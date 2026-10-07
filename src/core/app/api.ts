@@ -1,0 +1,163 @@
+export type FlowStep = {
+  id: string
+  position: number
+  kind: 'welcome' | 'question' | 'completion'
+  questionType: 'short_text' | 'long_text' | 'email' | 'single_choice' | 'multiple_choice' | 'rating' | 'priority' | null
+  prompt: string
+  helperText: string | null
+  required: boolean
+  nextStepId: string | null
+  questionSettings: Record<string, unknown> | null
+}
+
+export type ChoiceOption = { id: string; stepId: string; value: string; label: string; position: number }
+
+export type BranchRule = {
+  id: string
+  sourceStepId: string
+  predicateKind: 'equals' | 'greater_than' | 'greater_than_or_equal' | 'less_than' | 'less_than_or_equal' | 'any_of' | 'all_of'
+  expectedValue: unknown
+  destinationStepId: string
+  position: number
+}
+
+export type PublicFlow = {
+  branchSelection?: import('../shared/flowPolicies').BranchSelection
+  identity?: 'anonymous' | 'identified'
+  completedStepId?: string | null
+  flow: { id: string; slug: string; title: string }
+  revision: { id: string; number: number; publishedAt: string | null; deadlineAt: string | null; targetCompletedResponses: number | null }
+  steps: FlowStep[]
+  choices: ChoiceOption[]
+  branchRules: BranchRule[]
+}
+
+export type DashboardFlow = {
+  id: string
+  slug: string
+  title: string
+  status: 'draft' | 'open' | 'closed' | 'archived'
+  draftVersion: number
+  lastActivityAt: string
+  completedResponses: number
+  starts: number
+  audience: { launchedParticipants: number; eligibleParticipants: number; completedParticipants?: number }
+  analysisStatus: 'unconfigured'
+}
+
+export type BuilderDraft = PublicFlow & {
+  flow: PublicFlow['flow'] & { status: DashboardFlow['status']; draftVersion: number }
+}
+
+export type FlowResults = {
+  flow: { id: string; title: string; slug: string; status: DashboardFlow['status'] }
+  revision: PublicFlow['revision']
+  starts: number
+  completedResponses: number
+  completionRate: number
+  averageCompletionMilliseconds: number
+  deviceStarts: { mobile: number; tablet: number; desktop: number }
+  analysis: { status: 'unconfigured'; configuration: string }
+  taskDestination: { status: 'unconfigured'; configuration: string }
+}
+
+export type WorkspaceSettings = {
+  id: string
+  name: string
+  timeZone: string
+  sendingWindowStart: string
+  sendingWindowEnd: string
+  embedAllowedOrigins: string[]
+}
+
+export type Operator = {
+  id: string
+  email: string
+  displayName: string
+  isSetupOperator: boolean
+  createdAt: string
+}
+
+export type ClosedFlow = { title: string; slug: string }
+
+export class ApiError extends Error {
+  constructor(readonly code: string, message: string, readonly status: number, readonly details?: Array<{ stepId: string; reason: string }>, readonly closedFlow?: ClosedFlow) {
+    super(message)
+  }
+}
+
+async function request<T>(url: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(url, {
+    credentials: 'same-origin',
+    headers: { 'content-type': 'application/json', ...(init?.headers ?? {}) },
+    ...init,
+  })
+  const body = await response.json().catch(() => ({})) as { error?: string; message?: string; details?: Array<{ stepId: string; reason: string }>; closedFlow?: ClosedFlow } & T
+  if (!response.ok) {
+    throw new ApiError(body.error ?? 'REQUEST_FAILED', body.message ?? 'The request could not be completed.', response.status, body.details, body.closedFlow)
+  }
+  return body
+}
+
+export const api = {
+  dashboard: (status?: DashboardFlow['status']) => request<DashboardFlow[]>(`/api/app/dashboard${status ? `?status=${encodeURIComponent(status)}` : ''}`),
+  createFlow: (input: { title: string; slug: string }) => request<{ id: string; slug: string; title: string }>('/api/app/flows', { method: 'POST', body: JSON.stringify(input) }),
+  duplicateFlow: (flowId: string, input: { title: string; slug: string }) => request<{ id: string; slug: string; title: string }>(`/api/app/flows/${encodeURIComponent(flowId)}/duplicate`, { method: 'POST', body: JSON.stringify(input) }),
+  builder: (flowId: string) => request<BuilderDraft>(`/api/app/flows/${encodeURIComponent(flowId)}/draft`),
+  saveDraft: (flowId: string, input: { stepId: string; prompt: string; required: boolean; expectedVersion: number; helperText?: string | null; nextStepId?: string | null; questionSettings?: Record<string, unknown> | null; questionType?: FlowStep['questionType']; choices?: Array<{ id?: string; value: string; label: string }> }) =>
+    request<{ kind: 'updated'; draftVersion: number; step: FlowStep } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft`, {
+      method: 'PUT',
+      body: JSON.stringify(input),
+    }),
+  addDraftStep: (flowId: string, input: { expectedVersion: number; step: { kind: FlowStep['kind']; questionType: FlowStep['questionType']; prompt: string; helperText?: string | null; required?: boolean; nextStepId?: string | null; questionSettings?: Record<string, unknown> | null; choices?: Array<{ value: string; label: string }> } }) =>
+    request<{ kind: 'created'; draftVersion: number; step: FlowStep } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/steps`, { method: 'POST', body: JSON.stringify(input) }),
+  duplicateDraftStep: (flowId: string, stepId: string, expectedVersion: number) =>
+    request<{ kind: 'created'; draftVersion: number; step: FlowStep } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/steps/${encodeURIComponent(stepId)}/duplicate`, { method: 'POST', body: JSON.stringify({ expectedVersion }) }),
+  deleteDraftStep: (flowId: string, stepId: string, expectedVersion: number) =>
+    request<{ kind: 'deleted'; draftVersion: number } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/steps/${encodeURIComponent(stepId)}`, { method: 'DELETE', body: JSON.stringify({ expectedVersion }) }),
+  reorderDraftSteps: (flowId: string, input: { expectedVersion: number; orderedStepIds: string[] }) =>
+    request<{ kind: 'reordered'; draftVersion: number } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/order`, { method: 'PUT', body: JSON.stringify(input) }),
+  saveBranchRules: (flowId: string, input: { expectedVersion: number; rules: Omit<BranchRule, 'id'>[] }) =>
+    request<{ kind: 'updated'; draftVersion: number } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/branches`, { method: 'PUT', body: JSON.stringify(input) }),
+  previewDraft: (flowId: string, answers: Record<string, unknown>) =>
+    request<{ preview: true; draftVersion: number; screens: Array<{ stepId: string; evaluations: Array<{ ruleId: string; matched: boolean; destinationStepId: string }>; selectedRuleId: string | null; nextStepId: string | null }>; complete: boolean; reason?: string }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/preview`, { method: 'POST', body: JSON.stringify({ answers }) }),
+  publishDraft: (flowId: string, input: { expectedVersion: number; deadlineAt?: string | null; targetCompletedResponses?: number | null }) =>
+    request<{ kind: 'published'; revision: { id: string; number: number }; draftVersion: number } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/publish`, { method: 'POST', body: JSON.stringify(input) }),
+  closeFlow: (flowId: string) => request<void>(`/api/app/flows/${encodeURIComponent(flowId)}/close`, { method: 'POST' }),
+  reopenFlow: (flowId: string) => request<void>(`/api/app/flows/${encodeURIComponent(flowId)}/reopen`, { method: 'POST' }),
+  archiveFlow: (flowId: string) => request<void>(`/api/app/flows/${encodeURIComponent(flowId)}/archive`, { method: 'POST' }),
+  results: (flowId: string, revisionId?: string) => request<FlowResults>(`/api/app/flows/${encodeURIComponent(flowId)}/results${revisionId ? `?revisionId=${encodeURIComponent(revisionId)}` : ''}`),
+  publicFlow: (slug: string) => request<PublicFlow>(`/api/public/flows/${encodeURIComponent(slug)}`),
+  startSession: (slug: string, deviceClass: 'mobile' | 'tablet' | 'desktop', source: 'direct' | 'embed', invitationToken?: string) =>
+    request<{ sessionId: string; sessionToken: string; revisionId: string; flowId: string; flow: PublicFlow }>(`/api/public/flows/${encodeURIComponent(slug)}/sessions`, { method: 'POST', body: JSON.stringify({ deviceClass, source, invitationToken }) }),
+  advanceSession: (slug: string, input: { sessionId: string; sessionToken: string; stepId: string }) => request<void>(`/api/public/flows/${encodeURIComponent(slug)}/sessions/advance`, { method: 'POST', body: JSON.stringify(input) }),
+  submitResponse: (slug: string, input: { sessionId: string; sessionToken: string; idempotencyKey: string; answers: Array<{ stepId: string; value: unknown }>; honeypot?: string; invitationToken?: string }) =>
+    request<{ responseId: string | null; idempotent: boolean; completionStepId: string | null; disposition: 'released' | 'quarantined' | 'dropped' }>(`/api/public/flows/${encodeURIComponent(slug)}/responses`, { method: 'POST', body: JSON.stringify(input) }),
+  quarantinedResponses: (revisionId: string) => request<Array<{ id: string; quarantineReason: string | null; completedAt: string; answers: Array<{ stepId: string; value: unknown }> }>>(`/api/app/revisions/${encodeURIComponent(revisionId)}/quarantine`),
+  releaseQuarantinedResponse: (responseId: string) => request<void>(`/api/app/responses/${encodeURIComponent(responseId)}/release`, { method: 'POST' }),
+  deleteQuarantinedResponse: (responseId: string) => request<void>(`/api/app/responses/${encodeURIComponent(responseId)}/quarantine`, { method: 'DELETE' }),
+  eraseReleasedResponse: (responseId: string) => request<void>(`/api/app/responses/${encodeURIComponent(responseId)}`, { method: 'DELETE' }),
+  requestMagicLink: (email: string) => request<{ delivery: 'local' | 'email'; inboxAvailable: boolean }>('/auth/magic-link', { method: 'POST', body: JSON.stringify({ email }) }),
+  localInbox: (email: string) => request<{ messages: Array<{ id: string; toEmail: string; magicLinkToken: string; expiresAt: string; createdAt: string }> }>(`/auth/local-inbox?email=${encodeURIComponent(email)}`),
+  signOut: () => request<void>('/auth/signout', { method: 'POST', body: '{}' }),
+  workspace: () => request<WorkspaceSettings>('/api/app/workspace'),
+  updateWorkspace: (input: Pick<WorkspaceSettings, 'timeZone' | 'sendingWindowStart' | 'sendingWindowEnd'> & { embedAllowedOrigins?: string[] }) =>
+    request<WorkspaceSettings>('/api/app/workspace', { method: 'PUT', body: JSON.stringify(input) }),
+  operators: () => request<Operator[]>('/api/app/operators'),
+  inviteOperator: (input: { email: string; displayName: string }) => request<{ id: string }>('/api/app/operators', { method: 'POST', body: JSON.stringify(input) }),
+  removeOperator: (operatorId: string) => request<void>(`/api/app/operators/${encodeURIComponent(operatorId)}`, { method: 'DELETE' }),
+}
+
+export type LedgerFilter = { revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
+export type LedgerResponse = { participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string; answers: Array<{ stepId: string; label: string; questionType: string; value: unknown; displayValue: string }> }
+export type Ledger = { flow: { id: string; title: string; slug: string }; cutoff: string; filter: LedgerFilter; revisions: Array<{ id: string; number: number; isCurrent: number }>; total: number; responses: LedgerResponse[] }
+export type QuestionReport = { id: string; prompt: string; questionType: string | null; reached: number; dropped: number; answered: number; choices: Array<{ id: string; label: string }>; distribution: Array<{ value: unknown; label: string; count: number }>; distributionLabel: string }
+function query(filter: LedgerFilter) { return new URLSearchParams(Object.entries(filter).filter(([, value]) => value !== undefined).map(([key, value]) => [key, String(value)])).toString() }
+export type RevisionComparison = { flow: { id: string; title: string; slug: string }; revisions: Array<{ id: string; number: number; isCurrent: number }>; questions: Array<{ id: string; answered: number; eligibleResponses: number; versions: Array<QuestionReport & { revisionId: string; eligibleResponses: number }> }> }
+
+export const reportingApi = {
+  compareRevisions: (flowId: string) => request<RevisionComparison>(`/api/app/flows/${encodeURIComponent(flowId)}/questions/compare`),
+  ledger: (flowId: string, filter: LedgerFilter = {}) => request<Ledger>(`/api/app/flows/${encodeURIComponent(flowId)}/ledger?${query(filter)}`),
+  questions: (flowId: string, revisionId: string) => request<QuestionReport[]>(`/api/app/flows/${encodeURIComponent(flowId)}/questions?revisionId=${encodeURIComponent(revisionId)}`),
+  export: (flowId: string, filter: LedgerFilter) => request<{ cutoff: string; filter: LedgerFilter; excludedQuarantined: number; responses: LedgerResponse[] }>(`/api/app/flows/${encodeURIComponent(flowId)}/responses/export?${query(filter)}`),
+}

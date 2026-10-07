@@ -1,0 +1,12 @@
+Pencil
+Copyright (c) 2026 Run Edit Run
+Released under the MIT license in LICENSE.
+
+Dependencies retain their own license and copyright notices. The installed font
+packages ship SIL Open Font License notices, and Lucide ships ISC and retained Feather MIT notices.
+See ASSET-PROVENANCE.md for the distributed visual inputs. No competitor
+screenshot, design-run output or historical review capture is a product asset.
+
+Maintained operator-auth and mail source from Run Edit Run Base is included under
+the MIT notice in src/base/LICENSE. See edition.json and sources.lock.json for
+the exact reviewed origin and src/base/provenance.json for copied file hashes.

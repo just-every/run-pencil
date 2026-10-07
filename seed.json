@@ -1,0 +1,506 @@
+{
+  "id": "pencil",
+  "name": "Pencil",
+  "version": "0.1.0",
+  "maturity": "first-release-profile-candidate-local-runtime",
+  "category": "forms",
+  "spine": {
+    "id": "forms",
+    "record": "form response"
+  },
+  "replaces": [
+    {
+      "name": "Typeform",
+      "edition": null
+    }
+  ],
+  "description": "A self-hosted feedback-to-action loop for one business: ask a short adaptive flow, surface evidence, and own the next action.",
+  "scope": "One business, one shared workspace, equal operators with no roles.",
+  "capabilities": [
+    {
+      "id": "landing",
+      "description": "The owner-configured public landing at `/`, matching the canonical published flow's respondent experience and admission state.",
+      "clauses": [
+        "HOME-001"
+      ]
+    },
+    {
+      "id": "application-shell",
+      "description": "A session-gated operator shell at `/app` with labelled, keyboard-operable navigation; `/signin` is the only sessionless entry point.",
+      "clauses": [
+        "SHELL-001"
+      ]
+    },
+    {
+      "id": "operators",
+      "description": "Equal operators with no roles, invited and removed in settings, whose sign-in depends on mail.",
+      "clauses": [
+        "OPER-001",
+        "OPER-002",
+        "OPER-003"
+      ]
+    },
+    {
+      "id": "workspace",
+      "description": "One workspace time zone and sending-hours window, plus the guarantee that optional AI and task adapters are configuration, not degradation.",
+      "clauses": [
+        "WS-001",
+        "WS-002",
+        "WS-003"
+      ]
+    },
+    {
+      "id": "dashboard",
+      "description": "An onboarding empty state and a sortable flow list with completion and audience figures.",
+      "clauses": [
+        "DASH-001",
+        "DASH-002"
+      ]
+    },
+    {
+      "id": "flow-builder",
+      "description": "Building, branching, validating, publishing, and revising adaptive flows with stable structure IDs.",
+      "clauses": [
+        "FLOW-001",
+        "FLOW-002",
+        "FLOW-003",
+        "FLOW-004",
+        "FLOW-005",
+        "FLOW-006",
+        "FLOW-007",
+        "FLOW-008",
+        "FLOW-009",
+        "FLOW-010",
+        "FLOW-011",
+        "FLOW-012",
+        "FLOW-013",
+        "FLOW-014",
+        "FLOW-015",
+        "FLOW-016",
+        "FLOW-017",
+        "FLOW-018",
+        "FLOW-019",
+        "FLOW-020",
+        "FLOW-021"
+      ]
+    },
+    {
+      "id": "audiences",
+      "description": "Contacts, segments, and participants for inviting a known audience with consent and send-time eligibility checks.",
+      "clauses": [
+        "AUD-001",
+        "AUD-002",
+        "AUD-003",
+        "AUD-004",
+        "AUD-005",
+        "AUD-006"
+      ]
+    },
+    {
+      "id": "distribution",
+      "description": "Public links, embeds, invitations, reminders, opt-out, and durable mail delivery with retry and adapter isolation.",
+      "clauses": [
+        "DIST-001",
+        "DIST-002",
+        "DIST-003",
+        "DIST-004",
+        "DIST-005",
+        "DIST-006",
+        "DIST-007",
+        "DIST-008",
+        "DIST-009",
+        "DIST-010"
+      ]
+    },
+    {
+      "id": "respondent-experience",
+      "description": "The one-question-at-a-time public flow: answers, back navigation, privacy disclosure, abuse defences, and quarantine review.",
+      "clauses": [
+        "RESP-001",
+        "RESP-002",
+        "RESP-003",
+        "RESP-004",
+        "RESP-005",
+        "RESP-006",
+        "RESP-007",
+        "RESP-008",
+        "RESP-009",
+        "RESP-010",
+        "RESP-011",
+        "RESP-012",
+        "RESP-013",
+        "RESP-014",
+        "RESP-015",
+        "RESP-016",
+        "RESP-017",
+        "RESP-018",
+        "RESP-019"
+      ]
+    },
+    {
+      "id": "response-ledger",
+      "description": "A response ledger with filters, counts, and lossless CSV/JSON export.",
+      "clauses": [
+        "LEDG-001",
+        "LEDG-002",
+        "LEDG-003",
+        "LEDG-004"
+      ]
+    },
+    {
+      "id": "results",
+      "description": "AI-free response summary, drop-off, stated denominators, device split, and cross-revision results.",
+      "clauses": [
+        "RSLT-001",
+        "RSLT-002",
+        "RSLT-003",
+        "RSLT-004",
+        "RSLT-005"
+      ]
+    },
+    {
+      "id": "analysis",
+      "description": "Budgeted, evidence-linked AI analysis with disclosure thresholds, provenance, output validation, and visible failure.",
+      "clauses": [
+        "ANLY-001",
+        "ANLY-002",
+        "ANLY-003",
+        "ANLY-004",
+        "ANLY-005",
+        "ANLY-006",
+        "ANLY-007",
+        "ANLY-008",
+        "ANLY-009",
+        "ANLY-010",
+        "ANLY-011",
+        "ANLY-012",
+        "ANLY-013",
+        "ANLY-014",
+        "ANLY-015",
+        "ANLY-016"
+      ]
+    },
+    {
+      "id": "actions",
+      "description": "Turning a recommendation into an owned, measurable action with idempotent, confirmed external task delivery.",
+      "clauses": [
+        "ACT-001",
+        "ACT-002",
+        "ACT-003",
+        "ACT-004",
+        "ACT-005",
+        "ACT-006",
+        "ACT-007"
+      ]
+    },
+    {
+      "id": "notifications",
+      "description": "In-app, immediate, and digest notification of completed responses with no mail loops.",
+      "clauses": [
+        "NOTIFY-001",
+        "NOTIFY-002",
+        "NOTIFY-003",
+        "NOTIFY-004"
+      ]
+    },
+    {
+      "id": "data-ownership",
+      "description": "Complete export and bounded response erasure across every dependent record.",
+      "clauses": [
+        "DATA-001",
+        "DATA-002"
+      ]
+    }
+  ],
+  "nonGoals": [
+    "Multiple workspaces",
+    "Roles and permissions",
+    "Agency management",
+    "Payments and order forms",
+    "Appointment scheduling",
+    "Public template marketplace",
+    "Survey-panel recruitment",
+    "Native mobile apps",
+    "Video, audio, signature, and file-upload questions",
+    "Single sign-on",
+    "Advanced fraud scoring",
+    "Broad marketing analytics",
+    "Live collaborative editing",
+    "Arbitrary automation builder",
+    "Storing or reporting the answers of an abandoned session"
+  ],
+  "externals": [
+    {
+      "id": "mail",
+      "required": true,
+      "why": "Cloudflare has no owned primitive that delivers transactional email to external recipients, and BASE-ACCESS-001 magic-link sign-in is delivered by mail, so no deployment can run without it.",
+      "data": [
+        "operator email and magic-link sign-in token",
+        "participant email and display name",
+        "business and flow name",
+        "opaque invitation or opt-out link",
+        "invitation, reminder, notification, or digest copy"
+      ],
+      "adapters": [
+        "mail.sender.v1"
+      ]
+    },
+    {
+      "id": "ai",
+      "required": false,
+      "why": "Evidence synthesis and draft-question assistance require a model provider; no model is bundled with the deployment.",
+      "data": [
+        "draft question text for requested assistance",
+        "published revision prompts and settings",
+        "completed answer text and structured values selected for an analysis",
+        "stable response IDs without contact identity"
+      ],
+      "adapters": [
+        "ai.provider.v1"
+      ]
+    },
+    {
+      "id": "task-destination",
+      "required": false,
+      "why": "Creating a task in a buyer-selected task system necessarily sends the confirmed action to that system.",
+      "data": [
+        "operator-confirmed action fields",
+        "operator-confirmed report link"
+      ],
+      "adapters": [
+        "task.destination.v1"
+      ]
+    }
+  ],
+  "env": [
+    {
+      "name": "APP_ORIGIN",
+      "required": true,
+      "secret": false,
+      "why": "Canonical HTTPS origin for auth, reports, and public flow links."
+    },
+    {
+      "name": "PENCIL_BUILD_ID",
+      "required": true,
+      "secret": false,
+      "why": "Exact deploy candidate identifier shown by `/health` after its D1 readiness check."
+    },
+    {
+      "name": "SEED_ADMIN_EMAIL",
+      "required": true,
+      "secret": false,
+      "why": "Allow-listed operator created during setup."
+    },
+    {
+      "name": "MAIL_PROVIDER",
+      "required": true,
+      "secret": false,
+      "why": "Selects the mail sender adapter. Required: magic-link sign-in depends on it (OPER-003)."
+    },
+    {
+      "name": "MAIL_API_KEY",
+      "required": true,
+      "secret": true,
+      "why": "Authenticates transactional sign-in, invitation, reminder, and notification mail."
+    },
+    {
+      "name": "MAIL_FROM",
+      "required": true,
+      "secret": false,
+      "why": "Verified no-reply sender address used for every outbound message (NOTIFY-004)."
+    },
+    {
+      "name": "AI_PROVIDER",
+      "required": false,
+      "secret": false,
+      "why": "Selects the optional AI adapter; when absent ANLY-008 and WS-003 apply."
+    },
+    {
+      "name": "AI_MODEL",
+      "required": false,
+      "secret": false,
+      "why": "Model required when AI analysis or assistance is enabled."
+    },
+    {
+      "name": "AI_API_KEY",
+      "required": false,
+      "secret": true,
+      "why": "Authenticates the configured AI provider when AI is enabled."
+    },
+    {
+      "name": "TASK_PROVIDER",
+      "required": false,
+      "secret": false,
+      "why": "Selects an optional task destination adapter; when absent ACT-004 and WS-003 apply."
+    },
+    {
+      "name": "TASK_API_KEY",
+      "required": false,
+      "secret": true,
+      "why": "Authenticates the optional task destination."
+    },
+    {
+      "name": "SESSION_SECRET",
+      "required": true,
+      "secret": true,
+      "why": "At least 32 random bytes encoded for Base HMAC session and one-time token hashes; preserve across restarts."
+    },
+    {
+      "name": "SETUP_TOKEN",
+      "required": false,
+      "secret": true,
+      "why": "Independent one-time bootstrap secret required only until the first Base operator is established. Remove after setup; the durable ledger forbids a second bootstrap."
+    }
+  ],
+  "deploy": {
+    "healthPath": "/health",
+    "operatorPath": "/app",
+    "publicPaths": [
+      "/",
+      "/signin",
+      "/signin/inbox",
+      "/health",
+      "/favicon.ico",
+      "/assets/",
+      "/auth/",
+      "/f/",
+      "/embed/",
+      "/api/public/",
+      "/_serverFn/",
+      "/i/",
+      "/optout/"
+    ],
+    "notes": "`/` matches only the literal root document, never as a prefix over the whole deployment: a matcher must compare `/` for exact equality, not `path.startsWith('/')`, which would trivially admit every route. Every other entry ending in `/` is a true prefix \u2014 `/f/` for direct flow links, `/embed/` for the embed script, `/auth/` for the sign-in flow, `/assets/` for static files, `/api/public/` for unauthenticated public API reads \u2014 and covers everything under it. Every other entry is one exact, sessionless document. Everything else, including the rest of `/app` and `/api/`, requires an operator or respondent session. Start owns generated /_serverFn/ transport; each private handler independently validates the native operator session."
+  },
+  "customFields": [
+    "contact",
+    "flow",
+    "response",
+    "action"
+  ],
+  "extensionPoints": {
+    "policies": [
+      "flow.branch-selection.v1",
+      "flow.audience-eligibility.v1",
+      "flow.reminder-schedule.v1",
+      "response.identity.v1",
+      "flow.response-admission.v1",
+      "analysis.autorun.v1",
+      "analysis.disclosure.v1",
+      "recommendation.selection.v1"
+    ],
+    "events": [
+      "flow.created.v1",
+      "flow.published.v1",
+      "flow.closed.v1",
+      "participant.invited.v1",
+      "response.completed.v1",
+      "analysis.completed.v1",
+      "analysis.failed.v1",
+      "action.created.v1",
+      "action.reviewed.v1"
+    ],
+    "slots": [
+      "navigation.after.v1",
+      "dashboard.after.v1",
+      "flow.row.actions.after.v1",
+      "flow.header.actions.after.v1",
+      "flow.editor.sidebar.after.v1",
+      "flow.step.settings.after.v1",
+      "flow.results.header.after.v1",
+      "flow.results.finding.after.v1",
+      "response.question.after.v1",
+      "settings.after.v1"
+    ],
+    "adapters": [
+      "mail.sender.v1",
+      "ai.provider.v1",
+      "task.destination.v1"
+    ],
+    "contributions": [
+      "app.routes.v1",
+      "app.navigation.v1",
+      "app.settings.v1",
+      "jobs.consumers.v1",
+      "schedules.cron.v1"
+    ]
+  },
+  "limits": {
+    "status": "estimated",
+    "mustBeReplacedByLoadTest": true,
+    "flows": {
+      "total": 1000,
+      "simultaneouslyOpen": 50
+    },
+    "flowRevisions": {
+      "perFlow": 100
+    },
+    "steps": {
+      "perRevision": 50,
+      "choiceOptionsPerStep": 100,
+      "priorityOptionsPerStep": 10,
+      "branchRulesPerStep": 100
+    },
+    "contacts": {
+      "total": 100000,
+      "participantsPerRevision": 25000
+    },
+    "responses": {
+      "perRevision": 100000,
+      "shortTextCharactersPerAnswer": 200,
+      "openTextCharactersPerAnswer": 5000
+    },
+    "respondentSessions": {
+      "retentionDays": 30
+    },
+    "abuse": {
+      "minimumSecondsFromSessionStartToSubmit": 3
+    },
+    "publicRateLimits": {
+      "requestsPerIpPerMinute": 120,
+      "finalSubmissionsPerIpPerMinute": 30
+    },
+    "operatorRateLimits": {
+      "requestsPerOperatorPerMinute": 600
+    },
+    "p95Milliseconds": {
+      "publicScreen": 500,
+      "answerTransition": 500,
+      "finalSubmission": 1000,
+      "responseLedger": 500
+    },
+    "notes": "These are design targets, not proven capacities. The backend pass must load-test them, revise the values, and mark status as tested before release."
+  },
+  "accessibility": {
+    "level": "WCAG 2.2 AA",
+    "status": "target-not-yet-tested",
+    "includes": [
+      "operator app",
+      "direct public flow",
+      "embedded public flow",
+      "email"
+    ]
+  },
+  "operatingCost": {
+    "status": "estimate",
+    "freePlanDefault": true,
+    "platformMonthlyUsdAtTypicalLocalOrEarlyProductionUse": {
+      "min": 0,
+      "max": 0
+    },
+    "platformMonthlyUsdAtDeclaredEstimatedLimits": {
+      "min": 5,
+      "max": null
+    },
+    "workersPaidRequiredWhen": "The first measured boundary is any of: the 100,001st dynamic Worker request in a UTC day; an invocation that cannot stay within the Free plan's 10 ms CPU limit; the 5,000,001st D1 row read or 100,001st D1 row written in a UTC day; one D1 database exceeding 500 MB or the account exceeding 5 GB; or the 10,001st Queue operation in a UTC day. A normally delivered Queue message consumes write, read, and delete operations, so 3,334 such messages cross the Queue boundary. The declared capacity targets are not Free-capable or load-tested and are not a monthly usage forecast.",
+    "workersPaidMinimumMonthlyUsd": 5,
+    "excludes": [
+      "R2 usage above its Standard free tier",
+      "AI provider usage",
+      "email delivery",
+      "optional task destination charges",
+      "domain registration"
+    ],
+    "assumptions": "The current thin spine uses one Worker and D1. R2 and Queues are declared but not implemented; R2 Standard includes 10 GB-month storage, 1 million Class A operations, 10 million Class B operations, and free egress each month. No second worker, Durable Object, Workflow, KV, or hosted database is used until a measured need exists."
+  }
+}

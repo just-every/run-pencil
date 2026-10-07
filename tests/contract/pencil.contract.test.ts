@@ -1,0 +1,41 @@
+import { describe } from 'vitest'
+import { contract } from '../../src/test/contract'
+
+describe('Pencil contract implementation', () => {
+  contract.todo('AUD-001', 'Contacts')
+  contract.todo('AUD-002', 'Segments')
+  contract.todo('AUD-003', 'Participants')
+  contract.todo('AUD-004', 'Eligibility')
+  contract.todo('AUD-005', 'Launch idempotency')
+  contract.todo('AUD-006', 'Send-time eligibility')
+  contract.todo('ANLY-001', 'Analysis run')
+  contract.todo('ANLY-002', 'Fixed evidence set')
+  contract.todo('ANLY-003', 'Findings')
+  contract.todo('ANLY-004', 'Exact evidence')
+  contract.todo('ANLY-005', 'Disclosure threshold')
+  contract.todo('ANLY-006', 'Recommendations')
+  contract.todo('ANLY-007', 'Staleness')
+  contract.todo('ANLY-008', 'Provider failure')
+  contract.todo('ANLY-009', 'Builder assistance')
+  contract.todo('ANLY-010', 'Cost')
+  contract.todo('ANLY-011', 'Evidence provenance')
+  contract.todo('ANLY-012', 'Output validation')
+  contract.todo('ANLY-013', 'Insufficient evidence')
+  contract.todo('ANLY-014', 'Untrusted evidence')
+  contract.todo('ANLY-015', 'Analysis policy snapshot')
+  contract.todo('ANLY-016', 'Provider retry')
+  contract.todo('ACT-001', 'Action record')
+  contract.todo('ACT-002', 'Action lifecycle')
+  contract.todo('ACT-003', 'External task')
+  contract.todo('ACT-004', 'Task failure')
+  contract.todo('ACT-005', 'Follow-up measurement')
+  contract.todo('ACT-006', 'Confirmed task payload')
+  contract.todo('ACT-007', 'Task delivery state')
+  contract.todo('NOTIFY-001', 'Analysis attention')
+  contract.todo('NOTIFY-002', 'New-response mail')
+  contract.todo('NOTIFY-003', 'Digest')
+  contract.todo('NOTIFY-004', 'No mail loops')
+})
+
+// Active requirements now execute in the unit/Worker/native evidence registry.
+// See docs/FIRST-RELEASE.md. These four deferred families remain unsatisfied in full mode.

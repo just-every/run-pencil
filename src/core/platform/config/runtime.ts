@@ -1,0 +1,99 @@
+import type { WorkerBindings } from '../../app/environment'
+import type { MailConfiguration } from '../mail'
+
+const loopbackHostnames = new Set(['127.0.0.1', '::1', 'localhost'])
+
+export class DeploymentConfigurationError extends Error {}
+
+export type RuntimeConfiguration = {
+  readonly appOrigin: string
+  readonly buildId: string
+  readonly sessionSecret: string
+  readonly setupToken?: string
+  readonly bootstrapAdminEmail?: string
+  readonly mail: MailConfiguration
+  readonly isLocalDevelopment: boolean
+  readonly seedSampleData: boolean
+}
+
+export function isLoopbackRequest(requestUrl: string) {
+  return loopbackHostnames.has(new URL(requestUrl).hostname)
+}
+
+export function isLocalDevelopmentRequest(requestUrl: string, environment: WorkerBindings) {
+  return isLoopbackRequest(requestUrl)
+    && environment.PENCIL_LOCAL_DEVELOPMENT === 'true'
+    && environment.MAIL_PROVIDER === 'local'
+}
+
+function hasLineBreak(value: string) {
+  return /[\r\n]/.test(value)
+}
+
+function isEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+}
+
+function isValidMailFrom(value: string) {
+  if (hasLineBreak(value)) return false
+  const email = value.match(/<([^<>]+)>$/)?.[1] ?? value
+  return isEmail(email.trim())
+}
+
+export function deploymentConfigurationErrors(requestUrl: string, environment: WorkerBindings) {
+  if (isLocalDevelopmentRequest(requestUrl, environment)) return environment.SESSION_SECRET && environment.SESSION_SECRET.length >= 32 ? [] : ['SESSION_SECRET must contain at least 32 characters']
+
+  const errors: string[] = []
+  for (const name of ['APP_ORIGIN', 'PENCIL_BUILD_ID', 'SEED_ADMIN_EMAIL', 'MAIL_PROVIDER', 'MAIL_API_KEY', 'MAIL_FROM', 'SESSION_SECRET'] as const) {
+    if (!environment[name]?.trim()) errors.push(`${name} is required`)
+  }
+  if (environment.MAIL_PROVIDER && !['resend','sendgrid'].includes(environment.MAIL_PROVIDER)) {
+    errors.push('MAIL_PROVIDER must be resend or sendgrid outside explicit loopback development')
+  }
+  if (environment.SESSION_SECRET && environment.SESSION_SECRET.length < 32) errors.push('SESSION_SECRET must contain at least 32 characters')
+  if (environment.SESSION_SECRET && hasLineBreak(environment.SESSION_SECRET)) errors.push('SESSION_SECRET must not contain line breaks')
+  if (environment.SETUP_TOKEN && (environment.SETUP_TOKEN.length < 32 || hasLineBreak(environment.SETUP_TOKEN))) errors.push('SETUP_TOKEN must contain at least 32 characters with no line breaks')
+  if (environment.APP_ORIGIN) {
+    try {
+      const origin = new URL(environment.APP_ORIGIN)
+      if (origin.protocol !== 'https:') errors.push('APP_ORIGIN must use HTTPS outside local development')
+      if (origin.origin !== environment.APP_ORIGIN.replace(/\/$/, '')) errors.push('APP_ORIGIN must be an origin without a path, query, or fragment')
+    } catch {
+      errors.push('APP_ORIGIN must be an absolute URL')
+    }
+  }
+  if (environment.SEED_ADMIN_EMAIL && !isEmail(environment.SEED_ADMIN_EMAIL.trim())) errors.push('SEED_ADMIN_EMAIL must be an email address')
+  if (environment.MAIL_FROM && !isValidMailFrom(environment.MAIL_FROM.trim())) errors.push('MAIL_FROM must be a sender email address')
+  if (environment.MAIL_API_KEY && hasLineBreak(environment.MAIL_API_KEY)) errors.push('MAIL_API_KEY must not contain line breaks')
+  if (environment.PENCIL_BUILD_ID && hasLineBreak(environment.PENCIL_BUILD_ID)) errors.push('PENCIL_BUILD_ID must not contain line breaks')
+  if (errors.length === 0 && new URL(requestUrl).origin !== new URL(environment.APP_ORIGIN!).origin) {
+    errors.push('The request host must match APP_ORIGIN')
+  }
+  return errors
+}
+
+export function readRuntimeConfiguration(requestUrl: string, environment: WorkerBindings): RuntimeConfiguration {
+  const errors = deploymentConfigurationErrors(requestUrl, environment)
+  if (errors.length > 0) throw new DeploymentConfigurationError(`Invalid deployment configuration: ${errors.join('; ')}.`)
+  if (isLocalDevelopmentRequest(requestUrl, environment)) {
+    return {
+      appOrigin: new URL(requestUrl).origin,
+      buildId: 'local-development',
+      sessionSecret: environment.SESSION_SECRET!,
+      setupToken: environment.SETUP_TOKEN,
+      mail: { kind: 'local-development' },
+      isLocalDevelopment: true,
+      seedSampleData: environment.SEED_SAMPLE_DATA === 'true',
+    }
+  }
+  return {
+    appOrigin: new URL(environment.APP_ORIGIN!).origin,
+    buildId: environment.PENCIL_BUILD_ID!.trim(),
+    sessionSecret: environment.SESSION_SECRET!,
+    setupToken: environment.SETUP_TOKEN,
+    bootstrapAdminEmail: environment.SEED_ADMIN_EMAIL!.trim().toLowerCase(),
+    mail: { kind: environment.MAIL_PROVIDER as 'resend' | 'sendgrid', apiKey: environment.MAIL_API_KEY!.trim(), from: environment.MAIL_FROM!.trim() },
+    isLocalDevelopment: false,
+    seedSampleData: false,
+  }
+}

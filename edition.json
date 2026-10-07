@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "id": "just-every/pencil",
+  "toolchain": {
+    "id": "runeditrun/edition-authoring",
+    "version": "1.1.0"
+  },
+  "parent": null,
+  "components": [
+    {
+      "id": "just-every/pencil",
+      "role": "edition",
+      "source": {
+        "kind": "local",
+        "paths": [
+          "src/core",
+          "src/test",
+          "src/ext",
+          "src/router.tsx",
+          "src/vite-env.d.ts",
+          "src/routeTree.gen.ts",
+          "src/server.ts",
+          "src/routes",
+          "migrations",
+          "sample-data",
+          "tests"
+        ]
+      }
+    },
+    {
+      "id": "runeditrun/base-auth-mail",
+      "role": "module",
+      "source": {
+        "kind": "local",
+        "paths": [
+          "src/base"
+        ],
+        "origin": {
+          "repository": "https://github.com/runeditrun/base.git",
+          "revision": "712a4b43d8fc3f30b8d4c2f354c8a10e060bfc38",
+          "paths": [
+            "LICENSE",
+            "modules/mail/LICENSE",
+            "modules/mail/.gitignore",
+            "modules/mail/index.mjs",
+            "modules/mail/doctor.mjs",
+            "modules/operator-auth/identity.mjs",
+            "modules/operator-auth/routes.mjs",
+            "modules/operator-auth/admin.mjs",
+            "modules/operator-auth/index.d.mts",
+            "modules/operator-auth/input.mjs",
+            "modules/operator-auth/crypto.mjs",
+            "modules/operator-auth/errors.mjs",
+            "modules/operator-auth/store.mjs",
+            "modules/operator-auth/policy.mjs",
+            "modules/operator-auth/index.mjs",
+            "modules/operator-auth/service.mjs",
+            "modules/operator-auth/config.mjs",
+            "modules/operator-auth/http.mjs",
+            "modules/operator-auth/schema/operator-auth.sql",
+            "modules/mail/live-proof/run.mjs",
+            "modules/mail/src/core/transport.mjs",
+            "modules/mail/src/core/validation.mjs",
+            "modules/mail/src/core/errors.mjs",
+            "modules/mail/src/development/index.mjs",
+            "modules/mail/src/doctor/probe.mjs",
+            "modules/mail/src/doctor/common.mjs",
+            "modules/mail/src/doctor/receive.mjs",
+            "modules/mail/src/doctor/records.mjs",
+            "modules/mail/src/doctor/index.mjs",
+            "modules/mail/src/doctor/dns.mjs",
+            "modules/mail/src/unsubscribe/index.mjs",
+            "modules/mail/src/inbound/mime.mjs",
+            "modules/mail/src/inbound/bytes.mjs",
+            "modules/mail/src/inbound/sendgrid.mjs",
+            "modules/mail/src/inbound/resend-attachment.mjs",
+            "modules/mail/src/inbound/headers.mjs",
+            "modules/mail/src/inbound/resend.mjs",
+            "modules/mail/src/inbound/multipart.mjs",
+            "modules/mail/src/inbound/index.mjs",
+            "modules/mail/src/events/storage.mjs",
+            "modules/mail/src/events/intake.mjs",
+            "modules/mail/src/events/verify.mjs",
+            "modules/mail/src/events/index.mjs",
+            "modules/mail/src/adapters/sendgrid/serialize.mjs",
+            "modules/mail/src/adapters/sendgrid/index.mjs",
+            "modules/mail/src/adapters/cloudflare/headers.mjs",
+            "modules/mail/src/adapters/cloudflare/index.mjs",
+            "modules/mail/src/adapters/cloudflare/response.mjs",
+            "modules/mail/src/adapters/resend/serialize.mjs",
+            "modules/mail/src/adapters/resend/index.mjs",
+            "modules/mail/src/adapters/resend/size.mjs",
+            "modules/mail/src/adapters/resend/response.mjs"
+          ]
+        },
+        "mappings": [
+          {
+            "path": "src/base/operator-auth",
+            "originPath": "modules/operator-auth"
+          },
+          {
+            "path": "src/base/mail",
+            "originPath": "modules/mail"
+          },
+          {
+            "path": "src/base/LICENSE",
+            "originPath": "LICENSE"
+          }
+        ]
+      }
+    }
+  ]
+}

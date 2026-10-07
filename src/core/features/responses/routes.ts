@@ -1,0 +1,100 @@
+import { validateInput as zValidator, resourceId, flowSlug, emptyMutationBody, answerValue } from '../../shared/validation'
+import type { Context, Hono } from 'hono'
+import { z } from 'zod'
+import type { WorkerEnvironment } from '../../app/environment'
+import type { RequestServices } from '../../app/request-context'
+import { FlowClosedError, PencilError, RateLimitError } from '../../shared/errors'
+import { requireSameOriginRequest } from '../auth'
+
+const startSessionSchema = z.object({
+  deviceClass: z.enum(['mobile', 'tablet', 'desktop']),
+  source: z.enum(['direct', 'embed']).default('direct'),
+  invitationToken: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+})
+
+const sessionCredentials = z.object({
+  sessionId: resourceId,
+  sessionToken: z.string().min(32).max(200),
+})
+
+const submitResponseSchema = sessionCredentials.extend({
+  // Missing credentials reach the named session refusal; present credentials
+  // retain their original format bounds and never bypass service admission.
+  sessionToken: z.string().min(32).max(200).optional(),
+  idempotencyKey: z.string().min(12).max(200),
+  answers: z.array(z.object({ stepId: resourceId, value: answerValue })).max(50),
+  invitationToken: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  honeypot: z.string().max(500).optional(),
+})
+
+function failure(context: Context<WorkerEnvironment>, error: unknown) {
+  if (error instanceof FlowClosedError) return context.json({ error: error.code, message: error.message, closedFlow: error.flow }, 409)
+  if (error instanceof PencilError) {
+    return context.json({ error: error.code, message: error.message }, error instanceof RateLimitError ? 429 : error.code === 'NOT_FOUND' ? 404 : 400)
+  }
+  throw error
+}
+
+export function registerResponseRoutes(app: Hono<WorkerEnvironment>, services: RequestServices) {
+  app.post('/api/public/flows/:slug/sessions', zValidator('param', z.object({ slug: flowSlug })), zValidator('json', startSessionSchema), async (context) => {
+    try {
+      return context.json(await services(context).responses.startPublicSession({ slug: context.req.param('slug'), clientAddress: context.req.header('CF-Connecting-IP'), ...context.req.valid('json') }), 201)
+    } catch (error) {
+      return failure(context, error)
+    }
+  })
+
+  app.post('/api/public/flows/:slug/sessions/advance', zValidator('param', z.object({ slug: flowSlug })), zValidator('json', sessionCredentials.extend({ stepId: resourceId })), async (context) => {
+    try {
+      await services(context).responses.advancePublicSession({ slug: context.req.param('slug'), ...context.req.valid('json') })
+      return context.body(null, 204)
+    } catch (error) {
+      return failure(context, error)
+    }
+  })
+
+  app.post('/api/public/flows/:slug/responses', zValidator('param', z.object({ slug: flowSlug })), zValidator('json', submitResponseSchema), async (context) => {
+    try {
+      const input = context.req.valid('json')
+      return context.json(await services(context).responses.submitPublicResponse({ slug: context.req.param('slug'), clientAddress: context.req.header('CF-Connecting-IP'), ...input, sessionToken: input.sessionToken ?? '' }), 201)
+    } catch (error) {
+      return failure(context, error)
+    }
+  })
+
+  app.get('/api/app/revisions/:revisionId/quarantine', zValidator('param', z.object({ revisionId: resourceId })), async (context) => {
+    try {
+      return context.json(await services(context).responses.listQuarantinedResponses({ workspaceId: context.get('operatorSession').workspaceId, revisionId: context.req.param('revisionId') }))
+    } catch (error) {
+      return failure(context, error)
+    }
+  })
+
+  app.post('/api/app/responses/:responseId/release', zValidator('param', z.object({ responseId: resourceId })), emptyMutationBody, async (context) => {
+    try {
+      requireSameOriginRequest(context.req.raw)
+      await services(context).responses.releaseQuarantinedResponse({ workspaceId: context.get('operatorSession').workspaceId, responseId: context.req.param('responseId'), operatorId: context.get('operatorSession').operatorId })
+      return context.body(null, 204)
+    } catch (error) {
+      return failure(context, error)
+    }
+  })
+
+  app.delete('/api/app/responses/:responseId/quarantine', zValidator('param', z.object({ responseId: resourceId })), emptyMutationBody, async (context) => {
+    try {
+      requireSameOriginRequest(context.req.raw)
+      await services(context).responses.deleteQuarantinedResponse({ workspaceId: context.get('operatorSession').workspaceId, responseId: context.req.param('responseId'), operatorId: context.get('operatorSession').operatorId })
+      return context.body(null, 204)
+    } catch (error) {
+      return failure(context, error)
+    }
+  })
+
+  app.delete('/api/app/responses/:responseId', zValidator('param', z.object({ responseId: resourceId })), emptyMutationBody, async (context) => {
+    try {
+      requireSameOriginRequest(context.req.raw)
+      await services(context).responses.eraseReleasedResponse({ workspaceId: context.get('operatorSession').workspaceId, responseId: context.req.param('responseId'), operatorId: context.get('operatorSession').operatorId })
+      return context.body(null, 204)
+    } catch (error) { return failure(context, error) }
+  })
+}

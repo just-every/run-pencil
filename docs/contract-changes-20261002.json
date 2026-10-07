@@ -1,0 +1,10 @@
+{
+  "contractChanges": {
+    "BASE-ACCESS-002": {
+      "change": "changed",
+      "summary": "Otherwise-admissible protected API requests return 401 at session validation, while native documents and generated RPC preserve their identifiable session-denial protocols with no private product payload or requested mutation.",
+      "was": "A session expires after at most 30 days of inactivity; sign-out revokes that session. Every operator endpoint requires a valid session and returns 401 without one.",
+      "now": "A session expires after at most 30 days of inactivity; sign-out revokes that session. A valid session is required before an operator request reads private product data or performs its requested action. A protected operator document and each private generated server-function handler validate the session independently; a document gate does not authorize a function call. For an otherwise-admissible request that reaches session validation, a protected operator HTTP API returns 401 when the session is missing, expired, or revoked; a protected document returns its native sign-in response; and a generated transport may encode an identifiable session denial or sign-in redirect in its framework protocol, including a 200 serialized redirect. No such denial response exposes private product data or performs the requested mutation. Declared public exceptions remain governed by BASE-ACCESS-003, and host, method, Origin/CSRF, input, and runtime guards retain their normal order."
+    }
+  }
+}

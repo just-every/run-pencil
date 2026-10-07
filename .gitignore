@@ -1,0 +1,21 @@
+node_modules/
+dist/
+coverage/
+.DS_Store
+.wrangler/
+.dev.vars*
+wrangler.toml
+.tanstack/
+test-results/
+playwright-report/
+.pencil-e2e-state/
+worker-configuration.d.ts
+
+deploy/wrangler.production.toml
+
+.pencil-backups/
+
+.isolated-config/
+# Owner-specific remote targets; the portable template remains tracked.
+deploy/*.toml
+!deploy/wrangler.template.toml

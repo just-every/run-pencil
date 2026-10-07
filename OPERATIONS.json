@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "edition": "just-every/pencil",
+  "commands": {
+    "setup": {
+      "argv": [
+        "pnpm",
+        "run",
+        "setup"
+      ],
+      "effects": "Default: prepare loopback configuration and migrate local D1. Explicit --remote: validate production inputs, find or create the exactly named D1 and write a private target configuration without replacing owner values; deployment remains separate."
+    },
+    "deploy": {
+      "argv": [
+        "pnpm",
+        "run",
+        "deploy"
+      ],
+      "effects": "Validate explicit worker/database/config, run full verify, build target, apply ordered remote migrations, install supplied secrets via stdin and upload the Worker. Does not claim live health or inbox delivery."
+    },
+    "verify": {
+      "argv": [
+        "pnpm",
+        "run",
+        "verify"
+      ],
+      "effects": "Local type, unit, isolated Worker/D1, capacity, current-data round-trip/refusal, migration, manifest, boundary, build and contract coverage gates. No deployment or live provider effects."
+    },
+    "export": {
+      "argv": [
+        "pnpm",
+        "run",
+        "export"
+      ],
+      "effects": "Read-only consistent snapshot of an explicit local SQLite/D1 source into a new private archive; no provider calls or effects."
+    },
+    "import": {
+      "argv": [
+        "pnpm",
+        "run",
+        "import"
+      ],
+      "effects": "Fully validates the private archive and restores only into an exclusively created new local SQLite/D1 database; preserves migrations and effect/auth state, never replaces existing files or starts providers."
+    }
+  },
+  "requiredEnvironment": [
+    "APP_ORIGIN",
+    "PENCIL_BUILD_ID",
+    "SEED_ADMIN_EMAIL",
+    "MAIL_PROVIDER",
+    "MAIL_API_KEY",
+    "MAIL_FROM",
+    "SESSION_SECRET"
+  ],
+  "authentication": {
+    "deployment": "Owner-selected Cloudflare account and Wrangler authentication; remote operations require explicit worker, database and configuration target.",
+    "operators": "Maintained Base one-time bootstrap with SETUP_TOKEN, read-only link confirmation and single-use POST, opaque native sessions; loopback Base mail outbox only for synthetic development."
+  },
+  "configurationFiles": [
+    "seed.json",
+    "deploy/wrangler.template.toml",
+    "owner-selected deploy/<name>.toml"
+  ],
+  "health": {
+    "path": "/health",
+    "semantics": "Configured Worker/D1 dependency health and build identity; does not prove provider delivery or remote acceptance."
+  },
+  "acceptance": {
+    "document": "ACCEPTANCE.md"
+  }
+}

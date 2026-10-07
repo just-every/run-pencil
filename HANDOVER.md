@@ -1,0 +1,11 @@
+# Pencil 0.1.0 implementation state
+
+Implemented: native operator email sign-in, form creation and editing, typed questions and ordered branches, isolated preview, immutable publication, validated direct/embed response collection, quarantine release and erasure, revision-aware factual reporting and response exports. Invitations and reminders retain consent, delivery attempts, sending windows and visible failure/unknown outcomes. Private routes and server functions recheck native sessions. Embeds use an exact origin allowlist and an opaque sandbox.
+
+The first-release profile defers exactly AUD, ANLY, ACT and NOTIFY (33 TODO clauses). Audience management, AI analysis, action workflows and notifications are incomplete. `pnpm verify:contract:full` deliberately reports these obligations as unsatisfied. Baseline requirements and all other product clauses remain active. Durable response outbox records do not imply an implemented AI or task dispatcher.
+
+`pnpm verify` is the complete local gate, including native browser journeys and the unchanged load workload. Hosted capacity, HTTPS health and actual provider inbox delivery require separate measurements on the deployed source and resources; this document makes no live deployment claim. Optional released-predecessor coverage is skipped for this first release, while current empty-database and legacy-auth cutover checks remain required.
+
+Before applying `0010_base_operator_auth.sql`, export the database. The migration imports operator identities and revokes legacy links and sessions, signing operators out. Configure maintained Base mail and SESSION_SECRET, then sign in again. A fresh database bootstraps once using SETUP_TOKEN; a migrated installation cannot bootstrap again. Preserve every applied migration filename and byte. Restore private archives only to a new database, without sending mail.
+
+See [operations](OPERATIONS.md), [hosting](docs/HOSTING.md), [release scope](docs/FIRST-RELEASE.md) and [local data recovery](docs/LOCAL-DATA-RECOVERY.md). Source provenance remains in edition.json, sources.lock.json and src/base/provenance.json. Public documentation is adapted locally; upstream runtime and license provenance is retained.

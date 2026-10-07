@@ -1,0 +1,18 @@
+name = "pencil-local"
+main = "src/server.ts"
+compatibility_date = "2026-09-08"
+compatibility_flags = ["nodejs_compat"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "pencil-local"
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations/core"
+
+[assets]
+binding = "ASSETS"
+run_worker_first = ["/assets/*", "/favicon.ico", "/_serverFn/*", "/", "/signin", "/signin/*", "/app", "/app/*", "/f/*", "/embed/*", "/health", "/api/*", "/auth/*"]
+
+# Retain anonymous metrics and dispatch due durable invitations/reminders.
+[triggers]
+crons = ["* * * * *"]

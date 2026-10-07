@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "id": "first-release",
+  "authority": "First-release scope: defer only AUD, ANLY, ACT and NOTIFY; preserve every other clause and every baseline requirement.",
+  "deferredFamilies": ["AUD", "ANLY", "ACT", "NOTIFY"]
+}

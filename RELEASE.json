@@ -1,0 +1,25 @@
+{
+  "version": "0.1.0",
+  "date": "2026-10-07",
+  "contractChanges": {
+    "HOME-001": {
+      "was": "Optional static Run Edit Run credit defaults on.",
+      "now": "Optional static Run Edit Run credit defaults off; an owner can enable it explicitly. No request or telemetry is introduced.",
+      "change": "changed",
+      "summary": "Optional static credit defaults off while owner opt-in and public privacy remain intact."
+    }
+  },
+  "extensionPointChanges": [],
+  "migrations": [
+    {
+      "id": "0009_invitation_distribution.sql",
+      "buyerSteps": "Additive first-release distribution, recipient consent and durable delivery data; preserve all prior migration identities."
+    },
+    {
+      "id": "0010_base_operator_auth.sql",
+      "buyerSteps": "Export first. Configure SESSION_SECRET and maintained Base mail; apply the additive migration. Existing operators are imported, old SHA links and sessions revoked, and operators sign in again through read-only GET confirmation and single-use POST. Fresh deployments bootstrap once with SETUP_TOKEN. Restore the private export to a new database for recovery, without replaying mail."
+    }
+  ],
+  "breaking": true,
+  "agentUpdateInstructions": "Read docs/FIRST-RELEASE.md and OPERATIONS.md. Adopt pinned Base auth/mail source through edition mappings and preserve owner inputs and migrations0000\u20130009. Update callers from legacy GET redemption to GET/HEAD confirmation and POST consumption; no legacy session cookie authenticates. Exactly AUD, ANLY, ACT and NOTIFY are deferred; full contract mode remains unsatisfied. Run full pnpm verify and frozen clean-clone checks. This metadata is a candidate, not a tag, publication or hosted acceptance receipt."
+}

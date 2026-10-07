@@ -1,0 +1,42 @@
+[
+  {
+    "name": "0000_seeded_flowly_data_spine.sql",
+    "sha256": "e76719702be508166b72e9f2f367355930cf3b826b3b25dc85860c8ced034bde"
+  },
+  {
+    "name": "0001_local_magic_link_auth.sql",
+    "sha256": "ea5a319b3987a15febf6d12c6a99a24aa7acaa3c4dcabb575c5381811117c2cd"
+  },
+  {
+    "name": "0002_one_response_per_session.sql",
+    "sha256": "14c89e765fc402f6af47f1310445db7747720146050d45eb51ce498eb93276c9"
+  },
+  {
+    "name": "0003_operator_workspace_auth_foundation.sql",
+    "sha256": "a13c33a3c24ce7e4d9a9f8efdf289e20cf4fb8167b5a67f71dcf82c01ee62035"
+  },
+  {
+    "name": "0004_flow_publication_and_response_admission.sql",
+    "sha256": "9e208fef5fb6ac41cce48a6695dcc80177b8cedf4c591c5019d877e18a130578"
+  },
+  {
+    "name": "0005_response_ledger_privacy.sql",
+    "sha256": "e430633f0b9b0284d7a152fd3b10e0d8f95482452332b8ad7c1c02752f18bc8a"
+  },
+  {
+    "name": "0006_session_stable_progress.sql",
+    "sha256": "984533efb8fdcf8b0da745129a7051fb0ab42a61f31f0ac8ebf5680fe17b08ce"
+  },
+  {
+    "name": "0007_embed_origins.sql",
+    "sha256": "14225035b96741ab876fa8b77da9e3f305af992124742db75860118b92e1ab50"
+  },
+  {
+    "name": "0008_local_fixture_marker.sql",
+    "sha256": "c60c9231cb3e25232118490a1af493657c9955a684a67a57e09369ed88c1e2f9"
+  },
+  {
+    "name": "0009_invitation_distribution.sql",
+    "sha256": "5adb51a256e01269027e02fe03658e3c3329e116afa3f5179708a65601f8ef0e"
+  }
+]

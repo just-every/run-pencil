@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "projectId": "just-every/pencil",
+  "name": "Pencil",
+  "sourceRepository": "https://github.com/just-every/pencil",
+  "license": "MIT",
+  "deployment": {
+    "target": "cloudflare-workers"
+  },
+  "operations": {
+    "descriptor": "OPERATIONS.json",
+    "documentation": "OPERATIONS.md",
+    "build": "pnpm build",
+    "verify": "pnpm verify",
+    "setup": "pnpm run setup",
+    "deploy": "pnpm run deploy",
+    "recovery": "Export before migration. Restore the private archive into a new database without replaying mail, validate recovery, then change the D1 binding. See OPERATIONS.md for explicit local SQLite commands and remote backup responsibilities."
+  }
+}

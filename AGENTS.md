@@ -1,0 +1,13 @@
+# Working on Pencil
+
+Read README.md, HANDOVER.md, CONTRACT.md, BASELINE.md and the actual package scripts before changing behavior. This repository is the complete editable product source. Owners may adapt source, schema, UI, framework and infrastructure while preserving their recorded requirements and customizations.
+
+Keep responsibilities in small files, remove dead code, and validate inputs and authorization on the server. No production mocks, silent failures or semantic fallbacks. Keep credentials and server dependencies out of browser bundles. Parallelize independent investigation; keep ordered migrations and coupled writes under one owner.
+
+Run affected checks and the complete `pnpm verify` gate before release. Tests must exercise behavior and preserve assertions, workload sizes and thresholds. The first-release profile defers only AUD, ANLY, ACT and NOTIFY; their TODOs and the failing full-contract gate remain until implemented. Record uncovered requirements honestly. Local checks, CI, live mail delivery and hosted capacity are separate evidence.
+
+Preserve applied migration filenames and bytes. Export before upgrades and verify restoration into a new database. Migration `0010_base_operator_auth.sql` revokes legacy links and sessions; existing operators must sign in again. Never overwrite owner data or replay mail during recovery.
+
+Use OPERATIONS.md and docs/HOSTING.md for setup, deployment and recovery. Remote deployment and provider activity require the intended account and explicit resource configuration. No command name, push or pull request implies deployment.
+
+`edition.json` selects components and `sources.lock.json` pins their origin and bytes. Source may be adapted locally. Stage intentional changes, inspect `node scripts/edition-authoring/cli.mjs changes`, run `node scripts/edition-authoring/cli.mjs lock`, commit, then run `pnpm source:check`. Retain provenance and verify real behavior after adopting upstream changes. Preserve contract IDs and explain intentional requirement changes in release metadata.
