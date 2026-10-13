@@ -35,7 +35,8 @@ test("the docs plugin follows edits to Markdown and docs/site.json in a running 
   };
   for (const [path, text] of Object.entries(files)) await writeFile(join(root, path), text);
   // No WebSocket server: the plugin's full-reload goes nowhere here, and no fixed HMR port is taken.
-  const server = await createServer({ root, configFile: false, logLevel: "silent", appType: "custom", server: { middlewareMode: true, ws: false }, plugins: [docsSite()] });
+  // Poll the real fixture files: macOS FSEvents can miss edits in the runner's temporary directory even after ready.
+  const server = await createServer({ root, configFile: false, logLevel: "silent", appType: "custom", server: { middlewareMode: true, ws: false, watch: { usePolling: true } }, plugins: [docsSite()] });
   // What each environment is sent: the browser's full reload when the docs change, an error if the plugin throws.
   const sent = [];
   for (const environment of Object.values(server.environments)) {
@@ -109,9 +110,12 @@ test("the docs plugin follows edits to Markdown and docs/site.json in a running 
     await until(async () => assert.match((await loadDocsPage("sub")).page.html, /<h2 id="inside">Inside<\/h2>/), "the new page is served");
     sent.length = 0;
     await rm(join(root, "docs/sub"), { recursive: true, force: true });
-    await until(async () => assert.deepEqual(reloaded(), ["client"]), "the browser reloads when a docs folder is removed");
+    // A reload queued by the preceding manifest edit does not prove the deletion was handled.
+    await until(async () => {
+      assert.deepEqual(reloaded(), ["client"]);
+      assert.match((await index()).problem ?? "", /docs\/sub\/PAGE\.md" does not exist/);
+    }, "the browser reloads when a docs folder is removed");
     assert.deepEqual(errors(), [], "removing a docs folder sends no error");
-    assert.match((await index()).problem ?? "", /docs\/sub\/PAGE\.md" does not exist/);
     await assert.rejects(loadDocsPage("sub"), /docs\/sub\/PAGE\.md" does not exist/, "the removed page no longer loads");
     await assert.rejects(page("sub"), /docs\/sub\/PAGE\.md" does not exist/);
   } finally {

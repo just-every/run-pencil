@@ -54,6 +54,8 @@ Pencil finds your local database itself. You do not name it.
 
 Use the matching source checkout and its maintained owner recovery command. The public `rer export --target remote` and `rer import --target remote` commands still refuse remote transfer. The separate command below accepts the deployment kit's `_rer_deploy_migrations` ledger and Wrangler's `d1_migrations` ledger; it refuses mixed, incomplete or changed history. Source and destination must use the same ledger kind and the exact same migration bytes.
 
+**Released 0.2.0 installations:** this source’s recovery command does not establish compatibility with the old 0019 migration hash. Retain your existing source and database and use only a supported matching-version backup path. Do not edit ledger hashes or archives, or treat restore as a workaround for the [blocked hosted upgrade](hosting.md#upgrading). The current-version recovery proof is separate.
+
 Set `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID` and `CLOUDFLARE_API_TOKEN` in your private shell environment. Use the actual source D1 ID from your deployment receipt, and a token authorized for that account's D1 database. Never put the token in an archive or commit it.
 
 Stop every database writer as described below, then:

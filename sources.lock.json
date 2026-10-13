@@ -765,7 +765,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "49186332d06c595fa0c3d95ac601943e495fb57a087891935fd6570d18c49237",
+      "sha256": "1b16650288f354ceaa06a642fdf72ad3e2ca309f59f5508a321c951d873bbf29",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -829,7 +829,7 @@
       "executable": false
     },
     "docs/FIRST-RELEASE.md": {
-      "sha256": "bdf945cbcc0d9ee1414224a13584f99013fa2d6131a5ba1a965ea6db1359679d",
+      "sha256": "3b5f489f060ef5e775c076f51a6fd7f46b8ce298ceb0563a92a36392167137de",
       "executable": false
     },
     "docs/guide/actions.md": {
@@ -841,7 +841,7 @@
       "executable": false
     },
     "docs/guide/backup.md": {
-      "sha256": "86d8bc3ce5fc50f0c02f69203f2aa99d7e57390f47cf1a7e4c39af4ef42caf6a",
+      "sha256": "1aa8d728cbe64cc32eb5bb3b103f09562f2d62082ac593bb10d9c20e9eba2112",
       "executable": false
     },
     "docs/guide/branching.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "docs/guide/hosting.md": {
-      "sha256": "04ab989d5a61b6ae0701c3b832b83ae67205596d3d2744dc2309a180b8f87354",
+      "sha256": "5b5a06c2182fcb21789348517137262f492a33cb70d88666ccd97bd76094480c",
       "executable": false
     },
     "docs/guide/install.md": {
@@ -885,7 +885,7 @@
       "executable": false
     },
     "docs/HOSTING.md": {
-      "sha256": "ab3ca51a8fde128c130eaeadef58265c3474ee5eafa80208aed658feb4580943",
+      "sha256": "4d05445e0a66a3f121ed9b2499ffd067d9ecaa0964e585bde3eef3b4e395977d",
       "executable": false
     },
     "docs/IMMUTABLE-MIGRATIONS.json": {
@@ -913,7 +913,7 @@
       "executable": false
     },
     "HANDOVER.md": {
-      "sha256": "d0a1370120664310b0203c010a6c91f1c610d0afbbab6b4309e621e2606f9e53",
+      "sha256": "2702b369220232eb5d62cc9b31c5cbd8b8f77e44c5323485f3f44cf3397efcb3",
       "executable": false
     },
     "LICENSE": {
@@ -1525,7 +1525,7 @@
       "executable": true
     },
     "scripts/installer/deploy.mjs": {
-      "sha256": "015649817f0b4442295a41fdf54e33b1f5367f24c34468cce85546bdf71f969b",
+      "sha256": "68b5b2496df38cce05fb1dbacc39a2daeca085bd96911bf9829efc8add3ec8b0",
       "executable": false
     },
     "scripts/installer/local.mjs": {
@@ -5173,7 +5173,7 @@
       "executable": false
     },
     "tests/docs/docs-dev-sync.test.mjs": {
-      "sha256": "7c43569289e0b65555540e696f571c3d3ed54b70a47df290adcbc1e633f68658",
+      "sha256": "e56706569b696347b9975a33c1c70f784821d1b8eda37508184f3311f5949ad5",
       "executable": false
     },
     "tests/docs/docs-site.test.mjs": {
