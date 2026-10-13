@@ -33,6 +33,15 @@ contract(['RESP-005'], 'discloses privacy before interaction, shows it once on w
   expect(api.submitResponse).not.toHaveBeenCalled()
 })
 
+contract(['RESP-005'], 'tells respondents their written answers may reach an AI service only while the deployment can analyse them', () => {
+  for (const answersMayReachAi of [false, true]) {
+    render(<RespondentFlowPage config={{ ...config, answersMayReachAi }} slug="review" initialFlow={draft} />)
+    expect(screen.getByText('Before you share')).toBeInTheDocument()
+    expect(document.querySelector('[data-disclosure="ai-analysis"]') !== null).toBe(answersMayReachAi)
+    cleanup()
+  }
+})
+
 contract(['RESP-005', 'RESP-014'], 'keeps the no-welcome disclosure, entered answers and the same receipt key after a failed final acknowledgement', async () => {
   vi.mocked(api.startSession).mockResolvedValue({ sessionId: 'session', sessionToken: 'a'.repeat(64), revisionId: draft.revision.id, flowId: draft.flow.id, flow: draft })
   vi.mocked(api.submitResponse).mockRejectedValueOnce(new Error('Response acknowledgement lost')).mockResolvedValue({ responseId: 'response', idempotent: true, disposition: 'quarantined', completionStepId: 'completion' })

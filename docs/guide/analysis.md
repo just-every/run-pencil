@@ -13,6 +13,8 @@ When an analysis runs, Pencil sends one request to the provider shown on the req
 
 Nothing else is sent: no contact names or emails, no answers to email questions or to questions you did not tick, no network addresses, devices or session data, and no workspace or operator details. By default only long text questions are ticked. A short text question is often a name, so it is sent only if you tick it.
 
+While AI is on, the **Before you share** note on your forms adds that, if you analyse feedback, a respondent's written answers may be sent to the AI service you chose, and that their name, email address and network address are never sent. With AI off the note does not mention it.
+
 Pencil asks the provider not to store the request (`store: false`). What the provider keeps or logs under its own terms is outside Pencil's control; read your provider's data policy before you turn analysis on.
 
 Answers are treated only as data. An answer that contains instructions ("ignore your instructions and…") cannot change settings, call your task webhook, create jobs or reveal anything: the provider can only return the analysis format below, and an answer in any other form fails.

@@ -7,12 +7,14 @@ export const loadPublicConfig = createServerFn({ method: 'GET' }).handler(async 
   const { mountServerExtensions } = await import('./mountExtensions.server')
   const { requestServices } = await import('../platform/request.server')
   const { publicBrandConfig } = await import('../features/brand/brand')
-  const { services, request } = await requestServices()
+  const { services, request, platform } = await requestServices()
   const publicPath = /^\/(?:f|embed)\/([^/]+)$/.exec(new URL(request.url).pathname)
   const slug = publicPath ? decodePublicSlug(publicPath[1]) : undefined
   if (publicPath && !slug) throw notFound()
   const brandWorkspace = slug ? await services.flows.getFlowWorkspaceId(slug) : undefined
   const config = publicBrandConfig(await services.brand.get(brandWorkspace), mountServerExtensions().publicSeedConfig)
+  // Analysis sends only selected written answers, and only while the provider is on (analysis/evidence.ts).
+  config.answersMayReachAi = platform.ai.state === 'on'
   if (new URL(request.url).pathname.startsWith('/embed/')) {
     let host: string | undefined
     try { host = new URL(request.headers.get('Referer') ?? '').origin } catch { /* no parent protocol */ }

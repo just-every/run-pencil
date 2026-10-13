@@ -1,5 +1,7 @@
 export interface PublicSeedConfig {
   embedHostOrigin?: string
+  /** True while this deployment's AI provider is on, so analysis may send written answers to it. Set only for respondent pages. */
+  answersMayReachAi?: boolean
   readonly organizationName: string
   readonly productName: string
   readonly publicFlowLogoUrl?: string

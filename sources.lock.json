@@ -829,7 +829,7 @@
       "executable": false
     },
     "docs/guide/analysis.md": {
-      "sha256": "9d60bce78c46dfc04ba6193744109421ee6f40836142fa05e96c10dbb3d17f40",
+      "sha256": "825d9b44834ab34ad8750a40ed884195e827892927b72bd929aac314c6b11779",
       "executable": false
     },
     "docs/guide/backup.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "docs/guide/privacy.md": {
-      "sha256": "85862d69943551b08955c936ae43b29f2d4564ecced75d8e63c13915b0a83756",
+      "sha256": "3b7ec607151361b90a06cdbd8f3c0b3d5125b20af7503f94144dcaa338ae56f2",
       "executable": false
     },
     "docs/guide/publish-and-share.md": {
@@ -3069,7 +3069,7 @@
       "executable": false
     },
     "src/core/app/loaders.ts": {
-      "sha256": "47170e1e3ae63ade7d62fd52c91cdc69f94378ab8044eaad6d4d49b989e3e23f",
+      "sha256": "b45c21dcc11437ffec9957328f84df015e3703cc069782ab718cc86b3ba48184",
       "executable": false
     },
     "src/core/app/maintenance.ts": {
@@ -4525,7 +4525,7 @@
       "executable": false
     },
     "src/core/features/responses/ui/RespondentFlowPage.tsx": {
-      "sha256": "fc4beaf6fc50ac64fee7b9ce0e3352cb9db320e24808716b0d62599baa77a6ae",
+      "sha256": "48ccb0af8393da8a4e6a0b112e1cbb9399048e8468863249ed3e49442076bbb0",
       "executable": false
     },
     "src/core/features/results/ui/AnswerEvidence.tsx": {
@@ -4809,7 +4809,7 @@
       "executable": false
     },
     "src/core/shared/config.ts": {
-      "sha256": "e02e77643e3c7d8ff2311305d99a3df946e7b2e463689dc98247870b63f97299",
+      "sha256": "99c18a5fa45eca9a3d297393cc8ed47876a6fb0f651658fac1c6f2f08d0a229f",
       "executable": false
     },
     "src/core/shared/distributionPolicies.ts": {
@@ -5089,7 +5089,7 @@
       "executable": false
     },
     "src/test/respondent-journey.ui.test.tsx": {
-      "sha256": "85907ce790e1f3b887904177deae83c7e1aa5eb12b3fd3630f6384fa9f3d2884",
+      "sha256": "5ef54a4e15308798f99928a95f0da5d6117b3b9f6995478f734aff13236b34ce",
       "executable": false
     },
     "src/test/response-ledger-filters.ui.test.tsx": {

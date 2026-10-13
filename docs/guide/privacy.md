@@ -51,7 +51,7 @@ Your data lives in the D1 database in your Cloudflare account. It leaves that da
 - **External tasks, only if you turn them on and confirm each one.** Your task receiver gets exactly the JSON shown on the confirmation screen: the action's title, rationale, owner name and email, metric, review date and a link that needs an operator sign-in. Never answers, excerpts or respondent details. See [Actions and follow-up](actions.md).
 - **Exports and backups that you make.** They go where you put them. See [Backup and restore](backup.md).
 
-- **AI analysis, only if you turn it on.** When you request an analysis, or a flow closes with close-time analysis on, the provider you configured receives the prompts of the selected text questions and, for each completed response, its ID and its answers to those questions. Never contact names or emails, email answers, other answers, network addresses or devices. See [Analysis](analysis.md#what-leaves-and-where-it-goes).
+- **AI analysis, only if you turn it on.** When you request an analysis, or a flow closes with close-time analysis on, the provider you configured receives the prompts of the selected text questions and, for each completed response, its ID and its answers to those questions. Never contact names or emails, email answers, other answers, network addresses or devices. While AI is on, respondents are told so on the form before they answer. See [Analysis](analysis.md#what-leaves-and-where-it-goes).
 
 Pencil also has no telemetry, no phone-home, no licence check and no kill switch, and it makes no requests to the people who wrote it.
 
