@@ -9,6 +9,8 @@ declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 const plannedAt = '2026-10-08T00:00:00.000Z'
 
+// Each complete import takes about 9 minutes on a lightly loaded shared runner and over 17 when it is oversubscribed;
+// the limit is not what these tests check.
 test('one million distinct admitted answers retain complete cold-start custody without a global answer dictionary', async () => {
   const f = await importPrivacyFixture(), count = 100_000, width = 10
   const input = { plannedAt, definition: JSON.stringify({ title: 'Distinct response capacity', fields: Array.from({ length: width }, (_, q) => ({ ref: `q${q}`, title: `Q${q}`, type: 'short_text' })) }), csv: Array.from({ length: width }, (_, q) => `Q${q}`).join(',') + ',Submit Date\n' + Array.from({ length: count }, (_, row) => Array.from({ length: width }, (_, q) => (row * width + q).toString(36).padStart(5, '0')).join(',') + ',2026-09-12 10:00:00').join('\n') }
@@ -25,7 +27,7 @@ test('one million distinct admitted answers retain complete cold-start custody w
   const answers = (plan.entries.at(-1)!.source.payload as any).answers
   expect(Object.values(answers).sort()).toEqual(Array.from({ length: width }, (_, q) => ((count - 1) * width + q).toString(36).padStart(5, '0')).sort())
   expect(await env.DB.prepare('SELECT COUNT(*) n FROM ik_jobs j LEFT JOIN ik_d1_indexed_jobs i ON i.job_id=j.id AND i.fingerprint=j.fingerprint WHERE j.destination=? AND i.job_id IS NULL').bind(f.actor.workspaceId).first()).toEqual({ n: 0 })
-}, 900_000)
+}, 2_400_000)
 
 test('repeated full-size consent statements remain immutable through complete native import and undo', async () => {
   const f = await importPrivacyFixture(), count = 1000, width = 49
@@ -51,4 +53,4 @@ test('repeated full-size consent statements remain immutable through complete na
   job = await f.imports.undo(job.id)
   while (job.state !== 'undone') job = await new FormImports(env.DB, f.actor).undo(job.id)
   expect(await env.DB.prepare('SELECT id FROM flows WHERE id=?').bind(review.flowId).first()).toBeNull()
-}, 900_000)
+}, 2_400_000)

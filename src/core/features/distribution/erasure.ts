@@ -1,6 +1,8 @@
 import { ulid } from 'ulid'
 import { NotFoundError } from '../../shared/errors'
 import { eraseContactLocalMail } from '../../platform/mail/erasure'
+import { restoreCheckpoint } from '../../platform/restore/checkpoint'
+import { analysisErasureStatements } from '../analysis'
 /** Pencil's one cascade declaration; SQL below and existing response triggers apply it atomically. */
 export const contactErasureCascade = [
   { target:'distribution_contacts.* (including fields_json)', action:'delete', reason:'Remove the contact and every custom field.' },
@@ -19,6 +21,9 @@ export const contactErasureCascade = [
   { target:'distribution_segments.*', action:'retained', reason:'Rules are operator configuration; SQL matching excludes the removed contact without membership records.' },
   { target:'invitation_launches.*,flow_revisions.invitation_reserved_count', action:'retained', reason:'Policy participant IDs are opaque; evaluated policy, command identity and historical capacity contain no contact values.' },
   { target:'respondent_sessions.*,respondent_session_step_events.*,revision_step_metric_counters.*', action:'retained', reason:'Anonymous session metrics contain no participant/contact identity or answers.' },
+  { target:'analysis_evidence.*,analysis_theme_members.*,analysis_quotes.*', action:'delete', reason:'Remove the erased responses from every analysis evidence set, theme and quote.' },
+  { target:'analysis_themes.title,summary,analysis_recommendations.title,rationale,analysis_runs.summary', action:'anonymise', reason:'Withhold provider text that may paraphrase an erased response.' },
+  { target:'restore_erasure_checkpoint.epoch', action:'retained', reason:'Advanced in the same batch, so rer import --journal refuses any archive made before this erasure.' },
 ] as const
 export async function eraseContact(db:D1Database, workspaceId: string, contactId: string, operatorId: string) {
     const started=Date.now()
@@ -48,6 +53,7 @@ export async function eraseContact(db:D1Database, workspaceId: string, contactId
       db.prepare(`UPDATE audit_entries SET subject_id = NULL, details_json = '{}' WHERE subject_type = 'response' AND subject_id IN (${owned})`).bind(contactId, workspaceId),
       eraseContactLocalMail(db, contactId, workspaceId),
       db.prepare(`DELETE FROM local_mail_outbox WHERE delivery_id IN(SELECT d.idempotency_key FROM mail_deliveries d JOIN invitation_participants p ON p.id=d.participant_id WHERE p.contact_id=? AND p.workspace_id=?)`).bind(contactId,workspaceId),
+      ...analysisErasureStatements(owned, [contactId, workspaceId], now).map(statement => db.prepare(statement.sql).bind(...statement.params ?? [])),
       db.prepare(`DELETE FROM response_answers WHERE response_id IN (${owned})`).bind(contactId, workspaceId),
       db.prepare(`DELETE FROM response_outbox WHERE response_id IN (${owned})`).bind(contactId, workspaceId),
       db.prepare(`DELETE FROM responses WHERE id IN (${owned})`).bind(contactId, workspaceId),
@@ -57,6 +63,7 @@ export async function eraseContact(db:D1Database, workspaceId: string, contactId
       db.prepare('DELETE FROM contact_consent_events WHERE contact_id = ? AND workspace_id = ?').bind(contactId, workspaceId),
       db.prepare(`UPDATE invitation_candidates SET contact_id=NULL,email_snapshot=NULL,name_snapshot=NULL,outcome=CASE WHEN outcome='pending' THEN 'noAddress' ELSE outcome END WHERE contact_id=? AND launch_id IN(SELECT id FROM invitation_launches WHERE workspace_id=?)`).bind(contactId,workspaceId),
       db.prepare('DELETE FROM distribution_contacts WHERE id = ? AND workspace_id = ?').bind(contactId, workspaceId),
+      db.prepare(restoreCheckpoint.sql),
     ])
     return {completed:true as const,counts,elapsedMilliseconds:Date.now()-started}
   }

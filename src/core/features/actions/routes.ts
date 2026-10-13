@@ -4,6 +4,7 @@ import { emptyMutationBody, resourceId, validateInput } from '../../shared/valid
 import type { WorkerEnvironment } from '../../app/environment'
 import type { RequestServices } from '../../app/request-context'
 import { freezeEvidence } from './evidence'
+import { ValidationError } from '../../shared/errors'
 import { createActionSchema, editActionSchema, measurementSchema, transitionSchema } from './model'
 
 const actionParam = validateInput('param', z.object({ actionId: resourceId }))
@@ -18,6 +19,11 @@ export function registerActionRoutes(app: Hono<WorkerEnvironment>, services: Req
     const { workspaceId, operatorId } = c.get('operatorSession'), input = c.req.valid('json'), all = services(c)
     // The figures are read here, on the server, as results show them now; the browser cannot supply them.
     const figures = await freezeEvidence(all.flows, all.reporting, workspaceId, input.evidence)
+    if (input.analysisId) {
+      // The analysis must be this workspace's, show a recommendation, and rest on the same flow revision as the action.
+      const analysis = await all.analysis.records.detail(workspaceId, input.analysisId)
+      if (!analysis.recommendation || analysis.flowId !== input.evidence.flowId || analysis.revisionId !== input.evidence.revisionId) throw new ValidationError('This analysis has no recommendation for that flow revision.')
+    }
     const id = await all.actions.records.create(workspaceId, operatorId, input, figures)
     return c.json(await detail(c, id), 201)
   })

@@ -42,7 +42,6 @@ export type DashboardFlow = {
   completedResponses: number
   starts: number
   audience: { launchedParticipants: number; eligibleParticipants: number; completedParticipants?: number }
-  analysisStatus: 'unconfigured'
 }
 
 export type BuilderDraft = PublicFlow & {
@@ -59,7 +58,6 @@ export type FlowResults = {
   completionRate: number
   averageCompletionMilliseconds: number
   deviceStarts: { mobile: number; tablet: number; desktop: number }
-  analysis: { status: 'unconfigured'; configuration: string }
 }
 
 export type WorkspaceSettings = {

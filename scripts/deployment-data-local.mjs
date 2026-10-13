@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { assertEmpty } from './deployment-data-core.mjs';
 import { captureStore, readStore, validateStore, populateStore, writeStore, storeSummary } from './deployment-data-stream.mjs';
 import { privateArchivePath } from './deployment-data-paths.mjs';
+import { erasureFence } from './deployment-data-journal.mjs';
 
 export function exportData(source, output) {
   privateArchivePath(output);
@@ -30,11 +31,13 @@ export function importData(archivePath, target) {
     return storeSummary(store);
   } finally { if (staging) rmSync(staging, { recursive:true }); store.close(); }
 }
-export function restoreData(archivePath, target) {
+export function restoreData(archivePath, target, journalPath) {
   privateArchivePath(archivePath);
+  if (journalPath) privateArchivePath(journalPath);
   const store = readStore(archivePath);
   let database;
   try {
+    if (journalPath) { const later = readStore(journalPath); try { erasureFence(store, later); } finally { later.close(); } }
     lstatSync(target);
     database = new DatabaseSync(target);
     database.exec('PRAGMA foreign_keys=OFF; BEGIN IMMEDIATE');

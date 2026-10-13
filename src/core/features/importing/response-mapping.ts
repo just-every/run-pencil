@@ -12,9 +12,19 @@ export function suggestColumns(headers: string[], form: ImportForm, forbiddenCol
   return headers.map((header, column) => {
     let target = 'skip'
     if (!forbiddenColumns.includes(column) && !forbiddenColumn(header)) {
-      if (/^(submit date|submitted at|submitted_at)$/i.test(header)) target = 'submittedAt'
-      else if (/^(start date|started at|landed_at)$/i.test(header)) target = 'startedAt'
-      else { const matches = form.steps.filter(s => s.kind === 'question' && [s.prompt, s.sourceId].includes(header)); if (matches.length === 1) target = matches[0].id }
+      // Typeform's results export names its UTC timestamps "Start Date (UTC)" and "Submit Date (UTC)".
+      if (/^(submit date|submitted at|submitted_at)(?: \(utc\))?$/i.test(header)) target = 'submittedAt'
+      else if (/^(start date|started at|landed_at)(?: \(utc\))?$/i.test(header)) target = 'startedAt'
+      else {
+        const matches = form.steps.filter(s => s.kind === 'question' && [s.prompt, s.sourceId].includes(header))
+        if (matches.length === 1) target = matches[0].id
+        else if (!matches.length) {
+          // The export splits a multiple-selection question into one column per option, headed by the option's label.
+          // Suggest it only when exactly one option of one such question carries that label; the operator reviews it.
+          const options = form.steps.flatMap(s => s.kind === 'question' && s.questionType === 'multiple_choice' ? s.choices.filter(c => c.label === header).map(c => ({ step: s.id, choice: c.id })) : [])
+          if (options.length === 1) return { column, target: options[0].step, choice: options[0].choice }
+        }
+      }
     }
     return { column, target }
   })

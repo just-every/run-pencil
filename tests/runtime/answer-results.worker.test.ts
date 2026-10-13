@@ -46,7 +46,8 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-005', 'LEDG-001', 'LEDG-003', 'DATA-002'
   const app=createWorkerApp(undefined,createPencilPlatform('http://localhost',{...env,DB:measured,SEED_SAMPLE_DATA:'false'}))
   const counted=await app.fetch(new Request(`http://localhost${textQuery}&countOnly=true&cursor=${encodeURIComponent(textStart.countCursor)}`,{headers:{Host:'localhost',cookie}}))
   expect(counted.status).toBe(200);expect(await counted.json()).toMatchObject({texts:[],matching:12})
-  expect(countStatements).toBe(6)
+  // Base's session read includes its provider-pin lookup (0028).
+  expect(countStatements).toBe(7)
   const countDenied=await SELF.fetch(`http://localhost${textQuery}&countOnly=true&cursor=${encodeURIComponent(textStart.countCursor)}`,{headers:{Host:'localhost'}})
   expect(countDenied.status).toBe(401);expect(await countDenied.text()).not.toContain('Exact retained answer')
   expect(question('multiple_choice').distribution.map(bucket => bucket.count)).toEqual([12, 12])

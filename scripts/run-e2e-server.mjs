@@ -52,8 +52,11 @@ const managementVars = process.argv[3] === '--management' ? `\nRER_MANAGEMENT_OR
 // The actions journey starts its own loopback task receiver on this port (tests/e2e/task-receiver.ts).
 const taskPort = process.env.PENCIL_E2E_TASK_PORT ?? String(Number(port) + 2)
 const taskVars = `TASK_PROVIDER = "webhook"\nTASK_WEBHOOK_URL = "http://127.0.0.1:${taskPort}/tasks"\n`
-await writeFile(config, template + '\n[vars]\nMAIL_PROVIDER = "local"\nPENCIL_LOCAL_DEVELOPMENT = "true"\nSEED_SAMPLE_DATA = "true"\n' + taskVars + managementVars)
-await writeFile(resolve(state, '.dev.vars'), `SESSION_SECRET=synthetic-native-browser-session-secret-at-least-32-characters\nRER_DEV_KEY=${testDevKey}\nTASK_API_KEY=synthetic-browser-task-key\n`, { mode: 0o600 })
+// The analysis journey starts its own loopback OpenAI-compatible provider on this port (tests/e2e/ai-receiver.ts).
+const aiPort = process.env.PENCIL_E2E_AI_PORT ?? String(Number(port) + 3)
+const aiVars = `AI_ENABLED = "true"\nAI_MODEL = "synthetic-browser-model"\nAI_BASE_URL = "http://127.0.0.1:${aiPort}/v1"\n`
+await writeFile(config, template + '\n[vars]\nMAIL_PROVIDER = "local"\nPENCIL_LOCAL_DEVELOPMENT = "true"\nSEED_SAMPLE_DATA = "true"\n' + taskVars + aiVars + managementVars)
+await writeFile(resolve(state, '.dev.vars'), `SESSION_SECRET=synthetic-native-browser-session-secret-at-least-32-characters\nRER_DEV_KEY=${testDevKey}\nTASK_API_KEY=synthetic-browser-task-key\nAI_API_KEY=synthetic-browser-ai-key\n`, { mode: 0o600 })
 const common = { ...process.env, PENCIL_WRANGLER_CONFIG: config, CI: '1', WRANGLER_SEND_METRICS: 'false', XDG_CONFIG_HOME: resolve(root, '.isolated-config') }
 let management
 let exitCode

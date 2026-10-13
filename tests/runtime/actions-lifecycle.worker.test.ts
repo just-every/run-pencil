@@ -32,8 +32,8 @@ contract(['ACT-001', 'ACT-008'], 'an operator turns results into an owned action
   const stored = JSON.stringify([await rows('actions', 'id', action.id), await rows('action_evidence', 'action_id', action.id), await rows('action_events', 'action_id', action.id), await rows('audit_entries', 'subject_id', action.id)])
   for (const forbidden of [...responses, 'RESPONDENT-CANARY', 'barista']) expect(stored).not.toContain(forbidden)
   expect((await rows('audit_entries', 'subject_id', action.id)).map(row => [row.kind, row.details_json])).toEqual([['action.created', '{"actions":1}']])
-  // ACT-008: an action written by hand from results evidence has no analysis link; the browser cannot claim one.
-  expect((await f.call('/api/app/actions', f.input({ analysisId: 'analysis-1' }))).status).toBe(400)
+  // ACT-008: an action written by hand from results evidence has no analysis link; the browser can name only an analysis of this workspace.
+  expect((await f.call('/api/app/actions', f.input({ analysisId: 'analysis-1' }))).status).toBe(404)
   expect((await f.call('/api/app/actions', f.input({ source: 'analysis' }))).status).toBe(400)
   await expect(env.DB.prepare("UPDATE actions SET source = 'analysis' WHERE id = ?").bind(action.id).run()).rejects.toThrow(/CHECK/)
   // Revision-level evidence without a question.

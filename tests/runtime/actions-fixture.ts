@@ -24,7 +24,7 @@ export async function actionsHttp(bindings: Partial<WorkerBindings> = {}, label 
   const app = createWorkerApp(undefined, platform)
   const as = (token: string): Call => (path, body, options = {}) => app.request(`http://localhost${path}`, {
     method: options.method ?? (body === undefined ? 'GET' : 'POST'),
-    headers: { Host: 'localhost', Origin: options.origin ?? 'http://localhost', Cookie: options.auth === false ? '' : `operator_session_local=${token}`, 'Content-Type': 'application/json' },
+    headers: { Host: 'localhost', Origin: options.origin ?? 'http://localhost', Cookie: options.auth === false ? '' : `operator_session_local_80=${token}`, 'Content-Type': 'application/json' },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   })
   const call = as(lead.token)

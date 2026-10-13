@@ -32,7 +32,7 @@ contract(['BASE-ACCESS-001'], 'the dev-sessions migration keeps every existing o
   })
   const before = await rows()
   const platform = () => createPencilPlatform('http://localhost', env)
-  const session = (token: string) => createPencilServices(platform()).auth.getSession(new Request('http://localhost/app', { headers: { Host: 'localhost', Cookie: `operator_session_local=${token}` } }))
+  const session = (token: string) => createPencilServices(platform()).auth.getSession(new Request('http://localhost/app', { headers: { Host: 'localhost', Cookie: `operator_session_local_80=${token}` } }))
   await applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__)
   expect(await rows()).toEqual(before)
   expect(await session(live)).toMatchObject({ operatorId: 'p', email: 'owner@example.test' })

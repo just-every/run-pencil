@@ -5,6 +5,7 @@ import type { WorkerBindings } from '../app/environment'
 import { readManagementConfiguration, type ManagementConfiguration } from './management'
 import { developmentOutboxResponse } from './mail/development.server'
 import { deploymentHealth } from '../../base/deployment-health'
+import { readAiProvider, type AiProvider } from './ai/provider'
 
 export type PencilPlatform = {
   readonly database: PencilDatabase
@@ -15,19 +16,23 @@ export type PencilPlatform = {
   /** Which deployment answers: the identity rer deploy binds and reads back from /health. */
   readonly deployment: ReturnType<typeof deploymentHealth>
   fetchAsset(request: Request): Promise<Response>
+  /** ai.provider.v1 for analysis: off until configured (WS-003); a local runtime uses the dev client server.dev.ts supplies. */
+  readonly ai: AiProvider
   /** The key-gated local outbox and key exchange (`/__dev/outbox`, `/__dev/key`): 404 unless a local runtime holds RER_DEV_KEY. */
   developmentOutbox(request: Request): Promise<Response>
 }
 
 export function createPencilPlatform(requestUrl: string, environment: WorkerBindings): PencilPlatform {
+  const configuration = readRuntimeConfiguration(requestUrl, environment)
   return {
     database: createDatabase(environment.DB),
     databaseBinding: environment.DB,
     databaseBatch: createD1BatchExecutor(environment.DB),
-    configuration: readRuntimeConfiguration(requestUrl, environment),
+    configuration,
     management: readManagementConfiguration(environment),
     deployment: deploymentHealth(environment),
     fetchAsset: (request) => environment.ASSETS.fetch(request),
+    ai: readAiProvider(environment, configuration.isLocalDevelopment),
     developmentOutbox: (request) => developmentOutboxResponse(request, environment, environment.DB),
   }
 }

@@ -95,6 +95,15 @@
           "label": "Mail API key"
         }
       ]
+    },
+    {
+      "name": "IDENTITY_PROVIDER",
+      "label": "Identity provider",
+      "kind": "url",
+      "required": false,
+      "default": "",
+      "help": "Optional Auth install. Leave empty to use email links.",
+      "group": "owner"
     }
   ],
   "steps": [
@@ -104,6 +113,18 @@
       "emailField": "SEED_ADMIN_EMAIL",
       "tokenField": "SETUP_TOKEN",
       "path": "/auth/owner-claim"
+    }
+  ],
+  "dependencies": [
+    {
+      "interface": "oidc-provider@1",
+      "optional": true,
+      "cardinality": 1,
+      "address": "IDENTITY_PROVIDER",
+      "paths": [
+        "/auth/oidc/auth/callback",
+        "/auth/oidc/auth/logout"
+      ]
     }
   ]
 }

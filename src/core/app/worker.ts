@@ -1,5 +1,6 @@
 import { registerManagementRoutes } from '../features/management/routes'
 import { registerActionRoutes } from '../features/actions'
+import { registerAnalysisRoutes } from '../features/analysis'
 import { registerNotificationRoutes } from '../features/notifications/routes'
 import { registerEmbeddingRoutes } from '../features/embedding/script'
 import { registerBrandRoutes } from '../features/brand/routes'
@@ -128,6 +129,7 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
   registerDistributionRoutes(app, context => context.get('services'))
   registerNotificationRoutes(app, context => context.get('services'))
   registerActionRoutes(app, context => context.get('services'))
+  registerAnalysisRoutes(app, context => context.get('services'))
 
   app.onError((error, context) => {
     if (error instanceof AuthError) return context.json({ error: error.code }, error.status as 403)

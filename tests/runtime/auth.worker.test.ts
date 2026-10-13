@@ -50,7 +50,7 @@ async function sessionCookie(email: string) {
   const redemption = await request('/auth/confirm', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token }), redirect: 'manual' })
   expect(redemption.status).toBe(303)
   const cookie = redemption.headers.get('set-cookie')?.split(';', 1)[0]
-  expect(cookie).toMatch(/^operator_session_local=/)
+  expect(cookie).toMatch(/^operator_session_local_80=/)
   return cookie!
 }
 
@@ -312,7 +312,7 @@ it.each(['auth.magic_link_sent', 'operator.invited'])('rolls invitation custody 
   expect(invitedId).not.toBe('')
   expect(redeemedToken).toMatch(/^[A-Za-z0-9_-]{43}$/)
   expect(await f.repository.findOperatorByEmail(email)).toBeUndefined()
-  expect(await service.getSession(new Request('http://localhost/app', { headers: { Host: 'localhost', Cookie: `operator_session_local=${redeemedToken}` } }))).toBeUndefined()
+  expect(await service.getSession(new Request('http://localhost/app', { headers: { Host: 'localhost', Cookie: `operator_session_local_80=${redeemedToken}` } }))).toBeUndefined()
   for (const table of ['operator_sessions', 'auth_magic_links']) {
     expect(await env.DB.prepare(`SELECT count(*) AS n FROM ${table} WHERE operator_id = ?`).bind(invitedId).first()).toEqual({ n: 0 })
   }
@@ -346,7 +346,7 @@ it.each(['auth.magic_link_sent', 'operator.invited'])('preserves the last access
     await expect(service.inviteOperator({ workspaceId: f.workspaceId, actorOperatorId: f.actorOperatorId, email, displayName: 'Retained invited operator', runtime: { appOrigin: 'http://localhost' }, request: new Request('http://localhost/api/app/operators', { method: 'POST', headers: { Host: 'localhost', Origin: 'http://localhost', Cookie: actorCookie } }) })).rejects.toMatchObject({ code: 'INVITATION_RECOVERY_REQUIRED', message: expect.stringContaining('remains to preserve protected workspace access') })
   } finally { await env.DB.exec('DROP TRIGGER fail_last_invitation_audit') }
   expect(await env.DB.prepare('SELECT id FROM operators WHERE workspace_id = ?').bind(f.workspaceId).all()).toMatchObject({ results: [{ id: invitedId }] })
-  expect(await service.getSession(new Request('http://localhost/app', { headers: { Host: 'localhost', Cookie: `operator_session_local=${redeemedToken}` } }))).toMatchObject({ operatorId: invitedId })
+  expect(await service.getSession(new Request('http://localhost/app', { headers: { Host: 'localhost', Cookie: `operator_session_local_80=${redeemedToken}` } }))).toMatchObject({ operatorId: invitedId })
   expect((await developmentInbox(path => request(path), email)).messages).toHaveLength(1)
   expect(await env.DB.prepare("SELECT count(*) AS n FROM audit_entries WHERE workspace_id = ? AND kind = 'operator.invitation_rolled_back'").bind(f.workspaceId).first()).toEqual({ n: 0 })
   expect(await env.DB.prepare("SELECT actor_operator_id, subject_id FROM audit_entries WHERE workspace_id = ? AND kind = 'operator.invitation_retained'").bind(f.workspaceId).first()).toEqual({ actor_operator_id: null, subject_id: invitedId })

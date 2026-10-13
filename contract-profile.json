@@ -1,11 +1,10 @@
 {
   "schemaVersion": 1,
   "id": "first-release",
-  "authority": "First-release scope: defer only ANLY, NOTIFY-001 and NOTIFY-003; preserve every other clause and every baseline requirement.",
-  "deferredFamilies": [
-    "ANLY"
-  ],
+  "authority": "First-release scope: defer only ANLY-009 (builder assistance), NOTIFY-001 and NOTIFY-003; preserve every other clause and every baseline requirement.",
+  "deferredFamilies": [],
   "deferredClauses": [
+    "ANLY-009",
     "NOTIFY-001",
     "NOTIFY-003"
   ]

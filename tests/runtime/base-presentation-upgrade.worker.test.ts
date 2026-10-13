@@ -43,7 +43,7 @@ contract(['BASE-OPS-002', 'BASE-ACCESS-001', 'OPER-003'], 'additive cancellation
     brand_logo_base64: null, brand_logo_mime: null, brand_logo_version: null, public_flow_slug: null,
   })
   const handle = createAuthHandler(auth)
-  const retainedSession = (await handle(new Request(origin + '/auth/session', { headers: { Host: 'localhost', Cookie: `operator_session_local=${sessionToken}` } })))!
+  const retainedSession = (await handle(new Request(origin + '/auth/session', { headers: { Host: 'localhost', Cookie: `operator_session_local_80=${sessionToken}` } })))!
   expect(retainedSession.status).toBe(200)
   expect(await retainedSession.json()).toMatchObject({ operatorId: 'retained-operator', operator: { email: 'upgrade@example.test' } })
   const confirmation = (await handle(request('/auth/confirm', { token: pendingToken })))!

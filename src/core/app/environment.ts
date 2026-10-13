@@ -24,12 +24,26 @@ export interface WorkerBindings {
   readonly TASK_PROVIDER?: string
   readonly TASK_WEBHOOK_URL?: string
   readonly TASK_API_KEY?: string
+  /** ai.provider.v1 (Base ai): off unless AI_ENABLED is true. Exactly one transport: a direct key or a linked Models service. */
+  readonly AI_ENABLED?: string
+  readonly AI_MODEL?: string
+  readonly AI_API_KEY?: string
+  readonly AI_BASE_URL?: string
+  readonly MODELS_SERVICE?: string
+  readonly MODELS_KEY?: string
+  /** Optional owner rates for a direct key (USD per million tokens); without them a direct call's cost is not reported. */
+  readonly AI_INPUT_USD_PER_MILLION_TOKENS?: string
+  readonly AI_OUTPUT_USD_PER_MILLION_TOKENS?: string
   readonly SESSION_SECRET?: string
   readonly SETUP_TOKEN?: string
   readonly PENCIL_LOCAL_DEVELOPMENT?: string
   /** Local runtimes only: the checkout's key gate and dev identity switch. `rer deploy` refuses both. */
   readonly RER_DEV_KEY?: string
   readonly RER_DEV_IDENTITY?: string
+  /** Local runtimes only: `rer dev --models live` hands the capped Models dev app here; server.dev.ts builds the dev client. */
+  readonly RER_MODELS_SERVICE?: string
+  readonly RER_MODELS_KEY?: string
+  readonly PENCIL_DEV_AI?: import('../platform/ai/provider').DevAiFactory
 }
 
 export type WorkerEnvironment = {

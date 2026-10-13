@@ -1,3 +1,4 @@
+import { analysisErasureStatements } from '../analysis'
 import { and, count, eq, sql } from 'drizzle-orm'
 import { completionMetricStatements } from './completionMetrics'
 import { eraseResponseLocalMail, eraseResponseLocalMailStatement } from '../../platform/mail/erasure'
@@ -312,6 +313,7 @@ export class ResponseRepository {
       { sql: `UPDATE audit_entries SET subject_id = NULL, details_json = '{}' WHERE workspace_id = ? AND subject_type = 'response' AND subject_id = ? AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`, params: [input.workspaceId, input.responseId, auditId] },
       eraseResponseLocalMailStatement(input.responseId, input.workspaceId, auditId),
       { sql: 'DELETE FROM response_outbox WHERE response_id = ? AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)', params: [input.responseId, auditId] },
+      ...analysisErasureStatements('SELECT id FROM responses WHERE id = ? AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)', [input.responseId, auditId], input.now),
       { sql: 'DELETE FROM response_answers WHERE response_id = ? AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)', params: [input.responseId, auditId] },
       { sql: `DELETE FROM respondent_session_step_events WHERE session_id = (SELECT session_id FROM responses WHERE id = ?) AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`, params: [input.responseId, auditId] },
       { sql: `DELETE FROM respondent_sessions WHERE id = (SELECT session_id FROM responses WHERE id = ?) AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`, params: [input.responseId, auditId] },

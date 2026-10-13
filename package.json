@@ -26,7 +26,7 @@
     "deploy": "rer deploy",
     "export": "rer export",
     "import": "rer import",
-    "verify:data": "node --test scripts/deployment-data.check.mjs scripts/distribution-data.check.mjs scripts/action-data.check.mjs scripts/deployment-data-dev.check.mjs",
+    "verify:data": "node --test scripts/deployment-data.check.mjs scripts/distribution-data.check.mjs scripts/action-data.check.mjs scripts/analysis-data.check.mjs scripts/deployment-data-dev.check.mjs",
     "verify:contract:full": "node scripts/verify-contract-coverage.mjs full",
     "verify:publication": "node scripts/verify-publication.mjs",
     "source:inspect": "node scripts/edition-authoring/cli.mjs inspect",

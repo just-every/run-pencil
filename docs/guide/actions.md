@@ -2,7 +2,7 @@
 
 An action turns what your results show into owned follow-through: a named person, a metric to move, a date to look again, and later a record of what actually changed. Pencil keeps the record. People decide what to do and whether it worked.
 
-Recommendations are written by people today. Pencil has no AI analysis yet, so every action starts from a recommendation an operator writes by hand, linked to the results it rests on.
+An action starts from a recommendation: one an operator writes by hand, linked to the results it rests on, or the recommendation of an [analysis](analysis.md), which an operator turns into an action and edits as their own. Either way a person owns it and decides whether it worked.
 
 ## Create an action
 

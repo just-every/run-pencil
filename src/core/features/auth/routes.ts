@@ -13,9 +13,12 @@ const postSchemas: Record<string, z.ZodType> = {
   '/auth/bootstrap': z.object({ token: z.string().min(1).max(1024), displayName: z.string().min(1).max(100), returnTo: z.string().max(2048).optional() }).strict(),
   '/auth/confirm': z.object({ token: z.string().regex(/^[A-Za-z0-9_-]{43}$/) }).strict(),
   '/auth/signout': z.object({}).strict(),
+  '/auth/setup-complete': z.object({}).strict(),
 }
 const invalid = () => Response.json({ error: 'VALIDATION_ERROR', message: 'Invalid request body.' }, { status: 400, headers: securityHeaders() })
-const exposed = new Set(['/auth/bootstrap', '/auth/magic-link', '/auth/confirm', '/auth/session', '/auth/signout'])
+// /auth/setup-complete: `rer setup` closes first setup once the owner exists when rer-setup.json declares dependencies;
+// Base answers it only to the local CLI's proof on loopback.
+const exposed = new Set(['/auth/bootstrap', '/auth/magic-link', '/auth/confirm', '/auth/session', '/auth/signout', '/auth/setup-complete'])
 export function registerAuthRoutes(app: Hono<WorkerEnvironment>, services: PencilServices | RequestServices, runtime: RuntimeConfiguration | RequestConfiguration) {
   const getServices = typeof services === 'function' ? services : () => services
   const getRuntime = typeof runtime === 'function' ? runtime : () => runtime

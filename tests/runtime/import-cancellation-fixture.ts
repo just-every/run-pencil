@@ -36,5 +36,5 @@ export async function cancellationHttp(database: D1Database, actor: ImportActor)
   const token = opaqueToken()
   await env.DB.prepare('UPDATE oa_sessions SET token_hash=? WHERE id=?').bind(await hashToken(env.SESSION_SECRET, 'session', token), actor.id).run()
   const app = createWorkerApp(undefined, createPencilPlatform('http://localhost', { ...env, DB: database }))
-  return (path: string, body: object = {}) => app.request(`http://localhost/api/app/imports${path}`, { method: 'POST', headers: { Host: 'localhost', Origin: 'http://localhost', Cookie: `operator_session_local=${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+  return (path: string, body: object = {}) => app.request(`http://localhost/api/app/imports${path}`, { method: 'POST', headers: { Host: 'localhost', Origin: 'http://localhost', Cookie: `operator_session_local_80=${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
 }

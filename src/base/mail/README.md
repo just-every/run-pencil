@@ -19,7 +19,7 @@ const result = await sender.send({
 
 ## Adopting
 
-A seed copies this module's runtime files byte for byte, to the same paths under its root, and records them in its source lock. Every seed copies the same one module: one SendGrid transport, and the development outbox. Nothing else is needed for SendGrid, Resend, Cloudflare or local capture.
+A seed copies this module's runtime files byte for byte, to the same paths under its root, and records them in its source lock. Every seed copies the same one module: one SendGrid transport, and the development outbox. The same facade also supports optional signed Messaging links; unlinked sends and the local outbox keep their existing configuration.
 
 ### Mail
 
@@ -41,10 +41,17 @@ modules/mail/src/adapters/resend/serialize.mjs
 modules/mail/src/adapters/resend/size.mjs
 modules/mail/src/adapters/sendgrid/index.mjs
 modules/mail/src/adapters/sendgrid/serialize.mjs
+modules/mail/src/adapters/messaging/contract.mjs
+modules/mail/src/adapters/messaging/event-schema.mjs
+modules/mail/src/adapters/messaging/index.mjs
+modules/mail/src/adapters/messaging/jws.mjs
+modules/mail/src/adapters/messaging/request.mjs
+modules/mail/src/adapters/messaging/serialize.mjs
 modules/mail/src/unsubscribe/index.mjs
 modules/mail/src/events/index.mjs
 modules/mail/src/events/intake.mjs
 modules/mail/src/events/storage.mjs
+modules/mail/src/events/d1-storage.mjs
 modules/mail/src/events/verify.mjs
 modules/mail/src/inbound/bytes.mjs
 modules/mail/src/inbound/headers.mjs
@@ -68,6 +75,16 @@ Every seed copies this whole folder, every file in it. It is what lets a seed si
 
 ```text
 modules/mail/src/development/
+```
+
+### D1 event intake
+
+For durable delivery-event intake on D1, copy this additive schema into a new
+application migration and apply it before using `createD1EventStore`. It is
+separate from the JavaScript runtime files and the local outbox migration.
+
+```text
+modules/mail/src/events/d1-schema.sql
 ```
 
 ### Sign-in mail
@@ -132,14 +149,20 @@ Network loss, redirects, HTTP 408 and 5xx are conservatively `uncertain`; 429 is
 
 ## Development and unsubscribe
 
-Development requires all three: `provider:'development'`, `mode:'development'`, and explicit `dependencies.outbox.put`. It captures the prepared message with its raw attachment bytes and returns `development`, never remote acceptance. Configure storage only in your development host; no route is mounted automatically and no network replay is provided. Treat captured messages and sign-in links as sensitive local data.
+Development requires all three: `provider:'development'`, `mode:'development'`, and explicit `dependencies.outbox.put`. It captures the prepared message with its raw attachment bytes and returns `development`, never remote acceptance. A storage failure throws `DevelopmentOutboxError` (`code: 'development_outbox_failed'`, `retryable: true`): the message is valid, so a queue consumer retries it. Invalid input throws `MailValidationError`, which is permanent and is dropped. Configure storage only in your development host; no route is mounted automatically and no network replay is provided. Treat captured messages and sign-in links as sensitive local data.
 
 ### Adopting the local outbox
 
 The typed `src/development/index.mjs` subpath exports
 `createD1DevelopmentOutbox({db,maxMessages?,maxAgeMs?,clock?})` and
-`createDevelopmentOutboxHandler({local,origin,outbox,path?})`. The root facade's
-exports remain stable. Apply the additive [schema](src/development/schema.sql)
+`createDevelopmentOutboxHandler({local,origin,outbox,path?,theme?})`. The root facade's
+exports remain stable. `theme` is the seed's served theme stylesheet, a
+root-relative `.css` path such as `'/rer-theme.css'` (the same grammar as
+operator-auth `branding.theme`; any other value throws when the handler is
+created). With it the page links that file, reads its `--rer-*` tokens with
+readable fallbacks and a visible 3px focus ring, and its policy allows
+same-origin styles, fonts and images (still no script). Without it the page is
+unchanged. Apply the additive [schema](src/development/schema.sql)
 to your local D1 database during local setup, for example:
 
 ```sh
@@ -208,7 +231,7 @@ HTML or attachment content. All viewer responses, including errors, carry
 no-store, noindex, nosniff and a strict CSP with an exact static-style hash and
 scripts disabled. The layout wraps long content on a 390px viewport.
 
-First-party seeds route local setup through `node scripts/rer.mjs setup` and
+First-party seeds route local setup through `rer setup` and
 declare their actual mail, auth, database and migration behavior in the RER
 adapter. Base's default seed is the reference for loopback development mail and
 the private local outbox. Follow the runnable checkout's root
@@ -217,6 +240,44 @@ replace a seed's owner setup, database bindings, migration directory or sign-in
 policy.
 
 `unsubscribe: {url, mailto?, oneClick?}` supplies an HTTPS unsubscribe URL and optional mailbox. One-click generates `List-Unsubscribe-Post: List-Unsubscribe=One-Click`. Insecure URLs, injection and contradictory custom unsubscribe headers fail before dispatch. `applyUnsubscribeHeaders(message)` returns a new prepared message with the `unsubscribe` request removed. Passing an already prepared message to the facade is safe. Direct adapters reject unconsumed requests before any effect; the facade performs assembly once before dispatch. Applications own unsubscribe authorization and processing. Confirm delivered headers and DKIM coverage with a real delivered message; local serialization is not one-click acceptance.
+
+## Optional Messaging link
+
+```js
+const sender = createMailSender({
+  provider: 'messaging', mode: 'production',
+  serviceOrigin: 'https://messaging.example.com', installId, kid, signingKey,
+});
+const result = await sender.send({ ...message, kind: 'transactional',
+  expiresAt: '2027-01-01T12:00:00Z' });
+const receipt = await sender.reconcile(message.deliveryId); // null on scoped 404
+await sender.erase('Reader@example.net');
+```
+
+The ES256 private JWK belongs to this application. The application holds no
+Messaging API key or underlying provider key. A Worker may supply
+`{serviceBinding:env.MESSAGING}` as the second argument; requests still carry the
+same signature. The linked path makes one request, including on timeout; it never
+falls back to a provider or development outbox. Preserve durable delivery IDs and
+use reconciliation after an uncertain result. For same-account public Worker
+fetches, configure `global_fetch_strictly_public`; the optional binding avoids
+that public fetch requirement. Neither path changes the signature contract.
+
+Messaging requires exactly one `to` recipient and a granted `kind` (`auth`,
+`transactional`, `bulk`). It carries optional RFC3339 `expiresAt`; direct providers
+reject these service-only fields because they cannot promise expiry. Base
+preserves attachment bytes and prepares unsubscribe headers before signing.
+Applications own consent, unsubscribes, business ledgers and retry scheduling.
+A rate-limited `retryAfter` is an absolute epoch timestamp in seconds. A synchronous
+suppression includes its reason and must be applied to the application's ledger.
+
+[The Messaging contract](src/adapters/messaging/README.md) defines every signed
+byte, result, error, reconcile and erasure shape, plus pinned event JWS intake.
+For a D1 application, copy `src/events/d1-schema.sql` into a **new** migration and
+use [the D1 event constructor](src/events/README.md). No migration, linking,
+provider switch or credential removal happens automatically. Self-hosted installs
+stay unlinked until the owner configures them; local development still uses the
+existing D1 outbox without a Messaging service.
 
 ## The former sendgrid-email API
 
@@ -239,7 +300,7 @@ Because the one adapter now builds the request, the former module takes this mod
 
 ## Verified events and inbound mail
 
-`verifyWebhook({provider,rawBody,headers,key,now,toleranceSeconds?})` returns a boolean. Providers are `sendgrid` and `resend`; `rawBody` is the exact `Uint8Array`, `headers` a `Headers`, and `now` epoch milliseconds. Default clock tolerance is 300 seconds. SendGrid uses base64 SPKI P-256 public keys and DER ECDSA signatures over timestamp plus exact bytes; Resend uses a `whsec_` base64 HMAC secret and Svix framing. Never decode and reserialize JSON or multipart before verification. Signature validity alone establishes neither schema validity nor sender identity. `MAX_WEBHOOK_BYTES` exports the 32 MiB verifier bound; delivery-event intake has its own 1 MiB bound. `createDeliveryEventIntake({provider,tenantId,eventNamespace,key?,storage,authorize,clock?,cloudflareSource?})` verifies, authorizes, then commits receipts and recipient states in one durable transaction. It exposes `ingestWebhook({rawBody,headers})` for SendGrid/Resend or `consumeQueue(batch)` for the trusted Cloudflare queue boundary. Supply actual serializable durable storage (for Workers, Durable Object SQLite); there is no process-local fallback. See the [event integration contract](src/events/README.md) for atomic deduplication and recipient reconciliation.
+`verifyWebhook({provider,rawBody,headers,key,now,toleranceSeconds?})` returns a boolean. Providers are `sendgrid` and `resend`; `rawBody` is the exact `Uint8Array`, `headers` a `Headers`, and `now` epoch milliseconds. Default clock tolerance is 300 seconds. SendGrid uses base64 SPKI P-256 public keys and DER ECDSA signatures over timestamp plus exact bytes; Resend uses a `whsec_` base64 HMAC secret and Svix framing. Never decode and reserialize JSON or multipart before verification. Signature validity alone establishes neither schema validity nor sender identity. `MAX_WEBHOOK_BYTES` exports the 32 MiB verifier bound; delivery-event intake has its own 1 MiB bound. `createDeliveryEventIntake({provider,tenantId,eventNamespace,key?,storage,authorize,clock?,cloudflareSource?})` verifies, authorizes, then commits receipts and recipient states in one durable transaction. It exposes `ingestWebhook({rawBody,headers})` for SendGrid/Resend or `consumeQueue(batch)` for the trusted Cloudflare queue boundary. Supply actual serializable durable storage (Durable Object SQLite, or `store:createD1EventStore({db:env.DB})` with its additive migration); there is no process-local fallback. See the [event integration contract](src/events/README.md) for atomic deduplication and recipient reconciliation.
 
 `normalizeInbound(input, limits)` returns `{provider,messageId,from,to,subject,text,html,inReplyTo,references,attachments}`. Nullable fields remain null, empty subject remains valid, references retain order, and attachment content remains decoded bytes. Required positive-integer limits are `maxRawBytes`, `maxBodyBytes`, `maxAttachments`, `maxAttachmentBytes`, and `maxTotalAttachmentBytes`; limits apply to actual bytes, including streams and decoded attachments. Over-limit/malformed messages fail atomically.
 
@@ -270,6 +331,6 @@ pnpm --dir modules/mail test:workerd
 
 The root install is also required for the bundle regression, which uses the reference app's actual Vite dependency. The facade formerly re-exported the doctor while the doctor dynamically imported the facade, causing Vite's `INEFFECTIVE_DYNAMIC_IMPORT` warning. Both now import a private sender module; the existing facade exports and send behavior remain unchanged. `tests/development/bundle.test.mjs` builds the facade and doctor with Vite and fails on that warning.
 
-The module-local lock pins the Miniflare/workerd test runtime; production source has no npm dependencies. Unit suites cover core validation, adapters, events, inbound parsing, development, unsubscribe and doctor behaviour. One workerd smoke per area checks core portability, remote adapters, inbound hydration, durable event intake, the development outbox and doctor/facade assembly. The storage smokes retain real transaction rollback, namespace isolation, restart and sensitive viewer refusal coverage. `tests/all.test.ts` runs the nested suites serially through `pnpm verify:modules`; each worker is disposed after its run. Former SendGrid API tests remain while seed source still imports the deprecated module.
+The module-local lock pins the Miniflare/workerd test runtime; production source has no npm dependencies. Unit suites cover core validation, adapters, events, inbound parsing, development, unsubscribe and doctor behaviour. The Messaging HTTP/service-binding smoke and real D1 intake race/rollback/restart suite join the existing area smokes. They check core portability, remote adapters, inbound hydration, durable event intake, the development outbox and doctor/facade assembly. The storage smokes retain real transaction rollback, namespace isolation, restart and sensitive viewer refusal coverage. `tests/all.test.ts` runs the nested suites serially through `pnpm verify:modules`; each worker is disposed after its run. Former SendGrid API tests remain while seed source still imports the deprecated module.
 
 Local conformance does not establish provider configuration, DNS propagation, deployed webhook reachability, DKIM coverage or mailbox delivery. Live acceptance remains **PENDING** until an exact-SHA hosted run sends and receives on the owner's approved test domain with independently correlated mailbox evidence. Resend is the default test sender; SendGrid is selected where Inbound Parse is required. No live request is authorized by running local tests.

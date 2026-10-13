@@ -11,6 +11,7 @@
       { "slug": "invitations", "source": "docs/guide/invitations.md", "label": "Invitations, reminders and consent" },
       { "slug": "results", "source": "docs/guide/results.md", "label": "Results, review and exports" },
       { "slug": "actions", "source": "docs/guide/actions.md", "label": "Actions and follow-up" },
+      { "slug": "analysis", "source": "docs/guide/analysis.md", "label": "Analysis" },
       { "slug": "moving-in", "source": "docs/guide/moving-in.md", "label": "Moving in" }
     ]},
     { "title": "Run it", "pages": [
@@ -51,6 +52,10 @@
     { "source": "src/base/mail/live-proof/README.md", "reason": "Maintainer notes on a pending live mail proof, not a delivery claim" },
     { "source": "src/base/mail/src/adapters/cloudflare/README.md", "reason": "Source documentation for a mail adapter, for developers" },
     { "source": "src/base/mail/src/adapters/resend/README.md", "reason": "Source documentation for the Resend mail adapter, for developers" },
+    { "source": "src/base/mail/src/adapters/messaging/README.md", "reason": "Source documentation for the copied messaging mail adapter, for developers" },
+    { "source": "src/base/ai/README.md", "reason": "Developer documentation for the copied Base AI client (ai.provider.v1)" },
+    { "source": "src/base/dependencies/README.md", "reason": "Developer documentation for the copied application dependency-link module" },
+    { "source": "src/base/operator-auth/docs/native-accounts.md", "reason": "Developer documentation for the copied operator-auth native accounts" },
     { "source": "src/base/mail/src/adapters/sendgrid/README.md", "reason": "Source documentation for the SendGrid mail adapter, for developers" },
     { "source": "src/base/mail/src/doctor/README.md", "reason": "Source documentation for the mail configuration checker, for developers" },
     { "source": "src/base/mail/src/events/README.md", "reason": "Source documentation for delivery-event intake in the mail module, for developers" },

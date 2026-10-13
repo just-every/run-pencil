@@ -17,7 +17,6 @@ contract('DASH-002', 'dashboard names anonymous starts and explicit invited deno
     await screen.findByText(new RegExp(text))
     expect(screen.getByText('1 completed · 2 starts')).toBeVisible()
     expect(screen.queryByText(/%/)).toBeNull()
-    expect(screen.getByText(/Analysis: Not connected\./)).toBeVisible()
     expect(screen.getByText('Open', { exact: true })).toBeVisible()
     expect(screen.queryByText(/draft v\d+|immutable|persisted|stable ID/i)).toBeNull()
     rendered.dispose()

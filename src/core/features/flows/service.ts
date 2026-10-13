@@ -99,7 +99,6 @@ export class FlowService {
         completedResponses: result?.completedResponses ?? 0,
         starts: result?.counter?.starts ?? 0,
         audience: publishedRevision ? await this.responseRepository.audience(publishedRevision.id) : { launchedParticipants: 0, eligibleParticipants: 0, completedParticipants: 0 },
-        analysisStatus: 'unconfigured' as const,
       }
     }))
   }
@@ -211,7 +210,6 @@ export class FlowService {
       completionRate: metrics.starts === 0 ? 0 : liveCompletedResponses / metrics.starts,
       averageCompletionMilliseconds: liveCompletedResponses === 0 ? 0 : Math.round(metrics.totalCompletionMilliseconds / liveCompletedResponses),
       deviceStarts: { mobile: metrics.mobileStarts, tablet: metrics.tabletStarts, desktop: metrics.desktopStarts },
-      analysis: { status: 'unconfigured' as const, configuration: 'AI_PROVIDER, AI_MODEL, and AI_API_KEY' },
     }
   }
 

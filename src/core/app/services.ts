@@ -29,6 +29,7 @@ import { WorkspaceRepository } from '../features/workspace/repository'
 import { WorkspaceService } from '../features/workspace/service'
 import type { PencilPlatform } from '../platform/runtime'
 import { ActionService, TaskDeliveries } from '../features/actions'
+import { AnalysisService } from '../features/analysis'
 
 export function createPencilServices(platform: PencilPlatform) {
   const { database } = platform
@@ -64,6 +65,8 @@ export function createPencilServices(platform: PencilPlatform) {
     flows,
     responses: new ResponseService(flowRepository, responseRepository),
     // Actions take no extension configuration: nothing but an operator's request can set a verdict (ACT-005).
+    // Analysis reads only released responses and validates every provider answer before anything is shown (ANLY-002, ANLY-012).
+    analysis: new AnalysisService(platform.databaseBinding, platform.ai),
     actions: { records: new ActionService(platform.databaseBinding), tasks: new TaskDeliveries(platform.databaseBinding, platform.configuration.task, platform.configuration.appOrigin) },
   }
 }

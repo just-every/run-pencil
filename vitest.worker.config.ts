@@ -31,6 +31,8 @@ export default defineConfig({
         bindings: {
           // The loopback task receiver from the global setup; tests opt in to task delivery with their own bindings.
           TASK_RECEIVER_ORIGIN: inject('taskReceiverOrigin'),
+          // The loopback AI provider edge; analysis tests opt in with their own AI bindings.
+          AI_RECEIVER_ORIGIN: inject('aiReceiverOrigin'),
           MAIL_PROVIDER: 'local',
           SESSION_SECRET: 'synthetic-worker-session-secret-at-least-32-characters',
           PENCIL_LOCAL_DEVELOPMENT: 'true',
@@ -44,7 +46,7 @@ export default defineConfig({
     // Native D1 journeys run serially on shared and cold CI workers.
     testTimeout: 30_000,
     include: ['tests/runtime/**/*.worker.test.ts'],
-    globalSetup: ['tests/runtime/task-receiver.global.ts'],
+    globalSetup: ['tests/runtime/task-receiver.global.ts', 'tests/runtime/ai-receiver.global.ts'],
     fileParallelism: false,
   },
 })

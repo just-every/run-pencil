@@ -1,0 +1,54 @@
+{
+  "id": "Rk3docUm",
+  "title": "Café visit (documented-format synthetic)",
+  "language": "en",
+  "workspace": { "href": "https://api.typeform.com/workspaces/synthetic" },
+  "theme": { "href": "https://api.typeform.com/themes/synthetic" },
+  "settings": { "language": "en", "is_public": true, "progress_bar": "proportion", "show_progress_bar": true, "meta": { "allow_indexing": false } },
+  "hidden": ["utm_source"],
+  "variables": { "score": 0 },
+  "welcome_screens": [{ "ref": "welcome", "title": "Tell us about your visit", "properties": { "show_button": true, "button_text": "Start" } }],
+  "thankyou_screens": [
+    { "ref": "thanks", "title": "Thank you", "type": "thankyou_screen", "properties": { "show_button": false, "share_icons": false } },
+    { "ref": "sorry", "title": "Sorry to hear that", "type": "thankyou_screen", "properties": { "show_button": false } }
+  ],
+  "fields": [
+    { "id": "f01", "ref": "name", "type": "short_text", "title": "Your name", "validations": { "required": true, "max_length": 120 } },
+    { "id": "f02", "ref": "notes", "type": "long_text", "title": "Anything else?", "properties": { "description": "Optional" } },
+    { "id": "f03", "ref": "email", "type": "email", "title": "Email for follow-up" },
+    { "id": "f04", "ref": "drink", "type": "multiple_choice", "title": "What did you drink?", "properties": { "allow_multiple_selection": false, "allow_other_choice": false, "vertical_alignment": true, "choices": [{ "id": "c01", "ref": "tea", "label": "Tea" }, { "id": "c02", "ref": "coffee", "label": "Coffee" }] }, "validations": { "required": true } },
+    { "id": "f05", "ref": "extras", "type": "multiple_choice", "title": "What else did you order?", "properties": { "allow_multiple_selection": true, "choices": [{ "id": "c03", "ref": "cake", "label": "Cake" }, { "id": "c04", "ref": "toast", "label": "Toast" }, { "id": "c05", "ref": "soup", "label": "Soup" }] }, "validations": { "max_selection": 3 } },
+    { "id": "f06", "ref": "seat", "type": "picture_choice", "title": "Where did you sit?", "properties": { "allow_multiple_selection": false, "supersized": false, "show_labels": true, "choices": [{ "id": "c06", "ref": "window", "label": "Window", "attachment": { "type": "image", "href": "https://images.typeform.com/images/synthetic-window" } }, { "id": "c07", "ref": "bar", "label": "Bar", "attachment": { "type": "image", "href": "https://images.typeform.com/images/synthetic-bar" } }] } },
+    { "id": "f07", "ref": "music", "type": "checkbox", "title": "Which music did you hear?", "properties": { "choices": [{ "id": "c08", "ref": "jazz", "label": "Jazz" }, { "id": "c09", "ref": "folk", "label": "Folk" }] } },
+    { "id": "f08", "ref": "size", "type": "dropdown", "title": "Cup size", "properties": { "alphabetical_order": false, "choices": [{ "id": "c10", "ref": "small", "label": "Small" }, { "id": "c11", "ref": "large", "label": "Large" }] } },
+    { "id": "f09", "ref": "again", "type": "yes_no", "title": "Would you come again?" },
+    { "id": "f10", "ref": "stars", "type": "rating", "title": "Rate the service", "properties": { "steps": 5, "shape": "star" } },
+    { "id": "f11", "ref": "mood", "type": "opinion_scale", "title": "How busy was it?", "properties": { "steps": 5, "start_at_one": true, "labels": { "left": "Quiet", "right": "Packed" } } },
+    { "id": "f12", "ref": "nps", "type": "nps", "title": "How likely are you to recommend us?" },
+    { "id": "f13", "ref": "visits", "type": "number", "title": "Visits this month", "validations": { "min_value": 0, "max_value": 60 } },
+    { "id": "f14", "ref": "visited", "type": "date", "title": "Date of visit", "properties": { "structure": "DDMMYYYY", "separator": "/" } },
+    { "id": "f15", "ref": "terms", "type": "legal", "title": "I agree to the café's feedback terms." },
+    { "id": "f16", "ref": "order", "type": "ranking", "title": "Rank what matters", "properties": { "choices": [{ "id": "c12", "ref": "price", "label": "Price" }, { "id": "c13", "ref": "taste", "label": "Taste" }] } },
+    { "id": "f17", "ref": "phone", "type": "phone_number", "title": "Phone", "properties": { "default_country_code": "AU" } },
+    { "id": "f18", "ref": "site", "type": "website", "title": "Your website" },
+    { "id": "f19", "ref": "receipt", "type": "file_upload", "title": "Upload your receipt" },
+    { "id": "f20", "ref": "about", "type": "group", "title": "About you", "properties": { "button_text": "Continue", "fields": [{ "id": "f21", "ref": "age", "type": "number", "title": "Age" }] } },
+    { "id": "f22", "ref": "pay", "type": "payment", "title": "Leave a tip", "properties": { "currency": "AUD", "price": { "type": "variable", "value": "price" } } },
+    { "id": "f23", "ref": "contact", "type": "contact_info", "title": "Contact details" }
+  ],
+  "logic": [
+    { "type": "field", "ref": "again", "actions": [
+      { "action": "jump", "details": { "to": { "type": "thankyou", "value": "sorry" } }, "condition": { "op": "is", "vars": [{ "type": "field", "value": "again" }, { "type": "constant", "value": false }] } },
+      { "action": "add", "details": { "target": { "type": "variable", "value": "score" }, "value": { "type": "constant", "value": 1 } }, "condition": { "op": "always", "vars": [] } }
+    ] },
+    { "type": "field", "ref": "drink", "actions": [
+      { "action": "jump", "details": { "to": { "type": "field", "value": "size" } }, "condition": { "op": "is", "vars": [{ "type": "field", "value": "drink" }, { "type": "choice", "value": "coffee" }] } }
+    ] },
+    { "type": "field", "ref": "name", "actions": [
+      { "action": "jump", "details": { "to": { "type": "field", "value": "email" } }, "condition": { "op": "begins_with", "vars": [{ "type": "field", "value": "name" }, { "type": "constant", "value": "Dr" }] } }
+    ] },
+    { "type": "hidden", "ref": "utm_source", "actions": [
+      { "action": "jump", "details": { "to": { "type": "field", "value": "nps" } }, "condition": { "op": "equal", "vars": [{ "type": "hidden", "value": "utm_source" }, { "type": "constant", "value": "newsletter" }] } }
+    ] }
+  ]
+}

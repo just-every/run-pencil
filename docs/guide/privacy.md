@@ -51,7 +51,9 @@ Your data lives in the D1 database in your Cloudflare account. It leaves that da
 - **External tasks, only if you turn them on and confirm each one.** Your task receiver gets exactly the JSON shown on the confirmation screen: the action's title, rationale, owner name and email, metric, review date and a link that needs an operator sign-in. Never answers, excerpts or respondent details. See [Actions and follow-up](actions.md).
 - **Exports and backups that you make.** They go where you put them. See [Backup and restore](backup.md).
 
-Pencil has an optional connection for AI analysis, but it is not built in this release, so nothing is sent to it. Pencil also has no telemetry, no phone-home, no licence check and no kill switch, and it makes no requests to the people who wrote it.
+- **AI analysis, only if you turn it on.** When you request an analysis, or a flow closes with close-time analysis on, the provider you configured receives the prompts of the selected text questions and, for each completed response, its ID and its answers to those questions. Never contact names or emails, email answers, other answers, network addresses or devices. See [Analysis](analysis.md#what-leaves-and-where-it-goes).
+
+Pencil also has no telemetry, no phone-home, no licence check and no kill switch, and it makes no requests to the people who wrote it.
 
 Saved segment rule values are operator configuration, not subject rows. Rules cannot name a person's exact email address. Erasing a contact removes their custom fields and makes them absent from segment results; it does not remove saved segment configuration.
 
@@ -65,7 +67,7 @@ You can erase a response, or a recipient and everything they gave, at any time. 
 
 Erasure works on your live database only. Some copies are out of its reach:
 
-- **Backups.** An archive made before the erasure still holds the erased data. Restoring it brings contacts, custom fields, prior consent state and answers back and loses any opt-outs recorded since the archive was made. The import command prints a reminder: erase those people and responses again and record those opt-outs again. Restored invitation links remain inert because their capabilities are omitted. See [Backup and restore](backup.md#restore-into-a-new-database).
+- **Backups.** An archive made before the erasure still holds the erased data. Restoring it brings contacts, custom fields, prior consent state and answers back and loses any opt-outs recorded since the archive was made. The import command prints a reminder: erase those people and responses again and record those opt-outs again. If you name a later archive with `--journal`, an archive made before an erasure is refused whole instead; see [Refuse an archive made before an erasure](backup.md#refuse-an-archive-made-before-an-erasure). Restored invitation links remain inert because their capabilities are omitted. See [Backup and restore](backup.md#restore-into-a-new-database).
 - **Response exports** you downloaded before the erasure.
 - **Your mail provider's records** of the messages it sent.
 

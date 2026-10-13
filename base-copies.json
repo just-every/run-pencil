@@ -4,7 +4,7 @@
     {
       "path": "docs/contract-changes-20261002.json",
       "originPath": "changes/2026-09-08-base-access-002.json",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "docs/contract-changes-20261002.json": "0ce490b292c90af4b75f6d6a740eb42f2d25232a96c357c26aa0dca9f3380848"
       },
@@ -15,7 +15,7 @@
     {
       "path": "migrations/core/0012_base_invitation_cancellation.sql",
       "originPath": "modules/operator-auth/accounts/schema/invitation-cancellation.sql",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "migrations/core/0012_base_invitation_cancellation.sql": "2130793483660155aaa1851b6111e51a7aeaf1f8ceb86d467d42ba684c35b562"
       },
@@ -26,7 +26,7 @@
     {
       "path": "migrations/core/0013_base_mail_outbox.sql",
       "originPath": "modules/mail/src/development/schema.sql",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "migrations/core/0013_base_mail_outbox.sql": "45d6b03eadfe1e91737763ae85cdff74e7216f859869e34431550bba48294996"
       },
@@ -37,7 +37,7 @@
     {
       "path": "migrations/core/0022_owner_claim.sql",
       "originPath": "modules/owner-claim/schema/owner-claim.sql",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "migrations/core/0022_owner_claim.sql": "c3ffe653727bb4867b064dc2489df5013613f08f4b5998d2fe2b6a8485cdb815"
       },
@@ -48,7 +48,7 @@
     {
       "path": "migrations/core/0023_dev_sessions.sql",
       "originPath": "modules/operator-auth/accounts/schema/dev-sessions.sql",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "migrations/core/0023_dev_sessions.sql": "18754583983c09f3624038131c1b03fadecb8375dddb0a5d09c449a4238ce298"
       },
@@ -59,7 +59,7 @@
     {
       "path": "migrations/core/0024_domain_rules_step_up.sql",
       "originPath": "modules/operator-auth/accounts/schema/domain-rules-step-up.sql",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "migrations/core/0024_domain_rules_step_up.sql": "e41c7f1381f547582148cdf247b521d7f166461ab24058ace95acdf21839e815"
       },
@@ -68,11 +68,55 @@
       }
     },
     {
+      "path": "migrations/core/0027_base_provider_control.sql",
+      "originPath": "modules/operator-auth/accounts/schema/provider-control.sql",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
+      "files": {
+        "migrations/core/0027_base_provider_control.sql": "f19cc7a792538a8ff36d87760a3cad58fccab0316984488d1834af14fbf37cfe"
+      },
+      "modes": {
+        "migrations/core/0027_base_provider_control.sql": "100644"
+      }
+    },
+    {
+      "path": "migrations/core/0028_base_provider_pins.sql",
+      "originPath": "modules/operator-auth/accounts/schema/provider-pins.sql",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
+      "files": {
+        "migrations/core/0028_base_provider_pins.sql": "f0cfb6b3740869fd098ee449efb25807f8b1ef51c353fd07bafeb00ce38aeb63"
+      },
+      "modes": {
+        "migrations/core/0028_base_provider_pins.sql": "100644"
+      }
+    },
+    {
+      "path": "migrations/core/0029_base_dependency_setup.sql",
+      "originPath": "modules/operator-auth/accounts/schema/dependency-setup.sql",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
+      "files": {
+        "migrations/core/0029_base_dependency_setup.sql": "7b36f7e1fb0991fe3e808613d911393bbad3386ead06427082c69a48c5738108"
+      },
+      "modes": {
+        "migrations/core/0029_base_dependency_setup.sql": "100644"
+      }
+    },
+    {
+      "path": "migrations/core/0030_base_idp_owner.sql",
+      "originPath": "modules/owner-claim/schema/idp.sql",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
+      "files": {
+        "migrations/core/0030_base_idp_owner.sql": "a870102648a2226b18a2fe8168d096389b698af88333d112fa8137e582fc2b33"
+      },
+      "modes": {
+        "migrations/core/0030_base_idp_owner.sql": "100644"
+      }
+    },
+    {
       "path": "RUN-LOCALLY.md",
       "originPath": "export/RUN-LOCALLY.md",
-      "revision": "a3bf848a8baea3abbc60c6e81f532718c792239a",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
-        "RUN-LOCALLY.md": "62b895def4c355bcbe173565e49a780856aa38f11d27a3b7f92409239e4de51e"
+        "RUN-LOCALLY.md": "5eeb33783fc12fb09530716aa885e630f84123aa7f0fb79458fee4c5a2683e1d"
       },
       "modes": {
         "RUN-LOCALLY.md": "100644"
@@ -81,9 +125,9 @@
     {
       "path": "scripts/delivery/base/artifact.mjs",
       "originPath": "modules/delivery-producer/artifact.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
-        "scripts/delivery/base/artifact.mjs": "1adf5deb9ead7f065d317d488d93098dab4656f7322339bc45e01c99ba4e9e14"
+        "scripts/delivery/base/artifact.mjs": "129f210f1556e816ba94ffe74359ac553cd26466aaf8c6c299765e9cea29aa07"
       },
       "modes": {
         "scripts/delivery/base/artifact.mjs": "100644"
@@ -92,7 +136,7 @@
     {
       "path": "scripts/delivery/base/bindings.mjs",
       "originPath": "modules/delivery-producer/bindings.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "scripts/delivery/base/bindings.mjs": "5548f71b7bb32c6e6c75442f0e6cf0af9da3226aebcaf964c7702ea549e48392"
       },
@@ -103,7 +147,7 @@
     {
       "path": "scripts/delivery/base/capabilities.mjs",
       "originPath": "modules/delivery-producer/capabilities.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "scripts/delivery/base/capabilities.mjs": "5e4db1f4428f107c91b51be3c9c18e7757d7e23574dd977a872f6944abd32a1d"
       },
@@ -114,7 +158,7 @@
     {
       "path": "scripts/delivery/base/cli.mjs",
       "originPath": "modules/delivery-producer/cli.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "scripts/delivery/base/cli.mjs": "5d60954f6b03216613d17ec0d19464c339ce3a8a441c7972bf3f80ceea4f7ad5"
       },
@@ -125,7 +169,7 @@
     {
       "path": "scripts/delivery/base/declarations.mjs",
       "originPath": "modules/delivery-producer/declarations.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "scripts/delivery/base/declarations.mjs": "a1da486ff5ddd563a0fece919d30dc5a8d053080c75d9f10b361626b2636a772"
       },
@@ -136,9 +180,9 @@
     {
       "path": "scripts/delivery/base/export.mjs",
       "originPath": "modules/delivery-producer/export.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
-        "scripts/delivery/base/export.mjs": "d6887f6adc6da41e89ce8c09f175373a5c9d5fef8dc2f92456ddec3bc4f35933"
+        "scripts/delivery/base/export.mjs": "29529729881ec35c67e4875038e0450a3f0e658d90c00bf24f1de218ab15f469"
       },
       "modes": {
         "scripts/delivery/base/export.mjs": "100644"
@@ -147,7 +191,7 @@
     {
       "path": "scripts/delivery/base/generators",
       "originPath": "modules/delivery-producer/generators",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "scripts/delivery/base/generators/integration.mjs": "ec9689f03b339466ee20c4a77da5227ba39789cc3de52d33687127148d4889f3",
         "scripts/delivery/base/generators/managed.mjs": "275131025f7b1810b7757053caa7439f9cd8119bfec94512c4fa4cf1ee1a5c60",
@@ -164,7 +208,7 @@
     {
       "path": "scripts/delivery/base/migrations.mjs",
       "originPath": "modules/delivery-producer/migrations.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "scripts/delivery/base/migrations.mjs": "41650d5f2c22c0dbf8c4d8640bc89d872907828b558df4af89c4f70059d4878f"
       },
@@ -175,7 +219,7 @@
     {
       "path": "scripts/delivery/base/package.mjs",
       "originPath": "modules/delivery-producer/package.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "scripts/delivery/base/package.mjs": "8daa16d77dfd21ea918dd896b25bcf7e67627d7bf89933e5f5719fe9093e6ca8"
       },
@@ -186,9 +230,9 @@
     {
       "path": "scripts/delivery/base/paths.mjs",
       "originPath": "modules/delivery-producer/paths.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
-        "scripts/delivery/base/paths.mjs": "1325dc10e44eccb18eef79450e46895ab5c069f0706f3aeebb28da02d9710cbe"
+        "scripts/delivery/base/paths.mjs": "ab1c79b8370ea670ab1d1b4ecaa1d841e6a667ab8ca0c9e055911414e1d83aa1"
       },
       "modes": {
         "scripts/delivery/base/paths.mjs": "100644"
@@ -197,7 +241,7 @@
     {
       "path": "scripts/delivery/base/payloads.mjs",
       "originPath": "modules/delivery-producer/payloads.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "scripts/delivery/base/payloads.mjs": "da3a9d09860c33bdd0b287bca9abc6210b12d13439e569d178a5b31fec563ee5"
       },
@@ -206,9 +250,20 @@
       }
     },
     {
+      "path": "scripts/delivery/base/schema/dependencies.mjs",
+      "originPath": "schema/dependencies.mjs",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
+      "files": {
+        "scripts/delivery/base/schema/dependencies.mjs": "4bfc30fa75029db2727a9d1fb095d4969dc756c5317ac55ce768202bb869e2b7"
+      },
+      "modes": {
+        "scripts/delivery/base/schema/dependencies.mjs": "100644"
+      }
+    },
+    {
       "path": "scripts/delivery/base/schema/json-schema.mjs",
       "originPath": "schema/json-schema.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "scripts/delivery/base/schema/json-schema.mjs": "ed601a8f68d25769ff3706a90f69f1a9e18dd6eb4b3b5f81a18b7cd0dcfc8fa3"
       },
@@ -219,9 +274,9 @@
     {
       "path": "scripts/delivery/base/schema/setup-validation.mjs",
       "originPath": "schema/setup-validation.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
-        "scripts/delivery/base/schema/setup-validation.mjs": "b3999ae37e36ddef051f522abb256e51968ee3fc9d723f86d0a07297ce4abded"
+        "scripts/delivery/base/schema/setup-validation.mjs": "2edccf8aebb48fac95bdcca868df0aaa31e4a46931f66a2a64196cdf751f9fbd"
       },
       "modes": {
         "scripts/delivery/base/schema/setup-validation.mjs": "100644"
@@ -230,9 +285,9 @@
     {
       "path": "scripts/delivery/base/schema/SETUP.schema.json",
       "originPath": "schema/SETUP.schema.json",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
-        "scripts/delivery/base/schema/SETUP.schema.json": "29e51a7dd7bf1070f31de43417198135d41fa9ea36c2327d525f646e2133179b"
+        "scripts/delivery/base/schema/SETUP.schema.json": "a6af219fb0fb3ea80ad5673883644a7f765ece93c67a4e85bd7053d67b427067"
       },
       "modes": {
         "scripts/delivery/base/schema/SETUP.schema.json": "100644"
@@ -241,7 +296,7 @@
     {
       "path": "scripts/delivery/base/spec.mjs",
       "originPath": "modules/delivery-producer/spec.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "scripts/delivery/base/spec.mjs": "4526a4d0f3ec141b4afa8d848badb12a08e42d60e1b00bd1db9e63064483428b"
       },
@@ -252,9 +307,9 @@
     {
       "path": "scripts/edition-authoring/base-copies.mjs",
       "originPath": "edition-authoring/base-copies.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
-        "scripts/edition-authoring/base-copies.mjs": "cbe640dddce2db44b3d1f64215adb443fb75f0079af155424e1a2d79422629a4"
+        "scripts/edition-authoring/base-copies.mjs": "ca2e3b86aec67aaa5cb28d1a8311612a905fbd2116fac999a34185fa776cf876"
       },
       "modes": {
         "scripts/edition-authoring/base-copies.mjs": "100644"
@@ -263,7 +318,7 @@
     {
       "path": "scripts/edition-authoring/cli.mjs",
       "originPath": "edition-authoring/cli.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "scripts/edition-authoring/cli.mjs": "d9bc25b361c056ec4bebe2b8e506baff95fdd06ec4d4f54a63f20d873025a89b"
       },
@@ -274,7 +329,7 @@
     {
       "path": "scripts/edition-authoring/files.mjs",
       "originPath": "edition-authoring/files.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "scripts/edition-authoring/files.mjs": "eb0b8a0b9958c4ed84735d85f5298f3d1307ef60ddee1c2a3329c6ed7af0902e"
       },
@@ -285,7 +340,7 @@
     {
       "path": "scripts/edition-authoring/LICENSE",
       "originPath": "LICENSE",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "scripts/edition-authoring/LICENSE": "2f5076ef027045b9e0e72df8aa61ca8551e54b1877d531656d6e7985b2c32324"
       },
@@ -296,7 +351,7 @@
     {
       "path": "scripts/edition-authoring/manifest.mjs",
       "originPath": "edition-authoring/manifest.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "scripts/edition-authoring/manifest.mjs": "0c93bd39b1dd869b23a9d2727671fe8f9c933a9d56c7a3df1ba83c4a6f816e7b"
       },
@@ -307,7 +362,7 @@
     {
       "path": "scripts/edition-authoring/parent-comparison.mjs",
       "originPath": "edition-authoring/parent-comparison.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "scripts/edition-authoring/parent-comparison.mjs": "fba6c894e2fe5a48c2f8706ab74b09d1935bd7fa38049a264d3d91ff6d336003"
       },
@@ -318,7 +373,7 @@
     {
       "path": "scripts/edition-authoring/projection-lock.mjs",
       "originPath": "edition-authoring/projection-lock.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "scripts/edition-authoring/projection-lock.mjs": "bbb939b4e5bc6b5db8bf51156ec770fa30fc5df7a8fbb21a751c8ede69b1444b"
       },
@@ -329,7 +384,7 @@
     {
       "path": "scripts/edition-authoring/release.mjs",
       "originPath": "edition-authoring/release.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "scripts/edition-authoring/release.mjs": "40acdb670edbde2eafa731f535bbe7403360a3327b576ed47355936bcc4a543a"
       },
@@ -340,7 +395,7 @@
     {
       "path": "scripts/edition-authoring/sources.mjs",
       "originPath": "edition-authoring/sources.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "scripts/edition-authoring/sources.mjs": "1033adaaa5f1f52053c34552c0979b6f868907f00cc1005d39fd8f845df4be09"
       },
@@ -351,7 +406,7 @@
     {
       "path": "scripts/edition-authoring/updates.mjs",
       "originPath": "edition-authoring/updates.mjs",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "scripts/edition-authoring/updates.mjs": "54e7246025a618ed16ee042c22dc9a8dc27b06175c30f81c4c6568992ed04799"
       },
@@ -362,9 +417,9 @@
     {
       "path": "scripts/install-gitleaks.sh",
       "originPath": "scripts/install-gitleaks.sh",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
-        "scripts/install-gitleaks.sh": "c5195dad139a929578342c442415fa719d53ca6fc95b36f816eceda647b34e51"
+        "scripts/install-gitleaks.sh": "749e4620cc20ae8a42da92bca6cc7c5f52dd6d16c80d67bb58e3b907cfd35e80"
       },
       "modes": {
         "scripts/install-gitleaks.sh": "100755"
@@ -373,12 +428,82 @@
     {
       "path": "SEED-COMMAND-CONTRACT.md",
       "originPath": "export/SEED-COMMAND-CONTRACT.md",
-      "revision": "a3bf848a8baea3abbc60c6e81f532718c792239a",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
-        "SEED-COMMAND-CONTRACT.md": "5718e8c6aace5889bd251a871aeb631c5420aad2947d7c8907adb279b1e5b374"
+        "SEED-COMMAND-CONTRACT.md": "bccf98c60748f580b46bbf5eef83ddd66aefaf1e29499d2f50424d12c9c98ffa"
       },
       "modes": {
         "SEED-COMMAND-CONTRACT.md": "100644"
+      }
+    },
+    {
+      "path": "src/base/ai",
+      "originPath": "modules/ai",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
+      "files": {
+        "src/base/ai/client.mjs": "ab2d451f20bb618646e8cd56711ee5b665e7a639374b40af8e79543026045ab1",
+        "src/base/ai/config.mjs": "04b1f03a17c9268ce222f25fda041b049bf623b2f5fb4155e7c5c9af775e62ab",
+        "src/base/ai/dev/index.d.mts": "7c53486beecb6800ac7dd383667300753c15098ac6ba01c7b1bb2c6ef0611375",
+        "src/base/ai/dev/index.mjs": "1cf67d8c073c871d234086d0a32d3d7ea5ab14762b39284414922a26fcf41bda",
+        "src/base/ai/dev/outbox.mjs": "f9a3a5326e2e96b127452412570b27d4a8942b0bdbb81d6e94559d7ba7626ea8",
+        "src/base/ai/errors.mjs": "2a9574e85880c2c26252665e91c8b9f68e85844eb152260630ff717dc553da61",
+        "src/base/ai/fake/index.d.mts": "b5a59cc6ab4bd911ee81afc783c8a101f66260db5a4e7fc1b485a758f67d5a40",
+        "src/base/ai/fake/index.mjs": "cc9cfdaf67482b626c3a9c1f2c82f8aeff10fb3774043715acbdb579224087b2",
+        "src/base/ai/index.d.mts": "42c1cd6b07cfb4eba6b63a0f3876d412422e6130509870cf7c70d395b02a80cc",
+        "src/base/ai/index.mjs": "dc9100f9df3dabab1b43eecdba8aa4d337c85f987935eb28707335125380271a",
+        "src/base/ai/LICENSE": "2f5076ef027045b9e0e72df8aa61ca8551e54b1877d531656d6e7985b2c32324",
+        "src/base/ai/package.json": "e1952aea5cd307285f9b8ce5a5a43fbda965098c2de85e005049d0f6bc661601",
+        "src/base/ai/README.md": "6ebf7160bc2952aaa1620def0bc3f9059cc86bbcaa6db15ddcb38f81bd95a251"
+      },
+      "modes": {
+        "src/base/ai/client.mjs": "100644",
+        "src/base/ai/config.mjs": "100644",
+        "src/base/ai/dev/index.d.mts": "100644",
+        "src/base/ai/dev/index.mjs": "100644",
+        "src/base/ai/dev/outbox.mjs": "100644",
+        "src/base/ai/errors.mjs": "100644",
+        "src/base/ai/fake/index.d.mts": "100644",
+        "src/base/ai/fake/index.mjs": "100644",
+        "src/base/ai/index.d.mts": "100644",
+        "src/base/ai/index.mjs": "100644",
+        "src/base/ai/LICENSE": "100644",
+        "src/base/ai/package.json": "100644",
+        "src/base/ai/README.md": "100644"
+      }
+    },
+    {
+      "path": "src/base/dependencies",
+      "originPath": "modules/dependencies",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
+      "files": {
+        "src/base/dependencies/approval.mjs": "41599909a5a8d5c2b31db98a06d7fbcc3ea47564c9643c9dd8e20062eaebafbd",
+        "src/base/dependencies/auth.mjs": "57e53a75c99cd1f06fd6a7103f232bd4530c089bf15f17094afe8448e2ceca93",
+        "src/base/dependencies/authority.mjs": "fe89cd1fb7da306cf145b8ef3ebe160902f4e4a82284681eccb97193c68e8750",
+        "src/base/dependencies/crypto.mjs": "8dc3397e90b6f8ec1dad81ba68da6e1a5e966ddd8c1b9ace943e964098fea950",
+        "src/base/dependencies/index.d.mts": "667f8fd42fb7319b5d43c5cced539ad0ad13bfca46887c45b52c1bee19ef7a22",
+        "src/base/dependencies/index.mjs": "403205efea3e027bfead18c93912275f9aa38471e13796b01481f8286dbf1597",
+        "src/base/dependencies/logout.mjs": "3bfa236ead120187b96da5f05e94861da682eb8419954a97ac594ff2de49ceb0",
+        "src/base/dependencies/native.mjs": "746b101f850bbf8ab18070352bb4920e2ab7252978b2594e9b4aa66e021534ce",
+        "src/base/dependencies/protocol.mjs": "851fedce4fbf2840fd75ace7b0216677d3d9f36cebe885dd39be0902009d2816",
+        "src/base/dependencies/README.md": "0360447fa552c02ebcd86053fe29dbf9ca386bdaf280012c5ff29a9fc8ef812d",
+        "src/base/dependencies/schema/approval-attempt.sql": "7d3742369189b69ea28bdc000097f150f83221c6474f7e177c7b5590691b67e9",
+        "src/base/dependencies/schema/dependencies.sql": "3481d8aef870a9eda153a1617e99bb71a408e61a25dea92bb132efa7dd1c2526",
+        "src/base/dependencies/store.mjs": "1d102b080d60634fe28da383c80d32a191b9b99cd94600168d6071ac25f0a606"
+      },
+      "modes": {
+        "src/base/dependencies/approval.mjs": "100644",
+        "src/base/dependencies/auth.mjs": "100644",
+        "src/base/dependencies/authority.mjs": "100644",
+        "src/base/dependencies/crypto.mjs": "100644",
+        "src/base/dependencies/index.d.mts": "100644",
+        "src/base/dependencies/index.mjs": "100644",
+        "src/base/dependencies/logout.mjs": "100644",
+        "src/base/dependencies/native.mjs": "100644",
+        "src/base/dependencies/protocol.mjs": "100644",
+        "src/base/dependencies/README.md": "100644",
+        "src/base/dependencies/schema/approval-attempt.sql": "100644",
+        "src/base/dependencies/schema/dependencies.sql": "100644",
+        "src/base/dependencies/store.mjs": "100644"
       }
     },
     {
@@ -406,7 +531,7 @@
     {
       "path": "src/base/editor",
       "originPath": "modules/editor/src",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "src/base/editor/config.ts": "d0f8078bf43ac047a76179c54f0ac04905bea38364411a4904b4617bb6cb92ae",
         "src/base/editor/index.ts": "737a9c56675239e5261aceff927cbfecf2c420aa225b9bc25da796f00f5c4a85",
@@ -491,9 +616,9 @@
     {
       "path": "src/base/import-kit/CONTRACT.md",
       "originPath": "modules/import-kit/CONTRACT.md",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
-        "src/base/import-kit/CONTRACT.md": "a9aae186f79952d1942e7a6cb04bda8e1eff8558b858440f9dde0ec1439713d7"
+        "src/base/import-kit/CONTRACT.md": "eab60ff3766461dc41c5253fd88dd5845539eb8dca2f38189c96bdf3f857ea87"
       },
       "modes": {
         "src/base/import-kit/CONTRACT.md": "100644"
@@ -502,7 +627,7 @@
     {
       "path": "src/base/import-kit/FIXTURES.md",
       "originPath": "modules/import-kit/FIXTURES.md",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "src/base/import-kit/FIXTURES.md": "2f193cf36fce01f7497721f577e4d6aca6dfaeb3cc5615c96be8c847cd6be5f3"
       },
@@ -513,7 +638,7 @@
     {
       "path": "src/base/import-kit/README.md",
       "originPath": "modules/import-kit/README.md",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "src/base/import-kit/README.md": "cb59cbda077f66159ddc3d9d8aec56a9c60226c9aa3cd7911c800b32846d2c05"
       },
@@ -524,7 +649,7 @@
     {
       "path": "src/base/import-kit/schema",
       "originPath": "modules/import-kit/schema",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "src/base/import-kit/schema/importer-verification-receipt.schema.json": "710740a418fbd1fda5dd7a9017c247040c2bef98a6eadbec2a59220a5afa0ae7",
         "src/base/import-kit/schema/importers.schema.json": "70ffac46763ab493388cad8fb0bc40946be819b8e8036274a7bff30cf3b4d9c3"
@@ -537,39 +662,40 @@
     {
       "path": "src/base/import-kit/src",
       "originPath": "modules/import-kit/src",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "src/base/import-kit/src/d1/apply.ts": "97190e9e8924fd0751d5f31c94f2a227705a6c5f3edda8672b70168fac2f6d8e",
         "src/base/import-kit/src/d1/budget.ts": "15a85719224332a015d653d2619ed5c60c8b230fe197573159b5209a2fd603bd",
         "src/base/import-kit/src/d1/compressed-plan.ts": "b96a798a51902178361933ac2509a7ccb549c932a778a7c3662b604f3b7a1430",
         "src/base/import-kit/src/d1/creation.ts": "06ed88e62a1afedbc47e1bbe8edac1f4cb434a3ccce5ddd1b3c9a3ea70fe91cf",
         "src/base/import-kit/src/d1/custody-state-schema.ts": "abd95460b9d732ec47f806c94c559c77a2e8b9967ef3286d7f0bc97c61b25966",
-        "src/base/import-kit/src/d1/database.ts": "c9d57e3d1c67bac36a99beae42e0face3f65d044ce6eafae579487e6c0e3e03a",
-        "src/base/import-kit/src/d1/erased-artifacts.ts": "685a9b9441166d8452ae792d672a328b83e0394df7d8601d7e7635473dda384c",
+        "src/base/import-kit/src/d1/database.ts": "a0da0005d37f51c693e5101dbb736135345706d31d09af9ce4fd82dfaa7e5763",
+        "src/base/import-kit/src/d1/erased-artifacts.ts": "e2766643f0653bef87672698295be3aecf9fd221f0455bba629de9c9503878bd",
         "src/base/import-kit/src/d1/erased-custody.ts": "3b32fc2de77dc7ada815466f31645bc1322d8ef7a70bf357ddef3dc39455e51d",
-        "src/base/import-kit/src/d1/erased-plan.ts": "964fd91f64201c2f4e7366f4137058beffb678e5a8e58acf46687c4944f8e9f5",
+        "src/base/import-kit/src/d1/erased-plan.ts": "ef235b404003131e87af2eb07e8e39c3423c500a28dd9b2fee4b6f2d0eb24248",
         "src/base/import-kit/src/d1/erased-reversal.ts": "1e451448d65086e2eb1d20df5c4f9190f7f04aec55d187bcf6adbe66068c61ec",
         "src/base/import-kit/src/d1/erasure-bounded.ts": "53a19e61fbce0fe8b3066a45e08486a795d7450a6496980d4ebb7d1f5e488f06",
         "src/base/import-kit/src/d1/erasure-claims.ts": "5254f570c850da5fefb213f74a44df73ec5ac5ca0ea3eae3972e60c55a48b022",
         "src/base/import-kit/src/d1/erasure-compiler.ts": "1d9d948ede9b3d5428db7ddc0c9e125b61bbe4cb24c2c5415abf6ad1003537c7",
         "src/base/import-kit/src/d1/erasure-disposition.ts": "d6edd39b94d4c063845d92f11ff435dd4f76898588f2d386b2d383e0df0cf045",
         "src/base/import-kit/src/d1/erasure-fragments.ts": "46d299b1a2efa8017e010fd17c500ce062e64126d7334605d1844e9085e24ed4",
-        "src/base/import-kit/src/d1/erasure-index.ts": "9faab99ff8f7c1049859424af29187fd7fc57180e3876899234fe69e7add37d2",
+        "src/base/import-kit/src/d1/erasure-index.ts": "995f8641fff4a7f2060a145be38fc13c7852b8093ea392d1f197936743e16cb4",
         "src/base/import-kit/src/d1/erasure-pages.ts": "0224a40b3466a1b61f5b226ae614f7db8d160bbecfad9470c900de88c706f698",
+        "src/base/import-kit/src/d1/erasure-related.ts": "def52956c47ccae38bbd2e0f82bf6a58e5ebb027676edca774cea68cc3050058",
         "src/base/import-kit/src/d1/erasure-report.ts": "2a8bdb6cab8a13100d2a351f61ff24d0b16aadc6d34fcf79ecad087241d81348",
         "src/base/import-kit/src/d1/erasure-schema.ts": "582dadabb6c8c010560fb8e5e46521766c72fdf743a3784cd08deb7b63988eef",
         "src/base/import-kit/src/d1/erasure-snapshot.ts": "5a16b9a9bf9ac22c9d22624314218e0f901d3ac511e3f642df11970bb2732244",
         "src/base/import-kit/src/d1/erasure-values.ts": "93b18362f5deb0ef80933b8f24f03ac4fa56e7015986ea993ba12b9ddff40e09",
         "src/base/import-kit/src/d1/erasure-writes.ts": "756b5efa1537f1e9286f2c85eeaf284d0fb1ec2abc51a06542220360706a306b",
-        "src/base/import-kit/src/d1/erasure.ts": "f4cb07681ba5218e3eb80fe3d92f4f4719e08780a3611902cd6255eff406f851",
+        "src/base/import-kit/src/d1/erasure.ts": "aed0da1bdc31ac4b32c3d143ea38531578cd52fd7d1ca7c612f1adc97165234e",
         "src/base/import-kit/src/d1/evolutions/0001-preserved-undo.ts": "8def72f17f375aeddfc3fabd4c3756fc26f4e1fed492cd70cf821d48847e0fe1",
         "src/base/import-kit/src/d1/expected-state.ts": "bd5b5bc97ee20b910646161186717418951da673a4c294e09e75653c98892df0",
         "src/base/import-kit/src/d1/guards.ts": "7f8c7d43a1d5f41d88017a24435d88f9c7b5cb58140ca8d9d0a343697ec09e44",
-        "src/base/import-kit/src/d1/history.ts": "233fbd8e69298ba97804180a6e73308f3e09b2dbc95acd8a6bbad46a751960f1",
-        "src/base/import-kit/src/d1/index.ts": "519b531216177eed7cbcdb2f3250a2a7876b5dc8fec301bd390c78c7b90760be",
+        "src/base/import-kit/src/d1/history.ts": "004b6b72a3c33b33de05196ccaa7ee09777c9a3253bac8128f3cf4ebeb66aea9",
+        "src/base/import-kit/src/d1/index.ts": "9499496195c309d340b7580ff9519144956e6f67e5046411edf9d3aeeab8ba56",
         "src/base/import-kit/src/d1/integrity.ts": "bca91ca3bf5d9a1b868a8f53a9989dee12ddfa69c1b6edee10a9ee84d51c6b14",
         "src/base/import-kit/src/d1/inventory-snapshot.ts": "687f41c9ef55f372e4af0e1c63a70945a9808036d118acfe97978f9c6ec04d6f",
-        "src/base/import-kit/src/d1/jobs.ts": "f7684d339f14b37362f8be7914850b56be088d0abe5cef1d2c62b4b88af66f37",
+        "src/base/import-kit/src/d1/jobs.ts": "130ea5c7f62c149a961f458e7c68a5f4cf25f785cf9241d4ce6c9ed0b2f1c733",
         "src/base/import-kit/src/d1/native-staging-admission.ts": "64d798314f2271d6af590ec2797c5e3395ca6e529aa221b2935c4c7b1b0a6ee3",
         "src/base/import-kit/src/d1/native-staging-context.ts": "726735c573ba08a308dfb89d50c5be63eb88dfb98e027be180db54032337535d",
         "src/base/import-kit/src/d1/native-staging-lifecycle.ts": "f404f3fd618e11ae9f37de7ead2f80ed70fbc6d4ce97af62ce0176ba2a154591",
@@ -590,15 +716,21 @@
         "src/base/import-kit/src/d1/preparation-state.ts": "a46c501d435902eb66b06d89b2708d084ed5eca666822cde48873e0dfc2b5f12",
         "src/base/import-kit/src/d1/preparations.ts": "a29c90ca353d527b3aab5238307bcb0613614d8afb58f74f1eb4cf7459fd8aec",
         "src/base/import-kit/src/d1/preserved-reverse.ts": "8283befaf15dc5edf67f091808f1f182f1eb2038f4bf8f28351e0240ce3aebe4",
-        "src/base/import-kit/src/d1/provenance-set.ts": "7ca32ce20a01711297cddb832ec92b4ba05fd65813fc5e1ea9f51592cf12ef3c",
+        "src/base/import-kit/src/d1/provenance-set.ts": "f005f774ddfa60342430db3cc4ae0e988570832f10be7e97be2876ec050c5a67",
         "src/base/import-kit/src/d1/publication-fence.ts": "b8fd1857119e520bec5cf10d07b3c81a2fbc1caf066b05c774394a8f2ba2c14a",
         "src/base/import-kit/src/d1/publication-receipt-schema.ts": "a8562507cad8506e7c3ceaade0161b6de82a202f5bad368ea322187c62be1929",
         "src/base/import-kit/src/d1/published-stream.ts": "8e672ca3c1921fce0dc2fe37fa4470a5ada1dd38924a9b39db0cb5a97060a222",
         "src/base/import-kit/src/d1/read-fence.ts": "e77cf651e56af1d6d37c78ac68ae339b7a5e98049dad2e3f501b602b01b203b3",
         "src/base/import-kit/src/d1/read-results.ts": "75fe5cb009f41c2aa850941e8db21bfe77261baeccf5a0203505871d4ef66e2d",
-        "src/base/import-kit/src/d1/README.md": "3c529303b9de9b3a7eab9ac0b72dc7df8aeba074490d0022d5136811bb443c61",
+        "src/base/import-kit/src/d1/README.md": "4be048736ffaff8e8e5f9e29fc89f71e80f5e79eeeb010a49ef0d0a421540cfd",
         "src/base/import-kit/src/d1/retained-values.ts": "d864ad9edcfe335507dcc64c478bb6133a3633ea5e91040887381bf8e8f2d889",
-        "src/base/import-kit/src/d1/reverse.ts": "5ee10cb52dd653a95ba3fa195b690480c33c25bff4f85efc6705998241e888e0",
+        "src/base/import-kit/src/d1/retirement-schema.ts": "a32fef20e32a595cdca12f4914d39cfe32013072454c3429dc9e72fe144ce789",
+        "src/base/import-kit/src/d1/retirement-scope.ts": "7bbe5d54f1813768d2b020d3f3d00f7ed49238694dd047b9d890e59d5c50ced5",
+        "src/base/import-kit/src/d1/retirement-tally.ts": "e2530e05d0108a5b6eee28b506b67cc4cabadde7d4e0d4f498c326630917b753",
+        "src/base/import-kit/src/d1/retirement.ts": "4bebd9bfcd7b053e5e9d7cede4de4be7d5f12c1872316a045375e4149148a82e",
+        "src/base/import-kit/src/d1/reversal-fence-schema.ts": "85850e6eee015c05355769fd4b933b8d8c2175711ca11081e46157bf58ad3cdb",
+        "src/base/import-kit/src/d1/reversal-fence.ts": "5b0b3c50b29b55f016d7c46e83bc8c1eec6ef34bb5de2c05a5b7bea35cb7946e",
+        "src/base/import-kit/src/d1/reverse.ts": "d20b6dc0d043c57922e1793a6d0808795992f88faa797f158370ea394173ed7c",
         "src/base/import-kit/src/d1/reviewed-source.ts": "fa3d5a6847476721b0d1d4a0ff3546e394f8d2ab6ecf4ce63a4598a131014b84",
         "src/base/import-kit/src/d1/sets.ts": "f1a6572f8a5701fd3d72cf5793dcb0302dc05e7ef6f33c941636562291d179bd",
         "src/base/import-kit/src/d1/staging-admission.ts": "dcf561f9098294c33b0d85c52d3a85d7737f203c5cd09d502db6244a2300b343",
@@ -618,9 +750,9 @@
         "src/base/import-kit/src/d1/stream-layout.ts": "9b1771a447233e39609e28a27c034270127ca9628d1045786066a7cc5f03f31c",
         "src/base/import-kit/src/d1/stream-origin.ts": "8c593ea5d256102b6027edc6759c4d2accff520fbb586391bb4240d11e84b1f1",
         "src/base/import-kit/src/d1/stream-page-integrity.ts": "b81cc04000f7733f537b3817a3513433abb5a5922d3590a506169888a91c035d",
-        "src/base/import-kit/src/d1/stream-partition.ts": "d9afe61feb35a5b8e9b8d64364adef79879488e2afa4bfc9e85d29da728433cd",
+        "src/base/import-kit/src/d1/stream-partition.ts": "598ea0594c789fcd98496fbf668df5ec21ef25a0d0888b94f633c320ffbe8375",
         "src/base/import-kit/src/d1/stream-plan.ts": "096c2fa2b586b29e0ab277baeaf2db6f74bb65661539d1586d8d3e92a35f665c",
-        "src/base/import-kit/src/d1/stream-receipt.ts": "0705e0833a5d105ea07c835bfcc41355a421cab4064c8c57caae372ee3c67365",
+        "src/base/import-kit/src/d1/stream-receipt.ts": "5ef1aa79f546b7bfba98c2b291bf15bd32f5c4c71f76c3d8522ba39a47cb6f6d",
         "src/base/import-kit/src/d1/stream-revision-schema.ts": "33954cf1d174b0a8589e685cc0a77a6b5c07fbc64719e8e87d49384a461d150a",
         "src/base/import-kit/src/d1/stream-snapshot.ts": "82c8c6c698d7548bc781c776c6ad00a6c7293b21b2d2cd58bf75a85fa3d6ee4b",
         "src/base/import-kit/src/d1/stream-stage.ts": "9c18c0ffe72ad26a42d84b452fedebbc2885c09dae1a348ce98e8cc697b02c1b",
@@ -630,7 +762,7 @@
         "src/base/import-kit/src/d1/target-guards.ts": "0109367eda7594ab16f0a449cdbfab93627e3c8f8fb3f74a4123383ba60bb716",
         "src/base/import-kit/src/d1/target-identities.ts": "6bea9b8ae58cc3e9fa5006918ce5649a6fa2967788a4c5459971ea89297846ec",
         "src/base/import-kit/src/d1/transport.ts": "8db08ec77553f58f816bc0e3325a20e63552e38a99604237a58e8843de7819bf",
-        "src/base/import-kit/src/d1/types.ts": "b94748352b7dbbcd777445fe9dc43548bbe6a6367cab3a4e184fcce4bd225f24",
+        "src/base/import-kit/src/d1/types.ts": "521c24ecb4258c3461e147ba4775cc095dac538c60a409612cb68dde50f888e5",
         "src/base/import-kit/src/d1/undo-observations.ts": "aa5c7eac0fd202244fe7a5518a95dcab377809b9eda12c52b610fe03b00f9958",
         "src/base/import-kit/src/d1/undo-report.ts": "10776e6240f7090e59023aa2e9ed212ead66b37c2c696ec0d44dba424be34b71",
         "src/base/import-kit/src/d1/undo-snapshot.ts": "e92301721da9d72c37213a99a308701c94c882657d2fe0a263ad95614d3928d2",
@@ -697,6 +829,7 @@
         "src/base/import-kit/src/d1/erasure-fragments.ts": "100644",
         "src/base/import-kit/src/d1/erasure-index.ts": "100644",
         "src/base/import-kit/src/d1/erasure-pages.ts": "100644",
+        "src/base/import-kit/src/d1/erasure-related.ts": "100644",
         "src/base/import-kit/src/d1/erasure-report.ts": "100644",
         "src/base/import-kit/src/d1/erasure-schema.ts": "100644",
         "src/base/import-kit/src/d1/erasure-snapshot.ts": "100644",
@@ -739,6 +872,12 @@
         "src/base/import-kit/src/d1/read-results.ts": "100644",
         "src/base/import-kit/src/d1/README.md": "100644",
         "src/base/import-kit/src/d1/retained-values.ts": "100644",
+        "src/base/import-kit/src/d1/retirement-schema.ts": "100644",
+        "src/base/import-kit/src/d1/retirement-scope.ts": "100644",
+        "src/base/import-kit/src/d1/retirement-tally.ts": "100644",
+        "src/base/import-kit/src/d1/retirement.ts": "100644",
+        "src/base/import-kit/src/d1/reversal-fence-schema.ts": "100644",
+        "src/base/import-kit/src/d1/reversal-fence.ts": "100644",
         "src/base/import-kit/src/d1/reverse.ts": "100644",
         "src/base/import-kit/src/d1/reviewed-source.ts": "100644",
         "src/base/import-kit/src/d1/sets.ts": "100644",
@@ -824,7 +963,7 @@
     {
       "path": "src/base/LICENSE",
       "originPath": "LICENSE",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "src/base/LICENSE": "2f5076ef027045b9e0e72df8aa61ca8551e54b1877d531656d6e7985b2c32324"
       },
@@ -846,21 +985,28 @@
     {
       "path": "src/base/mail",
       "originPath": "modules/mail",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
         "src/base/mail/.gitignore": "bac5cb305c3cbf6aa42e50e7f2c0f5331a71d70dac15f239b8ec6746afed0db5",
         "src/base/mail/doctor.mjs": "861a2be20c051247d590cc14d173037f648666fc28ac39f826d69e38e5e2f5d9",
-        "src/base/mail/index.mjs": "c8d1c9cf36186c9e16a9c6a92ca01228cce91eab9f7395e0a01d3c9dd229c5d6",
+        "src/base/mail/index.mjs": "c0501b55f9ba53796926bed1abb22c8690ad2a66b03e09407a84a632c5a4a0c0",
         "src/base/mail/LICENSE": "2f5076ef027045b9e0e72df8aa61ca8551e54b1877d531656d6e7985b2c32324",
         "src/base/mail/live-proof/README.md": "2f6cf1d376a9356b24291765361930b502f8644a0dde4019650d5dddc7478a59",
         "src/base/mail/live-proof/run.mjs": "e0c9a4838d6e3ab467f98a7c5be3a74f874267ced6ec025e4de26e906fb45a04",
-        "src/base/mail/package.json": "fb97ece867a3c13b9b1ad70c1ceb855e6547a49b30c2d8d265980f1759fe58f6",
-        "src/base/mail/pnpm-lock.yaml": "9e2b9946e854b4e4aa2c32b9a5436971ee8e505561baa224bb83001877b0a6c7",
-        "src/base/mail/README.md": "eb190b5cf222c2a90c800825f9a087601d8b377c93376e458a7fc536a02553bb",
+        "src/base/mail/package.json": "b099b75f009c5cfd41c42cccd748c8530fb6f1caf8444d3de82fbc42241e7dfe",
+        "src/base/mail/pnpm-lock.yaml": "c87e27684086028e3ca9e088e5c14f786069a4cecf0e33467577cb91dfba42e8",
+        "src/base/mail/README.md": "5b7a0e638c367eef44557c9941b74372da3fd752ad210fba90238226643c90d2",
         "src/base/mail/src/adapters/cloudflare/headers.mjs": "6bee46c1edb6228b9d3df8b26ca1acbb163c36d94ecbd8e28ace1a6811095f23",
         "src/base/mail/src/adapters/cloudflare/index.mjs": "377e4a322ac7803a1c56986ac909c35c1328896cff07c0610abbad5e8f8c3f86",
         "src/base/mail/src/adapters/cloudflare/README.md": "80531ce460180b853b7db0480b4ff3d4f919fa5ccc119f71255fb1ac13485c5a",
         "src/base/mail/src/adapters/cloudflare/response.mjs": "5eb6749653c10e45c712a76029f5f87503f660315f8f3f665531f2d346f70ddf",
+        "src/base/mail/src/adapters/messaging/contract.mjs": "33397b933e393dca874b673e45c65cbcc1c96b84eeaab10d0346e2b1230f30df",
+        "src/base/mail/src/adapters/messaging/event-schema.mjs": "c1e971e32859954f7087412bd4044cec0a3a4d1e7b81c3b186dbd3aab3aa1fd1",
+        "src/base/mail/src/adapters/messaging/index.mjs": "cb6165778b1265db6b68ed6fc7fdbe04f72beeea56e64d47cc8f3808b3d438e7",
+        "src/base/mail/src/adapters/messaging/jws.mjs": "bac3ac5de7f1c65ac6a23d53e9e0508917ed9bba55c0b4011d466c117a5bfd0a",
+        "src/base/mail/src/adapters/messaging/README.md": "b9dcfc5aeeb1ee2118486efa584b790cee9f77e1c7c95036d6ff99e48df317db",
+        "src/base/mail/src/adapters/messaging/request.mjs": "40a8a800c8791bceb8a9d7c86976693c9fb6eeb37d0b902c0fdab93b6b5c7f71",
+        "src/base/mail/src/adapters/messaging/serialize.mjs": "4ee46c1ccb75edfd53b94bfff67ccdb08196a3ee68576c1eb0aa2494f9d4e1f5",
         "src/base/mail/src/adapters/resend/index.mjs": "03d292468577cb51b012b2c71c13654cd7b0af82c240ec124921ee88e05639dc",
         "src/base/mail/src/adapters/resend/README.md": "07487907a351cde380774bed9b1f7b8d387f55f19be02990a521e25bdb09d468",
         "src/base/mail/src/adapters/resend/response.mjs": "a0f26cafacdae8c6b8070a9ddeb7c1a68a67b47310d27932e59f425450b4b650",
@@ -869,15 +1015,15 @@
         "src/base/mail/src/adapters/sendgrid/index.mjs": "bd94b2d46151ed35f4b0f8ba720588e4d64c899654111e114691b4c6421dfa4e",
         "src/base/mail/src/adapters/sendgrid/README.md": "37a03786dd7cbc6d114a344389daa828334967642574f939df35219b094ad536",
         "src/base/mail/src/adapters/sendgrid/serialize.mjs": "60d7836f94068a92283b1b66ccd27efeb78173c013fd1c9a6caaef1b928e09c0",
-        "src/base/mail/src/core/errors.mjs": "ad6d85870719774eff284328d54bdcb20cc9fb24faf790e3f1e934d19be5197c",
+        "src/base/mail/src/core/errors.mjs": "8ffe417be05ef9f9f6eae1f84641f8da0e3c244f0a5ee712befc979dec455869",
         "src/base/mail/src/core/transport.mjs": "3f7bf52854e4908bb69b93032ac65cbd90bba57d03a62da1c2652ef4e470a1f8",
-        "src/base/mail/src/core/validation.mjs": "c1f54ba93abdead716f8e647aa5ac05af0b47bafa2055e67682393d16791e89d",
-        "src/base/mail/src/development/index.d.mts": "6fe266148a517c9759e1c70358a2d9ffba8fed36ed10bcb653c61fcc6e0b928d",
-        "src/base/mail/src/development/index.mjs": "d4e2cd5726291a63af51b09e1d8d6fd8212091a330f083782c84fe0c45fb8e2e",
+        "src/base/mail/src/core/validation.mjs": "6a08d0f42f795b8e16520a3f7ea2a1accef17c91584f13f9be791c2d3e6f4f56",
+        "src/base/mail/src/development/index.d.mts": "5a5974b24b90d01e11957f1b67852cfa6cf4498ed41f6cebc637a11312dcfa48",
+        "src/base/mail/src/development/index.mjs": "400ea3689e3fc64f228ad4bbc2e9eb31fc4dc7a0d5e043cd08e3a009cecdc7d0",
         "src/base/mail/src/development/outbox.mjs": "ca97ec8816a03cd606c90a37a98d3764fab809dba73411922cbd6f7a3f314376",
         "src/base/mail/src/development/schema.sql": "45d6b03eadfe1e91737763ae85cdff74e7216f859869e34431550bba48294996",
-        "src/base/mail/src/development/viewer-html.mjs": "96706dc588fa35a18203cc3e3350fbf03c2db2ddad779fbdbd21fa29a7d8f00a",
-        "src/base/mail/src/development/viewer.mjs": "8c8c7575c2364151501d1725515b90fa662be039422837643d89f6668f241627",
+        "src/base/mail/src/development/viewer-html.mjs": "4b9ad61da0517b2741417b5c61d054defbb853850edd628e306c93ddb6b9c922",
+        "src/base/mail/src/development/viewer.mjs": "dba10b05bfa58d30e64eae0a5afcf894e33984a7989db11b45e4676950e655f2",
         "src/base/mail/src/doctor/common.mjs": "09d55a9065b133ca5e3c64e35a652cac6c5220cd1f130328c9014f994ebd1e23",
         "src/base/mail/src/doctor/dns.mjs": "dbbd30abedf91cbf041597be0016d8f308f86951685161af89eeee1e99a9450e",
         "src/base/mail/src/doctor/index.mjs": "bc7e27eb1066b48b0c10bf0d874e858016675124e87f9795b04aa90cd5a11860",
@@ -885,9 +1031,11 @@
         "src/base/mail/src/doctor/README.md": "03fbc37879c24a39d864147142b3474ade2f3611a3bc9343be214f2280619e14",
         "src/base/mail/src/doctor/receive.mjs": "c113c033011d3a98c4407c5d7bb5a1f7130de088620a03d36d9087fc536a24c7",
         "src/base/mail/src/doctor/records.mjs": "f5a8f43ab1d3e5a125056f34068380f7634ed178b238937eac26c92b67c686b1",
-        "src/base/mail/src/events/index.mjs": "6184eeaf89d426b8650f68dfb064f7825541d33a8190ba91d29a9e7de0149a7d",
-        "src/base/mail/src/events/intake.mjs": "88dc2902d523908a4d5a030814816c7322667373b5670d413de4c03c065c95ff",
-        "src/base/mail/src/events/README.md": "14f2daf2819422b62059434910d5ca18995f0fc63f3ef4810c9cc80c8b60218e",
+        "src/base/mail/src/events/d1-schema.sql": "c18a168f27d6994d2930730e775422d65cb97023f5550cdccc2d95fdf64440b1",
+        "src/base/mail/src/events/d1-storage.mjs": "994d21831a0783e9338e2cc2832c4e4936b4a8b9f962938ed947a32923305fe5",
+        "src/base/mail/src/events/index.mjs": "b59cbd19c3676bd36931929379e1a80605192ed4adb496fe39287e927b799ddc",
+        "src/base/mail/src/events/intake.mjs": "27b4092955b0e9fe58ad860f9e386d9c57656816bd9855db62022455a6bab2b4",
+        "src/base/mail/src/events/README.md": "31ca618acfcff4a9303772b31cf6ab4cec0c45d80e4ffb4eb5e1bbc8b97d8def",
         "src/base/mail/src/events/storage.mjs": "56a1befc9d7bb799de431d7e938bf84470cd10f891c5275cb0be89704f2de32b",
         "src/base/mail/src/events/verify.mjs": "d5ab927fdcca001bebdf1128e7cdf4c6006b49468406aff983c10957ef5bf286",
         "src/base/mail/src/inbound/bytes.mjs": "cf6d59fff8c693a2833d0015f134d5c2559ec749aeb69b292b38585be7b7db7f",
@@ -899,7 +1047,7 @@
         "src/base/mail/src/inbound/resend-attachment.mjs": "a2ca74f17f0018c96b12a6bcaadc31c9b20d870687c5a2d7374de50e4c8fbff3",
         "src/base/mail/src/inbound/resend.mjs": "7d279b6dcb1280b0c3902afc05c7356a9fbfcc015051a5c852fbfbb789a41e17",
         "src/base/mail/src/inbound/sendgrid.mjs": "b599533e99e7912adfd10fc7343ba59e9387d783a623af0c6ac0843314265118",
-        "src/base/mail/src/sender.mjs": "fb8a0036fcd591a8f218702ca2dc94b40853cfc02b7d1c98972224ad8a88e179",
+        "src/base/mail/src/sender.mjs": "1e4ec0a59b6a7a523ed929e56bc5a9433b039ff75c5611d8e1a9162d8a508a6b",
         "src/base/mail/src/sendgrid-email/index.d.mts": "65efe2ed9647dd24ce7a7c1055cc5d8213ce94061db7597fb0460309baaa48be",
         "src/base/mail/src/sendgrid-email/index.mjs": "4b0a9132941f0ba7a2f91b86b46b16bb0cdb5d3b9396b19ad13fb060bd02737d",
         "src/base/mail/src/unsubscribe/index.mjs": "4cd7c05a3a885d4d16cfcb50e623fdc201fe6c6bb8d9418502b0837161e55295"
@@ -918,6 +1066,13 @@
         "src/base/mail/src/adapters/cloudflare/index.mjs": "100644",
         "src/base/mail/src/adapters/cloudflare/README.md": "100644",
         "src/base/mail/src/adapters/cloudflare/response.mjs": "100644",
+        "src/base/mail/src/adapters/messaging/contract.mjs": "100644",
+        "src/base/mail/src/adapters/messaging/event-schema.mjs": "100644",
+        "src/base/mail/src/adapters/messaging/index.mjs": "100644",
+        "src/base/mail/src/adapters/messaging/jws.mjs": "100644",
+        "src/base/mail/src/adapters/messaging/README.md": "100644",
+        "src/base/mail/src/adapters/messaging/request.mjs": "100644",
+        "src/base/mail/src/adapters/messaging/serialize.mjs": "100644",
         "src/base/mail/src/adapters/resend/index.mjs": "100644",
         "src/base/mail/src/adapters/resend/README.md": "100644",
         "src/base/mail/src/adapters/resend/response.mjs": "100644",
@@ -942,6 +1097,8 @@
         "src/base/mail/src/doctor/README.md": "100644",
         "src/base/mail/src/doctor/receive.mjs": "100644",
         "src/base/mail/src/doctor/records.mjs": "100644",
+        "src/base/mail/src/events/d1-schema.sql": "100644",
+        "src/base/mail/src/events/d1-storage.mjs": "100644",
         "src/base/mail/src/events/index.mjs": "100644",
         "src/base/mail/src/events/intake.mjs": "100644",
         "src/base/mail/src/events/README.md": "100644",
@@ -965,79 +1122,105 @@
     {
       "path": "src/base/operator-auth",
       "originPath": "modules/operator-auth",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
-        "src/base/operator-auth/accounts/adapter.mjs": "fa6e5590c336221144b759e9001e5faca82f2578fe83dca4b36685f012e4e693",
-        "src/base/operator-auth/accounts/admin.mjs": "5a654d03050565ea61ca4ec39b1f13368c06865288454a9ffe198cbdcdf424a7",
-        "src/base/operator-auth/accounts/index.d.mts": "70524ac95bafd50ae5bf195222c5ff933f43ca2def2e98292049aaddc99fc1f8",
-        "src/base/operator-auth/accounts/index.mjs": "7891ecd3b9eb9e834358d80edf29eda08f8c7faf3b3752e24f79a4cab09cab42",
-        "src/base/operator-auth/accounts/oa.mjs": "5a195a69c5e1e58c9868790aa98c5b76220c0551f5729f3a6c97a079f099b02d",
+        "src/base/operator-auth/accounts/adapter.mjs": "989fca51e86ecc80cb150661b6d6cb8b6a57f82a85eb408d1fa6286a8372a3aa",
+        "src/base/operator-auth/accounts/admin.mjs": "ad164e6b03136b67407e6f0b9ac7089dbcad505f65c07ac05c991705e17c69b1",
+        "src/base/operator-auth/accounts/credentials.mjs": "da7b4825fd3ec58fd0310083762fdad67a094b407629fe76406f7f8ce11c1517",
+        "src/base/operator-auth/accounts/editor-owner.mjs": "ed47e235de1fc52aa4b92e9ab60be5f7fbb07d8f29a5fc3d3c0b3e86702c4da7",
+        "src/base/operator-auth/accounts/index.d.mts": "bea6399182774eaa7a2269aa1575679af98ec5d3340325098edac4aac2445cc0",
+        "src/base/operator-auth/accounts/index.mjs": "f6510c4c973812299256c9ecaf5a8e6736f874400eeddf1cba98ae548e754ebd",
+        "src/base/operator-auth/accounts/native.d.mts": "ab920e7d3d35119dec57cc80ade5e8e9144e0a7a5c79880dc2b2511c52544051",
+        "src/base/operator-auth/accounts/native.mjs": "70d40b63c359838812adcf7e9e1062895222e1fd70de6319874716b38ff46951",
+        "src/base/operator-auth/accounts/oa.mjs": "84508f8c507d12d3df4cd0d683baa8bbd5a3b60522bd08d31cf49ebb92a72aa1",
+        "src/base/operator-auth/accounts/provider-control.mjs": "753a21fd66170fb3bfac89a1aa0af3a47e881be53cbcb346696c8ec8a4facb5a",
+        "src/base/operator-auth/accounts/provider-pin.mjs": "ebc398d4c8dc573fdc724c3d1a7d790b9b9fbb7e18043eafdc4400ffce84aac6",
         "src/base/operator-auth/accounts/roles.mjs": "9c4ab78154db3c38bac35e101b3411afe610c3892f58384a84d9e8516384810e",
+        "src/base/operator-auth/accounts/schema/dependency-setup.sql": "7b36f7e1fb0991fe3e808613d911393bbad3386ead06427082c69a48c5738108",
         "src/base/operator-auth/accounts/schema/dev-sessions.sql": "18754583983c09f3624038131c1b03fadecb8375dddb0a5d09c449a4238ce298",
         "src/base/operator-auth/accounts/schema/domain-rules-step-up.sql": "e41c7f1381f547582148cdf247b521d7f166461ab24058ace95acdf21839e815",
         "src/base/operator-auth/accounts/schema/invitation-cancellation.sql": "2130793483660155aaa1851b6111e51a7aeaf1f8ceb86d467d42ba684c35b562",
-        "src/base/operator-auth/accounts/schema/operator-auth.sql": "a3a586a6b095cae80501c3f22fd8df98f4140e0281bc08f3b944c818a977ecde",
-        "src/base/operator-auth/accounts/store.mjs": "6afbcdc5df41b8483defcbbacf69d086d22a7c880482fe337a0464daeb66fbed",
-        "src/base/operator-auth/branding.mjs": "644fb1f1873b77dbae239de2d3d3a9c6e5bf82942b8ad509536eaf8e71e522a7",
-        "src/base/operator-auth/config.mjs": "0f57f69f3acc16633bf59950c6ead79121623b8cbc9f6883748add089dcc0c9e",
+        "src/base/operator-auth/accounts/schema/operator-auth.sql": "389e6fc3201a73ab5e7280bbe4fdb793b652b84f157e444bab48cc3c25eb8c41",
+        "src/base/operator-auth/accounts/schema/provider-control.sql": "f19cc7a792538a8ff36d87760a3cad58fccab0316984488d1834af14fbf37cfe",
+        "src/base/operator-auth/accounts/schema/provider-pins.sql": "f0cfb6b3740869fd098ee449efb25807f8b1ef51c353fd07bafeb00ce38aeb63",
+        "src/base/operator-auth/accounts/settings-page.mjs": "3036524d91e838e63654748b6fe0c8671c8590bc6632eb9990fc2b518e1bbcc7",
+        "src/base/operator-auth/accounts/store.mjs": "c6ea4f85cc62bbe9c4d0827a99df1051755be5c1a11498f2017534d37e43ad4a",
+        "src/base/operator-auth/branding.mjs": "fc88270b035fcf5a44bbc8383a1939d89742189c4d410c1ca825d9af3e2f85cb",
+        "src/base/operator-auth/config.mjs": "2299c5081b0e8731572c34066e4f9421c997f44b8c3ecd85944a54e1e2fda122",
         "src/base/operator-auth/conformance/index.d.mts": "b8e9b4a51bf2b0f9c20eaf5c01902d763f6ea652adc5c7c600da69d2542e7055",
-        "src/base/operator-auth/conformance/index.mjs": "a0617178d1f8cc795f1559eb3e213733ee1dd307869cc20d02c544fd6378c0d0",
+        "src/base/operator-auth/conformance/index.mjs": "b744282e573caa1a45748f92b76ccfdb608bda506eafb6bda276cc7ad12a4d99",
         "src/base/operator-auth/conformance/presentation.mjs": "5626e1c96f43c41dfe5ff8d15d0b98e4cd0c1965cb2693968b50ae1295671606",
-        "src/base/operator-auth/conformance/README.md": "8ff3bf82c885df67e19abf1940273d64fb46f1f5765e0e4a27f286b621490e37",
+        "src/base/operator-auth/conformance/README.md": "62b9e2dea277cd62ba0ddfd0ec9246bab7347de0d6c367971af209dae03163e6",
         "src/base/operator-auth/crypto.mjs": "c9a843518d9223ec91698060bacd5a44cd0c4361adaa6b09c05be69f11a828b8",
+        "src/base/operator-auth/dev-admission.d.mts": "4fa20898bba75ecf5a09005fd4ea3ae520f8a43b4b2cca5ecb5069443cd72d1d",
         "src/base/operator-auth/dev-admission.mjs": "d8c59cea293b24364961dc0a9a1f2bfb615ffee73cd48507147f37b577cc0ef8",
-        "src/base/operator-auth/dev-gate.mjs": "7b8e04432fe3cd467a113f4568e7fb1dc666043a63f3e4872617f459f794712d",
-        "src/base/operator-auth/dev/badge.mjs": "a21071f5c345fafb0470b606a8afd2ace1a287e4492e085463fa1cba2996ce32",
+        "src/base/operator-auth/dev-gate.mjs": "efff8220a192d8def2a9642fa14429958a103c9c887b052882c621a5ca343c54",
+        "src/base/operator-auth/dev/badge.mjs": "c38dfaaa40abf492c857d1d5596e484728d118e4219e1b7cf8f59c48ae8a5f5d",
         "src/base/operator-auth/dev/index.d.mts": "7bd9b7a4082d367a8fb9f330906d97e647f05977491ebf3abbdd6940ff02821c",
-        "src/base/operator-auth/dev/index.mjs": "9df236bfe03ccab9c1d142e64a4de0c83d0cd4f27cf5904d574e228738396e7f",
+        "src/base/operator-auth/dev/index.mjs": "e9882a4a3c4cc75246f29a98d8e3fc251208875c0e31e0e5f32b5715717e289c",
         "src/base/operator-auth/dev/personas.mjs": "888afa951b9520376cd1b0cdbe13e75b002213c368be26652e514eca0ca2e485",
         "src/base/operator-auth/dev/sign-in-as.d.mts": "e566a2c11c117ee408c3a4203326eecea4805478894f705a19f1c6edb08df992",
         "src/base/operator-auth/dev/sign-in-as.mjs": "c41b8030fc95b3fa401976322fb433ad547ff659471d5d5344eb120849e9b34a",
+        "src/base/operator-auth/docs/native-accounts.md": "068f1c664d3e6ac55942f2ea0db5791dd9656b3607b456aacb69c8c8480d701c",
         "src/base/operator-auth/docs/README.md": "098a5dfc2f761b962a0dae818a6130931789efe34376cc4efbd92cfc50d6fb2e",
         "src/base/operator-auth/docs/tanstack-start.md": "52557d15e2c9840fc92d0ef148d9f7f67ba7f5d718eabd5b7dbb80ab8dbff9e1",
         "src/base/operator-auth/docs/vite-spa.md": "ba684430f1a5adeae8bb7c28d02ca11a95a666242048a33256ab427d8fbce781",
         "src/base/operator-auth/errors.mjs": "393de2f6a068fc32d0904e238e88d6fae90576b197cca463da8d7dfabef36f47",
-        "src/base/operator-auth/http.mjs": "eb95dcb02bc2e2c4729f60727ba7e7a6a4dc9733b533a3e76f205e709bd0201d",
-        "src/base/operator-auth/identity/admission.mjs": "ac5d3a81cbe0185447632dbe7b9e417a8507f07c7ec3cccf91f74a32829f8d04",
+        "src/base/operator-auth/http.mjs": "caf5ddf8b50070b1339afd6f19e3ef3c73677cc7726a355fbac5cda371f09b53",
+        "src/base/operator-auth/identity/admission.mjs": "a9247a655bf71c606cb1a9a3eae97202f7e4cde8695252f06ab4dff151e1dd39",
+        "src/base/operator-auth/identity/after-confirm.mjs": "cb43ccb5fdb90ad1739ac581d5deb6b15fd4e490f91a658c06693d7e8f83b2d4",
         "src/base/operator-auth/identity/email-link/confirmation.mjs": "20e3d8e91bb3562801abf762d84e93629c01469b89e646320e232946793e1499",
+        "src/base/operator-auth/identity/email-link/index.d.mts": "0c6209f3f74a0b483f428d5a457b8f9fa60c1ed8249b819f0098603947353f97",
+        "src/base/operator-auth/identity/email-link/index.mjs": "eadf57db13711637de084d763ad4fa2bfcc3c7b5896e33665bb0767112eefb2b",
         "src/base/operator-auth/identity/email-link/message.mjs": "dcbd0eef8f8bac023235162b079945441daab3e0b27541f4738ba15c3ebebbec",
-        "src/base/operator-auth/identity/index.d.mts": "740d93a59ef568ad3b65e85796d4acc3de3b2333cff958eba871be774498deac",
+        "src/base/operator-auth/identity/index.d.mts": "5c7b8c2bf70f7a1e57dd53110ab88e4be8a46297d8838405763a3e95870a0b88",
         "src/base/operator-auth/identity/index.mjs": "0b68a78d59ecf553a1cacc182e280071f9554b37271249cfc037afcbf2d54cfb",
         "src/base/operator-auth/identity/oidc/client-auth.mjs": "061ac35699976c075b120891f7eacb4b1c893b9081faff1e5b3bd0a5834d97ef",
-        "src/base/operator-auth/identity/oidc/config.mjs": "f38385f3f62f43469458f8f47b4175755fe5bb0a53be5dc7bb60d3a74ac67a6f",
+        "src/base/operator-auth/identity/oidc/config.mjs": "da65b4a181b68f5cc703af6d9702db9851efe81cfefe25ef9988790f3debac8e",
         "src/base/operator-auth/identity/oidc/crypto.mjs": "968787aa4d88b2d5323ef55dce0755d50e32502a6753505eaf3f6a0298078ff8",
         "src/base/operator-auth/identity/oidc/errors.mjs": "09b4452714fdbd7382d1ce71162c17cf41fd7a3e6c2ea74be768a156ec1e138d",
-        "src/base/operator-auth/identity/oidc/index.d.mts": "666be89c22c8c2d825a797aab85f3e7d713266f347c95a9a62774e5b05173fc1",
-        "src/base/operator-auth/identity/oidc/index.mjs": "dcb729ad24fa1d7a793d30493a0a7d086f5628bcc6bad539b5c74193ec546c59",
-        "src/base/operator-auth/identity/oidc/jwt.mjs": "92826fa9738aae48c72af86fc7ac0a880f17a399176577d55ba5873b022f5536",
-        "src/base/operator-auth/identity/oidc/network.mjs": "ee906ff3b434a2722a53d4650d6beb226d92adb3ce0ebefea504f3970847d684",
-        "src/base/operator-auth/identity/oidc/presets.mjs": "5a3b39a1b52f0411801587fe8876b38079b099019f6b6592bf074f7f394b45ed",
-        "src/base/operator-auth/identity/oidc/README.md": "7c2645ff1510458f9d7ef51aa865c8c0da8f26a11bf5f57a339d2d0e0be16f01",
+        "src/base/operator-auth/identity/oidc/index.d.mts": "e4b8e2a583daf21e024355c77f5399c0d7184aff69b81cd1266681de05f91922",
+        "src/base/operator-auth/identity/oidc/index.mjs": "0781a4b6ce711874454fd37432e1a5c961512d95a2f97b6a64fd56746a12d3db",
+        "src/base/operator-auth/identity/oidc/jwt.mjs": "b66750270020887f31339122c08ee9a55a7c6057486777e629d18bf7678d8562",
+        "src/base/operator-auth/identity/oidc/network.mjs": "fabd93891da5a2d90ca6a4a97ea56f5cad07cdb4390aacfe1e9eda8f1ec31130",
+        "src/base/operator-auth/identity/oidc/presets.mjs": "8fdfa82f855de54cd984ff700a396a2a89c870f724faeaa4f74a6dcd131c240c",
+        "src/base/operator-auth/identity/oidc/README.md": "21fa1fec41b1d36ecf18ac47f091b9924a1e7e7c8523b848bd159124f1d5cf0e",
         "src/base/operator-auth/identity/oidc/schema/oidc.sql": "f879fb86b079e591dfe4a8513752a8e0394e252b940aa35d3f7430f27b7382c6",
-        "src/base/operator-auth/identity/oidc/store.mjs": "38324e70569f9da12672d63a02efa31b8e06f55ce6ea5c3e0ba0a024ba6e20ca",
+        "src/base/operator-auth/identity/oidc/store.mjs": "9395f0d0a2a7dd23e8ee59c819a65583510a0dbd5c230541751cda121b99a9a3",
         "src/base/operator-auth/identity/principal.mjs": "6b949a826dab8f63d70da4603e4da9d50d9071faf0e18684a66f86beec63ab03",
-        "src/base/operator-auth/index.d.mts": "8cc6876b91b09466794b0b197c766188603145b9c2f46617d34ef704035823ea",
-        "src/base/operator-auth/index.mjs": "85d9d8e3219b72f574f762800767728f9e930788842a9b2fef80fd6fd5564b13",
+        "src/base/operator-auth/index.d.mts": "2790f02ef4102e6ca1931af7355883eb33d5e954a865470139ea711bed67d633",
+        "src/base/operator-auth/index.mjs": "d788203c0e82f4d4e22df8884f592bc9134bdbedaee29bb416f7eee9fc82b0c1",
         "src/base/operator-auth/input.mjs": "0b668bdbdce75d31acc6a2918ed8131d6baeff948d91048bde9fd58fb52a91e8",
         "src/base/operator-auth/local-cli.mjs": "b10dafbf33fc4f342e2c3c6db343afd353c3e6264208216a6155d50e71d1f19a",
-        "src/base/operator-auth/page.mjs": "a2e1ee2864aa33bee3db99c260af8044217616e8c0d5f5a618a711767434f92d",
+        "src/base/operator-auth/loopback.mjs": "13b32a076bce23a3124be1745202c18eda553f298fad3d9f5cb93ac61aee3115",
+        "src/base/operator-auth/page.mjs": "4e06fa4fece6c17544692503d710be9a703713397c95e216c970e38cd1db8c9e",
         "src/base/operator-auth/policy.mjs": "d535aba35621d333cd6faae49fc3c6cb72e1d5718741f02d363cbe3e8eaf153c",
-        "src/base/operator-auth/README.md": "d10c23ecc9adc92ddfdd81c3558d6fa9a28f00fae0b637d6ca73fe8051503e58",
-        "src/base/operator-auth/routes.mjs": "ec5e9e22ed541ccc2924da2d411a4b54981af1b8809fcde04187c654bb2f082e",
-        "src/base/operator-auth/service.mjs": "a367c3d066bfedce2bc373098f5c7738c08545b2d0e36ebc410ef1f80bb1a13e",
-        "src/base/operator-auth/signin/index.mjs": "81693b4faae8dbb9ac0662ca51f54855b4ebf043d21df97cf6ec8d5ec2012315"
+        "src/base/operator-auth/README.md": "90ed6b62dd5557e517392ef62837d1059f0c44f701db2bbf205974369c4483e9",
+        "src/base/operator-auth/routes.mjs": "4b8682c89f66fa7e0df4c66554131fbd317f7a7c61272ff576e40e0ee13ece13",
+        "src/base/operator-auth/service.mjs": "107dadbca207bff69c562a8630e693384201408986ee176c908f56d933e81ef8",
+        "src/base/operator-auth/signin/index.mjs": "326416aea7643466d4dddea422cab21f4b861fa47f44f45685b5f7d406d9db8c"
       },
       "modes": {
         "src/base/operator-auth/accounts/adapter.mjs": "100644",
         "src/base/operator-auth/accounts/admin.mjs": "100644",
+        "src/base/operator-auth/accounts/credentials.mjs": "100644",
+        "src/base/operator-auth/accounts/editor-owner.mjs": "100644",
         "src/base/operator-auth/accounts/index.d.mts": "100644",
         "src/base/operator-auth/accounts/index.mjs": "100644",
+        "src/base/operator-auth/accounts/native.d.mts": "100644",
+        "src/base/operator-auth/accounts/native.mjs": "100644",
         "src/base/operator-auth/accounts/oa.mjs": "100644",
+        "src/base/operator-auth/accounts/provider-control.mjs": "100644",
+        "src/base/operator-auth/accounts/provider-pin.mjs": "100644",
         "src/base/operator-auth/accounts/roles.mjs": "100644",
+        "src/base/operator-auth/accounts/schema/dependency-setup.sql": "100644",
         "src/base/operator-auth/accounts/schema/dev-sessions.sql": "100644",
         "src/base/operator-auth/accounts/schema/domain-rules-step-up.sql": "100644",
         "src/base/operator-auth/accounts/schema/invitation-cancellation.sql": "100644",
         "src/base/operator-auth/accounts/schema/operator-auth.sql": "100644",
+        "src/base/operator-auth/accounts/schema/provider-control.sql": "100644",
+        "src/base/operator-auth/accounts/schema/provider-pins.sql": "100644",
+        "src/base/operator-auth/accounts/settings-page.mjs": "100644",
         "src/base/operator-auth/accounts/store.mjs": "100644",
         "src/base/operator-auth/branding.mjs": "100644",
         "src/base/operator-auth/config.mjs": "100644",
@@ -1046,6 +1229,7 @@
         "src/base/operator-auth/conformance/presentation.mjs": "100644",
         "src/base/operator-auth/conformance/README.md": "100644",
         "src/base/operator-auth/crypto.mjs": "100644",
+        "src/base/operator-auth/dev-admission.d.mts": "100644",
         "src/base/operator-auth/dev-admission.mjs": "100644",
         "src/base/operator-auth/dev-gate.mjs": "100644",
         "src/base/operator-auth/dev/badge.mjs": "100644",
@@ -1054,13 +1238,17 @@
         "src/base/operator-auth/dev/personas.mjs": "100644",
         "src/base/operator-auth/dev/sign-in-as.d.mts": "100644",
         "src/base/operator-auth/dev/sign-in-as.mjs": "100644",
+        "src/base/operator-auth/docs/native-accounts.md": "100644",
         "src/base/operator-auth/docs/README.md": "100644",
         "src/base/operator-auth/docs/tanstack-start.md": "100644",
         "src/base/operator-auth/docs/vite-spa.md": "100644",
         "src/base/operator-auth/errors.mjs": "100644",
         "src/base/operator-auth/http.mjs": "100644",
         "src/base/operator-auth/identity/admission.mjs": "100644",
+        "src/base/operator-auth/identity/after-confirm.mjs": "100644",
         "src/base/operator-auth/identity/email-link/confirmation.mjs": "100644",
+        "src/base/operator-auth/identity/email-link/index.d.mts": "100644",
+        "src/base/operator-auth/identity/email-link/index.mjs": "100644",
         "src/base/operator-auth/identity/email-link/message.mjs": "100644",
         "src/base/operator-auth/identity/index.d.mts": "100644",
         "src/base/operator-auth/identity/index.mjs": "100644",
@@ -1081,6 +1269,7 @@
         "src/base/operator-auth/index.mjs": "100644",
         "src/base/operator-auth/input.mjs": "100644",
         "src/base/operator-auth/local-cli.mjs": "100644",
+        "src/base/operator-auth/loopback.mjs": "100644",
         "src/base/operator-auth/page.mjs": "100644",
         "src/base/operator-auth/policy.mjs": "100644",
         "src/base/operator-auth/README.md": "100644",
@@ -1092,21 +1281,25 @@
     {
       "path": "src/base/owner-claim",
       "originPath": "modules/owner-claim",
-      "revision": "56d2eadbd094cfe31c7f155da3355afe6fccf7de",
+      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
       "files": {
-        "src/base/owner-claim/index.d.mts": "62b73bae51da53154364f046546abc0a31812aa728ff5654ec07f1768979a8f0",
-        "src/base/owner-claim/index.mjs": "80d2ca1bafa16e78a524224fb334645e11d4049426c7f9ce7eff013c6ff46cc1",
+        "src/base/owner-claim/idp.mjs": "edb09dfeb0b66849cd84b651099d46c6420d1dc3f270446ae96595d91754d3e6",
+        "src/base/owner-claim/index.d.mts": "33fc8d1b756cb2c0a4317ea4dbc29ae704dd137f76993278859d98ae5e9ad184",
+        "src/base/owner-claim/index.mjs": "71e4b0f9f967981146dd1daa5f6b14ab30f577adac4901c8e3d47bb8a5a76991",
         "src/base/owner-claim/page.mjs": "1e03cd872c5bf95a2672e782153b71272f90f1cea7f10ee70f971fae0432e929",
         "src/base/owner-claim/README.md": "400d900fbe0981f9e6e27ff40b7913ebb140680bd045167cfb9ddb2a45a4c890",
+        "src/base/owner-claim/schema/idp.sql": "a870102648a2226b18a2fe8168d096389b698af88333d112fa8137e582fc2b33",
         "src/base/owner-claim/schema/owner-claim.sql": "c3ffe653727bb4867b064dc2489df5013613f08f4b5998d2fe2b6a8485cdb815",
-        "src/base/owner-claim/transaction.mjs": "c3198c8ac52e6493a4b39dac55c1021f7c57ccd9b25694ce617f4267f4a0380b",
-        "src/base/owner-claim/verify.mjs": "7378d81d2b453d7dea9cecb94f99ccbbbebc4455f02617146f844ed1151f7ad0"
+        "src/base/owner-claim/transaction.mjs": "ca36db33042d7778d518b407bd9b403dd4bac82d4b89d81beeb78ed47421cca2",
+        "src/base/owner-claim/verify.mjs": "a1cc5094a30415c60f739b67ad2eda40750e8d963d199fad45bdd562f7d0248b"
       },
       "modes": {
+        "src/base/owner-claim/idp.mjs": "100644",
         "src/base/owner-claim/index.d.mts": "100644",
         "src/base/owner-claim/index.mjs": "100644",
         "src/base/owner-claim/page.mjs": "100644",
         "src/base/owner-claim/README.md": "100644",
+        "src/base/owner-claim/schema/idp.sql": "100644",
         "src/base/owner-claim/schema/owner-claim.sql": "100644",
         "src/base/owner-claim/transaction.mjs": "100644",
         "src/base/owner-claim/verify.mjs": "100644"

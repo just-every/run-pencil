@@ -63,6 +63,16 @@ A restore only ever goes into an empty database. It refuses a database that alre
 > [!WARNING]
 > A restore brings back everything as it was when the archive was made. Responses, contacts and custom fields you erased since then come back with their archived consent state, and opt-outs recorded since then are lost. The import command prints a reminder. After restoring an older archive, erase those people and responses again and record those opt-outs again. Erasing in Pencil never reaches copies outside it, such as older archives and response exports. See [Privacy and security](privacy.md#keeping-and-erasing-data).
 
+### Refuse an archive made before an erasure
+
+Every erasure (a response, imported or not, and a recipient) advances an erasure count that travels in every later archive. If you still have a later archive of the same installation, name it with `--journal` when you restore an older one:
+
+```sh
+rer import --input exports/install-2026-10-01.rer --journal exports/install-2026-10-10.rer --yes
+```
+
+When anything was erased between the two archives, the restore is refused whole with `Restore refused (erasure_epoch)` and exit code 4, and nothing is written; restore the later archive instead. A `--journal` archive from another installation, or one older than the archive you restore, is refused with `later_journal`. Without `--journal` the older archive restores as described above.
+
 ### Locally
 
 In a fresh clone of the matching source, install dependencies, copy your archive into the private `exports` folder, then import **before setup or build**. The committed runtime configuration lets import apply the schema without either step. Setup afterwards preserves the restored owner; use that owner’s email:

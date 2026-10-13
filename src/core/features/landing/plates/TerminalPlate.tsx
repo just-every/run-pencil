@@ -31,7 +31,7 @@ export function TerminalPlate() {
         <p className="terminal-sheet__line"><Command>pnpm run deploy -- --dry-run</Command></p>
         <p className="terminal-sheet__line"><Command>pnpm run deploy -- --environment production</Command></p>
         <p className="terminal-sheet__line">
-          <PencilCircle block><Command>node scripts/rer.mjs export --output exports/pencil.rer</Command></PencilCircle>
+          <PencilCircle block><Command>rer export --output exports/pencil.rer</Command></PencilCircle>
         </p>
       </SketchFrame>
       <PlateNote section="yours" />

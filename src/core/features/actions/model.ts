@@ -17,6 +17,8 @@ export const actionFieldsSchema = z.object({
 }).strict()
 export const createActionSchema = actionFieldsSchema.extend({
   evidence: z.object({ flowId: resourceId, revisionId: resourceId, questionId: resourceId.optional() }).strict(),
+  // ACT-008 / ANLY-006: an action an operator makes from an analysis's recommendation names that analysis.
+  analysisId: resourceId.optional(),
 }).strict()
 export const editActionSchema = actionFieldsSchema.partial().extend({ expectedVersion: z.number().int().min(1) }).strict()
 export const transitionSchema = z.object({ to: z.enum(actionStates), note: z.string().trim().max(2000).optional(), expectedVersion: z.number().int().min(1).optional() }).strict()

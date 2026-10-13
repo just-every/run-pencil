@@ -33,6 +33,8 @@ Deploy reads everything from environment variables. Start with the address you w
 
 External tasks are optional. To send actions to your own task system, also set `TASK_PROVIDER`, `TASK_WEBHOOK_URL` and `TASK_API_KEY` as Worker secrets; [Actions and follow-up](actions.md) explains the webhook your receiver must honour. Without them, everything else works and the action page says what to set.
 
+Analysis is optional. To turn it on, set `AI_ENABLED` to `true` and `AI_MODEL`, then either `AI_API_KEY` (with `AI_BASE_URL` for a provider other than OpenAI) or `MODELS_SERVICE` and `MODELS_KEY` for a linked Models service; the keys are Worker secrets. Optional `AI_INPUT_USD_PER_MILLION_TOKENS` and `AI_OUTPUT_USD_PER_MILLION_TOKENS` let Pencil show a direct key's cost. Without them, nothing is sent and the Analysis page says what to set. [Analysis](analysis.md) explains what leaves and to where.
+
 Supply the secrets through your secret manager or the secret environment of your terminal. Never put them in a tracked file, in a command line or in your shell history. In examples on these pages a secret appears only as a placeholder such as `<your-api-key>`.
 
 Leave the local-only options off: `PENCIL_LOCAL_DEVELOPMENT`, `SEED_SAMPLE_DATA` and the local mail provider must never be enabled on a deployment. A deployment turns local capture and sample data off.

@@ -92,8 +92,8 @@ export class ActionService {
     await this.db.batch([
       this.db.prepare(`INSERT INTO actions (id, workspace_id, title, rationale, owner_operator_id, state, verdict, review_date, source, analysis_id, metric_name, metric_unit, metric_direction,
         baseline_value, baseline_source, baseline_observed_at, version, last_event_id, created_by_operator_id, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, 'planned', NULL, ?, 'manual', NULL, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)`)
-        .bind(id, workspaceId, input.title, input.rationale, input.ownerOperatorId, input.reviewDate, metric.name, metric.unit, metric.direction, metric.baselineValue, metric.baselineSource, metric.baselineObservedAt, eventId, operatorId, now, now),
+        VALUES (?, ?, ?, ?, ?, 'planned', NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)`)
+        .bind(id, workspaceId, input.title, input.rationale, input.ownerOperatorId, input.reviewDate, input.analysisId ? 'analysis' : 'manual', input.analysisId ?? null, metric.name, metric.unit, metric.direction, metric.baselineValue, metric.baselineSource, metric.baselineObservedAt, eventId, operatorId, now, now),
       this.db.prepare('INSERT INTO action_evidence (action_id, flow_id, revision_id, question_stable_id, figures_json, captured_at) VALUES (?, ?, ?, ?, ?, ?)')
         .bind(id, input.evidence.flowId, input.evidence.revisionId, input.evidence.questionId ?? null, JSON.stringify(figures), now),
       this.db.prepare("INSERT INTO action_events (id, action_id, kind, from_state, to_state, note, changes_json, operator_id, created_at) VALUES (?, ?, 'created', NULL, 'planned', NULL, NULL, ?, ?)").bind(eventId, id, operatorId, now),

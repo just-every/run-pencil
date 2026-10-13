@@ -15,7 +15,7 @@ const devServedByVite = ['/*', '!/@*', '!/src/*', '!/node_modules/*', '!/seed.js
 // (rer build checks its output).
 const local = (name: string): Record<string, string> => process.env[name] ? { [name]: process.env[name]! } : {}
 const origin: Record<string, string> = process.env.RER_DEV_ORIGIN ? { APP_ORIGIN: process.env.RER_DEV_ORIGIN } : {}
-const serve = { main: './src/server.dev.ts', vars: { ...origin, ...local('RER_DEV_KEY'), ...local('RER_DEV_IDENTITY') }, assets: { run_worker_first: devServedByVite } }
+const serve = { main: './src/server.dev.ts', vars: { ...origin, ...local('RER_DEV_KEY'), ...local('RER_DEV_IDENTITY'), ...local('RER_MODELS_SERVICE'), ...local('RER_MODELS_KEY') }, assets: { run_worker_first: devServedByVite } }
 export default defineConfig(({ command, isPreview }) => ({ plugins: [
   cloudflare({ configPath: process.env.PENCIL_WRANGLER_CONFIG ?? './wrangler.jsonc', config: () => command === 'serve' && !isPreview ? serve : Object.keys(origin).length ? { vars: origin } : {}, viteEnvironment: { name: 'ssr' }, inspectorPort: false, persistState: process.env.PENCIL_E2E_STATE ? { path: process.env.PENCIL_E2E_STATE } : true }),
   // /docs: the repository's Markdown rendered when Vite loads it (DOCS-001), never in the Worker or the browser.

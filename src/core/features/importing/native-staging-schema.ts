@@ -15,6 +15,7 @@ const selectors: Record<string, (ref: string) => string> = {
   notification_attempts: r => `SELECT response_id AS target_id FROM notification_deliveries WHERE id=${r}.delivery_id`,
   form_import_targets: r => `SELECT ${r}.target_id AS target_id`,
 }
+// D1 ends a trigger at its first `END;`, so a trigger body never closes a CASE right before a semicolon.
 export const nativeImportStagingSchema = [
   'CREATE TABLE IF NOT EXISTS form_import_native_clock (id INTEGER PRIMARY KEY CHECK(id=1),revision INTEGER NOT NULL)',
   'INSERT OR IGNORE INTO form_import_native_clock(id,revision) VALUES(1,1)',
@@ -27,7 +28,7 @@ export const nativeImportStagingSchema = [
   ...Object.entries(selectors).flatMap(([table, select]) => ['INSERT','UPDATE','DELETE'].map(event => {
     const ids = event === 'INSERT' ? select('NEW') : event === 'DELETE' ? select('OLD') : select('OLD')+' UNION '+select('NEW')
     const tracked = table === 'form_import_targets' ? `SELECT target_id FROM (${ids}) WHERE target_id IN (SELECT id FROM flows UNION ALL SELECT id FROM responses)` : `SELECT target_id FROM (${ids}) WHERE target_id IN (SELECT target_id FROM form_import_targets)`
-    return `CREATE TRIGGER IF NOT EXISTS form_import_epoch_${table}_${event.toLowerCase()} BEFORE ${event} ON ${table} BEGIN SELECT CASE WHEN EXISTS(SELECT 1 FROM form_import_native_publication_fences WHERE target_id IN (${ids})) THEN RAISE(ABORT,'IMPORT_NATIVE_PUBLICATION_CHANGED') END; UPDATE form_import_native_clock SET revision=revision+1 WHERE id=1 AND EXISTS(${tracked}); INSERT INTO form_import_native_epochs(target_id,revision) SELECT target_id,(SELECT revision FROM form_import_native_clock WHERE id=1) FROM (${tracked}) WHERE 1 ON CONFLICT(target_id) DO UPDATE SET revision=excluded.revision; END`
+    return `CREATE TRIGGER IF NOT EXISTS form_import_epoch_${table}_${event.toLowerCase()} BEFORE ${event} ON ${table} BEGIN SELECT RAISE(ABORT,'IMPORT_NATIVE_PUBLICATION_CHANGED') WHERE EXISTS(SELECT 1 FROM form_import_native_publication_fences WHERE target_id IN (${ids})); UPDATE form_import_native_clock SET revision=revision+1 WHERE id=1 AND EXISTS(${tracked}); INSERT INTO form_import_native_epochs(target_id,revision) SELECT target_id,(SELECT revision FROM form_import_native_clock WHERE id=1) FROM (${tracked}) WHERE 1 ON CONFLICT(target_id) DO UPDATE SET revision=excluded.revision; END`
   })),
   ...['flows','responses'].map(table => `CREATE TRIGGER IF NOT EXISTS form_import_epoch_${table}_erase AFTER DELETE ON ${table} BEGIN DELETE FROM form_import_native_epochs WHERE target_id=OLD.id; END`),
 ]

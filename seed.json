@@ -336,22 +336,52 @@
       "why": "Verified no-reply sender address used for every outbound message (NOTIFY-004)."
     },
     {
-      "name": "AI_PROVIDER",
+      "name": "AI_ENABLED",
       "required": false,
       "secret": false,
-      "why": "Selects the optional AI adapter; when absent ANLY-008 and WS-003 apply."
+      "why": "Turns analysis on (Base ai, ai.provider.v1) when true; when absent ANLY-008 and WS-003 apply and nothing is sent."
     },
     {
       "name": "AI_MODEL",
       "required": false,
       "secret": false,
-      "why": "Model required when AI analysis or assistance is enabled."
+      "why": "Exact model name the provider serves; required when AI is enabled."
     },
     {
       "name": "AI_API_KEY",
       "required": false,
       "secret": true,
-      "why": "Authenticates the configured AI provider when AI is enabled."
+      "why": "Direct transport: the provider key. Configure either this or MODELS_SERVICE and MODELS_KEY, never both."
+    },
+    {
+      "name": "AI_BASE_URL",
+      "required": false,
+      "secret": false,
+      "why": "Direct transport: an OpenAI-compatible https base URL; OpenAI's /v1 when absent."
+    },
+    {
+      "name": "MODELS_SERVICE",
+      "required": false,
+      "secret": false,
+      "why": "Linked transport: the https origin of a Models service; its receipts report each call's cost."
+    },
+    {
+      "name": "MODELS_KEY",
+      "required": false,
+      "secret": true,
+      "why": "Linked transport: the app key the Models service issued."
+    },
+    {
+      "name": "AI_INPUT_USD_PER_MILLION_TOKENS",
+      "required": false,
+      "secret": false,
+      "why": "Optional owner rate for a direct key; with the output rate, analysis reports a cost per call (ANLY-010). Without it the cost is not reported."
+    },
+    {
+      "name": "AI_OUTPUT_USD_PER_MILLION_TOKENS",
+      "required": false,
+      "secret": false,
+      "why": "Optional owner rate for a direct key, paired with the input rate."
     },
     {
       "name": "TASK_PROVIDER",

@@ -36,10 +36,12 @@ test('rer dev opens signed in as the owner, a persona really works as an operato
   const operators = await (await get('/api/app/operators')).json();
   assert.deepEqual(operators.map(operator => operator.email).sort(), ['operator@dev.localhost', email]);
   // Signing out ends the dev session; the same cookie no longer reaches an operator page.
-  const session = cookies.get('operator_session_local');
+  // Base names each local checkout's session cookie by its port.
+  const sessionCookie = `operator_session_local_${new URL(app.origin).port}`;
+  const session = cookies.get(sessionCookie);
   assert.equal(keep(await get('/auth/dev/enter?as=signed-out', { key })).status, 303);
   assert.equal((await get('/api/app/workspace')).status, 401);
-  cookies.set('operator_session_local', session);
+  cookies.set(sessionCookie, session);
   assert.equal((await get('/api/app/workspace')).status, 401, 'the revoked dev session stays revoked');
   await app.stop(runtime);
  } finally { await app.close(); }

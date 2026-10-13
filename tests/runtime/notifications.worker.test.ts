@@ -225,7 +225,7 @@ contract(['NOTIFY-002','NOTIFY-004','DATA-002'],'the maintained Base local outbo
     expect(await env.DB.prepare("SELECT sequence FROM rer_mail_development_outbox WHERE json_extract(message,'$.deliveryId')=?").bind(delivery!.idempotency_key).first()).toBeNull()
     const {baseMailSender}=await import('../../src/core/platform/mail/base.server'),{notificationCaptureClaim}=await import('../../src/core/features/notifications/capture')
     const capturesBefore=await env.DB.prepare('SELECT count(*) n FROM rer_mail_development_outbox').first()
-    await expect(baseMailSender({kind:'local-development'},env.DB,notificationCaptureClaim).send(message)).rejects.toMatchObject({name:'MailValidationError',code:'development_outbox_failed'})
+    await expect(baseMailSender({kind:'local-development'},env.DB,notificationCaptureClaim).send(message)).rejects.toMatchObject({name:'DevelopmentOutboxError',code:'development_outbox_failed',retryable:true})
     expect(await env.DB.prepare('SELECT count(*) n FROM rer_mail_development_outbox').first()).toEqual(capturesBefore)
     expect(await env.DB.prepare("SELECT sequence FROM rer_mail_development_outbox WHERE json_extract(message,'$.deliveryId')=?").bind(delivery!.idempotency_key).first()).toBeNull()
     await f.services.notifications.dispatcher.run();expect(fetch).not.toHaveBeenCalled()

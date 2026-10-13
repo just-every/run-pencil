@@ -1,0 +1,88 @@
+# Analysis
+
+Analysis reads the completed answers to one published revision and groups them into themes. It is built so you can check every part of it: each count is recomputed by Pencil from the responses it names, each quote is an exact excerpt of a stored answer, and a theme with too few responses is never shown.
+
+Analysis uses a language model you configure. It is off until you set it up, and nothing leaves your deployment until you request an analysis or a flow closes with analysis turned on.
+
+## What leaves, and where it goes
+
+When an analysis runs, Pencil sends one request to the provider shown on the request screen (its origin, such as `https://api.openai.com`, and the model name). The request holds:
+
+- the prompts of the questions you ticked;
+- for each completed response in the analysis, its response ID and its answers to those questions.
+
+Nothing else is sent: no contact names or emails, no answers to email questions or to questions you did not tick, no network addresses, devices or session data, and no workspace or operator details. By default only long text questions are ticked. A short text question is often a name, so it is sent only if you tick it.
+
+Pencil asks the provider not to store the request (`store: false`). What the provider keeps or logs under its own terms is outside Pencil's control; read your provider's data policy before you turn analysis on.
+
+Answers are treated only as data. An answer that contains instructions ("ignore your instructions and…") cannot change settings, call your task webhook, create jobs or reveal anything: the provider can only return the analysis format below, and an answer in any other form fails.
+
+## Turn analysis on
+
+Set these on your Worker, as secrets or variables in the Cloudflare dashboard, alongside the others in [Hosting on Cloudflare](hosting.md):
+
+| Variable | What it is |
+|---|---|
+| `AI_ENABLED` | `true` turns analysis on. Without it nothing is sent and the Analysis page says what to set. |
+| `AI_MODEL` | The exact model name your provider serves. |
+| `AI_API_KEY` | A direct key for an OpenAI-compatible provider. A secret. |
+| `AI_BASE_URL` | Optional, with a direct key: the provider's `https` base URL, such as an OpenRouter or Cloudflare AI Gateway address. OpenAI's `https://api.openai.com/v1` when unset. |
+| `MODELS_SERVICE` and `MODELS_KEY` | Instead of a direct key: the address of a linked Models service and the app key it issued (a secret). Its receipts report each call's cost. |
+| `AI_INPUT_USD_PER_MILLION_TOKENS` and `AI_OUTPUT_USD_PER_MILLION_TOKENS` | Optional, with a direct key: your provider's prices, so Pencil can show a cost per call. Without them the cost shows as not reported; Pencil never guesses it. |
+
+Configure one transport: a direct key, or a Models service, not both. If both are set, or a URL is not `https`, the Analysis page says so and every request fails without being sent.
+
+## Request an analysis
+
+Open **Analysis** in the navigation and choose **Request analysis**. Pick the flow, the published revision and the questions to read. The screen shows where the answers would go before you send anything. Choose **Request analysis**: the run starts at once.
+
+A run fixes its evidence when it starts: the completed, released responses of that revision at that moment. Responses held for review are not read until you release them. A response submitted or released later never changes the run; the run shows **Stale** with how many responses arrived after its evidence cutoff, and you can request a new one. Earlier runs stay in the list.
+
+## Read the findings
+
+A completed run shows:
+
+- **Primary finding**: the theme supported by the most responses, with its count, its share of the responses read, and the provider's summary labelled **Analysis**. A summary is the model's wording, never a quote.
+- **Quotes**: text in quotation marks is an exact excerpt of a stored answer. Pencil checks the exact characters against the answer before the run completes. **Response …** opens that response's retained answers; **See the responses** lists every response behind the theme.
+- **Other themes**, ranked by how many responses support them.
+- **Withheld themes**: a theme supported by fewer responses than the disclosure threshold (5 by default) shows no title, excerpt or breakdown, because a small group can identify people. A theme with exactly the threshold is shown. This only affects the analysis view: your results, ledger and exports are unchanged.
+- **Recommendation**: at most one proposed action, from the highest-ranked theme that can be shown, with the provider's rationale (labelled **Analysis**), confidence, expected impact and effort.
+- **This run**: the questions read, where they were sent, the provider's reported usage and cost, and the policies the run used.
+
+Pencil fails a run, and shows nothing from it, when the provider's answer is not in the required format, names a response outside the evidence, quotes text that is not exactly in the answer, or states a count that differs from the responses it names.
+
+When the evidence cannot support a finding, the run completes as **Insufficient evidence** with the reason and its cutoff, and shows no theme, quote or recommendation. That happens without a provider call when fewer responses answered the selected questions than the disclosure threshold.
+
+## Turn the recommendation into an action
+
+Choose **Turn this into an action**. The **New action** page opens with the recommendation's title and rationale filled in and the analysed revision as its evidence. You choose the owner, the metric and the review date, edit the words as your own, and save. The action records that it came from this analysis. Saving contacts nobody, and you decide whether it worked; see [Actions and follow-up](actions.md).
+
+## When it fails
+
+If AI is off or misconfigured, a request fails at once with what to set, and nothing is sent. If the provider refuses (for example a wrong key), the run fails with a fixed error and a **Retry** button; the provider's own error text is never shown or stored. Publishing, collecting responses, results and exports keep working either way.
+
+If the provider does not answer or is briefly unavailable, Pencil retries the same request, with the same evidence and policies, at most three times within ten minutes, on its scheduled minute. An answer that fails the checks above is never retried as a transport failure.
+
+## Close-time analysis
+
+With a provider configured, Pencil analyses a revision once when its flow closes, if it has at least 5 completed responses and a long text question. Turn this off, or change the minimum and the disclosure threshold, under **Settings** on the Analysis page. A change applies to new runs only; each run keeps the settings it used.
+
+## Cost
+
+Every provider call records the provider, model, input and output tokens, the feature (`analysis`), the run, and its cost: the Models service's receipt, your rates times the usage, or "not reported". The Analysis page totals calls, tokens and cost by day (UTC) and feature.
+
+## Erasure, backups and restore
+
+Erasing a response, or a recipient and their responses, removes it from every analysis: its evidence entry, its theme membership and its quotes. Text the provider wrote for a theme that included it is withheld, because it may describe the erased answer; the run shows that a response was erased afterwards.
+
+Analyses travel in your [backups](backup.md). A restored analysis is never resent by itself: one that had not finished waits for you to choose **Retry**, and a restore makes no provider request.
+
+## Try it locally
+
+`rer dev` answers analysis requests with Base's local double, which cannot produce the structured answer analysis needs. A run there fails with `dev_fake_cannot_answer`; that is expected, not a fault. To try analysis on your computer:
+
+1. Create a Models **dev app** with a low spending cap, a short expiry and a cheap model allow-list.
+2. Set `AI_ENABLED=true` and `AI_MODEL` (a model the dev app allows) in your local settings, `.dev.vars`.
+3. Pipe the dev app's key into `rer dev --models live --models-service https://your-models-service`. Later runs of `rer dev --models live` reuse it; plain `rer dev` keeps using the double.
+
+Nothing in this release was run against a live model: analysis was checked against a scripted local provider that answers in the documented format.

@@ -34,8 +34,10 @@ export function mapLogic(form: ImportForm, raw: unknown) {
         if (c.op === 'always') { source.next = destination.id; defaultSeen = true; report.state = 'imported'; report.change = `${source.prompt} → ${destination.prompt} (default)`; report.reason = 'Ordered unconditional jump.' }
         else if (mapped) { form.rules.push({ source: source.id, destination: destination.id, predicate: mapped.predicate, expected: mapped.expected, position: form.rules.filter(r => r.source === source.id).length }); report.state = 'imported'; report.change = `${source.prompt} → ${destination.prompt}`; report.reason = `First matching ${mapped.predicate} path.` }
       }
+      // Calculations never route a respondent: an omitted add/subtract/multiply/divide/set leaves the question's paths intact.
+      if (report.state === 'unsupported' && action.action !== 'jump') report.reason = 'Calculations and variables are not imported; the question keeps its imported paths.'
       form.report.push(report)
-      if (report.state === 'unsupported' && (source ?? firstQuestion)) incomplete.add((source ?? firstQuestion)!)
+      if (report.state === 'unsupported' && action.action === 'jump' && (source ?? firstQuestion)) incomplete.add((source ?? firstQuestion)!)
     }
   }
   for (const source of incomplete) source.next = null

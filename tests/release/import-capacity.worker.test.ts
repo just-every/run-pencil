@@ -29,6 +29,8 @@ test('accepted large choice forms publish and undo atomically with byte-bounded 
   expect(await env.DB.prepare('SELECT id FROM flows WHERE id=?').bind(review.flowId).first()).toBeNull()
 }, 180_000)
 
+// 31 answers take about 870 s on an idle shared runner at 0.1.x and at 0.2.0 alike, and well over 20 minutes when
+// it is oversubscribed; the limit is not what this test checks.
 for (const width of [1, 31]) test(`the declared response limit with ${width} answers prepares and persists bounded pages and resumes erased custody without uploaded files`, async () => {
   const f = await importPrivacyFixture(), count = 100_000
   const input = { definition: JSON.stringify({ title: 'Response capacity', fields: width === 1 ? [{ ref: 'answer', title: 'Answer', type: 'short_text' }] : Array.from({ length: width }, (_, q) => ({ ref: `answer-${q}`, title: `Answer ${q}`, type: 'short_text' })) }), plannedAt: '2026-10-08T00:00:00.000Z', csv: (width === 1 ? 'Answer,Submit Date\n' : Array.from({ length: width }, (_, q) => `Answer ${q}`).join(',') + ',Submit Date\n') + Array.from({ length: count }, (_, i) => (width === 1 ? [`response-${i}`] : Array(width).fill('x')).join(',') + ',2026-09-12 10:03:00').join('\n') }
@@ -51,4 +53,4 @@ for (const width of [1, 31]) test(`the declared response limit with ${width} ans
   expect(await env.DB.prepare('SELECT id FROM responses WHERE id=?').bind(victim).first()).toBeNull()
   expect((await f.imports.commit(input, review.fingerprint, true)).id).toBe(job.id)
   expect(await env.DB.prepare('SELECT COUNT(*) n FROM ik_jobs j LEFT JOIN ik_d1_indexed_jobs x ON x.job_id=j.id AND x.fingerprint=j.fingerprint WHERE j.destination=? AND x.job_id IS NULL').bind(f.actor.workspaceId).first()).toEqual({ n: 0 })
-}, 900_000)
+}, 2_400_000)

@@ -29,6 +29,7 @@ export function OperatorShellPage({ config, editorEnabled }: { config: PublicSee
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const flowsCurrent = pathname === '/app' || pathname === '/app/' || pathname.startsWith('/app/flows/')
   const actionsCurrent = pathname === '/app/actions' || pathname.startsWith('/app/actions/')
+  const analysisCurrent = pathname === '/app/analysis' || pathname.startsWith('/app/analysis/')
   return <main className="pencil-canvas operator-shell" data-hydrated={hydrated}>
     {editorEnabled ? <OwnerEditorShell /> : null}
     <header className="operator-header" style={{ flexWrap: 'wrap' }}>
@@ -37,6 +38,7 @@ export function OperatorShellPage({ config, editorEnabled }: { config: PublicSee
         <Link activeOptions={{ exact: true }} aria-current={flowsCurrent ? 'page' : undefined} to="/app">Flows</Link>
         <Link activeOptions={{ exact: true }} to="/app/audience">Audience</Link>
         <Link aria-current={actionsCurrent ? 'page' : undefined} to="/app/actions">Actions</Link>
+        <Link aria-current={analysisCurrent ? 'page' : undefined} to="/app/analysis">Analysis</Link>
         <Link activeOptions={{ exact: true }} to="/app/settings">Settings</Link>
       </nav>
       <button className="secondary-button operator-signout focus-ring" disabled={signingOut} onClick={() => void signOut()} type="button">{signingOut ? 'Signing out…' : 'Sign out'}</button>

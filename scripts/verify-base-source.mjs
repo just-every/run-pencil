@@ -18,4 +18,8 @@ assert.deepEqual(initializedRows, { form_import_native_clock: { columns: ['id', 
 // d1StagingSchema already includes publication fences; do not append them twice.
 const importMigration = [...preservedUndoEvolution, ...d1ErasureSchema, ...d1StreamOriginSchema, ...d1LegacyStreamReceiptUpgrade, ...d1StagingSchema, ...d1NativeStagingSchema, ...d1CustodyStateSchema, ...d1PreparationSchema, ...nativeImportStagingSchema].map(sql => `${sql};\n`).join('')
 assert.ok((await readFile('migrations/core/0019_import_custody.sql')).equals(Buffer.from(importMigration)), 'Additive import migration differs from maintained SQL exports.')
+// 0034 recreates 0019's publication-fence triggers in the form D1 parses, for databases that applied the earlier text.
+const fenceTriggers = nativeImportStagingSchema.filter(sql => sql.includes("'IMPORT_NATIVE_PUBLICATION_CHANGED'"))
+const triggerRepair = '-- The import publication-fence triggers of 0019, recreated in the form D1 parses. They behave as before.\n' + fenceTriggers.map(sql => `DROP TRIGGER IF EXISTS ${/TRIGGER IF NOT EXISTS (\S+)/.exec(sql)[1]};\n${sql};\n`).join('')
+assert.ok((await readFile('migrations/core/0034_import_fence_triggers_d1.sql')).equals(Buffer.from(triggerRepair)), 'The trigger repair migration differs from the maintained trigger SQL.')
 console.log('Pencil\'s additive import migration matches the maintained Base SQL exports.')

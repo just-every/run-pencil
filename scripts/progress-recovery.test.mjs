@@ -5,6 +5,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { exportData, importData, initialize } from './deployment-data.mjs'
 
+// Builds the whole schema twice and round-trips an archive: 1.6 s at 0.1.x, 2.7 s with 0.2.0's migrations
+// on a developer machine, past Vitest's 5 s default on loaded CI runners.
 it('restores retained progress and the atomic write view without recounting visits', () => {
   const directory = mkdtempSync(join(tmpdir(), 'pencil-progress-recovery-'))
   const source = join(directory, 'source.sqlite')

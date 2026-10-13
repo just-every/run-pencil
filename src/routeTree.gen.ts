@@ -28,6 +28,9 @@ import { Route as OptoutTokenRouteImport } from './routes/optout.$token'
 import { Route as AppActionsIndexRouteImport } from './routes/app.actions.index'
 import { Route as AppActionsActionIdRouteImport } from './routes/app.actions.$actionId'
 import { Route as AppActionsNewRouteImport } from './routes/app.actions.new'
+import { Route as AppAnalysisIndexRouteImport } from './routes/app.analysis.index'
+import { Route as AppAnalysisRunIdRouteImport } from './routes/app.analysis.$runId'
+import { Route as AppAnalysisNewRouteImport } from './routes/app.analysis.new'
 import { Route as AppFlowsFlowIdBuilderRouteImport } from './routes/app.flows.$flowId.builder'
 import { Route as AppFlowsFlowIdResultsRouteImport } from './routes/app.flows.$flowId.results'
 
@@ -126,6 +129,21 @@ const AppActionsNewRoute = AppActionsNewRouteImport.update({
   path: '/actions/new',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAnalysisIndexRoute = AppAnalysisIndexRouteImport.update({
+  id: '/analysis/',
+  path: '/analysis/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAnalysisRunIdRoute = AppAnalysisRunIdRouteImport.update({
+  id: '/analysis/$runId',
+  path: '/analysis/$runId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAnalysisNewRoute = AppAnalysisNewRouteImport.update({
+  id: '/analysis/new',
+  path: '/analysis/new',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppFlowsFlowIdBuilderRoute = AppFlowsFlowIdBuilderRouteImport.update({
   id: '/flows/$flowId/builder',
   path: '/flows/$flowId/builder',
@@ -156,7 +174,10 @@ export interface FileRoutesByFullPath {
   '/docs/': typeof DocsIndexRoute
   '/app/actions/$actionId': typeof AppActionsActionIdRoute
   '/app/actions/new': typeof AppActionsNewRoute
+  '/app/analysis/$runId': typeof AppAnalysisRunIdRoute
+  '/app/analysis/new': typeof AppAnalysisNewRoute
   '/app/actions/': typeof AppActionsIndexRoute
+  '/app/analysis/': typeof AppAnalysisIndexRoute
   '/app/flows/$flowId/builder': typeof AppFlowsFlowIdBuilderRoute
   '/app/flows/$flowId/results': typeof AppFlowsFlowIdResultsRoute
 }
@@ -178,7 +199,10 @@ export interface FileRoutesByTo {
   '/docs': typeof DocsIndexRoute
   '/app/actions/$actionId': typeof AppActionsActionIdRoute
   '/app/actions/new': typeof AppActionsNewRoute
+  '/app/analysis/$runId': typeof AppAnalysisRunIdRoute
+  '/app/analysis/new': typeof AppAnalysisNewRoute
   '/app/actions': typeof AppActionsIndexRoute
+  '/app/analysis': typeof AppAnalysisIndexRoute
   '/app/flows/$flowId/builder': typeof AppFlowsFlowIdBuilderRoute
   '/app/flows/$flowId/results': typeof AppFlowsFlowIdResultsRoute
 }
@@ -202,7 +226,10 @@ export interface FileRoutesById {
   '/docs/': typeof DocsIndexRoute
   '/app/actions/$actionId': typeof AppActionsActionIdRoute
   '/app/actions/new': typeof AppActionsNewRoute
+  '/app/analysis/$runId': typeof AppAnalysisRunIdRoute
+  '/app/analysis/new': typeof AppAnalysisNewRoute
   '/app/actions/': typeof AppActionsIndexRoute
+  '/app/analysis/': typeof AppAnalysisIndexRoute
   '/app/flows/$flowId/builder': typeof AppFlowsFlowIdBuilderRoute
   '/app/flows/$flowId/results': typeof AppFlowsFlowIdResultsRoute
 }
@@ -227,7 +254,10 @@ export interface FileRouteTypes {
     | '/docs/'
     | '/app/actions/$actionId'
     | '/app/actions/new'
+    | '/app/analysis/$runId'
+    | '/app/analysis/new'
     | '/app/actions/'
+    | '/app/analysis/'
     | '/app/flows/$flowId/builder'
     | '/app/flows/$flowId/results'
   fileRoutesByTo: FileRoutesByTo
@@ -249,7 +279,10 @@ export interface FileRouteTypes {
     | '/docs'
     | '/app/actions/$actionId'
     | '/app/actions/new'
+    | '/app/analysis/$runId'
+    | '/app/analysis/new'
     | '/app/actions'
+    | '/app/analysis'
     | '/app/flows/$flowId/builder'
     | '/app/flows/$flowId/results'
   id:
@@ -272,7 +305,10 @@ export interface FileRouteTypes {
     | '/docs/'
     | '/app/actions/$actionId'
     | '/app/actions/new'
+    | '/app/analysis/$runId'
+    | '/app/analysis/new'
     | '/app/actions/'
+    | '/app/analysis/'
     | '/app/flows/$flowId/builder'
     | '/app/flows/$flowId/results'
   fileRoutesById: FileRoutesById
@@ -427,6 +463,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppActionsNewRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/analysis/': {
+      id: '/app/analysis/'
+      path: '/analysis'
+      fullPath: '/app/analysis/'
+      preLoaderRoute: typeof AppAnalysisIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/analysis/$runId': {
+      id: '/app/analysis/$runId'
+      path: '/analysis/$runId'
+      fullPath: '/app/analysis/$runId'
+      preLoaderRoute: typeof AppAnalysisRunIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/analysis/new': {
+      id: '/app/analysis/new'
+      path: '/analysis/new'
+      fullPath: '/app/analysis/new'
+      preLoaderRoute: typeof AppAnalysisNewRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/flows/$flowId/builder': {
       id: '/app/flows/$flowId/builder'
       path: '/flows/$flowId/builder'
@@ -451,7 +508,10 @@ interface AppRouteChildren {
   AppIndexRoute: typeof AppIndexRoute
   AppActionsActionIdRoute: typeof AppActionsActionIdRoute
   AppActionsNewRoute: typeof AppActionsNewRoute
+  AppAnalysisRunIdRoute: typeof AppAnalysisRunIdRoute
+  AppAnalysisNewRoute: typeof AppAnalysisNewRoute
   AppActionsIndexRoute: typeof AppActionsIndexRoute
+  AppAnalysisIndexRoute: typeof AppAnalysisIndexRoute
   AppFlowsFlowIdBuilderRoute: typeof AppFlowsFlowIdBuilderRoute
   AppFlowsFlowIdResultsRoute: typeof AppFlowsFlowIdResultsRoute
 }
@@ -463,7 +523,10 @@ const AppRouteChildren: AppRouteChildren = {
   AppIndexRoute: AppIndexRoute,
   AppActionsActionIdRoute: AppActionsActionIdRoute,
   AppActionsNewRoute: AppActionsNewRoute,
+  AppAnalysisRunIdRoute: AppAnalysisRunIdRoute,
+  AppAnalysisNewRoute: AppAnalysisNewRoute,
   AppActionsIndexRoute: AppActionsIndexRoute,
+  AppAnalysisIndexRoute: AppAnalysisIndexRoute,
   AppFlowsFlowIdBuilderRoute: AppFlowsFlowIdBuilderRoute,
   AppFlowsFlowIdResultsRoute: AppFlowsFlowIdResultsRoute,
 }

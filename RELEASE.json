@@ -1,7 +1,7 @@
 {
   "version": "0.2.0",
   "previousVersion": "0.1.0",
-  "date": "2026-10-08",
+  "date": "2026-10-13",
   "contractChanges": {
     "HOME-001": {
       "change": "changed",
@@ -246,9 +246,41 @@
     {
       "id": "0026_actions.sql",
       "buyerSteps": "Export before upgrading and apply this additive migration after 0025. It adds actions, their history, frozen evidence figures, measurements and external task deliveries; existing data is unchanged and nothing is sent. TASK_PROVIDER, TASK_WEBHOOK_URL and TASK_API_KEY stay optional."
+    },
+    {
+      "id": "0027_base_provider_control.sql",
+      "buyerSteps": "Add Base provider sign-in controls, provider-session bindings, consumed logout ids and minted credential hashes. Provider sign-in stays off: existing operators, native sessions and links are unchanged."
+    },
+    {
+      "id": "0028_base_provider_pins.sql",
+      "buyerSteps": "Add provider session pins for a later linked identity provider. Existing sessions are unchanged."
+    },
+    {
+      "id": "0029_base_dependency_setup.sql",
+      "buyerSteps": "Add app-local provider setup attempts (never exported) and the trigger that binds them to the first native owner. Installations without an identity provider are unchanged."
+    },
+    {
+      "id": "0030_base_idp_owner.sql",
+      "buyerSteps": "Add the identity-provider owner grant ledger used only by an idp owner claim. Existing owner claims are unchanged."
+    },
+    {
+      "id": "0031_import_reversal_retirement.sql",
+      "buyerSteps": "Add Base import-kit undo fences and indexes, the append-only erasure journal and retirements, and the retired-stream revision rule. Existing imports keep resume and undo; no import row changes."
+    },
+    {
+      "id": "0032_restore_erasure_checkpoint.sql",
+      "buyerSteps": "Add the restore erasure checkpoint that every later erasure advances, so rer import --journal can refuse older archives. It starts empty."
+    },
+    {
+      "id": "0033_analysis.sql",
+      "buyerSteps": "Add analysis runs, fixed evidence, validated themes, quotes, recommendations, policies and per-call usage, and Base ai's local dev capture table. Analysis stays off until a provider is configured; nothing is sent by the migration."
+    },
+    {
+      "id": "0034_import_fence_triggers_d1.sql",
+      "buyerSteps": "Recreate the 39 import publication-fence triggers of 0019 in the form Cloudflare D1 parses. A database that applied the earlier 0019 text, which only unreleased source carried, gets the same triggers; rows and behaviour are unchanged."
     }
   ],
   "breaking": true,
-  "publicReleaseNotes": "Pencil 0.2.0 adds a new-response email, answers-first results, saved business identity with a script embed, six more question types, reviewed form and response imports, and export and restore against a deployed database.\n\nEach operator chooses Immediately or Off per flow. Publishing turns it on for the publisher only. Flows from 0.1.0 that are not republished start on Off for everyone: open the flow's Results page and choose Immediately, or republish it. MAIL_FROM must be a noreply@ or no-reply@ address for this email; sign-in keeps working with any sender.\n\nResults lead with answer summaries. Imported responses contribute to answers and completed counts without inventing native starts, completion rates, durations or device data. Imports admit up to 8 MiB combined file bytes and 100,000 responses, subject to the configured form and answer limits; full-limit Worker qualification remains pending.\n\nExport before upgrading from 0.1.0 and apply 0011 through 0026 in order. The additive credential changes preserve native sessions and links; migration 0018 preserves stable step and choice identities while expanding the type constraint.\n\nHistorical and imported responses never send new-response mail.\n\nActions turn what results show into an owned action with a metric, a review date and a frozen copy of the counts it rests on; operators record what changed and set the verdict themselves, and can send a confirmed task to their own task system through an optional webhook. Recommendations are written by people. Apply additive 0026_actions.sql after 0025.\n\nExactly 18 clauses remain deferred: ANLY-001\u2013016, NOTIFY-001 and NOTIFY-003. Hidden-field fidelity, an import check against a real export, hosted capacity and live delivery are not claimed.\n\nMigration 0019 adds private import preparation and cold verification before reporting migration 0020. Publish only after final-source verification, clean-clone qualification and release checks. Hosted proof and live delivery require a separately authorised deployment.\n\nOptional managed delivery supports signed first-owner admission and the owner editor. Existing initialized stores refuse claims. Apply 0022 for the durable consumed-claim ledger; hosted admission remains an owner verification step.\n\nFresh owners finish their business name and time zone at /setup; migration 0021 preserves established workspaces as complete.\n\nAudience now supports editable contacts and custom fields, reviewed CSV imports, saved segments and frozen invitation launches with actual outcome counts. Export before upgrading and apply additive 0025_audiences.sql after the existing ordered migrations; older archives can restore erased contacts, fields and prior consent state.",
-  "agentUpdateInstructions": "Read OPERATIONS.md, docs/FIRST-RELEASE.md and docs/HOSTING.md. Export first to a private path outside source paths or in this checkout\u2019s ignored exports directory and verify recovery into a new local database or an explicitly selected empty migrated D1 database. Preserve the documented archive redactions and never restore over existing application records. Preserve migrations 0000 through 0011 byte-for-byte, owner configuration, native credentials and all retained rows. Apply 0011 through 0026 in order before serving the new source. The question table constraint expands through copy and replacement; use the prior compatible deployment and restored database for recovery. Never replay historical or imported mail. Run populated predecessor upgrade tests and the complete verification gate on the integrated source. Exactly ANLY-001\u2013016, NOTIFY-001 and NOTIFY-003 remain deferred; full-contract verification remains unsatisfied. Migration 0019 adds maintained private preparation and bounded publication; complete final-source qualification before release."
+  "publicReleaseNotes": "Pencil 0.2.0 adds grounded analysis, owned actions, Audience, Google Forms move-in and a Typeform move-in checked against Typeform's published documentation, alongside a new-response email, answers-first results, saved business identity with a script embed, six more question types, and export and restore.\n\nAnalysis is optional and off until you configure a provider. It groups a revision's completed text answers into ranked themes; Pencil recomputes every count, checks every quote character for character against the stored answer, withholds themes below the disclosure threshold, and fails a run with nothing shown when the provider's answer does not check out. Recommendations are grounded in stored responses and become an action only when an operator chooses. Only the selected answers and response IDs are sent. Analysis was checked against a scripted local provider, not against a live model.\n\nActions turn what results or an analysis show into an owned action with a metric, a review date and a frozen copy of the counts it rests on; operators record what changed and set the verdict themselves, and can send a confirmed task to their own task system through an optional webhook.\n\nAudience supports editable contacts and custom fields, reviewed CSV imports, saved segments and frozen invitation launches with actual outcome counts.\n\nMoving in: a Google Forms response CSV with an optional forms.get definition, or a Typeform definition JSON with an optional response CSV, into an editable draft with a reviewed report of every omission. Both importers were written from published documentation and checked with synthetic files only; no real Google Forms or Typeform account export has been checked. Hidden fields are never imported.\n\nEach operator chooses Immediately or Off per flow for the new-response email. Flows from 0.1.0 that are not republished start on Off for everyone. MAIL_FROM must be a noreply@ or no-reply@ address for this email. Historical and imported responses never send mail.\n\nExport before upgrading from 0.1.0 and apply 0011 through 0033 in order. Every migration is additive; applied migrations are unchanged. /health now reports the deployment that answered, and rer deploy labels the build with the commit it deployed. rer import --journal with a later archive refuses an archive made before an erasure.\n\nExactly 3 clauses remain deferred: ANLY-009 (builder assistance), NOTIFY-001 and NOTIFY-003. Hosted capacity and live delivery are not claimed.",
+  "agentUpdateInstructions": "Read OPERATIONS.md, docs/FIRST-RELEASE.md and docs/HOSTING.md. Export first to a private path outside source paths or in this checkout’s ignored exports directory and verify recovery into a new local database or an explicitly selected empty migrated D1 database. Preserve the documented archive redactions and never restore over existing application records. Preserve migrations 0000 through 0011 byte-for-byte, owner configuration, native credentials and all retained rows. Apply 0011 through 0034 in order before serving the new source. The question table constraint expands through copy and replacement; use the prior compatible deployment and restored database for recovery. Never replay historical or imported mail. Run populated predecessor upgrade tests and the complete verification gate on the integrated source. Exactly ANLY-009, NOTIFY-001 and NOTIFY-003 remain deferred; full-contract verification remains unsatisfied. Migration 0019 adds maintained private preparation and bounded publication; complete final-source qualification before release."
 }

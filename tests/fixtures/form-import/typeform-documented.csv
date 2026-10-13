@@ -1,0 +1,9 @@
+#,Your name,Anything else?,Email for follow-up,What did you drink?,Cake,Toast,Soup,Where did you sit?,Jazz,Folk,Cup size,Would you come again?,Rate the service,How busy was it?,How likely are you to recommend us?,Visits this month,Date of visit,I agree to the café's feedback terms.,Rank what matters,Phone,Your website,Upload your receipt,Age,Leave a tip,utm_source,score,Start Date (UTC),Submit Date (UTC),Network ID,Tags
+tf00000000synthetic,Visitor 0,"Line one, with comma
+Line two ""quoted"" 0",visitor0@example.test,Tea,,Toast,,Bar,Jazz,Folk,,0,1,1,0,0,2026-09-01,1,,+61 400 000 000,https://example.test,,20,,,0,2026-09-01 08:00:00,2026-09-01 08:00:42,synthetic-network-0,vip
+tf00000001synthetic,Visitor 1,,visitor1@example.test,Coffee,Cake,,,Window,Jazz,,Large,1,2,2,1,1,2026-09-02,1,,+61 400 000 000,https://example.test,,21,,newsletter,1,2026-09-02 09:01:00,2026-09-02 09:01:42,synthetic-network-1,
+tf00000002synthetic,Visitor 2,,visitor2@example.test,Tea,,,,Bar,Jazz,,,1,3,3,2,2,2026-09-03,1,,+61 400 000 000,https://example.test,,22,,,2,2026-09-03 10:02:00,2026-09-03 10:02:42,synthetic-network-2,
+tf00000003synthetic,Visitor 3,"Line one, with comma
+Line two ""quoted"" 3",visitor3@example.test,Coffee,Cake,Toast,,Window,Jazz,,Large,1,4,4,3,3,2026-09-04,1,,+61 400 000 000,https://example.test,,23,,newsletter,0,2026-09-04 11:03:00,2026-09-04 11:03:42,synthetic-network-3,
+tf00000004synthetic,Visitor 4,,visitor4@example.test,Tea,,,,Bar,Jazz,,,0,5,5,4,4,2026-09-05,1,,+61 400 000 000,https://example.test,,24,,,1,2026-09-05 12:04:00,2026-09-05 12:04:42,synthetic-network-4,
+tf00000005synthetic,Visitor 5,,visitor5@example.test,Coffee,Cake,,,Window,Jazz,Folk,Large,1,1,1,5,5,2026-09-06,1,,+61 400 000 000,https://example.test,,25,,newsletter,2,2026-09-06 13:05:00,2026-09-06 13:05:42,synthetic-network-5,

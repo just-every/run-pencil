@@ -65,7 +65,7 @@ contract(['DATA-002', 'IMPORT-004', 'BASE-ACCESS-004'], 'imported response erasu
   const token = opaqueToken(), sessionId = crypto.randomUUID()
   await env.DB.prepare("INSERT INTO oa_sessions(id,token_hash,operator_id,operator_version,kind,created_at,expires_at) VALUES(?,?,?,1,'native',?,?)").bind(sessionId, await hashToken(env.SESSION_SECRET, 'session', token), f.actor.operatorId, Date.now(), Date.now() + 3600000).run()
   for (const host of [undefined, 'mismatched.example.test']) {
-    const headers = new Headers({ Origin: 'http://localhost', Cookie: `operator_session_local=${token}` })
+    const headers = new Headers({ Origin: 'http://localhost', Cookie: `operator_session_local_80=${token}` })
     if (host) headers.set('Host', host)
     const denied = await SELF.fetch(`http://localhost/api/app/responses/${response.id}`, { method: 'DELETE', headers })
     expect(denied.status).toBe(403)

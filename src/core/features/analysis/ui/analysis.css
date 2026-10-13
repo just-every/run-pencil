@@ -1,0 +1,57 @@
+/* Analysis screens: the 12ui findings design in Pencil's paper-and-pencil app look (tokens.css, controls.css). */
+.analysis-status { display: flex; flex-wrap: wrap; align-items: center; gap: .55rem .9rem; margin: .9rem 0 0; color: var(--muted); font-size: .9rem; }
+.badge[data-status="completed"] { color: var(--green); background: var(--wash-great); font-weight: 700; }
+.badge[data-status="failed"] { color: var(--danger); background: var(--wash-better); font-weight: 700; }
+.badge[data-status="insufficient_evidence"], .badge[data-status="queued"], .badge[data-status="running"] { color: var(--draft-ink); background: var(--yellow-wash); font-weight: 700; }
+.analysis-stale { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; margin: .7rem 0 0; color: var(--draft-ink); font-size: .88rem; }
+.analysis-grid { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: 1.25rem; align-items: start; margin-top: 1.6rem; }
+.analysis-card { padding: 1.4rem 1.5rem; min-width: 0; overflow-wrap: anywhere; }
+.analysis-card h2 { margin: .35rem 0 0; font-family: var(--font-display); font-weight: 400; font-size: clamp(1.35rem, 2.2vw, 1.7rem); letter-spacing: -.02em; line-height: 1.15; }
+.analysis-card h3 { margin: 0; font-size: 1rem; }
+.analysis-rank { display: inline-grid; flex: none; place-items: center; width: 2rem; height: 2rem; border: 1px solid var(--line-bright); border-radius: 999px; background: var(--paper-deep); color: var(--ink); font-weight: 700; font-size: .9rem; }
+.analysis-card[data-primary="true"] .analysis-rank { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+.analysis-theme-heading { display: flex; gap: .8rem; align-items: flex-start; margin-top: .75rem; }
+.analysis-figure { margin: .3rem 0 0; color: var(--muted); font-size: .9rem; }
+.analysis-label { margin: 1.1rem 0 .2rem; color: var(--ink); font-size: .82rem; font-weight: 700; }
+.analysis-quotes { list-style: none; margin: 1rem 0 0; padding: 0; display: grid; gap: .85rem; }
+.analysis-quotes li { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .4rem 1rem; }
+.analysis-quotes blockquote { margin: 0; flex: 1 1 22rem; color: var(--ink); line-height: 1.5; }
+.analysis-link { display: inline-flex; align-items: center; gap: .25rem; border: 0; padding: 0; background: none; color: var(--ink); font: inherit; font-size: .86rem; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 4px; cursor: pointer; }
+.analysis-link:hover { text-decoration-color: var(--yellow-deep); }
+.analysis-divider { border: 0; border-top: 1px solid var(--line); margin: 1.1rem 0; }
+.analysis-chips { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+.analysis-chip { border: 1px solid var(--line-bright); border-radius: 999px; background: var(--card); padding: .4rem .7rem; color: var(--ink); font-size: .82rem; font-weight: 600; }
+.analysis-themes { list-style: none; margin: .6rem 0 0; padding: 0; }
+.analysis-themes > li { border-top: 1px solid var(--line); padding: .85rem 0; }
+.analysis-themes > li:first-child { border-top: 0; }
+.analysis-theme-row { display: flex; align-items: center; gap: .8rem; width: 100%; border: 0; padding: 0; background: none; color: var(--ink); text-align: left; cursor: pointer; }
+.analysis-theme-row .analysis-figure { margin: 0 0 0 auto; white-space: nowrap; }
+.analysis-withheld { display: flex; align-items: center; gap: .8rem; color: var(--subtle); font-size: .9rem; }
+.analysis-withheld .analysis-rank { border-color: var(--line); background: var(--track); color: var(--subtle); }
+.analysis-facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: .75rem 1.5rem; margin: .9rem 0 0; font-size: .9rem; }
+.analysis-facts dt { color: var(--muted); }
+.analysis-facts dd { margin: 0; color: var(--ink); }
+.analysis-responses { margin-top: 1.25rem; }
+.analysis-responses ol { list-style: none; margin: .8rem 0 0; padding: 0; display: grid; gap: .7rem; }
+.analysis-responses li { border: 1px solid var(--line); border-radius: .75rem; padding: .8rem .95rem; background: var(--card); }
+.analysis-responses li[data-focused="true"] { border-color: var(--ink); background: var(--paper-deep); }
+.analysis-run-list { list-style: none; padding: 0; margin: 1rem 0 0; display: grid; gap: .75rem; }
+.analysis-run-list li { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem 1rem; padding: 1rem 1.1rem; }
+.analysis-run-list li > a { font-weight: 700; }
+.analysis-run-list .analysis-figure { margin: 0; flex-basis: 100%; }
+.analysis-table { width: 100%; border-collapse: collapse; margin-top: .8rem; font-size: .88rem; }
+.analysis-table th, .analysis-table td { border-top: 1px solid var(--line); padding: .55rem .4rem; text-align: left; }
+.analysis-table th { color: var(--muted); font-weight: 600; white-space: nowrap; }
+.analysis-table td:first-child { white-space: nowrap; }
+.analysis-questions { display: grid; gap: .55rem; margin-top: .9rem; }
+.analysis-questions label { display: flex; gap: .6rem; align-items: flex-start; color: var(--ink); font-size: .92rem; }
+.analysis-leaves { border-left: 3px solid var(--graphite); padding: .2rem 0 .2rem 1rem; margin-top: 1.1rem; }
+.analysis-setup code { overflow-wrap: anywhere; }
+@media (max-width: 900px) { .analysis-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 620px) {
+  .analysis-card { padding: 1.1rem 1rem; }
+  .analysis-facts { grid-template-columns: minmax(0, 1fr); gap: .2rem; }
+  .analysis-facts dd { margin-bottom: .6rem; }
+  .analysis-theme-row { flex-wrap: wrap; }
+  .analysis-theme-row .analysis-figure { margin: 0; flex-basis: 100%; padding-left: 2.8rem; }
+}

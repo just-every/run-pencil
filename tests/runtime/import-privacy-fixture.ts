@@ -17,7 +17,7 @@ export async function importPrivacyFixture() {
   const services = createPencilServices(createPencilPlatform('http://localhost', env))
   const erase = (responseId: string) => {
     const requestURL = `http://localhost/api/app/responses/${responseId}`
-    return SELF.fetch(requestURL, { method: 'DELETE', headers: { Host: new URL(requestURL).host, Origin: 'http://localhost', Cookie: `operator_session_local=${token}` } })
+    return SELF.fetch(requestURL, { method: 'DELETE', headers: { Host: new URL(requestURL).host, Origin: 'http://localhost', Cookie: `operator_session_local_80=${token}` } })
   }
   return { actor, imports, services, erase }
 }

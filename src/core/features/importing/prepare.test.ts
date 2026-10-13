@@ -19,7 +19,9 @@ contract(['IMPORT-001', 'IMPORT-002', 'IMPORT-003'], 'accounts for every field a
   expect(serialized).not.toContain('never-import-hidden-value')
   expect(serialized).not.toContain('991827')
   expect(result.source.artifacts.every(a => a.original?.status === 'unavailable')).toBe(true)
-  expect(result.form.steps.find(s => s.sourceId === 'short')?.next).toBeNull()
+  // An omitted calculation (the score add on 'short') never routes, so the question keeps its default path.
+  const short = result.form.steps.findIndex(s => s.sourceId === 'short')
+  expect(result.form.steps[short].next).toBe(result.form.steps[short + 1].id)
   const first = result.source.records.find(r => r.kind === 'response')!.payload as any
   expect(first.answers[result.form.steps.find(s => s.sourceId === 'yes')!.id]).toBe(false)
   expect(first.answers[result.form.steps.find(s => s.sourceId === 'nps')!.id]).toBe(10)
