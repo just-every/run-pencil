@@ -1,5 +1,6 @@
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
 import { spawn } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
@@ -25,6 +26,31 @@ async function releasedMigrationFiles(root, tag) {
   const result = await command(root, 'git', ['ls-tree', '-r', '--name-only', tag, 'migrations/core'])
   if (result.code !== 0) throw new Error(result.output.trim())
   return result.output.split(/\r?\n/).filter((path) => /^migrations\/core\/[^/]+\.sql$/.test(path))
+}
+
+const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex')
+
+// migrations/released-rewrites.json names each released migration whose bytes changed, with both
+// exact hashes and the later migration that brings a database holding the released text to the same schema.
+async function releasedRewrites(root) {
+  let text
+  try { text = await readFile(resolve(root, 'migrations/released-rewrites.json'), 'utf8') } catch (error) {
+    if (error && typeof error === 'object' && 'code' in error && error.code === 'ENOENT') return []
+    throw error
+  }
+  const value = JSON.parse(text)
+  if (!Array.isArray(value)) throw new Error('migrations/released-rewrites.json must be an array.')
+  return value
+}
+
+async function declaredRewrite(root, rewrites, path, released, current, releasedFiles) {
+  const id = path.replace('migrations/core/', '')
+  const entry = rewrites.find((rewrite) => rewrite?.id === id)
+  if (!entry || entry.releasedSha256 !== sha256(released) || entry.sha256 !== sha256(current) || typeof entry.reason !== 'string' || !entry.reason.trim()) return false
+  const converging = `migrations/core/${entry.convergedBy}`
+  if (typeof entry.convergedBy !== 'string' || releasedFiles.has(converging) || converging <= path) return false
+  try { await readFile(resolve(root, converging)) } catch { return false }
+  return true
 }
 
 function upgradeChecks(value) {
@@ -82,12 +108,14 @@ export async function withReleaseUpgradeInputs(root, run) {
   const ancestor = await command(root, 'git', ['merge-base', '--is-ancestor', previousTag, 'HEAD'])
   if (ancestor.code !== 0) throw new Error(`Declared previous release tag ${previousTag} is not an ancestor of this candidate.`)
   const releasedFiles = new Set(await releasedMigrationFiles(root, previousTag))
+  const rewrites = await releasedRewrites(root)
   const migrations = []
   for (const path of releasedFiles) {
     const bytes = await gitShow(root, previousTag, path)
     let current
     try { current = await readFile(resolve(root, path)) } catch { throw new Error(`Released core migrations are immutable: ${path} is absent.`) }
-    if (!current.equals(bytes)) throw new Error(`Released core migrations are immutable: ${path} changed.`)
+    if (!current.equals(bytes) && !await declaredRewrite(root, rewrites, path, bytes, current, releasedFiles)) throw new Error(`Released core migrations are immutable: ${path} changed.`)
+    // The predecessor applies the bytes it released; a declared rewrite is proven by upgrading from them.
     migrations.push({ path, bytes })
   }
   if (!migrations.length) throw new Error('The previous release has no core migrations.')

@@ -1,0 +1,10 @@
+[
+  {
+    "id": "0019_import_custody.sql",
+    "releasedIn": "0.2.0",
+    "releasedSha256": "f567b86d2a2bc46aeeea1ed28b78094ba52eb7c3cb0717ad50f57667fa6c1560",
+    "sha256": "74c826128f4611b2a33d0ca2a44713b15df3f772fe22157e9b07dd1835d86028",
+    "convergedBy": "0034_import_fence_triggers_d1.sql",
+    "reason": "Cloudflare D1 ends a trigger at its first END;, so it refused the 39 SELECT CASE ... END; guards in the released 0019 and rer deploy stopped there on every new database. The rewrite states the same checks as SELECT RAISE(...) WHERE EXISTS(...). A database that applied the released text keeps it in its ledger and 0034 replaces those triggers, so both end with the same schema."
+  }
+]

@@ -66,6 +66,11 @@ describe.skipIf(!hasUpgradeInput)('declared release migration in a Workers D1 ru
     expect(ledger.results.map((entry) => entry.name)).toEqual(__PENCIL_CORE_MIGRATIONS__.map((migration) => migration.name))
     await applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__)
     expect((await env.DB.prepare('SELECT name FROM d1_migrations ORDER BY id').all()).results).toEqual(ledger.results)
+    // A predecessor that applied a since-rewritten migration (migrations/released-rewrites.json) ends with a new database's schema.
+    const fresh = (env as unknown as { IMPORT_SECOND: D1Database }).IMPORT_SECOND
+    await applyD1Migrations(fresh, __PENCIL_CORE_MIGRATIONS__)
+    const schema = (db: D1Database) => db.prepare("SELECT type, name, tbl_name, sql FROM sqlite_master WHERE sql IS NOT NULL AND name NOT LIKE '_cf_%' AND name != 'd1_migrations' ORDER BY type, name").all()
+    expect((await schema(env.DB)).results).toEqual((await schema(fresh)).results)
     await verifyRetainedRows()
   })
 

@@ -4,6 +4,7 @@ import { mkdtemp, mkdir, readFile, readdir, rm, writeFile, access } from 'node:f
 import { execFileSync } from 'node:child_process'
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
+import { createHash } from 'node:crypto'
 import { withReleaseUpgradeInputs } from './release-upgrade-inputs.mjs'
 
 const checks = ['sample-row', 'graph-link', 'idempotency'].map(kind => ({ kind, query: 'SELECT 1 AS value', expectedRows: [{ value: 1 }] }))
@@ -63,7 +64,8 @@ test('BASE-OPS-002 explicit empty results are valid for every required check kin
 })
 
 test('BASE-OPS-002 shipped idempotency metadata retains its zero-row INSERT OR IGNORE RETURNING expectation', async () => {
-  const metadata = await readFile(new URL('../tests/runtime/upgrades/0.1.0.json', import.meta.url), 'utf8')
+  const { previousVersion } = JSON.parse(await readFile(new URL('../RELEASE.json', import.meta.url), 'utf8'))
+  const metadata = await readFile(new URL(`../tests/runtime/upgrades/${previousVersion}.json`, import.meta.url), 'utf8')
   const releasedChecks = JSON.parse(metadata).checks
   const idempotency = releasedChecks.find(check => check.kind === 'idempotency')
   assert.match(idempotency.query, /^INSERT OR IGNORE\b[\s\S]*\bRETURNING\b/)
@@ -105,6 +107,28 @@ test('BASE-OPS-002 invalid predecessor, immutable migrations and fixtures fail b
       let called = false
       await assert.rejects(withReleaseUpgradeInputs(root, () => { called = true }))
       assert.equal(called, false, mode)
+    })
+  }
+})
+
+test('BASE-OPS-002 a released migration may change only as declared with both exact hashes and a later converging migration', async () => {
+  const sha256 = text => createHash('sha256').update(text).digest('hex')
+  const released = 'CREATE TABLE sample(value INTEGER);\n', rewritten = 'CREATE TABLE sample(value INTEGER);\n-- rewritten\n'
+  const declaration = { id: '0000_schema.sql', releasedIn: '0.1.0', releasedSha256: sha256(released), sha256: sha256(rewritten), convergedBy: '0001_converge.sql', reason: 'The released text cannot be applied by the host.' }
+  for (const mode of ['declared', 'undeclared', 'wrong-released-hash', 'wrong-current-hash', 'missing-converging', 'released-converging']) {
+    await repository(async (root, git) => {
+      if (mode === 'released-converging') {
+        await writeFile(join(root, 'migrations/core/0001_converge.sql'), 'SELECT 1;\n')
+        git('add', '.'); git('commit', '-qm', 'Released converging'); git('tag', '-d', 'v0.1.0'); git('tag', 'v0.1.0')
+      }
+      await writeFile(join(root, 'migrations/core/0000_schema.sql'), rewritten)
+      if (mode !== 'missing-converging') await writeFile(join(root, 'migrations/core/0001_converge.sql'), 'SELECT 1;\n')
+      const entry = { ...declaration, ...(mode === 'wrong-released-hash' ? { releasedSha256: sha256(rewritten) } : {}), ...(mode === 'wrong-current-hash' ? { sha256: sha256(released) } : {}) }
+      if (mode !== 'undeclared') await writeFile(join(root, 'migrations/released-rewrites.json'), JSON.stringify([entry]))
+      let forwarded
+      const result = withReleaseUpgradeInputs(root, async upgrade => { forwarded = await readFile(join(upgrade.env.PENCIL_PREVIOUS_MIGRATIONS_DIR, '0000_schema.sql'), 'utf8') })
+      if (mode === 'declared') { await result; assert.equal(forwarded, released) }
+      else { await assert.rejects(result, /Released core migrations are immutable/, mode); assert.equal(forwarded, undefined) }
     })
   }
 })
