@@ -10,6 +10,25 @@
 
 <p align="center"><a href="https://run-pencil.com">run-pencil.com</a> · <a href="https://justevery.com">Part of Just Every</a> · <a href="LICENSE">MIT licensed</a></p>
 
+<p align="center">
+  <a href="https://justevery.com/#vol-pencil"><img src=".github/assets/media/preview.gif" width="800" alt="Pencil: a respondent goes back, picks Could be better and is asked What could we do better?"></a>
+</p>
+<p align="center"><a href="https://justevery.com/#vol-pencil"><b>Watch the full demo</b></a> · 47 seconds</p>
+
+<p align="center">
+  <img src=".github/assets/media/flow.webp" width="800" alt="Each answer leads to its own next question: Great to What made it great?, Could be better to What could we do better?">
+</p>
+
+<p align="center">
+  <img src=".github/assets/media/screen-1.webp" width="800" alt="Pencil's Aurora Coffee form asking How was your visit? with Great, Good and Could be better"><br>
+  <sub>One question at a time, on a card your respondents can read.</sub>
+</p>
+
+<p align="center">
+  <img src=".github/assets/media/screen-2.webp" width="800" alt="Results for Post-visit feedback: 42 answers counted, and searchable answers to What made it great? and What would make it great?"><br>
+  <sub>Results counted honestly, with every answer searchable.</sub>
+</p>
+
 # Pencil
 
 Pencil is an editable form builder and feedback workspace with branching questions, published forms, results, branding, response email, embeds, a bounded Typeform JSON/CSV importer and a Google Forms CSV-first importer with an optional `forms.get` definition. To bring existing forms and historical responses into an editable draft, read the [moving-in guide](docs/guide/moving-in.md).
