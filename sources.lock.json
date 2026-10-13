@@ -1577,7 +1577,7 @@
       "executable": false
     },
     "scripts/progress-recovery.test.mjs": {
-      "sha256": "55ea9ea99ae9678678eca3341d4acf0c8076b799a28644c24adeba6391d40411",
+      "sha256": "8a74b6dabaaf706629af57889dadef3b0ba5e22b90aca7935e81be14819adab9",
       "executable": false
     },
     "scripts/release-upgrade-inputs.check.mjs": {

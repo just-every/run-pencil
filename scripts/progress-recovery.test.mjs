@@ -36,8 +36,10 @@ it('restores retained progress and the atomic write view without recounting visi
     expect(importData(archive, restored)).toEqual(exported)
     database = new DatabaseSync(restored)
     expect(database.prepare('SELECT name FROM d1_migrations ORDER BY id DESC LIMIT 1').get().name).toBe(readdirSync('migrations/core').filter(name => name.endsWith('.sql')).sort().at(-1))
+    // The resume token never travels: the old respondent credential no longer matches after a restore.
+    expect(database.prepare("SELECT id FROM respondent_session_progress WHERE session_token_hash = 'synthetic-hash'").all()).toEqual([])
     const advance = database.prepare(`UPDATE respondent_session_progress SET furthest_step_id = ?, updated_at = ?
-      WHERE id = 'session' AND session_token_hash = 'synthetic-hash' RETURNING id`)
+      WHERE id = 'session' RETURNING id`)
     for (const stepId of ['first', 'second', 'second']) {
       expect(advance.all(stepId, now)).toEqual([{ id: 'session' }])
     }
