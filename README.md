@@ -1,3 +1,15 @@
+<p align="center">
+  <a href="https://run-pencil.com">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset=".github/assets/banner-dark.webp">
+      <source media="(prefers-color-scheme: light)" srcset=".github/assets/banner-light.webp">
+      <img src=".github/assets/banner-light.webp" width="100%" alt="Pencil: Ask like you’re listening. 100% free, open source alternative to Typeform, Google Forms and Jotform.">
+    </picture>
+  </a>
+</p>
+
+<p align="center"><a href="https://run-pencil.com">run-pencil.com</a> · <a href="https://justevery.com">Part of Just Every</a> · <a href="LICENSE">MIT licensed</a></p>
+
 # Pencil
 
 Pencil is an editable form builder and feedback workspace with branching questions, published forms, results, branding, response email, embeds, a bounded Typeform JSON/CSV importer and a Google Forms CSV-first importer with an optional `forms.get` definition. To bring existing forms and historical responses into an editable draft, read the [moving-in guide](docs/guide/moving-in.md).
