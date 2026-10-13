@@ -1,6 +1,6 @@
 # Backup and restore
 
-A Pencil backup is one `.rer` archive containing JSON that holds your whole installation. You can make one from a local copy of Pencil and restore it into a new, empty local database. Make one before every upgrade and before you move to a new host. Pencil's own commands work on a local copy only; for a deployed database, see [Back up a deployed database](#back-up-a-deployed-database). This page covers what a backup holds, how to make and restore one, and how to check the result.
+A Pencil backup is one `.rer` archive containing JSON that holds your whole installation. You can make one from a local copy of Pencil and restore it into a new, empty local database. Make one before every upgrade and before you move to a new host. The `rer` commands use local data; Pencil's separate owner recovery command handles deployed D1 databases. See [Back up a deployed database](#back-up-a-deployed-database). This page covers what a backup holds, how to make and restore one, and how to check the result.
 
 Backups are made from the command line. The **Export JSON** and **Export CSV** buttons on a results page are different. They download the responses to one flow for analysis and are not a backup.
 
@@ -52,8 +52,19 @@ Pencil finds your local database itself. You do not name it.
 
 ## Back up a deployed database
 
-Pencil's own `export` and `import` commands work on a local copy and refuse a deployed database. To keep a copy of a deployed database, use Cloudflare's own D1 tools, such as Time Travel and `wrangler d1 export`, and keep the previous deployment until you have checked a new one. Those are Cloudflare's tools, not Pencil's: Pencil does not check an archive made that way, and it does not leave out secrets or personal invitation links for you.
+Use the matching source checkout and its maintained owner recovery command. The public `rer export --target remote` and `rer import --target remote` commands still refuse remote transfer. The separate command below accepts the deployment kit's `_rer_deploy_migrations` ledger and Wrangler's `d1_migrations` ledger; it refuses mixed, incomplete or changed history. Source and destination must use the same ledger kind and the exact same migration bytes.
 
+Set `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID` and `CLOUDFLARE_API_TOKEN` in your private shell environment. Use the actual source D1 ID from your deployment receipt, and a token authorized for that account's D1 database. Never put the token in an archive or commit it.
+
+Stop every database writer as described below, then:
+
+```sh
+node scripts/deployment-data-cli.mjs export --output exports/deployed.rer --writers-stopped
+```
+
+`--writers-stopped` confirms that you stopped the Worker, schedules and any other process that writes this database. The exporter also checks D1 consistency bookmarks and primary reads, and refuses if the source changes. This creates the same redacted archive described above, including import custody, the erasure checkpoint and delivery history.
+
+The recovery command is verified against a local Cloudflare API stand-in using the installed deployment kit and real SQL. This is not a live-account recovery acceptance result. In the older October 13 hosted run, the previous exporter refused the kit ledger; a raw Wrangler dump restored only after its SQL was manually regrouped. That workaround did not produce a redacted Pencil archive. Raw D1 exports and Time Travel remain provider tools with their own semantics.
 Your running Worker writes to the database as it works: visits to public pages and signed-in pages record rate-limit counters and sessions, and its schedule runs every minute. If you are about to move your data, stop the Worker for the length of the backup. Pencil has no command for this. Use the Cloudflare dashboard: in your Worker's settings, turn off its `workers.dev` address and remove its Cron trigger. Your forms, sign-in and `/health` are unreachable until you turn them back on. The database is not touched. Afterwards, turn both back on in the dashboard, or deploy again.
 
 ## Restore into a new database
@@ -89,8 +100,26 @@ Restore before setup. Give setup the email of the owner you had when you made th
 
 ### To a deployed database
 
-Pencil's commands do not restore into a deployed database. Hosted recovery is a separate step that is not part of Pencil's commands: restore with Cloudflare's own D1 tools into a new, empty database, deploy the source that matches the backup against it, and keep the previous database until you are sure. Check it as described in [Hosting on Cloudflare](hosting.md#check-that-it-works): open `/health`, sign in with a fresh emailed link, open a public form, and look at your response ledger, your quarantine queue and your delivery history.
+Create a new deployment with the same source and kit, then stop its Worker routes, schedules and all other database writers **before setup or first-owner admission**. The target must contain only its fully applied migrations and their initialization rows. Keep the previous deployment and database available until you have verified recovery.
 
+Change `CLOUDFLARE_DATABASE_ID` to the new empty target's actual D1 ID, then:
+
+```sh
+node scripts/deployment-data-cli.mjs import --input exports/deployed.rer --yes --writers-stopped
+node scripts/deployment-data-cli.mjs export --output exports/deployed-restored.rer --writers-stopped
+```
+
+Both commands must print the same `sha256` as the source export. A second restore refuses before writing any application data. A later archive can fence an old backup against erasure with `--journal exports/later.rer`; that check runs before any target request.
+
+Restore validates the whole archive, stages inert tables in bounded batches, verifies their contents, then publishes atomically under repeated empty-target guards. It dispatches no mail. If it reports `RESTORE_STATE_UNCONFIRMED`, keep writers stopped and inspect the target. For a recognized incomplete stage belonging to that archive, use:
+
+```sh
+node scripts/deployment-data-cli.mjs cleanup --input exports/deployed.rer --yes --writers-stopped
+```
+
+Cleanup removes only a matching inert restore stage. If the result is `RESTORE_VERIFICATION_UNCONFIRMED`, publication already completed: re-export and compare before retrying; cleanup cannot undo publication.
+
+After archive equality is confirmed, reconfigure private secrets and re-enable the Worker. Check it as described in [Hosting on Cloudflare](hosting.md#check-that-it-works): open `/health`, sign in with a fresh emailed link, open a public form, and inspect responses, quarantine and delivery history.
 ## Check the restored data
 
 Before you start `dev` on a restored local copy, export it to a new file and compare:

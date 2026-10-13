@@ -1,3 +1,4 @@
+import { erasureFence } from './deployment-data-journal.mjs';
 import { initializedPredicate } from './deployment-data-initialized.mjs';
 import { DatabaseSync } from 'node:sqlite';
 import { dirname, join } from 'node:path';
@@ -5,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { initialize, inventory, metadata, failure, schema, quote } from './deployment-data-core.mjs';
 import { privateArchivePath } from './deployment-data-paths.mjs';
 import { ledger, schemaQuery } from './deployment-data-sql.mjs';
-import { assertLedgerShape, ledgerShapeQuery } from './deployment-data-ledger.mjs';
+import { assertLedgerShape, ledgerShapeQuery, validateLedger } from './deployment-data-ledger.mjs';
 import { createStore, readStore, storeDigest, storeSummary, validateStore, writeStore } from './deployment-data-stream.mjs';
 import { cloudflareClient, primaryQuery } from './deployment-data-provider.mjs';
 import { remoteRows } from './deployment-data-page.mjs';
@@ -13,10 +14,10 @@ import { canonicalSchema } from './deployment-data-schema.mjs';
 import { destinationGuards, stagingPlan, stageRows, cleanupStage } from './deployment-data-staging.mjs';
 export { cloudflareClient } from './deployment-data-provider.mjs';
 
-function committed() {
-  const db = new DatabaseSync(':memory:'); initialize(db);
+function committed(history = ledger) {
+  const db = new DatabaseSync(':memory:'); initialize(db, history);
   const tables = inventory(db);
-  const trusted = { schema: db.prepare("SELECT type,name,tbl_name,sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*' ORDER BY type,name").all(), foreignKeys: Object.fromEntries([ledger,...tables].map(table => [table.name,db.prepare(`PRAGMA foreign_key_list(${quote(table.name)})`).all()])) };
+  const trusted = { schema: db.prepare("SELECT type,name,tbl_name,sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*' ORDER BY type,name").all(), foreignKeys: Object.fromEntries([history,...tables].map(table => [table.name,db.prepare(`PRAGMA foreign_key_list(${quote(table.name)})`).all()])) };
   return { db, tables, schema: schema(db), trusted };
 }
 async function bookmark(query) {
@@ -31,12 +32,12 @@ async function captureRemote(query, parent, expected, plan) {
       { sql: schemaQuery }, { sql: ledgerShapeQuery },
       ...expected.tables.map(table=>({sql:`SELECT EXISTS(SELECT 1 FROM ${quote(plan?.names[table.name] ?? table.name)}) AS occupied`})),
     ]);
-    assertLedgerShape(shape.results);
+    const history = assertLedgerShape(shape.results);
     canonicalSchema(actual.results, plan ? JSON.stringify(plan.stagedSchema) : expected.schema);
     store.actualSchema = JSON.stringify(actual.results);
-    store.payload = { format: 'runeditrun/pencil-local-data.v1', migrations: metadata(), schema: expected.schema, d1Migrations: { ...ledger, rows: [] }, tables: expected.tables };
+    store.payload = { format: 'runeditrun/pencil-local-data.v1', migrations: metadata(), schema: expected.schema, d1Migrations: { ...history, rows: [] }, tables: expected.tables };
     store.db.exec('BEGIN');
-    for (const [index, table] of [ledger,...expected.tables].entries()) {
+    for (const [index, table] of [history,...expected.tables].entries()) {
       let ordinal = 0;
       if (index > 0) {
         const occupied=occupancy[index-1]?.results[0]?.occupied;
@@ -49,6 +50,7 @@ async function captureRemote(query, parent, expected, plan) {
     }
     store.db.exec('COMMIT');
     store.payload.d1Migrations.rows.sort((left,right)=>JSON.stringify(left)<JSON.stringify(right)?-1:JSON.stringify(left)>JSON.stringify(right)?1:0);
+    validateLedger(store.payload.d1Migrations, metadata());
     if (await bookmark(query) !== before) throw failure('SOURCE_CHANGED', 'The deployed database changed during export; no archive was published. Stop writers and export again.');
     store.sha256 = storeDigest(store);
     return store;
@@ -72,15 +74,16 @@ export async function exportRemote(output, query = cloudflareClient()) {
     validateStore(store); writeStore(store, output); return storeSummary(store);
   } finally { store?.close(); expected.db.close(); }
 }
-export async function importRemote(archivePath, query = cloudflareClient()) {
+export async function importRemote(archivePath, query = cloudflareClient(), journalPath) {
   privateArchivePath(archivePath);
-  const store = readStore(archivePath), expected = committed();
+  const store = readStore(archivePath), expected = committed(store.payload.d1Migrations);
   let plan, prepared = false, published = false;
   try {
+    if (journalPath) { privateArchivePath(journalPath); const later = readStore(journalPath); try { erasureFence(store, later); } finally { later.close(); } }
     // One read-only preflight preserves the no-write refusal. Preparation
     // repeats all guards atomically before creating any inert staging schema.
     const preflight = await query([{ sql: schemaQuery }, { sql: ledgerShapeQuery }, ...expected.tables.map(table=>{ const expected = initializedPredicate(table); return { sql: `SELECT CASE WHEN (${expected.sql}) THEN 0 ELSE 1 END AS occupied`, params: expected.params }; })]);
-    assertLedgerShape(preflight[1].results); canonicalSchema(preflight[0].results, expected.schema);
+    if (assertLedgerShape(preflight[1].results).name !== store.payload.d1Migrations.name) throw failure('MIGRATION_MISMATCH', 'Destination uses a different migration controller.'); canonicalSchema(preflight[0].results, expected.schema);
     if (preflight.slice(2).some(result=>result.results[0]?.occupied !== 0)) throw failure('NONEMPTY_TARGET', 'Destination contains application records; nothing was written.');
     plan = stagingPlan(store, expected.trusted);
     await query([...destinationGuards(store, JSON.stringify(preflight[0].results)),...plan.create]);
@@ -110,7 +113,7 @@ export async function importRemote(archivePath, query = cloudflareClient()) {
 
 export async function cleanupRemote(archivePath, query = cloudflareClient()) {
   privateArchivePath(archivePath);
-  const store = readStore(archivePath), expected = committed();
+  const store = readStore(archivePath), expected = committed(store.payload.d1Migrations);
   try {
     const [result] = await query([{sql:"SELECT name FROM sqlite_schema WHERE type='table' AND name GLOB '_pencil_restore_*_state'"}]);
     if (result.results.length !== 1 || !/^_pencil_restore_[a-f0-9]{24}_state$/.test(result.results[0].name)) throw failure('RESTORE_STATE_UNCONFIRMED', 'Exactly one recognized staged restore is required for cleanup.');

@@ -3,6 +3,7 @@ import { withoutDevRows } from './deployment-data-dev.mjs';
 // to an archive: both new tables and new columns fail closed until classified.
 const retained = {
   d1_migrations: 'id name applied_at',
+  _rer_deploy_migrations: 'name sha256 state',
   // Actions hold operator-written text and frozen aggregate counts, never answers or response IDs. The task key is
   // never stored, so nothing here is a credential; the confirmed payload and every attempt travel as recorded.
   actions: 'id workspace_id title rationale owner_operator_id state verdict review_date source analysis_id metric_name metric_unit metric_direction baseline_value baseline_source baseline_observed_at version last_event_id created_by_operator_id created_at updated_at',

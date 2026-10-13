@@ -1,7 +1,7 @@
 import { localInstaller } from '@runeditrun/rer/local-installer';
 import { developmentTarget, previewTarget } from '@runeditrun/rer/operator-installer';
 import { commandAdapter as createCommandAdapter } from '@runeditrun/rer/adapter';
-import { ownerDeploy } from '@runeditrun/rer/deploy';
+import { pencilDeploy } from './deploy.mjs';
 import { features, product } from './ui/seed.mjs';
 import { portability } from '../local/portability.mjs';
 import { localOwners, prepare } from '../local/state.mjs';
@@ -26,7 +26,7 @@ export const { install } = lifecycle;
 export const commandAdapter = createCommandAdapter(lifecycle, {
  product: product.name, setup: { manifestFile: 'rer-setup.json' }, browserModule: 'scripts/installer/ui/seed.mjs',
  dev: developmentTarget, preview: production, verify: ['pnpm', ['run', 'verify:app']],
- deploy: ownerDeploy('deploy.json', lifecycle), portability,
+ deploy: pencilDeploy(lifecycle), portability,
  // Local dev identity: the local-only Worker entry, the build output rer build scans for the dev layer, and the kept
  // end-to-end email-link test.
  devIdentity: { entry: 'src/server.dev.ts', output: ['dist'], emailLinkTest: 'tests/local-cli/rer-journey.test.mjs' },

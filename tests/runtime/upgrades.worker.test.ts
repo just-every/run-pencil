@@ -4,6 +4,7 @@ import { contract } from '../../src/test/contract'
 import { NotificationDispatcher } from '../../src/core/features/notifications/dispatcher'
 import { NotificationRepository } from '../../src/core/features/notifications/repository'
 import { boundedCompoundSelect } from '../helpers/compound-select'
+import { dispatchQueuedLegacyRetry } from './upgrades/queued-retry-dispatch'
 
 type UpgradeCheck = { kind: 'sample-row' | 'graph-link' | 'idempotency'; query: string; expectedRows: Array<Record<string, unknown>> }
 
@@ -57,6 +58,21 @@ describe.skipIf(!hasUpgradeInput)('declared release migration in a Workers D1 ru
       expect(duplicate.meta.changes, table).toBe(0)
     }
     await verifyRetainedRows()
+
+    // Recreate the 0.2.0 state after its explicit retry was queued: attempts 4,
+    // an old first-attempt timestamp, and a current operator-retry marker at 4.
+    // The released retry preserved that old timestamp, so only the normal
+    // post-upgrade dispatcher can prove that the queued send still happens.
+    const retryProof = await dispatchQueuedLegacyRetry((env as unknown as { IMPORT_SECOND: D1Database }).IMPORT_SECOND,
+      __PENCIL_PREVIOUS_CORE_MIGRATIONS__, __PENCIL_UPGRADE_FIXTURE_QUERIES__, __PENCIL_CORE_MIGRATIONS__)
+    expect(retryProof.concurrentDrains.reduce((sum, result) => sum + result.attempted, 0)).toBe(1)
+    expect(retryProof.repeatedDrains).toEqual([{ attempted: 0 }, { attempted: 0 }, { attempted: 0 }])
+    expect(retryProof.delivery).toEqual({ status: 'sent', attempts: 5, first_attempt_at: '2026-10-13T00:00:00.000Z',
+      last_attempt_at: '2026-10-13T00:00:00.000Z', idempotency_key: 'upgrade-delivery-key-2' })
+    expect(retryProof.historyAfter.filter(row => retryProof.historyBefore.some(before => before.id === row.id))).toEqual(retryProof.historyBefore)
+    expect(retryProof.historyAfter.filter(row => row.ordinal === 5).map(row => row.event).sort()).toEqual(['sent', 'started'])
+    expect(retryProof.captured).toHaveLength(1)
+    expect(JSON.parse(retryProof.captured[0].message)).toMatchObject({ deliveryId: 'upgrade-delivery-key-2', to: ['contact2@example.com'] })
   })
 
   contract('BASE-OPS-002', 'leaves no foreign-key violations and records every current migration', async () => {

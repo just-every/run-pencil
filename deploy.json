@@ -12,6 +12,11 @@
   ],
   "secrets": [
     {
+      "binding": "MAIL_PROVIDER",
+      "environment": "PENCIL_MAIL_PROVIDER",
+      "verifyStandIn": "sendgrid"
+    },
+    {
       "binding": "SESSION_SECRET",
       "environment": "SESSION_SECRET"
     },
@@ -38,7 +43,6 @@
   "originVar": "APP_ORIGIN",
   "vars": {
     "PENCIL_LOCAL_DEVELOPMENT": "false",
-    "SEED_SAMPLE_DATA": "false",
-    "MAIL_PROVIDER": "resend"
+    "SEED_SAMPLE_DATA": "false"
   }
 }

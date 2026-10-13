@@ -4,7 +4,7 @@ import { initializedPredicate, initializedReplacement } from './deployment-data-
 import { ledgerShape, ledgerShapeQuery } from './deployment-data-ledger.mjs';
 export { ledger } from './deployment-data-ledger.mjs';
 export const quote = name => `"${name.replaceAll('"', '""')}"`;
-export const schemaQuery = "SELECT type, name, tbl_name, sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*' AND name != '_cf_METADATA' AND name != 'd1_migrations' ORDER BY type, name";
+export const schemaQuery = "SELECT type, name, tbl_name, sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*' AND name != '_cf_METADATA' AND name NOT IN ('d1_migrations','_rer_deploy_migrations') ORDER BY type, name";
 export function rowExpression(table) {
   const cells = table.columns.map(name => {
     const column = quote(name);

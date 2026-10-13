@@ -47,7 +47,7 @@ rer import --input exports/installation.rer --yes
 rer setup --owner-email owner@example.com --owner-name Owner
 ```
 
-Import validates integrity and restores atomically into an empty destination without replaying mail. Archives retain the complete product graph, import custody, delivery history and credential hashes; plaintext credentials, captured mail and private settings are excluded. Public transfer supports local state; remote targets are refused.
+Import validates integrity and restores atomically into an empty destination without replaying mail. Archives retain the complete product graph, import custody, delivery history and credential hashes; plaintext credentials, captured mail and private settings are excluded. These rer commands support local state; the separate maintained deployed D1 command is documented in [Backup and restore](docs/guide/backup.md).
 
 ```sh
 pnpm run deploy -- --dry-run

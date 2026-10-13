@@ -9,7 +9,13 @@ Bring Google Forms response history into an editable Pencil draft from a CSV, wi
 - **Pencil does not connect to either provider.** You get the files in your own account and choose them on the import page. Never paste a Google token or Typeform API token into Pencil.
 - **Pencil keeps the safe import record, not the files.** It retains file names, sizes and digests, the reviewed plan and imported answers; it does not retain the original file bytes.
 - **The importer has not been checked against a real account export.** The Google Forms importer was written from published Google documentation and checked only with example files; no real Google account export was supplied. The Typeform importer was also checked only with example files from published documentation; no real Typeform account export has been checked.
-- **Size limits.** One import can be at most 8 MiB of files in total and 100,000 response rows. Larger imports are refused before anything is stored. The usual form limits, such as the number of questions and the length of answers, also apply.
+- **File admission limits.** One import can be at most 8 MiB of files in total and 100,000 response rows. Larger imports are refused before anything is stored. The usual form limits, such as the number of questions and the length of answers, also apply. Admission does not guarantee that a hosted import will finish; see the execution limit below.
+
+### Hosted execution limit
+
+Large imports within those file limits can exceed the hosted request CPU budget. Review, preparation and the first continuation still process the complete plan in a single request at each stage. Native response creation and undo use batches, but that does not bound those earlier requests. Local HTTP measurements already exceed the Workers Paid default of 30 seconds for an admitted 100,000-row import; local measurements do not establish live hosted capacity. The [hosting guide](hosting.md#costs-limits-and-what-is-not-proven) explains the required plan and budget.
+
+If a request fails, use **Refresh history** to inspect durable progress. A failed review creates nothing. An interrupted private preparation creates no form or responses and can be cancelled; retrying it requires the source files. A complete private preparation and an import that has begun creating native records can be continued from stored custody without the files. Retrying does not remove the CPU limit, so completion at the maximum admitted sizes is not currently guaranteed.
 
 ## Get a Google Forms response CSV
 

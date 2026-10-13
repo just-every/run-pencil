@@ -3,17 +3,18 @@ import { Buffer } from 'node:buffer';
 import { randomBytes } from 'node:crypto';
 import { quote } from './deployment-data-sql.mjs';
 import { insertStatement, insertRowsStatement, schemaQuery } from './deployment-data-sql.mjs';
-import { ledgerShape, ledgerShapeQuery } from './deployment-data-ledger.mjs';
+import { ledgerShape, ledgerShapeQuery, kitLedgerShape, kitLedger, historyGuard } from './deployment-data-ledger.mjs';
 import { renameSQL, canonicalSchema } from './deployment-data-schema.mjs';
 import { assertQueryBudget, queryLimits } from './deployment-data-provider.mjs';
 
 export const guard = (expression, params = []) => ({ sql: `SELECT CASE WHEN (${expression}) THEN 1 ELSE json('Restore precondition failed') END AS verified`, params });
 const schemaExpression = `SELECT json_group_array(json_object('type',type,'name',name,'tbl_name',tbl_name,'sql',sql)) FROM (${schemaQuery})`;
 export function destinationGuards(store, actualSchema) {
+  const history = historyGuard(store.payload.d1Migrations, store.payload.migrations);
   return [
     guard(`(${schemaExpression})=?`, [actualSchema]),
-    guard(`(SELECT json_group_array(json_object('cid',cid,'name',name,'type',type,'notnull',"notnull",'dflt_value',dflt_value,'pk',pk,'hidden',hidden)) FROM (${ledgerShapeQuery}))=?`, [JSON.stringify(ledgerShape)]),
-    guard(`(SELECT group_concat(name,',') FROM (SELECT name FROM d1_migrations ORDER BY name))=?`, [store.payload.migrations.map(row=>row.name).join(',')]),
+    guard(`(SELECT json_group_array(json_object('cid',cid,'name',name,'type',type,'notnull',"notnull",'dflt_value',dflt_value,'pk',pk,'hidden',hidden)) FROM (${ledgerShapeQuery}))=?`, [JSON.stringify(store.payload.d1Migrations.name === kitLedger.name ? kitLedgerShape : ledgerShape)]),
+    guard(history.sql, history.params),
     ...store.payload.tables.map(table => { const expected = initializedPredicate(table); return guard(expected.sql, expected.params); }),
   ];
 }
@@ -62,7 +63,7 @@ export function stagingPlan(store, trusted, restorePrefix) {
     { sql: `DROP TABLE ${quote(stateName)}` },
   ];
   const stagedSchema = [
-    ...allSchema.filter(row => row.type !== 'index' && row.name !== 'd1_migrations'),
+    ...allSchema.filter(row => row.type !== 'index' && row.name !== store.payload.d1Migrations.name),
     ...allSchema.filter(row => row.type === 'table').map(row => ({ ...row, name: names[row.name], tbl_name: names[row.name], sql: renameSQL(row.sql,names) })),
     ...indexes.flatMap(row => [
       { ...row, name: prefix + 'keep_' + row.name, sql: renameSQL(row.sql,{[row.name]:prefix + 'keep_' + row.name}) },
@@ -70,7 +71,7 @@ export function stagingPlan(store, trusted, restorePrefix) {
     ]),
     { type:'table',name:stateName,tbl_name:stateName,sql:stateSQL },
   ].sort((a,b)=>a.type<b.type?-1:a.type>b.type?1:a.name<b.name?-1:a.name>b.name?1:0);
-  return { prefix, names, ordered, create, publish, cleanup, stateName, stagedSchema, sha256:store.sha256 };
+  return { ledgerName:store.payload.d1Migrations.name, prefix, names, ordered, create, publish, cleanup, stateName, stagedSchema, sha256:store.sha256 };
 
 }
 export async function stageRows(query, store, plan) {
@@ -84,7 +85,7 @@ export async function stageRows(query, store, plan) {
   };
   for (const table of plan.ordered) {
     const index = store.payload.tables.findIndex(item=>item.name===table.name);
-    const rows = table.name === 'd1_migrations' ? table.rows : store.rows(index);
+    const rows = table.name === store.payload.d1Migrations.name ? table.rows : store.rows(index);
     const destination = { ...table, name:plan.names[table.name] };
     let group = [], groupBytes = 0;
     const flushRows = async () => { if(group.length) { await enqueue(insertRowsStatement(destination,group,toHex));group=[];groupBytes=0; } };
@@ -101,7 +102,7 @@ export async function stageRows(query, store, plan) {
 export async function cleanupStage(query, plan) {
   // The presence probe distinguishes an uncommitted preparation from an
   // existing inert stage. Never drop or delete original application records.
-  const [result] = await query([{ sql: 'SELECT name FROM sqlite_schema WHERE type=\'table\' AND name=?', params: [plan.names.d1_migrations] }]);
+  const [result] = await query([{ sql: 'SELECT name FROM sqlite_schema WHERE type=\'table\' AND name=?', params: [plan.names[plan.ledgerName]] }]);
   if (result.results.length) {
     const [actual] = await query([{sql:schemaQuery}]);
     canonicalSchema(actual.results,JSON.stringify(plan.stagedSchema));

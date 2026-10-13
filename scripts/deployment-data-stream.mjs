@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { closeSync, openSync, mkdtempSync, rmSync, writeSync, fsyncSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { archiveSchema, canonicalDatabaseSchema, cell, decode, failure, initialize, integrity, inventory, metadata, quote, readTable, schema } from './deployment-data-core.mjs';
-import { checkedLedger } from './deployment-data-ledger.mjs';
+import { checkedLedger, validateLedger } from './deployment-data-ledger.mjs';
 import { classify, sanitize, excludedCaptureTables } from './deployment-data-policy.mjs';
 import { refuseDevRows } from './deployment-data-dev.mjs';
 import { readArchiveJSON } from './deployment-data-json.mjs';
@@ -93,7 +93,7 @@ function checkHeader(store, expected) {
   if (p.schema !== schema(expected)) throw failure('SCHEMA_MISMATCH', 'Archive schema differs from the committed Pencil schema.');
   if (JSON.stringify(p.tables.map(({ name, columns }) => ({ name, columns }))) !== JSON.stringify(inventory(expected))) throw failure('INVENTORY_MISMATCH', 'Archive table/column inventory differs from the committed Pencil schema.');
   const ledger = p.d1Migrations;
-  if (ledger.name !== 'd1_migrations' || JSON.stringify(ledger.columns) !== JSON.stringify(['id','name','applied_at']) || JSON.stringify(ledger.rows.map(row => row[1]?.type === 'text' ? row[1].value : null).sort()) !== JSON.stringify(metadata().map(row => row.name))) throw failure('MIGRATION_MISMATCH', 'D1 migration ledger differs from the committed migration history.');
+  validateLedger(ledger, metadata());
   if (ledger.rows.some((row,index)=>index>0&&JSON.stringify(ledger.rows[index-1])>JSON.stringify(row))) throw failure('CONTENT_MISMATCH', 'Archive migration rows are not in canonical order.');
   p.tables.forEach(classify);
 }
@@ -101,7 +101,7 @@ export function populateStore(database, store) {
   assertInitialized(database, inventory(database));
   const triggers = database.prepare("SELECT name,sql FROM sqlite_schema WHERE type='trigger'").all();
   for (const trigger of triggers) database.exec(`DROP TRIGGER ${quote(trigger.name)}`);
-  database.exec('DELETE FROM d1_migrations');
+  database.exec(`DELETE FROM ${quote(store.payload.d1Migrations.name)}`);
   for (const statement of initializedReplacement(store.payload.tables)) database.exec(statement.sql);
   for (const [index, table] of [store.payload.d1Migrations, ...store.payload.tables].entries()) {
     const insert = database.prepare(`INSERT INTO ${quote(table.name)} (${table.columns.map(quote).join(',')}) VALUES (${table.columns.map(() => '?').join(',')}) RETURNING ${rowExpression(table)} AS cells`);
@@ -119,7 +119,7 @@ export function populateStore(database, store) {
 export function validateStore(store) {
   const path = join(store.directory, 'validated.sqlite'), database = privateDatabase(path);
   try {
-    initialize(database); checkHeader(store, database);
+    initialize(database, store.payload.d1Migrations); checkHeader(store, database);
     database.exec('PRAGMA foreign_keys=OFF; BEGIN IMMEDIATE');
     populateStore(database, store); database.exec('COMMIT');
     // Every INSERT returns its actual typed storage values. Together with

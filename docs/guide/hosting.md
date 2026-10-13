@@ -6,7 +6,7 @@ Deploy acts only on the Cloudflare account you select. No command in Pencil depl
 
 ## What you need
 
-- **A Cloudflare account**, and an API token for it that may edit Workers and D1. You give Pencil the account's ID and the token as `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`, through your secret manager or the secret environment of your terminal.
+- **A Cloudflare account on Workers Paid**, and an API token for it that may edit Workers and D1. You give Pencil the account's ID and the token as `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`, through your secret manager or the secret environment of your terminal.
 - **Node 22.20.0 and pnpm 10.12.4**, and the installed dependencies from [Install and run locally](install.md).
 - **A mail provider**, SendGrid or Resend, with a verified sender address and an API key. See [Set up email](#set-up-email).
 - **A passing local check of the exact source you will deploy.** Run `rer verify` first. It includes browser journeys, so install the test browser once:
@@ -23,11 +23,11 @@ Deploy reads everything from environment variables. Start with the address you w
 |---|---|
 | `APP_ORIGIN` | The exact HTTPS origin of your deployment, with no path. Sign-in links, reports and public links point here. If it differs from the address people open, every page there, `/health` included, answers **Not found**. |
 | `SEED_ADMIN_EMAIL` | The email address of the first owner. |
-| `MAIL_PROVIDER` | `sendgrid` or `resend`. |
+| `PENCIL_MAIL_PROVIDER` | `sendgrid` (the default) or `resend`. `rer deploy` binds the choice as the Worker’s `MAIL_PROVIDER`. The earlier `MAIL_PROVIDER` environment setting is also accepted; if both are set, they must agree. |
 | `MAIL_FROM` | Your verified sender. It must be a plain `noreply@` or `no-reply@` address, with no display name. |
 | `MAIL_API_KEY` | Your mail provider's API key. A secret. |
 | `SESSION_SECRET` | A random string of at least 32 characters, used to sign people in. A secret. Keep it the same for the life of the deployment. |
-| `SETUP_TOKEN` | A different random string of at least 32 characters. A secret used once, to create the first owner. |
+| `SETUP_TOKEN` | A different random string of at least 32 characters. A secret used to create the first owner. Keep the deployed secret after setup, as explained below. |
 | `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` | The account to deploy into and its token. The token is a secret. |
 
 External tasks are optional. To send actions to your own task system, also set `TASK_PROVIDER`, `TASK_WEBHOOK_URL` and `TASK_API_KEY` as Worker secrets; [Actions and follow-up](actions.md) explains the webhook your receiver must honour. Without them, everything else works and the action page says what to set.
@@ -56,7 +56,9 @@ A healthy Worker shows that the code runs. It does not show that email arrives o
 3. Choose **Set up the first owner**.
 4. The same page then asks for your business name and your time zone. Fill them in and choose **Finish setup**. Until you do, the rest of the app sends you back there.
 
-The new owner's email is your `SEED_ADMIN_EMAIL`. After it works, remove the `SETUP_TOKEN` secret from your Worker in the Cloudflare dashboard, under your Worker's settings, then unset it in your environment so a later deploy does not install it again. An installation that already has an owner cannot be set up a second time.
+The new owner's email is your `SEED_ADMIN_EMAIL`. After it works, keep the `SETUP_TOKEN` secret on the Worker. You may unset it in your terminal: repeat deployments inherit the existing Worker secrets. An installation that already has an owner cannot be set up a second time, even while the token remains installed.
+
+Do not delete or change Worker secrets in the dashboard between deployments. With rer 0.2.1, those changes create a Worker version outside the saved deployment receipt; the next deploy refuses it as `owned-resource-replaced`. Preserve `.rer/deploy/production.json` (or the file for your chosen environment) privately and back it up after each successful deploy. Do not edit the receipt or bypass an ownership refusal. A deployment whose Worker version has already changed outside rer needs the deploy kit's supported ownership recovery; simply putting the token back does not restore its identity.
 
 ## Check that it works
 
@@ -73,8 +75,9 @@ Enter your email at `/signin` and choose **Send magic link**. The link in the em
 
 ## Set up email
 
-Pencil sends email for three things: sign-in links, invitations and reminders, and new-response notices to operators. It uses SendGrid or Resend, whichever you set in `MAIL_PROVIDER`.
+Pencil sends email for three things: sign-in links, invitations and reminders, and new-response notices to operators. It uses SendGrid by default, or Resend when you set `PENCIL_MAIL_PROVIDER=resend` before the first deploy.
 
+- Choose the provider before the first deploy. Existing Worker secrets, including `MAIL_PROVIDER` and `MAIL_API_KEY`, are inherited on later deployments; changing your terminal setting does not rotate them.
 - Verify your sender with the provider, and set `MAIL_FROM` to that address, in the `noreply@` or `no-reply@` form.
 - The provider receives each recipient's address and the whole message, including the sign-in, invitation or opt-out link. Keep provider keys and these links out of your logs and out of anything public.
 - A missing mail setting stops Pencil from starting and names the variable. There is no half-working mode.
@@ -94,13 +97,15 @@ The Worker has a schedule that runs every minute. It sends invitations still wai
 
 ## Upgrading
 
-Back up first. Pencil's own export and restore commands work on a local copy and refuse a deployed database, so take the copy of a deployed database with Cloudflare's own D1 tools, and keep the previous deployment until you have checked the new one. See [Backup and restore](backup.md). Then deploy the new source with `pnpm run deploy -- --environment production`, which applies the new database migrations in order. Never edit a migration that has already been applied. `RELEASE.json` lists every migration with its steps, and the notes for upgrading from 0.1.0 are in [the release scope](../FIRST-RELEASE.md) on GitHub.
+Back up first using the deployed recovery command in [Backup and restore](backup.md), and verify its archive in a new empty target before changing the running installation. The public `rer export` and `rer import` commands remain local; `node scripts/deployment-data-cli.mjs` handles deployed D1, including the deployment kit's migration ledger. Keep the previous deployment until you have checked the new one. Then deploy the new source with `pnpm run deploy -- --environment production`, which applies the new database migrations in order. `RELEASE.json` lists every migration with its steps. The [release scope](../FIRST-RELEASE.md) explains the 0.2.0 predecessor, the declared 0019 rewrite and 0034 convergence; no other applied migration may be edited.
 
 Migrations cannot be undone in place. Keep the previous deployment's source and its database until the new one has been checked.
 
 Pencil has no command that takes a deployed Worker offline. If you need to stop one, for example a first deployment that went wrong, use the Cloudflare dashboard: in your Worker's settings, turn off its `workers.dev` address and remove its Cron trigger. Your database is kept. The next deploy turns both on again.
 
 ## Costs, limits and what is not proven
+
+Pencil’s software is free; Cloudflare’s Workers plan is separate. Use Workers Paid for this hosting path: its default request CPU budget is 30 seconds (30,000 ms), while Workers Free permits only 10 ms. The published rer 0.2.1 deploy kit does not accept a `limits.cpu_ms` declaration or upload that setting; this path relies on the provider’s plan default, not an explicit per-Worker limit. Check your account plan and [Cloudflare’s current limits](https://developers.cloudflare.com/workers/platform/limits/) before deploying.
 
 Cloudflare and your mail provider bill you directly, depending on your plans and your traffic. Check their current pricing. Pencil's declared sizes, such as many flows and responses per revision, are design targets and not proven capacity. Local tests do not establish how a hosted deployment performs, and Pencil makes no claim about how much traffic yours will carry. If you rely on a particular load, measure it on your own deployment.
 

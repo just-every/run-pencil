@@ -32,6 +32,16 @@ contract(['DIST-006', 'DIST-008'], 'late queue processing cannot authorize retry
     }
     expect(await env.DB.prepare("SELECT count(*) AS n FROM mail_delivery_attempts WHERE delivery_id = ? AND event = 'started'").bind(f.id).first()).toEqual({ n: allowed ? 2 : 1 })
   }
+  const stale = await pending('retry-budget-stale-operator-marker')
+  await env.DB.batch([
+    env.DB.prepare("UPDATE mail_deliveries SET attempts=2, available_at='2026-10-06T00:02:00.000Z', last_attempt_at='2026-10-06T00:02:01.000Z' WHERE id=?").bind(stale.id),
+    env.DB.prepare("INSERT INTO mail_delivery_attempts (id,delivery_id,ordinal,event,created_at) VALUES ('stale-retry-started',?,2,'started','2026-10-06T00:02:00.000Z')").bind(stale.id),
+    env.DB.prepare("INSERT INTO mail_delivery_attempts (id,delivery_id,ordinal,event,reason,created_at) VALUES ('stale-retry-transient',?,2,'transient','Synthetic transient failure','2026-10-06T00:02:01.000Z')").bind(stale.id),
+    env.DB.prepare("INSERT INTO mail_delivery_attempts (id,delivery_id,ordinal,event,actor_operator_id,reason,created_at) VALUES ('stale-operator-retry',?,1,'operator-retry',?,'Earlier explicit retry', '2026-10-06T00:01:00.000Z')").bind(stale.id, stale.operatorId),
+  ])
+  expect(await new MailDeliveries(env.DB).prepare(stale.id, origin, '2026-10-06T02:00:00.000Z')).toBeNull()
+  expect(await env.DB.prepare('SELECT status,attempts,reason FROM mail_deliveries WHERE id=?').bind(stale.id).first())
+    .toEqual({ status: 'failed', attempts: 2, reason: 'Automatic retry budget exhausted.' })
 }, 60_000)
 contract(['DIST-006', 'BASE-OPS-003'], 'concurrent consumers authorize once and the atomic guard rejects changed retry timing', async () => {
   const f = await pending('retry-budget-concurrent')

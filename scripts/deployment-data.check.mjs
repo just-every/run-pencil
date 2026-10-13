@@ -164,3 +164,5 @@ import './deployment-data-notification.check.mjs';
 import "./deployment-data-stream.check.mjs";
 import './deployment-data-reporting.check.mjs';
 import './deployment-data-import-custody.check.mjs';
+
+import './deployment-data-hosted.check.mjs';

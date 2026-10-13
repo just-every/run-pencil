@@ -9,7 +9,8 @@ export class MailDeliveries {
   private async read(id: string, now = new Date().toISOString()) {
     return this.db.prepare(`SELECT d.id, d.participant_id AS participantId, d.kind, d.status, d.idempotency_key AS key, d.attempts,
       (SELECT COALESCE(MAX(ordinal), 0) FROM mail_delivery_attempts WHERE delivery_id = d.id AND event = 'operator-retry') AS retryBase,
-      d.first_attempt_at AS firstAttempt, d.available_at AS availableAt, p.workspace_id AS workspaceId, p.email_snapshot AS email,
+      CASE WHEN EXISTS (SELECT 1 FROM mail_delivery_attempts WHERE delivery_id = d.id AND event = 'operator-retry' AND ordinal = d.attempts)
+        THEN NULL ELSE d.first_attempt_at END AS firstAttempt, d.available_at AS availableAt, p.workspace_id AS workspaceId, p.email_snapshot AS email,
       p.token, p.opt_out_token AS optOutToken, w.name AS business, r.title, w.time_zone AS timeZone,
       w.sending_window_start AS sendingWindowStart, w.sending_window_end AS sendingWindowEnd,
       json_extract(l.policy_json, '$.reminderDelayHours') AS reminderDelayHours,
@@ -49,9 +50,12 @@ export class MailDeliveries {
     }
     const attemptId = ulid()
     const results = await this.db.batch([
-      this.db.prepare(`UPDATE mail_deliveries SET status = 'sending', attempts = attempts + 1, first_attempt_at = COALESCE(first_attempt_at, ?), last_attempt_at = ?, updated_at = ?
+      this.db.prepare(`UPDATE mail_deliveries SET status = 'sending', attempts = attempts + 1,
+        first_attempt_at = CASE WHEN EXISTS (SELECT 1 FROM mail_delivery_attempts WHERE delivery_id = mail_deliveries.id AND event = 'operator-retry' AND ordinal = mail_deliveries.attempts)
+          THEN ? ELSE COALESCE(first_attempt_at, ?) END, last_attempt_at = ?, updated_at = ?
         WHERE id = ? AND status = 'pending' AND attempts = ? AND available_at <= ?
-          AND (first_attempt_at IS NULL OR ? <= strftime('%Y-%m-%dT%H:%M:%fZ', first_attempt_at, '+1 hour'))
+          AND (EXISTS (SELECT 1 FROM mail_delivery_attempts WHERE delivery_id = mail_deliveries.id AND event = 'operator-retry' AND ordinal = mail_deliveries.attempts)
+            OR first_attempt_at IS NULL OR ? <= strftime('%Y-%m-%dT%H:%M:%fZ', first_attempt_at, '+1 hour'))
           AND attempts - (SELECT COALESCE(MAX(ordinal), 0) FROM mail_delivery_attempts WHERE delivery_id = mail_deliveries.id AND event = 'operator-retry') < 6
           AND EXISTS (
           SELECT 1 FROM invitation_participants p JOIN distribution_contacts c ON c.id = p.contact_id
@@ -60,7 +64,7 @@ export class MailDeliveries {
           AND (r.deadline_at IS NULL OR r.deadline_at > ?)
           AND (r.target_completed_responses IS NULL OR (SELECT count(*) FROM responses WHERE revision_id = r.id AND state = 'released') < r.target_completed_responses) AND p.delivery_status != 'bounced'
           AND (mail_deliveries.kind = 'invitation' OR (p.delivery_status = 'sent' AND p.response_status != 'completed')))`)
-        .bind(now, now, now, id, delivery.attempts, now, now, now),
+        .bind(now, now, now, now, id, delivery.attempts, now, now, now),
       this.db.prepare(`INSERT INTO mail_delivery_attempts (id, delivery_id, ordinal, event, created_at)
         SELECT ?, id, attempts, 'started', ? FROM mail_deliveries WHERE id = ? AND status = 'sending' AND attempts = ? AND last_attempt_at = ?
         AND NOT EXISTS (SELECT 1 FROM mail_delivery_attempts WHERE delivery_id = ? AND ordinal = ? AND event = 'started')`)
