@@ -2,27 +2,41 @@ import { participantInvitation } from './message'
 import { ulid } from 'ulid'
 import { ConflictError, NotFoundError, ValidationError } from '../../shared/errors'
 import { nextSendingInstant, retryInstant } from './schedule'
-type Delivery = { id: string; participantId: string; kind: 'invitation' | 'reminder'; status: string; key: string; attempts: number; firstAttempt: string | null; availableAt: string; workspaceId: string; email: string | null; token: string | null; optOutToken: string | null; business: string; title: string; timeZone: string; sendingWindowStart: string; sendingWindowEnd: string; eligible: number; reminderDelayHours: number }
+type Delivery = { id: string; participantId: string; kind: 'invitation' | 'reminder'; status: string; key: string; attempts: number; retryBase: number; firstAttempt: string | null; availableAt: string; workspaceId: string; email: string | null; token: string | null; optOutToken: string | null; business: string; title: string; timeZone: string; sendingWindowStart: string; sendingWindowEnd: string; eligible: number; reminderDelayHours: number }
 /** Domain receipts only. The maintained sender must call prepare before any provider effect. */
 export class MailDeliveries {
   constructor(private readonly db: D1Database) {}
-  private async read(id: string) {
+  private async read(id: string, now = new Date().toISOString()) {
     return this.db.prepare(`SELECT d.id, d.participant_id AS participantId, d.kind, d.status, d.idempotency_key AS key, d.attempts,
+      (SELECT COALESCE(MAX(ordinal), 0) FROM mail_delivery_attempts WHERE delivery_id = d.id AND event = 'operator-retry') AS retryBase,
       d.first_attempt_at AS firstAttempt, d.available_at AS availableAt, p.workspace_id AS workspaceId, p.email_snapshot AS email,
       p.token, p.opt_out_token AS optOutToken, w.name AS business, r.title, w.time_zone AS timeZone,
       w.sending_window_start AS sendingWindowStart, w.sending_window_end AS sendingWindowEnd,
       json_extract(l.policy_json, '$.reminderDelayHours') AS reminderDelayHours,
-      (c.id IS NOT NULL AND c.opted_out_at IS NULL AND p.token IS NOT NULL AND f.status = 'open' AND r.admission_closed_at IS NULL
-        AND (r.deadline_at IS NULL OR r.deadline_at > strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
+      (c.id IS NOT NULL AND c.opted_out_at IS NULL AND p.token IS NOT NULL AND f.status IN ('open', 'closed') AND r.admission_closed_at IS NULL
+        AND (r.deadline_at IS NULL OR r.deadline_at > ?)
         AND (r.target_completed_responses IS NULL OR (SELECT count(*) FROM responses WHERE revision_id = r.id AND state = 'released') < r.target_completed_responses)
         AND p.delivery_status != 'bounced' AND (d.kind = 'invitation' OR (p.delivery_status = 'sent' AND p.response_status != 'completed'))) AS eligible
       FROM mail_deliveries d JOIN invitation_participants p ON p.id = d.participant_id JOIN invitation_launches l ON l.id = p.launch_id JOIN workspaces w ON w.id = p.workspace_id
       JOIN flow_revisions r ON r.id = p.revision_id JOIN flows f ON f.id = r.flow_id
-      LEFT JOIN distribution_contacts c ON c.id = p.contact_id WHERE d.id = ?`).bind(id).first<Delivery>()
+      LEFT JOIN distribution_contacts c ON c.id = p.contact_id WHERE d.id = ?`).bind(now, id).first<Delivery>()
   }
   async prepare(id: string, origin: string, now = new Date().toISOString()) {
-    const delivery = await this.read(id)
+    const delivery = await this.read(id, now)
     if (!delivery || delivery.status !== 'pending' || delivery.availableAt > now) return null
+    // A delayed queue wakeup cannot extend the budget. Recheck the same
+    // deadline and retry count in the atomic send authorization below.
+    if (delivery.firstAttempt && (Date.parse(now) > Date.parse(delivery.firstAttempt) + 3600_000 || delivery.attempts - delivery.retryBase >= 6)) {
+      await this.db.batch([
+        this.db.prepare(`UPDATE mail_deliveries SET status = 'failed', reason = 'Automatic retry budget exhausted.', updated_at = ?
+          WHERE id = ? AND status = 'pending' AND attempts = ? AND first_attempt_at = ?`)
+          .bind(now, id, delivery.attempts, delivery.firstAttempt),
+        this.db.prepare(`UPDATE invitation_participants SET delivery_status = 'failed' WHERE id = ? AND ? = 'invitation'
+          AND EXISTS (SELECT 1 FROM mail_deliveries WHERE id = ? AND status = 'failed' AND reason = 'Automatic retry budget exhausted.')`)
+          .bind(delivery.participantId, delivery.kind, id),
+      ])
+      return null
+    }
     // Recovery omits invitation capabilities while preserving their receipts.
     if (delivery.token === null) return null
     if (!delivery.eligible) {
@@ -36,14 +50,17 @@ export class MailDeliveries {
     const attemptId = ulid()
     const results = await this.db.batch([
       this.db.prepare(`UPDATE mail_deliveries SET status = 'sending', attempts = attempts + 1, first_attempt_at = COALESCE(first_attempt_at, ?), last_attempt_at = ?, updated_at = ?
-        WHERE id = ? AND status = 'pending' AND attempts = ? AND EXISTS (
+        WHERE id = ? AND status = 'pending' AND attempts = ? AND available_at <= ?
+          AND (first_attempt_at IS NULL OR ? <= strftime('%Y-%m-%dT%H:%M:%fZ', first_attempt_at, '+1 hour'))
+          AND attempts - (SELECT COALESCE(MAX(ordinal), 0) FROM mail_delivery_attempts WHERE delivery_id = mail_deliveries.id AND event = 'operator-retry') < 6
+          AND EXISTS (
           SELECT 1 FROM invitation_participants p JOIN distribution_contacts c ON c.id = p.contact_id
           JOIN flow_revisions r ON r.id = p.revision_id JOIN flows f ON f.id = r.flow_id WHERE p.id = mail_deliveries.participant_id
-          AND c.opted_out_at IS NULL AND p.token IS NOT NULL AND f.status = 'open' AND r.admission_closed_at IS NULL
+          AND c.opted_out_at IS NULL AND p.token IS NOT NULL AND f.status IN ('open', 'closed') AND r.admission_closed_at IS NULL
           AND (r.deadline_at IS NULL OR r.deadline_at > ?)
           AND (r.target_completed_responses IS NULL OR (SELECT count(*) FROM responses WHERE revision_id = r.id AND state = 'released') < r.target_completed_responses) AND p.delivery_status != 'bounced'
           AND (mail_deliveries.kind = 'invitation' OR (p.delivery_status = 'sent' AND p.response_status != 'completed')))`)
-        .bind(now, now, now, id, delivery.attempts, now),
+        .bind(now, now, now, id, delivery.attempts, now, now, now),
       this.db.prepare(`INSERT INTO mail_delivery_attempts (id, delivery_id, ordinal, event, created_at)
         SELECT ?, id, attempts, 'started', ? FROM mail_deliveries WHERE id = ? AND status = 'sending' AND attempts = ? AND last_attempt_at = ?
         AND NOT EXISTS (SELECT 1 FROM mail_delivery_attempts WHERE delivery_id = ? AND ordinal = ? AND event = 'started')`)
@@ -56,7 +73,7 @@ export class MailDeliveries {
   async record(id: string, ordinal: number, outcome: { kind: 'sent'; providerId: string | null } | { kind: 'transient' | 'permanent' | 'unknown' | 'bounced'; reason: string }, now = new Date().toISOString()) {
     const delivery = await this.read(id)
     if (!delivery || delivery.status !== 'sending' || delivery.attempts !== ordinal) throw new ConflictError('This attempt already has an outcome or is not current.')
-    const retry = outcome.kind === 'transient' && delivery.firstAttempt ? retryInstant(delivery.firstAttempt, ordinal) : null
+    const retry = outcome.kind === 'transient' && delivery.firstAttempt ? retryInstant(delivery.firstAttempt, ordinal - delivery.retryBase) : null
     const canRetry = retry !== null && Date.parse(now) <= Date.parse(delivery.firstAttempt!) + 3600_000
     const status = outcome.kind === 'sent' ? 'sent' : outcome.kind === 'unknown' ? 'unknown' : canRetry ? 'pending' : 'failed'
     const reason = 'reason' in outcome ? outcome.reason.slice(0, 1000) : null
@@ -75,16 +92,19 @@ export class MailDeliveries {
         .bind(ulid(), `reminder:${delivery.participantId}`, new Date(Date.parse(now) + delivery.reminderDelayHours * 3600_000).toISOString(), now, now, delivery.participantId, status, delivery.kind, receipt),
     ])
   }
-  async retry(workspaceId: string, id: string, operatorId: string, duplicateRiskAccepted: boolean) {
+  async retry(workspaceId: string, id: string, operatorId: string, duplicateRiskAccepted: boolean, now = new Date().toISOString()) {
     const delivery = await this.read(id)
     if (!delivery || delivery.workspaceId !== workspaceId) throw new NotFoundError('This delivery is not in your workspace.')
     if (!['failed','unknown'].includes(delivery.status)) throw new ValidationError('Only failed or unknown delivery can be retried.')
     if (delivery.status === 'unknown' && !duplicateRiskAccepted) throw new ValidationError('The previous outcome is unknown. Explicit resend may deliver a duplicate; acknowledge this risk first.')
-    const now = new Date().toISOString()
-    await this.db.batch([
-      this.db.prepare(`INSERT INTO mail_delivery_attempts (id, delivery_id, ordinal, event, actor_operator_id, reason, created_at) VALUES (?, ?, ?, 'operator-retry', (SELECT id FROM operators WHERE id = ? AND workspace_id = ?), ?, ?)`)
-        .bind(ulid(), id, delivery.attempts, operatorId, workspaceId, `Explicit operator retry; duplicate risk ${duplicateRiskAccepted ? 'accepted' : 'not applicable'}`, now),
-      this.db.prepare(`UPDATE mail_deliveries SET status = 'pending', available_at = ?, updated_at = ? WHERE id = ? AND status IN ('failed','unknown')`).bind(now, now, id),
+    const receipt = ulid()
+    const result = await this.db.batch([
+      this.db.prepare(`INSERT INTO mail_delivery_attempts (id, delivery_id, ordinal, event, actor_operator_id, reason, created_at)
+        SELECT ?, id, attempts, 'operator-retry', (SELECT id FROM operators WHERE id = ? AND workspace_id = ?), ?, ?
+        FROM mail_deliveries WHERE id = ? AND attempts = ? AND status IN ('failed','unknown') AND (status != 'unknown' OR ?)`)
+        .bind(receipt, operatorId, workspaceId, `Explicit operator retry starts a new one-hour budget; duplicate risk ${duplicateRiskAccepted ? 'accepted' : 'not applicable'}`, now, id, delivery.attempts, duplicateRiskAccepted ? 1 : 0),
+      this.db.prepare(`UPDATE mail_deliveries SET status = 'pending', first_attempt_at = NULL, last_attempt_at = NULL, available_at = ?, updated_at = ? WHERE id = ? AND EXISTS (SELECT 1 FROM mail_delivery_attempts WHERE id = ?)`).bind(now, now, id, receipt),
     ])
+    if (!result[0].meta.changes) throw new ConflictError('This delivery was already retried or changed; refresh its status.')
   }
 }

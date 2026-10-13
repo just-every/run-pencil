@@ -396,7 +396,7 @@ export class FlowService {
 
   async closeFlow(workspaceId: string, flowId: string, operatorId?: string) {
     const flow = await this.requireWorkspaceFlow(workspaceId, flowId)
-    if (flow.status !== 'open') throw new ValidationError('Only an open flow can be closed.')
+    if (!['open', 'closed'].includes(flow.status)) throw new ValidationError('Only a published flow can be closed.')
     await this.repository.closeFlow(flowId, new Date().toISOString(), operatorId)
   }
 

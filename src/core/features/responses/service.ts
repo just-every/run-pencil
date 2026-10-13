@@ -92,7 +92,9 @@ export class ResponseService {
     const revision = await this.flowRepository.findRevisionById(invitation.revisionId)
     const flow = revision && await this.flowRepository.findFlow(revision.flowId)
     if (!flow || !revision || flow.status === 'archived') throw new NotFoundError('This invitation is no longer available.')
-    if (flow.status !== 'open' || revision.admissionClosedAt || (revision.deadlineAt && Date.parse(revision.deadlineAt) <= Date.now()) || await this.targetReached(revision)) throw new FlowClosedError({ title: revision.title, slug: flow.slug })
+    const expired = revision.deadlineAt && Date.parse(revision.deadlineAt) <= Date.now()
+    if (expired) await this.flowRepository.closeExpiredRevision(revision.id, new Date().toISOString())
+    if (flow.status === 'draft' || revision.admissionClosedAt || expired || await this.targetReached(revision)) throw new FlowClosedError({ title: revision.title, slug: flow.slug })
     const { steps, choices, rules } = await this.flowRepository.getRevisionGraph(revision.id)
     return { invitation, flow, revision, steps, choices, rules, publicFlow: { branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules), identity: 'identified' as const, completedStepId: invitation.responseStatus === 'completed' ? invitation.completionStepId : null } }
   }
@@ -231,7 +233,7 @@ export class ResponseService {
       const [latestFlow, latestRevision] = await Promise.all([this.flowRepository.findFlow(flow.id), this.flowRepository.findRevisionById(revision.id)])
       const expired = latestRevision?.deadlineAt && Date.parse(latestRevision.deadlineAt) <= Date.now()
       if (expired) await this.flowRepository.closeExpiredRevision(revision.id, new Date().toISOString())
-      if (latestFlow?.status !== 'open' || latestRevision?.admissionClosedAt || expired || (latestRevision && await this.targetReached(latestRevision))) throw new FlowClosedError({ title: revision.title, slug: flow.slug })
+      if (!latestFlow || !['open', 'closed'].includes(latestFlow.status) || latestRevision?.admissionClosedAt || expired || (latestRevision && await this.targetReached(latestRevision))) throw new FlowClosedError({ title: revision.title, slug: flow.slug })
       const remaining = await this.repository.findSubmissionContext(session.id, tokenHash)
       if (!remaining || remaining.session.expiresAt <= new Date().toISOString()) throw new SessionUnavailableError()
       throw new ValidationError('This response session has already completed or cannot accept this submission.')

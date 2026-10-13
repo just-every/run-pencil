@@ -290,7 +290,7 @@ export function FlowBuilderPage() {
       <footer className="builder-lifecycle" aria-label="Flow lifecycle">
         <div className="builder-lifecycle-status"><p className="eyebrow">Flow lifecycle</p><span className="badge" data-status={draft.flow.status}>{draft.flow.status[0].toUpperCase() + draft.flow.status.slice(1)}</span><p>Publish your saved changes when you are ready to share.</p></div>
         <div className="builder-actions">
-          {draft.flow.status === 'open' ? <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={() => changeLifecycle('close')} type="button">Close responses</button> : null}
+          {draft.flow.status === 'open' || draft.flow.status === 'closed' ? <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={() => changeLifecycle('close')} type="button">Close responses</button> : null}
           {draft.flow.status === 'closed' ? <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={() => changeLifecycle('reopen')} type="button">Reopen current revision</button> : null}
           {draft.flow.status !== 'archived' ? <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={() => changeLifecycle('archive')} type="button">Archive flow</button> : null}
         </div>

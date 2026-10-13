@@ -87,7 +87,7 @@ export class ResponseRepository {
         WHERE EXISTS (
           SELECT 1 FROM flows f
           JOIN flow_revisions r ON r.id = ?
-          WHERE f.id = ? AND f.status = 'open' AND r.flow_id = f.id AND r.state = 'published' AND ((? IS NULL AND r.is_current = 1) OR EXISTS (SELECT 1 FROM invitation_participants p WHERE p.id = ? AND p.revision_id = r.id AND p.token IS NOT NULL AND p.response_status != 'completed'))
+          WHERE f.id = ? AND f.status IN ('open', 'closed') AND r.flow_id = f.id AND r.state = 'published' AND ((? IS NULL AND r.is_current = 1) OR EXISTS (SELECT 1 FROM invitation_participants p WHERE p.id = ? AND p.revision_id = r.id AND p.token IS NOT NULL AND p.response_status != 'completed'))
             AND r.admission_closed_at IS NULL
             AND (r.deadline_at IS NULL OR r.deadline_at > ?)
             AND (r.target_completed_responses IS NULL OR (
@@ -196,7 +196,7 @@ export class ResponseRepository {
         WHERE s.id = ? AND s.revision_id = ? AND s.session_token_hash = ?
           AND s.completed_at IS NULL AND s.expires_at > ?
           AND ((s.source != 'invitation' AND ? IS NULL) OR (s.source = 'invitation' AND EXISTS (SELECT 1 FROM invitation_participants p WHERE p.id = ? AND p.revision_id = r.id AND p.token IS NOT NULL AND p.response_status != 'completed' AND NOT EXISTS (SELECT 1 FROM responses WHERE participant_id = p.id))))
-          AND f.id = ? AND f.status = 'open' AND r.admission_closed_at IS NULL
+          AND f.id = ? AND f.status IN ('open', 'closed') AND r.admission_closed_at IS NULL
           AND (r.deadline_at IS NULL OR r.deadline_at > ?)
           AND (? = 'quarantined' OR r.target_completed_responses IS NULL OR (
             SELECT COUNT(*) FROM responses completed
