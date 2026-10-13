@@ -7,7 +7,7 @@ import type { PencilServices } from './services'
 import type { PencilPlatform } from '../platform/runtime'
 
 contract('OPER-003', 'refuses every missing required mail variable outside explicit loopback development', () => {
-  const complete = { APP_ORIGIN: 'https://pencil.example', PENCIL_BUILD_ID: 'test-build', SEED_ADMIN_EMAIL: 'owner@example.test', SESSION_SECRET: 'synthetic-session-secret-at-least-32-characters', MAIL_PROVIDER: 'resend', MAIL_API_KEY: 'synthetic-config', MAIL_FROM: 'no-reply@example.test' }
+  const complete = { APP_ORIGIN: 'https://pencil.example', SEED_ADMIN_EMAIL: 'owner@example.test', SESSION_SECRET: 'synthetic-session-secret-at-least-32-characters', MAIL_PROVIDER: 'resend', MAIL_API_KEY: 'synthetic-config', MAIL_FROM: 'no-reply@example.test' }
   expect(deploymentConfigurationErrors('https://pencil.example/health', complete as WorkerBindings)).toEqual([])
   for (const name of ['MAIL_PROVIDER', 'MAIL_API_KEY', 'MAIL_FROM']) {
     expect(deploymentConfigurationErrors('https://pencil.example/health', { ...complete, [name]: '' } as WorkerBindings)).toContain(`${name} is required`)
@@ -19,7 +19,7 @@ contract('BASE-SECRET-001', 'redacts arbitrary bootstrap and health exceptions i
   const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
   try {
     const services = { responses: { enforcePublicRequestRateLimit: async () => {} }, workspace: { checkHealth: async () => { throw new Error(sentinel) } } } as unknown as PencilServices
-    const health = await createWorkerApp(services, { configuration: { buildId: 'test' } } as PencilPlatform).request('https://pencil.test/health')
+    const health = await createWorkerApp(services, { configuration: {} } as PencilPlatform).request('https://pencil.test/health')
     expect(health.status).toBe(503)
     expect(await health.text()).not.toContain(sentinel)
     expect(JSON.stringify(consoleError.mock.calls)).not.toContain(sentinel)

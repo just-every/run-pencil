@@ -69,7 +69,6 @@
         "SEED_ADMIN_EMAIL",
         "MAIL_PROVIDER",
         "MAIL_FROM",
-        "PENCIL_BUILD_ID",
         "SEED_SAMPLE_DATA",
         "RER_MANAGEMENT_ORIGIN",
         "RER_INSTALLATION_ID",

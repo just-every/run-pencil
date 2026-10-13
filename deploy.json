@@ -12,10 +12,6 @@
   ],
   "secrets": [
     {
-      "binding": "PENCIL_BUILD_ID",
-      "environment": "PENCIL_BUILD_ID"
-    },
-    {
       "binding": "SESSION_SECRET",
       "environment": "SESSION_SECRET"
     },

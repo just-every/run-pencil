@@ -10,7 +10,7 @@ import { decodeLogo, logoByteLimit } from '../../src/core/features/brand/logo'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 const origin = 'https://forms.example.test'
-const bindings = { ...env, APP_ORIGIN: origin, PENCIL_BUILD_ID: 'brand-proof', SESSION_SECRET: 'synthetic-brand-session-secret-at-least-32-characters', SETUP_TOKEN: 'synthetic-brand-setup-secret-at-least-32-characters', SEED_ADMIN_EMAIL: 'brand-owner@example.test', MAIL_PROVIDER: 'sendgrid', MAIL_FROM: 'forms@example.test', MAIL_API_KEY: 'synthetic-unused-key', PENCIL_LOCAL_DEVELOPMENT: 'false', SEED_SAMPLE_DATA: 'false' }
+const bindings = { ...env, APP_ORIGIN: origin, SESSION_SECRET: 'synthetic-brand-session-secret-at-least-32-characters', SETUP_TOKEN: 'synthetic-brand-setup-secret-at-least-32-characters', SEED_ADMIN_EMAIL: 'brand-owner@example.test', MAIL_PROVIDER: 'sendgrid', MAIL_FROM: 'forms@example.test', MAIL_API_KEY: 'synthetic-unused-key', PENCIL_LOCAL_DEVELOPMENT: 'false', SEED_SAMPLE_DATA: 'false' }
 const png = decodeLogo('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jU1sAAAAASUVORK5CYII=')
 const raw = (path: string, init: RequestInit = {}) => worker.fetch(new Request(origin + path, init), bindings, {} as ExecutionContext)
 contract(['BRAND-001', 'HOME-001', 'BASE-ACCESS-004', 'BASE-INPUT-001'], 'production D1 branding persists, refuses unauthorized and invalid writes, and selects only a published owned flow', async () => {

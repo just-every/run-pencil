@@ -15,7 +15,6 @@ export interface WorkerBindings {
   readonly RER_VERSION?: { id: string }
   readonly DB: D1Database
   readonly APP_ORIGIN?: string
-  readonly PENCIL_BUILD_ID?: string
   readonly SEED_ADMIN_EMAIL?: string
   readonly SEED_SAMPLE_DATA?: string
   readonly MAIL_PROVIDER?: string

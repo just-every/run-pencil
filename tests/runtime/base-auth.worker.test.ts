@@ -8,7 +8,7 @@ beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 const origin = 'https://pencil.example.test'
 const secret = 'synthetic-auth-session-secret-at-least-32-characters'
 const setup = 'synthetic-setup-secret-distinct-at-least-32-characters'
-const bindings = () => ({ ...env, APP_ORIGIN: origin, PENCIL_BUILD_ID: 'base-auth-proof', SESSION_SECRET: secret,
+const bindings = () => ({ ...env, APP_ORIGIN: origin, SESSION_SECRET: secret,
   SETUP_TOKEN: setup, SEED_ADMIN_EMAIL: 'first@example.test', MAIL_PROVIDER: 'sendgrid', MAIL_API_KEY: 'synthetic-mail-key', MAIL_FROM: 'no-reply@example.test', PENCIL_LOCAL_DEVELOPMENT: 'false', SEED_SAMPLE_DATA: 'false' }) as WorkerBindings
 function run(path: string, body?: unknown, cookie?: string) {
   return raw(new Request(origin + path, { method: body === undefined ? 'GET' : 'POST', headers: { Host: 'pencil.example.test', Origin: origin, 'CF-Connecting-IP': '192.0.2.60', 'Content-Type': 'application/json', ...(cookie ? { Cookie: cookie } : {}) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) }))

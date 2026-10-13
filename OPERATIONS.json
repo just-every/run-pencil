@@ -15,7 +15,6 @@
   },
   "requiredEnvironment": [
     "APP_ORIGIN",
-    "PENCIL_BUILD_ID",
     "SEED_ADMIN_EMAIL",
     "MAIL_PROVIDER",
     "MAIL_API_KEY",
@@ -26,7 +25,6 @@
   ],
   "environmentSources": {
     "APP_ORIGIN": "Owner-selected hosted configuration. Read OPERATIONS.md",
-    "PENCIL_BUILD_ID": "Owner-selected hosted configuration. Read OPERATIONS.md",
     "SEED_ADMIN_EMAIL": "Owner-selected hosted configuration. Read OPERATIONS.md",
     "MAIL_PROVIDER": "Owner-selected hosted configuration. Read OPERATIONS.md",
     "MAIL_API_KEY": "Owner-selected hosted configuration. Read OPERATIONS.md",
@@ -275,7 +273,7 @@
   "authentication": "Base operator-auth bootstrap, one-use native magic links and opaque sessions. Local mail uses the Base outbox.",
   "health": {
     "path": "/health",
-    "semantics": "Configured Worker/D1 dependency health and build identity; does not prove provider delivery or remote acceptance."
+    "semantics": "Configured Worker/D1 dependency health and the identity of the deployment that answered; does not prove provider delivery or remote acceptance."
   },
   "seedContract": {
     "version": 1,

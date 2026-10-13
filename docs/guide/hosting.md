@@ -22,7 +22,6 @@ Deploy reads everything from environment variables. Start with the address you w
 | Variable | What it is |
 |---|---|
 | `APP_ORIGIN` | The exact HTTPS origin of your deployment, with no path. Sign-in links, reports and public links point here. If it differs from the address people open, every page there, `/health` included, answers **Not found**. |
-| `PENCIL_BUILD_ID` | A label of your choice, such as the commit you deploy. `/health` reports it. |
 | `SEED_ADMIN_EMAIL` | The email address of the first owner. |
 | `MAIL_PROVIDER` | `sendgrid` or `resend`. |
 | `MAIL_FROM` | Your verified sender. It must be a plain `noreply@` or `no-reply@` address, with no display name. |
@@ -61,7 +60,7 @@ The new owner's email is your `SEED_ADMIN_EMAIL`. After it works, remove the `SE
 
 ## Check that it works
 
-1. Open `/health` at your address. It returns a short status with the `PENCIL_BUILD_ID` from your configuration file and the code 200 when the database is reachable, and 503 when it is not.
+1. Open `/health` at your address. It returns a short status naming the deployment that answered (the commit, fingerprint and Worker version `rer deploy` recorded) and the code 200 when the database is reachable, and 503 when it is not.
 2. Sign in as the owner with a real mailbox you control, as described just below.
 3. Build a flow, publish it, answer it from a second browser and check the results and an export.
 4. Send an invitation to a mailbox you control, and look in that inbox.

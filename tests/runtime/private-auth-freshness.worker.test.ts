@@ -10,7 +10,7 @@ import { createPencilPlatform } from '../../src/core/platform/runtime'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 const origin = 'https://pencil.example.test'
-const bindings = () => ({ ...env, APP_ORIGIN: origin, PENCIL_BUILD_ID: 'private-auth-freshness',
+const bindings = () => ({ ...env, APP_ORIGIN: origin,
   SESSION_SECRET: 'synthetic-private-auth-secret-at-least-32-characters',
   SETUP_TOKEN: 'synthetic-private-auth-setup-at-least-32-characters', SEED_ADMIN_EMAIL: 'setup@example.test',
   MAIL_PROVIDER: 'sendgrid', MAIL_API_KEY: 'synthetic-mail-key', MAIL_FROM: 'no-reply@example.test',

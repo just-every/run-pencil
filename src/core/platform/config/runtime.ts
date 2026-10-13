@@ -8,7 +8,6 @@ export class DeploymentConfigurationError extends Error {}
 
 export type RuntimeConfiguration = {
   readonly appOrigin: string
-  readonly buildId: string
   readonly sessionSecret: string
   readonly setupToken?: string
   readonly bootstrapAdminEmail?: string
@@ -46,7 +45,7 @@ export function deploymentConfigurationErrors(requestUrl: string, environment: W
   if (isLocalDevelopmentRequest(requestUrl, environment)) return environment.SESSION_SECRET && environment.SESSION_SECRET.length >= 32 ? [] : ['SESSION_SECRET must contain at least 32 characters']
 
   const errors: string[] = []
-  for (const name of ['APP_ORIGIN', 'PENCIL_BUILD_ID', 'SEED_ADMIN_EMAIL', 'MAIL_PROVIDER', 'MAIL_API_KEY', 'MAIL_FROM', 'SESSION_SECRET'] as const) {
+  for (const name of ['APP_ORIGIN', 'SEED_ADMIN_EMAIL', 'MAIL_PROVIDER', 'MAIL_API_KEY', 'MAIL_FROM', 'SESSION_SECRET'] as const) {
     if (!environment[name]?.trim()) errors.push(`${name} is required`)
   }
   if (environment.MAIL_PROVIDER && !['resend','sendgrid'].includes(environment.MAIL_PROVIDER)) {
@@ -67,7 +66,6 @@ export function deploymentConfigurationErrors(requestUrl: string, environment: W
   if (environment.SEED_ADMIN_EMAIL && !isEmail(environment.SEED_ADMIN_EMAIL.trim())) errors.push('SEED_ADMIN_EMAIL must be an email address')
   if (environment.MAIL_FROM && !isValidMailFrom(environment.MAIL_FROM.trim())) errors.push('MAIL_FROM must be a sender email address')
   if (environment.MAIL_API_KEY && hasLineBreak(environment.MAIL_API_KEY)) errors.push('MAIL_API_KEY must not contain line breaks')
-  if (environment.PENCIL_BUILD_ID && hasLineBreak(environment.PENCIL_BUILD_ID)) errors.push('PENCIL_BUILD_ID must not contain line breaks')
   if (errors.length === 0 && new URL(requestUrl).origin !== new URL(environment.APP_ORIGIN!).origin) {
     errors.push('The request host must match APP_ORIGIN')
   }
@@ -80,7 +78,6 @@ export function readRuntimeConfiguration(requestUrl: string, environment: Worker
   if (isLocalDevelopmentRequest(requestUrl, environment)) {
     return {
       appOrigin: new URL(requestUrl).origin,
-      buildId: 'local-development',
       sessionSecret: environment.SESSION_SECRET!,
       setupToken: environment.SETUP_TOKEN,
       bootstrapAdminEmail: environment.SEED_ADMIN_EMAIL?.trim().toLowerCase(),
@@ -92,7 +89,6 @@ export function readRuntimeConfiguration(requestUrl: string, environment: Worker
   }
   return {
     appOrigin: new URL(environment.APP_ORIGIN!).origin,
-    buildId: environment.PENCIL_BUILD_ID!.trim(),
     sessionSecret: environment.SESSION_SECRET!,
     setupToken: environment.SETUP_TOKEN,
     bootstrapAdminEmail: environment.SEED_ADMIN_EMAIL!.trim().toLowerCase(),

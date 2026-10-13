@@ -23,7 +23,6 @@ describe('deployment configuration boundary', () => {
   contract(['WS-003'], 'accepts a complete production configuration', () => {
     const errors = deploymentConfigurationErrors('https://pencil.example/health', environment({
       APP_ORIGIN: 'https://pencil.example',
-      PENCIL_BUILD_ID: 'pencil-0.0.0+abc123',
       SEED_ADMIN_EMAIL: 'owner@example.com',
       SESSION_SECRET: 'synthetic-session-secret-at-least-32-characters', MAIL_PROVIDER: 'resend',
       MAIL_API_KEY: 'configured',
@@ -35,7 +34,6 @@ describe('deployment configuration boundary', () => {
   it('does not bootstrap or serve a configured deployment on an arbitrary host', () => {
     const errors = deploymentConfigurationErrors('https://untrusted.workers.dev/health', environment({
       APP_ORIGIN: 'https://pencil.example',
-      PENCIL_BUILD_ID: 'pencil-0.0.0+abc123',
       SEED_ADMIN_EMAIL: 'owner@example.com',
       SESSION_SECRET: 'synthetic-session-secret-at-least-32-characters', MAIL_PROVIDER: 'resend',
       MAIL_API_KEY: 'configured',
@@ -47,7 +45,6 @@ describe('deployment configuration boundary', () => {
   contract(['BASE-SECRET-001'], 'creates an explicit production mail configuration without exposing its values', () => {
     const configuration = readRuntimeConfiguration('https://pencil.example/health', environment({
       APP_ORIGIN: 'https://pencil.example',
-      PENCIL_BUILD_ID: 'pencil-0.0.0+abc123',
       SEED_ADMIN_EMAIL: 'OWNER@example.com',
       SESSION_SECRET: 'synthetic-session-secret-at-least-32-characters', MAIL_PROVIDER: 'resend',
       MAIL_API_KEY: 'configured',
@@ -55,7 +52,6 @@ describe('deployment configuration boundary', () => {
     }))
     expect(configuration).toMatchObject({
       appOrigin: 'https://pencil.example',
-      buildId: 'pencil-0.0.0+abc123',
       bootstrapAdminEmail: 'owner@example.com',
       mail: { kind: 'resend' },
       isLocalDevelopment: false,

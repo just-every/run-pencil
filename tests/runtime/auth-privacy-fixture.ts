@@ -14,7 +14,7 @@ const setup = 'synthetic-privacy-setup-token-at-least-32-characters'
 let bootstrapCookie: string | undefined
 
 export async function authPrivacyFixture(exception = false) {
-  const platform = createPencilPlatform(origin, { ...env, APP_ORIGIN: origin, PENCIL_BUILD_ID: 'auth-privacy',
+  const platform = createPencilPlatform(origin, { ...env, APP_ORIGIN: origin,
     SESSION_SECRET: 'synthetic-privacy-session-secret-at-least-32-characters', SETUP_TOKEN: setup,
     SEED_ADMIN_EMAIL: 'privacy-owner@example.test', MAIL_PROVIDER: 'sendgrid', MAIL_API_KEY: 'synthetic-privacy-mail-key',
     MAIL_FROM: 'no-reply@example.test', PENCIL_LOCAL_DEVELOPMENT: 'false', SEED_SAMPLE_DATA: 'false' })

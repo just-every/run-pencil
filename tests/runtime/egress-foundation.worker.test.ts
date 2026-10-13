@@ -14,7 +14,7 @@ contract(['BASE-DATA-004', 'BASE-DATA-005', 'BASE-SECRET-001'], 'Worker collecti
   await f.add({ kind: 'completion', questionType: null, prompt: 'Done' })
   await f.publish()
   const secret = 'synthetic-runtime-mail-secret'
-  const bindings = { ...env, APP_ORIGIN: 'https://pencil.example.test', PENCIL_BUILD_ID: 'synthetic-build', SEED_ADMIN_EMAIL: 'owner@aurora-coffee.test', SESSION_SECRET: 'synthetic-test-session-secret-at-least-32-characters', MAIL_PROVIDER: 'resend', MAIL_API_KEY: secret, MAIL_FROM: 'no-reply@example.test', PENCIL_LOCAL_DEVELOPMENT: 'false', SEED_SAMPLE_DATA: 'false' } as WorkerBindings
+  const bindings = { ...env, APP_ORIGIN: 'https://pencil.example.test', SEED_ADMIN_EMAIL: 'owner@aurora-coffee.test', SESSION_SECRET: 'synthetic-test-session-secret-at-least-32-characters', MAIL_PROVIDER: 'resend', MAIL_API_KEY: secret, MAIL_FROM: 'no-reply@example.test', PENCIL_LOCAL_DEVELOPMENT: 'false', SEED_SAMPLE_DATA: 'false' } as WorkerBindings
   const outbound = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('Unexpected egress: synthetic network is blocked'))
   const errors = vi.spyOn(console, 'error').mockImplementation(() => {})
   const run = (path: string, body?: unknown) => worker.fetch(new Request(`https://pencil.example.test${path}`, { method: body ? 'POST' : 'GET', headers: { Origin: 'https://pencil.example.test', 'CF-Connecting-IP': '192.0.2.1', 'content-type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) }), bindings, {} as ExecutionContext)

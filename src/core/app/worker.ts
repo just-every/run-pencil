@@ -79,7 +79,7 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
   app.get('/health', async (context) => {
     try {
       await context.get('services').workspace.checkHealth()
-      return context.json({ status: 'ok', product: manifest.id, version: manifest.version, buildId: context.get('platform').configuration.buildId, ...context.get('platform').deployment })
+      return context.json({ status: 'ok', product: manifest.id, version: manifest.version, ...context.get('platform').deployment })
     } catch (error) {
       console.error('D1 health check failed.')
       return context.json({ status: 'not-ready', message: 'The D1 database is unavailable.' }, 503)

@@ -11,7 +11,7 @@ async function call(path, data, method = data === undefined ? 'GET' : 'POST') {
 }
 async function json(path, data, method) { return (await call(path, data, method)).json() }
 const health = await json('/health')
-if (health.product !== 'pencil' || health.buildId !== 'local-development') throw Error('This command only creates synthetic data in explicit local Pencil development.')
+if (health.product !== 'pencil' || health.deployment?.sourceSha !== null || health.deployment?.versionId !== null) throw Error('This command only creates synthetic data in explicit local Pencil development.')
 const email = 'owner@aurora-coffee.test'
 const mail = await json('/auth/magic-link', { email })
 if (mail.delivery !== 'local') throw Error('The synthetic local mail adapter is required.')

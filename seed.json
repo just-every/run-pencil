@@ -306,12 +306,6 @@
       "why": "Canonical HTTPS origin for auth, reports, and public flow links."
     },
     {
-      "name": "PENCIL_BUILD_ID",
-      "required": true,
-      "secret": false,
-      "why": "Exact deploy candidate identifier shown by `/health` after its D1 readiness check."
-    },
-    {
       "name": "SEED_ADMIN_EMAIL",
       "required": true,
       "secret": false,

@@ -26,7 +26,7 @@ export function brandMailFixture() {
     return statement
   } } as unknown as D1Database
   const platform = createPencilPlatform('https://forms.example.test', {
-    DB: db, APP_ORIGIN: 'https://forms.example.test', PENCIL_BUILD_ID: 'test', SEED_ADMIN_EMAIL: 'operator@example.test',
+    DB: db, APP_ORIGIN: 'https://forms.example.test', SEED_ADMIN_EMAIL: 'operator@example.test',
     MAIL_PROVIDER: 'sendgrid', MAIL_API_KEY: 'synthetic-test-key', MAIL_FROM: 'no-reply@example.test', SESSION_SECRET: 'synthetic-test-session-secret-long-enough',
   } as WorkerBindings)
   const services = createPencilServices(platform)

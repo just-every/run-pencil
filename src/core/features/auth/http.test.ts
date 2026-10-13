@@ -39,7 +39,7 @@ describe('magic-link redemption', () => {
     const app = new Hono<WorkerEnvironment>()
     registerAuthRoutes(app, {
       auth: { native: { confirmLink: async () => ({ cookie: sessionCookie('a'.repeat(43), { cookieName: 'operator_session_local', secure: false, sessionSeconds: 60 }), returnTo: '/app' }) } },
-    } as unknown as PencilServices, { sessionSecret: 'synthetic-unit-secret-at-least-32-characters', appOrigin: 'http://pencil.test', buildId: 'test-build', isLocalDevelopment: true, seedSampleData: false, mail: { kind: 'local-development' }, task: { kind: 'unavailable', message: 'External tasks are not set up.' } })
+    } as unknown as PencilServices, { sessionSecret: 'synthetic-unit-secret-at-least-32-characters', appOrigin: 'http://pencil.test', isLocalDevelopment: true, seedSampleData: false, mail: { kind: 'local-development' }, task: { kind: 'unavailable', message: 'External tasks are not set up.' } })
 
     const response = await app.request('http://pencil.test/auth/confirm', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ token: 'a'.repeat(43) }), redirect: 'manual' })
     expect(response.status).toBe(303)

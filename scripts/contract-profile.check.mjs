@@ -28,7 +28,7 @@ test('every shipped deferral is declared and has no implementing test', async ()
 })
 test('deployment validation requires a plain no-reply sender without restricting runtime sign-in configuration', async()=>{
   const {validateConfiguration}=await import('./operations-config.mjs')
-  const environment={APP_ORIGIN:'https://forms.example.test',PENCIL_BUILD_ID:'synthetic',SEED_ADMIN_EMAIL:'operator@example.test',MAIL_PROVIDER:'sendgrid',MAIL_API_KEY:'synthetic',SESSION_SECRET:'s'.repeat(32)}
+  const environment={APP_ORIGIN:'https://forms.example.test',SEED_ADMIN_EMAIL:'operator@example.test',MAIL_PROVIDER:'sendgrid',MAIL_API_KEY:'synthetic',SESSION_SECRET:'s'.repeat(32)}
   for(const MAIL_FROM of ['noreply@example.test','no-reply@example.test']) assert.doesNotThrow(()=>validateConfiguration({...environment,MAIL_FROM}))
   for(const MAIL_FROM of ['team@example.test','Name <noreply@example.test>','no-reply@example.test\r\nBcc: other@example.test','noreply@bad&.test']) assert.throws(()=>validateConfiguration({...environment,MAIL_FROM}),/MAIL_FROM/)
 })

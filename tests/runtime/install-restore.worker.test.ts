@@ -11,7 +11,7 @@ beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 const origin = 'https://pencil.example.test'
 const secret = 'synthetic-restoration-secret-at-least-32-characters'
 const setup = 'synthetic-restoration-setup-at-least-32-characters'
-const bindings = { ...env, APP_ORIGIN: origin, PENCIL_BUILD_ID: 'recovery-proof', SESSION_SECRET: secret, SETUP_TOKEN: setup,
+const bindings = { ...env, APP_ORIGIN: origin, SESSION_SECRET: secret, SETUP_TOKEN: setup,
   SEED_ADMIN_EMAIL: 'operator@example.test', MAIL_PROVIDER: 'sendgrid', MAIL_API_KEY: 'synthetic-provider-credential',
   MAIL_FROM: 'sender@example.test', PENCIL_LOCAL_DEVELOPMENT: 'false', SEED_SAMPLE_DATA: 'false' } as WorkerBindings
 const run = (path: string, body?: unknown, cookie?: string) => worker.fetch(new Request(origin + path, {

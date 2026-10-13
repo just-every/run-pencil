@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest'
 import type { PencilPlatform } from '../platform/runtime'
 import type { PencilServices } from './services'
 import { createWorkerApp } from './worker'
+import { deploymentHealth } from '../../base/deployment-health'
+import manifest from '../../../seed.json'
 
 function unauthenticatedServices() {
   return { auth: { getSession: vi.fn().mockResolvedValue(undefined) } } as unknown as PencilServices
@@ -11,11 +13,11 @@ function platform() {
   return {
     configuration: {
       appOrigin: 'https://pencil.test',
-      buildId: 'test-build',
       mail: { kind: 'resend', apiKey: 'test', from: 'no-reply@pencil.test' },
       isLocalDevelopment: false,
       seedSampleData: false,
     },
+    deployment: deploymentHealth({ RER_DEPLOY_SOURCE: 'synthetic-source-sha', RER_DEPLOY_FINGERPRINT: 'synthetic-fingerprint', RER_VERSION: { id: 'synthetic-version' } }),
     fetchAsset: vi.fn(),
   } as unknown as PencilPlatform
 }
@@ -57,12 +59,12 @@ describe('Pencil Worker session boundary', () => {
     })
   })
 
-  it('identifies the product and exact build after a D1 health check', async () => {
+  it('identifies the product and the deployment that answered after a D1 health check', async () => {
     const app = createWorkerApp(publicRequestServices(), platform())
     const response = await app.request('https://pencil.test/health')
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual({ status: 'ok', product: 'pencil', version: '0.2.0', buildId: 'test-build' })
+    await expect(response.json()).resolves.toEqual({ status: 'ok', product: 'pencil', version: manifest.version, ok: true, deployment: { sourceSha: 'synthetic-source-sha', fingerprint: 'synthetic-fingerprint', versionId: 'synthetic-version' } })
   })
 
   it('rejects an operator cookie mutation that lacks its exact Origin header', async () => {

@@ -5,6 +5,7 @@ import AxeBuilder from '@axe-core/playwright'
 import type { FrameLocator, Page } from '@playwright/test'
 import { expect, test } from './fixtures'
 import { contract } from './contract'
+import manifest from '../../seed.json' with { type: 'json' }
 
 const slug = 'aurora-coffee-post-visit'
 type FlowSurface = Page | FrameLocator
@@ -12,12 +13,13 @@ type FlowSurface = Page | FrameLocator
 async function verifyHealth(page: Page) {
   const response = await page.request.get('/health')
   expect(response.status()).toBe(200)
-  const health = await response.json() as { status: string; product: string; version: string; buildId: string }
+  const health = await response.json() as { status: string; product: string; version: string; deployment: { sourceSha: string | null } }
   expect(health).toMatchObject({
     status: 'ok',
     product: 'pencil',
-    version: '0.2.0',
-    buildId: process.env.PENCIL_EXPECTED_BUILD_ID ?? 'local-development',
+    version: manifest.version,
+    // A local run has no deployment identity; rer deploy records the commit it shipped.
+    deployment: { sourceSha: null },
   })
 }
 

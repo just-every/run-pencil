@@ -20,7 +20,7 @@ async function ok(path, data, method = data === undefined ? 'GET' : 'POST') {
 const waitForFill = () => new Promise(resolve => setTimeout(resolve, 3100))
 try {
   const health = await ok('/health')
-  assert.equal(health.buildId, 'local-development', 'Require explicit local development, never remote credentials')
+  assert.deepEqual([health.deployment?.sourceSha, health.deployment?.versionId], [null, null], 'Require explicit local development, never a deployed Worker')
   const existing = await context.get(`/api/public/flows/${slug}`, { headers })
   assert.equal(existing.status(), 404, 'Existing review detected: stop before changing it')
   await ok('/auth/magic-link', { email: 'owner@aurora-coffee.test' })

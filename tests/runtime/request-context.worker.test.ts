@@ -9,7 +9,7 @@ beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 
 const configured = (name: string): WorkerBindings => ({ ...env,
   PENCIL_LOCAL_DEVELOPMENT: 'false', SEED_SAMPLE_DATA: 'false',
-  APP_ORIGIN: `https://${name}.example.test`, PENCIL_BUILD_ID: `build-${name}`,
+  APP_ORIGIN: `https://${name}.example.test`, RER_DEPLOY_SOURCE: `source-${name}`,
   SEED_ADMIN_EMAIL: `${name}@example.test`, SESSION_SECRET: `synthetic-${name}-session-secret-at-least-32-characters`,
   SETUP_TOKEN: `synthetic-${name}-setup-token-at-least-32-characters`,
   MAIL_PROVIDER: 'resend', MAIL_API_KEY: `synthetic-${name}-mail-key`, MAIL_FROM: `${name}@example.test`,
@@ -22,7 +22,7 @@ it('keeps concurrent and later requests tied to their own configuration and init
   const result = await Promise.all([request(first), request(second), request(first), request(second)])
   for (const [index, response] of result.entries()) {
     expect(response.status).toBe(200)
-    expect(await response.json()).toMatchObject({ status: 'ok', buildId: index % 2 ? 'build-second' : 'build-first' })
+    expect(await response.json()).toMatchObject({ status: 'ok', deployment: { sourceSha: index % 2 ? 'source-second' : 'source-first' } })
   }
   const invalid = await request({ ...first, MAIL_API_KEY: '' })
   expect(invalid.status).toBe(503)

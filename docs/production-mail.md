@@ -1,6 +1,6 @@
 # Production mail
 
-Pencil uses maintained Base mail for operator sign-in, invitations and reminders. Configure MAIL_PROVIDER as `sendgrid` or `resend`, MAIL_API_KEY as a secret and MAIL_FROM as a verified sender. APP_ORIGIN, PENCIL_BUILD_ID, SEED_ADMIN_EMAIL and SESSION_SECRET are also required for production. See [hosting](HOSTING.md) for bootstrap and resource configuration.
+Pencil uses maintained Base mail for operator sign-in, invitations and reminders. Configure MAIL_PROVIDER as `sendgrid` or `resend`, MAIL_API_KEY as a secret and MAIL_FROM as a verified sender. APP_ORIGIN, SEED_ADMIN_EMAIL and SESSION_SECRET are also required for production. See [hosting](HOSTING.md) for bootstrap and resource configuration.
 
 The provider receives the recipient address and the message, including the sign-in, invitation or opt-out capability where applicable. Keep these capabilities and provider credentials out of logs and public receipts. Production configuration errors fail visibly; a provider failure does not create a local inbox or authentication bypass.
 

@@ -164,7 +164,7 @@ contract(['ACT-004', 'ACT-007'], 'redirects are not followed and a plain http UR
   expect(redirected.body.delivery!.attempts).toEqual([expect.objectContaining({ outcome: 'failed', outcomeClass: '3xx', httpStatus: 307 })])
   expect((await received()).requests.map(request => request.path)).toEqual(['/tasks'])
   await reset('ok')
-  const production = { ...env, APP_ORIGIN: 'https://pencil.example.test', PENCIL_BUILD_ID: 'synthetic-build', SEED_ADMIN_EMAIL: 'owner@example.test', MAIL_PROVIDER: 'resend', MAIL_API_KEY: 'synthetic-mail-key', MAIL_FROM: 'no-reply@example.test', PENCIL_LOCAL_DEVELOPMENT: 'false', SEED_SAMPLE_DATA: 'false', SETUP_TOKEN: 's'.repeat(32), TASK_PROVIDER: 'webhook', TASK_WEBHOOK_URL: `${receiver}/tasks`, TASK_API_KEY: t.key } as WorkerBindings
+  const production = { ...env, APP_ORIGIN: 'https://pencil.example.test', SEED_ADMIN_EMAIL: 'owner@example.test', MAIL_PROVIDER: 'resend', MAIL_API_KEY: 'synthetic-mail-key', MAIL_FROM: 'no-reply@example.test', PENCIL_LOCAL_DEVELOPMENT: 'false', SEED_SAMPLE_DATA: 'false', SETUP_TOKEN: 's'.repeat(32), TASK_PROVIDER: 'webhook', TASK_WEBHOOK_URL: `${receiver}/tasks`, TASK_API_KEY: t.key } as WorkerBindings
   const app = createWorkerApp(undefined, createPencilPlatform('https://pencil.example.test', production))
   const call = (path: string, body?: unknown) => app.request(`https://pencil.example.test${path}`, { method: body ? 'POST' : 'GET', headers: { Origin: 'https://pencil.example.test', Cookie: `__Host-operator_session=${t.f.lead.token}`, 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) })
   const status = await (await call(`/api/app/actions/${t.action.id}/task`)).json() as Status
