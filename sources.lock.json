@@ -853,7 +853,7 @@
       "executable": false
     },
     "docs/guide/hosting.md": {
-      "sha256": "b0a875672a3e5afac0468b6b07c138e741139f0f53deeb1692fc139c78b1b4f6",
+      "sha256": "16a4096735dfd2f0654bda967230069483f39f23c3234b342205820bf0acc6e5",
       "executable": false
     },
     "docs/guide/install.md": {
@@ -885,7 +885,7 @@
       "executable": false
     },
     "docs/HOSTING.md": {
-      "sha256": "7b1a1d06d96034b246a3a0293ab4acd89c80ee87817ea6bc32076913db558319",
+      "sha256": "6eec93ca743ecf18c8c8dce715bd1625d8630073ac4e62e5de93d4a38a5ffdbc",
       "executable": false
     },
     "docs/IMMUTABLE-MIGRATIONS.json": {
@@ -1073,11 +1073,11 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "17fe29e062289687574b24ca86d78a42f0e6b21c78501d8d680b15acecabc8db",
+      "sha256": "075d4758816d9796283506aed48012b821f3db86507dd0203abef852122e3af8",
       "executable": false
     },
     "package.json": {
-      "sha256": "a011a5714983aad14ffd5c0cc58ef8ed80e0cf25edc704f7a6275df35bc42deb",
+      "sha256": "7476d2525175d9945fea5494243d44764cc64d568d5d62a4ce15558bf04f52f7",
       "executable": false
     },
     "playwright.admission.config.ts": {
@@ -1508,8 +1508,12 @@
       "sha256": "749e4620cc20ae8a42da92bca6cc7c5f52dd6d16c80d67bb58e3b907cfd35e80",
       "executable": true
     },
+    "scripts/installer/deploy.mjs": {
+      "sha256": "33769ce5f0a9de17b5d77807895ab3100974c338312f6ec0263854ab0ce28054",
+      "executable": false
+    },
     "scripts/installer/local.mjs": {
-      "sha256": "f5c530b83cb3a4205461d142d2327c866167e99e129bb02818c9cec8cabeb9dc",
+      "sha256": "ecd28781658cc799ee257b2fba724417df18aed1090d24e138f086b534f400cf",
       "executable": false
     },
     "scripts/installer/seed.mjs": {
@@ -5558,6 +5562,10 @@
     },
     "tests/local-access/playwright.config.ts": {
       "sha256": "001a99a6b54eaff26c7ebdede0f5451819552da1deef55f502bcbbb08276d490",
+      "executable": false
+    },
+    "tests/local-cli/deploy-mail.test.mjs": {
+      "sha256": "368e9f58e9648eb20840abe06ef27be56115a1bfcc9cf7593869c99850ebe6b2",
       "executable": false
     },
     "tests/local-cli/dev-identity.test.mjs": {

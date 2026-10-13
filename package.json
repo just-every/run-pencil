@@ -32,7 +32,7 @@
     "source:inspect": "node scripts/edition-authoring/cli.mjs inspect",
     "source:lock": "node scripts/edition-authoring/cli.mjs lock",
     "source:check": "node scripts/edition-authoring/cli.mjs check && node scripts/edition-authoring/cli.mjs verify-base --offline",
-    "verify:setup": "node --test --test-concurrency=1 tests/local-cli/rer-journey.test.mjs tests/local-cli/dev-identity.test.mjs && playwright test --config playwright.local.config.ts --workers=1",
+    "verify:setup": "node --test --test-concurrency=1 tests/local-cli/rer-journey.test.mjs tests/local-cli/dev-identity.test.mjs tests/local-cli/deploy-mail.test.mjs && playwright test --config playwright.local.config.ts --workers=1",
     "verify:base": "node scripts/verify-base-source.mjs",
     "verify:release": "PENCIL_RUN_LOAD=1 PENCIL_LOAD_MODE=1 vitest run --config vitest.release.config.ts && playwright test --config playwright.release.config.ts --workers=1",
     "build:app": "vite build && tsc -b",

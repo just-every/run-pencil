@@ -23,9 +23,9 @@ Deploy reads everything from environment variables. Start with the address you w
 |---|---|
 | `APP_ORIGIN` | The exact HTTPS origin of your deployment, with no path. Sign-in links, reports and public links point here. If it differs from the address people open, every page there, `/health` included, answers **Not found**. |
 | `SEED_ADMIN_EMAIL` | The email address of the first owner. |
-| `MAIL_PROVIDER` | `sendgrid` or `resend`. |
+| `MAIL_PROVIDER` | `sendgrid` or `resend`. Deploy uses what you set. If you leave it unset, deploy uses SendGrid when only `SENDGRID_API_KEY` is set and Resend when only `RESEND_API_KEY` is set, and Resend when neither is. |
 | `MAIL_FROM` | Your verified sender. It must be a plain `noreply@` or `no-reply@` address, with no display name. |
-| `MAIL_API_KEY` | Your mail provider's API key. A secret. |
+| `MAIL_API_KEY` | Your mail provider's API key. A secret. Instead of `MAIL_API_KEY` you may set `SENDGRID_API_KEY` or `RESEND_API_KEY`, and deploy stores the one for your provider. |
 | `SESSION_SECRET` | A random string of at least 32 characters, used to sign people in. A secret. Keep it the same for the life of the deployment. |
 | `SETUP_TOKEN` | A different random string of at least 32 characters. A secret used once, to create the first owner. |
 | `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` | The account to deploy into and its token. The token is a secret. |
@@ -73,7 +73,7 @@ Enter your email at `/signin` and choose **Send magic link**. The link in the em
 
 ## Set up email
 
-Pencil sends email for three things: sign-in links, invitations and reminders, and new-response notices to operators. It uses SendGrid or Resend, whichever you set in `MAIL_PROVIDER`.
+Pencil sends email for three things: sign-in links, invitations and reminders, and new-response notices to operators. It uses SendGrid or Resend, whichever you set in `MAIL_PROVIDER` when you deploy; deploy prints the provider it will use before it changes anything. With only a SendGrid key set, mail goes through SendGrid with no other setting.
 
 - Verify your sender with the provider, and set `MAIL_FROM` to that address, in the `noreply@` or `no-reply@` form.
 - The provider receives each recipient's address and the whole message, including the sign-in, invitation or opt-out link. Keep provider keys and these links out of your logs and out of anything public.

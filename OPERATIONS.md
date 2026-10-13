@@ -30,7 +30,7 @@ Run **`pnpm run verify:release` before every release** for unchanged capacity, m
 
 ## Hosted operation
 
-`pnpm run deploy -- --dry-run` builds real Worker/assets/migrations and validates deploy.json with zero provider calls. Actual deployment needs the intended `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `SESSION_SECRET`, `SETUP_TOKEN`, `SEED_ADMIN_EMAIL`, `MAIL_FROM` and `MAIL_API_KEY`. The declaration selects production mail and disables sample data and local capture. Keep secrets out of argv and output. Health does not prove hosted installation, delivery, permissions or capacity. Read docs/HOSTING.md.
+`pnpm run deploy -- --dry-run` builds real Worker/assets/migrations and validates deploy.json with zero provider calls. Actual deployment needs the intended `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `SESSION_SECRET`, `SETUP_TOKEN`, `SEED_ADMIN_EMAIL`, `MAIL_FROM` and `MAIL_API_KEY`. The declaration selects production mail, which `rer deploy` takes from `MAIL_PROVIDER` (else the one of `SENDGRID_API_KEY` or `RESEND_API_KEY` that is set, else `resend`), and disables sample data and local capture. Keep secrets out of argv and output. Health does not prove hosted installation, delivery, permissions or capacity. Read docs/HOSTING.md.
 
 The Base importer row identifies public just-every/pencil, whose source is https://github.com/just-every/run-pencil. Point Base at a reachable public guide commit on its `main` and verify its bytes.
 
