@@ -6,7 +6,7 @@ import { stagingPlan, destinationGuards, stageRows } from '../../scripts/deploym
 import { schemaQuery, quote } from '../../scripts/deployment-data-sql.mjs'
 import { canonicalSchema } from '../../scripts/deployment-data-schema.mjs'
 import { custodyGraph } from '../../scripts/custody-test-graph.mjs'
-import { custodyActor, custodyContext } from '../../scripts/custody-test-targets.mjs'
+import { custodyActor, custodyContext, custodySignIn } from '../../scripts/custody-test-targets.mjs'
 import { verifyCustodyReadback, custodyTriggerCanaries } from '../../scripts/custody-test-canaries.mjs'
 import { sha256, readD1ImportStream, resumeD1ImportStream, planD1ImportStream, createD1ImportStream, cancelD1ImportStaging } from '../../src/base/import-kit/src/d1/index'
 import { custodyMapping } from '../../scripts/custody-test-graph.mjs'
@@ -32,6 +32,7 @@ contract(['DATA-001','BASE-DATA-001','IMPORT-004','BASE-OPS-003'], 'native custo
   const restored = await archiveFixture(second, __PENCIL_CORE_MIGRATIONS__)
   canonicalSchema(JSON.parse(restored.payload.schema), archive.payload.schema)
   expect({ ...restored, payload: { ...restored.payload, schema: archive.payload.schema } }).toEqual(archive)
+  await custodySignIn(second, graph.actor)
   await verifyCustodyReadback(second, graph)
   const beforeRefusal = JSON.stringify(await archiveFixture(second, __PENCIL_CORE_MIGRATIONS__))
   await expect(query(destinationGuards(store, restored.payload.schema))).rejects.toThrow()
@@ -57,6 +58,7 @@ contract(['DATA-001','BASE-DATA-001','IMPORT-004','BASE-OPS-003'], 'native custo
 
   await restoreFixture(env.DB, archive)
   expect(await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__)).toEqual(archive)
+  await custodySignIn(env.DB, graph.actor)
   await verifyCustodyReadback(env.DB, graph)
   await custodyTriggerCanaries(env.DB, graph)
 })

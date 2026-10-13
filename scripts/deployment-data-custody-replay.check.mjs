@@ -10,6 +10,7 @@ import { fixture, sqliteTransport } from './deployment-data-test-helpers.mjs';
 import { sqliteD1 } from './custody-test-transport.mjs';
 import { custodyGraph } from './custody-test-graph.mjs';
 import { verifyCustodyReadback, custodyTriggerCanaries } from './custody-test-canaries.mjs';
+import { custodySignIn } from './custody-test-targets.mjs';
 
 test('[DATA-001,BASE-DATA-001,IMPORT-004] real typed custody replays through core, file and remote SQL without capture or seal invalidation', async () => {
   const f = fixture(), core = new DatabaseSync(':memory:'), remote = new DatabaseSync(':memory:');
@@ -32,6 +33,7 @@ test('[DATA-001,BASE-DATA-001,IMPORT-004] real typed custody replays through cor
     for (const database of [core, file, remote]) {
       assert.equal(canonicalDatabaseSchema(database), originalSchema);
       assert.equal(database.prepare('PRAGMA foreign_key_check').get(), undefined);
+      await custodySignIn(sqliteD1(database), graph.actor);
       await verifyCustodyReadback(sqliteD1(database), graph);
       await custodyTriggerCanaries(sqliteD1(database), graph);
     }

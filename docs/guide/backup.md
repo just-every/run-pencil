@@ -14,11 +14,12 @@ The archive contains every record Pencil keeps:
 - Contacts with custom fields and consent state, saved segments, frozen launch audiences and evaluated policies, invitations and the history of every delivery attempt, including failed and unknown ones.
 - The audit log, the counters behind your starts and drop-off figures, and each person's notification choices.
 - Actions with their history, frozen evidence figures, measurements, external task deliveries and every attempt.
-- Sign-in credential hashes, so restored operators can sign in with a fresh emailed link.
+- Operators with their roles and linked sign-in identities, so restored operators can sign in again with a fresh emailed link.
 
 Some things are left out or changed on purpose:
 
-- **Your secrets are never collected.** Keep your `SESSION_SECRET`, mail provider key, setup token and any `TASK_API_KEY` somewhere safe yourself. After a restore, set them again. Using the same `SESSION_SECRET` keeps the restored credential hashes usable. A different one invalidates them, though emailed sign-in still works.
+- **Your secrets are never collected.** Keep your `SESSION_SECRET`, mail provider key, setup token and any `TASK_API_KEY` somewhere safe yourself. After a restore, set them again.
+- **Everyone signs in again.** Sign-in sessions, sign-in and invitation links, step-up confirmations and API credentials are never exported, and a restore refuses an archive that holds one. No cookie or link from before the backup works on the restored installation, even with the same `SESSION_SECRET`, so a sign-out or revocation made after the backup stays in force. People who were invited but had not accepted stay listed as invited; invite them again to send a new link. Respondents part-way through a form start it again.
 - **Personal invitation and opt-out links do not survive.** Their plaintext is removed from the archive, so links you already emailed stop working after a restore. Invitations and reminders that were still waiting are never sent, and stay listed as pending. Pencil cannot issue those people a new link for the same revision. To reach them again, publish the flow again and queue them for the new revision. See [Invitations, reminders and consent](invitations.md#send-invitations).
 - **Local outbox messages are not exported.** Those are synthetic development mail. Your private settings are not exported either.
 - **Original files from an import are not kept.** Only the reviewed result and its record are.
@@ -28,7 +29,7 @@ Restoring never sends any mail or external task, and never changes a delivery th
 
 ## Keep the archive private
 
-An archive holds personal data, answer text and credential hashes. Pencil creates it readable by you only. Keep it in the `exports` folder inside your copy, which Git ignores, or in another private folder, and keep the file as carefully as you would keep the data itself. Create the folder once, readable by you only:
+An archive holds personal data and answer text. Pencil creates it readable by you only. Keep it in the `exports` folder inside your copy, which Git ignores, or in another private folder, and keep the file as carefully as you would keep the data itself. Create the folder once, readable by you only:
 
 ```sh
 mkdir -m 700 exports
@@ -130,7 +131,7 @@ Before you start `dev` on a restored local copy, export it to a new file and com
 rer export --output exports/restored-check-2026-10-10.rer
 ```
 
-The `sha256` it prints must be the same as the one the restore printed. Once the restored installation runs, sessions and rate-limit counters from your checks change later exports. That is expected.
+The `sha256` it prints must be the same as the one the restore printed. Once the restored installation runs, rate-limit counters and other activity from your checks change later exports. That is expected.
 
 ## When to make a backup
 

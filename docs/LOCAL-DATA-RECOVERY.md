@@ -11,15 +11,16 @@ Choose an existing private directory outside every repository or this checkout's
 ignored `exports` directory (mode 0700). Export creates one new file with mode
 0600 and refuses existing files. Other repository paths and symlinks into
 repositories are rejected, even when Git would ignore the file.
-The archive contains personal data, answer text, identities and credential
-hashes. Keep it private. The digest detects changes; it is not a signature and
+The archive contains personal data, answer text and identities. Keep it
+private. The digest detects changes; it is not a signature and
 does not authenticate an untrusted sender.
 
 Environment secrets are never collected. Reconfigure `SESSION_SECRET`, mail
-provider credentials and other deployment secrets independently. Preserving the
-same session secret allows retained keyed credential hashes to remain usable;
-changing it invalidates those credentials. Fresh emailed operator sign-in still
-works after restoring identities. Bootstrap ownership and invitation
+provider credentials and other deployment secrets independently. Sign-in
+authorization never travels: sessions, sign-in and invitation links, step-up
+challenges, minted credentials and respondent resume tokens are excluded, and
+import refuses an archive that holds one. After a restore everyone signs in
+again with a fresh emailed link, whatever the session secret. Bootstrap ownership and invitation
 cancellations remain durable, so setup cannot create a second first owner.
 
 The explicit table/column classification in

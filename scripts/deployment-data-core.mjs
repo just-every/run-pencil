@@ -5,7 +5,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
-import { classify, sanitize } from './deployment-data-policy.mjs';
+import { classify, sanitize, refuseAuthorization } from './deployment-data-policy.mjs';
 import { refuseDevRows } from './deployment-data-dev.mjs';
 import { checkedLedger, kitLedger, kitLedgerSQL, validateLedger } from './deployment-data-ledger.mjs';
 import { failure } from './deployment-data-errors.mjs';
@@ -138,7 +138,7 @@ export function validate(archive) {
       if (row.length !== table.columns.length) throw failure('INVALID_ROW', 'Archive row width differs from its table.');
       row.forEach(decode);
     }
-    parsed.payload.tables.forEach(table => { classify(table); refuseDevRows(table, table.rows); if (JSON.stringify(sanitize(table)) !== JSON.stringify(table)) throw failure('PRIVATE_CREDENTIAL', 'Archive contains excluded plaintext credentials.'); });
+    parsed.payload.tables.forEach(table => { classify(table); refuseAuthorization(table, table.rows); refuseDevRows(table, table.rows); if (JSON.stringify(sanitize(table)) !== JSON.stringify(table)) throw failure('PRIVATE_CREDENTIAL', 'Archive contains excluded plaintext credentials.'); });
     populate(expected, parsed);
     if (snapshot(expected).sha256 !== parsed.sha256) throw failure('CONTENT_MISMATCH', 'Archive values do not round-trip through the committed schema.');
     return parsed;

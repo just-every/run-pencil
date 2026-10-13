@@ -1,4 +1,5 @@
 import { withoutDevRows } from './deployment-data-dev.mjs';
+import { failure } from './deployment-data-errors.mjs';
 // Every persisted column is reviewed here. A migration cannot silently add data
 // to an archive: both new tables and new columns fail closed until classified.
 const retained = {
@@ -12,6 +13,7 @@ const retained = {
   action_measurements: 'id action_id flow_id revision_id observed_value unit observed_at operator_id created_at',
   action_task_deliveries: 'action_id idempotency_key state payload_json payload_sha256 action_version confirmed_by_operator_id confirmed_at in_flight_attempt_id remote_task_id updated_at',
   action_task_attempts: 'id action_id ordinal idempotency_key payload_sha256 operator_id started_at outcome outcome_class http_status remote_task_id finished_at',
+  // Respondent sessions and responses travel as history; the token that resumes a session does not (exclusions below).
   // Analysis: runs, their fixed evidence (response IDs), validated themes, members, exact quotes, the one recommendation, the
   // policies and per-call usage. No provider credential or request body is stored; erasure removes a response from all of them.
   analysis_policies: 'workspace_id autorun_enabled autorun_minimum disclosure_threshold selection updated_by_operator_id updated_at',
@@ -53,8 +55,8 @@ const retained = {
   oa_sessions: 'id token_hash operator_id operator_version kind source_token_id created_at expires_at revoked_at',
   oa_tokens: 'id token_hash kind operator_id operator_version issuer_id issuer_version return_to created_at expires_at consumed_at revoked_at',
   oa_invitation_cancellations: 'operator_id operator_version',
-  // Provider sign-in controls (off until an identity provider is linked): the setting, its audit, provider-issued
-  // session bindings, consumed logout token ids, minted credential hashes and session pins. No bearer secret is stored.
+  // Provider sign-in controls (off until an identity provider is linked): the setting, its audit and consumed logout
+  // token ids travel. Provider session bindings, session pins and minted credentials are sign-in authorization (below).
   oa_auth_settings: 'singleton idp_sign_in generation first_setup',
   oa_auth_audit: 'id actor_id action value created_at',
   oa_provider_sessions: 'session_id issuer subject sid generation',
@@ -64,7 +66,7 @@ const retained = {
   // Ephemeral app-local provider setup attempts: the schema travels, rows never do.
   oa_setup_links: 'interface attempt_id expires_at owner_id owner_version session_id completed',
   oc_idp_grants: 'issuer client_id jti subject sector_id',
-  // Consumed claim identity is durable admission state, never a bearer token.
+  // Consumed claim identity and the one-time owner grant are durable admission and replay state, never a bearer token.
   oc_owner_claims: 'singleton jti installation_id email issued_at expires_at consumed_at operator_id session_id completed',
   operator_auth_links: 'operator_id auth_id',
   operator_sessions: 'id operator_id token_hash expires_at last_active_at revoked_at created_at updated_at',
@@ -144,6 +146,9 @@ export const exclusions = {
   ik_originals: { bytes: nul },
   ik_stages: { bytes: { type: 'blob', value: '' } },
   ik_d1_original_chunks: { bytes: { type: 'blob', value: '' } },
+  // A respondent's resume token never travels: a restored session or response cannot be continued by an old cookie.
+  respondent_sessions: { session_token_hash: nul },
+  responses: { session_token_hash: { type: 'text', value: '' } },
   // Restoring old response history cannot make it eligible for a new send.
   responses: { notification_eligible: { type: 'integer', value: '0' } },
   response_outbox: { notification_eligible: { type: 'integer', value: '0' } },
@@ -156,15 +161,23 @@ export function classify(table) {
   if (!known || table.columns.some(column => !known.split(' ').includes(column) && !(column in (exclusions[table.name] ?? {})) && !(captured[table.name] ?? []).includes(column))) {
     throw Object.assign(new Error('Archive schema differs from the explicit table/column privacy classification.'), { recoveryCode: 'UNCLASSIFIED_SCHEMA' });
   }
-  return Object.fromEntries(table.columns.map(column => [column, table.name in captured ? 'excluded-capture' : column in (exclusions[table.name] ?? {}) ? 'redacted' : /(?:^|_)token_hash$|^address_hash$/.test(column) ? 'credential-hash' : 'retained']));
+  return Object.fromEntries(table.columns.map(column => [column, table.name in captured ? 'excluded-capture' : authorizationTables.has(table.name) ? 'excluded-authorization' : column in (exclusions[table.name] ?? {}) ? 'redacted' : /(?:^|_)token_hash$|^address_hash$/.test(column) ? 'credential-hash' : 'retained']));
 }
 // Base messages require a real sender and at least one recipient. Captured mail
 // cannot be represented as valid empty-address messages without fabrication.
 // Preserve these tables in the required schema, but exclude their private rows.
-export const excludedCaptureTables = new Set(['local_mail_outbox', 'rer_mail_development_outbox', 'oa_dev_credentials', 'oa_setup_links', 'rer_ai_development_outbox']);
+const excludedCaptureTables = new Set(['local_mail_outbox', 'rer_mail_development_outbox', 'oa_dev_credentials', 'oa_setup_links', 'rer_ai_development_outbox']);
+// Sign-in authorization never travels: sessions (native, dev, review, provider), sign-in and invitation links, step-up
+// challenges, minted API credentials and the provider bindings of those sessions. A restore cannot revive a session that
+// was signed out or revoked after the backup, so everyone signs in again. Operators, roles and the audit history stay.
+export const authorizationTables = new Set(['oa_sessions', 'oa_tokens', 'oa_credentials', 'oa_step_up_challenges', 'oa_provider_sessions', 'oa_provider_session_pins', 'operator_sessions', 'auth_magic_links']);
+export const rowsNeverTravel = name => excludedCaptureTables.has(name) || authorizationTables.has(name);
+export function refuseAuthorization(table, rows) {
+  if (authorizationTables.has(table.name) && rows.length) throw failure('LIVE_AUTHORIZATION', 'Archive holds sign-in authorization (sessions, sign-in or invitation links, or credentials). Export again from the source; sign-in authorization never travels.');
+}
 export function sanitize(table) {
   classify(table);
-  if (excludedCaptureTables.has(table.name)) return { ...table, rows: [] };
+  if (rowsNeverTravel(table.name)) return { ...table, rows: [] };
   const replacements = exclusions[table.name] ?? {};
   const rows = withoutDevRows(table, table.rows.map(row => row.map((value, index) => replacements[table.columns[index]] ?? value)));
   rows.sort((left, right) => JSON.stringify(left) < JSON.stringify(right) ? -1 : JSON.stringify(left) > JSON.stringify(right) ? 1 : 0);

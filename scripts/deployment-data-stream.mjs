@@ -7,7 +7,7 @@ import { closeSync, openSync, mkdtempSync, rmSync, writeSync, fsyncSync } from '
 import { dirname, join } from 'node:path';
 import { archiveSchema, canonicalDatabaseSchema, cell, decode, failure, initialize, integrity, inventory, metadata, quote, readTable, schema } from './deployment-data-core.mjs';
 import { checkedLedger, validateLedger } from './deployment-data-ledger.mjs';
-import { classify, sanitize, excludedCaptureTables } from './deployment-data-policy.mjs';
+import { classify, sanitize, rowsNeverTravel, refuseAuthorization } from './deployment-data-policy.mjs';
 import { refuseDevRows } from './deployment-data-dev.mjs';
 import { readArchiveJSON } from './deployment-data-json.mjs';
 
@@ -75,7 +75,7 @@ export function captureStore(database, parent) {
     const tables = inventory(database); tables.forEach(classify);
     store.payload = { format: 'runeditrun/pencil-local-data.v1', migrations: metadata(), schema: canonicalDatabaseSchema(database), d1Migrations: readTable(database, ledger), tables };
     tables.forEach((table, index) => {
-      if (excludedCaptureTables.has(table.name)) return;
+      if (rowsNeverTravel(table.name)) return;
       let ordinal = 0;
       for (const value of tableRows(database, table)) {
         const rows = sanitize({ ...table, rows: [value] }).rows;
@@ -107,7 +107,7 @@ export function populateStore(database, store) {
     const insert = database.prepare(`INSERT INTO ${quote(table.name)} (${table.columns.map(quote).join(',')}) VALUES (${table.columns.map(() => '?').join(',')}) RETURNING ${rowExpression(table)} AS cells`);
     for (const row of index === 0 ? table.rows : store.rows(index - 1)) {
       if (row.length !== table.columns.length) throw failure('INVALID_ROW', 'Archive row width differs from its table.');
-      if (index) refuseDevRows(table, [row]);
+      if (index) { refuseAuthorization(table, [row]); refuseDevRows(table, [row]); }
       if (index && JSON.stringify(sanitize({ ...table, rows: [row] }).rows) !== JSON.stringify([row])) throw failure('PRIVATE_CREDENTIAL', 'Archive contains excluded plaintext credentials.');
       const stored = insert.get(...row.map(decode));
       if (JSON.stringify(readCells(stored.cells)) !== JSON.stringify(row)) throw failure('CONTENT_MISMATCH', 'Archive values do not round-trip through the committed schema.');

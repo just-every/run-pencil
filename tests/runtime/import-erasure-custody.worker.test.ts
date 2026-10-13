@@ -6,7 +6,7 @@ import { nativeCustodyFixture } from './import-custody-native-fixture'
 import { interceptCustodyCommit } from './import-custody-commit-boundary'
 import { importContext } from '../../src/core/features/importing/service'
 import { custodyGraph } from '../../scripts/custody-test-graph.mjs'
-import { custodyContext, custodyTargets } from '../../scripts/custody-test-targets.mjs'
+import { custodyContext, custodyTargets, custodySignIn } from '../../scripts/custody-test-targets.mjs'
 import { readD1ImportStream, resumeD1ImportStream, undoD1ImportStream, planD1ImportStream, createD1ImportStream,
   upgradeD1ImportErasureIndex, eraseD1ImportTarget, readD1ImportUndoReport, d1RequestContext } from '../../src/base/import-kit/src/d1/index'
 
@@ -60,6 +60,7 @@ contract(['DATA-002','IMPORT-003','IMPORT-004','BASE-ACCESS-004'], 'native impor
   const archive = await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__)
   await restoreFixture(env.DB, archive)
   expect(await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__)).toEqual(archive)
+  await custodySignIn(env.DB, f.actor)
   const cold = { ...importContext(env.DB, f.actor, f.prepared.namespace), batchSize: 1, maxBatches: 1 }
   for (const id of [f.first.id, f.repeated.id]) {
     for (let step = 0; step < 3; step++) await resumeD1ImportStream(id, cold)
@@ -91,6 +92,7 @@ contract(['DATA-001','DATA-002','IMPORT-004'], 'erasure removes cross-target pre
   expect(await custodyTargets.read(env.DB, graph.actor.workspaceId, 'record', editedId)).toEqual(edited)
   const archive = await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__)
   await restoreFixture(env.DB, archive)
+  await custodySignIn(env.DB, graph.actor)
   expect(await readD1ImportUndoReport(graph.ordinaryId, reportContext)).toEqual(report)
   expect(await custodyTargets.read(env.DB, graph.actor.workspaceId, 'record', editedId)).toEqual(edited)
   expect(await custodyTargets.read(env.DB, graph.actor.workspaceId, 'record', retainedId)).toBeNull()

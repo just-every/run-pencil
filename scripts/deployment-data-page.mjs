@@ -1,7 +1,7 @@
 import { Buffer } from 'node:buffer';
 import { failure } from './deployment-data-errors.mjs';
 import { quote } from './deployment-data-sql.mjs';
-import { exclusions, excludedCaptureTables } from './deployment-data-policy.mjs';
+import { exclusions, rowsNeverTravel } from './deployment-data-policy.mjs';
 import { primaryQuery, queryLimits } from './deployment-data-provider.mjs';
 
 const valueExpression = (table, column) => {
@@ -26,7 +26,7 @@ export function pageStatement(table, after) {
   return { sql: `WITH page AS (SELECT rowid AS archive_cursor,${bytes} AS archive_row_bytes FROM ${quote(table.name)} ${after === undefined ? '' : 'WHERE rowid > CAST(? AS INTEGER)'} ORDER BY rowid LIMIT ${queryLimits.pageRows}), bounded AS (SELECT archive_cursor,sum(archive_row_bytes) OVER (ORDER BY archive_cursor) AS archive_bytes,row_number() OVER (ORDER BY archive_cursor) AS archive_ordinal FROM page) SELECT CAST(archive_cursor AS TEXT) AS cursor,${cells.join(',')} FROM ${quote(table.name)} JOIN bounded ON rowid=archive_cursor WHERE archive_bytes<=${queryLimits.pageBytes} OR archive_ordinal=1 ORDER BY archive_cursor`, params: after === undefined ? [] : [after] };
 }
 export async function* remoteRows(query, table) {
-  if (excludedCaptureTables.has(table.name)) return;
+  if (rowsNeverTravel(table.name)) return;
   let after;
   for (;;) {
     const [{ results }] = await primaryQuery(query, [pageStatement(table, after)]);

@@ -85,7 +85,8 @@ contract(['DATA-001','BASE-DATA-001','BASE-ACCESS-001','BASE-OPS-003'], 'real D1
     // Both schema and nonempty guards run before writes, even on direct batches.
     await expect(env.DB.batch(statements.map(({sql,params=[]}:{sql:string;params?:unknown[]})=>env.DB.prepare(sql).bind(...params)))).rejects.toThrow()
     expect(await archiveSnapshot()).toEqual(afterMaintenance)
-    expect((await run('/api/app/dashboard',undefined,cookie)).status).toBe(200)
+    // Sessions never travel: the owner's pre-backup cookie is refused and everyone signs in again.
+    expect((await run('/api/app/dashboard',undefined,cookie)).status).toBe(401)
     expect((await run('/auth/bootstrap',{token:setup,displayName:'Second owner'})).status).toBe(409)
     expect((await run('/auth/magic-link',{email:'operator@example.test'})).status).toBe(202)
     expect(send).toHaveBeenCalledTimes(1)

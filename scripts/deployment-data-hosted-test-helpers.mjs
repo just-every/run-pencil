@@ -58,7 +58,7 @@ export async function application(directory, db) {
   const origin='https://recovery.example.test';
   const bindings={DB,APP_ORIGIN:origin,SESSION_SECRET:'synthetic-restoration-secret-at-least-32-characters',SETUP_TOKEN:'synthetic-restoration-setup-at-least-32-characters',SEED_ADMIN_EMAIL:'owner@example.test',MAIL_PROVIDER:'sendgrid',MAIL_API_KEY:'synthetic-mail-edge-only',MAIL_FROM:'sender@example.test',PENCIL_LOCAL_DEVELOPMENT:'false',SEED_SAMPLE_DATA:'false'};
   let cookie;
-  return {bindings,worker, setCookie(value){cookie=value;}, async request(path, body, method=body===undefined?'GET':'POST') {
+  return {bindings,worker, cookie:()=>cookie, setCookie(value){cookie=value;}, async request(path, body, method=body===undefined?'GET':'POST') {
     const requestOrigin=bindings.APP_ORIGIN;
     const response=await worker.fetch(new Request(requestOrigin+path,{method,headers:{Host:new URL(requestOrigin).host,Origin:requestOrigin,'CF-Connecting-IP':'192.0.2.55','Content-Type':'application/json',...(cookie?{Cookie:cookie}:{})},...(body===undefined?{}:{body:JSON.stringify(body)})}),bindings,{waitUntil:promise=>promise});
     if(response.headers.has('set-cookie'))cookie=response.headers.get('set-cookie').split(';')[0];

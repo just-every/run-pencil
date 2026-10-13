@@ -4,7 +4,7 @@ import { contract } from '../../src/test/contract'
 import { archiveFixture, snapshotFixture, restoreFixture } from './archive-fixture'
 import { prepareImport } from '../../src/core/features/importing/prepare'
 import { importContext } from '../../src/core/features/importing/service'
-import { custodyActor, custodyContext, custodyTargets } from '../../scripts/custody-test-targets.mjs'
+import { custodyActor, custodyContext, custodyTargets, custodySignIn } from '../../scripts/custody-test-targets.mjs'
 import { custodySource, custodyMapping } from '../../scripts/custody-test-graph.mjs'
 import { preparationCustody, preparationRows } from '../../scripts/custody-test-preparations.mjs'
 import { planD1ImportStream, prepareD1ImportStream, publishD1ImportPreparation, readD1ImportPreparation,
@@ -37,6 +37,7 @@ contract(['DATA-001','IMPORT-003','IMPORT-004','BASE-ACCESS-004','NOTIFY-004'], 
   const archive = await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__)
   await restoreFixture(env.DB, archive)
   expect(await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__)).toEqual(archive)
+  await custodySignIn(env.DB, actor)
   expect(await preparationRows(env.DB, prepared.id)).toEqual(privateRows)
   expect(await readD1ImportPreparation(prepared.id, context())).toEqual(prepared)
   await unpublished()
@@ -86,6 +87,7 @@ contract(['DATA-001','DATA-002','IMPORT-004'], 'restored preparation cancellatio
   const archive = await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__)
   await restoreFixture(env.DB, archive)
   expect(await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__)).toEqual(archive)
+  await custodySignIn(env.DB, actor)
   await cancelD1ImportStaging(cancelled.namespace, { ...custodyContext(env.DB, actor, cancelled.namespace), reviewedFingerprint: cancelled.plan.fingerprint })
   const context = custodyContext(env.DB, actor, erased.namespace), id = `${erased.namespace}:0`
   await eraseD1ImportTarget('record', id, custodyTargets.remove(actor.workspaceId, 'record', id), context)
@@ -102,6 +104,7 @@ contract(['DATA-001','DATA-002','IMPORT-004'], 'restored preparation cancellatio
   const afterErasure = await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__)
   await restoreFixture(env.DB, afterErasure)
   expect(await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__)).toEqual(afterErasure)
+  await custodySignIn(env.DB, actor)
   await expect(prepareD1ImportStream(erased.source, custodyMapping, { ...context, reviewedFingerprint: erased.plan.fingerprint, operationKey: erased.namespace })).rejects.toThrow()
   await absent()
   expect(await env.DB.prepare('SELECT count(*) n FROM ik_d1_erased_targets WHERE destination=?').bind(actor.workspaceId).first()).toEqual({ n: 1 })

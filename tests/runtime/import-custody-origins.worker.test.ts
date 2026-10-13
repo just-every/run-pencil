@@ -3,7 +3,7 @@ import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
 import { archiveFixture, snapshotFixture } from './archive-fixture'
 import { custodyGraph } from '../../scripts/custody-test-graph.mjs'
-import { custodyActor, custodyContext } from '../../scripts/custody-test-targets.mjs'
+import { custodyActor, custodyContext, custodySignIn } from '../../scripts/custody-test-targets.mjs'
 import { readStreamOrigins } from '../../scripts/custody-test-origins.mjs'
 import { verifyCustodyReadback } from '../../scripts/custody-test-canaries.mjs'
 import { restoreStatements } from '../../scripts/deployment-data-sql.mjs'
@@ -44,6 +44,7 @@ contract(['DATA-001','IMPORT-004','BASE-OPS-002','BASE-OPS-003'], 'real membersh
     [...atob(base64)].map(char => char.charCodeAt(0).toString(16).padStart(2, '0')).join(''))
     .map(({ sql, params = [] }: { sql: string; params?: unknown[] }) => second.prepare(sql).bind(...params)))
   expect(await archiveFixture(second, __PENCIL_CORE_MIGRATIONS__)).toEqual(archive)
+  await custodySignIn(second, graph.actor)
   await verifyCustodyReadback(second, graph)
   expect(await readStreamOrigins(second, crypto.randomUUID())).toEqual([])
   const other = await custodyActor(second), scoped = await snapshotFixture(second, __PENCIL_CORE_MIGRATIONS__)

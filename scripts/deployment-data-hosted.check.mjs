@@ -6,13 +6,13 @@ import { join } from 'node:path';
 import { recoveryCommand } from './deployment-data-cli.mjs';
 import { kitDatabase, providerFetch, providerEnv, application } from './deployment-data-hosted-test-helpers.mjs';
 import { hostedFixture } from './deployment-data-hosted-fixture.mjs';
-import { snapshot, metadata } from './deployment-data-core.mjs';
+import { snapshot, metadata, hash } from './deployment-data-core.mjs';
 import { exportRemote, importRemote } from './deployment-data-remote.mjs';
 import { sqliteTransport } from './deployment-data-test-helpers.mjs';
 
 const directory=()=>mkdtempSync(join(process.env.PENCIL_VERIFICATION_TMPDIR??tmpdir(),'pencil-kit-recovery-'));
 
-test('owner recovery command round-trips a kit-created installation filled through app routes, preserves custody and delivery, refuses a second restore without writes', async () => {
+test('owner recovery command round-trips a kit-created installation filled through app routes, preserves custody and delivery, never revives sign-in authorization, refuses a second restore without writes', async () => {
   const dir=directory(), source=await kitDatabase(join(dir,'source.sqlite')), target=await kitDatabase(join(dir,'target.sqlite'));
   const network=[];
   const mail=mock.method(globalThis,'fetch',async(url,options)=>{assert.equal(String(url),'https://api.sendgrid.com/v3/mail/send');network.push(options.body);return new Response(null,{status:202,headers:{'X-Message-Id':'recovery-delivery'}});});
@@ -20,6 +20,10 @@ test('owner recovery command round-trips a kit-created installation filled throu
   let timers;
   try {
     const fixture=await hostedFixture(dir,source);
+    // A respondent part-way through the form holds a resume credential.
+    const respondent=await fixture.call('/api/public/flows/preserved-form/sessions',{deviceClass:'desktop'},201);
+    const resume=()=>({sessionId:respondent.sessionId,sessionToken:respondent.sessionToken,stepId:respondent.flow.steps[0].id});
+    await fixture.call('/api/public/flows/preserved-form/sessions/advance',resume(),204);
     assert.ok(network.length>0);
     assert.ok(source.prepare("SELECT count(*) n FROM mail_deliveries WHERE status='sent'").get().n>0);
     timers=mock.method(globalThis,'setTimeout',(fn,_delay,...args)=>{queueMicrotask(()=>fn(...args));return {unref(){}};});
@@ -40,7 +44,20 @@ test('owner recovery command round-trips a kit-created installation filled throu
     assert.ok(bytes.includes('Retained imported answer'));
     assert.equal(original.payload.tables.find(row=>row.name==='rer_mail_development_outbox').rows.length,0);
     for(const {token,opt_out_token} of source.prepare('SELECT token,opt_out_token FROM invitation_participants').all())for(const secret of [token,opt_out_token])if(secret)assert.equal(bytes.includes(secret),false);
-    assert.ok(original.payload.tables.find(row=>row.name==='oa_tokens').rows.length>0);
+    // Sign-in authorization never travels: the owner's live session and pending sign-in link stay behind.
+    assert.ok(source.prepare('SELECT count(*) n FROM oa_sessions WHERE revoked_at IS NULL').get().n>0);
+    assert.ok(source.prepare('SELECT count(*) n FROM oa_tokens').get().n>0);
+    for(const table of ['oa_sessions','oa_tokens','oa_credentials','oa_step_up_challenges','oa_provider_sessions','oa_provider_session_pins','operator_sessions','auth_magic_links'])assert.equal(original.payload.tables.find(row=>row.name===table).rows.length,0,table);
+    const respondentHash=source.prepare('SELECT session_token_hash h FROM respondent_sessions WHERE id=?').get(respondent.sessionId).h;
+    assert.ok(respondentHash);assert.equal(bytes.includes(respondentHash),false);
+    assert.ok(original.payload.tables.find(row=>row.name==='respondent_sessions').rows.length>0);
+    assert.ok(original.payload.tables.find(row=>row.name==='oa_operators').rows.length>0);
+    assert.ok(original.payload.tables.find(row=>row.name==='audit_entries').rows.length>0);
+    // The owner signs out after the backup; the saved cookie is refused from then on.
+    const signedOut=fixture.app.cookie();
+    assert.equal((await fixture.app.request('/auth/signout',{})).status,204);
+    fixture.app.setCookie(signedOut);
+    assert.equal((await fixture.app.request('/api/app/dashboard')).status,401);
     const before=readFileSync(join(dir,'target.sqlite'));
     await assert.rejects(command(['import','--input',older,'--journal',archive,'--yes'],targetEdge),{recoveryCode:'ERASURE_EPOCH'});
     assert.deepEqual(readFileSync(join(dir,'target.sqlite')),before);
@@ -62,6 +79,28 @@ test('owner recovery command round-trips a kit-created installation filled throu
     const restoredApp=await application(dir,target);
     await restoredApp.worker.scheduled({scheduledTime:Date.now()},restoredApp.bindings);
     assert.equal(network.length,mailsBefore);
+    // Restored with the same SESSION_SECRET, the signed-out cookie stays refused; the owner signs in afresh by email.
+    restoredApp.setCookie(signedOut);
+    assert.equal((await restoredApp.request('/api/app/dashboard')).status,401);
+    assert.equal((await restoredApp.request('/api/public/flows/preserved-form/sessions/advance',resume())).status,400);
+    restoredApp.setCookie(undefined);
+    timers.mock.restore();timers=undefined;
+    assert.equal((await restoredApp.request('/auth/magic-link',{email:'owner@example.test'})).status,202);
+    for(let i=0;i<100&&network.length===mailsBefore;i++)await new Promise(resolve=>setImmediate(resolve));
+    assert.equal(network.length,mailsBefore+1);
+    const link=/token=([A-Za-z0-9_-]{43})(?![A-Za-z0-9_-])/.exec(network.at(-1))[1];
+    assert.equal((await restoredApp.request('/auth/confirm',{token:link})).status,303);
+    assert.equal((await restoredApp.request('/api/app/dashboard')).status,200);
+    // An archive that carries a session is refused before any write, even with a matching digest.
+    const planted=structuredClone(original), sessions=planted.payload.tables.find(row=>row.name==='oa_sessions');
+    sessions.rows.push(sessions.columns.map(column=>({type:'text',value:`planted-${column}`})));
+    planted.sha256=hash(JSON.stringify(planted.payload));
+    const plantedPath=join(dir,'planted.rer'), empty=await kitDatabase(join(dir,'empty.sqlite')), emptyEdge=providerFetch(empty);
+    try {
+      writeFileSync(plantedPath,JSON.stringify(planted)+'\n',{mode:0o600});
+      await assert.rejects(command(['import','--input',plantedPath,'--yes'],emptyEdge),{recoveryCode:'LIVE_AUTHORIZATION'});
+      assert.ok(emptyEdge.calls.flat().every(row=>row.sql.startsWith('SELECT')));
+    } finally {empty.close();}
     const evidence=process.env.PENCIL_RECOVERY_EVIDENCE;
     if(evidence){mkdirSync(evidence,{recursive:true,mode:0o700});for(const file of ['source.rer','restored.rer','before-erasure.rer'])copyFileSync(join(dir,file),join(evidence,file));writeFileSync(join(evidence,'roundtrip.json'),JSON.stringify({exported,archiveBytes:Buffer.byteLength(bytes),semanticEquality:true,byteEquality:true,kitLedger:history,secondRestore:{code:'NONEMPTY_TARGET',databaseBytesUnchanged:true,totalChangesUnchanged:true,onlyReads:true},journalRefusal:'ERASURE_EPOCH',providerCalls:network.length,mailReplayed:0,sourceSnapshot:snapshot(source).sha256},null,2));}
   } finally {timers?.mock.restore();mail.mock.restore();source.close();target.close();rmSync(dir,{recursive:true});}

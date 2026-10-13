@@ -38,10 +38,14 @@ export async function custodyActor(database) {
     database.prepare('INSERT INTO workspaces(id,name,time_zone,created_at,updated_at) VALUES(?,?,?,?,?)').bind(actor.workspaceId, 'Custody recovery', 'UTC', now, now),
     database.prepare('INSERT INTO operators(id,workspace_id,email,display_name,created_at,updated_at) VALUES(?,?,?,?,?,?)').bind(actor.operatorId, actor.workspaceId, `${actor.operatorId}@example.test`, 'Recovery operator', now, now),
   ]);
+  await custodySignIn(database, actor);
+  return actor;
+}
+// Sessions never travel in an archive, so a restored copy needs the actor to sign in again.
+export async function custodySignIn(database, actor) {
   await database.batch([database.prepare(`INSERT INTO oa_sessions(id,token_hash,operator_id,operator_version,kind,created_at,expires_at)
     SELECT ?,?,a.id,a.version,'native',?,? FROM oa_operators a JOIN operator_auth_links l ON l.auth_id=a.id WHERE l.operator_id=?`)
     .bind(actor.id, crypto.randomUUID(), Date.now(), Date.now() + 3600000, actor.operatorId)]);
-  return actor;
 }
 
 export function custodyContext(database, actor, namespace) {

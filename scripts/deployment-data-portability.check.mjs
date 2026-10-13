@@ -16,7 +16,7 @@ test('explicit schema classifications cover every migrated column and reject new
     for (const table of inventory(db)) assert.equal(Object.keys(classify(table)).length, table.columns.length);
     assert.throws(() => classify({name:'new_private_records',columns:['id']}), /privacy classification/);
     assert.throws(() => classify({name:'operators',columns:['private_token']}), /privacy classification/);
-    for (const table of inventory(db).filter(table => ['oa_tokens','oa_sessions','auth_magic_links','operator_sessions'].includes(table.name))) assert.equal(classify(table).token_hash,'credential-hash');
+    for (const table of inventory(db).filter(table => ['oa_tokens','oa_sessions','auth_magic_links','operator_sessions'].includes(table.name))) assert.equal(classify(table).token_hash,'excluded-authorization');
   } finally { db.close(); }
 });
 test('legacy inbox metadata and bootstrap survive while private captured mail rows are excluded', () => {

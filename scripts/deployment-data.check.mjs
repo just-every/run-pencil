@@ -67,7 +67,8 @@ test('full current-data roundtrip preserves stable revisions, quarantine, receip
     assert.equal(database.prepare('SELECT COUNT(*) AS n FROM d1_migrations').get().n, migrations().length);
     assert.deepEqual(database.prepare('SELECT name FROM d1_migrations ORDER BY id').all().map(row => row.name), migrations().map(row => row.name));
     assert.deepEqual(JSON.parse(readFileSync(f.archive, 'utf8')).payload.migrations, migrations().map(row => ({ name: row.name, sha256: createHash('sha256').update(row.sql).digest('hex') })));
-    assert.equal(database.prepare('SELECT revoked_at FROM operator_sessions').get().revoked_at, stamp);
+    for (const table of ['operator_sessions', 'auth_magic_links', 'oa_tokens', 'oa_sessions']) assert.equal(database.prepare(`SELECT count(*) AS n FROM ${table}`).get().n, 0, table);
+    assert.equal(database.prepare('SELECT operator_id FROM oa_external_identities').get().operator_id, 'operator');
     assert.equal(database.prepare('SELECT initialized_at FROM local_fixture_initializations').get().initialized_at, stamp);
     database.close();
   } finally { rmSync(f.directory, { recursive: true }); }
