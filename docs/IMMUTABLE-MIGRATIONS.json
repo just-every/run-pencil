@@ -38,5 +38,13 @@
   {
     "name": "0009_invitation_distribution.sql",
     "sha256": "5adb51a256e01269027e02fe03658e3c3329e116afa3f5179708a65601f8ef0e"
+  },
+  {
+    "name": "0010_base_operator_auth.sql",
+    "sha256": "f91d67d1ef038091a42a642f43e52773f98cef279b57d706870bdc10fe657d08"
+  },
+  {
+    "name": "0011_atomic_session_progress.sql",
+    "sha256": "e6a093aed5547ceaf3e3f9eb88608242fabe374b44b889322f71eec9fd25682f"
   }
 ]

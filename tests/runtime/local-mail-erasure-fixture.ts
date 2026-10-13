@@ -24,8 +24,8 @@ export async function localMailErasureFixture(slug: string) {
     return (await env.DB.prepare('SELECT id, token, opt_out_token, email_snapshot FROM invitation_participants WHERE launch_id = ?')
       .bind(launched.id).first<MailParticipant>())!
   }
-  const mail = async (participant: MailParticipant) => (await env.DB.prepare(`SELECT o.delivery_id, o.message_json FROM local_mail_outbox o
-    JOIN mail_deliveries d ON d.idempotency_key = o.delivery_id WHERE d.participant_id = ? ORDER BY o.delivery_id`)
+  const mail = async (participant: MailParticipant) => (await env.DB.prepare(`SELECT json_extract(o.message,'$.deliveryId') delivery_id, o.message message_json FROM rer_mail_development_outbox o
+    JOIN mail_deliveries d ON d.idempotency_key = json_extract(o.message,'$.deliveryId') WHERE d.participant_id = ? ORDER BY json_extract(o.message,'$.deliveryId')`)
     .bind(participant.id).all<{ delivery_id: string; message_json: string }>()).results
   const send = async (participant: MailParticipant, reminder = false) => {
     await dispatcher.run()
@@ -58,8 +58,8 @@ export async function localMailErasureFixture(slug: string) {
   }
   const erasedParticipant = async (participant: MailParticipant) => {
     expect(await mail(participant)).toEqual([])
-    expect((await env.DB.prepare(`SELECT delivery_id FROM local_mail_outbox
-      WHERE instr(message_json, ?) > 0 OR instr(message_json, ?) > 0`)
+    expect((await env.DB.prepare(`SELECT json_extract(message,'$.deliveryId') delivery_id FROM rer_mail_development_outbox
+      WHERE instr(message, ?) > 0 OR instr(message, ?) > 0`)
       .bind(participant.token, participant.opt_out_token).all()).results).toEqual([])
     expect(await env.DB.prepare(`SELECT contact_id, email_snapshot, name_snapshot, token, opt_out_token
       FROM invitation_participants WHERE id = ?`).bind(participant.id).first()).toEqual({

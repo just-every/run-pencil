@@ -31,6 +31,9 @@ const errors = []
 const files = await sourceFiles(resolve(root, 'src'))
 for (const file of files) {
   const shown = relative(root, file)
+  // Complete upstream packages retain their own framework/runtime test harnesses.
+  // Application boundaries cover their runtime source, not those unbundled tests.
+  if (/^src\/base\/(?:mail|operator-auth)\/(?:tests|oidc\/tests|conformance)\//.test(shown)) continue
   const source = ts.createSourceFile(file, await readFile(file, 'utf8'), ts.ScriptTarget.Latest, true)
   const inspectSpecifier = (specifier) => {
     if (specifier.startsWith('cloudflare:') && !shown.startsWith('src/core/platform/')) {

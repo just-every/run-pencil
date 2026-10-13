@@ -1,6 +1,8 @@
+import { testDevKey } from './tests/helpers/dev-key.mjs'
 import { readFile } from 'node:fs/promises'
 import { cloudflareTest, readD1Migrations } from '@cloudflare/vitest-plugin'
 import { defineConfig } from 'vitest/config'
+import { unstable_splitSqlQuery } from 'wrangler'
 
 const migrations = await readD1Migrations('./migrations/core')
 const previousMigrations = process.env.PENCIL_PREVIOUS_MIGRATIONS_DIR
@@ -17,28 +19,32 @@ export default defineConfig({
   define: {
     __PENCIL_CORE_MIGRATIONS__: JSON.stringify(migrations),
     __PENCIL_PREVIOUS_CORE_MIGRATIONS__: JSON.stringify(previousMigrations),
-    __PENCIL_UPGRADE_FIXTURE_SQL__: JSON.stringify(upgradeFixture),
+    __PENCIL_UPGRADE_FIXTURE_QUERIES__: JSON.stringify(upgradeFixture ? unstable_splitSqlQuery(upgradeFixture) : []),
     __PENCIL_UPGRADE_CHECKS__: JSON.stringify(upgradeChecks),
     __PENCIL_RUN_LOAD__: JSON.stringify(process.env.PENCIL_RUN_LOAD === '1'),
   },
   plugins: [
-    cloudflareTest({
+    cloudflareTest(({ inject }) => ({
       main: './src/core/app/worker.ts',
       miniflare: {
-        d1Databases: ['DB'],
+        d1Databases: ['DB', 'IMPORT_SECOND'],
         bindings: {
+          // The loopback task receiver from the global setup; tests opt in to task delivery with their own bindings.
+          TASK_RECEIVER_ORIGIN: inject('taskReceiverOrigin'),
           MAIL_PROVIDER: 'local',
           SESSION_SECRET: 'synthetic-worker-session-secret-at-least-32-characters',
           PENCIL_LOCAL_DEVELOPMENT: 'true',
+          RER_DEV_KEY: testDevKey,
           SEED_SAMPLE_DATA: process.env.PENCIL_LOAD_MODE === '1' ? 'false' : 'true',
         },
       },
-    }),
+    })),
   ],
   test: {
     // Native D1 journeys run serially on shared and cold CI workers.
     testTimeout: 30_000,
     include: ['tests/runtime/**/*.worker.test.ts'],
+    globalSetup: ['tests/runtime/task-receiver.global.ts'],
     fileParallelism: false,
   },
 })

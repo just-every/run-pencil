@@ -2,6 +2,9 @@ import { MailValidationError, fail } from '../core/errors.mjs';
 import { validateConfig, validateMessage } from '../core/validation.mjs';
 import { sendResult } from '../core/transport.mjs';
 
+export { createD1DevelopmentOutbox } from './outbox.mjs';
+export { createDevelopmentOutboxHandler } from './viewer.mjs';
+
 function validate(operation, errorCode) {
   try {
     return operation();

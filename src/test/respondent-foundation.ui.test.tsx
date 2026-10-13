@@ -35,7 +35,7 @@ contract(['RESP-002', 'RESP-003', 'RESP-004'], 'branch changes recompute visible
   vi.mocked(api.advanceSession).mockResolvedValue(undefined)
   render(<RespondentFlowPage config={config} slug="review" initialFlow={flow} />)
   expect(screen.getByText('Question 1 of 2')).toBeVisible()
-  expect(screen.getByText('1 remaining')).toBeVisible()
+  expect(screen.getByText('2 remaining')).toBeVisible()
   fireEvent.click(screen.getByRole('button', { name: 'Continue' }))
   expect(await screen.findByRole('alert')).toHaveTextContent('Choose path')
   expect(api.submitResponse).not.toHaveBeenCalled()

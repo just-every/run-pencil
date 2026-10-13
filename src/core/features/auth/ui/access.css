@@ -1,0 +1,27 @@
+/*
+ * Signed-out pages (sign-in, first-run setup): a white card left of centre with the note card and pencil beside it;
+ * on phones the art sits above the card (sign-in) or tucked under its corner (setup).
+ */
+.access-shell { display: grid; min-height: 100svh; grid-template-columns: minmax(0, 560px) minmax(0, 480px); align-items: center; justify-content: center; gap: clamp(32px, 6vw, 88px); padding: 48px var(--page-gutter); }
+.access-card { position: relative; min-width: 0; padding: 48px; overflow-wrap: anywhere; }
+.access-card .pencil-wordmark { margin-bottom: 40px; }
+.access-card h1 { margin: 12px 0 16px; font-size: 56px; line-height: 1.04; }
+.access-card > p.muted, .access-card form > p.muted { font-size: 17px; line-height: 1.55; }
+.access-card .inspector-field { margin-top: 24px; }
+.access-card .inspector-field + .inspector-field { margin-top: 18px; }
+.access-card .primary-button { width: 100%; min-height: 52px; margin-top: 22px; }
+.access-actions { display: grid; gap: 12px; margin-top: 24px; }
+.access-actions .primary-button { margin-top: 0; }
+.access-docs { margin-top: 28px; font-size: 16px; }
+.access-docs a { color: var(--ink); text-decoration: underline 1.5px; text-underline-offset: 6px; }
+.access-docs a:hover { text-decoration-color: var(--yellow-deep); }
+.access-art { width: 100%; max-width: 480px; justify-self: start; }
+
+@media (max-width: 900px) {
+  .access-shell { grid-template-columns: minmax(0, 560px); align-content: start; gap: 8px; padding-top: 20px; }
+  .access-art { order: -1; width: 260px; justify-self: center; }
+  .access-card { padding: 28px 24px; }
+  .access-card .pencil-wordmark { margin-bottom: 24px; }
+  .access-card h1 { margin-top: 8px; font-size: 44px; }
+  .access-card .primary-button { min-height: 48px; }
+}

@@ -2,25 +2,28 @@ import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { spawn } from 'node:child_process'
-// Each viewport runs the complete native suite in its own freshly migrated
-// runtime. Production auth limits remain unchanged; sessions/rate ledgers never
-// get reset inside a journey. Browser evidence retains both project outcomes.
+// Each viewport runs the complete native suite in freshly migrated runtimes.
+// Production auth limits remain unchanged; sessions/rate ledgers never get
+// reset inside a journey. Local sign-in links share one loopback allowance of
+// 30 per 15 minutes, so each viewport's journeys run in two shards, each with
+// its own runtime and empty ledgers. Browser evidence retains every outcome.
+const shards = 2
 const output = process.argv[2]
 const directory = await mkdtemp(join(process.env.PENCIL_VERIFICATION_TMPDIR ?? tmpdir(), 'pencil-browser-projects-'))
 const reports = []
 let failed = false
 try {
-  for (const project of ['desktop','mobile']) {
-    const file = join(directory,`${project}.json`)
+  for (const project of ['desktop','mobile']) for (let shard = 1; shard <= shards; shard++) {
+    const file = join(directory,`${project}-${shard}.json`)
     const code = await new Promise((resolve,reject) => {
-      const child = spawn(process.execPath,['node_modules/@playwright/test/cli.js','test',`--project=${project}`,`--output=test-results/${project}`,'--reporter=json'], {
+      const child = spawn(process.execPath,['node_modules/@playwright/test/cli.js','test',`--project=${project}`,`--shard=${shard}/${shards}`,`--output=test-results/${project}-${shard}`,'--reporter=json'], {
         env: { ...process.env, PLAYWRIGHT_JSON_OUTPUT_NAME:file }, stdio:['ignore','inherit','inherit'],
       })
       child.once('error',reject);child.once('close',resolve)
     })
     const report = JSON.parse(await readFile(file,'utf8'))
     reports.push(report)
-    console.log(`${project}: ${report.stats.expected} passed, ${report.stats.unexpected} failed, ${report.stats.skipped} skipped`)
+    console.log(`${project} shard ${shard}/${shards}: ${report.stats.expected} passed, ${report.stats.unexpected} failed, ${report.stats.skipped} skipped`)
     if (code !== 0) failed = true
   }
   const report = { ...reports[0], suites: reports.flatMap(item=>item.suites), errors: reports.flatMap(item=>item.errors ?? []), stats: {

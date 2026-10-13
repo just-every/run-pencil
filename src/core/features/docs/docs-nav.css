@@ -1,0 +1,25 @@
+/* Section navigation (the sidebar and the phone menu share the list), the contents list and the phone disclosures. */
+.pencil-docs:where(.pencil-site *) .docs-nav-group + .docs-nav-group { margin-top: 28px; }
+.pencil-docs:where(.pencil-site *) .docs-nav-section { margin: 0 0 6px; color: var(--graphite); font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.pencil-docs:where(.pencil-site *) .docs-nav-group ul { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.pencil-docs:where(.pencil-site *) .docs-nav-group a { position: relative; display: block; margin-left: -12px; padding: 6px 14px; border-radius: 999px; color: var(--ink); font-size: 16px; line-height: 1.35; text-decoration: none; transition: background-color 0.18s; }
+.pencil-docs:where(.pencil-site *) .docs-nav-group a:hover { background: var(--paper-deep); }
+.pencil-docs:where(.pencil-site *) .docs-nav-group a[aria-current="page"] { background: var(--yellow-wash); font-weight: 700; }
+/* The current page is circled in pencil: one loose graphite oval that overshoots where it started, drawn over the wash. */
+.pencil-docs:where(.pencil-site *) .docs-nav-group a[aria-current="page"]::after { content: ""; position: absolute; inset: -3px -5px -3px -5px; pointer-events: none; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none' fill='none'%3E%3Cpath d='M34 4.5C70 1.5 142 1.8 176 6c19 2.4 25 8 22 15-3 7.5-18 13-60 15.2-36 1.8-90 1.2-120-3C6 30.5 1 22 4 14.5 7 8 22 4 52 2.6' stroke='%235f646b' stroke-width='1.6' stroke-linecap='round' vector-effect='non-scaling-stroke' opacity='.8'/%3E%3C/svg%3E") no-repeat center / 100% 100%; }
+
+/* On this page */
+.pencil-docs:where(.pencil-site *) .docs-toc-title { margin: 0 0 10px; color: var(--graphite); font-size: 13px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+.pencil-docs:where(.pencil-site *) :is(.docs-toc, .docs-toc-compact) ul { margin: 0; padding: 0; list-style: none; }
+.pencil-docs:where(.pencil-site *) :is(.docs-toc, .docs-toc-compact) a { display: block; padding: 4px 0; color: var(--ink-soft); font-size: 15px; line-height: 1.4; text-decoration: none; transition: color 0.18s; }
+.pencil-docs:where(.pencil-site *) :is(.docs-toc, .docs-toc-compact) a:hover { color: var(--ink); text-decoration: underline 1.5px var(--yellow-deep); text-underline-offset: 4px; }
+.pencil-docs:where(.pencil-site *) :is(.docs-toc, .docs-toc-compact) ul ul { margin: 2px 0 6px; padding-left: 14px; border-left: 1.5px solid var(--line); }
+
+/* Phone menu and the compact contents list: an outline pill that opens a white card. */
+.pencil-docs:where(.pencil-site *) :is(.docs-menu, .docs-toc-compact) { margin-bottom: 24px; }
+.pencil-docs:where(.pencil-site *) :is(.docs-menu, .docs-toc-compact) summary { display: inline-flex; align-items: center; gap: 0.35em; min-height: 44px; max-width: 100%; padding: 0 20px; border: 1.5px solid var(--ink); border-radius: 999px; background: var(--card); font-size: 16px; font-weight: 500; cursor: pointer; list-style: none; }
+.pencil-docs:where(.pencil-site *) :is(.docs-menu, .docs-toc-compact) summary::-webkit-details-marker { display: none; }
+.pencil-docs:where(.pencil-site *) :is(.docs-menu, .docs-toc-compact) summary::after { content: ""; width: 7px; height: 7px; margin: -3px 0 0 6px; border: solid currentColor; border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
+.pencil-docs:where(.pencil-site *) .docs-menu details[open] > summary::after, .pencil-docs:where(.pencil-site *) .docs-toc-compact[open] > summary::after { margin-top: 4px; transform: rotate(225deg); }
+.pencil-docs:where(.pencil-site *) .docs-menu-current { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink-soft); font-weight: 400; }
+.pencil-docs:where(.pencil-site *) .docs-menu-list, .pencil-docs:where(.pencil-site *) .docs-toc-compact[open] > ul { margin-top: 12px; padding: 18px 20px 18px 24px; border: 1.5px solid var(--line); border-radius: 14px; background: var(--card); box-shadow: var(--shadow); }

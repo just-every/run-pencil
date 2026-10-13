@@ -1,6 +1,8 @@
-import { rm } from 'node:fs/promises'
+import { rm, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { spawn } from 'node:child_process'
 import { resolve } from 'node:path'
+import { managementEdge } from '../tests/admission/management-edge.mjs'
+import { testDevKey } from '../tests/helpers/dev-key.mjs'
 
 const root = resolve(new URL('..', import.meta.url).pathname)
 const port = process.argv[2]
@@ -39,16 +41,38 @@ async function cleanState() {
 }
 
 await cleanState()
-const common = { ...process.env, PENCIL_WRANGLER_CONFIG: 'wrangler.toml', CI: '1', WRANGLER_SEND_METRICS: 'false', XDG_CONFIG_HOME: resolve(root, '.isolated-config') }
-const built = await run('pnpm', ['build'], common)
-if (built !== 0) process.exit(built)
-const migrated = await run('pnpm', ['exec', 'wrangler', 'd1', 'migrations', 'apply', 'pencil-local', '--local', '--persist-to', state, '--config', 'wrangler.toml'], common)
-if (migrated !== 0) {
-  await cleanState()
-  process.exit(migrated)
-}
-
-const wrangler = resolve(root, 'node_modules/wrangler/bin/wrangler.js')
-const exitCode = await run(process.execPath, [wrangler, 'dev', '--local', '--config', 'dist/server/wrangler.json', '--ip', '127.0.0.1', '--port', port, '--inspector-port', '0', '--persist-to', state], common)
-await cleanState()
+await mkdir(state, { recursive: true })
+// The native suite owns explicit synthetic sample state and credentials. It
+// never relies on, replaces or reads the owner's local setup file.
+const config = resolve(state, 'wrangler.toml')
+const template = (await readFile(resolve(root, 'deploy/wrangler.template.toml'), 'utf8'))
+  .replace('main = "src/server.ts"', 'main = "../src/server.ts"')
+  .replace('migrations_dir = "migrations/core"', 'migrations_dir = "../migrations/core"')
+const managementVars = process.argv[3] === '--management' ? `\nRER_MANAGEMENT_ORIGIN = "http://127.0.0.1:${Number(port) + 1}"\nRER_INSTALLATION_ID = "synthetic-pencil-admission"\n` : ''
+// The actions journey starts its own loopback task receiver on this port (tests/e2e/task-receiver.ts).
+const taskPort = process.env.PENCIL_E2E_TASK_PORT ?? String(Number(port) + 2)
+const taskVars = `TASK_PROVIDER = "webhook"\nTASK_WEBHOOK_URL = "http://127.0.0.1:${taskPort}/tasks"\n`
+await writeFile(config, template + '\n[vars]\nMAIL_PROVIDER = "local"\nPENCIL_LOCAL_DEVELOPMENT = "true"\nSEED_SAMPLE_DATA = "true"\n' + taskVars + managementVars)
+await writeFile(resolve(state, '.dev.vars'), `SESSION_SECRET=synthetic-native-browser-session-secret-at-least-32-characters\nRER_DEV_KEY=${testDevKey}\nTASK_API_KEY=synthetic-browser-task-key\n`, { mode: 0o600 })
+const common = { ...process.env, PENCIL_WRANGLER_CONFIG: config, CI: '1', WRANGLER_SEND_METRICS: 'false', XDG_CONFIG_HOME: resolve(root, '.isolated-config') }
+let management
+let exitCode
+try {
+  const built = await run('pnpm', ['run', 'build:app'], common)
+  if (receivedSignal) exitCode = 0
+  else if (built !== 0) exitCode = built
+  else {
+    const migrated = await run('pnpm', ['exec', 'wrangler', 'd1', 'migrations', 'apply', 'pencil-local', '--local', '--persist-to', state, '--config', config], common)
+    if (receivedSignal) exitCode = 0
+    else if (migrated !== 0) exitCode = migrated
+    else {
+      if (process.argv[3] === '--management') {
+        management = await managementEdge(Number(port) + 1)
+        management.state.allowed = `http://127.0.0.1:${port}`
+      }
+      const wrangler = resolve(root, 'node_modules/wrangler/bin/wrangler.js')
+      exitCode = receivedSignal ? 0 : await run(process.execPath, [wrangler, 'dev', '--local', '--config', 'dist/server/wrangler.json', '--ip', '127.0.0.1', '--port', port, '--inspector-port', '0', '--persist-to', state], common)
+    }
+  }
+} finally { await management?.close(); await cleanState() }
 process.exit(receivedSignal ? 0 : exitCode)

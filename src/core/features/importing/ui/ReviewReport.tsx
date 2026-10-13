@@ -1,0 +1,25 @@
+import { RowErrors } from './RowErrors'
+import { type ColumnMapping, type ImportReview } from '../model'
+export function ReviewReport({ review, columns, change, busy }: { review: ImportReview; columns: ColumnMapping[]; change: (value: ColumnMapping[]) => void; busy: boolean }) {
+  return <section aria-labelledby="mapping-heading">
+    <h2 id="mapping-heading">Review the mapping</h2>
+    <p>{review.title} · {review.questions.length} questions · {review.responseCount} valid response rows</p>
+    {review.google ? <div className="quiet-panel" style={{padding:'1rem'}}><p>{review.google.mode === 'csv-only' ? 'CSV-only reconstruction' : 'Google Forms definition'} · {review.google.dateOrder ?? 'Choose date order'} · {review.google.timeZone ?? 'Choose Sheet time zone'}</p>{review.google.firstTimestamp ? <p>First: {review.google.firstTimestamp.local} → {review.google.firstTimestamp.utc}</p> : null}{review.google.lastTimestamp ? <p>Last: {review.google.lastTimestamp.local} → {review.google.lastTimestamp.utc}</p> : null}</div> : null}
+    <p className="muted">Every field and logic jump is listed below. Historical responses stay anonymous on an immutable imported revision. Editing the new draft does not change those answers.</p>
+    {review.headers.length ? <fieldset disabled={busy} style={{ minWidth: 0, margin: 0, padding: 0, border: 0 }}><legend>CSV columns</legend><p>{review.source === 'google-forms' ? 'Choose a question, the submission timestamp, or Skip. Each question uses one CSV column. Changed mappings need a fresh report.' : 'Choose a question, a timestamp, a separate multiple-choice option, or Skip. Changed mappings need a fresh report. Accepted selection encodings are shown in the moving guide.'}</p>
+      {review.headers.map((header, column) => {
+        const mapping = columns.find(c => c.column === column) ?? { column, target: 'skip' }
+        return <label className="inspector-field" key={column}>{column + 1}. {header || '(empty heading)'}
+          <select className="text-input" disabled={review.forbiddenColumns.includes(column)} value={mapping.choice ? `${mapping.target}::${mapping.choice}` : mapping.target} onChange={e => { const [target, choice] = e.target.value.split('::'); change(columns.map(c => c.column === column ? { column, target, ...(choice ? { choice } : {}) } : c)) }}>
+            <option value="skip">Skip{review.forbiddenColumns.includes(column) ? ' — private metadata, uploads or quiz data is never imported' : ''}</option><option value="submittedAt">Submission timestamp</option>{review.source !== 'google-forms' ? <option value="startedAt">Start timestamp</option> : null}
+            {review.questions.map(q => <option key={q.id} value={q.id}>{q.prompt} ({q.questionType}){review.source === 'google-forms' ? ` — source ${q.sourceId}` : ''}</option>)}
+            {review.source !== 'google-forms' ? review.questions.filter(q => q.questionType === 'multiple_choice').flatMap(q => q.choices.map(c => <option key={`${q.id}:${c.id}`} value={`${q.id}::${c.id}`}>{q.prompt} — {c.label} selected</option>)) : null}
+          </select>
+        </label>
+      })}</fieldset> : null}
+    <div role="list" aria-label="Field and logic mapping report">{review.report.map((item, index) => <div role="listitem" className="quiet-panel" style={{ padding: '1rem', marginTop: '.65rem', overflowWrap: 'anywhere' }} key={index}>
+      <strong>{item.label} · {item.sourceType}</strong><p><span className="badge">{item.state}</span> {item.change}</p><p>{item.reason}</p><small className="muted">{item.location}</small>
+    </div>)}</div>
+    <RowErrors key={review.fingerprint} errors={review.rowErrors} />
+  </section>
+}

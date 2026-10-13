@@ -1,0 +1,27 @@
+/* Plates for moving in and owning it: the import page and the terminal. */
+
+/* #moving-in: the response CSV field is circled; the note below reaches it past the left-hand button. */
+:where(.pencil-site) .plate--moving-in__note { --note-flow: row-reverse; --note-margin: 0.3em 8% 0 auto; --note-turn: scaleX(-1) rotate(100deg); }
+:where(.pencil-site) .import-sheet { --tilt: 0.9deg; padding: 1.05em 1.35em 1.2em; }
+:where(.pencil-site) .import-sheet__lede { margin-top: 0.25em; }
+:where(.pencil-site) .import-sheet__files { display: grid; gap: 0.45em; margin-top: 0.8em; }
+:where(.pencil-site) .import-sheet__field { display: flex; flex-wrap: wrap; align-items: center; gap: 0.15em 0.7em; max-width: 100%; }
+:where(.pencil-site) .import-sheet__field .plate-label { min-width: 9em; }
+:where(.pencil-site) .import-sheet__file { min-width: 0; max-width: 100%; }
+:where(.pencil-site) .import-sheet .pencil-circle--block { --ring-y: 0.65em; min-width: 0; padding-inline: 0.9em 0.7em; }
+:where(.pencil-site) .import-sheet__actions { display: flex; margin-top: 0.9em; }
+
+/* #yours: commands in ink; setup's output sentence in pencil, wrapping between words. */
+:where(.pencil-site) .plate--yours__note { --note-margin: 0.35em 6% 0 auto; --note-turn: rotate(78deg); }
+:where(.pencil-site) .terminal-sheet {
+  --tilt: -0.8deg;
+  padding: 1.05em 1.3em 1.15em;
+  color: var(--pencil);
+  font-family: var(--font-mono);
+  font-size: max(13px, 0.6em);
+  line-height: 1.6;
+}
+:where(.pencil-site) .terminal-sheet__line { color: var(--lead); font-weight: 600; }
+:where(.pencil-site) .terminal-sheet__line:not(:first-of-type) { margin-top: 0.9em; }
+:where(.pencil-site) .terminal-sheet__prompt { margin-right: 0.2em; color: var(--pencil-soft); font-weight: 400; }
+:where(.pencil-site) .terminal-sheet .pencil-circle--block { --ring-y: 0.9em; padding-inline: 1.3em 0.8em; }

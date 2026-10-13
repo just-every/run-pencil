@@ -1,0 +1,46 @@
+import AxeBuilder from '@axe-core/playwright'
+import { expect } from './fixtures'
+import { contract } from './contract'
+import { checkAuthoringLayout, signInEmptyWorkspace } from './authoring-helpers'
+
+contract(['WS-001','FLOW-005','FLOW-010','BASE-PUBLIC-003'], 'branch and publication options show a human workspace zone with accessible compact geometry', async ({ page }, info) => {
+  await signInEmptyWorkspace(page)
+  const settings = await (await page.request.get('/api/app/workspace')).json()
+  expect((await page.request.put('/api/app/workspace', { data: { ...settings, timeZone: 'Australia/Brisbane' } })).ok()).toBe(true)
+  await page.getByRole('button', { name: 'Customer feedback', exact: true }).click()
+  await page.getByRole('button', { name: 'Create draft flow' }).click()
+  const editor = page.getByRole('complementary', { name: 'Step settings' })
+  await editor.getByRole('button', { name: 'Add rule' }).click()
+  const check = async (name: string) => {
+    await checkAuthoringLayout(page)
+    const violations = (await new AxeBuilder({ page }).analyze()).violations.filter(v => v.impact === 'serious' || v.impact === 'critical')
+    expect(violations).toEqual([])
+    await info.attach(name, { contentType: 'application/json', body: JSON.stringify({ viewport: page.viewportSize(), ...await page.evaluate(() => ({ viewportHeights: document.documentElement.scrollHeight / innerHeight, horizontalOverflow: document.documentElement.scrollWidth > innerWidth })), seriousOrCritical: violations.length }) })
+    await page.screenshot({ path: `${process.env.PENCIL_CAPTURE_DIR ?? 'test-results'}/${info.project.name}-${name}.png`, fullPage: true })
+  }
+  await check('deadline-branch')
+  await page.getByRole('button', { name: 'Discard changes', exact: true }).click()
+  await page.getByText('Publication options', { exact: true }).click()
+  const options = page.getByRole('group', { name: 'Publication limits' })
+  const deadline = options.locator('input[type="datetime-local"]')
+  await expect(deadline).toHaveAccessibleName('Close at (Brisbane time)')
+  await expect(deadline).toBeVisible()
+  await expect(options).toContainText('Deadlines use Brisbane time and retain that zone if settings change.')
+  await expect(options).not.toContainText('Australia/Brisbane')
+  await expect(options.getByRole('link', { name: 'Change time zone in Settings' })).toHaveAttribute('href', '/app/settings')
+  const target = options.getByLabel('Completed response target')
+  await expect(target).toHaveAttribute('min', '1')
+  await expect(target).toHaveAttribute('step', '1')
+  await expect(target).toHaveAttribute('placeholder', 'No target')
+  await check('deadline-empty')
+  await deadline.fill('2036-01-15T12:00')
+  await expect(deadline).toHaveAccessibleName('Close at (Australian Eastern Standard Time)')
+  await expect(options).toContainText('Deadlines use Australian Eastern Standard Time and retain that zone if settings change.')
+  await target.fill('20')
+  await check('deadline-publication')
+  const published = page.waitForRequest(request => request.method() === 'POST' && new URL(request.url()).pathname.endsWith('/publish'))
+  await page.getByRole('button', { name: 'Publish', exact: true }).click()
+  expect((await published).postDataJSON()).toMatchObject({ deadlineAt: '2036-01-15T02:00:00.000Z', targetCompletedResponses: 20 })
+  await expect(page.getByText('Published. New visitors see this version.', { exact: true })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Share this flow' })).toBeVisible()
+})

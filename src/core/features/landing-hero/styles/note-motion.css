@@ -1,0 +1,76 @@
+/*
+ * Choosing an answer: the old loop and follow-up are rubbed out (a quick fade with an eraser's jiggle and a few
+ * crumbs), the pencil loops the new answer, then writes the new follow-up from left to right, ending at its tip.
+ * The server-rendered card never animates. Reduced motion swaps instantly.
+ */
+:where(.pencil-site) .pencil-loop--draw path {
+  stroke-dasharray: 1;
+  animation: note-loop-draw 0.56s cubic-bezier(0.42, 0.08, 0.3, 1) 0.12s both;
+}
+@keyframes note-loop-draw {
+  from { stroke-dashoffset: 1; opacity: 0; }
+  3% { opacity: 1; }
+  to { stroke-dashoffset: 0; opacity: 1; }
+}
+
+:where(.pencil-site) .pencil-loop--erase,
+:where(.pencil-site) .note-erasing { animation: note-rub-out 0.36s ease-in both; }
+:where(.pencil-site) .note-erasing { display: inline-block; }
+@keyframes note-rub-out {
+  0% { opacity: 1; transform: translateX(0); }
+  25% { transform: translateX(-0.035em); }
+  50% { opacity: 0.5; transform: translateX(0.045em); }
+  75% { transform: translateX(-0.025em); }
+  100% { opacity: 0; transform: translateX(0); }
+}
+
+/* Written at a hand's pace, with two short pauses between words. */
+:where(.pencil-site) .note-writing { animation: note-write 0.9s linear 0.5s both; }
+@keyframes note-write {
+  0% { clip-path: inset(-0.4em 100% -0.4em -0.3em); }
+  30% { clip-path: inset(-0.4em 67% -0.4em -0.3em); }
+  36% { clip-path: inset(-0.4em 65% -0.4em -0.3em); }
+  68% { clip-path: inset(-0.4em 27% -0.4em -0.3em); }
+  74% { clip-path: inset(-0.4em 25% -0.4em -0.3em); }
+  100% { clip-path: inset(-0.4em -0.3em -0.4em -0.3em); }
+}
+
+:where(.pencil-site) .note-crumbs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+:where(.pencil-site) .note-crumb {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: var(--size);
+  height: calc(var(--size) * 0.7);
+  border-radius: 46% 54% 42% 58%;
+  opacity: 0;
+  animation: note-crumb-fall 0.8s ease-out var(--delay) both;
+}
+:where(.pencil-site) .note-crumb--eraser { background: #d79a9e; }
+:where(.pencil-site) .note-crumb--graphite { background: #85898e; }
+@keyframes note-crumb-fall {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0); }
+  18% { opacity: 0.95; }
+  70% { opacity: 0.8; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(var(--spin)); }
+}
+
+/* The hint is added once the card responds; it is pencilled in softly rather than popping up. */
+:where(.pencil-site) .note-hint { animation: note-hint-in 0.7s ease-out 0.2s both; }
+@keyframes note-hint-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.pencil-site) .pencil-loop--draw path,
+  :where(.pencil-site) .note-writing,
+  :where(.pencil-site) .note-hint { animation: none; }
+  :where(.pencil-site) .pencil-loop--erase,
+  :where(.pencil-site) .note-erasing,
+  :where(.pencil-site) .note-crumbs { display: none; }
+}

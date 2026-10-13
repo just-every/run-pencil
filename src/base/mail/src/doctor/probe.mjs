@@ -1,3 +1,4 @@
+import { createMailSender } from '../sender.mjs';
 import { fail } from '../core/errors.mjs';
 import { parseAddress, validateConfig, validateSendResult } from '../core/validation.mjs';
 import { bounded, credential, digest, integer, object } from './common.mjs';
@@ -24,8 +25,7 @@ export async function runProbe(options, dependencies) {
   const config = validateProbe(options);
   let sender;
   try {
-    // Resolve the public facade lazily to keep its doctor re-export cycle safe.
-    sender = dependencies.sender ?? (await import('../../index.mjs')).createMailSender(options.send.config, { fetch: dependencies.fetch });
+    sender = dependencies.sender ?? createMailSender(options.send.config, { fetch: dependencies.fetch });
     if (!sender || typeof sender.send !== 'function') fail('doctor_sender_unavailable');
   } catch {
     return [

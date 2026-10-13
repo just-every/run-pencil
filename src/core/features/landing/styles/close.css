@@ -1,0 +1,17 @@
+/*
+ * The close: the CTA once more beside the pencil lying on the paper. The art is shown at no more than half its pixel
+ * width (crisp at 2x), and the fork is anchored at its tip (98.5% across, 9.2% down the 810 x 360 image).
+ */
+:where(.pencil-site) .landing-close { padding-block: clamp(72px, 8vw, 128px) clamp(16px, 3vw, 40px); }
+:where(.pencil-site) .landing-close__grid { display: grid; gap: clamp(32px, 5vw, 56px); align-items: center; }
+:where(.pencil-site) .landing-close__actions { margin-top: clamp(28px, 3vw, 40px); }
+:where(.pencil-site) .landing-close .landing-more { margin-top: clamp(20px, 2vw, 28px); }
+:where(.pencil-site) .landing-close__art { position: relative; width: min(64%, 405px); transform: rotate(-3deg); }
+:where(.pencil-site) .landing-close__art img { display: block; width: 100%; height: auto; }
+:where(.pencil-site) .close-fork { --draw-delay: 0.5s; --branch-delay: 1.1s; position: absolute; top: -13.3%; left: 98.5%; width: 50%; height: 45%; }
+
+@media (min-width: 1024px) {
+  :where(.pencil-site) .landing-close__grid { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: clamp(24px, 3vw, 48px); }
+  :where(.pencil-site) .landing-close .landing-copy { grid-column: 1 / span 6; }
+  :where(.pencil-site) .landing-close__art { grid-column: 7 / span 6; width: min(66%, 405px); margin-left: clamp(0px, 2vw, 32px); }
+}

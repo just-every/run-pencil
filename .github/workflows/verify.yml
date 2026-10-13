@@ -17,10 +17,25 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
-          node-version: 26.8.1
+          node-version: 22.20.0
       - run: npm install --global pnpm@10.12.4
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium
+      - name: Reclaim unused SDK space for real local runtimes
+        run: |
+          df -h . /tmp
+          sudo rm -rf -- /usr/share/dotnet /usr/local/lib/android
+          df -h . /tmp
       - run: pnpm verify
       - run: pnpm source:check
+      - name: Install the maintained publication scanner
+        run: |
+          bash scripts/install-gitleaks.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: Restore full history for the publication scan
+        run: |
+          # pnpm verify leaves the pull-request checkout shallow; the scan refuses shallow history and must keep inspecting all of it.
+          if [ "$(git rev-parse --is-shallow-repository)" = true ]; then git fetch --unshallow --no-tags origin; fi
       - run: pnpm verify:publication
+        env:
+          GH_TOKEN: ${{ github.token }}

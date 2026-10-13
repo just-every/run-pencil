@@ -1,9 +1,11 @@
+import { developmentInbox } from '../helpers/development-outbox'
+import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { operatorEmail } from './auth-identity'
 import type { APIRequestContext } from '@playwright/test'
 import { expect, test } from './fixtures'
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { DatabaseSync } from 'node:sqlite'
+import { openStateDatabase } from './state-database'
 import { createHmac } from 'node:crypto'
 import { createRequire } from 'node:module'
 import { contract } from './contract'
@@ -22,20 +24,22 @@ const rpcHeaders = { Origin: origin, 'Sec-Fetch-Site': 'same-origin', 'x-tsr-ser
 async function login(request: APIRequestContext) {
   const email = operatorEmail()
   expect((await request.post('/auth/magic-link', { data: { email } })).status()).toBe(202)
-  const inbox = await (await request.get(`/auth/local-inbox?email=${encodeURIComponent(email)}`)).json()
+  const inbox = await developmentInbox(path => request.get(path, { headers: devKeyHeaders }), email)
   const response = await request.post('/auth/confirm', { headers: { Origin: new URL(process.env.PENCIL_E2E_BASE_URL!).origin }, data: { token: inbox.messages[0].magicLinkToken },  maxRedirects: 0 })
   expect(response.status()).toBe(303)
   return response.headers()['set-cookie'].split(';')[0]
 }
 
 function expireCookie(cookie: string) {
-  const secret = readFileSync('wrangler.toml','utf8').match(/SESSION_SECRET\s*=\s*"([^"]+)"/)![1]
+  // The browser server keeps its session secret in its own private variables file, never in generated configuration.
+  const secret = readFileSync(join('.pencil-e2e-state', '.dev.vars'), 'utf8').match(/^SESSION_SECRET=(.+)$/m)![1]
   const hash = createHmac('sha256',secret).update(`session\0${cookie.split('=')[1]}`).digest('hex')
   const directory = process.env.PENCIL_MIGRATION_STATE ?? '.wrangler/state/v3/d1/miniflare-D1DatabaseObject'
   const file = readdirSync(directory).find((name) => name.endsWith('.sqlite'))!
-  const db = new DatabaseSync(join(directory, file))
-  db.prepare('UPDATE oa_sessions SET expires_at = ? WHERE token_hash = ?').run(946684800000, hash)
-  db.close()
+  const db = openStateDatabase(join(directory, file))
+  try {
+    db.prepare('UPDATE oa_sessions SET expires_at = ? WHERE token_hash = ?').run(946684800000, hash)
+  } finally { db.close() }
 }
 
 contract('BASE-ACCESS-002', 'native document/API/generated transport session matrix preserves private data boundaries', async ({ request }) => {
@@ -121,7 +125,7 @@ contract(['SHELL-001','HOME-001','DIST-009','BASE-PUBLIC-002'], 'fresh public SS
   await page.goto('/f/aurora-coffee-post-visit')
   await expect(page.locator('[data-hydrated=true]')).toBeVisible({ timeout: 30_000 })
   await page.getByRole('button', { name: 'Begin' }).click()
-  await expect(page.getByRole('button', { name: '5 out of 5' })).toBeVisible()
+  await expect(page.getByRole('radio', { name: '5 out of 5' })).toBeVisible()
   const cookie = await login(request)
   await page.context().addCookies([{ name: 'operator_session_local', value: cookie.split('=')[1], url: origin }])
   await page.goto('/app')
@@ -141,15 +145,27 @@ contract(['SHELL-001','HOME-001','DIST-009','BASE-PUBLIC-002'], 'fresh public SS
 contract(['HOME-001'], 'public HTML follows changed D1 rather than build-time or cached state', async ({ request }) => {
   test.skip(!emitted, 'This test changes only the emitted runtime synthetic state.')
   const directory = process.env.PENCIL_MIGRATION_STATE ?? '.wrangler/state/v3/d1/miniflare-D1DatabaseObject'
-  const db = new DatabaseSync(join(directory, readdirSync(directory).find((name) => name.endsWith('.sqlite'))!))
-  const step = db.prepare("SELECT id, prompt FROM flow_steps WHERE revision_id = '01J00000000000000000000004' AND kind = 'welcome'").get() as { id: string; prompt: string }
+  const db = openStateDatabase(join(directory, readdirSync(directory).find((name) => name.endsWith('.sqlite'))!))
   try {
-    db.prepare('UPDATE flow_steps SET prompt = ? WHERE id = ?').run('Synthetic SSR freshness proof', step.id)
-    for (const path of ['/', '/f/aurora-coffee-post-visit', '/embed/aurora-coffee-post-visit']) {
-      expect(await (await request.get(path)).text()).toContain('Synthetic SSR freshness proof')
+    const step = db.prepare("SELECT id, prompt FROM flow_steps WHERE revision_id = '01J00000000000000000000004' AND kind = 'welcome'").get() as { id: string; prompt: string }
+    let failed = false
+    let failure: unknown
+    try {
+      db.prepare('UPDATE flow_steps SET prompt = ? WHERE id = ?').run('Synthetic SSR freshness proof', step.id)
+      for (const path of ['/', '/f/aurora-coffee-post-visit', '/embed/aurora-coffee-post-visit']) {
+        expect(await (await request.get(path)).text()).toContain('Synthetic SSR freshness proof')
+      }
+    } catch (error) {
+      failed = true
+      failure = error
+      throw error
+    } finally {
+      try {
+        db.prepare('UPDATE flow_steps SET prompt = ? WHERE id = ?').run(step.prompt, step.id)
+      } catch (error) {
+        if (failed) throw new AggregateError([failure, error], 'SSR freshness check and fixture restoration failed')
+        throw error
+      }
     }
-  } finally {
-    db.prepare('UPDATE flow_steps SET prompt = ? WHERE id = ?').run(step.prompt, step.id)
-    db.close()
-  }
+  } finally { db.close() }
 })

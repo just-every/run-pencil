@@ -1,0 +1,113 @@
+/* The drawing marks: sketch frames, the pencil circle, margin notes and small drawn arrows. */
+:where(.pencil-site) .sketch { position: relative; isolation: isolate; }
+:where(.pencil-site) .sketch__frame {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+:where(.pencil-site) .sketch__fill { fill: none; stroke: none; }
+:where(.pencil-site) .sketch__line { fill: none; stroke: var(--stroke); stroke-width: 1.15; opacity: 0.8; }
+:where(.pencil-site) .sketch__line--again {
+  stroke-width: 0.85;
+  opacity: 0.45;
+  stroke-dasharray: 170 5 95 3 240 7;
+  transform: translate(0.7px, -0.6px) rotate(-0.22deg);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/*
+ * Paper sheets: cream like the hero card, with graphite rubbed in below and left of the sheet (and of the sheet
+ * behind it, when stacked) instead of a box shadow. The sheet behind is drawn in the same SVG, turned a little.
+ */
+:where(.pencil-site) .sketch--sheet .sketch__fill { fill: var(--sheet); }
+:where(.pencil-site) .sketch__smudge { fill: #000; opacity: var(--smudge, 0.5); }
+:where(.pencil-site) .sketch__behind { transform: rotate(2.4deg) translate(1.2%, 2.4%); transform-box: fill-box; transform-origin: center; }
+:where(.pencil-site) .sketch__back { fill: var(--sheet-back); stroke: var(--stroke-soft); stroke-width: 1; }
+
+/* Graphite-filled buttons and the coloured-pencil washes: grainy fill over a lighter base, text stays legible. */
+:where(.pencil-site) .sketch--ink { background-color: #3b4046; color: #fff; }
+:where(.pencil-site) .sketch--ink .sketch__fill { fill: #2a2d31; filter: var(--filter-grain); }
+:where(.pencil-site) .sketch--ink .sketch__line { stroke: #2a2d31; }
+:where(.pencil-site) .sketch--sage { background-color: var(--wash-sage-light); }
+:where(.pencil-site) .sketch--sage .sketch__fill { fill: var(--wash-sage); filter: var(--filter-grain); }
+:where(.pencil-site) .sketch--sage .sketch__line { stroke: var(--line-sage); }
+:where(.pencil-site) .sketch--yellow { background-color: var(--yellow-wash); }
+:where(.pencil-site) .sketch--yellow .sketch__fill { fill: var(--wash-yellow); filter: var(--filter-grain); }
+:where(.pencil-site) .sketch--yellow .sketch__line { stroke: var(--line-yellow); }
+:where(.pencil-site) .sketch--eraser { background-color: var(--wash-eraser-light); }
+:where(.pencil-site) .sketch--eraser .sketch__fill { fill: var(--wash-eraser); filter: var(--filter-grain); }
+:where(.pencil-site) .sketch--eraser .sketch__line { stroke: var(--line-eraser); }
+
+/*
+ * The pencil circle around one key detail; it draws when its plate is revealed. The loop bleeds about --ring-x past
+ * the detail's sides and --ring-y past its top and bottom, and the detail keeps a margin as wide as that bleed, so the
+ * loop never strikes or underlines the words beside, above or below it.
+ */
+:where(.pencil-site) .pencil-circle {
+  --ring-x: 0.46em;
+  --ring-y: 0.4em;
+  position: relative;
+  display: inline-block;
+  margin: var(--ring-gap-y, 0.36em) var(--ring-gap-x, 0.55em);
+  padding: 0 0.12em;
+}
+/* A whole line or list, circled across the sheet: the loop hugs the sheet's width and the text sits inset in it. */
+:where(.pencil-site) .pencil-circle--block {
+  --ring-x: 0.3em;
+  --ring-y: 0.55em;
+  --ring-gap-x: 0;
+  display: block;
+  padding: 0.25em 0.7em;
+}
+:where(.pencil-site) .pencil-circle__ring {
+  position: absolute;
+  top: calc(-1 * var(--ring-y));
+  left: calc(-4% - var(--ring-x));
+  width: calc(108% + 2 * var(--ring-x));
+  height: calc(100% + 2 * var(--ring-y));
+  overflow: visible;
+  pointer-events: none;
+}
+:where(.pencil-site) .pencil-circle__ring path {
+  fill: none;
+  stroke: var(--pencil);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 2400;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 3.4s linear 0.55s;
+}
+:where(.pencil-site) [data-reveal='waiting'] .pencil-circle__ring path { stroke-dashoffset: 2400; }
+
+/*
+ * Margin notes: Caveat in graphite with a curved arrow drawn pointing left. Each plate sets the note in the paper
+ * just above or below the sheet that holds its circled detail, and turns the arrow (--note-turn) onto that circle.
+ */
+:where(.pencil-site) .margin-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.15em;
+  width: max-content;
+  max-width: 100%;
+  margin: 0;
+  color: var(--graphite);
+  font-family: var(--font-hand);
+  font-size: calc(var(--hand) * 1.04);
+  line-height: 1.1;
+  transform: rotate(-4deg);
+}
+:where(.pencil-site) .margin-note__arrow { flex: none; width: 2.3em; height: 1.6em; overflow: visible; transform: var(--note-turn, none); }
+:where(.pencil-site) .margin-note__arrow path { fill: none; stroke: var(--graphite); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+:where(.pencil-site) .ticks { position: absolute; width: 1.6em; height: 1.6em; overflow: visible; pointer-events: none; }
+:where(.pencil-site) .ticks path { fill: none; stroke: var(--stroke); stroke-width: 1.6; stroke-linecap: round; }
+
+:where(.pencil-site) .stroke-arrow { width: 1.05em; height: 0.62em; flex: none; overflow: visible; }
+:where(.pencil-site) .stroke-arrow--back { transform: scaleX(-1); }
+:where(.pencil-site) .stroke-arrow path { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }

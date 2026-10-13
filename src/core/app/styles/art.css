@@ -1,0 +1,42 @@
+/*
+ * The note-card art (features/landing-hero/art) and its pencilled question. Positions are shares of the art, sizes are
+ * container units of it, using the hero card's geometry (landing-hero/styles/note-card.css), so the words sit on the
+ * card at every width.
+ */
+.app-art { position: relative; display: block; width: 100%; container-type: inline-size; aspect-ratio: 1510 / 1066; }
+.app-art .note-card__art, .app-art .note-card__art img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.app-art--snapped { aspect-ratio: auto; height: auto; container-type: normal; }
+.app-art__plane {
+  position: absolute;
+  left: 2.649%;
+  top: 15.76%;
+  width: 62.914%;
+  height: 67.542%;
+  transform: rotate(-9.33deg);
+  transform-origin: 0 0;
+  color: var(--pencil);
+  font-family: var(--font-hand);
+  font-weight: 400;
+  line-height: 1;
+}
+.app-art__plane p { position: absolute; margin: 0; white-space: nowrap; }
+.app-art__question { left: 9.26%; top: 14.86%; font-size: 4.636cqw; rotate: 0.6deg; }
+.app-art__answers { left: 8.95%; top: 34.44%; display: flex; gap: 0.9em; font-size: 4.503cqw; }
+.app-art__answers span:nth-child(2) { translate: 0 -0.05em; rotate: 0.8deg; }
+.app-art__answers span:nth-child(3) { translate: 0 0.03em; rotate: -0.7deg; }
+.app-art__chosen { position: relative; }
+.app-art__chosen::after { content: ""; position: absolute; inset: -0.32em -0.4em; background: var(--pencil-oval) no-repeat center / 100% 100%; }
+.app-art__followup { right: 24.42%; top: 57.44%; font-size: 4.503cqw; rotate: -0.5deg; }
+
+/* Load errors (LoadProblem): centred art, the message in serif, the way back and a retry. */
+.load-problem { display: grid; justify-items: center; gap: 0; padding: 48px 0 32px; text-align: center; }
+.load-problem__art { width: min(100%, 520px); }
+.load-problem__message { max-width: 24ch; margin: 32px 0 0; font-size: 36px; line-height: 1.1; }
+.load-problem__actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin-top: 36px; }
+.load-problem__actions > * { min-width: 200px; min-height: 48px; }
+@media (max-width: 620px) {
+  .load-problem { padding-top: 32px; }
+  .load-problem__message { font-size: 30px; }
+  .load-problem__actions { display: grid; justify-self: stretch; gap: 12px; }
+  .load-problem__actions > * { width: 100%; }
+}

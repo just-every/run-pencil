@@ -1,0 +1,10 @@
+/* First-run setup: the sign-in frame, with a pencilled note pointing at the business name on wide screens. */
+.setup-field { position: relative; }
+.setup-note { top: 30px; left: calc(100% + 14px); --note-tilt: -5deg; }
+/* Two short lines, so the note fits the gap between the card and the drawing instead of running over the drawing. */
+.setup-note .margin-note__text { width: 4.6em; white-space: normal; line-height: 1.1; }
+@media (max-width: 1180px) { .setup-note { display: none; } }
+@media (max-width: 900px) {
+  /* Below the card, clear of Finish setup: the card and its button stay whole on the first screen. */
+  .setup-shell .access-art { order: 0; width: 170px; margin: 4px 4px 0 0; justify-self: end; rotate: 4deg; }
+}

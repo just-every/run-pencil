@@ -2,7 +2,7 @@
 
 `mailDoctor(options, dependencies = {})` is portable ESM. Import from the public
 mail facade, or directly from
-`src/base/mail/src/doctor/index.mjs`. No Node APIs enter this runtime graph.
+`modules/mail/src/doctor/index.mjs`. No Node APIs enter this runtime graph.
 
 ```js
 const result = await mailDoctor({
@@ -27,19 +27,21 @@ has only `pending`/`not_checked` items. Supplied records remain a plan until
 queried. Missing setup values have actionable instructions and empty records;
 they are never invented or treated as published records.
 
-For explicit live operation, supply private sending and readback credentials in `keys`, then add:
+For explicit live operation add:
 
 ```js
 {
   live: true,
-  send: {
-    config: {provider: 'resend', mode: 'production', apiKey: keys['sending']},
-    from: verifiedSender, to: ownerTestInbox
-  },
-  receive: {provider: 'resend', apiKey: keys['readback']},
+  send: {config: senderConfig, from: verifiedSender, to: ownerTestInbox},
+  receive: readbackConfig,
   timeoutMs: 60000, pollIntervalMs: 2000
 }
 ```
+
+`senderConfig` is an ordinary mail sender configuration, for example
+`{provider: 'resend', mode: 'production', apiKey}` with the sending credential
+as `apiKey`. `readbackConfig` is `{provider: 'resend', apiKey}` with a separate
+readback credential as `apiKey`. Both credentials come from the environment.
 
 Sender provider must agree with `options.provider`; sending domain must match
 `domain`. SendGrid and Cloudflare senders use the same facade (Cloudflare also
@@ -92,7 +94,10 @@ returns credentials, message content, arbitrary headers, raw responses or remote
 error messages. API keys belong only in private process/config memory. A UI
 calling this function owns user authorization and test-inbox approval.
 
-The upstream module's doctor tests verify protocol behavior with test-only sender and network fixtures. They are not included in this copied runtime source. Pencil's `pnpm verify` exercises its actual mail integration; hosted delivery requires independent inbox evidence. See the mail live-proof documentation for live checks.
+Run unit checks: `node --test modules/mail/tests/doctor/*.test.mjs`. These tests
+inject explicit sender and network fixtures only under `./tests/doctor`; they prove
+protocol/conformance, not delivery. `tests/assembly/workerd.test.mjs` exercises
+the doctor through the real facade and all three sending adapters in workerd. See `../../live-proof/README.md` for protected proof.
 
 Primary contracts checked 2026-10-06:
 

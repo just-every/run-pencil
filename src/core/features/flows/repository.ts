@@ -10,8 +10,8 @@ export type StoredStep = typeof flowSteps.$inferSelect
 export type StoredChoice = typeof choiceOptions.$inferSelect
 export type StoredBranchRule = typeof flowBranchRules.$inferSelect
 
-function changes(result: D1Result<unknown> | undefined) {
-  return result?.meta.changes ?? 0
+function changedRows(result: D1Result<unknown>) {
+  return result.results.length
 }
 
 export class FlowRepository {
@@ -182,6 +182,7 @@ export class FlowRepository {
     nextStepStableId: string | null
     questionSettingsJson: string | null
     choices: Array<{ id: string; stableId: string; value: string; label: string; position: number; createdAt: string; updatedAt: string }>
+    rules?: Array<typeof flowBranchRules.$inferInsert>
   }) {
     const preservedChoices = input.choices.map((choice) => choice.stableId)
     const choiceGuard = 'EXISTS (SELECT 1 FROM flows WHERE id = ? AND draft_version = ?)'
@@ -195,7 +196,7 @@ export class FlowRepository {
         UPDATE flow_steps
         SET question_type = ?, prompt = ?, helper_text = ?, required = ?, next_step_stable_id = ?, question_settings_json = ?, updated_at = ?
         WHERE revision_id = ? AND stable_id = ?
-          AND EXISTS (SELECT 1 FROM flows WHERE id = ? AND draft_version = ?)
+          AND EXISTS (SELECT 1 FROM flows WHERE id = ? AND draft_version = ?) RETURNING id
       `).bind(input.questionType, input.prompt, input.helperText, input.required ? 1 : 0, input.nextStepStableId, input.questionSettingsJson, input.now, input.revisionId, input.stepStableId, input.flowId, input.expectedVersion),
       deleteMissingChoices,
       this.binding.prepare(`UPDATE choice_options SET position = -position - 1, value = ? || id WHERE step_id IN (SELECT id FROM flow_steps WHERE revision_id = ? AND stable_id = ?) AND ${choiceGuard}`).bind(`editing-${crypto.randomUUID()}-`, input.revisionId, input.stepStableId, input.flowId, input.expectedVersion),
@@ -206,12 +207,17 @@ export class FlowRepository {
         WHERE revision_id = ? AND stable_id = ? AND ${choiceGuard}
         ON CONFLICT(step_id, stable_id) DO UPDATE SET value = excluded.value, label = excluded.label, position = excluded.position, updated_at = excluded.updated_at
       `).bind(choice.id, choice.stableId, choice.value, choice.label, choice.position, choice.createdAt, choice.updatedAt, input.revisionId, input.stepStableId, input.flowId, input.expectedVersion)),
+      ...(input.rules ? [
+        this.binding.prepare(`DELETE FROM flow_branch_rules WHERE revision_id = ? AND ${choiceGuard}`).bind(input.revisionId, input.flowId, input.expectedVersion),
+        ...input.rules.map(rule => this.binding.prepare(`INSERT INTO flow_branch_rules (id, revision_id, source_step_stable_id, predicate_kind, expected_value_json, destination_step_stable_id, position, created_at, updated_at)
+          SELECT ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE ${choiceGuard}`).bind(rule.id, rule.revisionId, rule.sourceStepStableId, rule.predicateKind, rule.expectedValueJson, rule.destinationStepStableId, rule.position, rule.createdAt, rule.updatedAt, input.flowId, input.expectedVersion)),
+      ] : []),
       this.binding.prepare(`
         UPDATE flows SET draft_version = ?, last_activity_at = ?, updated_at = ?
-        WHERE id = ? AND draft_version = ?
+        WHERE id = ? AND draft_version = ? RETURNING id
       `).bind(input.expectedVersion + 1, input.now, input.now, input.flowId, input.expectedVersion),
     ])
-    if (changes(results[0]) !== 1 || changes(results[results.length - 1]) !== 1) return undefined
+    if (changedRows(results[0]) !== 1 || changedRows(results[results.length - 1]) !== 1) return undefined
     return this.findDraftStep(input.revisionId, input.stepStableId)
   }
 
@@ -226,7 +232,7 @@ export class FlowRepository {
           next_step_stable_id, question_settings_json, created_at, updated_at
         )
         SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
-        WHERE EXISTS (SELECT 1 FROM flows WHERE id = ? AND draft_version = ?)
+        WHERE EXISTS (SELECT 1 FROM flows WHERE id = ? AND draft_version = ?) RETURNING id
       `).bind(
         input.step.id, input.step.revisionId, input.step.position, input.step.stableId, input.step.kind, input.step.questionType,
         input.step.prompt, input.step.helperText, input.step.required ? 1 : 0, input.step.nextStepStableId,
@@ -240,11 +246,11 @@ export class FlowRepository {
       `).bind(choice.id, choice.stepId, choice.stableId, choice.value, choice.label, choice.position, choice.createdAt, choice.updatedAt, input.step.id, input.flowId, input.expectedVersion)),
       this.binding.prepare(`
         UPDATE flows SET draft_version = ?, last_activity_at = ?, updated_at = ?
-        WHERE id = ? AND draft_version = ?
+        WHERE id = ? AND draft_version = ? RETURNING id
       `).bind(input.expectedVersion + 1, input.now, input.now, input.flowId, input.expectedVersion),
     ]
     const results = await this.auditedDraft(input, statements)
-    if (changes(results[3]) !== 1 || changes(results[results.length - 1]) !== 1) return undefined
+    if (changedRows(results[3]) !== 1 || changedRows(results[results.length - 1]) !== 1) return undefined
     return this.findDraftStep(input.revisionId, input.step.stableId)
   }
 
@@ -253,27 +259,27 @@ export class FlowRepository {
     const results = await this.auditedDraft(input, [
       this.binding.prepare(`DELETE FROM choice_options WHERE step_id IN (SELECT id FROM flow_steps WHERE revision_id = ? AND stable_id = ?) AND ${guard}`).bind(input.revisionId, input.stepStableId, input.flowId, input.expectedVersion),
       this.binding.prepare(`DELETE FROM flow_branch_rules WHERE revision_id = ? AND (source_step_stable_id = ? OR destination_step_stable_id = ?) AND ${guard}`).bind(input.revisionId, input.stepStableId, input.stepStableId, input.flowId, input.expectedVersion),
-      this.binding.prepare(`DELETE FROM flow_steps WHERE revision_id = ? AND stable_id = ? AND ${guard}`).bind(input.revisionId, input.stepStableId, input.flowId, input.expectedVersion),
-      this.binding.prepare(`UPDATE flows SET draft_version = ?, last_activity_at = ?, updated_at = ? WHERE id = ? AND draft_version = ?`).bind(input.expectedVersion + 1, input.now, input.now, input.flowId, input.expectedVersion),
+      this.binding.prepare(`DELETE FROM flow_steps WHERE revision_id = ? AND stable_id = ? AND ${guard} RETURNING id`).bind(input.revisionId, input.stepStableId, input.flowId, input.expectedVersion),
+      this.binding.prepare(`UPDATE flows SET draft_version = ?, last_activity_at = ?, updated_at = ? WHERE id = ? AND draft_version = ? RETURNING id`).bind(input.expectedVersion + 1, input.now, input.now, input.flowId, input.expectedVersion),
     ])
-    return changes(results[2]) === 1 && changes(results[3]) === 1
+    return changedRows(results[2]) === 1 && changedRows(results[3]) === 1
   }
 
   async reorderDraftSteps(input: DraftVersion & { orderedStableIds: string[] }) {
     const statements: D1PreparedStatement[] = [
-      this.binding.prepare(`UPDATE flow_steps SET position = -position - 1, updated_at = ? WHERE revision_id = ? AND EXISTS (SELECT 1 FROM flows WHERE id = ? AND draft_version = ?)`)
+      this.binding.prepare(`UPDATE flow_steps SET position = -position - 1, updated_at = ? WHERE revision_id = ? AND EXISTS (SELECT 1 FROM flows WHERE id = ? AND draft_version = ?) RETURNING id`)
         .bind(input.now, input.revisionId, input.flowId, input.expectedVersion),
       ...input.orderedStableIds.map((stableId, position) => this.binding.prepare(`
         UPDATE flow_steps SET position = ?, updated_at = ?
         WHERE revision_id = ? AND stable_id = ? AND position < 0
-          AND EXISTS (SELECT 1 FROM flows WHERE id = ? AND draft_version = ?)
+          AND EXISTS (SELECT 1 FROM flows WHERE id = ? AND draft_version = ?) RETURNING id
       `).bind(position, input.now, input.revisionId, stableId, input.flowId, input.expectedVersion)),
-      this.binding.prepare(`UPDATE flows SET draft_version = ?, last_activity_at = ?, updated_at = ? WHERE id = ? AND draft_version = ?`).bind(input.expectedVersion + 1, input.now, input.now, input.flowId, input.expectedVersion),
+      this.binding.prepare(`UPDATE flows SET draft_version = ?, last_activity_at = ?, updated_at = ? WHERE id = ? AND draft_version = ? RETURNING id`).bind(input.expectedVersion + 1, input.now, input.now, input.flowId, input.expectedVersion),
     ]
     const results = await this.auditedDraft(input, statements)
-    return changes(results[0]) === input.orderedStableIds.length
-      && input.orderedStableIds.every((_, index) => changes(results[index + 1]) === 1)
-      && changes(results[results.length - 1]) === 1
+    return changedRows(results[0]) === input.orderedStableIds.length
+      && input.orderedStableIds.every((_, index) => changedRows(results[index + 1]) === 1)
+      && changedRows(results[results.length - 1]) === 1
   }
 
   async replaceDraftBranchRules(input: DraftVersion & { rules: Array<typeof flowBranchRules.$inferInsert> }) {
@@ -285,10 +291,10 @@ export class FlowRepository {
         SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?
         WHERE EXISTS (SELECT 1 FROM flows WHERE id = ? AND draft_version = ?)
       `).bind(rule.id, rule.revisionId, rule.sourceStepStableId, rule.predicateKind, rule.expectedValueJson, rule.destinationStepStableId, rule.position, rule.createdAt, rule.updatedAt, input.flowId, input.expectedVersion)),
-      this.binding.prepare(`UPDATE flows SET draft_version = ?, last_activity_at = ?, updated_at = ? WHERE id = ? AND draft_version = ?`).bind(input.expectedVersion + 1, input.now, input.now, input.flowId, input.expectedVersion),
+      this.binding.prepare(`UPDATE flows SET draft_version = ?, last_activity_at = ?, updated_at = ? WHERE id = ? AND draft_version = ? RETURNING id`).bind(input.expectedVersion + 1, input.now, input.now, input.flowId, input.expectedVersion),
     ]
     const results = await this.auditedDraft(input, statements)
-    return changes(results[results.length - 1]) === 1
+    return changedRows(results[results.length - 1]) === 1
   }
 
   async publishDraft(input: DraftVersion & {
@@ -306,7 +312,7 @@ export class FlowRepository {
     const statements: D1PreparedStatement[] = [
       this.binding.prepare(`
         INSERT INTO flow_revisions (id, flow_id, number, state, title, published_at, is_current, admission_closed_at, admission_close_reason, deadline_at, deadline_time_zone, target_completed_responses, policy_snapshot_json, created_at, updated_at)
-        SELECT ?, ?, ?, 'draft', ?, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, ?, ? WHERE ${guarded}
+        SELECT ?, ?, ?, 'draft', ?, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, ?, ? WHERE ${guarded} RETURNING id
       `).bind(input.newDraft.id, input.newDraft.flowId, input.newDraft.number, input.newDraft.title, input.newDraft.createdAt, input.newDraft.updatedAt, input.flowId, input.expectedVersion),
       ...input.newSteps.map((step) => this.binding.prepare(`
         INSERT INTO flow_steps (id, revision_id, position, stable_id, kind, question_type, prompt, helper_text, required, next_step_stable_id, question_settings_json, created_at, updated_at)
@@ -330,10 +336,13 @@ export class FlowRepository {
             deadline_at = ?, deadline_time_zone = ?, target_completed_responses = ?, policy_snapshot_json = ?, updated_at = ?
         WHERE id = ? AND state = 'draft' AND ${guarded}
       `).bind(input.now, input.deadlineAt, input.deadlineTimeZone, input.targetCompletedResponses, input.policySnapshotJson, input.now, input.currentRevisionId, input.flowId, input.expectedVersion),
-      this.binding.prepare(`UPDATE flows SET status = 'open', draft_version = ?, last_activity_at = ?, updated_at = ? WHERE id = ? AND draft_version = ?`).bind(input.expectedVersion + 1, input.now, input.now, input.flowId, input.expectedVersion),
+      this.binding.prepare(`INSERT OR IGNORE INTO notification_preferences(flow_id,operator_id,mode,updated_at) SELECT f.id,o.id,'immediately',? FROM flows f JOIN operators o ON o.workspace_id=f.workspace_id WHERE f.id=? AND f.draft_version=? AND o.id=?`).bind(input.now,input.flowId,input.expectedVersion,input.operatorId ?? null),
+      this.binding.prepare(`UPDATE flows SET status = 'open', draft_version = ?, last_activity_at = ?, updated_at = ? WHERE id = ? AND draft_version = ? RETURNING id`).bind(input.expectedVersion + 1, input.now, input.now, input.flowId, input.expectedVersion),
     ]
     const results = await this.auditedDraft(input, statements)
-    return changes(results[0]) === 1 && changes(results[results.length - 1]) === 1
+    // Imported forms also update custody stamps through triggers. Count the
+    // directly returned rows rather than including those trigger mutations.
+    return results[0].results.length === 1 && results[results.length - 1].results.length === 1
   }
 
   async closeFlow(flowId: string, now: string, operatorId?: string) {
@@ -352,9 +361,9 @@ export class FlowRepository {
           AND (r.deadline_at IS NULL OR r.deadline_at > ?) AND (r.target_completed_responses IS NULL OR
             (SELECT COUNT(*) FROM responses WHERE revision_id = r.id AND state = 'released') < r.target_completed_responses))`).bind(auditId, operatorId, now, flowId, now),
       this.binding.prepare(`UPDATE flow_revisions SET admission_closed_at = NULL, admission_close_reason = NULL, updated_at = ? WHERE flow_id = ? AND state = 'published' AND is_current = 1 AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`).bind(now, flowId, auditId),
-      this.binding.prepare(`UPDATE flows SET status = 'open', last_activity_at = ?, updated_at = ? WHERE id = ? AND status = 'closed' AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`).bind(now, now, flowId, auditId),
+      this.binding.prepare(`UPDATE flows SET status = 'open', last_activity_at = ?, updated_at = ? WHERE id = ? AND status = 'closed' AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?) RETURNING id`).bind(now, now, flowId, auditId),
     ])
-    return changes(results[2]) === 1
+    return changedRows(results[2]) === 1
   }
 
   async closeExpiredRevision(revisionId: string, now: string) {

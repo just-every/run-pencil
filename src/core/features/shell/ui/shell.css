@@ -1,0 +1,39 @@
+/* The operator shell: lockup, Flows, Audience, Actions and Settings with the landing's yellow current-page stroke, and Sign out at the far right. */
+.pencil-wordmark { display: inline-flex; flex: none; align-items: center; gap: 10px; color: var(--ink); font-size: 24px; font-weight: 600; letter-spacing: -0.035em; line-height: 1; text-decoration: none; }
+.pencil-mark { flex: none; }
+
+.operator-shell { min-height: 100svh; }
+.operator-header, .operator-content { width: min(100% - 2 * var(--page-gutter), var(--page-max)); margin-inline: auto; }
+.operator-header { display: flex; min-height: 72px; align-items: center; gap: 32px; border-bottom: 1px solid var(--line); }
+.operator-nav { display: flex; align-items: center; gap: 40px; font-size: 16px; }
+.operator-nav a {
+  padding-block: 6px;
+  color: var(--ink);
+  text-decoration: none;
+  background: linear-gradient(var(--yellow), var(--yellow)) no-repeat 0 100% / 0 3px;
+  transition: background-size 0.2s ease;
+}
+.operator-nav a:hover { background-size: 100% 1.5px; }
+.operator-nav a[aria-current='page'] { background-size: 100% 3px; }
+.operator-signout { min-height: 36px; margin-left: auto; padding: 0 16px; font-size: 14px; }
+.operator-shell > .status-note { width: min(100% - 2 * var(--page-gutter), var(--page-max)); margin: 16px auto 0; }
+.operator-content { padding: 40px 0 80px; }
+/* Controls brought into view (by focus or scrolling) keep a little room from the viewport edge. */
+.operator-content :is(a, button, input, select, textarea, [tabindex]) { scroll-margin-block: .5rem; }
+
+@media (max-width: 620px) {
+  .operator-header { min-height: 60px; gap: 8px; }
+  .pencil-wordmark { gap: 8px; font-size: 20px; }
+  .pencil-wordmark .pencil-mark { width: 26px; height: 26px; }
+  /* Flows, Audience, Actions and Settings plus Sign out stay on one row at phone width. */
+  .operator-nav { gap: 10px; margin-left: auto; font-size: 14px; }
+  .operator-signout { margin-left: 0; padding: 0 9px; font-size: 13px; }
+  .operator-content { padding-top: 28px; }
+}
+/* With four nav items the header's lockup keeps only the drawn mark on phones; the name stays the link's accessible name. */
+@media (max-width: 440px) {
+  .operator-header .pencil-wordmark span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+/* Titles of pages without their own heading block (import, opt-out). */
+:where(.operator-content) h1.display { margin: 10px 0 24px; font-size: clamp(40px, 5vw, 64px); line-height: 1.02; }
+:where(.operator-content) h2.display { font-size: 28px; line-height: 1.1; }

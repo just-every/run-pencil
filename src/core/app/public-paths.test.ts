@@ -8,8 +8,10 @@ it('matches exactly every declared public surface, with root literal and prefixe
   for (const path of manifest.deploy.publicPaths) {
     expect(isDeclaredPublicPath(path)).toBe(true)
     if (path !== '/' && path.endsWith('/')) {
+      const stem = path.slice(0, -1)
       expect(isDeclaredPublicPath(`${path}nested/path`)).toBe(true)
-      expect(isDeclaredPublicPath(path.slice(0, -1))).toBe(false)
+      // A prefix never admits its bare stem; the stem is public only when declared exact itself (`/docs` beside `/docs/`).
+      expect(isDeclaredPublicPath(stem)).toBe(manifest.deploy.publicPaths.includes(stem))
     } else expect(isDeclaredPublicPath(`${path}suffix`)).toBe(false)
   }
   for (const path of ['/app', '/app/settings', '/api/app/flows', '/health-extra', '/signinfoo', '/f-other/slug', '/_serverFn-other/id', '/no-such-path']) expect(isDeclaredPublicPath(path)).toBe(false)

@@ -4,8 +4,11 @@ import '@testing-library/jest-dom/vitest'
 import { act, cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { api, ApiError, reportingApi } from '../core/app/api'
+import { brandApi } from '../core/features/brand/api'
+import { neutralBrand } from '../core/features/brand/brand'
 import { DashboardPage } from '../core/features/dashboard/ui/DashboardPage'
 import { FlowBuilderPage } from '../core/features/flows/ui/FlowBuilderPage'
+import { notificationApi } from '../core/features/notifications/useNotifications'
 import { ResultsPage } from '../core/features/results/ui/ResultsPage'
 import { SettingsPage } from '../core/features/workspace/ui/SettingsPage'
 import { draft, flow, ledger, renderOperator, results, workspace } from './ui-fixtures'
@@ -14,9 +17,13 @@ vi.mock('../core/app/api', async (original) => {
   const actual = await original<typeof import('../core/app/api')>()
   return { ...actual, api: Object.fromEntries(Object.keys(actual.api).map((key) => [key, vi.fn()])), reportingApi: Object.fromEntries(Object.keys(actual.reportingApi).map((key) => [key, vi.fn()])) }
 })
+vi.mock('../core/features/brand/api', () => ({ brandApi: { get: vi.fn(), save: vi.fn(), upload: vi.fn(), removeLogo: vi.fn() } }))
 let dispose: (() => void) | undefined
 beforeEach(() => {
   vi.resetAllMocks()
+  vi.mocked(brandApi.get).mockResolvedValue(neutralBrand)
+  vi.mocked(brandApi.save).mockImplementation(async input => ({ ...input, configured: true, logoVersion: null }))
+  vi.spyOn(notificationApi, 'read').mockResolvedValue({ mode: 'off', failureReason: null, senderError: null, deliveries: [] })
   vi.mocked(api.workspace).mockResolvedValue(workspace)
   vi.mocked(api.dashboard).mockResolvedValue([flow])
   vi.mocked(api.builder).mockResolvedValue(draft)
@@ -99,7 +106,8 @@ describe('edit, leave and recover', () => {
     expect(screen.getByRole('button', { name: 'Publish' })).toBeDisabled()
     fireEvent.click(screen.getByRole('button', { name: 'Retry workspace settings' }))
     await waitFor(() => expect(screen.getByRole('button', { name: 'Publish' })).toBeEnabled())
-    expect(screen.getByLabelText('Close at (Australia/Brisbane)')).toBeInTheDocument()
+    expect(screen.getByLabelText('Close at (Brisbane time)')).toBeInTheDocument()
+    expect(screen.getByText(/Deadlines use Brisbane time/)).toBeInTheDocument()
     expect(api.publishDraft).not.toHaveBeenCalled()
   })
   it('does not revoke on cancelled sign-out or navigate after failed revocation', async () => {
@@ -120,16 +128,18 @@ describe('edit, leave and recover', () => {
   })
 })
 
-it('keeps revision/navigation recovery when the current report is unavailable and puts answers ahead of device detail', async () => {
+contract('WS-003', 'keeps revision/navigation recovery when the current report is unavailable and puts answers ahead of device detail', async () => {
   vi.mocked(api.results).mockRejectedValueOnce(new ApiError('NOT_FOUND', 'Current revision unavailable', 404)).mockResolvedValue(results)
   const { router } = show(<ResultsPage />, '/app/flows/flow/results')
   await screen.findByRole('alert')
   expect(screen.getByRole('link', { name: 'Builder' })).toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Retry results' })).toBeInTheDocument()
   fireEvent.change(screen.getByLabelText('Published revision'), { target: { value: 'revision' } })
-  const answers = await screen.findByRole('heading', { name: 'Answers and drop-off' })
+  const answers = await screen.findByRole('heading', { name: 'Answers' })
   const devices = screen.getByRole('heading', { name: 'Starts by device class' })
   expect(answers.compareDocumentPosition(devices) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  expect(screen.queryByText(/AI analysis and external task delivery are unavailable/)).not.toBeInTheDocument()
+  expect(document.body.textContent).not.toMatch(/AI_PROVIDER|TASK_PROVIDER/)
   expect(api.results).toHaveBeenLastCalledWith('flow', 'revision')
   expect(router.state.location.pathname).toBe('/app/flows/flow/results')
 })
@@ -202,14 +212,14 @@ it('protects an unfinished copy during filter and refresh, and locks editing whi
   fireEvent.click(await screen.findByRole('button', { name: 'Duplicate flow' }))
   expect(api.dashboard).not.toHaveBeenCalled() // Fresh route data needs no duplicate client fetch.
   fireEvent.change(screen.getByLabelText('Copy name'), { target: { value: 'Keep this copy' } })
-  fireEvent.click(screen.getByRole('button', { name: 'archived' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Archived' }))
   expect(api.dashboard).not.toHaveBeenCalled()
-  expect(screen.getByRole('button', { name: 'active' })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getByRole('button', { name: 'All flows' })).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getByLabelText('Copy name')).toHaveValue('Keep this copy')
   fireEvent.click(screen.getByRole('button', { name: 'Refresh' }))
   expect(api.dashboard).not.toHaveBeenCalled()
   vi.mocked(window.confirm).mockReturnValue(true)
-  fireEvent.click(screen.getByRole('button', { name: 'archived' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Archived' }))
   expect(api.dashboard).toHaveBeenCalledWith('archived')
   expect(screen.getByLabelText('Copy name')).toBeDisabled()
   expect(screen.getByLabelText('Copy public link')).toBeDisabled()
@@ -228,6 +238,7 @@ it('locks creation input during persistence and does not navigate after the crea
   fireEvent.click(screen.getByRole('button', { name: 'Create draft flow' }))
   expect(screen.getByLabelText('Flow name')).toBeDisabled()
   expect(screen.getByLabelText('Public link')).toBeDisabled()
+  await waitFor(() => expect(api.createFlow).toHaveBeenCalledTimes(1))
   vi.mocked(window.confirm).mockReturnValue(true)
   fireEvent.click(screen.getByRole('link', { name: 'Settings' }))
   await waitFor(() => expect(router.state.location.pathname).toBe('/app/settings'))
@@ -245,7 +256,7 @@ it('locks copy input and protects even an unchanged pending copy without late na
   expect(screen.getByLabelText('Copy name')).toBeDisabled()
   expect(screen.getByLabelText('Copy public link')).toBeDisabled()
   expect(screen.getByRole('button', { name: 'Refresh' })).toBeDisabled()
-  expect(screen.getByRole('button', { name: 'archived' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Archived' })).toBeDisabled()
   expect(screen.getByRole('button', { name: 'New flow' })).toBeDisabled()
   fireEvent.click(screen.getByRole('link', { name: 'Settings' }))
   await waitFor(() => expect(window.confirm).toHaveBeenCalledTimes(1))
@@ -262,8 +273,10 @@ it('locks publication limits until the submitted revision is acknowledged', asyn
   const publication = deferred<Awaited<ReturnType<typeof api.publishDraft>>>()
   vi.mocked(api.publishDraft).mockReturnValue(publication.promise)
   show(<FlowBuilderPage />, '/app/flows/flow/builder')
-  const deadline = await screen.findByLabelText('Close at (Australia/Brisbane)')
+  await screen.findByText(/Deadlines use Brisbane time/)
+  const deadline = await screen.findByLabelText('Close at (Brisbane time)')
   fireEvent.change(deadline, { target: { value: '2026-10-04T12:00' } })
+  expect(screen.getByLabelText('Close at (Australian Eastern Standard Time)')).toBe(deadline)
   fireEvent.change(screen.getByLabelText('Completed response target'), { target: { value: '20' } })
   fireEvent.click(screen.getByRole('button', { name: 'Publish' }))
   expect(deadline).toBeDisabled()
@@ -275,22 +288,33 @@ it('locks publication limits until the submitted revision is acknowledged', asyn
   expect(screen.getByLabelText('Completed response target')).toHaveValue(null)
 })
 
-it('locks branch edits and discard until a delayed branch save and its reload complete', async () => {
-  const saving = deferred<Awaited<ReturnType<typeof api.saveBranchRules>>>()
+it('locks branch edits and discard until the single step Save and its reload complete', async () => {
+  const saving = deferred<Awaited<ReturnType<typeof api.saveDraft>>>()
   const ratingDraft = { ...draft, steps: draft.steps.map((step) => step.id === 'question' ? { ...step, questionType: 'rating' as const, questionSettings: { min: 1, max: 5 } } : step) }
-  vi.mocked(api.builder).mockResolvedValue(ratingDraft)
-  vi.mocked(api.saveBranchRules).mockReturnValue(saving.promise)
+  const reload = deferred<typeof ratingDraft>()
+  const accepted = { ...ratingDraft, flow: { ...ratingDraft.flow, draftVersion: 2 }, branchRules: [{ id: 'rule', sourceStepId: 'question', predicateKind: 'equals' as const, expectedValue: 4, destinationStepId: 'completion', position: 0 }] }
+  vi.mocked(api.builder).mockResolvedValueOnce(ratingDraft).mockReturnValue(reload.promise)
+  vi.mocked(api.saveDraft).mockReturnValue(saving.promise)
   show(<FlowBuilderPage />, '/app/flows/flow/builder')
   fireEvent.click(await screen.findByRole('button', { name: 'Add rule' }))
   fireEvent.change(screen.getByLabelText('Rating'), { target: { value: '4' } })
-  fireEvent.click(screen.getByRole('button', { name: 'Save answer paths' }))
+  expect(screen.getAllByRole('button', { name: /^Save$/ })).toHaveLength(1)
+  fireEvent.click(screen.getByRole('button', { name: /^Save$/ }))
   expect(screen.getByLabelText('Rating')).toBeDisabled()
   expect(screen.getByLabelText('Match')).toBeDisabled()
   expect(screen.getByRole('button', { name: 'Discard changes' })).toBeDisabled()
   expect(screen.getByLabelText('Prompt')).toBeDisabled()
-  await act(async () => saving.resolve({ kind: 'updated', draftVersion: 2 }))
+  await act(async () => saving.resolve({ kind: 'updated', draftVersion: 2, step: accepted.steps[0] }))
+  expect(api.builder).toHaveBeenCalledTimes(2)
+  expect(screen.getByLabelText('Rating')).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Saving…' })).toBeDisabled()
+  await act(async () => reload.resolve(accepted))
   await waitFor(() => expect(screen.getByRole('button', { name: 'Add rule' })).toBeEnabled())
-  expect(api.saveBranchRules).toHaveBeenCalledTimes(1)
+  expect(screen.getByLabelText('Rating')).toHaveValue(4)
+  expect(screen.getByText('Saved.')).toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Discard changes' })).not.toBeInTheDocument()
+  expect(api.saveDraft).toHaveBeenCalledTimes(1)
+  expect(api.saveDraft).toHaveBeenCalledWith('flow', expect.objectContaining({ expectedVersion: 1, prompt: ratingDraft.steps[0].prompt, rules: [expect.objectContaining({ sourceStepId: 'question', predicateKind: 'equals', expectedValue: 4, destinationStepId: 'completion', position: 0 })] }))
 })
 
 it('locks editing during discard reload and retains its recovery protection if the reload fails', async () => {
@@ -326,12 +350,12 @@ contract(['FLOW-004'], 'shows saved only after acknowledgement and retains the a
   vi.mocked(api.saveDraft).mockReturnValue(acknowledgement.promise)
   const { router } = show(<FlowBuilderPage />, '/app/flows/flow/builder')
   fireEvent.change(await screen.findByLabelText('Prompt'), { target: { value: 'Accepted wording' } })
-  fireEvent.click(screen.getByRole('button', { name: 'Save step' }))
-  expect(screen.queryByText('Saved to the editable draft.')).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: /^Save$/ }))
+  expect(screen.queryByText('Saved.')).not.toBeInTheDocument()
   expect(screen.getByLabelText('Prompt')).toBeDisabled()
   expect(api.saveDraft).toHaveBeenCalledWith('flow', expect.objectContaining({ expectedVersion: 1, prompt: 'Accepted wording' }))
   await act(async () => acknowledgement.resolve({ kind: 'updated', draftVersion: 2, step: accepted.steps[0] }))
-  await screen.findByText('Saved to the editable draft.')
+  await screen.findByText('Saved.')
   expect(screen.getByLabelText('Prompt')).toHaveValue('Accepted wording')
   expect(screen.queryByRole('button', { name: 'Discard changes' })).not.toBeInTheDocument()
   const unloading = new Event('beforeunload', { cancelable: true }); window.dispatchEvent(unloading)
@@ -345,16 +369,18 @@ contract(['FLOW-004'], 'shows saved only after acknowledgement and retains the a
 })
 
 contract(['FLOW-004'], 'reloads the actual winner after a stale edit and never labels the rejected edit saved', async () => {
-  const winner = { ...draft, flow: { ...draft.flow, draftVersion: 2 }, steps: draft.steps.map(step => step.id === 'question' ? { ...step, prompt: 'Other operator won' } : step) }
+  const winner = { ...draft, flow: { ...draft.flow, draftVersion: 2, hasUnpublishedChanges: true }, steps: draft.steps.map(step => step.id === 'question' ? { ...step, prompt: 'Other operator won' } : step) }
   vi.mocked(api.builder).mockResolvedValueOnce(draft).mockResolvedValue(winner)
   vi.mocked(api.saveDraft).mockResolvedValue({ kind: 'conflict', latestVersion: 2 })
   show(<FlowBuilderPage />, '/app/flows/flow/builder')
   fireEvent.change(await screen.findByLabelText('Prompt'), { target: { value: 'Rejected wording' } })
-  fireEvent.click(screen.getByRole('button', { name: 'Save step' }))
+  fireEvent.click(screen.getByRole('button', { name: /^Save$/ }))
   await screen.findByRole('alert')
   await waitFor(() => expect(screen.getByLabelText('Prompt')).toHaveValue('Other operator won'))
-  expect(screen.getByText('Draft v2')).toBeInTheDocument()
-  expect(screen.queryByText('Saved to the editable draft.')).not.toBeInTheDocument()
+  expect(screen.getByText('Unpublished changes', { exact: false }).closest('p')).toHaveTextContent('Open · Unpublished changes')
+  expect(screen.queryByText(/draft v\d+/i)).not.toBeInTheDocument()
+  expect(api.builder).toHaveBeenCalledTimes(2)
+  expect(screen.queryByText('Saved.')).not.toBeInTheDocument()
   expect(api.saveDraft).toHaveBeenCalledTimes(1)
 })
 
@@ -379,24 +405,24 @@ it('protects builder edits when a stale preview requests a local reload', async 
   expect(api.saveDraft).not.toHaveBeenCalled()
 })
 
-it('locks stale-preview reload while a branch save is awaiting acknowledgement', async () => {
-  const acknowledgement = deferred<Awaited<ReturnType<typeof api.saveBranchRules>>>()
+it('locks stale-preview reload while the single step Save is awaiting acknowledgement', async () => {
+  const acknowledgement = deferred<Awaited<ReturnType<typeof api.saveDraft>>>()
   const ratingDraft = { ...draft, steps: draft.steps.map(step => step.id === 'question' ? { ...step, questionType: 'rating' as const, questionSettings: { min: 1, max: 5 } } : step) }
   vi.mocked(api.builder).mockResolvedValue(ratingDraft)
   vi.mocked(api.previewDraft).mockResolvedValue({ preview: true, draftVersion: 2, complete: true, screens: [] })
-  vi.mocked(api.saveBranchRules).mockReturnValue(acknowledgement.promise)
+  vi.mocked(api.saveDraft).mockReturnValue(acknowledgement.promise)
   show(<FlowBuilderPage />, '/app/flows/flow/builder')
   fireEvent.click(await screen.findByRole('button', { name: 'Preview draft' }))
   fireEvent.click(screen.getByRole('button', { name: 'Inspect answer path' }))
   await screen.findByRole('button', { name: 'Reload draft' })
   fireEvent.click(screen.getByRole('button', { name: 'Add rule' }))
   fireEvent.change(screen.getByLabelText('Rating'), { target: { value: '4' } })
-  fireEvent.click(screen.getByRole('button', { name: 'Save answer paths' }))
+  fireEvent.click(screen.getByRole('button', { name: /^Save$/ }))
   expect(screen.getByRole('button', { name: 'Reload draft' })).toBeDisabled()
   fireEvent.click(screen.getByRole('button', { name: 'Reload draft' }))
   expect(api.builder).toHaveBeenCalledTimes(1)
   expect(window.confirm).not.toHaveBeenCalled()
-  await act(async () => acknowledgement.resolve({ kind: 'updated', draftVersion: 2 }))
+  await act(async () => acknowledgement.resolve({ kind: 'updated', draftVersion: 2, step: ratingDraft.steps[0] }))
   await waitFor(() => expect(api.builder).toHaveBeenCalledTimes(2))
 })
 
@@ -405,13 +431,16 @@ it('opens and closes explicit revision comparison while preserving the current r
   vi.mocked(reportingApi.ledger).mockResolvedValue({ ...ledger, revisions: [{ id: 'revision', number: 2, isCurrent: 1 }, { id: 'old', number: 1, isCurrent: 0 }] })
   vi.mocked(reportingApi.compareRevisions).mockResolvedValue({ flow: { id: 'flow', title: 'Visit review', slug: 'review' }, revisions: [{ id: 'revision', number: 2, isCurrent: 1 }, { id: 'old', number: 1, isCurrent: 0 }], questions: [] })
   show(<ResultsPage />, '/app/flows/flow/results')
-  await screen.findByRole('heading', { name: 'Answers and drop-off' })
+  await screen.findByRole('heading', { name: 'Answers' })
+  expect(await screen.findByLabelText('Email me about completed responses')).toHaveValue('off')
   fireEvent.click(screen.getByRole('button', { name: 'Compare revisions' }))
-  await screen.findByRole('button', { name: 'Close comparison' })
+  await screen.findByRole('button', { name: 'Back to results' })
   expect(reportingApi.compareRevisions).toHaveBeenCalledWith('flow')
-  expect(screen.getByRole('heading', { name: 'Answers and drop-off' })).toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: 'Answers' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: 'Response ledger' })).not.toBeInTheDocument()
+  expect(screen.queryByLabelText('Email me about completed responses')).not.toBeInTheDocument()
   expect(screen.getByLabelText('Published revision')).toHaveValue('')
-  fireEvent.click(screen.getByRole('button', { name: 'Close comparison' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Back to results' }))
   expect(screen.queryByRole('region', { name: 'Compare revisions' })).not.toBeInTheDocument()
-  expect(screen.getByRole('heading', { name: 'Answers and drop-off' })).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Answers' })).toBeInTheDocument()
 })

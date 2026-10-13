@@ -1,22 +1,15 @@
-import { mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { spawn } from 'node:child_process'
-import ts from 'typescript'
+import { fileURLToPath } from 'node:url'
+import { contractRegistry } from './contract-registry.mjs'
+import { withReleaseUpgradeInputs } from './release-upgrade-inputs.mjs'
+import { runVitestJson, vitestPassedTests, vitestRunSummary } from './vitest-evidence.mjs'
 import { playwrightPassedTests } from './contract-evidence.mjs'
 import { readProfile } from './contract-profile.mjs'
 
-const root = resolve(new URL('..', import.meta.url).pathname)
-
-async function collectTestFiles(directory) {
-  const entries = await readdir(directory, { withFileTypes: true })
-  const files = await Promise.all(entries.map(async (entry) => {
-    const path = join(directory, entry.name)
-    if (entry.isDirectory()) return entry.name === 'node_modules' ? [] : collectTestFiles(path)
-    return /\.(test|spec)\.[cm]?[jt]sx?$/.test(entry.name) ? [path] : []
-  }))
-  return files.flat()
-}
+const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 
 async function clauses(path) {
   const document = await readFile(resolve(root, path), 'utf8')
@@ -28,71 +21,8 @@ async function supersededBaselineClauses() {
   return new Map([...document.matchAll(/^- \*\*([A-Z][A-Z0-9]*(?:-[A-Z][A-Z0-9]*)*-\d{3})\s+—[^\n]*\*Supersedes `([A-Z][A-Z0-9]*(?:-[A-Z][A-Z0-9]*)*-\d{3})`/gm)].map((match) => [match[2], match[1]]))
 }
 
-function stringArgument(node) {
-  return node && (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) ? node.text : undefined
-}
-
-async function contractRegistry() {
-  const files = (await Promise.all(['tests', 'src'].map((directory) => collectTestFiles(resolve(root, directory))))).flat()
-  const registry = new Map()
-
-  for (const file of files) {
-    const source = ts.createSourceFile(file, await readFile(file, 'utf8'), ts.ScriptTarget.Latest, true)
-    const visit = (node) => {
-      if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 'contract') {
-        const argument = node.arguments[0]
-        const ids = ts.isArrayLiteralExpression(argument) ? argument.elements.map(stringArgument) : [stringArgument(argument)]
-        if (ids.length && ids.every(Boolean)) {
-          const name = stringArgument(node.arguments[1])
-          for (const id of ids) {
-            const entry = registry.get(id) ?? { covered: [], todo: [] }
-            entry.covered.push({ file, title: name ? `[${ids.join(',')}] ${name}` : undefined, browser: file.startsWith(resolve(root, 'tests/e2e')) })
-            registry.set(id, entry)
-          }
-        }
-      }
-      if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression) && ts.isIdentifier(node.expression.expression) && node.expression.expression.text === 'contract' && node.expression.name.text === 'todo') {
-        const id = stringArgument(node.arguments[0])
-        if (id) {
-          const entry = registry.get(id) ?? { covered: [], todo: [] }
-          entry.todo.push(file)
-          registry.set(id, entry)
-        }
-      }
-      ts.forEachChild(node, visit)
-    }
-    ts.forEachChild(source, visit)
-  }
-  return registry
-}
-
-async function runVitestJson(config) {
-  const directory = await mkdtemp(join(process.env.PENCIL_VERIFICATION_TMPDIR ?? tmpdir(), 'pencil-contract-coverage-'))
-  const output = join(directory, 'results.json')
-  try {
-    const result = await new Promise((resolveResult, reject) => {
-      const args = ['./node_modules/vitest/vitest.mjs', 'run', '--reporter=json', '--outputFile', output]
-      if (config) args.push('--config', config)
-      const child = spawn(process.execPath, args, {
-        cwd: root,
-        stdio: ['ignore', 'pipe', 'pipe'],
-      })
-      // Reporters write their result file; always drain diagnostic stdout so a full pipe cannot stall the child.
-      child.stdout.resume()
-      let stderr = ''
-      child.stderr.on('data', (chunk) => { stderr += chunk })
-      child.on('error', reject)
-      child.on('close', (code) => resolveResult({ code, stderr }))
-    })
-    const report = JSON.parse(await readFile(output, 'utf8'))
-    return { ...result, report }
-  } finally {
-    await rm(directory, { recursive: true, force: true })
-  }
-}
-
 async function runPlaywrightJson() {
-  const directory = await mkdtemp(join(process.env.PENCIL_VERIFICATION_TMPDIR ?? tmpdir(), 'pencil-browser-contract-coverage-'))
+  const directory = await mkdtemp(join(tmpdir(), 'pencil-browser-contract-coverage-'))
   const output = join(directory, 'results.json')
   try {
     const result = await new Promise((resolveResult, reject) => {
@@ -109,6 +39,21 @@ async function runPlaywrightJson() {
       child.on('close', (code) => resolveResult({ code, stderr }))
     })
     const report = JSON.parse(await readFile(output, 'utf8'))
+    const failures = suites => {
+      for (const suite of suites ?? []) {
+        for (const spec of suite.specs ?? []) for (const test of spec.tests ?? []) {
+          if (test.status !== 'unexpected') continue
+          const result = test.results.at(-1)
+          const location = result?.error?.location
+          const trace = result?.error?.stack?.match(/([^\s()]+\/tests\/[^:\s]+):(\d+):(\d+)/)
+          // Print source coordinates only. Assertion values and browser traces
+          // can contain transient credentials and stay in the private report.
+          console.error(`Browser failure: ${location?.file ?? trace?.[1] ?? spec.file}:${location?.line ?? trace?.[2] ?? spec.line}:${location?.column ?? trace?.[3] ?? spec.column} (${test.projectName}, ${result?.status})`)
+        }
+        failures(suite.suites)
+      }
+    }
+    failures(report.suites)
     return { ...result, report, passed: playwrightPassedTests(report) }
   } finally {
     await rm(directory, { recursive: true, force: true })
@@ -116,7 +61,7 @@ async function runPlaywrightJson() {
 }
 
 const [registry, ids, superseded] = await Promise.all([
-  contractRegistry(),
+  contractRegistry(root),
   Promise.all([clauses('CONTRACT.md'), clauses('BASELINE.md')]).then(([contract, baseline]) => [...new Set([...contract, ...baseline])]),
   supersededBaselineClauses(),
 ])
@@ -124,15 +69,27 @@ const [registry, ids, superseded] = await Promise.all([
 const profileMode = process.argv[2] ?? 'first-release'
 const deferred = await readProfile(root, ids, profileMode)
 const browserContracts = [...registry.values()].flatMap((entry) => entry.covered).filter((entry) => entry.browser)
-const runtime = [await runVitestJson(), await runVitestJson('vitest.worker.config.ts')]
+// Extract predecessor inputs for this invocation; evidence never comes from a prior run.
+const runtime = await withReleaseUpgradeInputs(root, async (upgrade) => [
+  await runVitestJson(root),
+  await runVitestJson(root, { config: 'vitest.worker.config.ts', env: upgrade.env }),
+])
 const browserRuntime = browserContracts.length > 0 ? await runPlaywrightJson() : undefined
+for (const [index, run] of runtime.entries()) {
+  const summary = vitestRunSummary(run)
+  console.log(`${index === 0 ? 'Unit' : 'Worker'} evidence: ${summary.passed} passed, ${summary.failed} failed, ${summary.pending} pending; exit ${summary.code}.`)
+  for (const failure of summary.failures) {
+    const trace = failure.messages.join('\n').match(/([^\s()]+\.(?:mjs|js|tsx|ts)):(\d+):(\d+)/)
+    console.error(`Runtime failure: ${trace?.[1] ?? failure.file}:${trace?.[2] ?? '?'}:${trace?.[3] ?? '?'}`)
+  }
+}
+if (browserRuntime) {
+  const stats = browserRuntime.report.stats
+  console.log(`Browser evidence: ${stats.expected + stats.flaky} passed, ${stats.unexpected} failed, ${stats.skipped} pending; exit ${browserRuntime.code}.`)
+}
 const passedTests = new Set()
 for (const run of runtime) {
-  for (const file of run.report.testResults ?? []) {
-    for (const assertion of file.assertionResults ?? []) {
-      if (assertion.status === 'passed') passedTests.add(`${file.name}\u0000${assertion.title}`)
-    }
-  }
+  for (const passed of vitestPassedTests(run.report)) passedTests.add(passed)
 }
 for (const passed of browserRuntime?.passed ?? []) passedTests.add(passed)
 
@@ -166,7 +123,7 @@ for (const id of ids) {
   covered.push(id)
 }
 
-if (process.env.PENCIL_CONTRACT_REPORT) await writeFile(process.env.PENCIL_CONTRACT_REPORT, JSON.stringify({ runs: { vitest: runtime.map(run => ({ code: run.code, passed: run.report.numPassedTests, failed: run.report.numFailedTests, pending: run.report.numPendingTests, failures: run.report.testResults.flatMap(file => file.assertionResults.filter(test => test.status === 'failed').map(test => ({ file: file.name, title: test.title, messages: test.failureMessages }))) })), playwright: browserRuntime?.report }, profile: profileMode, covered, partial, todo, deferred: [...deferred], missing, failed, overridden, clauses: Object.fromEntries(ids.map(id => [id, { status: deferred.has(id) ? 'deferred' : covered.includes(id) ? 'covered' : partial.includes(id) ? 'partial' : todo.includes(id) ? 'todo' : overridden.some(value => value.startsWith(id + ' ')) ? 'superseded' : 'uncovered', evidence: (registry.get(id)?.covered ?? []).map(test => ({ file: test.file.slice(root.length + 1), title: test.title, passed: passedTests.has(`${test.file}\u0000${test.title}`) })) }])) }, null, 2) + '\n')
+if (process.env.PENCIL_CONTRACT_REPORT) await writeFile(process.env.PENCIL_CONTRACT_REPORT, JSON.stringify({ runs: { vitest: runtime.map(vitestRunSummary), playwright: browserRuntime?.report }, profile: profileMode, covered, partial, todo, deferred: [...deferred], missing, failed, overridden, clauses: Object.fromEntries(ids.map(id => [id, { status: deferred.has(id) ? 'deferred' : covered.includes(id) ? 'covered' : partial.includes(id) ? 'partial' : todo.includes(id) ? 'todo' : overridden.some(value => value.startsWith(id + ' ')) ? 'superseded' : 'uncovered', evidence: (registry.get(id)?.covered ?? []).map(test => ({ file: test.file.slice(root.length + 1), title: test.title, passed: passedTests.has(`${test.file}\u0000${test.title}`) })) }])) }, null, 2) + '\n')
 console.log(`Partially evidenced but still active TODO: ${partial.join(', ')}`)
 console.log(`Contract coverage: ${covered.length} runtime-covered, ${deferred.size} explicitly deferred (${profileMode}), ${todo.length} todo, ${overridden.length} superseded, ${missing.length} untracked, ${failed.length} not-passing, ${ids.length} declared.`)
 console.log(`Passing clauses: ${covered.join(', ')}`)

@@ -1,3 +1,4 @@
+import { participantInvitation } from './message'
 import { ulid } from 'ulid'
 import { ConflictError, NotFoundError, ValidationError } from '../../shared/errors'
 import { nextSendingInstant, retryInstant } from './schedule'
@@ -22,6 +23,8 @@ export class MailDeliveries {
   async prepare(id: string, origin: string, now = new Date().toISOString()) {
     const delivery = await this.read(id)
     if (!delivery || delivery.status !== 'pending' || delivery.availableAt > now) return null
+    // Recovery omits invitation capabilities while preserving their receipts.
+    if (delivery.token === null) return null
     if (!delivery.eligible) {
       await this.db.prepare("UPDATE mail_deliveries SET status = 'cancelled', reason = 'Consent or admission is no longer eligible.', updated_at = ? WHERE id = ? AND status = 'pending'").bind(now, id).run()
       return null
@@ -48,7 +51,7 @@ export class MailDeliveries {
     ])
     if (!results[0].meta.changes || !results[1].meta.changes) return null
     const link = new URL(`/i/${delivery.token}`, origin).href, optOut = new URL(`/optout/${delivery.optOutToken}`, origin).href
-    return { deliveryId: id, ordinal: delivery.attempts + 1, idempotencyKey: delivery.key, to: delivery.email!, subject: `${delivery.business}: ${delivery.title}`, text: `${delivery.business} invites your feedback on ${delivery.title}.\n${link}\n\nStop future flow mail: ${optOut}`, headers: { 'Auto-Submitted': 'auto-generated' } }
+    return { deliveryId: id, ordinal: delivery.attempts + 1, idempotencyKey: delivery.key, to: delivery.email!, ...participantInvitation(delivery.business, delivery.title, link, optOut), headers: { 'Auto-Submitted': 'auto-generated' } }
   }
   async record(id: string, ordinal: number, outcome: { kind: 'sent'; providerId: string | null } | { kind: 'transient' | 'permanent' | 'unknown' | 'bounced'; reason: string }, now = new Date().toISOString()) {
     const delivery = await this.read(id)

@@ -11,7 +11,7 @@ migrations_dir = "migrations/core"
 
 [assets]
 binding = "ASSETS"
-run_worker_first = ["/assets/*", "/favicon.ico", "/_serverFn/*", "/", "/signin", "/signin/*", "/app", "/app/*", "/f/*", "/embed/*", "/health", "/api/*", "/auth/*"]
+run_worker_first = true
 
 # Retain anonymous metrics and dispatch due durable invitations/reminders.
 [triggers]

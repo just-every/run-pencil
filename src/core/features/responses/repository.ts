@@ -1,10 +1,13 @@
-import { and, count, eq } from 'drizzle-orm'
+import { and, count, eq, sql } from 'drizzle-orm'
 import { completionMetricStatements } from './completionMetrics'
-import { eraseResponseLocalMail } from '../../platform/mail/erasure'
+import { eraseResponseLocalMail, eraseResponseLocalMailStatement } from '../../platform/mail/erasure'
+import type { D1Sql } from '../../../base/import-kit/src/d1/types'
 import type { PencilDatabase } from '../../platform/db/repository'
 import { auditEntries, flowRevisions, flows, respondentSessions, responseAnswers, responses, revisionMetricCounters } from '../../platform/db/schema'
 
 type SessionInsert = typeof respondentSessions.$inferInsert
+export type ResponseErasureInput = { workspaceId: string; responseId: string; operatorId: string; sessionId?: string }
+export type ResponseErasure = (database: D1Database, input: ResponseErasureInput, statements: D1Sql[]) => Promise<D1Result<unknown>[]>
 
 function changes(result: D1Result<unknown> | undefined) {
   return result?.meta.changes ?? 0
@@ -14,6 +17,7 @@ export class ResponseRepository {
   constructor(
     private readonly database: PencilDatabase,
     private readonly binding: D1Database,
+    private readonly eraseResponse: ResponseErasure,
   ) {}
 
   async findInvitation(token: string) {
@@ -122,32 +126,18 @@ export class ResponseRepository {
   }
 
   async advanceSession(input: { sessionId: string; slug: string; sessionTokenHash: string; stepStableId: string; now: string }) {
-    const results = await this.binding.batch([
-      // Authenticate and resolve the pinned step once inside the transaction.
-      this.binding.prepare(`UPDATE respondent_sessions SET furthest_step_id = ?, updated_at = ?
+    // The progress trigger records a distinct visit atomically with this update.
+    // Repeated visits still authenticate and persist ordered backtracking, but
+    // need no additional binding statements or metric/event writes.
+    const result = await this.binding.prepare(`UPDATE respondent_session_progress SET furthest_step_id = ?, updated_at = ?
         WHERE id = ? AND session_token_hash = ? AND completed_at IS NULL AND expires_at > ?
           AND EXISTS (
             SELECT 1 FROM flow_steps q
-            JOIN flow_revisions r ON r.id = q.revision_id
-            JOIN flows f ON f.id = r.flow_id
-            WHERE q.revision_id = respondent_sessions.revision_id AND q.stable_id = ? AND f.slug = ?
-          )`).bind(input.stepStableId, input.now, input.sessionId, input.sessionTokenHash, input.now, input.stepStableId, input.slug),
-      // D1 batch statements execute sequentially in one transaction. changes()
-      // carries the preceding write's admission, without repeating its joins.
-      // Count before inserting the event so concurrent/repeated visits count once.
-      this.binding.prepare(`INSERT INTO revision_step_metric_counters (id, revision_id, step_stable_id, reached, dropped, created_at, updated_at)
-        SELECT 'step-metric-' || revision_id || '-' || ?, revision_id, ?, 1, 0, ?, ?
-        FROM respondent_sessions WHERE id = ? AND changes() = 1
-          AND NOT EXISTS (SELECT 1 FROM respondent_session_step_events WHERE session_id = ? AND step_stable_id = ?)
-        ON CONFLICT(revision_id, step_stable_id) DO UPDATE SET reached = reached + 1, updated_at = excluded.updated_at`
-      ).bind(input.stepStableId, input.stepStableId, input.now, input.now, input.sessionId, input.sessionId, input.stepStableId),
-      // Only the new distinct visit changed the preceding counter. A refused or
-      // repeated visit inserts nothing; any event failure rolls back all writes.
-      this.binding.prepare(`INSERT INTO respondent_session_step_events (id, session_id, revision_id, step_stable_id, counted_at, created_at)
-        SELECT ?, id, revision_id, ?, ?, ? FROM respondent_sessions WHERE id = ? AND changes() = 1`
-      ).bind(`event-${input.sessionId}-${input.stepStableId}`, input.stepStableId, input.now, input.now, input.sessionId),
-    ])
-    return changes(results[0]) === 1
+            WHERE q.revision_id = respondent_session_progress.revision_id AND q.stable_id = ?
+          ) AND flow_slug = ? RETURNING id`).bind(input.stepStableId, input.now, input.sessionId, input.sessionTokenHash, input.now, input.stepStableId, input.slug).all<{ id: string }>()
+    // meta.changes includes trigger writes; RETURNING identifies the admitted
+    // session regardless of whether this visit inserted telemetry.
+    return result.results.length === 1
   }
 
   async findSubmissionContext(sessionId: string, sessionTokenHash: string) {
@@ -196,9 +186,9 @@ export class ResponseRepository {
       this.binding.prepare(`
         INSERT INTO responses (
           id, workspace_id, flow_id, revision_id, session_id, session_token_hash, idempotency_key, state, quarantine_reason,
-          released_at, released_by_operator_id, completion_milliseconds, completed_at, created_at, updated_at, source, started_at, participant_id
+          released_at, released_by_operator_id, completion_milliseconds, completed_at, created_at, updated_at, source, started_at, participant_id, notification_eligible
         )
-        SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, s.source, s.created_at, ?
+        SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, s.source, s.created_at, ?, 1
         FROM respondent_sessions s
         JOIN flow_revisions r ON r.id = s.revision_id
         JOIN flows f ON f.id = r.flow_id
@@ -221,10 +211,14 @@ export class ResponseRepository {
         SELECT ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM responses WHERE id = ?)
       `).bind(answer.id, answer.responseId, answer.stepId, answer.valueJson, answer.createdAt, answer.updatedAt, response.id)),
       this.binding.prepare(`
-        INSERT INTO response_outbox (id, workspace_id, response_id, kind, idempotency_key, payload_json, status, available_at, dispatched_at, failure_reason, created_at, updated_at)
-        SELECT ?, ?, ?, 'response.completed', ?, ?, 'pending', ?, NULL, NULL, ?, ?
-        WHERE EXISTS (SELECT 1 FROM responses WHERE id = ? AND state = 'released')
-      `).bind(`outbox-${response.id}`, response.workspaceId, response.id, `response.completed:${response.id}`, JSON.stringify({ responseId: response.id, revisionId: response.revisionId }), input.completedAt, input.completedAt, input.completedAt, response.id),
+        INSERT INTO response_outbox (id, workspace_id, response_id, kind, idempotency_key, payload_json, status, available_at, dispatched_at, failure_reason, created_at, updated_at, notification_eligible)
+        SELECT ?, r.workspace_id, r.id, 'response.completed', ?,
+          json_object('responseId', r.id, 'revisionId', r.revision_id, 'notificationOperatorIds', (
+            SELECT json_group_array(p.operator_id) FROM notification_preferences p JOIN operators o ON o.id = p.operator_id
+            WHERE p.flow_id = r.flow_id AND p.mode = 'immediately' AND o.workspace_id = r.workspace_id
+          )), 'pending', ?, NULL, NULL, ?, ?, r.notification_eligible
+        FROM responses r WHERE r.id = ? AND r.state = 'released'
+      `).bind(`outbox-${response.id}`, `response.completed:${response.id}`, input.completedAt, input.completedAt, input.completedAt, response.id),
       this.binding.prepare(`
         UPDATE respondent_sessions SET completed_at = ?, completion_outcome = ?, updated_at = ?
         WHERE id = ? AND session_token_hash = ? AND completed_at IS NULL AND EXISTS (SELECT 1 FROM responses WHERE id = ?)
@@ -263,25 +257,31 @@ export class ResponseRepository {
       this.binding.prepare('DELETE FROM respondent_sessions WHERE id = ? AND EXISTS (SELECT 1 FROM responses WHERE id = ?)').bind(response.sessionId, response.id),
     )
     const results = await this.binding.batch(statements)
-    return changes(results[0]) === 1
+    // The guarded insert adds one row or none. Reporting triggers add their own row changes to the count, so any change means created.
+    return changes(results[0]) > 0
   }
 
   async releaseQuarantinedResponse(input: { workspaceId: string; responseId: string; operatorId: string; now: string }) {
     const auditId = crypto.randomUUID()
-    const results = await this.binding.batch([
+    const results = await this.binding.batch<{ id: string }>([
       this.binding.prepare(`INSERT INTO audit_entries (id, workspace_id, kind, actor_operator_id, subject_type, subject_id, details_json, created_at)
         SELECT ?, workspace_id, 'response.quarantine-released', (SELECT id FROM operators WHERE id = ? AND workspace_id = responses.workspace_id), 'response', id, '{}', ? FROM responses
         WHERE id = ? AND workspace_id = ? AND state = 'quarantined'`).bind(auditId, input.operatorId, input.now, input.responseId, input.workspaceId),
       this.binding.prepare(`UPDATE responses SET state = 'released', quarantine_reason = NULL, released_at = ?, released_by_operator_id = (SELECT id FROM operators WHERE id = ? AND workspace_id = responses.workspace_id), updated_at = ?
-        WHERE id = ? AND workspace_id = ? AND state = 'quarantined' AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`).bind(input.now, input.operatorId, input.now, input.responseId, input.workspaceId, auditId),
+        WHERE id = ? AND workspace_id = ? AND state = 'quarantined' AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?) RETURNING id`).bind(input.now, input.operatorId, input.now, input.responseId, input.workspaceId, auditId),
       this.binding.prepare(`UPDATE revision_metric_counters SET completions = completions + 1,
         total_completion_milliseconds = total_completion_milliseconds + COALESCE((SELECT completion_milliseconds FROM responses WHERE id = ?), 0), updated_at = ?
         WHERE revision_id = (SELECT revision_id FROM responses WHERE id = ?) AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`).bind(input.responseId, input.now, input.responseId, auditId),
-      this.binding.prepare(`INSERT INTO response_outbox (id, workspace_id, response_id, kind, idempotency_key, payload_json, status, available_at, dispatched_at, failure_reason, created_at, updated_at)
-        SELECT ?, workspace_id, id, 'response.completed', ?, ?, 'pending', ?, NULL, NULL, ?, ? FROM responses
-        WHERE id = ? AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`).bind(`outbox-release-${input.responseId}`, `response.completed:${input.responseId}`, JSON.stringify({ responseId: input.responseId }), input.now, input.now, input.now, input.responseId, auditId),
+      this.binding.prepare(`INSERT INTO response_outbox (id, workspace_id, response_id, kind, idempotency_key, payload_json, status, available_at, dispatched_at, failure_reason, created_at, updated_at, notification_eligible)
+        SELECT ?, r.workspace_id, r.id, 'response.completed', ?,
+          json_object('responseId', r.id, 'revisionId', r.revision_id, 'notificationOperatorIds', (
+            SELECT json_group_array(p.operator_id) FROM notification_preferences p JOIN operators o ON o.id = p.operator_id
+            WHERE p.flow_id = r.flow_id AND p.mode = 'immediately' AND o.workspace_id = r.workspace_id
+          )), 'pending', ?, NULL, NULL, ?, ?, r.notification_eligible FROM responses r
+        WHERE r.id = ? AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`).bind(`outbox-release-${input.responseId}`, `response.completed:${input.responseId}`, input.now, input.now, input.now, input.responseId, auditId),
     ])
-    return changes(results[1]) === 1
+    // Reporting triggers also write rows; identify the response transition itself.
+    return results[1].results.length === 1 && results[1].results[0].id === input.responseId
   }
 
   async deleteQuarantinedResponse(input: { workspaceId: string; responseId: string; operatorId: string; now: string }) {
@@ -300,23 +300,25 @@ export class ResponseRepository {
     return changes(results.at(-1)) > 0
   }
 
-  async eraseReleasedResponse(input: { workspaceId: string; responseId: string; operatorId: string; now: string }) {
+  async eraseReleasedResponse(input: ResponseErasureInput & { now: string }) {
     const auditId = crypto.randomUUID()
-    const results = await this.binding.batch([
-      this.binding.prepare(`INSERT INTO audit_entries (id, workspace_id, kind, actor_operator_id, subject_type, subject_id, details_json, created_at)
+    const statements: D1Sql[] = [
+      { sql: `INSERT INTO audit_entries (id, workspace_id, kind, actor_operator_id, subject_type, subject_id, details_json, created_at)
         SELECT ?, workspace_id, 'response.erased', (SELECT id FROM operators WHERE id = ? AND workspace_id = responses.workspace_id), 'response', NULL, '{}', ? FROM responses
-        WHERE id = ? AND workspace_id = ? AND state = 'released'`).bind(auditId, input.operatorId, input.now, input.responseId, input.workspaceId),
-      this.binding.prepare(`UPDATE revision_metric_counters SET completions = MAX(0, completions - 1),
+        WHERE id = ? AND workspace_id = ? AND state = 'released'`, params: [auditId, input.operatorId, input.now, input.responseId, input.workspaceId] },
+      { sql: `UPDATE revision_metric_counters SET completions = MAX(0, completions - 1),
         total_completion_milliseconds = MAX(0, total_completion_milliseconds - COALESCE((SELECT completion_milliseconds FROM responses WHERE id = ?), 0)), updated_at = ?
-        WHERE revision_id = (SELECT revision_id FROM responses WHERE id = ?) AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`).bind(input.responseId, input.now, input.responseId, auditId),
-      this.binding.prepare(`UPDATE audit_entries SET subject_id = NULL, details_json = '{}' WHERE workspace_id = ? AND subject_type = 'response' AND subject_id = ? AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`).bind(input.workspaceId, input.responseId, auditId),
-      eraseResponseLocalMail(this.binding, input.responseId, input.workspaceId, auditId),
-      this.binding.prepare('DELETE FROM response_outbox WHERE response_id = ? AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)').bind(input.responseId, auditId),
-      this.binding.prepare('DELETE FROM response_answers WHERE response_id = ? AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)').bind(input.responseId, auditId),
-      this.binding.prepare(`DELETE FROM respondent_session_step_events WHERE session_id = (SELECT session_id FROM responses WHERE id = ?) AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`).bind(input.responseId, auditId),
-      this.binding.prepare(`DELETE FROM respondent_sessions WHERE id = (SELECT session_id FROM responses WHERE id = ?) AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`).bind(input.responseId, auditId),
-      this.binding.prepare(`DELETE FROM responses WHERE id = ? AND workspace_id = ? AND state = 'released' AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`).bind(input.responseId, input.workspaceId, auditId),
-    ])
+        WHERE revision_id = (SELECT revision_id FROM responses WHERE id = ? AND source != 'imported') AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`, params: [input.responseId, input.now, input.responseId, auditId] },
+      { sql: `UPDATE audit_entries SET subject_id = NULL, details_json = '{}' WHERE workspace_id = ? AND subject_type = 'response' AND subject_id = ? AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`, params: [input.workspaceId, input.responseId, auditId] },
+      eraseResponseLocalMailStatement(input.responseId, input.workspaceId, auditId),
+      { sql: 'DELETE FROM response_outbox WHERE response_id = ? AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)', params: [input.responseId, auditId] },
+      { sql: 'DELETE FROM response_answers WHERE response_id = ? AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)', params: [input.responseId, auditId] },
+      { sql: `DELETE FROM respondent_session_step_events WHERE session_id = (SELECT session_id FROM responses WHERE id = ?) AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`, params: [input.responseId, auditId] },
+      { sql: `DELETE FROM respondent_sessions WHERE id = (SELECT session_id FROM responses WHERE id = ?) AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`, params: [input.responseId, auditId] },
+      { sql: `DELETE FROM form_import_targets WHERE target_id = ? AND workspace_id = ? AND kind = 'response' AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`, params: [input.responseId, input.workspaceId, auditId] },
+      { sql: `DELETE FROM responses WHERE id = ? AND workspace_id = ? AND state = 'released' AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`, params: [input.responseId, input.workspaceId, auditId] },
+    ]
+    const results = await this.eraseResponse(this.binding, input, statements)
     // D1 includes the invitation-erasure trigger's writes in meta.changes.
     return changes(results.at(-1)) > 0
   }
@@ -385,9 +387,10 @@ export class ResponseRepository {
   async getResults(revisionId: string) {
     const [[counter], [completed]] = await this.database.batch([
       this.database.select().from(revisionMetricCounters).where(eq(revisionMetricCounters.revisionId, revisionId)).limit(1),
-      this.database.select({ total: count() }).from(responses).where(and(eq(responses.revisionId, revisionId), eq(responses.state, 'released'))),
+      this.database.select({ total: count(), imported: sql<number>`count(case when ${responses.source} = 'imported' then 1 end)`.mapWith(Number), live: sql<number>`count(case when ${responses.source} != 'imported' then 1 end)`.mapWith(Number) }).from(responses).where(and(eq(responses.revisionId, revisionId), eq(responses.state, 'released'))),
     ])
-    return { counter, completedResponses: completed?.total ?? 0 }
+    if (!completed) throw new Error('Response result counts could not be read')
+    return { counter, completedResponses: completed.total, importedResponses: completed.imported, liveCompletedResponses: completed.live }
   }
 
   async listQuarantined(workspaceId: string, revisionId: string) {

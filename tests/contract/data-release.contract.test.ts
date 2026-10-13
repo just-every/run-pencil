@@ -1,16 +1,18 @@
 /// <reference types="node" />
-import { readFileSync } from 'node:fs'
-import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
-import { expect } from 'vitest'
 import { contract } from '../../src/test/contract'
-contract(['DATA-001','BASE-DATA-001','FLOW-015'], 'whole-data CLI export/import/export preserves every actual table, auth mapping, delivery fact and stable graph and refuses unsafe archives', () => {
-  const result=execFileSync(process.execPath,['--test','scripts/deployment-data.check.mjs','scripts/distribution-data.check.mjs'],{encoding:'utf8'})
-  expect(result).toContain('pass 7')
-  expect(result).toContain('fail 0')
-}, 30_000)
-contract('BASE-OPS-002', 'every applied migration0000 through0009 retains its exact reviewed bytes', () => {
-  const approved=JSON.parse(readFileSync('docs/IMMUTABLE-MIGRATIONS.json','utf8')) as Array<{name:string;sha256:string}>
-  expect(approved).toHaveLength(10)
-  for(const file of approved) expect(createHash('sha256').update(readFileSync(`migrations/core/${file.name}`)).digest('hex'),file.name).toBe(file.sha256)
-})
+contract(['DATA-001','BASE-DATA-001','FLOW-015','ACT-007'], 'whole-data CLI export/import/export preserves every actual table, auth mapping, delivery fact, action and stable graph and refuses unsafe archives', () => {
+  // The child exits unsuccessfully if any real archive journey fails. Its
+  // number of checks grows when retained table shapes and custody evolve.
+  try {
+    execFileSync(process.execPath,['--test','--test-concurrency=2','scripts/deployment-data.check.mjs','scripts/distribution-data.check.mjs','scripts/action-data.check.mjs'],{encoding:'utf8'})
+  } catch (failure) {
+    const child = failure as Error & { status?: number; stdout?: string; stderr?: string }
+    const output = `${child.stdout ?? ''}\n${child.stderr ?? ''}`
+    const coordinates = [...new Set([...output.matchAll(/(?:file:\/\/)?(\/[\w./-]+\/(?:scripts|src)\/[\w./-]+\.(?:mjs|ts)(?::\d+(?::\d+)?)?)/g)].map(match => match[1]))]
+    const codes = [...new Set(output.match(/\bERR_[A-Z_]+\b/g) ?? [])]
+    // Child assertions can contain archived values. Only source coordinates
+    // and its exit code leave this private diagnostic boundary.
+    throw new Error(`Archive verification exited ${child.status ?? 'unsuccessfully'}; failure coordinates: ${coordinates.join(', ') || 'unavailable'}; Node codes: ${codes.join(', ') || 'none'}; diagnostic bytes: ${Buffer.byteLength(output)}`)
+  }
+}, 240_000)

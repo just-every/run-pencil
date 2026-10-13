@@ -1,3 +1,5 @@
+import { developmentInbox } from '../helpers/development-outbox'
+import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { operatorEmail } from './auth-identity'
 import AxeBuilder from '@axe-core/playwright'
 import { mkdir } from 'node:fs/promises'
@@ -11,7 +13,7 @@ const mutationHeaders = { Origin: origin, 'CF-Connecting-IP': '198.19.156.20' }
 
 async function login(request: APIRequestContext) {
   expect((await request.post('/auth/magic-link', { headers: mutationHeaders, data: { email: operatorEmail() } })).status()).toBe(202)
-  const inbox = await (await request.get(`/auth/local-inbox?email=${encodeURIComponent(operatorEmail())}`)).json()
+  const inbox = await developmentInbox(path => request.get(path, { headers: devKeyHeaders }), operatorEmail())
   expect((await request.post('/auth/confirm', { headers: { Origin: new URL(process.env.PENCIL_E2E_BASE_URL!).origin }, data: { token: inbox.messages[0].magicLinkToken },  maxRedirects: 0 })).status()).toBe(303)
 }
 
@@ -61,7 +63,8 @@ contract('RESP-009', 'a respondent losing manual or final target admission sees 
     await expect(page.locator('[data-state=closed]')).toBeVisible()
     await expect(page.getByRole('heading', { name: 'This feedback flow is closed.' })).toBeVisible()
     await expect(page.getByText(f.title, { exact: true })).toBeVisible()
-    await expect(page.getByText('Aurora Coffee', { exact: true })).toBeVisible()
+    const brand = await (await page.request.get('/api/app/brand')).json()
+    await expect(page.getByText(brand.name, { exact: true }).first()).toBeVisible()
     await expect(page.getByRole('textbox')).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Submit response' })).toHaveCount(0)
     const ledger = await (await page.request.get(`${f.path}/ledger`)).json()

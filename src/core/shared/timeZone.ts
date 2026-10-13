@@ -24,3 +24,14 @@ export function dayBoundary(day: string, zone: string, end = false) {
   next.setUTCDate(next.getUTCDate() + 1)
   return new Date(Date.parse(zonedInstant(`${next.toISOString().slice(0, 10)}T00:00`, zone)) - 1).toISOString()
 }
+
+/** Empty deadlines use the stable location, never a name from an arbitrary era. */
+export function timeZoneName(zone: string, local = '') {
+  const canonical = new Intl.DateTimeFormat('en', { timeZone: zone }).resolvedOptions().timeZone
+  const location = canonical === 'UTC' ? 'Coordinated Universal Time' : `${canonical.split('/').at(-1)!.replaceAll('_', ' ')} time`
+  if (!local) return location
+  const instant = zonedInstant(local, zone)
+  if (canonical === 'UTC') return location
+  return new Intl.DateTimeFormat('en', { timeZone: zone, timeZoneName: 'longGeneric' })
+    .formatToParts(new Date(instant)).find(part => part.type === 'timeZoneName')!.value
+}

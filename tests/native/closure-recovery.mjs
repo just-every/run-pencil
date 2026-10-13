@@ -1,3 +1,5 @@
+import { developmentInbox } from '../../scripts/local-outbox.mjs'
+import { devKeyHeaders, testDevKey } from '../helpers/dev-key.mjs'
 // Browser-free emitted workerd proof. This runner owns fresh synthetic D1 only.
 import assert from 'node:assert/strict'
 import { mkdtemp, readdir, readFile } from 'node:fs/promises'
@@ -11,27 +13,38 @@ import { unstable_dev } from 'wrangler'
 process.env.WRANGLER_SEND_METRICS = 'false'
 const state = await mkdtemp(join(tmpdir(), 'pencil-closure-isolated-'))
 console.log(`Synthetic state retained: ${state}`)
-execFileSync('pnpm', ['exec', 'wrangler', 'd1', 'migrations', 'apply', 'pencil-local', '--local', '--persist-to', state, '--config', 'wrangler.toml'], { stdio: 'pipe' })
+execFileSync('pnpm', ['exec', 'wrangler', 'd1', 'migrations', 'apply', 'pencil-local', '--local', '--persist-to', state, '--config', 'wrangler.jsonc'], { stdio: 'pipe' })
 const origin = 'http://127.0.0.1:15683'
 let runtime, db, cookie = '', serial = 0
 async function request(path, body, { method = body === undefined ? 'GET' : 'POST', authenticated = true, address } = {}) {
-  return fetch(`${origin}${path}`, { method, redirect: 'manual', headers: { Origin: origin, 'Content-Type': 'application/json', Cookie: authenticated ? cookie : '', 'CF-Connecting-IP': address ?? `198.18.201.${++serial}` }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) })
+  return fetch(`${origin}${path}`, { method, redirect: 'manual', headers: { Origin: origin, ...devKeyHeaders, 'Content-Type': 'application/json', Cookie: authenticated ? cookie : '', 'CF-Connecting-IP': address ?? `198.18.201.${++serial}` }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) })
 }
 async function ok(path, body, options) {
+  if (path.endsWith('/responses/export')) {
+    const initial = await request(`${path}/start?format=json`)
+    assert.equal(initial.status, 200)
+    let { token } = await initial.json(), content = ''
+    while (token) {
+      const part = await request(`${path}?token=${encodeURIComponent(token)}`)
+      assert.equal(part.status, 200)
+      content += await part.text(); token = part.headers.get('x-export-next')
+    }
+    return JSON.parse(content)
+  }
   const response = await request(path, body, options)
   assert.ok(response.status >= 200 && response.status < 300, `${path}: ${response.status}`)
   return response.status === 204 ? undefined : response.json()
 }
 function privateAbsent(text, values) { for (const value of values) assert.ok(!text.includes(value), 'Private data appeared in a public response') }
 try {
-  runtime = await unstable_dev('dist/server/index.js', { config: 'dist/server/wrangler.json', local: true, bundle: true, persistTo: state, ip: '127.0.0.1', port: 15683, inspectorPort: 15684, logLevel: 'error', vars: { APP_ORIGIN: origin, MAIL_PROVIDER: 'local', PENCIL_LOCAL_DEVELOPMENT: 'true', SEED_SAMPLE_DATA: 'true' }, experimental: { watch: false, disableDevRegistry: true, disableExperimentalWarning: true, showInteractiveDevSession: false } })
+  runtime = await unstable_dev('dist/server/index.js', { config: 'dist/server/wrangler.json', vars: { RER_DEV_KEY: testDevKey }, local: true, bundle: true, persistTo: state, ip: '127.0.0.1', port: 15683, inspectorPort: 15684, logLevel: 'error', vars: { SESSION_SECRET: 'synthetic-native-closure-session-secret-at-least-32-characters', APP_ORIGIN: origin, MAIL_PROVIDER: 'local', PENCIL_LOCAL_DEVELOPMENT: 'true', SEED_SAMPLE_DATA: 'true' }, experimental: { watch: false, disableDevRegistry: true, disableExperimentalWarning: true, showInteractiveDevSession: false } })
   await ok('/health')
   const directory = join(state, 'v3/d1/miniflare-D1DatabaseObject')
   const filename = (await readdir(directory)).find(name => name.endsWith('.sqlite'))
   assert.ok(filename)
   db = new DatabaseSync(join(directory, filename))
   await ok('/auth/magic-link', { email: 'owner@aurora-coffee.test' })
-  const inbox = await ok('/auth/local-inbox?email=owner%40aurora-coffee.test')
+  const inbox = await developmentInbox(path => request(path), 'owner@aurora-coffee.test')
   const login = await request('/auth/confirm', { token: inbox.messages[0].magicLinkToken })
   assert.equal(login.status, 303); cookie = login.headers.get('set-cookie').split(';')[0]
   const slug = 'isolated-closure-recovery'

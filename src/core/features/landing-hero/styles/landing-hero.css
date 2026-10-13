@@ -1,0 +1,4 @@
+/* The product page hero, linked after the site stylesheet. Vite inlines these imports into one file under /assets. */
+@import './hero.css';
+@import './note-card.css';
+@import './note-motion.css';

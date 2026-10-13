@@ -1,3 +1,5 @@
+import { developmentInbox } from '../helpers/development-outbox'
+import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { operatorEmail } from './auth-identity'
 import { expect, test } from './fixtures'
 
@@ -6,16 +8,16 @@ test('native removal erases delivered credentials and returns the removed operat
   const email = `custody-native-${info.project.name}-${Date.now()}@example.test`
   const headers = { Origin: new URL(info.project.use.baseURL!).origin }
   expect((await request.post('/auth/magic-link', { data: { email: operatorEmail() } })).status()).toBe(202)
-  const inbox = await request.get(`/auth/local-inbox?email=${encodeURIComponent(operatorEmail())}`)
-  const ownerToken = (await inbox.json()).messages[0].magicLinkToken
+  const inbox = await developmentInbox(path => request.get(path, { headers: devKeyHeaders }), operatorEmail())
+  const ownerToken = inbox.messages[0].magicLinkToken
   const ownerLogin = await request.post('/auth/confirm', { headers: { Origin: new URL(process.env.PENCIL_E2E_BASE_URL!).origin }, data: { token: ownerToken },  maxRedirects: 0 })
   expect(ownerLogin.status()).toBe(303)
   const ownerCookie = ownerLogin.headers()['set-cookie'].split(';')[0]
   const invitation = await request.post('/api/app/operators', { headers, data: { email, displayName: 'Synthetic custody review' } })
   expect(invitation.status()).toBe(201)
   const { id } = await invitation.json()
-  const delivered = await request.get(`/auth/local-inbox?email=${encodeURIComponent(email)}`)
-  const messages = (await delivered.json()).messages
+  const delivered = await developmentInbox(path => request.get(path, { headers: devKeyHeaders }), email)
+  const messages = delivered.messages
   expect(messages).toHaveLength(1)
   expect(messages[0].id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
   const targetLogin = await request.post('/auth/confirm', { headers: { Origin: new URL(process.env.PENCIL_E2E_BASE_URL!).origin }, data: { token: messages[0].magicLinkToken },  maxRedirects: 0 })
@@ -23,7 +25,7 @@ test('native removal erases delivered credentials and returns the removed operat
   const targetCookie = targetLogin.headers()['set-cookie'].split(';')[0]
   const removal = await request.delete(`/api/app/operators/${id}`, { headers })
   expect(removal.status()).toBe(204)
-  expect((await (await request.get(`/auth/local-inbox?email=${encodeURIComponent(email)}`)).json()).messages).toEqual([])
+  expect((await developmentInbox(path => request.get(path, { headers: devKeyHeaders }), email)).messages).toEqual([])
   expect((await request.get('/api/app/operators', { headers: { Cookie: targetCookie } })).status()).toBe(401)
   const privateDocument = await request.get('/app/settings', { headers: { Cookie: targetCookie }, maxRedirects: 0 })
   expect(privateDocument.status()).toBe(302)

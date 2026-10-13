@@ -1,0 +1,45 @@
+/* Slim header: lockup, Docs and GitHub beside it, the ink pill on the right (approved hero composition). */
+:where(.pencil-site) .site-header { padding-top: 30px; }
+:where(.pencil-site) .site-header__bar { display: flex; min-height: 52px; align-items: center; gap: 52px; }
+:where(.pencil-site) .site-header__cta { margin-left: auto; }
+
+:where(.pencil-site) .site-lockup {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 14px;
+  color: var(--ink);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1;
+  text-decoration: none;
+}
+:where(.pencil-site) .site-lockup svg { flex: none; }
+
+:where(.pencil-site) .site-nav { display: flex; align-items: center; gap: 48px; color: var(--ink); font-size: 18px; line-height: 1.2; }
+:where(.pencil-site) .site-nav a {
+  padding-block: 6px;
+  text-decoration: none;
+  background: linear-gradient(var(--yellow), var(--yellow)) no-repeat 0 100% / 0 3px;
+  transition: background-size 0.2s ease;
+}
+:where(.pencil-site) .site-nav a:hover { background-size: 100% 1.5px; }
+:where(.pencil-site) .site-nav a[aria-current='page'] { background-size: 100% 3px; }
+
+@media (max-width: 760px) {
+  :where(.pencil-site) .site-header__bar { gap: 28px; }
+  :where(.pencil-site) .site-nav { gap: 24px; }
+}
+@media (max-width: 600px) {
+  :where(.pencil-site) .site-header { padding-top: 16px; }
+  :where(.pencil-site) .site-header__bar { min-height: 48px; gap: 16px; }
+  :where(.pencil-site) .site-lockup { gap: 8px; font-size: 22px; }
+  :where(.pencil-site) .site-lockup svg { width: 27px; height: 27px; }
+  :where(.pencil-site) .site-nav { gap: 14px; font-size: 15px; }
+  :where(.pencil-site) .site-header .site-pill--small { min-height: 44px; padding: 0 15px; font-size: 15px; }
+}
+/* Below 380px the GitHub link gives way: the pill beside it opens the same repository. */
+@media (max-width: 379px) {
+  :where(.pencil-site) .site-nav__source { display: none; }
+}

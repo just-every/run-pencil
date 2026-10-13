@@ -1,3 +1,5 @@
+import { developmentInbox } from '../helpers/development-outbox'
+import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { operatorEmail } from './auth-identity'
 import { contract } from './contract'
 import { expect, test } from './fixtures'
@@ -6,7 +8,7 @@ test.use({ extraHTTPHeaders: { 'CF-Connecting-IP': '198.18.240.12' } })
 contract(['DIST-009', 'BASE-PUBLIC-002', 'BASE-PUBLIC-001'], 'even an allowed same-origin host cannot read embedded answers, credentials or completion receipts', async ({ page, request }, info) => {
   const origin = new URL(info.project.use.baseURL!).origin
   await request.post('/auth/magic-link', { headers: { Origin: origin }, data: { email: operatorEmail() } })
-  const inbox = await request.get(`/auth/local-inbox?email=${encodeURIComponent(operatorEmail())}`).then(r => r.json())
+  const inbox = await developmentInbox(path => request.get(path, { headers: devKeyHeaders }), operatorEmail())
   await request.post('/auth/confirm', { headers: { Origin: new URL(process.env.PENCIL_E2E_BASE_URL!).origin }, data: { token: inbox.messages[0].magicLinkToken }, maxRedirects: 0 })
   const workspace = await request.get('/api/app/workspace').then(r => r.json())
   expect((await request.put('/api/app/workspace', { headers: { Origin: origin }, data: { timeZone: workspace.timeZone, sendingWindowStart: workspace.sendingWindowStart, sendingWindowEnd: workspace.sendingWindowEnd, embedAllowedOrigins: [origin] } })).status()).toBe(200)
@@ -19,7 +21,7 @@ contract(['DIST-009', 'BASE-PUBLIC-002', 'BASE-PUBLIC-001'], 'even an allowed sa
   expect(await page.evaluate(() => document.querySelector('iframe')!.contentDocument)).toBeNull()
   expect(await page.evaluate(() => { try { void document.querySelector('iframe')!.contentWindow!.document.body; return false } catch { return true } })).toBe(true)
   await frame.getByRole('button', { name: 'Begin', exact: true }).click()
-  await frame.getByRole('button', { name: '5 out of 5' }).click()
+  await frame.getByRole('radio', { name: '5 out of 5' }).click()
   await frame.getByRole('button', { name: 'Continue', exact: true }).click()
   await frame.getByRole('radio', { name: 'The coffee', exact: true }).click()
   await frame.getByRole('button', { name: 'Submit response', exact: true }).click()

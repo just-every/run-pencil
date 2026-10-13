@@ -1,0 +1,10 @@
+/* The product site stylesheet, linked by siteHead(). Vite inlines these imports into one file under /assets.
+   Every selector in the site, landing, landing-hero and docs stylesheets sits under .pencil-site, written as
+   :where(.pencil-site) .x (docs: .pencil-docs:where(.pencil-site *)) so it adds no specificity, so none of it can match a product page that happens to use the
+   same class or data attribute. Tokens and the canvas use :root:has(.pencil-site) and html:has(.pencil-site). */
+@import './fonts.css';
+@import './tokens.css';
+@import './base.css';
+@import './header.css';
+@import './footer.css';
+@import './marks.css';

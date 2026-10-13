@@ -26,8 +26,9 @@ function show(element: React.ReactNode) { dispose = renderOperator(element, '/ap
 
 it('uses the deployment origin and canonical routes rather than the current app path or an example host', () => {
   expect(flowShareLinks('https://feedback.example:8443/app/flows/id/builder?revision=2', 'café visits')).toEqual({
+    scriptCode: '<script async src="https://feedback.example:8443/embed.js?flow=caf%C3%A9%20visits" referrerpolicy="origin"></script>',
     publicUrl: 'https://feedback.example:8443/f/caf%C3%A9%20visits',
-    embedCode: '<iframe src="https://feedback.example:8443/embed/caf%C3%A9%20visits" title="Feedback form" width="100%" height="700" style="border:0"></iframe>',
+    embedCode: '<iframe src="https://feedback.example:8443/embed/caf%C3%A9%20visits" title="Feedback form" width="100%" height="700" sandbox="allow-scripts allow-forms" referrerpolicy="origin" style="border:0"></iframe>',
   })
 })
 
@@ -44,7 +45,9 @@ it('reveals the published link and iframe without saving or publishing the draft
   await screen.findByText('Public link copied.')
   fireEvent.click(screen.getByRole('button', { name: 'Copy embed code' }))
   await screen.findByText('Embed code copied.')
-  expect(clipboard.mock.calls).toEqual([[links.publicUrl], [links.embedCode]])
+  fireEvent.click(screen.getByRole('button', { name: 'Copy script embed' }))
+  await screen.findByText('Script embed copied.')
+  expect(clipboard.mock.calls).toEqual([[links.publicUrl], [links.embedCode], [links.scriptCode]])
   expect(screen.getByRole('link', { name: 'Settings' })).toHaveAttribute('href', '/app/settings')
   expect(api.publishDraft).not.toHaveBeenCalled(); expect(api.saveDraft).not.toHaveBeenCalled()
   fireEvent.click(share)

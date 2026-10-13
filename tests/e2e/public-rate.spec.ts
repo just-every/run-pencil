@@ -1,14 +1,15 @@
 import { contract } from './contract'
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { DatabaseSync } from 'node:sqlite'
+import { openStateDatabase } from './state-database'
+import type { DatabaseSync } from 'node:sqlite'
 import { createHash } from 'node:crypto'
 import manifest from '../../seed.json' with { type: 'json' }
 import { expect, test } from './fixtures'
 
 const emitted = !process.env.PENCIL_MIGRATION_DEV
 const directory = process.env.PENCIL_MIGRATION_STATE ?? '.wrangler/state/v3/d1/miniflare-D1DatabaseObject'
-function database() { return new DatabaseSync(join(directory, readdirSync(directory).find(name => name.endsWith('.sqlite'))!)) }
+function database() { return openStateDatabase(join(directory, readdirSync(directory).find(name => name.endsWith('.sqlite'))!)) }
 function seedWindow(db: DatabaseSync, address: string, count: number) {
   const hash = createHash('sha256').update(`public-rate:${address}`).digest('hex')
   const minute = Math.floor(Date.now() / 60000) * 60000
@@ -25,7 +26,9 @@ contract(['BASE-ACCESS-003'], 'every declared native public surface shares actua
   test.skip(!emitted, 'Requires emitted dispatcher and its declared D1 state.')
   const db = database(); const hashes: string[] = []
   try {
-    for (const [index, path] of manifest.deploy.publicPaths.entries()) {
+    // Keep the concrete logo workload even though the public API prefix covers it.
+    const publicSurfaces = [...new Set([...manifest.deploy.publicPaths, '/api/public/brand/logo'])]
+    for (const [index, path] of publicSurfaces.entries()) {
       const address = `198.18.${info.project.name === 'mobile' ? 157 : 156}.${100 + index}`
       const hash = seedWindow(db, address, manifest.limits.publicRateLimits.requestsPerIpPerMinute)
       hashes.push(hash)

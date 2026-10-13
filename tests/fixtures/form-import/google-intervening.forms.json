@@ -1,0 +1,92 @@
+{
+  "formId": "synthetic-intervening",
+  "info": {
+    "title": "Google branch intervening"
+  },
+  "items": [
+    {
+      "itemId": "before-item",
+      "title": "Before branch",
+      "questionItem": {
+        "question": {
+          "questionId": "before",
+          "textQuestion": {
+            "paragraph": false
+          }
+        }
+      }
+    },
+    {
+      "itemId": "route-item",
+      "title": "Choose route",
+      "questionItem": {
+        "question": {
+          "questionId": "route",
+          "choiceQuestion": {
+            "type": "RADIO",
+            "options": [
+              {
+                "value": "Next",
+                "goToAction": "NEXT_SECTION"
+              },
+              {
+                "value": "Submit",
+                "goToAction": "SUBMIT_FORM"
+              },
+              {
+                "value": "Special",
+                "goToSectionId": "special-section"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "itemId": "intervening-item",
+      "title": "Must answer before leaving section",
+      "questionItem": {
+        "question": {
+          "questionId": "intervening",
+          "textQuestion": {
+            "paragraph": false
+          }
+        }
+      }
+    },
+    {
+      "itemId": "next-section",
+      "title": "Next section",
+      "pageBreakItem": {}
+    },
+    {
+      "itemId": "next-item",
+      "title": "Next answer",
+      "questionItem": {
+        "question": {
+          "questionId": "next",
+          "textQuestion": {
+            "paragraph": false
+          }
+        }
+      }
+    },
+    {
+      "itemId": "special-section",
+      "title": "Special section",
+      "pageBreakItem": {}
+    },
+    {
+      "itemId": "special-item",
+      "title": "Special answer",
+      "questionItem": {
+        "question": {
+          "questionId": "special",
+          "textQuestion": {
+            "paragraph": false
+          }
+        }
+      }
+    }
+  ]
+}

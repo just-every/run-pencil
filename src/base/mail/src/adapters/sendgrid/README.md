@@ -2,7 +2,7 @@
 
 `index.mjs` exports the portable ESM functions
 `sendSendGrid(config, message, dependencies = {})` and
-`serializeSendGridMessage(message)`. Both accept the frozen mail API
+`serializeSendGridMessage(message)`. Both accept the frozen IF-056-MAIL-v1
 message shape. The serializer validates and returns deterministic JSON request
 bytes without effects; the sender validates config and message independently
 and makes one POST to `https://api.sendgrid.com/v3/mail/send` with Bearer API-key
@@ -54,7 +54,7 @@ before deciding whether to submit again.
 From Base root:
 
 ```sh
-node --test src/base/mail/tests/sendgrid/*.test.mjs src/base/mail/tests/core/*.test.mjs
+node --test modules/mail/tests/sendgrid/*.test.mjs modules/mail/tests/core/*.test.mjs
 ```
 
 Tests include complete wire conformance, all response classes, no retry/forwarding,

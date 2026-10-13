@@ -2,18 +2,53 @@
   "schema": 1,
   "projectId": "just-every/pencil",
   "name": "Pencil",
-  "sourceRepository": "https://github.com/just-every/pencil",
+  "sourceRepository": "https://github.com/just-every/run-pencil",
   "license": "MIT",
   "deployment": {
-    "target": "cloudflare-workers"
+    "target": "cloudflare-workers",
+    "artifactFile": "rer-worker-artifact.json"
   },
   "operations": {
-    "descriptor": "OPERATIONS.json",
-    "documentation": "OPERATIONS.md",
-    "build": "pnpm build",
-    "verify": "pnpm verify",
-    "setup": "pnpm run setup",
-    "deploy": "pnpm run deploy",
-    "recovery": "Export before migration. Restore the private archive into a new database without replaying mail, validate recovery, then change the D1 binding. See OPERATIONS.md for explicit local SQLite commands and remote backup responsibilities."
+    "setup": "bash scripts/delivery/setup-build.sh",
+    "build": "pnpm run build:delivery",
+    "verify": "pnpm run verify",
+    "artifact": "pnpm run build:delivery && node scripts/build-delivery-artifact.mjs",
+    "recovery": "Preserve the private deployment receipt and ordered D1 migration ledger. Export before upgrades. Restore to an empty installation; imported historical responses never replay mail. Verify the owner, forms and retained responses before switching traffic."
+  },
+  "verification": {
+    "sensitivePaths": [
+      "src/base/operator-auth/**",
+      "src/base/mail/**",
+      "src/base/owner-claim/**",
+      "src/core/features/auth/**",
+      "src/core/features/management/**",
+      "src/core/features/importing/**",
+      "src/core/platform/**",
+      "src/server.ts",
+      "scripts/delivery/**",
+      "rer-setup.json",
+      "src/editor/**",
+      "src/router.tsx",
+      "src/routes/**"
+    ],
+    "migrationDirectories": [
+      "migrations/core",
+      "migrations/ext"
+    ],
+    "guidanceFiles": [
+      "AGENTS.md",
+      "CONTRACT.md",
+      "OPERATIONS.md"
+    ],
+    "testPatterns": [
+      "tests/runtime/**/*.worker.test.ts",
+      "tests/e2e/**/*.spec.ts",
+      "tests/admission/**/*.spec.ts",
+      "scripts/delivery-artifact.check.mjs"
+    ]
+  },
+  "setup": {
+    "path": "rer-setup.json",
+    "sha256": "6598aa7652cb16d4bcc0e45433747b41bad0d0dac297604f8e742101a816eea4"
   }
 }

@@ -1,3 +1,6 @@
+import { httpExport } from '../helpers/report-download'
+import { developmentInbox } from '../helpers/development-outbox'
+import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { operatorEmail } from './auth-identity'
 import { expect, test } from './fixtures'
 import type { BuilderDraft, PublicFlow } from '../../src/core/app/api'
@@ -9,13 +12,14 @@ test('native creation, branch publication, final retry, quarantine and reports r
   const title = `Synthetic native journey ${info.project.name}`
   const headers = { Origin: new URL(info.project.use.baseURL!).origin, 'CF-Connecting-IP': `198.18.155.${info.project.name === 'mobile' ? 32 : 31}` }
   const ok = async <T,>(path: string, data?: unknown, method = data === undefined ? 'GET' : 'POST'): Promise<T> => {
+    if (path.includes('/responses/export')) return httpExport<T>(target => request.get(target),path)
     const response = await request.fetch(path, { method, headers, ...(data === undefined ? {} : { data }) })
     expect(response.status(), path).toBeGreaterThanOrEqual(200)
     expect(response.status(), path).toBeLessThan(300)
     return response.status() === 204 ? undefined as T : await response.json() as T
   }
   await ok('/auth/magic-link', { email: operatorEmail() })
-  const inbox = await ok<{ messages: Array<{ magicLinkToken: string }> }>(`/auth/local-inbox?email=${encodeURIComponent(operatorEmail())}`)
+  const inbox = await developmentInbox(path => request.get(path, { headers: devKeyHeaders }), operatorEmail())
   const login = await request.post('/auth/confirm', { data: { token: inbox.messages[0].magicLinkToken }, headers, maxRedirects: 0 })
   expect(login.status()).toBe(303)
   expect(await (await request.get('/app', { headers })).text()).toContain('Your flows')

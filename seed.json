@@ -1,7 +1,7 @@
 {
   "id": "pencil",
   "name": "Pencil",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "maturity": "first-release-profile-candidate-local-runtime",
   "category": "forms",
   "spine": {
@@ -9,10 +9,9 @@
     "record": "form response"
   },
   "replaces": [
-    {
-      "name": "Typeform",
-      "edition": null
-    }
+    { "name": "Typeform", "edition": null },
+    { "name": "Google Forms", "edition": null },
+    { "name": "Jotform", "edition": null }
   ],
   "description": "A self-hosted feedback-to-action loop for one business: ask a short adaptive flow, surface evidence, and own the next action.",
   "scope": "One business, one shared workspace, equal operators with no roles.",
@@ -22,6 +21,15 @@
       "description": "The owner-configured public landing at `/`, matching the canonical published flow's respondent experience and admission state.",
       "clauses": [
         "HOME-001"
+      ]
+    },
+    {
+      "id": "product-site",
+      "description": "Pencil's own product page at `/` by default (`/pencil` redirects there) and documentation at `/docs`: sessionless, cookieless and same-origin. An explicit respondent landing selection overrides the default root.",
+      "clauses": [
+        "SITE-001",
+        "SITE-002",
+        "DOCS-001"
       ]
     },
     {
@@ -182,7 +190,7 @@
     },
     {
       "id": "actions",
-      "description": "Turning a recommendation into an owned, measurable action with idempotent, confirmed external task delivery.",
+      "description": "Turning a recommendation, written by an operator or later by an analysis, into an owned, measurable action with idempotent, confirmed external task delivery.",
       "clauses": [
         "ACT-001",
         "ACT-002",
@@ -190,12 +198,13 @@
         "ACT-004",
         "ACT-005",
         "ACT-006",
-        "ACT-007"
+        "ACT-007",
+        "ACT-008"
       ]
     },
     {
       "id": "notifications",
-      "description": "In-app, immediate, and digest notification of completed responses with no mail loops.",
+      "description": "Implemented per-flow Immediately or Off response mail with durable delivery state and no mail loops. The notification centre and daily digests remain deferred.",
       "clauses": [
         "NOTIFY-001",
         "NOTIFY-002",
@@ -209,6 +218,23 @@
       "clauses": [
         "DATA-001",
         "DATA-002"
+      ]
+    },
+    {
+      "id": "business-brand",
+      "description": "Saved business name, supporting line, accessible accent, own-origin logo and public landing selection across respondent surfaces.",
+      "clauses": [
+        "BRAND-001"
+      ]
+    },
+    {
+      "id": "form-import",
+      "description": "Reviewed form-definition and historical response imports with explicit losses, resumable inert commits and guarded undo.",
+      "clauses": [
+        "IMPORT-001",
+        "IMPORT-002",
+        "IMPORT-003",
+        "IMPORT-004"
       ]
     }
   ],
@@ -331,13 +357,19 @@
       "name": "TASK_PROVIDER",
       "required": false,
       "secret": false,
-      "why": "Selects an optional task destination adapter; when absent ACT-004 and WS-003 apply."
+      "why": "Selects the optional task destination adapter; webhook is the only one included. When absent ACT-004 and WS-003 apply."
+    },
+    {
+      "name": "TASK_WEBHOOK_URL",
+      "required": false,
+      "secret": false,
+      "why": "The https endpoint of the deployer's task system for TASK_PROVIDER=webhook; it must create or return one task per idempotency key (docs/guide/actions.md)."
     },
     {
       "name": "TASK_API_KEY",
       "required": false,
       "secret": true,
-      "why": "Authenticates the optional task destination."
+      "why": "Authenticates the optional task destination; sent only as a bearer value and never stored, logged or exported."
     },
     {
       "name": "SESSION_SECRET",
@@ -358,7 +390,10 @@
     "publicPaths": [
       "/",
       "/signin",
-      "/signin/inbox",
+      "/pencil",
+      "/docs",
+      "/docs/",
+      "/__dev/outbox",
       "/health",
       "/favicon.ico",
       "/assets/",
@@ -368,9 +403,10 @@
       "/api/public/",
       "/_serverFn/",
       "/i/",
-      "/optout/"
+      "/optout/",
+      "/embed.js"
     ],
-    "notes": "`/` matches only the literal root document, never as a prefix over the whole deployment: a matcher must compare `/` for exact equality, not `path.startsWith('/')`, which would trivially admit every route. Every other entry ending in `/` is a true prefix \u2014 `/f/` for direct flow links, `/embed/` for the embed script, `/auth/` for the sign-in flow, `/assets/` for static files, `/api/public/` for unauthenticated public API reads \u2014 and covers everything under it. Every other entry is one exact, sessionless document. Everything else, including the rest of `/app` and `/api/`, requires an operator or respondent session. Start owns generated /_serverFn/ transport; each private handler independently validates the native operator session."
+    "notes": "`/` matches only the literal root document, never as a prefix over the whole deployment: a matcher must compare `/` for exact equality, not `path.startsWith('/')`, which would trivially admit every route. Every other entry ending in `/` is a true prefix \u2014 `/f/` for direct flow links, `/embed/` for the embed script, `/auth/` for the sign-in flow, `/assets/` for static files, `/api/public/` for unauthenticated public API reads \u2014 and covers everything under it. Every other entry is one exact, sessionless document. Everything else, including the rest of `/app` and `/api/`, requires an operator or respondent session. Start owns generated /_serverFn/ transport; each private handler independently validates the native operator session. /__dev/outbox is available only in explicitly configured loopback development; deployed environments return 404. `/` is the default Pencil product page (or the explicitly selected respondent landing); `/pencil` redirects to `/` and `/docs` is the documentation home, all exact sessionless documents; `/docs/` is the prefix for documentation pages under it, so `/docs` is deliberately declared both exact and as the stem of that prefix. An explicitly selected respondent landing at `/` keeps its existing behavior."
   },
   "customFields": [
     "contact",
@@ -442,8 +478,13 @@
       "branchRulesPerStep": 100
     },
     "contacts": {
-      "total": 100000,
-      "participantsPerRevision": 25000
+      "customFields": 20,
+      "fieldKeyCharacters": 64,
+      "fieldValueCharacters": 500,
+      "csvBytes": 2097152,
+      "csvRows": 5000,
+      "participantsPerRevision": 25000,
+      "total": 100000
     },
     "responses": {
       "perRevision": 100000,
@@ -469,7 +510,30 @@
       "finalSubmission": 1000,
       "responseLedger": 500
     },
-    "notes": "These are design targets, not proven capacities. The backend pass must load-test them, revise the values, and mark status as tested before release."
+    "notes": "These are design targets, not proven capacities. The backend pass must load-test them, revise the values, and mark status as tested before release.",
+    "brand": {
+      "logoBytes": 262144,
+      "logoMimeTypes": [
+        "image/png",
+        "image/jpeg",
+        "image/webp"
+      ],
+      "nameCharacters": 100,
+      "supportingLineCharacters": 240
+    },
+    "questions": {
+      "dropdownChoices": 100,
+      "npsMinimum": 0,
+      "npsMaximum": 10,
+      "numberMaximumDecimalPlaces": 15,
+      "dateMinimum": "0001-01-01",
+      "dateMaximum": "9999-12-31",
+      "consentStatementCharacters": 1000
+    },
+    "import": {
+      "combinedBytes": 8388608,
+      "responses": 100000
+    }
   },
   "accessibility": {
     "level": "WCAG 2.2 AA",

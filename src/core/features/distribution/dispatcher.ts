@@ -7,10 +7,12 @@ export class DistributionDispatcher {
   constructor(private readonly db: D1Database, private readonly deliveries: MailDeliveries,
     private readonly sender: MailSender, private readonly origin: string, private readonly from: string) {}
   async run(now = new Date().toISOString()) {
-    const interrupted = await this.db.prepare("SELECT id,attempts FROM mail_deliveries WHERE status='sending' AND last_attempt_at < ?")
+    // Archives retain delivery facts but omit bearer capabilities. Those rows
+    // must neither consume the live queue nor acquire a new automatic outcome.
+    const interrupted = await this.db.prepare("SELECT d.id,d.attempts FROM mail_deliveries d JOIN invitation_participants p ON p.id=d.participant_id WHERE d.status='sending' AND d.last_attempt_at < ? AND p.token IS NOT NULL")
       .bind(new Date(Date.parse(now) - 5 * 60_000).toISOString()).all<{ id: string; attempts: number }>()
     for (const row of interrupted.results) await this.deliveries.record(row.id, row.attempts, { kind: 'unknown', reason: 'The worker stopped before recording the provider outcome. Reconcile or explicitly resend with duplicate risk.' }, now)
-    const due = await this.db.prepare("SELECT id FROM mail_deliveries WHERE status='pending' AND available_at <= ? ORDER BY available_at,id LIMIT 50").bind(now).all<{ id: string }>()
+    const due = await this.db.prepare("SELECT d.id FROM mail_deliveries d JOIN invitation_participants p ON p.id=d.participant_id WHERE d.status='pending' AND d.available_at <= ? AND p.token IS NOT NULL ORDER BY d.available_at,d.id LIMIT 50").bind(now).all<{ id: string }>()
     let attempted = 0
     for (const row of due.results) {
       const message = await this.deliveries.prepare(row.id, this.origin, now)
@@ -18,7 +20,7 @@ export class DistributionDispatcher {
       attempted++
       let outcome: Parameters<MailDeliveries['record']>[2]
       try {
-        const result = await this.sender.send({ deliveryId: message.idempotencyKey, from: this.from, to: [message.to], subject: message.subject, text: message.text, headers: message.headers })
+        const result = await this.sender.send({ deliveryId: message.idempotencyKey, from: this.from, to: [message.to], subject: message.subject, text: message.text, html: message.html, headers: message.headers })
         outcome = result.status === 'accepted' || result.status === 'development'
           ? { kind: 'sent', providerId: result.providerMessageId }
           : result.status === 'rate_limited' ? { kind: 'transient', reason: result.code ?? 'Provider rate limited the message.' }

@@ -1,7 +1,8 @@
 import type { WorkerBindings } from '../../app/environment'
 import type { MailConfiguration } from '../mail'
+import { readTaskDestination, type TaskDestinationConfiguration } from './task-destination'
 
-const loopbackHostnames = new Set(['127.0.0.1', '::1', 'localhost'])
+const loopbackHostnames = new Set(['127.0.0.1', '[::1]', 'localhost'])
 
 export class DeploymentConfigurationError extends Error {}
 
@@ -12,6 +13,7 @@ export type RuntimeConfiguration = {
   readonly setupToken?: string
   readonly bootstrapAdminEmail?: string
   readonly mail: MailConfiguration
+  readonly task: TaskDestinationConfiguration
   readonly isLocalDevelopment: boolean
   readonly seedSampleData: boolean
 }
@@ -81,7 +83,9 @@ export function readRuntimeConfiguration(requestUrl: string, environment: Worker
       buildId: 'local-development',
       sessionSecret: environment.SESSION_SECRET!,
       setupToken: environment.SETUP_TOKEN,
+      bootstrapAdminEmail: environment.SEED_ADMIN_EMAIL?.trim().toLowerCase(),
       mail: { kind: 'local-development' },
+      task: readTaskDestination(environment, true),
       isLocalDevelopment: true,
       seedSampleData: environment.SEED_SAMPLE_DATA === 'true',
     }
@@ -93,6 +97,7 @@ export function readRuntimeConfiguration(requestUrl: string, environment: Worker
     setupToken: environment.SETUP_TOKEN,
     bootstrapAdminEmail: environment.SEED_ADMIN_EMAIL!.trim().toLowerCase(),
     mail: { kind: environment.MAIL_PROVIDER as 'resend' | 'sendgrid', apiKey: environment.MAIL_API_KEY!.trim(), from: environment.MAIL_FROM!.trim() },
+    task: readTaskDestination(environment, false),
     isLocalDevelopment: false,
     seedSampleData: false,
   }

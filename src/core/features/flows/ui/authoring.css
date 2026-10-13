@@ -1,0 +1,189 @@
+/*
+ * The flow builder: three cards (the steps rail on deeper paper, the current step on a note sheet, the inspector),
+ * then publication options and the lifecycle band. Phones get one column: header actions in two rows, the steps as
+ * three compact tiles, the sheet, then the fields.
+ */
+.flow-authoring [hidden] { display: none; }
+.builder-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px 24px; margin-bottom: 24px; }
+.builder-back { display: inline-flex; align-items: center; gap: 8px; color: var(--ink); font-size: 16px; text-decoration: none; }
+.builder-back:hover { text-decoration: underline 1.5px; text-underline-offset: 5px; }
+.builder-header h1 { margin: 14px 0 0; font-size: 48px; line-height: 1.04; overflow-wrap: anywhere; }
+.builder-status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 10px 0 0; color: var(--subtle); font-size: 14px; }
+.builder-header .builder-actions { gap: 10px; }
+
+.builder-grid { display: grid; grid-template-columns: minmax(250px, 0.75fr) minmax(0, 1.35fr) minmax(340px, 1.15fr); align-items: stretch; gap: 16px; }
+.builder-rail, .builder-canvas, .builder-inspector { position: relative; min-width: 0; border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+.builder-rail { background: var(--paper-deep); }
+.builder-canvas, .builder-inspector { background: var(--card); box-shadow: var(--shadow); }
+.builder-count { margin: 6px 0 0; font-size: 24px; }
+.builder-start-guidance { margin-top: 10px; }
+.builder-add { display: grid; gap: 10px; margin-top: 16px; }
+.builder-add .secondary-button { width: 100%; min-height: 36px; padding: 0 12px; background: var(--card); font-size: 14px; }
+
+.step-list { display: grid; gap: 6px; margin-top: 20px; }
+.step-button { position: relative; display: grid; width: 100%; grid-template-columns: 28px minmax(0, 1fr); align-items: center; gap: 12px; border: 0; border-radius: 999px; padding: 10px 14px 10px 10px; color: var(--ink); background: transparent; text-align: left; }
+.step-button:hover:not(:disabled) { background: rgba(255, 255, 255, 0.6); }
+.step-button[data-selected='true'] { background: var(--yellow-wash); }
+.step-button[data-selected='true']::after { content: ""; position: absolute; inset: -4px 0; pointer-events: none; background: var(--pencil-oval) no-repeat center / 100% 100%; }
+.step-button:disabled { cursor: not-allowed; }
+.step-index { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; color: var(--ink); background: var(--card); font-size: 13px; font-weight: 600; }
+.step-button[data-selected='true'] .step-index { background: rgba(255, 255, 255, 0.7); }
+.step-prompt { display: block; overflow-wrap: break-word; font-size: 14px; font-weight: 500; line-height: 1.3; }
+.step-type { display: block; margin-top: 2px; color: var(--subtle); font-size: 13px; }
+.step-type::first-letter, .canvas-chip::first-letter { text-transform: uppercase; }
+
+.builder-canvas { display: flex; flex-direction: column; }
+.builder-canvas .preview-surface { display: grid; min-height: 480px; align-content: center; margin: auto 24px; padding: 52px 44px; rotate: -2.5deg; }
+.builder-note { top: 22px; right: 22px; --note-turn: rotate(-58deg); --note-tilt: -8deg; }
+.builder-note .app-note { flex-direction: row-reverse; align-items: flex-end; }
+.canvas-step-label { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.canvas-chip { display: inline-block; border-radius: 999px; padding: 4px 14px; color: var(--draft-ink); background: var(--yellow-wash); font-size: 14px; }
+.canvas-required { border: 1.5px solid var(--line-bright); color: var(--ink); background: transparent; }
+.preview-surface h2 { max-width: 18ch; margin: 22px 0 0; font-size: 36px; line-height: 1.06; overflow-wrap: break-word; }
+.preview-surface .respondent-helper { margin-top: 10px; font-size: 16px; }
+.builder-canvas .answer-stack { gap: 6px; margin-top: 22px; }
+/* On the canvas, answers are drawn as on the pick: a radio ringed in its wash and the label, no box. */
+.builder-canvas .answer-stack > .choice-button { min-height: 52px; border-color: transparent; padding: 6px 4px; background: transparent; font-size: 20px; }
+.builder-canvas .answer-stack > .choice-button:hover:not(:disabled) { border-color: transparent; }
+.builder-canvas .answer-stack > .choice-button[data-selected='true'] { border-color: transparent; box-shadow: none; text-decoration: underline 1.5px; text-underline-offset: 6px; }
+.builder-canvas .answer-stack > .choice-button .choice-indicator { border-color: var(--graphite); background: var(--paper-deep); box-shadow: 0 0 0 6px var(--paper-deep); }
+.builder-canvas .answer-stack > .choice-button:nth-child(1) .choice-indicator { background: var(--wash-great); box-shadow: 0 0 0 6px var(--wash-great); }
+.builder-canvas .answer-stack > .choice-button:nth-child(2) .choice-indicator { background: var(--wash-good); box-shadow: 0 0 0 6px var(--wash-good); }
+.builder-canvas .answer-stack > .choice-button:nth-child(3) .choice-indicator { background: var(--wash-better); box-shadow: 0 0 0 6px var(--wash-better); }
+.builder-canvas .answer-stack > .choice-button[data-selected='true'] .choice-indicator { color: #fff; border-color: var(--ink); background: var(--ink); }
+.builder-canvas .rating-row { gap: 6px; margin-top: 18px; }
+.builder-canvas .rating-button { width: 44px; height: 44px; }
+
+.builder-inspector > .eyebrow + .inspector-field { margin-top: 12px; }
+.builder-inspector .text-area { min-height: 46px; height: 48px; }
+.builder-inspector details > summary { color: var(--muted); font-size: 14px; padding: 6px 0; }
+.choice-editor { display: grid; gap: 10px; margin-top: 16px; }
+.choice-editor > .toggle-row .secondary-button, .branch-add { min-height: 34px; padding: 0 14px; font-size: 14px; }
+/* A choice is one row: "Choice N" and its field, Remove, then Advanced; an open Advanced takes the row below. */
+.choice-editor-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 0 12px; }
+.choice-editor-row .inspector-field { grid-template-columns: 62px minmax(0, 1fr); align-items: center; gap: 8px; margin-top: 0; }
+.choice-editor-row details .inspector-field { grid-template-columns: 1fr; }
+.choice-editor-row .quiet-button { min-height: 40px; font-size: 13px; }
+.choice-editor-row details { margin-top: 0; }
+.choice-editor-row details > summary { font-size: 13px; white-space: nowrap; }
+.choice-editor-row details[open] { grid-column: 1 / -1; padding-left: 70px; }
+.builder-inspector > .toggle-row { justify-content: flex-end; flex-direction: row-reverse; border-bottom: 1px solid var(--line); padding-bottom: 16px; }
+.builder-step-tools { gap: 8px; margin-top: 16px; border-bottom: 1px solid var(--line); padding-bottom: 16px; }
+.builder-step-tools .secondary-button { min-height: 34px; padding: 0 14px; font-size: 14px; }
+.branch-editor { margin-top: 16px; }
+.branch-editor h2 { margin: 0; font-size: 16px; font-weight: 500; }
+/* With no rules yet, "Answer paths" and "Add rule" share a line. */
+.branch-editor .plain-fieldset:not(:has(.branch-rule)) { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.branch-rule { margin: 12px 0; padding: 12px; }
+.branch-rule legend { padding: 0 6px; font-size: 14px; font-weight: 600; }
+.builder-save { margin-top: 20px; }
+.builder-save .primary-button { width: 100%; }
+
+.publication-options { margin-top: 16px; padding: 18px 22px; }
+.publication-options > summary { font-weight: 500; }
+.builder-lifecycle { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; margin-top: 16px; border: 1px solid var(--line); border-radius: 14px; padding: 16px 22px; background: var(--card); box-shadow: var(--shadow); }
+.builder-lifecycle-status { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }
+.builder-lifecycle-status > * { margin: 0; }
+.builder-lifecycle-status p:last-child { border-left: 1px solid var(--line); padding-left: 20px; color: var(--muted); font-size: 15px; }
+
+/* Draft preview, share and distribution panels: cards with the same fields. */
+.draft-preview { margin-bottom: 24px; padding: 24px; }
+.draft-preview .preview-surface { margin: 20px 8px 8px; padding: 32px; rotate: -0.8deg; }
+.draft-preview-actions { margin-top: 18px; }
+.draft-trace { margin-top: 16px; padding: 16px 18px; }
+.draft-trace ol, .draft-trace ul { margin: 8px 0 0; padding-left: 20px; }
+.flow-share-panel { margin-bottom: 24px; padding: 24px; }
+.flow-share-panel h2 { margin: 0; font-family: var(--font-serif); font-size: 28px; font-weight: 400; }
+.flow-share-field { min-width: 0; margin-top: 16px; }
+.flow-share-field .inspector-field { display: flex; flex-direction: column; gap: 6px; }
+.flow-share-field .quiet-button { margin-top: 8px; }
+.flow-share-field .text-input, .flow-share-field .text-area { min-width: 0; overflow-wrap: anywhere; }
+
+@media (max-width: 1100px) {
+  .builder-grid { grid-template-columns: 1fr; }
+  .builder-rail { display: grid; grid-template-columns: 1fr auto; align-items: baseline; padding: 16px; }
+  .builder-rail > .eyebrow { grid-column: 1; }
+  .builder-count { grid-column: 2; margin: 0; color: var(--muted); font-family: inherit; font-size: 15px; }
+  .builder-start-guidance { grid-column: 1 / -1; }
+  .step-list { grid-column: 1 / -1; grid-row: 2; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+  .builder-add { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .builder-add .secondary-button { width: auto; flex: 1 1 auto; min-height: 38px; padding: 0 14px; font-size: 14px; white-space: nowrap; }
+  .step-button { align-items: start; border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: var(--card); }
+  /* A tile is circled with a loose pencilled box, which keeps clear of its words (an oval would cut its corners). */
+  .step-button[data-selected='true'] { border-color: transparent; }
+  .step-button[data-selected='true']::after { inset: -4px; background-image: var(--pencil-box); }
+  .step-prompt { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; font-size: 14px; }
+  .builder-canvas { border: 0; padding: 0; background: transparent; box-shadow: none; }
+  .builder-canvas > .eyebrow { display: none; }
+  .builder-canvas .preview-surface { min-height: 0; margin: 8px 4px 4px; padding: 22px 20px; rotate: -1deg; }
+  .builder-note { top: -6px; right: 4px; }
+  .preview-surface h2 { font-size: 28px; }
+  .builder-canvas .answer-stack { max-height: 40svh; overflow-y: auto; }
+}
+@media (max-width: 620px) {
+  .builder-header { display: grid; gap: 14px; margin-bottom: 18px; }
+  .builder-header h1 { margin-top: 10px; font-size: 38px; }
+  .builder-header .builder-actions { gap: 8px; }
+  .builder-header .builder-actions > * { flex: 1 1 auto; min-height: 38px; padding: 0 12px; font-size: 14px; white-space: nowrap; }
+  .builder-note { display: none; }
+  .step-button { grid-template-columns: 1fr; gap: 6px; }
+  .step-prompt { overflow-wrap: normal; word-break: normal; }
+  .builder-add svg { display: none; }
+  .builder-add .secondary-button { font-size: 13px; }
+  .choice-editor-row details, .choice-editor-row details[open] { padding-left: 0; }
+  .builder-inspector { padding: 16px; }
+  /* Compact editing: the whole builder stays within three phone screens. */
+  /* Whole-pixel line heights keep the controls below on whole pixels, so scrolling one into view never leaves it a fraction clipped. */
+  .builder-back { font-size: 15px; line-height: 22px; }
+  .builder-header h1 { margin-top: 6px; font-size: 34px; line-height: 36px; }
+  .builder-header .status-note, .flow-authoring .status-note { line-height: 20px; }
+  .builder-status { margin-top: 6px; min-height: 26px; }
+  .builder-rail { padding: 12px; }
+  .step-list { margin-top: 8px; }
+  .step-button { gap: 2px; padding: 8px; }
+  .step-index { width: 24px; height: 24px; font-size: 12px; }
+  .step-prompt { font-size: 13px; line-height: 1.25; }
+  .step-type { font-size: 12px; }
+  .builder-add { margin-top: 8px; }
+  .builder-add .secondary-button { min-height: 36px; }
+  /* Level on a phone: a turned sheet clips its own controls by a fraction, and the builder must keep every control fully reachable. */
+  .builder-canvas .preview-surface { padding: 16px; rotate: none; }
+  .canvas-chip { padding: 2px 10px; font-size: 13px; }
+  .preview-surface h2 { margin-top: 10px; font-size: 24px; }
+  .builder-canvas .answer-stack { gap: 6px; margin-top: 12px; }
+  .builder-canvas .choice-button { min-height: 40px; padding: 4px 12px; font-size: 16px; }
+  .builder-canvas .answer-stack > .choice-button { min-height: 40px; padding: 4px 6px; font-size: 17px; }
+  .builder-canvas .rating-button, .draft-preview .rating-button { width: 40px; height: 40px; }
+  .rating-row { gap: 6px; }
+  .builder-canvas .rating-row { margin-top: 12px; }
+  .builder-inspector .inspector-field, .builder-inspector .toggle-row, .builder-inspector details { margin-top: 8px; }
+  .builder-inspector .inspector-field { gap: 4px; }
+  /* A choice is one row: its field (named "Choice N label" for assistive technology), Remove, then Advanced. */
+  .choice-editor-row { grid-template-columns: minmax(0, 1fr) auto auto; }
+  .choice-editor-row .inspector-field { grid-template-columns: 1fr; gap: 0; font-size: 0; }
+  .choice-editor-row details { grid-column: auto; margin-top: 0; }
+  .choice-editor-row details[open] { grid-column: 1 / -1; }
+  .choice-editor-row details .inspector-field { gap: 4px; font-size: 14px; }
+  .branch-rule .plain-fieldset, .branch-rule { column-gap: 8px; }
+  .branch-rule:has(> .inspector-field + .inspector-field) { display: grid; grid-template-columns: 1fr 1fr; }
+  .branch-rule > legend, .branch-rule > :not(.inspector-field) { grid-column: 1 / -1; }
+  .builder-inspector .text-area { min-height: 52px; }
+  .builder-inspector details > summary { padding: 2px 0; }
+  .choice-editor { gap: 6px; margin-top: 10px; }
+  .builder-inspector > .toggle-row { padding-bottom: 10px; }
+  .builder-step-tools { gap: 6px; margin-top: 10px; padding-bottom: 10px; }
+  .builder-step-tools .secondary-button { min-height: 32px; padding: 0 10px; font-size: 13px; }
+  .branch-editor { margin-top: 10px; }
+  .branch-rule { margin: 8px 0; padding: 10px; }
+  .builder-save { margin-top: 12px; }
+  .publication-options, .builder-lifecycle { margin-top: 12px; }
+  .builder-lifecycle { gap: 8px; padding: 12px 14px; }
+  .builder-lifecycle-status { gap: 6px 12px; }
+  .builder-lifecycle-status p:last-child { border: 0; padding: 0; font-size: 14px; }
+  .publication-options { padding: 14px 16px; }
+  .draft-preview, .flow-share-panel { padding: 14px; }
+  .draft-preview .preview-surface { margin: 12px 2px 4px; padding: 16px; rotate: none; }
+  .draft-preview .preview-surface h2 { font-size: 24px; }
+  .draft-preview-actions { gap: 4px 12px; margin-top: 10px; }
+  .draft-preview-actions > * { min-height: 36px; font-size: 14px; }
+}

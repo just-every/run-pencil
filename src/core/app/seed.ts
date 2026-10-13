@@ -17,6 +17,8 @@ export async function seedSampleData(services: PencilServices) {
       ...sample.choiceOptions.draft.map((choice) => ({ ...choice, createdAt: sample.revisions.draft.createdAt, updatedAt: sample.revisions.draft.updatedAt })),
     ],
   })
+  const brand = await services.brand.get(sample.workspace.id)
+  if (!brand.configured) await services.brand.save(sample.workspace.id, sample.brand)
   await services.responses.ensureSampleResponses({
     workspaceId: sample.workspace.id,
     flowId: sample.flow.id,

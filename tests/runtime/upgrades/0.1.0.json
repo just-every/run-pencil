@@ -1,0 +1,230 @@
+{
+  "description": "Synthetic 0.1.0 operators, native credentials, two published revisions, stable graph, completed and quarantined responses, pending response outbox, invitations and delivery history.",
+  "checks": [
+    {
+      "kind": "sample-row",
+      "query": "SELECT 'audit_entries' AS table_name, json_object('id',id,'workspace_id',workspace_id,'kind',kind,'actor_operator_id',actor_operator_id,'subject_type',subject_type,'subject_id',subject_id,'details_json',details_json,'created_at',created_at) AS row_json FROM audit_entries UNION ALL SELECT 'choice_options' AS table_name, json_object('id',id,'step_id',step_id,'value',value,'label',label,'position',position,'created_at',created_at,'updated_at',updated_at,'stable_id',stable_id) AS row_json FROM choice_options UNION ALL SELECT 'distribution_contacts' AS table_name, json_object('id',id,'workspace_id',workspace_id,'email',email,'name',name,'opted_out_at',opted_out_at,'created_at',created_at,'updated_at',updated_at) AS row_json FROM distribution_contacts UNION ALL SELECT 'flow_branch_rules' AS table_name, json_object('id',id,'revision_id',revision_id,'source_step_stable_id',source_step_stable_id,'predicate_kind',predicate_kind,'expected_value_json',expected_value_json,'destination_step_stable_id',destination_step_stable_id,'position',position,'created_at',created_at,'updated_at',updated_at) AS row_json FROM flow_branch_rules UNION ALL SELECT 'flow_revisions' AS table_name, json_object('id',id,'flow_id',flow_id,'number',number,'state',state,'title',title,'published_at',published_at,'created_at',created_at,'updated_at',updated_at,'is_current',is_current,'admission_closed_at',admission_closed_at,'admission_close_reason',admission_close_reason,'deadline_at',deadline_at,'deadline_time_zone',deadline_time_zone,'target_completed_responses',target_completed_responses,'policy_snapshot_json',policy_snapshot_json) AS row_json FROM flow_revisions UNION ALL SELECT 'flow_steps' AS table_name, json_object('id',id,'revision_id',revision_id,'position',position,'kind',kind,'question_type',question_type,'prompt',prompt,'helper_text',helper_text,'required',required,'created_at',created_at,'updated_at',updated_at,'stable_id',stable_id,'next_step_stable_id',next_step_stable_id,'question_settings_json',question_settings_json) AS row_json FROM flow_steps UNION ALL SELECT 'flows' AS table_name, json_object('id',id,'workspace_id',workspace_id,'slug',slug,'title',title,'status',status,'draft_version',draft_version,'last_activity_at',last_activity_at,'created_at',created_at,'updated_at',updated_at) AS row_json FROM flows UNION ALL SELECT 'invitation_launches' AS table_name, json_object('id',id,'workspace_id',workspace_id,'revision_id',revision_id,'command_key',command_key,'policy_json',policy_json,'actor_operator_id',actor_operator_id,'created_at',created_at) AS row_json FROM invitation_launches UNION ALL SELECT 'invitation_participants' AS table_name, json_object('id',id,'launch_id',launch_id,'workspace_id',workspace_id,'revision_id',revision_id,'contact_id',contact_id,'email_snapshot',email_snapshot,'name_snapshot',name_snapshot,'token',token,'opt_out_token',opt_out_token,'delivery_status',delivery_status,'response_status',response_status,'completed_at',completed_at,'completion_step_id',completion_step_id,'created_at',created_at) AS row_json FROM invitation_participants UNION ALL SELECT 'mail_deliveries' AS table_name, json_object('id',id,'participant_id',participant_id,'kind',kind,'status',status,'idempotency_key',idempotency_key,'available_at',available_at,'first_attempt_at',first_attempt_at,'last_attempt_at',last_attempt_at,'attempts',attempts,'provider_id',provider_id,'reason',reason,'created_at',created_at,'updated_at',updated_at) AS row_json FROM mail_deliveries UNION ALL SELECT 'mail_delivery_attempts' AS table_name, json_object('id',id,'delivery_id',delivery_id,'ordinal',ordinal,'event',event,'actor_operator_id',actor_operator_id,'reason',reason,'provider_id',provider_id,'created_at',created_at) AS row_json FROM mail_delivery_attempts UNION ALL SELECT 'oa_bootstrap' AS table_name, json_object('singleton',singleton,'claim_id',claim_id,'claimed_at',claimed_at) AS row_json FROM oa_bootstrap UNION ALL SELECT 'oa_operators' AS table_name, json_object('id',id,'email',email,'display_name',display_name,'role',role,'status',status,'version',version,'created_at',created_at) AS row_json FROM oa_operators UNION ALL SELECT 'oa_sessions' AS table_name, json_object('id',id,'token_hash',token_hash,'operator_id',operator_id,'operator_version',operator_version,'kind',kind,'source_token_id',source_token_id,'created_at',created_at,'expires_at',expires_at,'revoked_at',revoked_at) AS row_json FROM oa_sessions UNION ALL SELECT 'oa_tokens' AS table_name, json_object('id',id,'token_hash',token_hash,'kind',kind,'operator_id',operator_id,'operator_version',operator_version,'issuer_id',issuer_id,'issuer_version',issuer_version,'return_to',return_to,'created_at',created_at,'expires_at',expires_at,'consumed_at',consumed_at,'revoked_at',revoked_at) AS row_json FROM oa_tokens UNION ALL SELECT 'operator_auth_links' AS table_name, json_object('operator_id',operator_id,'auth_id',auth_id) AS row_json FROM operator_auth_links UNION ALL SELECT 'operators' AS table_name, json_object('id',id,'workspace_id',workspace_id,'email',email,'display_name',display_name,'created_at',created_at,'updated_at',updated_at,'is_setup_operator',is_setup_operator) AS row_json FROM operators UNION ALL SELECT 'respondent_session_step_events' AS table_name, json_object('id',id,'session_id',session_id,'revision_id',revision_id,'step_stable_id',step_stable_id,'counted_at',counted_at,'created_at',created_at) AS row_json FROM respondent_session_step_events UNION ALL SELECT 'respondent_sessions' AS table_name, json_object('id',id,'revision_id',revision_id,'source',source,'device_class',device_class,'furthest_step_id',furthest_step_id,'completed_at',completed_at,'expires_at',expires_at,'created_at',created_at,'updated_at',updated_at,'session_token_hash',session_token_hash,'metric_folded_at',metric_folded_at,'completion_outcome',completion_outcome) AS row_json FROM respondent_sessions UNION ALL SELECT 'response_answers' AS table_name, json_object('id',id,'response_id',response_id,'step_id',step_id,'value_json',value_json,'created_at',created_at,'updated_at',updated_at) AS row_json FROM response_answers UNION ALL SELECT 'response_outbox' AS table_name, json_object('id',id,'workspace_id',workspace_id,'response_id',response_id,'kind',kind,'idempotency_key',idempotency_key,'payload_json',payload_json,'status',status,'available_at',available_at,'dispatched_at',dispatched_at,'failure_reason',failure_reason,'created_at',created_at,'updated_at',updated_at) AS row_json FROM response_outbox UNION ALL SELECT 'responses' AS table_name, json_object('id',id,'workspace_id',workspace_id,'flow_id',flow_id,'revision_id',revision_id,'session_id',session_id,'session_token_hash',session_token_hash,'idempotency_key',idempotency_key,'state',state,'quarantine_reason',quarantine_reason,'released_at',released_at,'released_by_operator_id',released_by_operator_id,'completion_milliseconds',completion_milliseconds,'completed_at',completed_at,'created_at',created_at,'updated_at',updated_at,'source',source,'started_at',started_at,'participant_id',participant_id) AS row_json FROM responses UNION ALL SELECT 'revision_metric_counters' AS table_name, json_object('id',id,'revision_id',revision_id,'starts',starts,'completions',completions,'total_completion_milliseconds',total_completion_milliseconds,'mobile_starts',mobile_starts,'tablet_starts',tablet_starts,'desktop_starts',desktop_starts,'created_at',created_at,'updated_at',updated_at) AS row_json FROM revision_metric_counters UNION ALL SELECT 'revision_step_metric_counters' AS table_name, json_object('id',id,'revision_id',revision_id,'step_stable_id',step_stable_id,'reached',reached,'dropped',dropped,'created_at',created_at,'updated_at',updated_at) AS row_json FROM revision_step_metric_counters UNION ALL SELECT 'workspaces' AS table_name, json_object('id',id,'name',name,'time_zone',time_zone,'created_at',created_at,'updated_at',updated_at,'sending_window_start',sending_window_start,'sending_window_end',sending_window_end,'setup_operator_initialized_at',setup_operator_initialized_at,'embed_allowed_origins_json',embed_allowed_origins_json) AS row_json FROM workspaces ORDER BY table_name, row_json",
+      "expectedRows": [
+        {
+          "table_name": "audit_entries",
+          "row_json": "{\"id\":\"upgrade-audit\",\"workspace_id\":\"upgrade-workspace\",\"kind\":\"quarantine\",\"actor_operator_id\":null,\"subject_type\":\"response\",\"subject_id\":\"upgrade-response-2\",\"details_json\":\"{\\\"reason\\\":\\\"minimum_elapsed\\\"}\",\"created_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "choice_options",
+          "row_json": "{\"id\":\"upgrade-choice-1-1\",\"step_id\":\"upgrade-question-1\",\"value\":\"choice-1\",\"label\":\"Good\",\"position\":0,\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\",\"stable_id\":\"upgrade-choice-1\"}"
+        },
+        {
+          "table_name": "choice_options",
+          "row_json": "{\"id\":\"upgrade-choice-1-2\",\"step_id\":\"upgrade-question-1\",\"value\":\"choice-2\",\"label\":\"Needs improvement\",\"position\":1,\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\",\"stable_id\":\"upgrade-choice-2\"}"
+        },
+        {
+          "table_name": "choice_options",
+          "row_json": "{\"id\":\"upgrade-choice-2-1\",\"step_id\":\"upgrade-question-2\",\"value\":\"choice-1\",\"label\":\"Good\",\"position\":0,\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\",\"stable_id\":\"upgrade-choice-1\"}"
+        },
+        {
+          "table_name": "choice_options",
+          "row_json": "{\"id\":\"upgrade-choice-2-2\",\"step_id\":\"upgrade-question-2\",\"value\":\"choice-2\",\"label\":\"Needs improvement\",\"position\":1,\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\",\"stable_id\":\"upgrade-choice-2\"}"
+        },
+        {
+          "table_name": "distribution_contacts",
+          "row_json": "{\"id\":\"upgrade-contact-1\",\"workspace_id\":\"upgrade-workspace\",\"email\":\"contact1@example.com\",\"name\":\"Contact 1\",\"opted_out_at\":null,\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "distribution_contacts",
+          "row_json": "{\"id\":\"upgrade-contact-2\",\"workspace_id\":\"upgrade-workspace\",\"email\":\"contact2@example.com\",\"name\":\"Contact 2\",\"opted_out_at\":null,\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "flow_branch_rules",
+          "row_json": "{\"id\":\"upgrade-branch-1\",\"revision_id\":\"upgrade-revision-1\",\"source_step_stable_id\":\"upgrade-question\",\"predicate_kind\":\"equals\",\"expected_value_json\":\"\\\"upgrade-choice-1\\\"\",\"destination_step_stable_id\":\"upgrade-completion\",\"position\":0,\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "flow_branch_rules",
+          "row_json": "{\"id\":\"upgrade-branch-2\",\"revision_id\":\"upgrade-revision-2\",\"source_step_stable_id\":\"upgrade-question\",\"predicate_kind\":\"equals\",\"expected_value_json\":\"\\\"upgrade-choice-1\\\"\",\"destination_step_stable_id\":\"upgrade-completion\",\"position\":0,\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "flow_revisions",
+          "row_json": "{\"id\":\"upgrade-revision-1\",\"flow_id\":\"upgrade-flow\",\"number\":1,\"state\":\"published\",\"title\":\"Cedar feedback 1\",\"published_at\":\"2026-10-01T12:00:00.000Z\",\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\",\"is_current\":0,\"admission_closed_at\":null,\"admission_close_reason\":null,\"deadline_at\":null,\"deadline_time_zone\":null,\"target_completed_responses\":null,\"policy_snapshot_json\":\"{\\\"branchSelection\\\":{\\\"kind\\\":\\\"first-match\\\"},\\\"identity\\\":{\\\"direct\\\":\\\"anonymous\\\",\\\"invitation\\\":\\\"identified\\\"},\\\"responseAdmission\\\":{\\\"invitationCompletions\\\":1}}\"}"
+        },
+        {
+          "table_name": "flow_revisions",
+          "row_json": "{\"id\":\"upgrade-revision-2\",\"flow_id\":\"upgrade-flow\",\"number\":2,\"state\":\"published\",\"title\":\"Cedar feedback 2\",\"published_at\":\"2026-10-01T12:00:00.000Z\",\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\",\"is_current\":1,\"admission_closed_at\":null,\"admission_close_reason\":null,\"deadline_at\":null,\"deadline_time_zone\":null,\"target_completed_responses\":null,\"policy_snapshot_json\":\"{\\\"branchSelection\\\":{\\\"kind\\\":\\\"first-match\\\"},\\\"identity\\\":{\\\"direct\\\":\\\"anonymous\\\",\\\"invitation\\\":\\\"identified\\\"},\\\"responseAdmission\\\":{\\\"invitationCompletions\\\":1}}\"}"
+        },
+        {
+          "table_name": "flow_steps",
+          "row_json": "{\"id\":\"upgrade-completion-1\",\"revision_id\":\"upgrade-revision-1\",\"position\":1,\"kind\":\"completion\",\"question_type\":null,\"prompt\":\"Thank you\",\"helper_text\":null,\"required\":0,\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\",\"stable_id\":\"upgrade-completion\",\"next_step_stable_id\":null,\"question_settings_json\":null}"
+        },
+        {
+          "table_name": "flow_steps",
+          "row_json": "{\"id\":\"upgrade-completion-2\",\"revision_id\":\"upgrade-revision-2\",\"position\":1,\"kind\":\"completion\",\"question_type\":null,\"prompt\":\"Thank you\",\"helper_text\":null,\"required\":0,\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\",\"stable_id\":\"upgrade-completion\",\"next_step_stable_id\":null,\"question_settings_json\":null}"
+        },
+        {
+          "table_name": "flow_steps",
+          "row_json": "{\"id\":\"upgrade-question-1\",\"revision_id\":\"upgrade-revision-1\",\"position\":0,\"kind\":\"question\",\"question_type\":\"single_choice\",\"prompt\":\"How was visit 1?\",\"helper_text\":null,\"required\":1,\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\",\"stable_id\":\"upgrade-question\",\"next_step_stable_id\":\"upgrade-completion\",\"question_settings_json\":\"{}\"}"
+        },
+        {
+          "table_name": "flow_steps",
+          "row_json": "{\"id\":\"upgrade-question-2\",\"revision_id\":\"upgrade-revision-2\",\"position\":0,\"kind\":\"question\",\"question_type\":\"single_choice\",\"prompt\":\"How was visit 2?\",\"helper_text\":null,\"required\":1,\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\",\"stable_id\":\"upgrade-question\",\"next_step_stable_id\":\"upgrade-completion\",\"question_settings_json\":\"{}\"}"
+        },
+        {
+          "table_name": "flows",
+          "row_json": "{\"id\":\"upgrade-flow\",\"workspace_id\":\"upgrade-workspace\",\"slug\":\"cedar-feedback\",\"title\":\"Cedar feedback\",\"status\":\"open\",\"draft_version\":4,\"last_activity_at\":\"2026-10-01T12:00:00.000Z\",\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "invitation_launches",
+          "row_json": "{\"id\":\"upgrade-launch-1\",\"workspace_id\":\"upgrade-workspace\",\"revision_id\":\"upgrade-revision-1\",\"command_key\":\"upgrade-launch-key-1\",\"policy_json\":\"{\\\"reminder\\\":{\\\"delayDays\\\":2},\\\"timeZone\\\":\\\"Australia/Brisbane\\\"}\",\"actor_operator_id\":\"upgrade-operator-1\",\"created_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "invitation_launches",
+          "row_json": "{\"id\":\"upgrade-launch-2\",\"workspace_id\":\"upgrade-workspace\",\"revision_id\":\"upgrade-revision-2\",\"command_key\":\"upgrade-launch-key-2\",\"policy_json\":\"{\\\"reminder\\\":{\\\"delayDays\\\":2},\\\"timeZone\\\":\\\"Australia/Brisbane\\\"}\",\"actor_operator_id\":\"upgrade-operator-1\",\"created_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "invitation_participants",
+          "row_json": "{\"id\":\"upgrade-participant-1\",\"launch_id\":\"upgrade-launch-1\",\"workspace_id\":\"upgrade-workspace\",\"revision_id\":\"upgrade-revision-1\",\"contact_id\":\"upgrade-contact-1\",\"email_snapshot\":\"contact1@example.com\",\"name_snapshot\":\"Contact 1\",\"token\":\"synthetic-upgrade-invitation-1\",\"opt_out_token\":\"synthetic-upgrade-opt-out-1\",\"delivery_status\":\"sent\",\"response_status\":\"completed\",\"completed_at\":\"2026-10-01T12:00:00.000Z\",\"completion_step_id\":\"upgrade-completion\",\"created_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "invitation_participants",
+          "row_json": "{\"id\":\"upgrade-participant-2\",\"launch_id\":\"upgrade-launch-2\",\"workspace_id\":\"upgrade-workspace\",\"revision_id\":\"upgrade-revision-2\",\"contact_id\":\"upgrade-contact-2\",\"email_snapshot\":\"contact2@example.com\",\"name_snapshot\":\"Contact 2\",\"token\":\"synthetic-upgrade-invitation-2\",\"opt_out_token\":\"synthetic-upgrade-opt-out-2\",\"delivery_status\":\"unknown\",\"response_status\":\"not-started\",\"completed_at\":null,\"completion_step_id\":null,\"created_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "mail_deliveries",
+          "row_json": "{\"id\":\"upgrade-delivery-1\",\"participant_id\":\"upgrade-participant-1\",\"kind\":\"invitation\",\"status\":\"sent\",\"idempotency_key\":\"upgrade-delivery-key-1\",\"available_at\":\"2026-10-01T12:00:00.000Z\",\"first_attempt_at\":\"2026-10-01T12:00:00.000Z\",\"last_attempt_at\":\"2026-10-01T12:00:00.000Z\",\"attempts\":1,\"provider_id\":\"synthetic-provider-id\",\"reason\":null,\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "mail_deliveries",
+          "row_json": "{\"id\":\"upgrade-delivery-2\",\"participant_id\":\"upgrade-participant-2\",\"kind\":\"invitation\",\"status\":\"unknown\",\"idempotency_key\":\"upgrade-delivery-key-2\",\"available_at\":\"2026-10-01T12:00:00.000Z\",\"first_attempt_at\":\"2026-10-01T12:00:00.000Z\",\"last_attempt_at\":\"2026-10-01T12:00:00.000Z\",\"attempts\":1,\"provider_id\":null,\"reason\":\"Provider outcome unknown\",\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "mail_delivery_attempts",
+          "row_json": "{\"id\":\"upgrade-attempt-1\",\"delivery_id\":\"upgrade-delivery-1\",\"ordinal\":1,\"event\":\"sent\",\"actor_operator_id\":\"upgrade-operator-1\",\"reason\":null,\"provider_id\":\"synthetic-provider-id\",\"created_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "mail_delivery_attempts",
+          "row_json": "{\"id\":\"upgrade-attempt-2\",\"delivery_id\":\"upgrade-delivery-2\",\"ordinal\":1,\"event\":\"unknown\",\"actor_operator_id\":\"upgrade-operator-1\",\"reason\":\"Provider outcome unknown\",\"provider_id\":null,\"created_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "oa_bootstrap",
+          "row_json": "{\"singleton\":1,\"claim_id\":\"pencil-existing-operators\",\"claimed_at\":1790856000000}"
+        },
+        {
+          "table_name": "oa_operators",
+          "row_json": "{\"id\":\"upgrade-operator-1\",\"email\":\"operator1@example.com\",\"display_name\":\"Operator 1\",\"role\":\"owner\",\"status\":\"active\",\"version\":1,\"created_at\":1790856000000}"
+        },
+        {
+          "table_name": "oa_operators",
+          "row_json": "{\"id\":\"upgrade-operator-2\",\"email\":\"operator2@example.com\",\"display_name\":\"Operator 2\",\"role\":\"owner\",\"status\":\"active\",\"version\":1,\"created_at\":1790856000000}"
+        },
+        {
+          "table_name": "oa_sessions",
+          "row_json": "{\"id\":\"upgrade-auth-session\",\"token_hash\":\"synthetic-upgrade-session-hash\",\"operator_id\":\"upgrade-operator-1\",\"operator_version\":1,\"kind\":\"native\",\"source_token_id\":null,\"created_at\":1790856000000,\"expires_at\":1793448000000,\"revoked_at\":null}"
+        },
+        {
+          "table_name": "oa_tokens",
+          "row_json": "{\"id\":\"upgrade-auth-link\",\"token_hash\":\"synthetic-upgrade-link-hash\",\"kind\":\"magic\",\"operator_id\":\"upgrade-operator-1\",\"operator_version\":1,\"issuer_id\":null,\"issuer_version\":null,\"return_to\":\"/app\",\"created_at\":1790856000000,\"expires_at\":1790857800000,\"consumed_at\":null,\"revoked_at\":null}"
+        },
+        {
+          "table_name": "operator_auth_links",
+          "row_json": "{\"operator_id\":\"upgrade-operator-1\",\"auth_id\":\"upgrade-operator-1\"}"
+        },
+        {
+          "table_name": "operator_auth_links",
+          "row_json": "{\"operator_id\":\"upgrade-operator-2\",\"auth_id\":\"upgrade-operator-2\"}"
+        },
+        {
+          "table_name": "operators",
+          "row_json": "{\"id\":\"upgrade-operator-1\",\"workspace_id\":\"upgrade-workspace\",\"email\":\"operator1@example.com\",\"display_name\":\"Operator 1\",\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\",\"is_setup_operator\":1}"
+        },
+        {
+          "table_name": "operators",
+          "row_json": "{\"id\":\"upgrade-operator-2\",\"workspace_id\":\"upgrade-workspace\",\"email\":\"operator2@example.com\",\"display_name\":\"Operator 2\",\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\",\"is_setup_operator\":0}"
+        },
+        {
+          "table_name": "respondent_session_step_events",
+          "row_json": "{\"id\":\"upgrade-active-event\",\"session_id\":\"upgrade-active-session\",\"revision_id\":\"upgrade-revision-1\",\"step_stable_id\":\"upgrade-question\",\"counted_at\":\"2026-10-01T12:00:00.000Z\",\"created_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "respondent_sessions",
+          "row_json": "{\"id\":\"upgrade-active-session\",\"revision_id\":\"upgrade-revision-1\",\"source\":\"direct\",\"device_class\":\"mobile\",\"furthest_step_id\":\"upgrade-question\",\"completed_at\":null,\"expires_at\":\"2026-11-01T12:00:00.000Z\",\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\",\"session_token_hash\":\"synthetic-active-session-hash\",\"metric_folded_at\":null,\"completion_outcome\":null}"
+        },
+        {
+          "table_name": "response_answers",
+          "row_json": "{\"id\":\"upgrade-answer-1\",\"response_id\":\"upgrade-response-1\",\"step_id\":\"upgrade-question\",\"value_json\":\"\\\"upgrade-choice-1\\\"\",\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "response_answers",
+          "row_json": "{\"id\":\"upgrade-answer-2\",\"response_id\":\"upgrade-response-2\",\"step_id\":\"upgrade-question\",\"value_json\":\"\\\"upgrade-choice-2\\\"\",\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "response_outbox",
+          "row_json": "{\"id\":\"upgrade-outbox-1\",\"workspace_id\":\"upgrade-workspace\",\"response_id\":\"upgrade-response-1\",\"kind\":\"response.completed\",\"idempotency_key\":\"upgrade-outbox-key-1\",\"payload_json\":\"{\\\"responseId\\\":\\\"upgrade-response-1\\\",\\\"revisionId\\\":\\\"upgrade-revision-1\\\"}\",\"status\":\"pending\",\"available_at\":\"2026-10-01T12:00:00.000Z\",\"dispatched_at\":null,\"failure_reason\":null,\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "response_outbox",
+          "row_json": "{\"id\":\"upgrade-outbox-2\",\"workspace_id\":\"upgrade-workspace\",\"response_id\":\"upgrade-response-2\",\"kind\":\"response.completed\",\"idempotency_key\":\"upgrade-outbox-key-2\",\"payload_json\":\"{\\\"responseId\\\":\\\"upgrade-response-2\\\",\\\"revisionId\\\":\\\"upgrade-revision-2\\\"}\",\"status\":\"pending\",\"available_at\":\"2026-10-01T12:00:00.000Z\",\"dispatched_at\":null,\"failure_reason\":null,\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "responses",
+          "row_json": "{\"id\":\"upgrade-response-1\",\"workspace_id\":\"upgrade-workspace\",\"flow_id\":\"upgrade-flow\",\"revision_id\":\"upgrade-revision-1\",\"session_id\":\"upgrade-completed-session-1\",\"session_token_hash\":\"synthetic-completed-session-hash-1\",\"idempotency_key\":\"upgrade-response-key-1\",\"state\":\"released\",\"quarantine_reason\":null,\"released_at\":\"2026-10-01T12:00:00.000Z\",\"released_by_operator_id\":null,\"completion_milliseconds\":12000,\"completed_at\":\"2026-10-01T12:00:00.000Z\",\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\",\"source\":\"invitation\",\"started_at\":\"2026-10-01T11:59:48.000Z\",\"participant_id\":\"upgrade-participant-1\"}"
+        },
+        {
+          "table_name": "responses",
+          "row_json": "{\"id\":\"upgrade-response-2\",\"workspace_id\":\"upgrade-workspace\",\"flow_id\":\"upgrade-flow\",\"revision_id\":\"upgrade-revision-2\",\"session_id\":\"upgrade-completed-session-2\",\"session_token_hash\":\"synthetic-completed-session-hash-2\",\"idempotency_key\":\"upgrade-response-key-2\",\"state\":\"quarantined\",\"quarantine_reason\":\"minimum_elapsed\",\"released_at\":null,\"released_by_operator_id\":null,\"completion_milliseconds\":100,\"completed_at\":\"2026-10-01T12:00:00.000Z\",\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\",\"source\":\"direct\",\"started_at\":\"2026-10-01T11:59:48.000Z\",\"participant_id\":null}"
+        },
+        {
+          "table_name": "revision_metric_counters",
+          "row_json": "{\"id\":\"upgrade-metrics-1\",\"revision_id\":\"upgrade-revision-1\",\"starts\":2,\"completions\":1,\"total_completion_milliseconds\":12000,\"mobile_starts\":1,\"tablet_starts\":0,\"desktop_starts\":1,\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "revision_metric_counters",
+          "row_json": "{\"id\":\"upgrade-metrics-2\",\"revision_id\":\"upgrade-revision-2\",\"starts\":2,\"completions\":0,\"total_completion_milliseconds\":0,\"mobile_starts\":1,\"tablet_starts\":0,\"desktop_starts\":1,\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "revision_step_metric_counters",
+          "row_json": "{\"id\":\"upgrade-step-metrics-1\",\"revision_id\":\"upgrade-revision-1\",\"step_stable_id\":\"upgrade-question\",\"reached\":2,\"dropped\":1,\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "revision_step_metric_counters",
+          "row_json": "{\"id\":\"upgrade-step-metrics-2\",\"revision_id\":\"upgrade-revision-2\",\"step_stable_id\":\"upgrade-question\",\"reached\":2,\"dropped\":1,\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\"}"
+        },
+        {
+          "table_name": "workspaces",
+          "row_json": "{\"id\":\"upgrade-workspace\",\"name\":\"Cedar Studio\",\"time_zone\":\"Australia/Brisbane\",\"created_at\":\"2026-10-01T12:00:00.000Z\",\"updated_at\":\"2026-10-01T12:00:00.000Z\",\"sending_window_start\":\"08:30\",\"sending_window_end\":\"18:00\",\"setup_operator_initialized_at\":\"2026-10-01T12:00:00.000Z\",\"embed_allowed_origins_json\":\"[\\\"https://example.org\\\"]\"}"
+        }
+      ]
+    },
+    {
+      "kind": "graph-link",
+      "query": "SELECT r.id AS response_id, r.state, f.slug, v.number AS revision, s.stable_id AS question_id, c.stable_id AS choice_id, b.destination_step_stable_id AS destination, o.id AS outbox_id, p.id AS participant_id, d.status AS delivery_status FROM responses r JOIN flows f ON f.id=r.flow_id JOIN flow_revisions v ON v.id=r.revision_id JOIN response_answers a ON a.response_id=r.id JOIN flow_steps s ON s.revision_id=v.id AND s.stable_id=a.step_id JOIN choice_options c ON c.step_id=s.id AND c.stable_id=json_extract(a.value_json,'$') JOIN flow_branch_rules b ON b.revision_id=v.id AND b.source_step_stable_id=s.stable_id JOIN response_outbox o ON o.response_id=r.id LEFT JOIN invitation_participants p ON p.id=r.participant_id LEFT JOIN mail_deliveries d ON d.participant_id=p.id ORDER BY r.id",
+      "expectedRows": [
+        {
+          "response_id": "upgrade-response-1",
+          "state": "released",
+          "slug": "cedar-feedback",
+          "revision": 1,
+          "question_id": "upgrade-question",
+          "choice_id": "upgrade-choice-1",
+          "destination": "upgrade-completion",
+          "outbox_id": "upgrade-outbox-1",
+          "participant_id": "upgrade-participant-1",
+          "delivery_status": "sent"
+        },
+        {
+          "response_id": "upgrade-response-2",
+          "state": "quarantined",
+          "slug": "cedar-feedback",
+          "revision": 2,
+          "question_id": "upgrade-question",
+          "choice_id": "upgrade-choice-2",
+          "destination": "upgrade-completion",
+          "outbox_id": "upgrade-outbox-2",
+          "participant_id": null,
+          "delivery_status": null
+        }
+      ]
+    },
+    {
+      "kind": "idempotency",
+      "query": "INSERT OR IGNORE INTO response_outbox (id,workspace_id,response_id,kind,idempotency_key,payload_json,status,available_at,created_at,updated_at) SELECT 'duplicate-' || id,workspace_id,response_id,kind,idempotency_key,payload_json,status,available_at,created_at,updated_at FROM response_outbox WHERE id LIKE 'upgrade-outbox-%' RETURNING id",
+      "expectedRows": []
+    }
+  ]
+}

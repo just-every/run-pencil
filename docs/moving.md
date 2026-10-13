@@ -1,0 +1,65 @@
+# Move your forms and keep your data
+
+Pencil's shared import kit accepts a Google Forms response CSV on its own, with an optional Google Forms definition JSON from `forms.get`. A Google definition can also create a structure-only draft without response history. The kit also accepts a Typeform definition JSON with an optional response CSV. Either source is reviewed before it becomes an editable draft. The Google Forms importer was written from published Google documentation and checked only with example files; no real Google account export has been supplied. The Typeform importer was also checked only with example files from published documentation; no real Typeform account export has been checked.
+
+## Get a Google Forms response CSV
+
+In Google Forms, open the form's **Responses** tab, choose **More**, then **Download responses (.csv)**. If the form has a linked response Sheet, you can also open that Sheet and use **File → Download → Comma-separated values (.csv)**. Google describes both the Forms CSV download and linked Sheets in its [response help](https://support.google.com/docs/answer/139706?hl=en).
+
+The response CSV is enough to start a flat draft. If you want Pencil to use the form's supported question types and answer paths, add the definition JSON described below. A CSV cannot reveal choices nobody selected, question descriptions or required settings, or branching that was not present in the response rows; Pencil names those gaps in its review report.
+
+## Optional Google Forms definition JSON
+
+The Google Forms API's read-only [`forms.get`](https://developers.google.com/workspace/forms/api/reference/rest/v1/forms/get) method returns a form definition as JSON. Open the method page's **Try it** section while signed in to the Google account that can read the form, enter the form ID, and save the JSON response privately. The response CSV still comes from Forms or Sheets; `forms.get` does not replace it when you want to import response history.
+
+You can also make this REST call from an Apps Script project in your own Google account using Google's [UrlFetchApp setup guide](https://developers.google.com/workspace/forms/api/guides/apps-script-setup). The Forms REST API is not currently an Apps Script advanced service; Google's [REST and Apps Script comparison](https://developers.google.com/workspace/forms/api/guides/compare-rest-apps-script) documents the `UrlFetchApp` route. Keep any authorization in your own Google account and save only the returned JSON file for Pencil.
+
+Pencil never connects to Google or Typeform and does not accept provider credentials. Do not paste a Google token or Typeform API token into Pencil. Your original files stay with you: Pencil retains their digests and sizes, safe mapping records and imported answers, but not the file bytes.
+
+## Keep the source Sheet's date and time meaning
+
+Google response timestamps can be read only with the source spreadsheet's time zone. Open the linked response Sheet, choose **File → Settings**, and note its time zone; then choose the corresponding IANA time zone for the import. Use this source Sheet setting even if you downloaded the CSV directly from Forms. Before committing, compare the first and last timestamps shown in Pencil's preview with the source data.
+
+Pencil infers date order from timestamps when their values disambiguate it, including a day greater than 12 or a year-first value. If timestamps do not establish one order, select it explicitly: day/month/year (DMY), month/day/year (MDY) or year/month/day (YMD). Conflicting or invalid dates are reported instead of changed or skipped. A daylight-saving gap or overlap also needs correction in the source; Pencil does not shift an ambiguous local time.
+
+When a Google checkbox CSV cell represents several selections as whole labels joined by comma and space, Pencil splits on that delimiter only when every label matches one definition option unambiguously. A label containing that separator, or a cell whose choices cannot be resolved, is reported for correction rather than guessed. With CSV-only import there is no complete option list; choose only observed whole values. A combined checkbox cell stays an opaque whole value because its separate selections cannot be reliably recovered without the definition. Duplicate column headings also need an explicit mapping for each column; Pencil does not decide which repeated heading you meant.
+
+## Get Typeform files
+
+In your Typeform account, open the form's Results, select the responses you need and export them as CSV. Keep the Start Date and Submit Date columns. See [Export your responses](https://help.typeform.com/hc/en-us/articles/360029253572-Export-your-responses) and [Working with your responses](https://help.typeform.com/hc/en-us/articles/360029253732-Working-with-your-responses). Exports use UTC. A Network ID is not a person and is never imported.
+
+The response export does not contain the form definition. Obtain it as JSON through Typeform's documented [Retrieve form API](https://www.typeform.com/developers/create/reference/retrieve-form/) using your own account and save it privately. The definition's fields and screens follow the [Create form reference](https://www.typeform.com/developers/create/reference/create-form/); jumps follow [Logic Jumps](https://www.typeform.com/developers/create/logic-jumps/). If you use a command-line client, pass your token through its protected credential store or an environment variable, not in a command saved in shell history.
+
+## Review the import
+
+Choose **Import a form** from Your flows. For Google Forms, choose the response CSV and optionally its `forms.get` definition JSON. For Typeform, choose the definition JSON and optionally its response CSV. Choose **Review import**. Reviewing or cancelling leaves no stored import job, flow or response.
+
+With a Google CSV alone, Pencil creates a flat draft and starts every question as short text. Observed values help you choose a type, but no type or choice list is applied automatically. Choose and confirm each question type yourself; if you choose Yes/No, confirm exactly two observed labels and which one means Yes and which means No. Other values become row errors. Only choices actually present in the rows can be seen; unchosen choices and missing branches cannot be recovered from the CSV. Missing required settings and descriptions are named in the report.
+
+With a Google definition, the importer maps text, radio/checkbox/dropdown, scales/ratings and full-year date questions without a time component, plus a bounded set of forward section paths. It carries the supported prompt, description, required state and fixed options. Email conversion and a two-option Yes/No conversion need explicit operator choices. Grid items are skipped unless you explicitly map an individual grid-row CSV column as an ordinary question; grid layout, validation and paths are not recreated. Section navigation is supported only for single-choice, dropdown or confirmed Yes/No questions at the end of their section; a routed question with following items, a backward or same-section route, a restart, or a destination that is empty or begins with an omitted item is left incomplete. The report lists each source item and path, what came across, what changed or was omitted, and why. File upload and time questions; partial dates without a year or dates that include time; quiz answer keys, scoring and feedback; validation rules and option shuffling; images and videos; and restart or looping actions are omitted. The report identifies affected paths, which you must repair in the draft before publication. Review every change and use Preview to check every path.
+
+Typeform fields and logic have the same item-by-item review. Supported mappings include short/long text, email, single/multiple choice, dropdown, yes/no, rating/opinion scale, NPS, number, date, legal consent and complete ranking. Phone and website become short text with a 200-character limit; their validation is lost. Unsupported statements, grouped questions, media, integrations, redirects, recall, calculations, hidden-variable conditions and unsupported validations are listed. A path the importer cannot reproduce is left incomplete and must be repaired before publication.
+
+Google identity columns such as **Email Address**, **Respondent email**, **Verified**, **Workspace identity** and **username** are skipped by default. You may explicitly map an ordinary email question to store its answer as response data; that does not create a contact, invite anyone or send mail. Typeform Network ID, hidden values and network/IP metadata are skipped or removed. Historical imports create no contact, identity grant, respondent session, notification, outbox event, deadline or target effect.
+
+For every CSV column, choose the question it answers, a timestamp or Skip. Map repeated headings separately. Google checkbox columns use the comma-and-space rule above. Typeform multiple-choice exports split across option columns can be mapped to the matching question and option. Every invalid row and cell appears in the report; correct the source or mapping and refresh it. Commit stays blocked until the errors are fixed and you accept the reported losses.
+
+The CSV reader preserves quoted commas, doubled quotes, Unicode and multiline cells; blank cells remain unanswered. Google dates accept `YYYY-MM-DD` or the selected source order; Typeform dates use `YYYY-MM-DD`. Numbers must be finite, unformatted decimals. Typeform yes/no and consent use `1`/`0` or `true`/`false`; a confirmed Google Yes/No answer must match its exact selected labels. A choice must match one exact option label or source reference. Google checkbox cells with a supplied definition use comma-space-separated whole labels as described above. Typeform multiple-choice or ranking cells that hold several values use a JSON array of exact labels, such as `["Coffee","Tea"]`; separate Typeform option columns can be mapped individually. A comma inside a Typeform label is never treated as a separator. Ranking must include every option once. Submission timestamps are required and never invented; optional start timestamps are retained. Required-question rules apply to future responses; historical blank answers stay unanswered. Google Sheets scripts and spreadsheet settings do not move.
+
+Imports over 8 MiB of combined file bytes or 100,000 response rows are refused before writes; there is no additional cell-count cap. Form, question and answer limits in `seed.json` also apply. These application limits do not establish hosted capacity; see [the release scope](FIRST-RELEASE.md) for the separate release qualification.
+
+## What is created
+
+Commit creates an ordinary editable draft with new stable native IDs, plus a closed immutable imported revision matching the reviewed source structure. Historical responses are released completed responses pinned to that imported revision with their original timestamps and source `imported`. They are anonymous. Imported responses appear in summaries, the ledger and response exports, but do not count in native starts, completion-rate numerators or duration averages. Editing or publishing the new draft cannot reinterpret historical answers.
+
+The same exact files are recognized and create nothing again. Recognition uses file digests and row positions, not an invented respondent identity. A different export is a different import and can overlap earlier responses; this is not cross-export deduplication.
+
+## Resume and undo
+
+Import history shows the committed checkpoint. Choose **Continue import** after interruption; the shared import kit resumes its stored safe plan without reparsing files or needing credentials. Each bounded batch commits native rows and import provenance together. A browser or network interruption is not assumed to have failed: refresh history first.
+
+Choose **Undo import** to reverse committed work. Continue undo until it finishes. Unedited imported responses and the imported flow are removed. The kit compares each native snapshot and revision; a later edit is preserved and stops undo with an explicit conflict. Already reversed batches remain reversed, so review both the preserved flow and durable checkpoint. Retained safe source records, before-images and provenance remain after undo.
+
+## Leave Pencil
+
+You own the editable source and database. Use Pencil's full deployment export before an upgrade or moving hosts, preserve the archive privately, and restore only into a new empty deployment. See [operations](../OPERATIONS.md) and [whole-install data recovery](LOCAL-DATA-RECOVERY.md) for the installed archive commands and scope. A response CSV is useful for analysis but is not a full deployment backup. Verify export → restore → export equivalence on the target before retiring the old deployment; never overwrite an occupied destination or replay mail during restoration.

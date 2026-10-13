@@ -1,3 +1,4 @@
+import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { expect, test } from './fixtures'
 
 // Request-only: no page, browser or browser-context fixture is constructed.
@@ -16,11 +17,15 @@ test('native public input failures use safe 400 JSON and retain read-only invali
   const malformed = await request.post('/auth/magic-link', { headers: { 'Content-Type': 'application/json' }, data: '{"private-secret":' })
   expect(malformed.status()).toBe(400)
   expect(await malformed.json()).toEqual({ error: 'VALIDATION_ERROR', message: 'Invalid request body.' })
-  for (const path of ['/api/public/flows/not%20a%20slug', '/auth/local-inbox?email=private-secret']) {
+  for (const path of ['/api/public/flows/not%20a%20slug']) {
     const response = await request.get(path)
     expect(response.status()).toBe(400)
     expect(await response.json()).toMatchObject({ error: 'VALIDATION_ERROR' })
   }
+  const outboxInvalid = await request.get('/__dev/outbox?message=', { headers: devKeyHeaders })
+  expect(outboxInvalid.status()).toBe(400)
+  expect(await outboxInvalid.text()).toContain('Invalid message request.')
+  expect((await request.get('/auth/local-inbox?email=private-secret')).status()).toBe(404)
   const invalid = await request.get('/auth/confirm?token=invalid-token', { maxRedirects: 0 })
   expect(invalid.status()).toBe(400)
   expect(invalid.headers()['set-cookie']).toBeUndefined()

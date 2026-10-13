@@ -93,7 +93,7 @@ export function registerResponseRoutes(app: Hono<WorkerEnvironment>, services: R
   app.delete('/api/app/responses/:responseId', zValidator('param', z.object({ responseId: resourceId })), emptyMutationBody, async (context) => {
     try {
       requireSameOriginRequest(context.req.raw)
-      await services(context).responses.eraseReleasedResponse({ workspaceId: context.get('operatorSession').workspaceId, responseId: context.req.param('responseId'), operatorId: context.get('operatorSession').operatorId })
+      await services(context).responses.eraseReleasedResponse({ workspaceId: context.get('operatorSession').workspaceId, responseId: context.req.param('responseId'), operatorId: context.get('operatorSession').operatorId, sessionId: context.get('operatorSession').id })
       return context.body(null, 204)
     } catch (error) { return failure(context, error) }
   })

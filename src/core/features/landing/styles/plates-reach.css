@@ -1,0 +1,68 @@
+/* Plates for reaching people and hearing back: share, the privacy card, and results. */
+
+/* #share: the share panel's three one-line fields, and the email with its opt-out beside the reminder timeline. */
+:where(.pencil-site) .plate--share__note { --note-flow: row-reverse; --note-margin: 0.3em 7% 0 auto; --note-turn: scaleX(-1) rotate(100deg); }
+:where(.pencil-site) .share-sheet { --tilt: -0.8deg; padding: 0.9em 1.2em 1.05em; }
+:where(.pencil-site) .share-sheet__fields { display: grid; gap: 0.4em; margin-top: 0.35em; }
+:where(.pencil-site) .share-sheet__fields > div { min-width: 0; }
+:where(.pencil-site) .share-sheet__value { display: block; margin-top: 0.08em; }
+:where(.pencil-site) .share-mail { position: relative; display: flex; flex-wrap: wrap-reverse; align-items: center; justify-content: flex-end; gap: 0.6em 1.4em; margin-top: -0.8em; }
+:where(.pencil-site) .mail-sheet { --tilt: 1.6deg; display: flex; align-items: center; gap: 0.2em; padding: 0.45em 0.9em 0.5em 0.9em; }
+:where(.pencil-site) .mail-sheet__link { color: var(--lead); text-decoration: underline 1.2px; text-underline-offset: 0.2em; }
+:where(.pencil-site) .envelope { flex: none; width: 1.45em; height: 1.05em; overflow: visible; }
+:where(.pencil-site) .envelope :is(rect, path) { fill: none; stroke: var(--stroke); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+/* The timeline keeps to the left, beside the email or, when it wraps, under it, so the note's arrow has a clear line. */
+:where(.pencil-site) .share-days { display: flex; align-items: center; gap: 0.45em; margin: 1.2em auto 0 0.4em; color: var(--pencil-soft); font-size: max(16px, 0.84em); }
+:where(.pencil-site) .share-days__line { width: 3.6em; height: 0.5em; overflow: visible; }
+:where(.pencil-site) .share-days__line circle { fill: var(--stroke); }
+:where(.pencil-site) .share-days__line path { fill: none; stroke: var(--stroke); stroke-width: 1.3; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; }
+
+/* #kind: the privacy card as its own sheet; the note stands above it, its arrow turned down onto the circled title. */
+:where(.pencil-site) .plate--kind__note { --note-inset: 7em; --note-margin: 0 0 0.15em var(--note-inset); --note-turn: rotate(-58deg); }
+@media (max-width: 639px) { :where(.pencil-site) .plate--kind__note { --note-inset: 5.2em; } }
+:where(.pencil-site) .kind-sheet { --tilt: 0.9deg; display: flex; gap: 0.5em; padding: 0.85em 1.4em 1.05em 1.1em; }
+:where(.pencil-site) .kind-sheet__title { color: var(--lead); }
+:where(.pencil-site) .kind-sheet__text { display: block; }
+/* The business name the card inserts, drawn as a pencilled blank. */
+:where(.pencil-site) .fill-in { padding: 0 0.15em; border-bottom: 1.3px dashed var(--stroke); color: var(--pencil-soft); white-space: nowrap; }
+:where(.pencil-site) .padlock { flex: none; width: 1.25em; height: 1.45em; margin-top: 0.3em; overflow: visible; }
+:where(.pencil-site) .padlock :is(path, rect) { fill: none; stroke: var(--stroke); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; }
+
+/*
+ * #results: the sample flow's title with its "sample numbers" tag and the two exports, three counts, then the first
+ * question's answers and its drop-off line, circled; the note stands below the sheet.
+ */
+:where(.pencil-site) .plate--results__note { --note-margin: 0.35em 6% 0 auto; --note-turn: rotate(78deg); }
+:where(.pencil-site) .results-sheet { --tilt: -0.7deg; padding: 0.95em 1.25em 1.1em; }
+:where(.pencil-site) .results-sheet__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.4em 1em; margin-bottom: 0.6em; }
+:where(.pencil-site) .sample-tag {
+  display: inline-block;
+  margin-left: 0.35em;
+  padding: 0 0.45em;
+  border: 1px dashed var(--stroke-soft);
+  border-radius: 0.6em;
+  color: var(--pencil-soft);
+  font-size: max(16px, 0.72em);
+  line-height: 1.35;
+  vertical-align: 0.15em;
+  transform: rotate(-3deg);
+}
+:where(.pencil-site) .results-sheet__exports { display: flex; flex-wrap: wrap; gap: 0.5em; }
+:where(.pencil-site) .results-sheet__exports .drawn-button { min-height: 1.7em; }
+:where(.pencil-site) .results-sheet__cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5em; }
+/* A narrow sheet keeps two counts side by side and gives the completion rate, with its denominator, the full row. */
+@container (max-width: 520px) {
+  :where(.pencil-site) .results-sheet__cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  :where(.pencil-site) .results-sheet__cards > :last-child { grid-column: 1 / -1; }
+}
+:where(.pencil-site) .metric { padding: 0.35em 0.65em 0.45em; }
+:where(.pencil-site) .metric__value { color: var(--lead); font-size: 1.55em; line-height: 1.05; }
+:where(.pencil-site) .metric__note { margin-top: 0.15em; font-size: max(16px, 0.8em); line-height: 1.15; }
+:where(.pencil-site) .results-sheet__question { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 0.7em; margin-top: 0.85em; color: var(--lead); font-size: 1.08em; }
+:where(.pencil-site) .results-sheet__question .plate-label { font-size: max(16px, 0.78em); }
+:where(.pencil-site) .results-sheet__choices { display: grid; gap: 0.3em; margin-top: 0.3em; }
+:where(.pencil-site) .results-sheet__choice { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0 0.8em; line-height: 1.2; }
+:where(.pencil-site) .results-sheet__choice > span:last-child { color: var(--lead); }
+:where(.pencil-site) .results-sheet__choices .drawn-bar { margin-top: 0.15em; }
+:where(.pencil-site) .results-sheet__dropoff { margin-top: 0.2em; }
+:where(.pencil-site) .results-sheet .pencil-circle--block { --ring-y: 0.75em; --ring-gap-y: 1.05em; padding-inline: 0.6em 0.5em; line-height: 1.25; }

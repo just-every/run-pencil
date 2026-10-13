@@ -1,5 +1,5 @@
-import { NotFoundError, ValidationError } from '../../shared/errors'
-import { ReportingRepository, type LedgerFilter, type LedgerResponse } from './repository'
+import { NotFoundError } from '../../shared/errors'
+import { ReportingRepository, type LedgerFilter } from './repository'
 export class ReportingService {
   constructor(private readonly repository: ReportingRepository) {}
   private async requireFlow(workspaceId: string, flowId: string) {
@@ -17,28 +17,8 @@ export class ReportingService {
     if (!(await this.repository.revisions(flowId)).some((revision) => revision.id === revisionId)) throw new NotFoundError('This published revision is not part of the selected flow.')
     return this.repository.questionReport(revisionId)
   }
-  async compareRevisions(workspaceId: string, flowId: string) {
+  async compareRevisions(workspaceId: string, flowId: string, offset = 0) {
     const flow = await this.requireFlow(workspaceId, flowId)
-    return { flow, ...await this.repository.revisionComparison(workspaceId, flowId) }
-  }
-  async export(workspaceId: string, flowId: string, filter: LedgerFilter) {
-    await this.requireFlow(workspaceId, flowId)
-    const cutoff = new Date().toISOString()
-    const records: LedgerResponse[] = []
-    let offset = 0
-    let expectedTotal: number | undefined
-    for (;;) {
-      const page = await this.repository.ledger(workspaceId, flowId, { ...filter, offset }, cutoff, 'released', 100)
-      expectedTotal ??= page.total
-      if (page.total !== expectedTotal) throw new ValidationError('Responses changed during export. Retry to create a complete export.')
-      records.push(...page.responses)
-      if (records.length >= page.total) break
-      offset += page.responses.length
-      if (!page.responses.length) throw new ValidationError('The export could not read the complete fixed response set. Retry the export.')
-    }
-    const check = await this.repository.ledger(workspaceId, flowId, { ...filter, offset: 0 }, cutoff, 'released', 0)
-    if (check.total !== expectedTotal || new Set(records.map((record) => record.id)).size !== expectedTotal) throw new ValidationError('Responses changed during export. Retry to create a complete export.')
-    const quarantined = await this.repository.ledger(workspaceId, flowId, { ...filter, offset: 0 }, cutoff, 'quarantined', 0)
-    return { cutoff, filter, excludedQuarantined: quarantined.total, responses: records }
+    return { flow, ...await this.repository.revisionComparison(workspaceId, flowId, offset) }
   }
 }

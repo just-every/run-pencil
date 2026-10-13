@@ -1,3 +1,5 @@
+import { developmentInbox } from '../helpers/development-outbox'
+import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { operatorEmail } from './auth-identity'
 import AxeBuilder from '@axe-core/playwright'
 import { contract } from './contract'
@@ -7,6 +9,7 @@ import type { BuilderDraft } from '../../src/core/app/api'
 test.use({ extraHTTPHeaders: { 'CF-Connecting-IP': '198.18.240.13' } })
 contract(['RESP-003', 'BASE-PUBLIC-003'], 'all seven question types reject an empty required answer and complete through keyboard controls at both widths', async ({ page, request }, info) => {
   test.setTimeout(120_000)
+  await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
   const origin = new URL(info.project.use.baseURL!).origin
   const slug = `question-matrix-${info.project.name}-${Date.now()}`
   const call = async <T,>(path: string, data?: unknown) => {
@@ -15,7 +18,7 @@ contract(['RESP-003', 'BASE-PUBLIC-003'], 'all seven question types reject an em
     return await response.json() as T
   }
   await call('/auth/magic-link', { email: operatorEmail() })
-  const inbox = await call<{ messages: Array<{ magicLinkToken: string }> }>(`/auth/local-inbox?email=${encodeURIComponent(operatorEmail())}`)
+  const inbox = await developmentInbox(path => request.get(path, { headers: devKeyHeaders }), operatorEmail())
   await request.post('/auth/confirm', { headers: { Origin: new URL(process.env.PENCIL_E2E_BASE_URL!).origin }, data: { token: inbox.messages[0].magicLinkToken }, maxRedirects: 0 })
   const created = await call<{ id: string }>('/api/app/flows', { title: 'Synthetic question matrix', slug })
   const path = `/api/app/flows/${created.id}`
@@ -40,6 +43,9 @@ contract(['RESP-003', 'BASE-PUBLIC-003'], 'all seven question types reject an em
   for (const [index, type] of types.entries()) {
     await expect(page.getByRole('heading', { name: `Answer ${type}`, exact: true })).toBeVisible()
     expect(await page.locator('[data-selected=true]').count()).toBe(0)
+    const required = page.locator('fieldset [aria-required=true]')
+    await expect(required).toHaveCount(type === 'priority' ? 3 : 1)
+    await expect(page.getByText('Required', { exact: true })).toBeVisible()
     const next = page.getByRole('button', { name: index === types.length - 1 ? 'Submit response' : 'Continue', exact: true })
     await tabTo(next); await page.keyboard.press('Enter')
     await expect(page.getByRole('alert')).toContainText(`Answer ${type}`)
@@ -47,11 +53,33 @@ contract(['RESP-003', 'BASE-PUBLIC-003'], 'all seven question types reject an em
     if (['short_text','long_text','email'].includes(type)) {
       await tabTo(page.getByRole('textbox', { name: `Answer ${type}` })); await page.keyboard.type(type === 'email' ? 'synthetic@example.test' : 'Synthetic keyboard feedback')
     } else if (type === 'rating') {
-      await tabTo(page.getByRole('button', { name: '3 out of 5' })); await page.keyboard.press('Space')
+      const ratings = page.getByRole('radiogroup', { name: 'Answer rating rating', exact: true })
+      await expect(ratings.getByRole('radio', { checked: false })).toHaveCount(5)
+      await tabTo(page.getByRole('radio', { name: '1 out of 5' })); await page.keyboard.press('ArrowRight'); await page.keyboard.press('ArrowRight'); await page.keyboard.press('Space')
+      await expect(page.getByRole('radio', { name: '3 out of 5' })).toHaveAttribute('aria-checked', 'true')
+      await expect(ratings.getByRole('radio', { checked: true })).toHaveCount(1)
+      await check()
     } else if (type === 'priority') {
-      for (const name of ['A','B','C']) { await tabTo(page.getByRole('button', { name, exact: true })); await page.keyboard.press('Space') }
+      for (const [rank, name] of ['A','B','C'].entries()) {
+        const option = page.getByRole('checkbox', { name, exact: true })
+        await expect(option).toHaveAttribute('aria-required', 'true')
+        await tabTo(option); await page.keyboard.press('Space')
+        await expect(page.getByRole('checkbox', { name: `${rank + 1} ${name}`, exact: true })).toBeChecked()
+      }
     } else {
-      await tabTo(page.getByRole(type === 'single_choice' ? 'radio' : 'checkbox', { name: 'A', exact: true })); await page.keyboard.press('Space')
+      await tabTo(page.getByRole(type === 'single_choice' ? 'radio' : 'option', { name: 'A', exact: true })); await page.keyboard.press('Space')
+      if (type === 'multiple_choice') {
+        const list = page.getByRole('listbox', { name: 'Answer multiple_choice', exact: true })
+        await expect(list).toHaveAttribute('aria-multiselectable', 'true')
+        await expect(list.getByRole('option', { selected: true })).toHaveCount(1)
+        await page.keyboard.press('ArrowDown')
+        await expect(list.getByRole('option', { name: 'B', exact: true })).toBeFocused()
+        await expect(list.getByRole('option', { selected: true })).toHaveCount(1)
+        await page.keyboard.press('Space')
+        await expect(list.getByRole('option', { selected: true })).toHaveCount(2)
+        await page.keyboard.press('Space')
+        await expect(list.getByRole('option', { selected: true })).toHaveCount(1)
+      }
     }
     await tabTo(next); await page.keyboard.press('Enter')
   }

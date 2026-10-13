@@ -2,7 +2,7 @@ import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { expect, test } from 'vitest'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 test('additive distribution migration preserves prior anonymous rows, original values and graph links', async () => {
-  const previous = __PENCIL_CORE_MIGRATIONS__.filter(m => !m.name.includes('invitation_distribution'))
+  const previous = __PENCIL_CORE_MIGRATIONS__.filter(m => m.name < '0009')
   await applyD1Migrations(env.DB, previous)
   const at = '2026-01-01T00:00:00.000Z'
   await env.DB.batch([
@@ -17,7 +17,7 @@ test('additive distribution migration preserves prior anonymous rows, original v
   const answers = (await env.DB.prepare('SELECT * FROM response_answers').all()).results
   await applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__)
   const after = (await env.DB.prepare('SELECT * FROM responses').all()).results
-  expect(after.map(({ participant_id, ...row }) => { expect(participant_id).toBeNull(); return row })).toEqual(before)
+  expect(after.map(({ participant_id, notification_eligible, ...row }) => { expect(participant_id).toBeNull(); expect(notification_eligible).toBe(0); return row })).toEqual(before)
   expect((await env.DB.prepare('SELECT * FROM response_answers').all()).results).toEqual(answers)
   expect(await env.DB.prepare("SELECT a.step_id, s.prompt FROM response_answers a JOIN responses r ON r.id=a.response_id JOIN flow_steps s ON s.stable_id=a.step_id AND s.revision_id=r.revision_id").first()).toEqual({ step_id: 'stable-prior', prompt: 'Original prompt' })
   expect((await env.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([])

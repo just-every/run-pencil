@@ -1,0 +1,12 @@
+{
+  "contractChanges": {
+    "ACT-008": {
+      "change": "added",
+      "summary": "Actions can come from a recommendation an operator writes by hand, linked to frozen results evidence, so owned follow-through works without a model provider. The analysis link stays required for actions accepted from an analysis once ANLY ships.",
+      "now": "**ACT-008 — Manual recommendation.** An operator may write a recommendation by hand and accept it as an action under ACT-001, linked to the results evidence it rests on: a flow, a published revision and optionally one question, with the RSLT counts shown at that moment kept as they were, never response identifiers, answer excerpts or cohort filters. An action written by hand has no analysis link. The analysis link of ACT-001 is required for every action accepted from an analysis once ANLY is implemented; nothing else in ACT-001 to ACT-007 is relaxed.",
+      "migrationIds": [
+        "0026_actions.sql"
+      ]
+    }
+  }
+}

@@ -1,0 +1,46 @@
+/*
+ * App tokens under the names the components read, all built on the product tokens (site/styles/tokens.css).
+ * Contrast: --ink 15.5:1 and --muted 7.9:1 on paper; --subtle 5.7:1 on paper and 5.2:1 on paper-deep; --green 6.3:1
+ * on --wash-great; --danger 7.2:1 on paper and 5.4:1 on --wash-better; --pencil 6.3:1 on the sheet; ink on every
+ * answer wash at least 11.6:1. Yellow is never text and never a fill: the pencil, the current-nav stroke and the wash
+ * inside a pencil oval.
+ */
+:root {
+  color-scheme: light;
+  color: var(--ink);
+  background: var(--paper);
+  font-family: var(--font-sans);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --canvas: var(--paper);
+  --canvas-raised: var(--paper-deep);
+  --panel: var(--card);
+  --panel-quiet: var(--paper-deep);
+  --line-bright: rgba(30, 33, 36, 0.34);
+  --muted: var(--ink-soft);
+  --subtle: var(--graphite);
+  --green: #2f5a37;
+  --danger: #9b2c35;
+  --draft-ink: #6b4a05;
+  --sheet: #fbf4e6;
+  --sheet-line: rgba(30, 33, 36, 0.18);
+  /* The drawn sheet (surfaces.css): paper with its tooth and double graphite outline, and the graphite rubbed in beneath. */
+  --sheet-paper:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300' preserveAspectRatio='none' fill='none' stroke='%235d5f62' stroke-linecap='round'%3E%3Cpath d='M1 1.2C110 .6 290 1.4 399 .9c.4 78-.3 216 .2 297.8-108 .6-284-.4-398.3.1C.5 218 1.3 82 1 1.2Z' stroke-width='1.15' opacity='.8' vector-effect='non-scaling-stroke'/%3E%3Cpath d='M3 1.6c118 .9 262-.4 392 .8M398.6 5c-.9 96 .5 190-.6 290M394 298.6c-128-.9-246 .8-390-.5M1.4 293c.8-96-.5-180 .5-286' stroke-width='.85' opacity='.42' vector-effect='non-scaling-stroke'/%3E%3C/svg%3E") no-repeat center / 100% 100%,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 .36 0 0 0 0 .35 0 0 0 0 .33 0 0 0 -1.2 .9'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23t)' opacity='.12'/%3E%3C/svg%3E"),
+    var(--sheet);
+  --sheet-rub:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='s'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9 .45' numOctaves='2' seed='3'/%3E%3CfeColorMatrix values='0 0 0 0 .3 0 0 0 0 .29 0 0 0 0 .26 0 0 0 -1.1 1.25'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23s)'/%3E%3C/svg%3E"),
+    rgba(76, 74, 68, 0.22);
+  --wash-great: #d9ead3;
+  --wash-good: #fbe5a6;
+  --wash-better: #f3d3d5;
+  --track: rgba(93, 95, 98, 0.12);
+  --hatch: repeating-linear-gradient(112deg, #5d5f62 0 1.3px, transparent 1.3px 3.2px), rgba(93, 95, 98, 0.24);
+  --page-gutter: clamp(16px, 5vw, 80px);
+  --page-max: 1280px;
+  /* The docs' pencil circle: one loose graphite oval that overshoots where it started (features/docs/docs-nav.css), for the app's selection. */
+  /* The same pencil drawn as a loose box, for selected tiles whose words reach their corners. */
+  --pencil-box: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 120' preserveAspectRatio='none' fill='none'%3E%3Cpath d='M22 4C70 2.2 140 2.6 184 4.6c9 .5 13 4 13.4 12 1 30 .8 62-.4 88-.4 8-4.6 11.2-13 11.5-52 1.6-118 1.4-166 .1-8.6-.3-13-3.8-13.4-12C2.6 76 2.8 44 3.6 16 4 8 8.4 4.4 17 3.6 26 2.8 40 2.4 52 2.4' stroke='%235f646b' stroke-width='1.6' stroke-linecap='round' vector-effect='non-scaling-stroke' opacity='.8'/%3E%3C/svg%3E");
+  --pencil-oval: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none' fill='none'%3E%3Cpath d='M34 4.5C70 1.5 142 1.8 176 6c19 2.4 25 8 22 15-3 7.5-18 13-60 15.2-36 1.8-90 1.2-120-3C6 30.5 1 22 4 14.5 7 8 22 4 52 2.6' stroke='%235f646b' stroke-width='1.6' stroke-linecap='round' vector-effect='non-scaling-stroke' opacity='.8'/%3E%3C/svg%3E");
+}

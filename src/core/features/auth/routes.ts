@@ -1,6 +1,5 @@
 import type { Hono } from 'hono'
-import { AuthError, createAuthHandler, requireLoopback, securityHeaders } from '../../../base/operator-auth/index.mjs'
-import { validateInput as zValidator } from '../../shared/validation'
+import { AuthError, createAuthHandler, securityHeaders } from '../../../base/operator-auth/index.mjs'
 import { z } from 'zod'
 // @ts-expect-error Maintained Base bounded duplicate-aware parser.
 import { readInput, readParameters } from '../../../base/operator-auth/input.mjs'
@@ -20,11 +19,6 @@ const exposed = new Set(['/auth/bootstrap', '/auth/magic-link', '/auth/confirm',
 export function registerAuthRoutes(app: Hono<WorkerEnvironment>, services: PencilServices | RequestServices, runtime: RuntimeConfiguration | RequestConfiguration) {
   const getServices = typeof services === 'function' ? services : () => services
   const getRuntime = typeof runtime === 'function' ? runtime : () => runtime
-  app.get('/auth/local-inbox', zValidator('query', z.object({ email: z.string().trim().email() })), async context => {
-    if (!getRuntime(context).isLocalDevelopment) return context.notFound()
-    requireLoopback(context.req.raw)
-    return context.json({ messages: await getServices(context).auth.listLocalInbox({ email: context.req.valid('query').email, isLocalDevelopment: true }) })
-  })
   app.all('/auth/*', async context => {
     if (!exposed.has(context.req.path)) return new Response('Not found', { status: 404, headers: securityHeaders() })
     try {

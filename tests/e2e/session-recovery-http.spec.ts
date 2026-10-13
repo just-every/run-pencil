@@ -1,3 +1,6 @@
+import { httpExport } from '../helpers/report-download'
+import { developmentInbox } from '../helpers/development-outbox'
+import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { operatorEmail } from './auth-identity'
 import { expect, test } from './fixtures'
 import type { BuilderDraft } from '../../src/core/app/api'
@@ -7,12 +10,13 @@ test('native unavailable credentials offer a definitive refusal and fresh origin
   const slug = `native-session-recovery-${info.project.name}-${Date.now()}`
   const headers = { Origin: new URL(info.project.use.baseURL!).origin, 'CF-Connecting-IP': `198.18.157.${info.project.name === 'mobile' ? 46 : 45}` }
   const ok = async <T,>(path: string, data?: unknown): Promise<T> => {
+    if (path.includes('/responses/export')) return httpExport<T>(target => request.get(target),path)
     const response = await request.fetch(path, { method: data === undefined ? 'GET' : 'POST', headers, ...(data === undefined ? {} : { data }) })
     expect(response.status(), path).toBeGreaterThanOrEqual(200); expect(response.status(), path).toBeLessThan(300)
     return response.status() === 204 ? undefined as T : response.json() as Promise<T>
   }
   await ok('/auth/magic-link', { email: operatorEmail() })
-  const inbox = await ok<{ messages: Array<{ magicLinkToken: string }> }>(`/auth/local-inbox?email=${encodeURIComponent(operatorEmail())}`)
+  const inbox = await developmentInbox(path => request.get(path, { headers: devKeyHeaders }), operatorEmail())
   expect((await request.post('/auth/confirm', { data: { token: inbox.messages[0].magicLinkToken }, headers, maxRedirects: 0 })).status()).toBe(303)
   const flow = await ok<{ id: string }>('/api/app/flows', { title: `Synthetic session recovery ${info.project.name}`, slug })
   const path = `/api/app/flows/${flow.id}`

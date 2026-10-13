@@ -1,47 +1,17 @@
 {
-  "version": 1,
-  "edition": "just-every/pencil",
-  "commands": {
-    "setup": {
-      "argv": [
-        "pnpm",
-        "run",
-        "setup"
-      ],
-      "effects": "Default: prepare loopback configuration and migrate local D1. Explicit --remote: validate production inputs, find or create the exactly named D1 and write a private target configuration without replacing owner values; deployment remains separate."
-    },
-    "deploy": {
-      "argv": [
-        "pnpm",
-        "run",
-        "deploy"
-      ],
-      "effects": "Validate explicit worker/database/config, run full verify, build target, apply ordered remote migrations, install supplied secrets via stdin and upload the Worker. Does not claim live health or inbox delivery."
-    },
-    "verify": {
-      "argv": [
-        "pnpm",
-        "run",
-        "verify"
-      ],
-      "effects": "Local type, unit, isolated Worker/D1, capacity, current-data round-trip/refusal, migration, manifest, boundary, build and contract coverage gates. No deployment or live provider effects."
-    },
-    "export": {
-      "argv": [
-        "pnpm",
-        "run",
-        "export"
-      ],
-      "effects": "Read-only consistent snapshot of an explicit local SQLite/D1 source into a new private archive; no provider calls or effects."
-    },
-    "import": {
-      "argv": [
-        "pnpm",
-        "run",
-        "import"
-      ],
-      "effects": "Fully validates the private archive and restores only into an exclusively created new local SQLite/D1 database; preserves migrations and effect/auth state, never replaces existing files or starts providers."
-    }
+  "version": 2,
+  "project": "pencil",
+  "runtime": {
+    "requirements": [
+      {
+        "name": "node",
+        "version": "22.20.0"
+      },
+      {
+        "name": "pnpm",
+        "version": "10.12.4"
+      }
+    ]
   },
   "requiredEnvironment": [
     "APP_ORIGIN",
@@ -50,22 +20,266 @@
     "MAIL_PROVIDER",
     "MAIL_API_KEY",
     "MAIL_FROM",
-    "SESSION_SECRET"
+    "SESSION_SECRET",
+    "CLOUDFLARE_ACCOUNT_ID",
+    "CLOUDFLARE_API_TOKEN"
   ],
-  "authentication": {
-    "deployment": "Owner-selected Cloudflare account and Wrangler authentication; remote operations require explicit worker, database and configuration target.",
-    "operators": "Maintained Base one-time bootstrap with SETUP_TOKEN, read-only link confirmation and single-use POST, opaque native sessions; loopback Base mail outbox only for synthetic development."
+  "environmentSources": {
+    "APP_ORIGIN": "Owner-selected hosted configuration. Read OPERATIONS.md",
+    "PENCIL_BUILD_ID": "Owner-selected hosted configuration. Read OPERATIONS.md",
+    "SEED_ADMIN_EMAIL": "Owner-selected hosted configuration. Read OPERATIONS.md",
+    "MAIL_PROVIDER": "Owner-selected hosted configuration. Read OPERATIONS.md",
+    "MAIL_API_KEY": "Owner-selected hosted configuration. Read OPERATIONS.md",
+    "MAIL_FROM": "Owner-selected hosted configuration. Read OPERATIONS.md",
+    "SESSION_SECRET": "Owner-selected hosted configuration. Read OPERATIONS.md",
+    "CLOUDFLARE_ACCOUNT_ID": "Owner-selected hosted configuration. Read OPERATIONS.md",
+    "CLOUDFLARE_API_TOKEN": "Owner-selected hosted configuration. Read OPERATIONS.md"
   },
-  "configurationFiles": [
-    "seed.json",
-    "deploy/wrangler.template.toml",
-    "owner-selected deploy/<name>.toml"
+  "commands": {
+    "install": {
+      "argv": [
+        "rer",
+        "install"
+      ],
+      "effects": "Install frozen dependencies only.",
+      "inputs": [
+        "package.json",
+        "scripts/installer/local.mjs",
+        "rer-setup.json"
+      ],
+      "requiredEnvironment": []
+    },
+    "setup": {
+      "argv": [
+        "rer",
+        "setup"
+      ],
+      "effects": "Build, migrate, preserve private settings and existing owners, bootstrap one real owner and verify outbox sign-in; stop the temporary runtime.",
+      "inputs": [
+        "package.json",
+        "scripts/installer/local.mjs",
+        "rer-setup.json"
+      ],
+      "requiredEnvironment": []
+    },
+    "dev": {
+      "argv": [
+        "rer",
+        "dev"
+      ],
+      "effects": "Run the actual application with assets and HMR on loopback; print health-gated app and outbox URLs.",
+      "inputs": [
+        "package.json",
+        "scripts/installer/local.mjs",
+        "rer-setup.json"
+      ],
+      "requiredEnvironment": []
+    },
+    "preview": {
+      "argv": [
+        "rer",
+        "preview"
+      ],
+      "effects": "Serve the actual production build on loopback with health, outbox sign-in and owned-process cleanup.",
+      "inputs": [
+        "package.json",
+        "scripts/installer/local.mjs",
+        "rer-setup.json"
+      ],
+      "requiredEnvironment": []
+    },
+    "build": {
+      "argv": [
+        "rer",
+        "build"
+      ],
+      "effects": "Build production output with private local settings excluded and restored.",
+      "inputs": [
+        "package.json",
+        "scripts/installer/local.mjs",
+        "rer-setup.json"
+      ],
+      "requiredEnvironment": []
+    },
+    "verify": {
+      "argv": [
+        "rer",
+        "verify"
+      ],
+      "effects": "Run the complete internal application verification target.",
+      "inputs": [
+        "package.json",
+        "scripts/installer/local.mjs",
+        "rer-setup.json"
+      ],
+      "requiredEnvironment": []
+    },
+    "reset": {
+      "argv": [
+        "rer",
+        "reset"
+      ],
+      "effects": "After confirmation remove inventoried local state, settings, owner, outbox and drafts; preserve source, exports and deployment receipts.",
+      "inputs": [
+        "package.json",
+        "scripts/installer/local.mjs",
+        "rer-setup.json"
+      ],
+      "requiredEnvironment": []
+    },
+    "deploy": {
+      "argv": [
+        "rer",
+        "deploy"
+      ],
+      "effects": "Build and deploy in the owner-selected Cloudflare account, then verify health. Dry run validates locally with zero provider calls.",
+      "inputs": [
+        "package.json",
+        "scripts/installer/local.mjs",
+        "rer-setup.json"
+      ],
+      "requiredEnvironment": [
+        "CLOUDFLARE_ACCOUNT_ID",
+        "CLOUDFLARE_API_TOKEN"
+      ]
+    },
+    "export": {
+      "argv": [
+        "rer",
+        "export"
+      ],
+      "effects": "Capture the complete current local Pencil database through its existing typed integrity archive engine; omit plaintext secrets and captured mail.",
+      "inputs": [
+        "package.json",
+        "scripts/installer/local.mjs",
+        "rer-setup.json"
+      ],
+      "requiredEnvironment": []
+    },
+    "import": {
+      "argv": [
+        "rer",
+        "import"
+      ],
+      "effects": "After confirmation validate the complete archive and atomically restore into an empty canonical local database without replaying mail.",
+      "inputs": [
+        "package.json",
+        "scripts/installer/local.mjs",
+        "rer-setup.json"
+      ],
+      "requiredEnvironment": []
+    },
+    "release": {
+      "argv": [
+        "rer",
+        "release"
+      ],
+      "effects": "Run Base release verification and publication scan; no push or deployment.",
+      "inputs": [
+        "package.json",
+        "scripts/installer/local.mjs",
+        "rer-setup.json"
+      ],
+      "requiredEnvironment": []
+    },
+    "outbox": {
+      "argv": [
+        "rer",
+        "outbox"
+      ],
+      "effects": "Print the running local Base outbox URL; request ordinary sign-in only when an owner email is provided.",
+      "inputs": [
+        "package.json",
+        "scripts/installer/local.mjs",
+        "rer-setup.json"
+      ],
+      "requiredEnvironment": []
+    },
+    "doctor": {
+      "argv": [
+        "rer",
+        "doctor"
+      ],
+      "effects": "Read-only tool, settings and state diagnostics.",
+      "inputs": [
+        "package.json",
+        "scripts/installer/local.mjs",
+        "rer-setup.json"
+      ],
+      "requiredEnvironment": []
+    },
+    "describe": {
+      "argv": [
+        "rer",
+        "describe"
+      ],
+      "effects": "Read-only actual verbs, flags, aliases, pins and effects.",
+      "inputs": [
+        "package.json",
+        "scripts/installer/local.mjs",
+        "rer-setup.json"
+      ],
+      "requiredEnvironment": []
+    },
+    "check": {
+      "argv": [
+        "rer",
+        "check"
+      ],
+      "effects": "Read-only first-party contract and operations validation before configuration or dependencies.",
+      "inputs": [
+        "package.json",
+        "scripts/installer/local.mjs",
+        "rer-setup.json"
+      ],
+      "requiredEnvironment": []
+    }
+  },
+  "documentation": {
+    "document": "OPERATIONS.md"
+  },
+  "acceptance": {
+    "document": "ACCEPTANCE.md"
+  },
+  "loops": [
+    {
+      "id": "worker",
+      "type": "worker",
+      "required": true,
+      "enabled": true
+    },
+    {
+      "id": "operator-sign-in-mail",
+      "type": "mail",
+      "required": true,
+      "enabled": true,
+      "binding": {
+        "providerEnvironment": "MAIL_PROVIDER",
+        "providers": {
+          "resend": {
+            "apiKeyEnvironment": "MAIL_API_KEY",
+            "requiredEnvironment": [
+              "MAIL_FROM"
+            ]
+          },
+          "sendgrid": {
+            "apiKeyEnvironment": "MAIL_API_KEY",
+            "requiredEnvironment": [
+              "MAIL_FROM"
+            ]
+          }
+        }
+      }
+    }
   ],
+  "authentication": "Base operator-auth bootstrap, one-use native magic links and opaque sessions. Local mail uses the Base outbox.",
   "health": {
     "path": "/health",
     "semantics": "Configured Worker/D1 dependency health and build identity; does not prove provider delivery or remote acceptance."
   },
-  "acceptance": {
-    "document": "ACCEPTANCE.md"
+  "seedContract": {
+    "version": 1,
+    "profile": "first-party",
+    "adapter": "scripts/installer/local.mjs"
   }
 }

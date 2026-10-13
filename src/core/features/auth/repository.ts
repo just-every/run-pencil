@@ -3,7 +3,7 @@ import { ulid } from 'ulid'
 import { operatorCustodyStatements } from './operatorCustody'
 import type { D1BatchExecutor } from '../../platform/db/batch'
 import type { PencilDatabase } from '../../platform/db/repository'
-import { localDevInbox, operators, workspaces } from '../../platform/db/schema'
+import { operators, workspaces } from '../../platform/db/schema'
 
 export class AuthRepository {
   constructor(
@@ -131,15 +131,6 @@ export class AuthRepository {
     if (!currentWorkspace) return { kind: 'missing-workspace' as const }
     if (currentWorkspace.initializedAt) return { kind: 'already-initialized' as const }
     return { kind: 'conflict' as const }
-  }
-
-  async listLocalInbox(email: string) {
-    return this.database
-      .select({ id: localDevInbox.id, toEmail: localDevInbox.toEmail, magicLinkToken: localDevInbox.magicLinkToken, expiresAt: localDevInbox.expiresAt, createdAt: localDevInbox.createdAt })
-      .from(localDevInbox)
-      .where(sql`lower(${localDevInbox.toEmail}) = lower(${email})`)
-      .orderBy(sql`${localDevInbox.createdAt} desc`)
-      .limit(8)
   }
 
   async removeOperator(input: { workspaceId: string; actorOperatorId: string; targetOperatorId: string }) {

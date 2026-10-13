@@ -2,7 +2,7 @@ export type FlowStep = {
   id: string
   position: number
   kind: 'welcome' | 'question' | 'completion'
-  questionType: 'short_text' | 'long_text' | 'email' | 'single_choice' | 'multiple_choice' | 'rating' | 'priority' | null
+  questionType: 'short_text' | 'long_text' | 'email' | 'single_choice' | 'multiple_choice' | 'rating' | 'priority' | 'dropdown' | 'yes_no' | 'nps' | 'number' | 'date' | 'consent' | null
   prompt: string
   helperText: string | null
   required: boolean
@@ -54,19 +54,22 @@ export type FlowResults = {
   revision: PublicFlow['revision']
   starts: number
   completedResponses: number
+  liveCompletedResponses: number
+  importedResponses: number
   completionRate: number
   averageCompletionMilliseconds: number
   deviceStarts: { mobile: number; tablet: number; desktop: number }
   analysis: { status: 'unconfigured'; configuration: string }
-  taskDestination: { status: 'unconfigured'; configuration: string }
 }
 
 export type WorkspaceSettings = {
+  brandConfigured?: boolean
   id: string
   name: string
   timeZone: string
   sendingWindowStart: string
   sendingWindowEnd: string
+  reminderDelayHours: number
   embedAllowedOrigins: string[]
 }
 
@@ -117,8 +120,6 @@ export const api = {
     request<{ kind: 'deleted'; draftVersion: number } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/steps/${encodeURIComponent(stepId)}`, { method: 'DELETE', body: JSON.stringify({ expectedVersion }) }),
   reorderDraftSteps: (flowId: string, input: { expectedVersion: number; orderedStepIds: string[] }) =>
     request<{ kind: 'reordered'; draftVersion: number } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/order`, { method: 'PUT', body: JSON.stringify(input) }),
-  saveBranchRules: (flowId: string, input: { expectedVersion: number; rules: Omit<BranchRule, 'id'>[] }) =>
-    request<{ kind: 'updated'; draftVersion: number } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/branches`, { method: 'PUT', body: JSON.stringify(input) }),
   previewDraft: (flowId: string, answers: Record<string, unknown>) =>
     request<{ preview: true; draftVersion: number; screens: Array<{ stepId: string; evaluations: Array<{ ruleId: string; matched: boolean; destinationStepId: string }>; selectedRuleId: string | null; nextStepId: string | null }>; complete: boolean; reason?: string }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/preview`, { method: 'POST', body: JSON.stringify({ answers }) }),
   publishDraft: (flowId: string, input: { expectedVersion: number; deadlineAt?: string | null; targetCompletedResponses?: number | null }) =>
@@ -137,27 +138,27 @@ export const api = {
   releaseQuarantinedResponse: (responseId: string) => request<void>(`/api/app/responses/${encodeURIComponent(responseId)}/release`, { method: 'POST' }),
   deleteQuarantinedResponse: (responseId: string) => request<void>(`/api/app/responses/${encodeURIComponent(responseId)}/quarantine`, { method: 'DELETE' }),
   eraseReleasedResponse: (responseId: string) => request<void>(`/api/app/responses/${encodeURIComponent(responseId)}`, { method: 'DELETE' }),
-  requestMagicLink: (email: string) => request<{ delivery: 'local' | 'email'; inboxAvailable: boolean }>('/auth/magic-link', { method: 'POST', body: JSON.stringify({ email }) }),
-  localInbox: (email: string) => request<{ messages: Array<{ id: string; toEmail: string; magicLinkToken: string; expiresAt: string; createdAt: string }> }>(`/auth/local-inbox?email=${encodeURIComponent(email)}`),
+  requestMagicLink: (email: string, returnTo?: string) => request<{ delivery: 'local' | 'email'; inboxAvailable: boolean }>('/auth/magic-link', { method: 'POST', body: JSON.stringify({ email, ...(returnTo ? { returnTo } : {}) }) }),
   signOut: () => request<void>('/auth/signout', { method: 'POST', body: '{}' }),
   workspace: () => request<WorkspaceSettings>('/api/app/workspace'),
-  updateWorkspace: (input: Pick<WorkspaceSettings, 'timeZone' | 'sendingWindowStart' | 'sendingWindowEnd'> & { embedAllowedOrigins?: string[] }) =>
+  updateWorkspace: (input: Pick<WorkspaceSettings, 'timeZone' | 'sendingWindowStart' | 'sendingWindowEnd'> & Partial<Pick<WorkspaceSettings, 'embedAllowedOrigins' | 'reminderDelayHours'>>) =>
     request<WorkspaceSettings>('/api/app/workspace', { method: 'PUT', body: JSON.stringify(input) }),
   operators: () => request<Operator[]>('/api/app/operators'),
   inviteOperator: (input: { email: string; displayName: string }) => request<{ id: string }>('/api/app/operators', { method: 'POST', body: JSON.stringify(input) }),
   removeOperator: (operatorId: string) => request<void>(`/api/app/operators/${encodeURIComponent(operatorId)}`, { method: 'DELETE' }),
 }
 
-export type LedgerFilter = { revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
-export type LedgerResponse = { participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string; answers: Array<{ stepId: string; label: string; questionType: string; value: unknown; displayValue: string }> }
+export type LedgerFilter = { revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown' | 'imported'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
+export type LedgerResponse = { omittedQuestions: Array<{ stepId: string; label: string; position: number; questionType?: string }>; participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string; answers: Array<{ stepId: string; label: string; position: number; questionType: string; value: unknown; displayValue: string }> }
 export type Ledger = { flow: { id: string; title: string; slug: string }; cutoff: string; filter: LedgerFilter; revisions: Array<{ id: string; number: number; isCurrent: number }>; total: number; responses: LedgerResponse[] }
-export type QuestionReport = { id: string; prompt: string; questionType: string | null; reached: number; dropped: number; answered: number; choices: Array<{ id: string; label: string }>; distribution: Array<{ value: unknown; label: string; count: number }>; distributionLabel: string }
+export type QuestionReport = { revisionId?: string; importedAnswered: number; summary: import('../features/reporting/answerSummary').AnswerSummary; id: string; prompt: string; questionType: string | null; reached: number; dropped: number; answered: number; choices: Array<{ id: string; label: string }>; distribution: Array<{ value: unknown; label: string; count: number }>; distributionLabel: string }
 function query(filter: LedgerFilter) { return new URLSearchParams(Object.entries(filter).filter(([, value]) => value !== undefined).map(([key, value]) => [key, String(value)])).toString() }
-export type RevisionComparison = { flow: { id: string; title: string; slug: string }; revisions: Array<{ id: string; number: number; isCurrent: number }>; questions: Array<{ id: string; answered: number; eligibleResponses: number; versions: Array<QuestionReport & { revisionId: string; eligibleResponses: number }> }> }
+export type RevisionComparison = { revisionCount?: number; offset?: number; nextOffset?: number; flow: { id: string; title: string; slug: string }; revisions: Array<{ id: string; number: number; isCurrent: number }>; questions: Array<{ id: string; answered: number; eligibleResponses: number; versions: Array<QuestionReport & { revisionId: string; eligibleResponses: number }> }> }
 
 export const reportingApi = {
-  compareRevisions: (flowId: string) => request<RevisionComparison>(`/api/app/flows/${encodeURIComponent(flowId)}/questions/compare`),
+  compareRevisions: (flowId: string, offset = 0) => request<RevisionComparison>(`/api/app/flows/${encodeURIComponent(flowId)}/questions/compare?offset=${offset}`),
   ledger: (flowId: string, filter: LedgerFilter = {}) => request<Ledger>(`/api/app/flows/${encodeURIComponent(flowId)}/ledger?${query(filter)}`),
   questions: (flowId: string, revisionId: string) => request<QuestionReport[]>(`/api/app/flows/${encodeURIComponent(flowId)}/questions?revisionId=${encodeURIComponent(revisionId)}`),
-  export: (flowId: string, filter: LedgerFilter) => request<{ cutoff: string; filter: LedgerFilter; excludedQuarantined: number; responses: LedgerResponse[] }>(`/api/app/flows/${encodeURIComponent(flowId)}/responses/export?${query(filter)}`),
+  textPage: (flowId: string, input: { revisionId:string;questionId:string;search:string;cursor?:string;countOnly?:boolean }, signal?: AbortSignal) => request<{texts:string[];cursor?:string;scanning:boolean;countCursor?:string;matching?:number}>(`/api/app/flows/${encodeURIComponent(flowId)}/questions/text`,{method:'POST',body:JSON.stringify(input),signal}),
+  startExport: (flowId: string, filter: LedgerFilter, format: 'json'|'csv') => request<{token:string;cutoff:string;total:number;excludedQuarantined:number;filename:string;format:'json'|'csv'}>(`/api/app/flows/${encodeURIComponent(flowId)}/responses/export/start`,{method:'POST',body:JSON.stringify({...filter,format})}),
 }

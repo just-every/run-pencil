@@ -1,3 +1,5 @@
 export { requireSameOriginRequest } from './http'
 export { AuthRepository } from './repository'
 export { AuthService, type AuthRuntimeConfiguration } from './service'
+export { nativeAuthConfiguration } from './native-config'
+export { ownerClaimDatabase } from './owner-claim'

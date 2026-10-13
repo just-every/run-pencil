@@ -1,3 +1,4 @@
+import { fixtureExport } from '../helpers/report-download'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -53,13 +54,13 @@ contract(['RESP-006', 'RESP-010', 'FLOW-019'], 'retains no abandoned answers or 
   const session = await f.start()
   const step = session.flow.steps[0]
   await f.services.responses.advancePublicSession({ slug: f.slug, sessionId: session.sessionId, sessionToken: session.sessionToken, stepId: step.id })
-  expect(await f.services.reporting.export(f.scope.workspaceId, f.flow.flowId, {})).toMatchObject({ responses: [] })
+  expect(await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, {})).toMatchObject({ responses: [] })
   const rows = await env.DB.prepare('SELECT * FROM respondent_sessions WHERE id = ?').bind(session.sessionId).first()
   expect(Object.keys(rows!)).not.toContain('participant_id')
   expect(Object.keys(rows!).some(key => /answer|email|contact|address|agent|host/.test(key))).toBe(false)
   await f.mature(session.sessionId)
   const receipt = await f.final(session, [{ stepId: step.id, value: 'Mixed.Case@Example.test' }])
-  const exported = await f.services.reporting.export(f.scope.workspaceId, f.flow.flowId, { answerStepId: step.id, answerValue: 'mixed.case@example.TEST' })
+  const exported = await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, { answerStepId: step.id, answerValue: 'mixed.case@example.TEST' })
   expect(exported.responses).toHaveLength(1)
   expect(exported.responses[0].answers[0].value).toBe('Mixed.Case@Example.test')
   expect(JSON.stringify(exported)).not.toMatch(/participant|contact|sessionToken|deviceClass|addressHash/)
@@ -100,7 +101,7 @@ contract(['FLOW-001','FLOW-011','FLOW-015','DASH-002'], 'lifecycle preserves col
   expect(copy.steps.map(s => [s.kind, s.questionType, s.prompt, s.helperText, s.required, s.questionSettings])).toEqual(draft.steps.map(s => [s.kind, s.questionType, s.prompt, s.helperText, s.required, s.questionSettings]))
   expect(copy.steps.every(s => !draft.steps.some(old => old.id === s.id))).toBe(true)
   expect(copy.choices.every(c => !draft.choices.some(old => old.id === c.id))).toBe(true)
-  expect((await f.services.reporting.export(f.scope.workspaceId, copied.id, {})).responses).toEqual([])
+  expect((await fixtureExport(env.DB, f.scope.workspaceId, copied.id, {})).responses).toEqual([])
   expect(await f.services.distribution.launches.list(f.scope.workspaceId, copied.id)).toEqual([])
   await f.services.flows.closeFlow(f.scope.workspaceId, f.flow.flowId, f.operatorId)
   await expect(f.services.flows.getPublicFlow(f.slug)).rejects.toThrow('no longer accepting')
@@ -111,7 +112,7 @@ contract(['FLOW-001','FLOW-011','FLOW-015','DASH-002'], 'lifecycle preserves col
   await expect(f.services.flows.reopenFlow(f.scope.workspaceId, f.flow.flowId, f.operatorId)).rejects.toThrow()
   expect((await f.services.flows.listDashboard(f.scope.workspaceId)).some(flow => flow.id === f.flow.flowId)).toBe(false)
   expect((await f.services.flows.listDashboard(f.scope.workspaceId, 'archived')).find(flow => flow.id === f.flow.flowId)).toMatchObject({ completedResponses: 1, starts: 1 })
-  expect((await f.services.reporting.export(f.scope.workspaceId, f.flow.flowId, {})).responses.map(r => r.id)).toEqual([done.responseId])
+  expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, {})).responses.map(r => r.id)).toEqual([done.responseId])
   await f.services.flows.archiveFlow(f.scope.workspaceId, copied.id, f.operatorId)
   expect((await f.services.flows.getBuilderDraft(f.scope.workspaceId, copied.id)).flow.status).toBe('archived')
 }, 60_000)
@@ -134,10 +135,10 @@ contract(['RSLT-001','RSLT-003','RSLT-004','RESP-019','LEDG-003'], 'revision fil
   expect(oldReport).toMatchObject({ starts: 2, completedResponses: 1, completionRate: .5, deviceStarts: { mobile: 1, desktop: 1, tablet: 0 } })
   expect(await f.services.flows.getFlowResults(f.scope.workspaceId, f.flow.flowId, second.revisionId)).toMatchObject({ starts: 1, completedResponses: 1, completionRate: 1, deviceStarts: { mobile: 0, desktop: 0, tablet: 1 } })
   for (const filter of [{ revisionId: first.revisionId, source: 'embed' as const }, { revisionId: first.revisionId, answerStepId: first.flow.steps[0].id, answerValue: '1' }, { revisionId: first.revisionId, from: '2099-01-01T00:00:00Z' }]) {
-    expect((await f.services.reporting.export(f.scope.workspaceId, f.flow.flowId, filter)).responses).toEqual([])
+    expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, filter)).responses).toEqual([])
     expect(await f.services.flows.getFlowResults(f.scope.workspaceId, f.flow.flowId, first.revisionId)).toEqual(oldReport)
   }
-  expect((await f.services.reporting.export(f.scope.workspaceId, f.flow.flowId, { revisionId: first.revisionId, source: 'direct', answerStepId: first.flow.steps[0].id, answerValue: '5', from: '2000-01-01T00:00:00Z', to: '2099-01-01T00:00:00Z' })).responses.map(r => r.id)).toEqual([a.responseId])
+  expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, { revisionId: first.revisionId, source: 'direct', answerStepId: first.flow.steps[0].id, answerValue: '5', from: '2000-01-01T00:00:00Z', to: '2099-01-01T00:00:00Z' })).responses.map(r => r.id)).toEqual([a.responseId])
 }, 60_000)
 
 contract('WS-001', 'workspace zone changes cannot move an already published deadline or its recorded zone', async () => {

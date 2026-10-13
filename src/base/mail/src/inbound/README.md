@@ -1,6 +1,6 @@
 # Inbound normalization
 
-Import `normalizeInbound` from `src/base/mail/src/inbound/index.mjs` (also exposed
+Import `normalizeInbound` from `modules/mail/src/inbound/index.mjs` (also exposed
 by the assembled mail facade). It returns the frozen `InboundMessage` contract.
 These are transport parsers, not authentication or HTTP handlers. No route or
 persistent storage is installed. HTML, text, filenames and sender claims remain
@@ -120,7 +120,16 @@ No caller-owned input objects or attachment buffers are mutated.
 
 From the Base worktree:
 
-Pencil does not ingest inbound mail. The retained upstream normalization API is available for deliberate extensions; its upstream inbound test suites are not included in this copied runtime source. An inbound integration must verify signature, routing, identity, persistence and privacy before deployment, and hosted receipt requires separate evidence.
+```sh
+node --test modules/mail/tests/inbound/normalization.test.mjs modules/mail/tests/inbound/boundaries.test.mjs modules/mail/tests/inbound/hydration.test.mjs
+node --test modules/mail/tests/inbound/workerd.test.mjs
+```
+
+The latter uses actual workerd through the module's Miniflare harness without
+Node compatibility, with three provider fixtures and the safe hydration protocol.
+Fixtures and provider responses live only under `./tests/inbound`. These checks do
+not prove hosted mail receipt; owner-authorized domain, provider configuration,
+signed routing and send/receive correlation evidence remain separate acceptance.
 
 Provider schemas consulted: [Cloudflare email event](https://developers.cloudflare.com/email-service/api/route-emails/email-handler/),
 [SendGrid Inbound Parse fields](https://www.twilio.com/docs/sendgrid/for-developers/parsing-email/setting-up-the-inbound-parse-webhook),

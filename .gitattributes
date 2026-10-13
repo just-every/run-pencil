@@ -1,0 +1,1 @@
+tests/fixtures/form-import/google-*.csv -text whitespace=cr-at-eol

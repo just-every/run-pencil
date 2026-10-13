@@ -1,9 +1,14 @@
+import { flowTemplates, type FlowTemplateId } from '../../flows'
 import { Plus, RefreshCw } from 'lucide-react'
-import { useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate, useRouter } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api, type DashboardFlow, type WorkspaceSettings } from '../../../app/api'
 import { useProtectUnsavedChanges, useUnsavedChanges } from '../../../shared/ui/UnsavedChanges'
+import { AppNote } from '../../../app/ui/AppNote'
+import { NoteIllustration } from '../../../app/ui/NoteIllustration'
 import { FlowCard } from './FlowCard'
+import { ReviewDueNotice } from './ReviewDueNotice'
+import { TemplatePreview } from './TemplatePreview'
 
 function suggestedSlug(title: string) {
   return title.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 120).replace(/-+$/g, '')
@@ -11,6 +16,7 @@ function suggestedSlug(title: string) {
 
 export function DashboardPage({ initialData }: { initialData: { flows: DashboardFlow[]; workspace: WorkspaceSettings; hasFlows: boolean } }) {
   const navigate = useNavigate()
+  const router = useRouter()
   const [flows, setFlows] = useState(initialData.flows)
   const [workspace, setWorkspace] = useState(initialData.workspace)
   const [hasFlows, setHasFlows] = useState(initialData.hasFlows)
@@ -20,6 +26,7 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
   const [slug, setSlug] = useState('')
   const [slugEdited, setSlugEdited] = useState(false)
   const [showCreate, setShowCreate] = useState(!initialData.hasFlows)
+  const [template, setTemplate] = useState<FlowTemplateId>()
   const [creating, setCreating] = useState(false)
   const [loading, setLoading] = useState(false)
   const [copySaves, setCopySaves] = useState(new Set<string>())
@@ -48,9 +55,11 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
       if (requestVersion.current === version) setError(reason instanceof Error ? reason.message : 'The dashboard could not load.')
     }).finally(() => { if (requestVersion.current === version) setLoading(false) })
   }
-  // The route loader already provided this view. Refresh only on an explicit
-  // request, with editors locked until the replacement list is acknowledged.
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; requestVersion.current++ } }, [])
+  useEffect(() => {
+    setFlows(initialData.flows); setWorkspace(initialData.workspace); setHasFlows(initialData.hasFlows)
+    if (initialData.hasFlows && !title && !slug) setShowCreate(false)
+  }, [initialData])
   const updateList = (nextStatus = status) => {
     if (loading || saving) return
     if (!showCreate && dirty && !window.confirm('Discard unfinished copies and update this list?')) return
@@ -61,37 +70,53 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
   const createFlow = async () => {
     setError(undefined); setCreating(true)
     try {
-      const flow = await api.createFlow({ title, slug })
+      const input = { title, slug, ...(template ? { template } : {}) }
+      const flow = await api.createFlow(input)
       if (!mounted.current) return
-      setTitle(''); setSlug(''); markSaved()
+      setTitle(''); setSlug(''); setSlugEdited(false); setTemplate(undefined); setShowCreate(false); markSaved()
+      await router.invalidate({ filter: match => match.routeId === '/app/' })
+      if (!mounted.current) return
       await navigate({ to: '/app/flows/$flowId/builder', params: { flowId: flow.id } })
     } catch (reason) { if (mounted.current) setError(reason instanceof Error ? reason.message : 'The draft flow could not be created.') }
     finally { if (mounted.current) setCreating(false) }
   }
-  const cancel = () => { setShowCreate(false); setTitle(''); setSlug(''); setSlugEdited(false); setError(undefined) }
+  const cancel = () => { setShowCreate(false); setTitle(''); setSlug(''); setSlugEdited(false); setTemplate(undefined); setError(undefined) }
 
-  return <section aria-labelledby="dashboard-title">
+  const openCreate = () => { if (dirty && !window.confirm('Discard the unfinished copy and create a new flow?')) return; setError(undefined); setShowCreate(true) }
+  const firstFlow = !hasFlows && status === 'active'
+
+  return <section className="dashboard" aria-labelledby="dashboard-title">
     <header className="dashboard-heading">
       <div><p className="eyebrow">{workspace.name}</p><h1 id="dashboard-title" className="display">Your flows</h1></div>
-      <div className="builder-actions">
-        {!showCreate ? <button className="primary-button focus-ring" disabled={loading || saving} type="button" onClick={() => { if (dirty && !window.confirm('Discard the unfinished copy and create a new flow?')) return; setError(undefined); setShowCreate(true) }}><Plus size={16} aria-hidden="true" /> New flow</button> : null}
+      <div className="builder-actions dashboard-actions">
+        <Link className="secondary-button focus-ring" to="/app/import">Import a form</Link>
+        {!showCreate ? <button className="primary-button focus-ring" disabled={loading || saving} type="button" onClick={openCreate}><Plus size={16} aria-hidden="true" /> New flow</button> : null}
         <button className="quiet-button focus-ring" disabled={loading || saving} onClick={() => updateList()} type="button"><RefreshCw aria-hidden="true" size={16} /> Refresh</button>
       </div>
     </header>
     {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
-    <nav className="builder-actions" aria-label="Filter flows" style={{ marginBottom: '1rem' }}>
-      {(['active', 'draft', 'open', 'closed', 'archived'] as const).map((item) => <button aria-pressed={status === item} className="quiet-button focus-ring" data-selected={status === item} key={item} disabled={loading || saving} onClick={() => { if (status !== item) updateList(item) }} type="button">{item}</button>)}
+    <ReviewDueNotice />
+    <nav className="filter-row" aria-label="Filter flows">
+      {(['active', 'draft', 'open', 'closed', 'archived'] as const).map((item) => <button aria-pressed={status === item} className="quiet-button focus-ring" data-selected={status === item} key={item} disabled={loading || saving} onClick={() => { if (status !== item) updateList(item) }} type="button">{item === 'active' ? 'All flows' : item[0].toUpperCase() + item.slice(1)}</button>)}
     </nav>
-    {showCreate ? <form className="panel" onSubmit={(event) => { event.preventDefault(); void createFlow() }} style={{ padding: '2rem', maxWidth: '42rem', marginBottom: '1.5rem' }}>
-      {!hasFlows ? <><p className="eyebrow">Ask → Signal → Act</p><h2 className="display" style={{ fontSize: '2.35rem', margin: '.55rem 0' }}>Create your first flow</h2><p className="muted" style={{ lineHeight: 1.55 }}>Ask a clear question, use the answers to make a decision, then act.</p></> : <h2 className="display" style={{ fontSize: '2.35rem', margin: 0 }}>New flow</h2>}
+    {showCreate ? <form className="panel dashboard-create-panel" onSubmit={(event) => { event.preventDefault(); void createFlow() }}>
       <div className="dashboard-create">
+        {!hasFlows ? <><p className="eyebrow">Ask → Signal → Act</p><h2 className="display">Create your first flow</h2><p className="muted">Ask a clear question, use the answers to make a decision, then act.</p></> : <h2 className="display">New flow</h2>}
+        <div aria-label="Flow templates" className="builder-actions template-choices">
+          {flowTemplates.map(item => <button className="secondary-button focus-ring" aria-pressed={template === item.id} disabled={creating} type="button" key={item.id} onClick={() => { setTemplate(item.id); setTitle(item.title); setSlug(`${suggestedSlug(item.title)}-${crypto.randomUUID().slice(0, 8)}`); setSlugEdited(false) }}>{item.title}</button>)}
+          <button className="secondary-button focus-ring" aria-pressed={!template} disabled={creating} type="button" onClick={() => { setTemplate(undefined); setTitle(''); setSlug(''); setSlugEdited(false) }}>Blank flow</button>
+        </div>
+        {template ? <p className="muted">{flowTemplates.find(item => item.id === template)?.description} You can edit every question before publishing.</p> : null}
         <label className="inspector-field">Flow name<input disabled={creating} required className="text-input" onChange={(event) => { const name = event.target.value; setTitle(name); if (!slugEdited) setSlug(suggestedSlug(name)) }} placeholder="Post-visit feedback" value={title} /></label>
         <label className="inspector-field">Public link<input disabled={creating} required maxLength={120} className="text-input" onChange={(event) => { setSlugEdited(true); setSlug(event.target.value) }} placeholder="post-visit-feedback" value={slug} /></label>
-        <div className="builder-actions"><button className="primary-button focus-ring" disabled={creating || !title.trim() || !slug.trim()} type="submit"><Plus aria-hidden="true" size={16} /> {creating ? 'Creating…' : 'Create draft flow'}</button><button className="quiet-button focus-ring" disabled={creating} onClick={cancel} type="button">Cancel</button></div>
+        <div className="builder-actions dashboard-create-actions"><button className="primary-button focus-ring" disabled={creating || !title.trim() || !slug.trim()} type="submit"><Plus aria-hidden="true" size={16} /> {creating ? 'Creating…' : 'Create draft flow'}</button><button className="quiet-button focus-ring" disabled={creating} onClick={cancel} type="button">Cancel</button></div>
       </div>
+      {template ? <div className="dashboard-create-preview"><TemplatePreview template={template} /><AppNote className="create-note" wideOnly>you can edit every question</AppNote></div> : null}
     </form> : null}
     {loading ? <p className="status-note" role="status">Updating flows…</p> : null}
-    {!loading && !error && !flows.length && !showCreate ? <section className="quiet-panel" style={{ padding: '1.5rem' }}><h2>{hasFlows || status !== 'active' ? `No ${status} flows` : 'No flows yet'}</h2>{!hasFlows && status === 'active' ? <p className="muted">Ask → Signal → Act. Create a flow to ask, make a decision, then act.</p> : <p className="muted">Choose another filter or create a new flow.</p>}</section> : null}
+    {!loading && !error && !flows.length && !showCreate ? firstFlow
+      ? <section className="panel dashboard-empty" aria-labelledby="empty-title"><div className="dashboard-empty__copy"><h2 id="empty-title" className="display">No flows yet</h2><p className="muted">Ask → Signal → Act. Create a flow to ask, make a decision, then act.</p><button className="primary-button focus-ring" disabled={saving} type="button" onClick={openCreate}><Plus size={16} aria-hidden="true" /> New flow</button></div><div className="dashboard-empty__art"><NoteIllustration variant="blank" /><AppNote className="empty-note">ask your first question</AppNote></div></section>
+      : <section className="quiet-panel dashboard-filter-empty" aria-labelledby="empty-title"><h2 id="empty-title" className="display">{`No ${status} flows`}</h2><p className="muted">Choose another filter or create a new flow.</p></section> : null}
     {!showCreate ? <div className="flow-grid" aria-busy={loading}>{flows.map((flow) => <FlowCard flow={flow} key={flow.id} refreshing={loading || saving} onSavingChange={onCopySaving} timeZone={workspace.timeZone} />)}</div> : null}
   </section>
 }

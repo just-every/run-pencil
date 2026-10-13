@@ -1,0 +1,121 @@
+/*
+ * The dark product theme (src/core/app/theme.css, with Tailwind's preflight) is linked on every document. A document
+ * that contains .pencil-site paints a light paper canvas instead; no product page contains it, and this stylesheet is
+ * linked only from site pages. Preflight still zeroes margins and list styles, so site styles set them explicitly.
+ */
+html:has(.pencil-site) {
+  color-scheme: light;
+  color: var(--ink);
+  background: var(--paper);
+}
+html:has(.pencil-site) body { background: var(--paper); }
+
+/*
+ * Arial sized to DM Sans: size-adjust matches the average advance width over the site's own copy, and the overrides
+ * carry DM Sans's ascent and descent (0.99 / 0.31 em), so text set before DM Sans arrives wraps to the same lines and
+ * nothing below it moves when the swap lands. Devices without Arial fall through to the token's system faces.
+ */
+@font-face { font-family: 'DM Sans Fallback'; font-weight: 400; src: local('Arial'), local('ArialMT'); size-adjust: 103.7%; ascent-override: 95.5%; descent-override: 29.9%; line-gap-override: 0%; }
+@font-face { font-family: 'DM Sans Fallback'; font-weight: 500; src: local('Arial'), local('ArialMT'); size-adjust: 105.8%; ascent-override: 93.6%; descent-override: 29.3%; line-gap-override: 0%; }
+@font-face { font-family: 'DM Sans Fallback'; font-weight: 600 700; src: local('Arial Bold'), local('Arial-BoldMT'); size-adjust: 100.3%; ascent-override: 98.7%; descent-override: 30.9%; line-gap-override: 0%; }
+
+.pencil-site {
+  display: flex;
+  min-height: 100svh;
+  flex-direction: column;
+  color: var(--ink-soft);
+  background: var(--paper);
+  /* The token's stack (tokens.css) with the metric-matched fallback right after DM Sans. */
+  font-family: 'DM Sans', 'DM Sans Fallback', var(--font-sans);
+  font-size: 18px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+:where(.pencil-site) .site-main { flex: 1 0 auto; }
+:where(.pencil-site) .site-main:focus { outline: none; }
+
+.pencil-site h1,
+.pencil-site h2 {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+.pencil-site h1 { font-size: clamp(48px, 6.4vw, 96px); line-height: 1.02; }
+.pencil-site h2 { font-size: clamp(36px, 4.2vw, 60px); line-height: 1.06; text-wrap: balance; }
+.pencil-site :focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+
+:where(.pencil-site) .site-wrap {
+  width: 100%;
+  max-width: calc(var(--content-max) + 2 * var(--gutter));
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+:where(.pencil-site) .site-skip {
+  position: absolute;
+  z-index: 20;
+  top: 12px;
+  left: var(--gutter);
+  border-radius: 999px;
+  padding: 10px 18px;
+  color: #fff;
+  background: var(--ink);
+  font-weight: 500;
+  text-decoration: none;
+  transform: translateY(-200%);
+}
+:where(.pencil-site) .site-skip:focus { transform: none; }
+
+/*
+ * Primary action: ink pill with white text. Its border is transparent on paper; in forced-colors mode, where the
+ * browser drops the ink fill, it is drawn in ButtonText so the pill keeps its outline.
+ */
+:where(.pencil-site) .site-pill {
+  display: inline-flex;
+  min-height: 56px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0 32px;
+  color: #fff;
+  background: var(--ink);
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.2;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+:where(.pencil-site) .site-pill:hover { background: #2c3035; box-shadow: inset 0 -3px 0 var(--yellow); }
+:where(.pencil-site) .site-pill--small { min-height: 44px; padding: 0 20px; font-size: 16px; }
+
+/* Secondary action: ink text with a pencil-weight underline that turns yellow on hover. */
+:where(.pencil-site) .site-link {
+  color: var(--ink);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 6px;
+  transition: text-decoration-color 0.15s ease;
+}
+:where(.pencil-site) .site-link:hover { text-decoration-color: var(--yellow-deep); }
+
+/* Page primitives shared by the homepage and docs. */
+:where(.pencil-site) .site-lede { max-width: 31em; margin: 0; color: var(--ink-soft); font-size: clamp(19px, 1.6vw, 23px); line-height: 1.55; text-wrap: pretty; }
+:where(.pencil-site) .site-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 40px; }
+:where(.pencil-site) .site-proof { display: flex; flex-wrap: wrap; gap: 4px 0; margin: 0; padding: 0; color: var(--ink-soft); font-size: 15px; list-style: none; }
+:where(.pencil-site) .site-proof li { white-space: nowrap; }
+:where(.pencil-site) .site-proof li:not(:last-child)::after { content: '·'; padding-inline: 10px; color: var(--graphite); }
+
+@media (forced-colors: active) {
+  :where(.pencil-site) .site-pill { border-color: ButtonText; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pencil-site *, .pencil-site *::before, .pencil-site *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}
+@media (max-width: 600px) {
+  .pencil-site { font-size: 17px; }
+  :where(.pencil-site) .site-pill:not(.site-pill--small) { min-height: 52px; padding: 0 26px; font-size: 17px; }
+}

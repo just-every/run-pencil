@@ -2,6 +2,7 @@ const createdAt = '2026-08-31T08:00:00.000Z'
 const publishedAt = '2026-08-31T08:05:00.000Z'
 
 export const auroraCoffeeSample = {
+  brand: { name: 'Aurora Coffee', supportingLine: 'Your feedback helps the cafe team improve what matters most.', accent: '#afa4f5', publicFlowSlug: 'aurora-coffee-post-visit' },
   workspace: {
     id: '01J00000000000000000000001',
     name: 'Aurora Coffee',

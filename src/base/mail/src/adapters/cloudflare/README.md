@@ -1,6 +1,6 @@
 # Cloudflare Email Sending adapter
 
-`sendCloudflare(config, message, dependencies = {})` implements mail API
+`sendCloudflare(config, message, dependencies = {})` implements IF-056-MAIL-v1
 using the structured Email Sending REST endpoint. Import it from `index.mjs` in
 this directory. It uses the shared portable core validation and transport and
 makes one request to
@@ -73,10 +73,10 @@ Inspected 2026-10-06:
 From the Base repository root:
 
 ```sh
-node --test src/base/mail/tests/cloudflare/*.test.mjs src/base/mail/tests/core/*.test.mjs
+node --test modules/mail/tests/cloudflare/*.test.mjs modules/mail/tests/core/*.test.mjs
 ```
 
-Fixtures are exclusively under `src/base/mail/tests/cloudflare`. They check the
+Fixtures are exclusively under `modules/mail/tests/cloudflare`. They check the
 actual request protocol, documented and malformed responses, partial delivery,
 cardinality, header/feature rejection, redaction, and no retry/redirect following.
 `tests/assembly/workerd.test.mjs` verifies the facade and doctor sender chain

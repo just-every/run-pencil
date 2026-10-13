@@ -1,6 +1,9 @@
+import { BrandIdentity } from '../../brand'
+import { brandStyle } from '../../brand'
+import { useEmbedProtocol } from '../../embedding'
 import { ArrowLeft, ArrowRight, Check, LockKeyhole } from 'lucide-react'
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
-import { answerIssue } from '../../../shared/answers'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { answerIssue, isUnanswered } from '../../../shared/answers'
 import { visiblePath } from '../../../shared/flowPath'
 import { QuestionInput } from '../../../shared/ui/QuestionInput'
 import { PublicClosedPage } from './PublicClosedPage'
@@ -39,8 +42,10 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   }, [slug, embedded, initialFlow.flow.id])
   const [index, setIndex] = useState(0)
   const [completedStepId, setCompletedStepId] = useState<string | undefined>(initialFlow.completedStepId ?? undefined)
+  useEmbedProtocol(embedded, !!completedStepId, config.embedHostOrigin)
   const [pendingFinal, setPendingFinal] = useState<PendingFinal>()
   const [answers, setAnswers] = useState<AnswerValues>({})
+  const [skipped, setSkipped] = useState<Set<string>>(new Set())
   const [error, setError] = useState<string>()
   const [submitting, setSubmitting] = useState(false)
   const [sessionUnavailable, setSessionUnavailable] = useState(false)
@@ -84,6 +89,8 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
 
   const changeAnswer = (stepId: string, value: unknown) => {
     if (pendingFinal || sessionUnavailable || formChanged) return
+    const reachableSkipped = new Set(visiblePath(flow, { ...answers, [stepId]: value }).map(step => step.id))
+    setSkipped(current => new Set([...current].filter(id => id !== stepId && reachableSkipped.has(id))))
     setAnswers((current) => {
       const next = { ...current, [stepId]: value }
       const reachable = new Set(visiblePath(flow, next).map((step) => step.id))
@@ -102,13 +109,9 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   const isCompletion = current.kind === 'completion'
   const isWelcome = current.kind === 'welcome'
   const nextCandidate = path[index + 1]
-  const progress = isCompletion ? 100 : Math.max(7, (Math.max(0, questionPosition) / Math.max(1, questionSteps.length)) * 100)
-  const configuredTheme = {
-    '--violet': config.publicFlowTheme.accent,
-    '--canvas': config.publicFlowTheme.background,
-    '--surface': config.publicFlowTheme.surface,
-    '--ink': config.publicFlowTheme.text,
-  } as CSSProperties
+  const answeredQuestions = questionSteps.filter(step => (!step.required && skipped.has(step.id) && isUnanswered(answers[step.id])) || (!isUnanswered(answers[step.id]) && !answerIssue(step, choicesForStep(flow.choices, step.id).map(choice => choice.id), answers[step.id]))).length
+  const progress = isCompletion ? 100 : answeredQuestions / Math.max(1, questionSteps.length) * 100
+  const configuredTheme = brandStyle(config)
 
   const confirmFinal = async (attempt: PendingFinal) => {
     const receipt = await api.submitResponse(slug, attempt.input)
@@ -133,7 +136,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
       sessionStart.current = Promise.resolve({ sessionId: session.sessionId, sessionToken: session.sessionToken, revisionId: session.revisionId })
       restartCandidate.current = undefined
       setFlow(session.flow); setIndex(0)
-      if (changed) { setAnswers({}); setHoneypot('') }
+      if (changed) { setAnswers({}); setSkipped(new Set()); setHoneypot('') }
       setSessionUnavailable(false); setFormChanged(false); setClosedRestart(false); setUnconfirmedClosedFlow(undefined); setError(undefined)
     } catch (reason) {
       if (context === responseContext.current) showFailure(reason, 'The current form could not load. Your unsent answers have been kept.', { restarting: true })
@@ -171,6 +174,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
         return
       }
       await api.advanceSession(slug, { ...credentials, stepId: nextCandidate!.id })
+      if (current.kind === 'question' && !current.required && isUnanswered(answers[current.id])) setSkipped(previous => new Set([...previous, current.id]))
       setIndex((currentIndex) => Math.min(currentIndex + 1, path.length - 1))
     } catch (reason) {
       // A refused first attempt did not commit. A refused retry (for example
@@ -189,20 +193,21 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   const primaryLabel = pendingFinal ? 'Retry submission' : formChanged ? 'Use current form' : sessionUnavailable ? 'Start again' : isWelcome ? 'Begin' : nextCandidate?.kind === 'completion' ? 'Submit response' : 'Continue'
 
   return (
-    <main className="pencil-canvas respondent-shell" data-hydrated={hydrated} data-embedded={embedded ? 'true' : undefined} data-landing={landing ? 'true' : undefined} style={configuredTheme}>
-      {landing ? <header className="respondent-landing-header"><span className="eyebrow">{config.publicFlowBusinessName}</span><a className="quiet-button focus-ring" href="/signin">Operator sign in</a></header> : null}
-      <article className="respondent-card" aria-labelledby="respondent-title">
-        {!embedded ? <p className="eyebrow">{config.publicFlowBusinessName}</p> : null}
-        {!isCompletion ? <><div className="respondent-top"><span>{isWelcome ? 'Before you begin' : `Question ${questionPosition + 1} of ${questionSteps.length}`}</span><span>{isWelcome ? `${questionSteps.length} question${questionSteps.length === 1 ? '' : 's'} ahead` : `${Math.max(0, questionSteps.length - questionPosition - 1)} remaining`}</span></div><div aria-label="Response progress" aria-valuemax={100} aria-valuemin={0} aria-valuenow={Math.round(progress)} className="progress-track" role="progressbar"><span style={{ width: `${progress}%` }} /></div></> : null}
+    <main className="pencil-canvas respondent-shell brand-surface" data-hydrated={hydrated} data-embedded={embedded ? 'true' : undefined} data-landing={landing ? 'true' : undefined} style={configuredTheme}>
+      {landing ? <header className="respondent-landing-header"><span className="eyebrow">{config.publicFlowBusinessName}</span><a className="secondary-button focus-ring" href="/signin">Operator sign in</a></header> : null}
+      <article className="respondent-card respondent-note-sheet" aria-labelledby="respondent-title">
+        <BrandIdentity config={config} />
+        {!isCompletion ? <><div className="respondent-top"><span>{isWelcome ? 'Before you begin' : `Question ${questionPosition + 1} of ${questionSteps.length}`}</span><span>{isWelcome ? `${questionSteps.length} question${questionSteps.length === 1 ? '' : 's'} ahead` : `${Math.max(0, questionSteps.length - answeredQuestions)} remaining`}</span></div><div aria-label="Response progress" aria-valuemax={100} aria-valuemin={0} aria-valuenow={Math.round(progress)} className="progress-track" role="progressbar"><span style={{ width: `${progress}%` }} />{!isWelcome && current.kind === 'question' ? <span className="progress-track__here" style={{ left: `${questionPosition / Math.max(1, questionSteps.length) * 100}%`, width: `${100 / Math.max(1, questionSteps.length)}%` }} /> : null}</div></> : null}
         <h1 className="display" id="respondent-title">{current.prompt}</h1>
         {current.helperText ? <p className="respondent-helper">{current.helperText}</p> : null}
-        {isWelcome || (!path.some((step) => step.kind === 'welcome') && current.kind === 'question' && questionPosition === 0) ? <aside className="privacy-card"><LockKeyhole aria-hidden="true" color="var(--violet)" size={21} /><span><strong style={{ color: 'var(--ink)' }}>Before you share</strong><br />{config.publicFlowPurpose} Your response is {initialFlow.identity === 'identified' ? 'identified through your invitation' : 'anonymous'}, and {config.publicFlowBusinessName} operators can see the answers you submit. Identifying details you choose to type, such as an email address, identify you to those operators. Analysis and task delivery are unavailable in this release; answers are not sent to those providers.</span></aside> : null}
-        {current.kind === 'question' ? <fieldset disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} aria-labelledby="respondent-title" style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}><QuestionInput choices={currentChoices} onChange={(value) => changeAnswer(current.id, value)} step={current} value={answers[current.id]} /></fieldset> : null}
-        {isCompletion ? <p className="privacy-card"><Check aria-hidden="true" color="var(--green)" size={21} /><span>Thank you. This public link cannot edit a completed response.</span></p> : null}
+        {isWelcome || (!path.some((step) => step.kind === 'welcome') && current.kind === 'question' && questionPosition === 0) ? <aside className="privacy-card"><LockKeyhole aria-hidden="true" size={22} strokeWidth={1.6} /><span><strong>Before you share</strong><br />{config.publicFlowPurpose} Your response is {initialFlow.identity === 'identified' ? 'identified through your invitation' : 'anonymous'}. At {config.publicFlowBusinessName}, operators can see the answers you submit. Identifying details you choose to type, such as an email address, identify you to those operators. Your answers are received and stored by this feedback service.</span></aside> : null}
+        {current.kind === 'question' && current.required ? <p className="respondent-required">Required</p> : null}
+        {current.kind === 'question' ? <fieldset className="plain-fieldset" disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} aria-labelledby="respondent-title"><QuestionInput key={`${flow.revision.id}-${current.id}`} choices={currentChoices} onChange={(value) => changeAnswer(current.id, value)} step={current} value={answers[current.id]} /></fieldset> : null}
+        {isCompletion ? <p className="privacy-card"><Check aria-hidden="true" color="var(--green)" size={22} /><span>Thank you. This public link cannot edit a completed response.</span></p> : null}
         <label className="respondent-honeypot" aria-hidden="true">Company website<input autoComplete="off" name="company-website" onChange={(event) => setHoneypot(event.target.value)} tabIndex={-1} value={honeypot} /></label>
         {pendingFinal && !submitting ? <p className="status-note">Retry to confirm the answers already submitted.</p> : null}
         {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
-        {!isCompletion ? <footer className="respondent-actions">{index > 0 ? <button className="quiet-button focus-ring" disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onClick={() => { setError(undefined); setIndex((currentIndex) => Math.max(0, currentIndex - 1)) }} type="button"><ArrowLeft aria-hidden="true" size={17} /> Back</button> : null}<button className="primary-button focus-ring" disabled={!hydrated || submitting} onClick={needsAdmission && !pendingFinal ? restart : next} type="button">{submitting ? (needsAdmission ? 'Starting again…' : pendingFinal || nextCandidate?.kind === 'completion' ? 'Submitting…' : 'Continuing…') : primaryLabel} <ArrowRight aria-hidden="true" size={17} /></button></footer> : null}
+        {!isCompletion ? <footer className="respondent-actions">{index > 0 ? <button className="secondary-button focus-ring" disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onClick={() => { setError(undefined); const target = Math.max(0, index - 1); const earlier = new Set(path.slice(0, target).map(step => step.id)); setSkipped(previous => new Set([...previous].filter(id => earlier.has(id)))); setIndex(target) }} type="button"><ArrowLeft aria-hidden="true" size={17} /> Back</button> : null}<button className="primary-button focus-ring" disabled={!hydrated || submitting} onClick={needsAdmission && !pendingFinal ? restart : next} type="button">{submitting ? (needsAdmission ? 'Starting again…' : pendingFinal || nextCandidate?.kind === 'completion' ? 'Submitting…' : 'Continuing…') : primaryLabel} <ArrowRight aria-hidden="true" size={17} /></button></footer> : null}
       </article>
       {landing && config.showPoweredByCredit ? <footer className="respondent-landing-credit">Powered by {config.productName} · <a href="https://runeditrun.com">runeditrun.com</a></footer> : null}
     </main>

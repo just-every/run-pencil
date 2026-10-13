@@ -27,7 +27,7 @@ contract('FLOW-014', 'validates all offending question IDs, nonempty bounded pro
   expect(validateRevisionGraph([{ ...question, prompt: 'x'.repeat(1000) }, completion], choices, [])).toEqual([])
   expect(validateRevisionGraph([completion], [], [])).toContainEqual(expect.objectContaining({ stepId: 'flow', reason: expect.stringContaining('at least one question') }))
   for (const questionType of ['single_choice', 'multiple_choice', 'priority'] as const) expect(validateRevisionGraph([{ ...question, questionType }, completion], [], [])).toContainEqual(expect.objectContaining({ stepId: 'q', reason: expect.stringContaining('at least one choice') }))
-  for (const duplicated of [{ ...choices[1], value: 'a' }, { ...choices[1], label: ' A ' }]) expect(validateRevisionGraph([question, completion], [choices[0], duplicated], [])).toContainEqual(expect.objectContaining({ stepId: 'q', reason: expect.stringContaining('distinct') }))
+  for (const [duplicated, reason] of [[{ ...choices[1], value: 'a' }, 'Each choice needs a different answer value.'], [{ ...choices[1], label: ' A ' }, 'Each choice needs a different label.']] as const) expect(validateRevisionGraph([question, completion], [choices[0], duplicated], [])).toContainEqual({ stepId: 'q', reason })
   for (const [questionType, count] of [['single_choice', 101], ['priority', 11]] as const) {
     const options = Array.from({ length: count }, (_, i) => ({ ...choices[0], id: `row-${i}`, stableId: String(i), value: String(i), label: String(i), position: i }))
     expect(validateRevisionGraph([{ ...question, questionType }, completion], options, [])).toContainEqual(expect.objectContaining({ stepId: 'q', reason: expect.stringContaining('choice limit') }))
@@ -36,4 +36,8 @@ contract('FLOW-014', 'validates all offending question IDs, nonempty bounded pro
   const errors = validateRevisionGraph([{ ...question, prompt: '' }, badRating, completion], choices, [])
   expect(errors).toContainEqual(expect.objectContaining({ stepId: 'q', reason: expect.stringContaining('prompt') }))
   expect(errors).toContainEqual(expect.objectContaining({ stepId: 'rating', reason: expect.stringContaining('settings') }))
+})
+
+contract('FLOW-014', 'duplicate labels give a plain correction independently of answer values', () => {
+  expect(validateRevisionGraph([question, completion], [choices[0], { ...choices[1], label: ' A ' }], [])).toContainEqual({ stepId: 'q', reason: 'Each choice needs a different label.' })
 })

@@ -1,0 +1,15 @@
+// The local runtime's Worker configuration: what `rer dev`, `rer build` and `rer preview` run. It carries the loopback
+// settings. Deployed installations get deploy/wrangler.template.toml with their own values (rer deploy), never this file.
+{
+  "name": "pencil-local",
+  "main": "src/server.ts",
+  "compatibility_date": "2026-09-08",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    { "binding": "DB", "database_name": "pencil-local", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations/core" }
+  ],
+  "assets": { "binding": "ASSETS", "run_worker_first": true },
+  // Retain anonymous metrics and dispatch due durable invitations/reminders.
+  "triggers": { "crons": ["* * * * *"] },
+  "vars": { "SEED_SAMPLE_DATA": "false", "MAIL_PROVIDER": "local", "PENCIL_LOCAL_DEVELOPMENT": "true" }
+}

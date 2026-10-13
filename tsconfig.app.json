@@ -3,7 +3,11 @@
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2022",
     "useDefineForClassFields": true,
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2023",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "allowJs": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -14,9 +18,24 @@
     "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "types": ["vitest/globals", "@testing-library/jest-dom", "@cloudflare/workers-types"],
+    "types": [
+      "vitest/globals",
+      "@testing-library/jest-dom",
+      "@cloudflare/workers-types"
+    ],
     "noEmit": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "allowImportingTsExtensions": true
   },
-  "include": ["src"]
+  "include": [
+    "src"
+  ],
+  "exclude": [
+    "src/core/features/docs/build",
+    "src/core/features/embedding/build",
+    "src/base/mail/tests/**",
+    "src/base/operator-auth/tests/**",
+    "src/base/operator-auth/oidc/tests/**",
+    "src/base/operator-auth/conformance/tests/**"
+  ]
 }

@@ -1,3 +1,5 @@
+import { developmentInbox } from '../helpers/development-outbox'
+import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { operatorEmail } from './auth-identity'
 import { expect } from './fixtures'
 import { contract } from './contract'
@@ -13,7 +15,7 @@ contract('RSLT-005', 'native revision comparison keeps absent questions, contain
     return response.status() === 204 ? undefined as T : await response.json() as T
   }
   await ok('/auth/magic-link', { email: operatorEmail() })
-  const inbox = await ok<{ messages: Array<{ magicLinkToken: string }> }>(`/auth/local-inbox?email=${encodeURIComponent(operatorEmail())}`)
+  const inbox = await developmentInbox(path => request.get(path, { headers: devKeyHeaders }), operatorEmail())
   expect((await request.post('/auth/confirm', { data: { token: inbox.messages[0].magicLinkToken }, headers, maxRedirects: 0 })).status()).toBe(303)
   const flow = await ok<{ id: string }>('/api/app/flows', { title: `Synthetic comparison ${info.project.name}`, slug })
   const path = `/api/app/flows/${flow.id}`

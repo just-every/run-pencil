@@ -1,0 +1,83 @@
+/* Your flows: the heading, the circled filter row, white flow cards, the New flow panel and the empty state. */
+.dashboard-actions { gap: 12px 20px; }
+
+.flow-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+@media (min-width: 700px) { .flow-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .flow-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.flow-card { display: grid; align-content: start; gap: 16px; min-width: 0; padding: 24px; overflow-wrap: anywhere; }
+.flow-card > * { margin: 0; }
+.flow-card header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.flow-card-note { color: var(--subtle); font-size: 13px; }
+.flow-card h2 { margin: 0; font-size: 26px; line-height: 1.1; }
+.flow-card-activity { margin: 6px 0 0; font-size: 15px; }
+.flow-card-counts { border-block: 1px solid var(--line); padding: 14px 0; }
+.flow-card-counts strong { color: var(--ink); font-size: 22px; font-weight: 400; }
+.flow-card-audience { font-size: 13px; color: var(--subtle); }
+.flow-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
+.flow-card-actions .quiet-button { margin-left: auto; font-size: 14px; }
+.flow-card-copy { border-top: 1px solid var(--line); padding-top: 16px; }
+.flow-card-copy .builder-actions { margin-top: 16px; }
+
+/* New flow: the form at left, the template's first question on a note sheet at right. */
+.dashboard-create-panel { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-items: center; gap: 48px; margin-bottom: 32px; padding: 40px; }
+.dashboard-create { display: grid; gap: 14px; min-width: 0; }
+.dashboard-create > * { margin: 0; }
+.dashboard-create h2 { margin: 0; font-size: clamp(36px, 4vw, 48px); line-height: 1.04; }
+.template-choices { gap: 12px 14px; margin: 6px 0 2px; }
+.dashboard-create-actions { gap: 20px; margin-top: 8px; }
+.dashboard-create-preview { position: relative; padding: 56px 40px 32px 8px; }
+/* The pick's preview card: the first question pencilled in Caveat with inked answer chips, the first one circled. */
+.template-preview { display: grid; min-height: 260px; align-content: center; margin: 0; padding: 40px 36px; rotate: -4deg; }
+.template-preview__prompt { margin: 0 0 22px; color: #34373b; font-family: var(--font-hand); font-size: 38px; line-height: 1.05; }
+.template-preview__answers { display: flex; flex-wrap: wrap; gap: 14px 16px; }
+.template-preview__answers .answer-chip { position: relative; border: 1.4px solid rgba(70, 72, 75, 0.62); padding: 4px 18px 6px; color: #34373b; font-family: var(--font-hand); font-size: 26px; line-height: 1.1; }
+.template-preview__answers .answer-chip:nth-child(2) { rotate: -1.5deg; }
+.template-preview__answers .answer-chip:nth-child(3) { rotate: 1deg; }
+.template-preview__answers .answer-chip:first-child::after { content: ""; position: absolute; inset: -7px -9px; pointer-events: none; background: var(--pencil-oval) no-repeat center / 100% 100%; }
+.template-preview__scale { display: flex; flex-wrap: wrap; gap: 8px; }
+.template-preview__scale span { display: grid; width: 34px; height: 34px; place-items: center; border: 1.3px solid rgba(70, 72, 75, 0.55); border-radius: 999px; color: #34373b; font-family: var(--font-hand); font-size: 22px; }
+.template-preview__line { display: block; height: 2px; margin-top: 18px; background: repeating-linear-gradient(90deg, rgba(70, 72, 75, 0.6) 0 10px, transparent 10px 16px); }
+.create-note { top: -6px; right: -8px; --note-turn: rotate(-28deg); --note-tilt: -8deg; }
+@media (max-width: 1100px) {
+  .dashboard-create-panel { grid-template-columns: 1fr; gap: 28px; padding: 24px 20px; }
+  .dashboard-create-preview { padding: 0 8px 8px; }
+  .template-preview { min-height: 0; rotate: -1.5deg; padding: 26px 24px; }
+  .template-preview__prompt { font-size: 32px; }
+  .template-preview__answers .answer-chip { font-size: 22px; }
+}
+
+/* No flows yet: copy at left, the blank card and pencil at right; a filtered empty list is a quiet panel. */
+.dashboard-empty { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: 48px; padding: 72px clamp(24px, 8vw, 160px) 72px clamp(24px, 12vw, 240px); }
+.dashboard-empty__copy > * { margin: 0; }
+.dashboard-empty h2 { font-size: 48px; line-height: 1.04; }
+.dashboard-empty p { margin-top: 14px; font-size: 18px; max-width: 26em; }
+.dashboard-empty .primary-button { margin-top: 28px; padding: 0 26px; }
+.dashboard-empty__art { position: relative; max-width: 460px; }
+.empty-note { top: -40px; right: -64px; --note-turn: rotate(-32deg); --note-tilt: -10deg; }
+.dashboard-filter-empty { padding: 28px; }
+.dashboard-filter-empty > * { margin: 0; }
+.dashboard-filter-empty h2 { font-size: 28px; }
+.dashboard-filter-empty p { margin-top: 8px; }
+
+@media (max-width: 620px) {
+  .dashboard-heading { align-items: flex-start; flex-direction: column; margin-bottom: 24px; }
+  /* One line each, as the phone pick draws them: actions, filters, and a card's three actions. */
+  .dashboard-actions { width: 100%; flex-wrap: nowrap; gap: 8px; }
+  .dashboard-actions > * { min-height: 40px; padding: 0 14px; font-size: 15px; white-space: nowrap; }
+  .dashboard-actions .primary-button { order: -1; }
+  .dashboard-actions .quiet-button { padding: 0 4px; }
+  .filter-row { flex-wrap: nowrap; justify-content: space-between; gap: 0; padding: 6px 4px 12px 6px; }
+  .filter-row .quiet-button { min-height: 36px; padding: 0 4px; font-size: 15px; white-space: nowrap; }
+  .filter-row .quiet-button[aria-pressed='true'] { padding: 0 11px; }
+  .flow-card { padding: 20px; }
+  .flow-card-actions { flex-wrap: nowrap; gap: 8px; }
+  .flow-card-actions > * { min-height: 38px; padding: 0 12px; font-size: 14px; white-space: nowrap; }
+  .flow-card-actions .quiet-button { padding: 0 2px; }
+  .dashboard-empty { grid-template-columns: 1fr; gap: 24px; padding: 24px 20px 32px; text-align: center; }
+  .dashboard-empty__art { order: -1; width: 240px; margin: 28px auto 0; }
+  .dashboard-empty h2 { font-size: 40px; }
+  .dashboard-empty p { margin-inline: auto; }
+  .empty-note { top: -40px; right: -14px; }
+}
+.dashboard-create-panel:not(:has(.dashboard-create-preview)) { grid-template-columns: minmax(0, 760px); }
+@media (max-width: 379px) { .dashboard-actions, .filter-row, .flow-card-actions { flex-wrap: wrap; } }

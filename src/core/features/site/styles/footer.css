@@ -1,0 +1,24 @@
+/* Footer: lockup and tagline, the site links, and the family's runeditrun.com credit, under one pencil hairline. */
+:where(.pencil-site) .site-footer { margin-top: clamp(64px, 8vw, 120px); padding-bottom: 40px; font-size: 16px; }
+:where(.pencil-site) .site-footer__bar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 20px 40px;
+  border-top: 1px solid var(--line);
+  padding-top: 32px;
+}
+:where(.pencil-site) .site-footer__brand { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+:where(.pencil-site) .site-footer__brand .site-lockup { font-size: 22px; gap: 10px; }
+:where(.pencil-site) .site-footer__tagline { margin: 0; border-left: 1px solid var(--line); padding-left: 20px; color: var(--graphite); }
+:where(.pencil-site) .site-footer__nav { display: flex; flex-wrap: wrap; gap: 8px 32px; color: var(--ink); }
+:where(.pencil-site) .site-footer__nav a { text-decoration: none; }
+:where(.pencil-site) .site-footer__nav a:hover,
+:where(.pencil-site) .site-footer__credit a:hover { text-decoration: underline 1.5px var(--yellow-deep); text-underline-offset: 5px; }
+:where(.pencil-site) .site-footer__credit { grid-column: 1 / -1; margin: 0; color: var(--graphite); font-size: 14px; }
+:where(.pencil-site) .site-footer__credit a { color: var(--ink-soft); text-decoration: underline 1px; text-underline-offset: 3px; }
+
+@media (max-width: 600px) {
+  :where(.pencil-site) .site-footer__bar { grid-template-columns: 1fr; gap: 18px; padding-top: 28px; }
+  :where(.pencil-site) .site-footer__nav { gap: 8px 24px; }
+}

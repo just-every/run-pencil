@@ -55,3 +55,7 @@ Pencil now carries exactly eight. The three rules above are cheap to state and w
 ## 10 — Clause formatting differs from the `AGENTS.md` example — **Friction**
 
 `AGENTS.md` shows clauses as `## CHAN-001 — Inbound email` headings. Both `CONTRACT.example.md` and every seed contract written so far use `- **CHAN-001 — Inbound email.**` bullets grouped under an area heading. Pencil followed the exemplar, not the guide. Whichever is intended, the two should agree, because a future harness that parses clause IDs will pick one.
+
+## 11 — Owner-approved product page at the default root — **Deviation**
+
+The owner's 11 October 2026 instruction replaces HOME-001's unconfigured root 404 with the existing approved Pencil product page, without changing its visible content or styling. `/pencil` redirects to `/`. Explicitly configured respondent root landings and direct `/f/<slug>` links retain their existing admission, closed and missing states. Pencil accepts only its configured APP_ORIGIN; it has no separate form-host mapping. This records the owner override in HOME-001 and SITE-001.

@@ -1,0 +1,30 @@
+/*
+ * Product tokens. Defined on every document root (the product's own pages import this file through
+ * src/core/app/theme.css) and on .pencil-site, so the site, the docs and the app read the same paper and ink. Contrast on --paper: --ink 15.5:1, --ink-soft 7.9:1,
+ * --graphite 5.7:1; white on --ink 16.2:1. --pencil is the handwriting's ink on the hero card and the plates' sheets
+ * (6.4:1 on the cream sheet). Yellow is never text (--yellow-deep is 2.8:1 on paper): it is the mark, the art, hover
+ * accents, the current-page stroke and small washes. --font-serif names the docs' metric-matched Georgia
+ * (docs-fonts.css) after DM Serif Display; a page without that face goes straight on to Georgia.
+ */
+:root,
+.pencil-site {
+  --paper: #fbfaf6;
+  --paper-deep: #f2f0e9;
+  --card: #ffffff;
+  --ink: #1e2124;
+  --ink-soft: #4a4f55;
+  --graphite: #5f646b;
+  --pencil: #5b5a57;
+  --line: rgba(30, 33, 36, 0.14);
+  --shadow: 0 1px 2px rgba(30, 33, 36, 0.06), 0 18px 40px -18px rgba(30, 33, 36, 0.22);
+  --yellow: #f2b33d;
+  --yellow-deep: #c98a12;
+  --yellow-wash: #fcefc9;
+  --eraser: #e7a3a6;
+  --gutter: clamp(20px, 5vw, 80px);
+  --content-max: 1440px;
+  --font-serif: 'DM Serif Display', 'DM Serif Fallback', Georgia, serif;
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-hand: 'Caveat', cursive;
+  --font-mono: ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace;
+}

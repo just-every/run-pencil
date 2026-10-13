@@ -2,7 +2,7 @@
 
 Public exports from `src/events/index.mjs` (re-export these from the mail facade):
 
-* `verifyWebhook(input): Promise<boolean>` — the frozen mail API signature.
+* `verifyWebhook(input): Promise<boolean>` — the frozen IF-056-MAIL-v1 signature.
 * `MAX_WEBHOOK_BYTES` — 32 MiB, including signed Inbound Parse multipart bytes.
 * `createDeliveryEventIntake(options)` — authenticated normalization plus atomic
   durable receipt and recipient-state storage. No public unverified normalizer.
@@ -172,9 +172,9 @@ Worker `email` event and does not enter this delivery pipeline.
 From the Base root, with the module's existing development dependency available:
 
 ```sh
-node --test src/base/mail/tests/events/verify.test.mjs
-node --test src/base/mail/tests/events/boundaries.test.mjs
-node --test src/base/mail/tests/events/workerd.test.mjs
+node --test modules/mail/tests/events/verify.test.mjs
+node --test modules/mail/tests/events/boundaries.test.mjs
+node --test modules/mail/tests/events/workerd.test.mjs
 ```
 
 If using an existing cached dependency in another checkout, set

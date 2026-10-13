@@ -1,0 +1,38 @@
+{
+  "formId": "synthetic-checkbox",
+  "info": {
+    "title": "Checkbox ambiguity"
+  },
+  "items": [
+    {
+      "itemId": "pick-item",
+      "title": "Pick",
+      "questionItem": {
+        "question": {
+          "questionId": "pick",
+          "choiceQuestion": {
+            "type": "CHECKBOX",
+            "options": [
+              {
+                "value": "Tea, green"
+              },
+              {
+                "value": "Tea"
+              },
+              {
+                "value": "green"
+              },
+              {
+                "value": "Café"
+              },
+              {
+                "value": "Other",
+                "isOther": true
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

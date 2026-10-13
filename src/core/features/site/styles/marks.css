@@ -1,0 +1,21 @@
+/* Pencil marks shared by the product page's hero and story: the filter definitions and the free pencil lines. */
+:where(.pencil-site) .pencil-filters { position: absolute; width: 0; height: 0; overflow: hidden; }
+
+/* PencilLine.tsx: graphite in the plates' --stroke, which each placement may set; a fork's branches are a little lighter. */
+:where(.pencil-site) .pencil-line { overflow: visible; pointer-events: none; }
+:where(.pencil-site) .pencil-line path {
+  fill: none;
+  stroke: var(--stroke);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+:where(.pencil-site) .pencil-line .pencil-line__branch { stroke-width: 1.15; }
+/* A line that draws itself in as its [data-reveal] ancestor is revealed; the placement sets --draw-delay and --branch-delay. */
+:where(.pencil-site) .pencil-line--draws path {
+  stroke-dasharray: 2400;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset 2.6s linear var(--draw-delay, 0s);
+}
+:where(.pencil-site) .pencil-line--draws .pencil-line__branch { transition-delay: var(--branch-delay); }
+:where(.pencil-site) [data-reveal='waiting'] .pencil-line--draws path { stroke-dashoffset: 2400; }

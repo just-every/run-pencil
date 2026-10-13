@@ -7,11 +7,11 @@ import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, w
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
-import { exportData, importData, initialize, snapshot, migrations } from './deployment-data.mjs';
+import { exportData, importData, initialize, snapshot, migrations, readTable } from './deployment-data.mjs';
 
 const stamp = '2026-10-02T00:00:00.000Z';
 function fixture() {
-  const directory = mkdtempSync(join(tmpdir(), 'pencil-data-test-'));
+  const directory = mkdtempSync(join(process.env.PENCIL_VERIFICATION_TMPDIR ?? tmpdir(), 'pencil-data-test-'));
   const source = join(directory, 'source.sqlite');
   const database = new DatabaseSync(source);
   initialize(database);
@@ -64,7 +64,7 @@ test('full current-data roundtrip preserves stable revisions, quarantine, receip
     const database = new DatabaseSync(f.restored, { readOnly: true });
     assert.equal(database.prepare("SELECT count(*) AS n FROM respondent_sessions").get().n, 0);
     assert.equal(database.prepare("SELECT count(*) AS n FROM responses WHERE state='quarantined'").get().n, 1);
-    assert.equal(database.prepare('SELECT COUNT(*) AS n FROM d1_migrations').get().n, 11);
+    assert.equal(database.prepare('SELECT COUNT(*) AS n FROM d1_migrations').get().n, migrations().length);
     assert.deepEqual(database.prepare('SELECT name FROM d1_migrations ORDER BY id').all().map(row => row.name), migrations().map(row => row.name));
     assert.deepEqual(JSON.parse(readFileSync(f.archive, 'utf8')).payload.migrations, migrations().map(row => ({ name: row.name, sha256: createHash('sha256').update(row.sql).digest('hex') })));
     assert.equal(database.prepare('SELECT revoked_at FROM operator_sessions').get().revoked_at, stamp);
@@ -120,7 +120,8 @@ test('snapshot preserves blob and real storage types without executing archive S
     // This exploratory source cannot be imported: added schema has no committed migration.
     database.exec('CREATE TABLE extra_values (binary BLOB, amount REAL)');
     database.prepare('INSERT INTO extra_values VALUES (?, ?)').run(Buffer.from([0, 255, 128, 10]), 1.25);
-    const table = snapshot(database).payload.tables.find(table => table.name === 'extra_values');
+    assert.throws(() => snapshot(database), /explicit table\/column privacy classification/);
+    const table = readTable(database, { name: 'extra_values', columns: ['binary','amount'] });
     assert.deepEqual(table.rows, [[{ type: 'blob', value: 'AP+ACg==' }, { type: 'real', value: 1.25 }]]);
   } finally { database.close(); }
 });
@@ -154,16 +155,12 @@ test('a target appearing during private staging is never overwritten and only ow
   } finally { interception?.mock.restore(); rmSync(f.directory, { recursive: true }); }
 });
 
-test('CLI reports a safe actionable failure without exposing archived values or creating an import target', () => {
-  const f = fixture();
-  try {
-    const sensitive = 'SYNTHETIC-private-answer-and-inbox-token';
-    writeFileSync(f.archive, JSON.stringify({ secret: sensitive }));
-    const result = spawnSync(process.execPath, [fileURLToPath(new URL('./deployment-data.mjs', import.meta.url)), 'import', '--archive', f.archive, '--database', f.restored], { encoding: 'utf8' });
-    assert.equal(result.status, 1);
-    assert.equal(result.stdout, '');
-    assert.match(result.stderr, /INVALID_ARCHIVE/);
-    assert.equal(result.stderr.includes(sensitive), false);
-    assert.equal(existsSync(f.restored), false);
-  } finally { rmSync(f.directory, { recursive: true }); }
-});
+import './deployment-data-portability.check.mjs';
+
+import './deployment-data-install.check.mjs';
+import './deployment-data-ledger.check.mjs';
+import './deployment-data-notification.check.mjs';
+
+import "./deployment-data-stream.check.mjs";
+import './deployment-data-reporting.check.mjs';
+import './deployment-data-import-custody.check.mjs';

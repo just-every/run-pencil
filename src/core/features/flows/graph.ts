@@ -1,3 +1,4 @@
+import { calendarDate, typeSettingsValid } from '../../shared/questionTypes'
 import { matchesBranch } from '../../shared/branching'
 import type { BranchSelection } from '../../shared/flowPolicies'
 import { reachableDestinations } from './reachable-destinations'
@@ -39,9 +40,10 @@ export function resolveNextStep(input: {
 }
 
 function validSettings(step: StoredStep, choices: StoredChoice[]) {
-  if (!step.questionSettingsJson) return { valid: true, value: {} as Record<string, unknown> }
+  if (!step.questionSettingsJson) return { valid: typeSettingsValid(step.questionType, {}), value: {} as Record<string, unknown> }
   const value = parsed(step.questionSettingsJson)
   if (!value || Array.isArray(value) || typeof value !== 'object') return { valid: false, value: {} as Record<string, unknown> }
+  if (!typeSettingsValid(step.questionType, value as Record<string, unknown>)) return { valid: false, value: {} as Record<string, unknown> }
   if (step.questionType === 'rating') {
     const { min, max } = value as { min?: unknown; max?: unknown }
     if (!Number.isInteger(min) || !Number.isInteger(max) || (min as number) >= (max as number) || (max as number) - (min as number) > 10) return { valid: false, value: {} as Record<string, unknown> }
@@ -53,7 +55,7 @@ function validSettings(step: StoredStep, choices: StoredChoice[]) {
   return { valid: true, value: value as Record<string, unknown> }
 }
 
-export function questionSettings(step: StoredStep, choices: StoredChoice[]) {
+export function questionSettings(step: StoredStep, choices: StoredChoice[]): { valid: boolean; value: Record<string, unknown> } {
   const defaultSettings = step.questionType === 'rating'
     ? { min: 1, max: 5 }
     : step.questionType === 'multiple_choice'
@@ -65,7 +67,9 @@ export function questionSettings(step: StoredStep, choices: StoredChoice[]) {
 
 function branchRuleIsValid(rule: StoredBranchRule, source: StoredStep, choiceIds: string[]) {
   const expected = parsed(rule.expectedValueJson)
-  if (source.questionType === 'single_choice') return rule.predicateKind === 'equals' && typeof expected === 'string' && choiceIds.includes(expected)
+  if (['single_choice', 'dropdown'].includes(source.questionType ?? '')) return rule.predicateKind === 'equals' && typeof expected === 'string' && choiceIds.includes(expected)
+  if (['yes_no', 'consent'].includes(source.questionType ?? '')) return rule.predicateKind === 'equals' && typeof expected === 'boolean'
+  if (['nps', 'number', 'date'].includes(source.questionType ?? '')) return ['equals', 'greater_than', 'greater_than_or_equal', 'less_than', 'less_than_or_equal'].includes(rule.predicateKind) && (source.questionType === 'date' ? calendarDate(expected) : typeof expected === 'number' && Number.isFinite(expected) && (source.questionType !== 'nps' || Number.isInteger(expected) && expected >= 0 && expected <= 10))
   if (source.questionType === 'multiple_choice') return ['any_of', 'all_of'].includes(rule.predicateKind) && Array.isArray(expected) && expected.length > 0 && new Set(expected).size === expected.length && expected.every((value) => typeof value === 'string' && choiceIds.includes(value))
   if (source.questionType === 'rating') return ['equals', 'greater_than', 'greater_than_or_equal', 'less_than', 'less_than_or_equal'].includes(rule.predicateKind) && typeof expected === 'number'
   if (source.questionType === 'priority') {
@@ -100,9 +104,10 @@ export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice
     if (step.kind === 'question' && (!step.questionType || step.prompt.trim().length === 0 || step.prompt.length > 1000)) issues.push({ stepId: step.stableId, reason: 'Every question needs a prompt within the configured text limit.' })
     if (step.kind !== 'question' && step.questionType) issues.push({ stepId: step.stableId, reason: 'Only questions can have a question type.' })
     const stepChoices = choicesByStep.get(step.id) ?? []
-    const structured = ['single_choice', 'multiple_choice', 'priority'].includes(step.questionType ?? '')
+    const structured = ['single_choice', 'multiple_choice', 'priority', 'dropdown'].includes(step.questionType ?? '')
     if (structured && stepChoices.length === 0) issues.push({ stepId: step.stableId, reason: 'This structured question needs at least one choice.' })
-    if (new Set(stepChoices.map((choice) => choice.value)).size !== stepChoices.length || new Set(stepChoices.map((choice) => choice.label.trim().toLocaleLowerCase())).size !== stepChoices.length) issues.push({ stepId: step.stableId, reason: 'Choices must have distinct stable values and labels.' })
+    if (new Set(stepChoices.map((choice) => choice.label.trim().toLocaleLowerCase())).size !== stepChoices.length) issues.push({ stepId: step.stableId, reason: 'Each choice needs a different label.' })
+    if (new Set(stepChoices.map((choice) => choice.value)).size !== stepChoices.length) issues.push({ stepId: step.stableId, reason: 'Each choice needs a different answer value.' })
     if (stepChoices.length > 100 || (step.questionType === 'priority' && stepChoices.length > 10)) issues.push({ stepId: step.stableId, reason: 'This question exceeds its configured choice limit.' })
     if (!questionSettings(step, stepChoices).valid) issues.push({ stepId: step.stableId, reason: 'This question has invalid type-specific settings.' })
     if (step.kind === 'completion' && step.nextStepStableId) issues.push({ stepId: step.stableId, reason: 'A completion screen cannot lead to another step.' })

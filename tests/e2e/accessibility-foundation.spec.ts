@@ -1,6 +1,6 @@
 import { operatorEmail } from './auth-identity'
 import AxeBuilder from '@axe-core/playwright'
-import { expect, test } from './fixtures'
+import { expect, test, grantOutboxKey } from './fixtures'
 import { contract } from './contract'
 import { mkdir } from 'node:fs/promises'
 // Isolate this new journey's API traffic; actual per-address rate limits stay enabled.
@@ -35,9 +35,10 @@ contract(['SHELL-001', 'BASE-PUBLIC-003', 'HOME-001'], 'keyboard and axe cover t
   await check('landing')
   await tabTo(page, page.getByRole('button', { name: 'Begin', exact: true }))
   await page.keyboard.press('Enter')
-  await expect(page.getByRole('button', { name: '5 out of 5' })).toBeVisible()
+  await expect(page.getByRole('radio', { name: '5 out of 5' })).toBeVisible()
   await check('question')
-  await tabTo(page, page.getByRole('button', { name: '5 out of 5' }))
+  await tabTo(page, page.getByRole('radio', { name: '1 out of 5' }))
+  await page.keyboard.press('End')
   await page.keyboard.press('Space')
   await tabTo(page, page.getByRole('button', { name: 'Continue', exact: true }))
   await page.keyboard.press('Enter')
@@ -54,13 +55,16 @@ contract(['SHELL-001', 'BASE-PUBLIC-003', 'HOME-001'], 'keyboard and axe cover t
   await page.keyboard.type(operatorEmail())
   await page.keyboard.press('Tab')
   await page.keyboard.press('Enter')
-  await expect(page.getByRole('link', { name: 'Open local dev inbox' })).toBeVisible()
-  await tabTo(page, page.getByRole('link', { name: 'Open local dev inbox' }))
+  await expect(page.getByRole('link', { name: 'Open the local outbox' })).toBeVisible()
+  await grantOutboxKey(page)
+  await tabTo(page, page.getByRole('link', { name: 'Open the local outbox' }))
   await page.keyboard.press('Enter')
-  await expect(page.getByRole('link', { name: 'Use this magic link' }).first()).toBeVisible()
-  await tabTo(page, page.getByRole('link', { name: 'Use this magic link' }).first())
+  await tabTo(page, page.locator('article').filter({ hasText: operatorEmail() }).getByRole('link', { name: 'Read message' }).first())
   await page.keyboard.press('Enter')
-  await expect(page.getByRole('heading', { name: 'Confirm sign-in', exact: true })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Open this link' })).toBeVisible()
+  await tabTo(page, page.getByRole('link', { name: 'Open this link' }))
+  await page.keyboard.press('Enter')
+  await expect(page.getByRole('heading', { name: 'Confirm sign-in to Pencil', exact: true })).toBeVisible()
   await page.waitForLoadState('load')
   expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([])
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)

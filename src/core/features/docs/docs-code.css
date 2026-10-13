@@ -1,0 +1,13 @@
+/* Code blocks: a white card on the paper that never re-wraps a command; a line longer than the card scrolls inside it, and the
+   card is a labelled, focusable region (like tables) so keyboard users can scroll it. highlight.js (build time, class-only
+   spans) is drawn in ink, graphite and a deep pencil amber, with a muted olive for strings; every colour keeps 4.5:1 or better on white. */
+.pencil-docs:where(.pencil-site *) .docs-code { max-width: 100%; overflow-x: auto; border: 1.5px solid var(--line); border-radius: 12px; background: var(--card); box-shadow: 0 1px 2px rgba(30, 33, 36, 0.06); }
+.pencil-docs:where(.pencil-site *) .docs-prose pre { box-sizing: border-box; width: max-content; min-width: 100%; margin: 0; padding: 16px 20px; color: var(--ink); font-size: 15px; line-height: 1.6; white-space: pre; overflow-wrap: normal; }
+.pencil-docs:where(.pencil-site *) .docs-prose pre code { display: block; padding: 0; border-radius: 0; background: none; font-size: inherit; white-space: inherit; overflow-wrap: inherit; }
+.pencil-docs:where(.pencil-site *) .docs-prose pre [class*="hljs-"] { background: none; color: var(--ink); font-style: normal; font-weight: inherit; }
+.pencil-docs:where(.pencil-site *) .docs-prose pre :is(.hljs-comment, .hljs-quote) { color: var(--graphite); font-style: italic; }
+.pencil-docs:where(.pencil-site *) .docs-prose pre :is(.hljs-keyword, .hljs-built_in, .hljs-literal, .hljs-selector-tag, .hljs-section, .hljs-name) { color: #7a4f00; font-weight: 600; }
+.pencil-docs:where(.pencil-site *) .docs-prose pre :is(.hljs-number, .hljs-meta, .hljs-symbol, .hljs-bullet, .hljs-addition) { color: #7a4f00; }
+.pencil-docs:where(.pencil-site *) .docs-prose pre :is(.hljs-string, .hljs-regexp, .hljs-template-variable) { color: #4a5d2a; }
+.pencil-docs:where(.pencil-site *) .docs-prose pre :is(.hljs-title, .hljs-attr, .hljs-attribute, .hljs-variable, .hljs-type, .hljs-params) { color: var(--ink); font-weight: 600; }
+.pencil-docs:where(.pencil-site *) .docs-prose pre .hljs-deletion { color: #8a3a3d; }

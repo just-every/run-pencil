@@ -1,0 +1,103 @@
+# Build a form
+
+In Pencil a form is called a flow. A flow is a short run of screens that people move through one at a time. This page covers creating a flow, adding questions, choosing question types and checking your work in a preview. To send people down different routes, see [Answer paths](branching.md).
+
+## Start a new flow
+
+1. Sign in and open **Flows**. The page is titled **Your flows**.
+2. Choose **New flow**. On a fresh install the form is already open under **Create your first flow**.
+3. The first time, enter your **Business name**. Pencil asks for it once, because your name appears on every public form. You can change it later in **Settings**.
+4. Pick a template or **Blank flow**.
+5. Enter a **Flow name** (for example "Post-visit feedback") and a **Public link**. The public link is the last part of the form's web address, `/f/` followed by the link, written in lowercase letters, numbers and hyphens. When you type a name, Pencil suggests a link made from it. Picking a template fills in the template's name and a link that ends in eight random letters and numbers, such as `customer-feedback-25e5a2da`. Edit the link to something short and readable before you create the draft, because it is the address people see.
+6. Choose **Create draft flow**. The builder opens.
+
+### Templates
+
+A template is only a starting point. It creates an ordinary draft that you can edit freely before you publish.
+
+| Template | What it asks |
+|---|---|
+| **Customer feedback** | "How was your visit?" (single choice: Great, Good, Could be better), then "What could we do better?" (long text). |
+| **NPS** | "How likely are you to recommend us to a friend?" (a 0 to 10 scale), then "What is the main reason for your score?" (long text). |
+| **Contact/lead** | "What is your name?", "What is your email address?" and "How can we help?". |
+
+Each template ends with the completion screen "Thank you. Your response has been received."
+
+## The builder
+
+The builder has three parts side by side:
+
+- **Steps** on the left lists every screen in order.
+- The middle shows the **Current draft step** as a respondent will see it, using the same controls.
+- The panel on the right holds the settings for the selected step.
+
+A flow is made of three kinds of step:
+
+- A **Welcome** screen. It is optional and can only come first. **Add welcome screen** appears until you have one.
+- **Questions**. A flow needs at least one.
+- **Completion** screens. A flow needs at least one, and you can have several. Each has its own wording, so different answer paths can end in different messages.
+
+Use **Add question**, **Add completion screen** and **Add welcome screen** to add steps. A new question goes in just before your completion screen. To rearrange, select a step and use **Move up** or **Move down**. **Duplicate** copies a step, and **Delete** removes it.
+
+Deleting a question from a draft never removes answers you have already collected. Those answers stay in your results, ledger and exports with the question that asked them.
+
+## Edit a step
+
+Select a step, then change it in the right-hand panel:
+
+- **Prompt** is the question or message people read.
+- **Extra wording**, then **Why ask this?**, adds a line of explanation under the prompt. It is a good place to say how you will use the answer.
+- **Question type** sets what people can answer (see below).
+- **Required response** makes the question mandatory. A required question only blocks people who actually reach it. If an answer sends someone around it, it is never asked and never counted as missing.
+- **Default next screen** says where people go after this step when no answer path applies. Every step except a completion screen needs one before you can publish.
+
+When you are done, choose **Save**. One **Save** stores everything on that step together: its wording, choices, settings and answer paths. If anything is invalid, nothing is saved. Once Pencil says **Saved.**, the edit is kept even if you reload.
+
+While a step has unsaved changes you cannot switch steps, add or move steps, preview or publish. Save, or choose **Discard changes**.
+
+If two operators edit the same flow, the first to save wins. The second sees **Another operator saved first. The latest draft has been reloaded.** and nothing is overwritten.
+
+## Question types
+
+Pick the type that matches how people should answer. The types are:
+
+| Type | People answer with | Settings |
+|---|---|---|
+| **Short text** | A line of text, up to 200 characters. | None. |
+| **Long text** | A longer comment, up to 5,000 characters. | None. |
+| **Email** | An email address, checked for a valid shape. | None. |
+| **Single choice** | One option from a list. | **Choices** |
+| **Multiple choice** | Any number of options. | **Choices**, **Minimum selections**, **Maximum selections** |
+| **Rating** | A number on a scale. | **Lowest rating** and **Highest rating**, anywhere from 0 to 10. |
+| **Priority** | Every option, put in order of preference. | **Choices** |
+| **Dropdown** | One option picked from a searchable list. | **Choices** |
+| **Yes / No** | Yes or No. | None. |
+| **NPS** | A whole number from 0 to 10. | **Zero label** and **Ten label**, the words at each end. |
+| **Number** | A number. | **Minimum**, **Maximum**, **Decimal places**. |
+| **Date** | A calendar date, with no time zone. | **Earliest date**, **Latest date**. |
+| **Consent** | A tick box next to a statement you write. | **Consent statement** |
+
+Nobody starts with an answer picked. A **No**, a **0** or a rating only counts once the person has chosen it. A required **Consent** question can only be answered by accepting.
+
+### Choices
+
+For choice types, use **Choice** to add options and **Remove** to take one away. Type each option's label into its own field, which is numbered **Choice 1**, **Choice 2** and so on.
+
+Behind each label sits an **Answer value** that Pencil makes from the label. It is the value used in exports. Rename a label later and the value stays the same, so your exports stay consistent. If you need to change it, open **Advanced** on that choice.
+
+## Preview your flow
+
+Choose **Preview draft** to try the draft as a respondent. You answer with test data, and Pencil shows the route it would take. A preview never creates a response, sends nothing and does not change any counts.
+
+- **Continue preview** and **Back in preview** move through the screens.
+- **Inspect answer path** opens **Evaluated path**, which lists each rule on each screen as matching or not matching and shows which one was chosen.
+
+The preview uses the same rules as the live form, so what you see is what people will get. Preview is unavailable while a step has unsaved changes.
+
+## Copy, edit and archive
+
+- **Duplicate flow** on a flow's card makes an independent draft with the same questions and paths. Give it a **Copy name** and **Copy public link**, then choose **Create independent copy**. The copy has no responses, invitations or history. The original keeps all of its responses.
+- Editing a flow that is already published changes only a new draft. The live form does not change until you publish again. The dashboard shows **Unpublished changes** on any flow whose draft differs from what is live.
+- An archived flow cannot be published or reopened, and Pencil refuses to save, add or duplicate its steps. Deleting or moving a step is not refused yet, and either one changes the draft that **Duplicate flow** copies, so leave an archived flow's steps as they are. To work on it again, duplicate it and edit the copy.
+
+Next: [Answer paths](branching.md), or go straight to [Publish and share](publish-and-share.md).

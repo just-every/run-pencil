@@ -1,3 +1,4 @@
+import { eraseResponseAndImportCustody } from '../../src/core/features/importing/erasure'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -28,7 +29,7 @@ contract('FLOW-016', 'publication freezes evaluated policy configuration and pri
   expect(JSON.parse(originalRow!.policy_snapshot_json)).toEqual(defaultFlowPolicies)
   const platform = createPencilPlatform('http://localhost', env)
   const changedPolicy = { ...defaultFlowPolicies, 'flow.branch-selection.v1': 'last-matching-rule' as const }
-  const changed = new FlowService(new FlowRepository(platform.database, env.DB), new ResponseRepository(platform.database, env.DB), changedPolicy)
+  const changed = new FlowService(new FlowRepository(platform.database, env.DB), new ResponseRepository(platform.database, env.DB, eraseResponseAndImportCustody), changedPolicy)
   const preview = await changed.previewDraft({ ...f.flow, answers: { [question.id]: 5 } })
   expect(preview.screens[0].nextStepId).toBe(last.id)
   await changed.publishDraft({ ...f.flow, expectedVersion: (await f.draft()).flow.draftVersion })

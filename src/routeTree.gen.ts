@@ -11,14 +11,23 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
+import { Route as PencilRouteImport } from './routes/pencil'
+import { Route as SetupRouteImport } from './routes/setup'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as AppIndexRouteImport } from './routes/app.index'
+import { Route as AppAudienceRouteImport } from './routes/app.audience'
+import { Route as AppImportRouteImport } from './routes/app.import'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as DocsIndexRouteImport } from './routes/docs.index'
+import { Route as DocsSplatRouteImport } from './routes/docs.$'
+import { Route as DocsSlugRouteImport } from './routes/docs.$slug'
 import { Route as EmbedSlugRouteImport } from './routes/embed.$slug'
 import { Route as FSlugRouteImport } from './routes/f.$slug'
 import { Route as ITokenRouteImport } from './routes/i.$token'
 import { Route as OptoutTokenRouteImport } from './routes/optout.$token'
-import { Route as SigninInboxRouteImport } from './routes/signin_.inbox'
+import { Route as AppActionsIndexRouteImport } from './routes/app.actions.index'
+import { Route as AppActionsActionIdRouteImport } from './routes/app.actions.$actionId'
+import { Route as AppActionsNewRouteImport } from './routes/app.actions.new'
 import { Route as AppFlowsFlowIdBuilderRouteImport } from './routes/app.flows.$flowId.builder'
 import { Route as AppFlowsFlowIdResultsRouteImport } from './routes/app.flows.$flowId.results'
 
@@ -32,6 +41,16 @@ const AppRoute = AppRouteImport.update({
   path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PencilRoute = PencilRouteImport.update({
+  id: '/pencil',
+  path: '/pencil',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SetupRoute = SetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SigninRoute = SigninRouteImport.update({
   id: '/signin',
   path: '/signin',
@@ -42,10 +61,35 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppAudienceRoute = AppAudienceRouteImport.update({
+  id: '/audience',
+  path: '/audience',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppImportRoute = AppImportRouteImport.update({
+  id: '/import',
+  path: '/import',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
   getParentRoute: () => AppRoute,
+} as any)
+const DocsIndexRoute = DocsIndexRouteImport.update({
+  id: '/docs/',
+  path: '/docs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsSplatRoute = DocsSplatRouteImport.update({
+  id: '/docs/$',
+  path: '/docs/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsSlugRoute = DocsSlugRouteImport.update({
+  id: '/docs/$slug',
+  path: '/docs/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const EmbedSlugRoute = EmbedSlugRouteImport.update({
   id: '/embed/$slug',
@@ -67,10 +111,20 @@ const OptoutTokenRoute = OptoutTokenRouteImport.update({
   path: '/optout/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SigninInboxRoute = SigninInboxRouteImport.update({
-  id: '/signin_/inbox',
-  path: '/signin/inbox',
-  getParentRoute: () => rootRouteImport,
+const AppActionsIndexRoute = AppActionsIndexRouteImport.update({
+  id: '/actions/',
+  path: '/actions/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppActionsActionIdRoute = AppActionsActionIdRouteImport.update({
+  id: '/actions/$actionId',
+  path: '/actions/$actionId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppActionsNewRoute = AppActionsNewRouteImport.update({
+  id: '/actions/new',
+  path: '/actions/new',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppFlowsFlowIdBuilderRoute = AppFlowsFlowIdBuilderRouteImport.update({
   id: '/flows/$flowId/builder',
@@ -86,27 +140,45 @@ const AppFlowsFlowIdResultsRoute = AppFlowsFlowIdResultsRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/pencil': typeof PencilRoute
+  '/setup': typeof SetupRoute
   '/signin': typeof SigninRoute
+  '/app/audience': typeof AppAudienceRoute
+  '/app/import': typeof AppImportRoute
   '/app/settings': typeof AppSettingsRoute
+  '/docs/$': typeof DocsSplatRoute
+  '/docs/$slug': typeof DocsSlugRoute
   '/embed/$slug': typeof EmbedSlugRoute
   '/f/$slug': typeof FSlugRoute
   '/i/$token': typeof ITokenRoute
   '/optout/$token': typeof OptoutTokenRoute
-  '/signin/inbox': typeof SigninInboxRoute
   '/app/': typeof AppIndexRoute
+  '/docs/': typeof DocsIndexRoute
+  '/app/actions/$actionId': typeof AppActionsActionIdRoute
+  '/app/actions/new': typeof AppActionsNewRoute
+  '/app/actions/': typeof AppActionsIndexRoute
   '/app/flows/$flowId/builder': typeof AppFlowsFlowIdBuilderRoute
   '/app/flows/$flowId/results': typeof AppFlowsFlowIdResultsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/pencil': typeof PencilRoute
+  '/setup': typeof SetupRoute
   '/signin': typeof SigninRoute
+  '/app/audience': typeof AppAudienceRoute
+  '/app/import': typeof AppImportRoute
   '/app/settings': typeof AppSettingsRoute
+  '/docs/$': typeof DocsSplatRoute
+  '/docs/$slug': typeof DocsSlugRoute
   '/embed/$slug': typeof EmbedSlugRoute
   '/f/$slug': typeof FSlugRoute
   '/i/$token': typeof ITokenRoute
   '/optout/$token': typeof OptoutTokenRoute
-  '/signin/inbox': typeof SigninInboxRoute
   '/app': typeof AppIndexRoute
+  '/docs': typeof DocsIndexRoute
+  '/app/actions/$actionId': typeof AppActionsActionIdRoute
+  '/app/actions/new': typeof AppActionsNewRoute
+  '/app/actions': typeof AppActionsIndexRoute
   '/app/flows/$flowId/builder': typeof AppFlowsFlowIdBuilderRoute
   '/app/flows/$flowId/results': typeof AppFlowsFlowIdResultsRoute
 }
@@ -114,14 +186,23 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/app': typeof AppRouteWithChildren
+  '/pencil': typeof PencilRoute
+  '/setup': typeof SetupRoute
   '/signin': typeof SigninRoute
+  '/app/audience': typeof AppAudienceRoute
+  '/app/import': typeof AppImportRoute
   '/app/settings': typeof AppSettingsRoute
+  '/docs/$': typeof DocsSplatRoute
+  '/docs/$slug': typeof DocsSlugRoute
   '/embed/$slug': typeof EmbedSlugRoute
   '/f/$slug': typeof FSlugRoute
   '/i/$token': typeof ITokenRoute
   '/optout/$token': typeof OptoutTokenRoute
-  '/signin_/inbox': typeof SigninInboxRoute
   '/app/': typeof AppIndexRoute
+  '/docs/': typeof DocsIndexRoute
+  '/app/actions/$actionId': typeof AppActionsActionIdRoute
+  '/app/actions/new': typeof AppActionsNewRoute
+  '/app/actions/': typeof AppActionsIndexRoute
   '/app/flows/$flowId/builder': typeof AppFlowsFlowIdBuilderRoute
   '/app/flows/$flowId/results': typeof AppFlowsFlowIdResultsRoute
 }
@@ -130,41 +211,68 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/app'
+    | '/pencil'
+    | '/setup'
     | '/signin'
+    | '/app/audience'
+    | '/app/import'
     | '/app/settings'
+    | '/docs/$'
+    | '/docs/$slug'
     | '/embed/$slug'
     | '/f/$slug'
     | '/i/$token'
     | '/optout/$token'
-    | '/signin/inbox'
     | '/app/'
+    | '/docs/'
+    | '/app/actions/$actionId'
+    | '/app/actions/new'
+    | '/app/actions/'
     | '/app/flows/$flowId/builder'
     | '/app/flows/$flowId/results'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/pencil'
+    | '/setup'
     | '/signin'
+    | '/app/audience'
+    | '/app/import'
     | '/app/settings'
+    | '/docs/$'
+    | '/docs/$slug'
     | '/embed/$slug'
     | '/f/$slug'
     | '/i/$token'
     | '/optout/$token'
-    | '/signin/inbox'
     | '/app'
+    | '/docs'
+    | '/app/actions/$actionId'
+    | '/app/actions/new'
+    | '/app/actions'
     | '/app/flows/$flowId/builder'
     | '/app/flows/$flowId/results'
   id:
     | '__root__'
     | '/'
     | '/app'
+    | '/pencil'
+    | '/setup'
     | '/signin'
+    | '/app/audience'
+    | '/app/import'
     | '/app/settings'
+    | '/docs/$'
+    | '/docs/$slug'
     | '/embed/$slug'
     | '/f/$slug'
     | '/i/$token'
     | '/optout/$token'
-    | '/signin_/inbox'
     | '/app/'
+    | '/docs/'
+    | '/app/actions/$actionId'
+    | '/app/actions/new'
+    | '/app/actions/'
     | '/app/flows/$flowId/builder'
     | '/app/flows/$flowId/results'
   fileRoutesById: FileRoutesById
@@ -172,12 +280,16 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  PencilRoute: typeof PencilRoute
+  SetupRoute: typeof SetupRoute
   SigninRoute: typeof SigninRoute
+  DocsSplatRoute: typeof DocsSplatRoute
+  DocsSlugRoute: typeof DocsSlugRoute
   EmbedSlugRoute: typeof EmbedSlugRoute
   FSlugRoute: typeof FSlugRoute
   ITokenRoute: typeof ITokenRoute
   OptoutTokenRoute: typeof OptoutTokenRoute
-  SigninInboxRoute: typeof SigninInboxRoute
+  DocsIndexRoute: typeof DocsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -196,6 +308,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/pencil': {
+      id: '/pencil'
+      path: '/pencil'
+      fullPath: '/pencil'
+      preLoaderRoute: typeof PencilRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signin': {
       id: '/signin'
       path: '/signin'
@@ -210,12 +336,47 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/audience': {
+      id: '/app/audience'
+      path: '/audience'
+      fullPath: '/app/audience'
+      preLoaderRoute: typeof AppAudienceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/import': {
+      id: '/app/import'
+      path: '/import'
+      fullPath: '/app/import'
+      preLoaderRoute: typeof AppImportRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/settings': {
       id: '/app/settings'
       path: '/settings'
       fullPath: '/app/settings'
       preLoaderRoute: typeof AppSettingsRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/docs/': {
+      id: '/docs/'
+      path: '/docs'
+      fullPath: '/docs/'
+      preLoaderRoute: typeof DocsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/$': {
+      id: '/docs/$'
+      path: '/docs/$'
+      fullPath: '/docs/$'
+      preLoaderRoute: typeof DocsSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/$slug': {
+      id: '/docs/$slug'
+      path: '/docs/$slug'
+      fullPath: '/docs/$slug'
+      preLoaderRoute: typeof DocsSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/embed/$slug': {
       id: '/embed/$slug'
@@ -245,12 +406,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OptoutTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/signin_/inbox': {
-      id: '/signin_/inbox'
-      path: '/signin/inbox'
-      fullPath: '/signin/inbox'
-      preLoaderRoute: typeof SigninInboxRouteImport
-      parentRoute: typeof rootRouteImport
+    '/app/actions/': {
+      id: '/app/actions/'
+      path: '/actions'
+      fullPath: '/app/actions/'
+      preLoaderRoute: typeof AppActionsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/actions/$actionId': {
+      id: '/app/actions/$actionId'
+      path: '/actions/$actionId'
+      fullPath: '/app/actions/$actionId'
+      preLoaderRoute: typeof AppActionsActionIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/actions/new': {
+      id: '/app/actions/new'
+      path: '/actions/new'
+      fullPath: '/app/actions/new'
+      preLoaderRoute: typeof AppActionsNewRouteImport
+      parentRoute: typeof AppRoute
     }
     '/app/flows/$flowId/builder': {
       id: '/app/flows/$flowId/builder'
@@ -270,15 +445,25 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppRouteChildren {
+  AppAudienceRoute: typeof AppAudienceRoute
+  AppImportRoute: typeof AppImportRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppActionsActionIdRoute: typeof AppActionsActionIdRoute
+  AppActionsNewRoute: typeof AppActionsNewRoute
+  AppActionsIndexRoute: typeof AppActionsIndexRoute
   AppFlowsFlowIdBuilderRoute: typeof AppFlowsFlowIdBuilderRoute
   AppFlowsFlowIdResultsRoute: typeof AppFlowsFlowIdResultsRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAudienceRoute: AppAudienceRoute,
+  AppImportRoute: AppImportRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
+  AppActionsActionIdRoute: AppActionsActionIdRoute,
+  AppActionsNewRoute: AppActionsNewRoute,
+  AppActionsIndexRoute: AppActionsIndexRoute,
   AppFlowsFlowIdBuilderRoute: AppFlowsFlowIdBuilderRoute,
   AppFlowsFlowIdResultsRoute: AppFlowsFlowIdResultsRoute,
 }
@@ -288,12 +473,16 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  PencilRoute: PencilRoute,
+  SetupRoute: SetupRoute,
   SigninRoute: SigninRoute,
+  DocsSplatRoute: DocsSplatRoute,
+  DocsSlugRoute: DocsSlugRoute,
   EmbedSlugRoute: EmbedSlugRoute,
   FSlugRoute: FSlugRoute,
   ITokenRoute: ITokenRoute,
   OptoutTokenRoute: OptoutTokenRoute,
-  SigninInboxRoute: SigninInboxRoute,
+  DocsIndexRoute: DocsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

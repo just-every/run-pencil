@@ -1,0 +1,153 @@
+/*
+ * The live note card. Every position is a share of the art (1510 x 1066 source pixels) and every size is in
+ * container units of the card, so the handwriting holds its place on the card at every width.
+ * The writing plane is the card's own rectangle (top-left corner at 40,168, 950 x 720, turned -9.33deg);
+ * its children are placed in shares of that plane. The pencil tip touches the plane at 77.5% / 65.7%.
+ * The handwriting is in the site's --pencil ink (6.4:1 on the card); its filters are NoteCard's --filter-* properties.
+ */
+:where(.pencil-site) .note-card {
+  position: relative;
+  container-type: inline-size;
+  aspect-ratio: 1510 / 1066;
+}
+
+/* The pencil's trail off the card (PencilTrail.tsx): its box is its viewBox, in tenths of cqw from the card's corner. */
+:where(.pencil-site) .note-trail {
+  --stroke: var(--pencil);
+  position: absolute;
+  left: 15cqw;
+  top: 52cqw;
+  width: 30cqw;
+  height: 42cqw;
+}
+@media (max-width: 1023px) {
+  :where(.pencil-site) .note-trail { display: none; }
+}
+:where(.pencil-site) .note-card__art,
+:where(.pencil-site) .note-card__art img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+:where(.pencil-site) .note-card__plane {
+  position: absolute;
+  left: 2.649%;
+  top: 15.76%;
+  width: 62.914%;
+  height: 67.542%;
+  transform: rotate(-9.33deg);
+  transform-origin: 0 0;
+  color: var(--pencil);
+  font-family: var(--font-hand);
+  font-weight: 400;
+  line-height: 1;
+}
+:where(.pencil-site) .note-card__question,
+:where(.pencil-site) .note-card__followup {
+  position: absolute;
+  margin: 0;
+  font-size: 4.503cqw;
+  white-space: nowrap;
+}
+/* Each line is pencilled at its own slight angle, as a hand would. */
+:where(.pencil-site) .note-card__question { left: 9.26%; top: 14.86%; font-size: 4.636cqw; rotate: 0.6deg; }
+/* Right-aligned so every follow-up ends where the pencil tip rests. */
+:where(.pencil-site) .note-card__followup { right: 24.42%; top: 57.44%; rotate: -0.5deg; transform-origin: 100% 80%; }
+:where(.pencil-site) .note-written { display: inline-block; }
+:where(.pencil-site) .note-card__question,
+:where(.pencil-site) .note-answer__label,
+:where(.pencil-site) .note-written,
+:where(.pencil-site) .note-erasing,
+:where(.pencil-site) .note-hint { filter: var(--filter-tooth); }
+
+:where(.pencil-site) .note-card__answers {
+  position: absolute;
+  left: 8.95%;
+  top: 34.44%;
+  display: flex;
+  gap: 0.42em;
+  font-size: 4.503cqw;
+}
+:where(.pencil-site) .note-answer {
+  position: relative;
+  display: block;
+  border: 0;
+  border-radius: 0.5em;
+  padding: var(--answer-pad-y) var(--answer-pad-x);
+  color: inherit;
+  background: none;
+  font: inherit;
+  line-height: var(--answer-line);
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.15s ease;
+}
+:where(.pencil-site) .note-answer:nth-child(2) { translate: 0 -0.05em; rotate: 0.8deg; }
+:where(.pencil-site) .note-answer:nth-child(3) { translate: 0 0.03em; rotate: -0.7deg; }
+/* A stroke of yellow pencil under the answer you might pick. */
+@media (hover: hover) {
+  :where(.pencil-site) .note-answer:hover:not([aria-pressed='true']) {
+    background: linear-gradient(transparent 60%, var(--yellow-wash) 60% 90%, transparent 90%);
+  }
+}
+/* The ring is the site standard (base.css); the focused answer only adds a light yellow wash under it. */
+.pencil-site .note-answer:focus-visible { background-color: color-mix(in srgb, var(--yellow-wash) 60%, transparent); }
+
+:where(.pencil-site) .pencil-loop {
+  position: absolute;
+  left: calc(-1 * var(--loop-bleed-x));
+  top: calc(-1 * var(--loop-bleed-y));
+  width: calc(100% + 2 * var(--loop-bleed-x));
+  height: calc(100% + 2 * var(--loop-bleed-y));
+  overflow: visible;
+  pointer-events: none;
+  fill: none;
+  stroke: var(--pencil);
+  stroke-width: 5.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+:where(.pencil-site) .pencil-loop path { filter: var(--filter-loop); }
+
+:where(.pencil-site) .note-hint {
+  position: absolute;
+  left: 70.5%;
+  top: 26%;
+  display: flex;
+  align-items: flex-end;
+  gap: 0.15em;
+  margin: 0;
+  color: var(--graphite);
+  font-family: var(--font-hand);
+  font-size: 3.2cqw;
+  line-height: 1;
+  white-space: nowrap;
+  transform: rotate(-6deg);
+  pointer-events: none;
+}
+:where(.pencil-site) .note-hint__arrow {
+  flex: none;
+  width: 1.7em;
+  height: auto;
+  margin-bottom: -0.55em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+:where(.pencil-site) .note-hint__arrow--above { display: none; }
+
+/*
+ * Phones: the card bleeds right and its foot meets the fold of a short screen, so the note moves into the paper above
+ * the card's top-left corner, where it shows together with the question, the answers and the follow-up, and its
+ * long arrow sweeps over the end of the question down to the other answers.
+ */
+@media (max-width: 600px) {
+  :where(.pencil-site) .note-hint { left: 2.5%; top: 0.6%; flex-direction: row-reverse; align-items: flex-start; font-size: 4.2cqw; transform: rotate(-3deg); }
+  :where(.pencil-site) .note-hint__arrow--beside { display: none; }
+  :where(.pencil-site) .note-hint__arrow--above { display: block; width: 4.2em; margin: 0.35em 0 0 0.1em; stroke-width: 1.5; }
+}

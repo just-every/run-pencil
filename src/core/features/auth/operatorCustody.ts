@@ -24,6 +24,10 @@ export async function operatorCustodyStatements(
   const legacyIds = (await Promise.all(inbox.map(async (message) => hashes.has(await sha256(message.token)) ? message.id : null)))
     .filter((id): id is string => id !== null)
   return [
+    { sql: `DELETE FROM rer_mail_development_outbox WHERE ${guard} AND (
+        json_extract(message,'$.deliveryId') IN (SELECT id FROM oa_tokens WHERE operator_id = ?)
+        OR EXISTS (SELECT 1 FROM json_each(json_extract(message,'$.to')) WHERE lower(value)=lower(?)))`,
+      parameters: [...guardParameters, authId, target.email] },
     { sql: `DELETE FROM local_dev_inbox WHERE ${guard} AND (
         id IN (SELECT 'auth_magic_link/' || id FROM auth_magic_links WHERE operator_id = ?)
         OR id IN (SELECT id FROM oa_tokens WHERE operator_id = ?)

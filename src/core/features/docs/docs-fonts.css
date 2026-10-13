@@ -1,0 +1,7 @@
+/* Metric-matched stand-ins for the web faces, so the first paint (before the preloaded DM Sans and DM Serif Display arrive) wraps
+   exactly where the finished page does and the article does not move when the fonts swap in. Each face is a system font scaled to
+   the web face's average width over the docs' own text, with the web face's ascent and descent. The site's font stacks name them
+   (base.css for DM Sans, tokens.css --font-serif); where the system font is missing they fall through to the generic face. */
+@font-face { font-family: "DM Sans Fallback"; font-weight: 400 500; src: local("Arial"), local("Liberation Sans"), local("Helvetica"); size-adjust: 104.39%; ascent-override: 95%; descent-override: 29.7%; line-gap-override: 0%; }
+@font-face { font-family: "DM Sans Fallback"; font-weight: 600 700; src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"), local("Helvetica Bold"); size-adjust: 102.41%; ascent-override: 96.9%; descent-override: 30.3%; line-gap-override: 0%; }
+@font-face { font-family: "DM Serif Fallback"; src: local("Georgia"); size-adjust: 99.63%; ascent-override: 104%; descent-override: 33.6%; line-gap-override: 0%; }

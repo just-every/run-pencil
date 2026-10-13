@@ -1,3 +1,4 @@
+import { runtimeAnswerValue, storedAnswerValue } from './answerStorage'
 import { revisionBranchSelection, type BranchSelection } from '../../shared/flowPolicies'
 import manifest from '../../../../seed.json'
 import { answerIssue, isUnanswered } from '../../shared/answers'
@@ -158,7 +159,7 @@ export class ResponseService {
       if (!answers || !revision) throw new NotFoundError('This completed response is no longer available.')
       // A retry is the original committed path, regardless of newer submitted
       // values. The immutable graph and retained answers also cover old rows.
-      const completionStepId = this.retainedCompletion(steps, rules, Object.fromEntries(answers.map((answer) => [answer.stepId, JSON.parse(answer.valueJson)])), revisionBranchSelection(revision.policySnapshotJson))
+      const completionStepId = this.retainedCompletion(steps, rules, Object.fromEntries(answers.map((answer) => [answer.stepId, runtimeAnswerValue(steps.find(step => step.stableId === answer.stepId), JSON.parse(answer.valueJson))])), revisionBranchSelection(revision.policySnapshotJson))
       return { responseId: response.id, idempotent: true, disposition: response.state, completionStepId }
     }
     const receipt = async () => {
@@ -217,7 +218,7 @@ export class ResponseService {
         createdAt: now,
         updatedAt: now,
       },
-      answers: acceptedAnswers.map((answer) => ({ id: ulid(), responseId, stepId: answer.stepId, valueJson: JSON.stringify(answer.value), createdAt: now, updatedAt: now })),
+      answers: acceptedAnswers.map((answer) => ({ id: ulid(), responseId, stepId: answer.stepId, valueJson: JSON.stringify(storedAnswerValue(steps.find(step => step.stableId === answer.stepId)!, answer.value)), createdAt: now, updatedAt: now })),
       sessionTokenHash: tokenHash,
       completedAt: now,
       completionMilliseconds: elapsed,
@@ -248,7 +249,7 @@ export class ResponseService {
     if (!deleted) throw new NotFoundError('The requested quarantined response does not exist.')
   }
 
-  async eraseReleasedResponse(input: { workspaceId: string; responseId: string; operatorId: string }) {
+  async eraseReleasedResponse(input: { workspaceId: string; responseId: string; operatorId: string; sessionId?: string }) {
     const erased = await this.repository.eraseReleasedResponse({ ...input, now: new Date().toISOString() })
     if (!erased) throw new NotFoundError('The requested released response does not exist.')
   }

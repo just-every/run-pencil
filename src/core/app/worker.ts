@@ -1,3 +1,9 @@
+import { registerManagementRoutes } from '../features/management/routes'
+import { registerActionRoutes } from '../features/actions'
+import { registerNotificationRoutes } from '../features/notifications/routes'
+import { registerEmbeddingRoutes } from '../features/embedding/script'
+import { registerBrandRoutes } from '../features/brand/routes'
+import { registerImportRoutes } from '../features/importing/routes'
 import { AuthError } from '../../base/operator-auth/index.mjs'
 import { opaqueEmbedCors } from './public-cors'
 import { registerDistributionRoutes } from '../features/distribution/routes'
@@ -13,6 +19,7 @@ import { requireSameOriginRequest } from '../features/auth'
 import { registerFlowRoutes } from '../features/flows/routes'
 import { registerResponseRoutes } from '../features/responses/routes'
 import { registerWorkspaceRoutes } from '../features/workspace/routes'
+import { registerSetupRoutes, unfinishedOwnerSetup } from '../features/workspace/setup'
 import { createRequestPlatform, type PencilPlatform } from '../platform/runtime'
 import { ForbiddenError, PencilError } from '../shared/errors'
 import { invalidInput } from '../shared/validation'
@@ -65,10 +72,13 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
   app.use('*', enforcePublicRateLimit)
   app.use('/api/public/*', opaqueEmbedCors)
 
+  app.all('/__dev/outbox', context => context.get('platform').developmentOutbox(context.req.raw))
+  app.all('/__dev/key', context => context.get('platform').developmentOutbox(context.req.raw))
+
   app.get('/health', async (context) => {
     try {
       await context.get('services').workspace.checkHealth()
-      return context.json({ status: 'ok', product: manifest.id, version: manifest.version, buildId: context.get('platform').configuration.buildId })
+      return context.json({ status: 'ok', product: manifest.id, version: manifest.version, buildId: context.get('platform').configuration.buildId, ...context.get('platform').deployment })
     } catch (error) {
       console.error('D1 health check failed.')
       return context.json({ status: 'not-ready', message: 'The D1 database is unavailable.' }, 503)
@@ -83,6 +93,7 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
         : unauthenticatedResponse()
     }
     context.set('operatorSession', session)
+    if ((context.req.path === '/app' || context.req.path.startsWith('/app/')) && await unfinishedOwnerSetup(context.get('services'), context.req.raw)) return context.redirect('/setup', 302)
     await next()
   }
 
@@ -104,12 +115,19 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
   app.use('/app', requireOperator)
   app.use('/app/*', requireOperator)
 
+  registerManagementRoutes(app)
   registerAuthRoutes(app, context => context.get('services'), context => context.get('platform').configuration)
+  registerEmbeddingRoutes(app, context => context.get('services'))
+  registerBrandRoutes(app, context => context.get('services'))
   registerWorkspaceRoutes(app, context => context.get('services'))
+  registerSetupRoutes(app)
   registerFlowRoutes(app, context => context.get('services'))
+  registerImportRoutes(app)
   registerResponseRoutes(app, context => context.get('services'))
   registerReportingRoutes(app, context => context.get('services'))
   registerDistributionRoutes(app, context => context.get('services'))
+  registerNotificationRoutes(app, context => context.get('services'))
+  registerActionRoutes(app, context => context.get('services'))
 
   app.onError((error, context) => {
     if (error instanceof AuthError) return context.json({ error: error.code }, error.status as 403)

@@ -1,7 +1,8 @@
+import { httpExport } from '../helpers/report-download'
 import { operatorEmail } from './auth-identity'
 import { contract } from './contract'
 import AxeBuilder from '@axe-core/playwright'
-import { expect, test } from './fixtures'
+import { expect, test, openLocalOutbox } from './fixtures'
 import { mkdir } from 'node:fs/promises'
 
 contract(['FLOW-002','FLOW-005','RESP-004','RESP-007','RESP-014','LEDG-004','BASE-PUBLIC-003'], 'an operator builds and previews an adaptive form, a respondent changes branches, and the report retains only final reachable answers', async ({ page, request }, info) => {
@@ -12,8 +13,9 @@ contract(['FLOW-002','FLOW-005','RESP-004','RESP-007','RESP-014','LEDG-004','BAS
   await page.goto('/signin')
   await page.getByLabel('Operator email').fill(operatorEmail())
   await page.getByRole('button', { name: /Send.*link/i }).click()
-  await page.getByRole('link', { name: 'Open local dev inbox' }).click()
-  await page.getByRole('link', { name: 'Use this magic link' }).first().click()
+  await openLocalOutbox(page)
+  await page.locator('article').filter({ hasText: operatorEmail() }).getByRole('link', { name: 'Read message' }).first().click()
+  await page.getByRole('link', { name: 'Open this link' }).click()
   await page.getByRole('button', { name: 'Confirm', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Your flows' })).toBeVisible()
   await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
@@ -27,24 +29,36 @@ contract(['FLOW-002','FLOW-005','RESP-004','RESP-007','RESP-014','LEDG-004','BAS
   await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible()
   const inspector = page.getByRole('complementary', { name: 'Step settings' })
   const rail = page.getByRole('complementary', { name: 'Flow steps' })
-  const saved = async () => { await inspector.getByRole('button', { name: 'Save step', exact: true }).click(); await expect(page.getByText('Unsaved step changes.', { exact: false })).toHaveCount(0) }
-  await rail.getByRole('button', { name: 'Question', exact: true }).click()
+  const saved = async () => {
+    await expect(inspector.getByRole('button', { name: /^Save/ })).toHaveCount(1)
+    await inspector.getByRole('button', { name: 'Save', exact: true }).click()
+    await expect(page.getByText('Saved.', { exact: true })).toBeVisible()
+    await expect(page.getByText('Unsaved step changes.', { exact: false })).toHaveCount(0)
+  }
+  await rail.getByRole('button', { name: 'Add question', exact: true }).click()
   await inspector.getByLabel('Prompt', { exact: true }).fill('Which route should we take?')
   await inspector.getByLabel('Question type').selectOption('single_choice')
   await inspector.getByRole('button', { name: 'Choice', exact: true }).click()
   await inspector.getByRole('button', { name: 'Choice', exact: true }).click()
-  await inspector.getByLabel('Choice 1 value').fill('detail')
   await inspector.getByLabel('Choice 1 label').fill('Tell us more')
-  await inspector.getByLabel('Choice 2 value').fill('skip')
   await inspector.getByLabel('Choice 2 label').fill('Finish now')
+  for (const [index, generated, value] of [[1, 'tell-us-more', 'detail'], [2, 'finish-now', 'skip']] as const) {
+    const field = inspector.getByLabel(`Choice ${index} value`)
+    await expect(field).toBeHidden()
+    await inspector.getByText('Advanced', { exact: true }).nth(index - 1).click()
+    await expect(field).toHaveValue(generated)
+    await field.fill(value)
+    await inspector.getByText('Advanced', { exact: true }).nth(index - 1).click()
+    await expect(field).toBeHidden()
+  }
   await inspector.getByLabel('Required response').check()
   await saved()
-  await rail.getByRole('button', { name: 'Question', exact: true }).click()
+  await rail.getByRole('button', { name: 'Add question', exact: true }).click()
   await inspector.getByLabel('Prompt', { exact: true }).fill('Tell us the detail')
   await inspector.getByLabel('Question type').selectOption('long_text')
   await inspector.getByLabel('Required response').check()
   await saved()
-  await rail.getByRole('button', { name: 'Completion', exact: true }).click()
+  await rail.getByRole('button', { name: 'Add completion screen', exact: true }).click()
   await inspector.getByLabel('Prompt', { exact: true }).fill('Your feedback is recorded.')
   await saved()
   await rail.getByRole('button', { name: 'Add welcome' }).click()
@@ -55,7 +69,7 @@ contract(['FLOW-002','FLOW-005','RESP-004','RESP-007','RESP-014','LEDG-004','BAS
   await expect(page.getByRole('button', { name: 'Preview draft' })).toBeDisabled()
   await inspector.getByLabel('Answer', { exact: true }).selectOption({ label: 'Finish now' })
   await inspector.getByLabel('Then go to').selectOption({ label: 'Your feedback is recorded.' })
-  await inspector.getByRole('button', { name: 'Save answer paths' }).click()
+  await saved()
   await expect(inspector.getByLabel('Answer', { exact: true })).toHaveValue(/.+/)
   await page.getByRole('button', { name: 'Preview draft' }).click()
   const preview = page.getByRole('region', { name: 'Draft preview' })
@@ -67,9 +81,11 @@ contract(['FLOW-002','FLOW-005','RESP-004','RESP-007','RESP-014','LEDG-004','BAS
   await preview.getByRole('button', { name: 'Close preview' }).click()
   await expect(new AxeBuilder({ page }).include('.operator-content').analyze().then((result) => result.violations)).resolves.toEqual([])
   await page.getByRole('button', { name: 'Publish', exact: true }).click()
+  await expect(page.getByText('Published. New visitors see this version.', { exact: true })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Share this flow' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'View public flow' })).toBeVisible()
+  await page.getByRole('button', { name: 'Edit steps', exact: true }).click()
   const flowId = /flows\/([^/]+)\//.exec(page.url())![1]
-  const builderURL = page.url()
   await mkdir('test-results/review-evidence', { recursive: true })
   await page.screenshot({ path: `test-results/review-evidence/${info.project.name}-builder.png`, fullPage: true })
   // A browser-visible edit must block publication until saved or discarded.
@@ -129,13 +145,13 @@ contract(['FLOW-002','FLOW-005','RESP-004','RESP-007','RESP-014','LEDG-004','BAS
   await ledger.getByRole('button', { name: 'Export JSON' }).click()
   const file = await download
   await file.saveAs(`test-results/review-evidence/${info.project.name}-responses.json`)
-  const response = await page.request.get(`/api/app/flows/${flowId}/responses/export`)
-  const exported = await response.json()
+  const exported = await httpExport(target => page.request.get(target),`/api/app/flows/${flowId}/responses/export`)
   expect(exported.responses).toHaveLength(1)
   expect(exported.responses[0].answers).toHaveLength(1)
   expect(exported.responses[0].answers[0].displayValue).toBe('Finish now')
   expect(JSON.stringify(exported)).not.toMatch(/deviceClass|sessionToken|This must disappear/)
   expect(submissionAttempts).toBe(2)
+  await page.unroute(`**/api/public/flows/${slug}/responses`)
   await ledger.getByRole('button', { name: 'Erase response', exact: true }).click()
   await ledger.getByRole('button', { name: 'Keep response', exact: true }).click()
   await expect(ledger.getByText('1 matching completed responses', { exact: false })).toBeVisible()
@@ -152,10 +168,10 @@ contract(['FLOW-002','FLOW-005','RESP-004','RESP-007','RESP-014','LEDG-004','BAS
   await expect(ledger.getByText('0 matching completed responses', { exact: false })).toBeVisible()
   await page.reload()
   await expect(ledger.getByText('0 matching completed responses', { exact: false })).toBeVisible()
-  expect(await page.request.get(`/api/app/flows/${flowId}/responses/export`).then((response) => response.json())).toMatchObject({ responses: [] })
+  expect(await httpExport(target => page.request.get(target),`/api/app/flows/${flowId}/responses/export`)).toMatchObject({ responses: [] })
   await expect(new AxeBuilder({ page }).include('.operator-content').analyze().then((result) => result.violations)).resolves.toEqual([])
   await page.screenshot({ path: `test-results/review-evidence/${info.project.name}-erasure.png`, fullPage: true })
   expect(errors).toEqual([])
-  await page.goto(builderURL)
+  await page.getByRole('link', { name: 'Builder', exact: true }).click()
   await expect(inspector.getByLabel('Prompt', { exact: true })).toHaveValue('Which route should we take?')
 })

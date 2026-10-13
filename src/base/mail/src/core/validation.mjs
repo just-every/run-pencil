@@ -25,6 +25,8 @@ export function validateConfig(config, dependencies = {}) {
   if (!['production', 'development', 'test'].includes(config.mode)) fail('invalid_mode');
   if (dependencies.fetch !== undefined && typeof dependencies.fetch !== 'function') fail('invalid_fetch');
   if (dependencies.clock !== undefined && typeof dependencies.clock !== 'function') fail('invalid_clock');
+  if (dependencies.timeoutMilliseconds !== undefined &&
+      (!Number.isSafeInteger(dependencies.timeoutMilliseconds) || dependencies.timeoutMilliseconds <= 0)) fail('invalid_timeout');
   if (config.provider === 'development') {
     if (config.mode !== 'development') fail('development_mode_required');
     if (config.apiKey !== undefined || config.accountId !== undefined) fail('unsupported_development_config');

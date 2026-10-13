@@ -1,0 +1,37 @@
+/* Workspace settings: three white cards (three columns from 1200px), serif titles with ink line icons. */
+.workspace-settings, .workspace-settings .settings-card > *, .workspace-settings .quiet-panel > div { min-width: 0; }
+.workspace-settings { overflow-wrap: anywhere; }
+.workspace-settings input, .workspace-settings textarea, .workspace-settings select { min-width: 0; max-width: 100%; }
+.workspace-settings > .status-note { margin-bottom: 20px; }
+.settings-grid { display: grid; grid-template-columns: 1fr; align-items: start; gap: 20px; }
+@media (min-width: 1200px) { .settings-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.settings-card { display: grid; align-content: start; gap: 0; padding: 28px; }
+.settings-card .card-title { margin-bottom: 8px; }
+.settings-card .inspector-field { margin-top: 18px; }
+.settings-help { margin-top: 8px; color: var(--subtle); font-size: 13px; line-height: 1.5; }
+.settings-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.settings-pair .inspector-field { margin-top: 18px; }
+.settings-save { width: 100%; margin-top: 24px; }
+.time-zone-field { margin-top: 0; }
+.time-zone-matches { display: grid; gap: 2px; margin: 8px 0 0; border: 1px solid var(--line); border-radius: 10px; padding: 6px 10px; list-style: none; background: var(--card); box-shadow: var(--shadow); }
+.time-zone-matches .quiet-button { min-height: 34px; text-decoration: none; }
+
+.brand-settings > p.muted { margin-top: 2px; }
+.brand-settings form { display: grid; }
+.brand-settings .quiet-button { justify-self: start; margin-top: 12px; }
+.brand-saved-preview { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; margin-top: 20px; border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; background: var(--paper-deep); }
+.brand-saved-preview .brand-identity { margin: 0; }
+.brand-saved-preview .primary-button { min-height: 40px; }
+
+.operator-list { display: grid; gap: 10px; margin-top: 16px; }
+.operator-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 12px; padding: 14px 16px; }
+.operator-name { display: block; color: var(--ink); font-size: 15px; font-weight: 500; }
+.operator-email { font-size: 14px; }
+.operator-invite { display: grid; gap: 0; margin-top: 24px; border-top: 1px solid var(--line); padding-top: 22px; }
+.operator-invite .inspector-field { margin-top: 14px; }
+.operator-invite-button { width: 100%; min-height: 44px; margin-top: 20px; }
+
+@media (max-width: 620px) { .settings-card { padding: 20px; } .card-title h2 { font-size: 24px; } }
+/* The accent's swatch beside its hex field (empty until the value is a full #rrggbb). */
+.accent-field { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 10px; }
+.accent-swatch { border: 1px solid var(--line-bright); border-radius: 10px; background: repeating-linear-gradient(135deg, var(--paper-deep) 0 6px, var(--card) 6px 12px); }

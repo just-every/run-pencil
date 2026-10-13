@@ -1,25 +1,56 @@
 # Pencil
 
-Pencil is a self-hosted adaptive form builder and feedback workspace for one business. Build and preview answer paths, publish immutable revisions, collect direct or embedded responses, send invitations and reminders, review quarantine, and download factual reports and response ledgers.
+Pencil is an editable form builder and feedback workspace with branching questions, published forms, results, branding, response email, embeds, a bounded Typeform JSON/CSV importer and a Google Forms CSV-first importer with an optional `forms.get` definition. To bring existing forms and historical responses into an editable draft, read the [moving-in guide](docs/guide/moving-in.md).
 
-The application uses React and TanStack Start with Hono in one Cloudflare Worker and D1 for durable storage. Native emailed operator sign-in and mail delivery use maintained Base source. Source: [just-every/pencil](https://github.com/just-every/pencil). License: [MIT](LICENSE).
+## Run it on your computer
 
-## Install and run
-
-Use Node 26.8.1 and pnpm 10.12.4 for the verified toolchain (Node >=22.12 is declared).
+Use Node **22.20.0** and pnpm **10.12.4**. From this checkout:
 
 ```sh
-pnpm install --frozen-lockfile
-pnpm run setup
-pnpm dev --host 127.0.0.1 --port 15621 --strictPort
+rer install
+rer setup --owner-email owner@example.com --owner-name Owner
+rer dev
 ```
 
-Open `/signin`, enter `owner@aurora-coffee.test`, and follow the link in the local inbox. Setup creates local D1 state and synthetic sample data. Local mail and sample initialization are restricted to explicit loopback development. Configuration generation preserves existing owner configuration.
+Install uses the frozen lockfile. Setup builds, migrates and creates one real owner through Base authentication, checks ordinary sign-in in the private outbox, then stops its temporary app. Reruns preserve existing owner, data and exact private settings. Dev prints its health-gated application URL and opens signed in: it prints `RER_SIGNED_IN` (who the browser will be) and `RER_OPEN`, a link for this computer that carries this checkout's private dev key in its fragment. Open it and the app signs you in as the owner you set up and takes you to **`/setup`** to finish your business name and time zone; finished setup enters the app. `RER_OPEN` is the only way in: the local outbox, the dev sign-in and the persona list answer 404 to any request without the key, including one a tunnel or a local proxy forwards to this computer. Use `rer dev --as operator` to start as the **Dev operator** persona (a colleague, `operator@dev.localhost`) or `--as signed-out` to start signed out; the dev badge at the bottom of every page switches between them. Use `rer dev --login` to turn dev identity off and sign in the ordinary way: read the newest sign-in message in the outbox (`RER_SIGN_IN`), open its link and confirm. A link works once; local capture sends no email.
 
-## Verify and deploy
+Read the guide at `/docs` on your copy (its source is [docs/guide](docs/guide/overview.md)); `/` is the Lobby (**Finish setup** until first-run setup is confirmed, then **Sign in**), with `/pencil` redirecting there. An explicitly selected public landing flow in Settings keeps its existing respondent experience at `/`; Pencil's product page is the run site, run-pencil.com, built by `rer build --site`; published forms also keep their `/f/<slug>` links.
 
-Install the native test browser once with `pnpm exec playwright install chromium --only-shell`. `pnpm verify` runs types, unit and native Worker tests, the unchanged load workload, data roundtrip/refusal checks, migrations, manifest, source boundaries, build and contract coverage with native desktop/mobile browser journeys. Run `pnpm source:check` after committing intended changes. See [operations](OPERATIONS.md) for export and restore, and [hosting](docs/HOSTING.md) for explicit Cloudflare resource and mail configuration.
+Keep `.dev.vars` private. Use `--port PORT` for an explicit loopback port. Stop dev with Ctrl-C or `rer dev --stop`.
 
-The first-release profile defers exactly AUD, ANLY, ACT and NOTIFY. Their 33 TODO clauses remain visible and `pnpm verify:contract:full` remains unsatisfied. All baseline and other product clauses remain active. Local verification does not establish hosted capacity, provider inbox delivery or deployment acceptance.
+```sh
+rer outbox
+pnpm exec playwright install chromium --only-shell
+rer verify
+rer reset --yes
+```
 
-Migration `0010_base_operator_auth.sql` imports operator identities and revokes legacy links and sessions, signing existing operators out. Export first, configure Base mail and the session secret, then have operators sign in again. Recovery restores a private export to a new database without replaying mail. Read [release scope](docs/FIRST-RELEASE.md), [current state](HANDOVER.md), [requirements](CONTRACT.md) and [security baseline](BASELINE.md) before adapting the product.
+Verify runs the functional and high-stakes wall. After intended source changes, stage them, inspect `node scripts/edition-authoring/cli.mjs changes`, run `node scripts/edition-authoring/cli.mjs lock`, commit with `sources.lock.json`, then run `pnpm source:check`; without `lock` it fails with a stale lock. Reset prints and removes only inventoried local data, settings, owner, outbox and drafts; source, dependencies, exports and deployment receipts survive. Export first to retain data:
+
+```sh
+mkdir -m 700 exports
+rer export --output exports/installation.rer
+rer reset --yes
+rer import --input exports/installation.rer --yes
+rer setup --owner-email owner@example.com --owner-name Owner
+```
+
+Import validates integrity and restores atomically into an empty destination without replaying mail. Archives retain the complete product graph, import custody, delivery history and credential hashes; plaintext credentials, captured mail and private settings are excluded. Public transfer supports local state; remote targets are refused.
+
+```sh
+pnpm run deploy -- --dry-run
+rer describe
+rer check --profile first-party
+```
+
+Deployment needs the intended owner account and production inputs. Dry run builds and validates with zero provider calls. Read [OPERATIONS.md](OPERATIONS.md), [RUN-LOCALLY.md](RUN-LOCALLY.md) and [SEED-COMMAND-CONTRACT.md](SEED-COMMAND-CONTRACT.md).
+
+Before **every release**, run `pnpm run verify:release` for unchanged capacity, maximum-size native memory, browser heap and load cases. These run outside CI and default verify. Publication inspection requires Gitleaks 8.30.1; `bash scripts/install-gitleaks.sh` installs the reviewed binary after checksum verification. CI uses the same installer and complete Base scanner. The maintained release dry run runs both commands:
+
+```sh
+pnpm run release -- --repo . --ref HEAD --project just-every/pencil --repository https://github.com/just-every/run-pencil --onto https://github.com/just-every/run-pencil#main --tag vVERSION --dry-run --output ../pencil-release
+```
+
+Require a complete scan with zero findings and reviews, without exclusions or an allowlist. Hosted installation, real-export validation, tags, public publication and site listing require the owner. Exactly ANLY-001–016, NOTIFY-001 and NOTIFY-003 remain deferred (18 clauses), with explicit TODOs and the unsatisfied full-contract check. CONTRACT.md and BASELINE.md record product guarantees.
+
+Optional managed delivery emits the actual Worker, assets, setup descriptor and ordered migrations. Signed admission creates one native owner in an empty installation; initialized stores reject further claims. The editor requires a current native owner session and revokes on sign-out. Hosted acceptance remains with the owner.

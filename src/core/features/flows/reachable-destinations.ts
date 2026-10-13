@@ -1,3 +1,5 @@
+import { numericCandidates, dateCandidates } from './ordered-answer-domain'
+import { answerIssue } from '../../shared/answers'
 import { matchesBranch } from '../../shared/branching'
 import type { BranchSelection } from '../../shared/flowPolicies'
 import type { StoredBranchRule, StoredStep } from './repository'
@@ -11,7 +13,21 @@ function answerExists(step: StoredStep, choices: string[], settings: Record<stri
   const satisfies = (answer: unknown) => requirements.every(({ predicate, matched }) => matchesBranch(predicate, answer) === matched)
   // The respondent normalizes every skipped optional answer to undefined.
   if (!step.required && satisfies(undefined)) return true
-  if (step.questionType === 'single_choice') return choices.some(satisfies)
+  if (['single_choice', 'dropdown'].includes(step.questionType ?? '')) return choices.some(satisfies)
+  if (step.questionType === 'yes_no') return [true, false].some(satisfies)
+  if (step.questionType === 'consent') return (step.required ? [true] : [true, false]).some(satisfies)
+  if (step.questionType === 'nps') return Array.from({ length: 11 }, (_, i) => i).some(satisfies)
+  if (step.questionType === 'number' || step.questionType === 'date') {
+    const valid = (value: unknown) => !answerIssue({ ...step, questionSettings: settings }, choices, value)
+    if (step.questionType === 'number') {
+      const boundaries = [settings.min, settings.max, ...requirements.map(item => item.predicate.expectedValue)].filter((value): value is number => typeof value === 'number' && Number.isFinite(value)).sort((a, b) => a - b)
+      const candidates = numericCandidates(boundaries, settings.decimalPlaces as number | undefined)
+      return candidates.some(value => valid(value) && satisfies(value))
+    }
+    const boundaries = ['0001-01-01', '9999-12-31', settings.earliest, settings.latest, ...requirements.map(item => item.predicate.expectedValue)].filter((value): value is string => typeof value === 'string')
+    const candidates = dateCandidates(boundaries)
+    return candidates.some(value => valid(value) && satisfies(value))
+  }
   if (step.questionType === 'rating') {
     const min = settings.min as number, max = settings.max as number
     return Array.from({ length: max - min + 1 }, (_, index) => min + index).some(satisfies)

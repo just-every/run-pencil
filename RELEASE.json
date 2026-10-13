@@ -1,25 +1,254 @@
 {
-  "version": "0.1.0",
-  "date": "2026-10-07",
+  "version": "0.2.0",
+  "previousVersion": "0.1.0",
+  "date": "2026-10-08",
   "contractChanges": {
     "HOME-001": {
-      "was": "Optional static Run Edit Run credit defaults on.",
-      "now": "Optional static Run Edit Run credit defaults off; an owner can enable it explicitly. No request or telemetry is introduced.",
       "change": "changed",
-      "summary": "Optional static credit defaults off while owner opt-in and public privacy remain intact."
+      "summary": "Owner override, 11 October 2026: the approved Pencil product page becomes the default root, and /pencil redirects there. Explicit respondent root selections and direct form paths are preserved.",
+      "was": "`/` renders the owner-configured public surface using the same respondent experience and admission state as the configured published flow's canonical direct link. The sample configuration selects the sample published flow. If that flow is closed, archived, or missing, `/` uses the same closed or 404 outcome as its direct link. The owner may configure the displayed business name, one supporting line, theme, and the optional default-off static `Powered by Pencil \u00b7 runeditrun.com` credit. The landing contains no vendor marketing, pricing, invented metrics, testimonials, or third-party requests.",
+      "now": "By the owner's 11 October 2026 override, `/` serves the approved Pencil product page when no public landing flow is selected, and `/pencil` redirects to `/`. An explicitly selected open published flow keeps its canonical respondent experience and admission checks at `/`. A later closed flow shows the standard closed page; an archived or missing flow returns 404, just as its direct link does. Business branding follows BRAND-001. The optional default-off static `Powered by Pencil \u00b7 runeditrun.com` credit remains available. A selected respondent landing contains no vendor marketing, pricing, invented metrics, testimonials, or third-party requests.",
+      "migrationIds": [
+        "0015_workspace_brand.sql"
+      ]
+    },
+    "BRAND-001": {
+      "change": "added",
+      "summary": "Save business name, supporting line, accessible accent and validated PNG, JPEG or WebP logo across public form states and new-response email. Email uses inline CID bytes with no remote resources; removal affects the next dispatch run.",
+      "migrationIds": [
+        "0015_workspace_brand.sql"
+      ],
+      "supersedes": "BASE-INPUT-003",
+      "was": "No BRAND-001 guarantee was defined.",
+      "now": "*Supersedes `BASE-INPUT-003` for business logos only.* Operators save the business name, one supporting line, an accent in #rrggbb format, and an optional PNG, JPEG or WebP logo within `seed.json \u2192 limits.brand`. A fresh workspace asks its owner for the business name at /setup and uses neutral defaults until saved. The same saved brand appears in preview, direct and embedded forms, completion and closed states, the selected public landing, and new-response email. Email includes the saved name and supporting line as literal text and escaped HTML, the saved accent, and any validated logo as inline CID bytes with no remote resources; removing the logo affects the next dispatch run. The accent's button text has at least 4.5:1 contrast; a readable foreground is selected for other accent text. Logo removal takes effect everywhere. Authenticated server uploads check size, declared MIME and content signatures, refusing SVG. Logos are served from this installation with the validated Content-Type and nosniff, with no third-party request. This clause supersedes BASE-INPUT-003 for business logos only: their bytes live in D1 and are deliberately public inline images, included in deployment exports, rather than private R2 downloads. Business identity is independent of Pencil's operator authentication branding."
+    },
+    "FLOW-003": {
+      "change": "changed",
+      "summary": "Questions also support dropdown, yes/no, NPS, number, calendar date and consent with editable choices or applicable type-specific settings.",
+      "was": "A question is short text, long text, email, single choice, multiple choice, rating, or priority; it has a prompt, optional why-we-ask text, required flag, and type-specific options within the limits in `seed.json`.",
+      "now": "A question is short text, long text, email, single choice, multiple choice, rating, priority, dropdown, yes/no, NPS, number, date, or consent; it has a prompt, optional why-we-ask text, required flag, and applicable editable type-specific options within the limits in `seed.json`. The builder canvas uses the same respondent controls.",
+      "migrationIds": [
+        "0018_question_types.sql"
+      ]
+    },
+    "FLOW-005": {
+      "change": "changed",
+      "summary": "Branch predicates also support dropdown stable-choice equality, boolean equality, and NPS, number and calendar-date comparisons using the same preview and published evaluator.",
+      "was": "A single-choice answer can match equality, a rating or priority answer can match equality or ordered comparison, and a multiple-choice answer can match any or all selected stable choice IDs. Preview shows the ordered rule evaluations and chosen next step used by the published runtime. *Policy: `flow.branch-selection.v1`; default: first matching rule in displayed order, then the required default path.*",
+      "now": "A single-choice or dropdown answer can match equality against a stable choice ID; yes/no and consent answers can match boolean equality; rating, priority, NPS, number and calendar-date answers can match equality or ordered comparison; and a multiple-choice answer can match any or all selected stable choice IDs. Priority equality compares the complete ordering and ordered comparisons use a choice's rank. Preview shows the ordered rule evaluations and chosen next step used by the published runtime, using the same predicates. *Policy: `flow.branch-selection.v1`; default: first matching rule in displayed order, then the required default path.*",
+      "migrationIds": [
+        "0018_question_types.sql"
+      ]
+    },
+    "FLOW-019": {
+      "change": "changed",
+      "summary": "Answer values also cover dropdown stable IDs, booleans, NPS integers 0\u201310, bounded finite numbers, real calendar dates and consent with its immutable published statement.",
+      "was": "A stored answer is exactly one of: for short text and long text, a string within that type's character limit in `seed.json \u2192 limits`; for email, a syntactically valid address stored as the respondent typed it and compared case-insensitively; for single choice, one stable choice ID belonging to that question; for multiple choice, a set of distinct stable choice IDs belonging to that question, within its configured minimum and maximum selections; for rating, an integer within the question's configured scale; for priority, a complete ordering of that question's stable choice IDs with no repetition and no omission. Nothing else is a valid answer.",
+      "now": "A stored answer is exactly one of: for short text and long text, a string within that type's character limit in `seed.json \u2192 limits`; for email, a syntactically valid address stored as the respondent typed it and compared case-insensitively; for single choice and dropdown, one stable choice ID belonging to that question; for multiple choice, a set of distinct stable choice IDs belonging to that question, within its configured minimum and maximum selections; for rating, an integer within the question's configured scale; for priority, a complete ordering of that question's stable choice IDs with no repetition and no omission; for yes/no, a boolean; for NPS, an integer from 0 through 10; for number, a finite number within optional minimum, maximum and decimal precision; for date, a true calendar YYYY-MM-DD value within optional earliest/latest bounds without timezone conversion; for consent, `{accepted: boolean, statement: string}` retaining the immutable published statement, with required consent accepting only true. Nothing else is a valid answer.",
+      "migrationIds": [
+        "0018_question_types.sql"
+      ]
+    },
+    "RESP-003": {
+      "change": "changed",
+      "summary": "Every input starts unanswered. False and zero count only after explicit selection or entry. Required semantics are visible and optional skipping creates no answer.",
+      "was": "The respondent can submit only the values FLOW-019 defines for the published question's type and configured limits. Rating, priority, and choice questions begin unselected and require affirmative respondent selection; a required unanswered or invalid question stays on screen with a field-specific error and creates no response.",
+      "now": "The respondent can submit only the values FLOW-019 defines for the published question's type and configured limits. Every question begins unanswered. False yes/no answers and zero scores or numbers count only after explicit selection or entry. Rating, priority, and choice questions begin unselected and require affirmative respondent selection. Required fields show Required and expose required semantics; a required unanswered or invalid question stays on screen with a field-specific error and creates no response. Progress is the share of currently reachable questions answered validly or deliberately skipped when optional; remaining includes every unfinished reachable question. Skipping never creates an answer.",
+      "migrationIds": [
+        "0018_question_types.sql"
+      ]
+    },
+    "NOTIFY-002": {
+      "change": "changed",
+      "summary": "Operators choose Immediately or Off per flow. Publishing opts in only its publisher when unset; migrated flows remain Off. Eligible new released responses create durable private notifications; historical rows never send.",
+      "was": "Each operator sets, per flow, whether completed responses are mailed to them immediately, summarised in one daily digest, or not mailed. The operator who published the flow starts on the digest; every other operator starts on nothing. A message names the business and flow and links to the ledger; it never carries answer text, respondent identity, or a link that grants access without signing in.",
+      "now": "Each operator sets, per flow, whether completed responses are mailed to them immediately or not mailed. Publication starts its publisher on Immediately only when no preference exists; every other operator defaults Off. Existing unrepublished flows default Off. A message uses the saved business identity under BRAND-001, names the flow and submission time in the workspace zone, and links to the authenticated results ledger; it never carries answer text, respondent identity, or a link that grants access without signing in.",
+      "migrationIds": [
+        "0014_response_notifications.sql"
+      ]
+    },
+    "IMPORT-001": {
+      "change": "added",
+      "summary": "Review every source field, screen and logic action before importing a form definition into an editable draft with new stable IDs; unsupported paths remain subject to native publication validation.",
+      "migrationIds": [
+        "0016_import_kit.sql",
+        "0017_form_import.sql"
+      ],
+      "was": "No IMPORT-001 guarantee was defined.",
+      "now": "Operators can import a documented form-definition JSON into a new editable draft with new stable IDs. Every field, screen and logic action is listed before writes with source type, imported/changed/unsupported outcome, explicit change and reason. Unsupported logic leaves affected paths incomplete; native graph validation still controls publication."
+    },
+    "IMPORT-002": {
+      "change": "added",
+      "summary": "Map response CSV columns and review every row error or omission before commit; cancelling review creates no durable job, flow or response.",
+      "migrationIds": [
+        "0016_import_kit.sql",
+        "0017_form_import.sql"
+      ],
+      "was": "No IMPORT-002 guarantee was defined.",
+      "now": "Operators can map every response CSV column to a supported question, timestamp or Skip. Every row error is reported. Blank answers stay unanswered; malformed values and configured capacity excess are refused before commit. Commit requires acknowledgement of every reported change or omission; cancelling review creates no job, flow or response."
+    },
+    "IMPORT-003": {
+      "change": "added",
+      "summary": "Historical imported responses retain timestamps and pinned revisions without mail, sessions, contacts or admission effects. Hidden values and network metadata are discarded before durable planning, and original bytes are not retained.",
+      "migrationIds": [
+        "0016_import_kit.sql",
+        "0017_form_import.sql"
+      ],
+      "was": "No IMPORT-003 guarantee was defined.",
+      "now": "Imported released completions retain their original timestamps and remain anonymous, with source imported and an immutable revision matching the mapped source. Hidden values and network/IP metadata are discarded before durable planning; original file bytes are not retained, and this omission is disclosed before commit. Imported data creates no session, contact, mail, outbox event or admission effect. Later draft edits cannot reinterpret historical answers."
+    },
+    "IMPORT-004": {
+      "change": "added",
+      "summary": "The maintained D1 import kit provides replay identity, bounded resume and undo with guards protecting later native edits.",
+      "migrationIds": [
+        "0016_import_kit.sql",
+        "0017_form_import.sql"
+      ],
+      "was": "No IMPORT-004 guarantee was defined.",
+      "now": "The unchanged Base D1 import kit owns reviewed commit, source identity, bounded resume and undo. Identical files create no duplicate native records; interruption resumes the exact stored safe plan. Undo removes unedited imported data while exact native snapshot guards preserve and report later edits. Completed reversal is idempotent; retained safe plan and provenance survive."
+    },
+    "DIST-002": {
+      "change": "changed",
+      "summary": "Script embeds add a checked opaque-frame messaging protocol and resizing while retaining the plain iframe.",
+      "was": "One asynchronous script or HTTPS iframe embeds the same respondent experience. It does not block the host page, and direct and embedded submissions produce the same response data and validation.",
+      "now": "One asynchronous script or HTTPS iframe embeds the same respondent experience. It does not block the host page, and direct and embedded submissions produce the same response data and validation. Script embeds use an asynchronously loaded installation-origin script that mounts a sandboxed iframe without allow-same-origin, resizes to its content and emits only loaded, height and completed events. Exact allowed host origin, exact frame source, opaque child origin, challenge and field shape are checked. No answers, response identifiers, credentials or contact details enter the host URL, DOM or messages. The plain iframe option remains available.",
+      "migrationIds": []
+    },
+    "RSLT-001": {
+      "change": "changed",
+      "summary": "Answer summaries lead results; imported responses remain in answer and completion counts but do not create native session metrics.",
+      "was": "Every published revision has a results view that needs no `ai.provider.v1`: it shows completed responses, starts, completion rate, and average time to complete for the current filter, each beside the counts it was computed from. It is available from publication, shows zeros rather than an error before the first session, and never blocks on an analysis run.",
+      "now": "Every published revision has a results view that needs no `ai.provider.v1`: question answer summaries appear before session metrics. It shows completed responses, starts, completion rate, and average time to complete for the current filter, each beside the counts it was computed from. Imported completions remain in answer summaries and completed counts but are excluded from native starts, completion-rate numerators and duration samples, with the imported count stated separately. It is available from publication, shows zeros rather than an error before the first session, and never blocks on an analysis run.",
+      "migrationIds": [
+        "0016_import_kit.sql",
+        "0017_form_import.sql"
+      ]
+    },
+    "RSLT-003": {
+      "change": "changed",
+      "summary": "Completion rates and durations use only native responses, with per-question answer denominators preserved.",
+      "was": "Every percentage Pencil displays in results or analysis names the numerator and denominator it was computed from. A single-answer distribution divides by the responses that answered that question and its parts sum to that denominator. A multiple-choice distribution divides by the same denominator, may therefore total more than 100%, and is labelled as multiple-select. Completion rate divides completed responses by starts for the same revision and filter, and is never mixed with a per-question answer rate. Changing a filter changes both numerator and denominator together.",
+      "now": "Every percentage Pencil displays in results or analysis names the numerator and denominator it was computed from. A single-answer distribution divides by the responses that answered that question and its parts sum to that denominator. A multiple-choice distribution divides by the same denominator, may therefore total more than 100%, and is labelled as multiple-select. Completion rate divides native completed responses by native starts for the same revision and filter, excluding imported historical responses from both rate and duration calculations, and is never mixed with a per-question answer rate. Changing a filter changes both numerator and denominator together.",
+      "migrationIds": [
+        "0016_import_kit.sql",
+        "0017_form_import.sql"
+      ]
+    },
+    "WS-003": {
+      "change": "changed",
+      "summary": "Keep required startup configuration and optional-adapter disclosure for implemented features; omit profile-deferred features from the interface until implemented.",
+      "was": "*Supersedes `BASE-SECRET-002`.* Pencil starts only when every variable marked required in `seed.json \u2192 env` is present, and fails at startup naming the first missing one. `ai.provider.v1` and `task.destination.v1` are declared optional: with either absent the deployment starts and serves, every clause that does not name that adapter holds in full, and each feature that does name it is shown as unavailable alongside the variables that would enable it. No feature silently produces a reduced result instead.",
+      "now": "*Supersedes `BASE-SECRET-002`.* Pencil starts only when every variable marked required in `seed.json \u2192 env` is present, and fails at startup naming the first missing one. `ai.provider.v1` and `task.destination.v1` are declared optional: with either absent the deployment starts and serves, every clause that does not name that adapter holds in full, and each feature offered by the implemented profile that does name it is shown as unavailable alongside the variables that would enable it. Features deferred by the declared contract profile are omitted from the interface until implemented. No feature silently produces a reduced result instead.",
+      "migrationIds": []
+    },
+    "SITE-001": {
+      "change": "added",
+      "summary": "Every installation serves Pencil's own product page at `/` by default, with `/pencil` redirecting there: cookieless, same-origin, and limited to claims about active clauses. Explicit respondent landing selections retain their canonical behavior.",
+      "was": "No SITE-001 guarantee was defined.",
+      "now": "The default `/` renders Pencil's own product page for people evaluating the software: what Pencil does, links to the source repository and the documentation. It sets no cookies, loads nothing from third-party origins, and makes claims only about active clauses of this contract: no deferred ANLY, ACT or NOTIFY features, invented metrics, customers, testimonials or pricing. `/pencil` redirects to `/`; an explicitly configured respondent landing remains governed by HOME-001.",
+      "migrationIds": []
+    },
+    "SITE-002": {
+      "change": "added",
+      "summary": "The product page's first screen demonstrates an answer path that works by keyboard, announces the follow-up to assistive technology, respects reduced motion and has a complete no-JavaScript state.",
+      "was": "No SITE-002 guarantee was defined.",
+      "now": "The product page's first screen demonstrates an answer path: choosing an answer on the illustrated card shows the follow-up question that answer leads to, works by keyboard, announces the change to assistive technology, and respects reduced motion. Without JavaScript the card shows one complete question, answer and follow-up.",
+      "migrationIds": []
+    },
+    "DOCS-001": {
+      "change": "added",
+      "summary": "Every installation also serves the product documentation at `/docs` and `/docs/<slug>`, rendered from repository Markdown at build time with navigation, a table of contents, previous/next links and 404 for unknown slugs; cookieless and same-origin.",
+      "was": "No DOCS-001 guarantee was defined.",
+      "now": "`/docs` and `/docs/<slug>` render the product documentation from Markdown in this repository at build time, with navigation, an on-page table of contents and previous/next links. Unknown slugs return 404. Docs pages set no cookies and load nothing from third-party origins.",
+      "migrationIds": []
+    },
+    "ACT-008": {
+      "change": "added",
+      "summary": "Actions can come from a recommendation an operator writes by hand, linked to frozen results evidence, so owned follow-through works without a model provider. The analysis link stays required for actions accepted from an analysis once ANLY ships.",
+      "now": "**ACT-008 \u2014 Manual recommendation.** An operator may write a recommendation by hand and accept it as an action under ACT-001, linked to the results evidence it rests on: a flow, a published revision and optionally one question, with the RSLT counts shown at that moment kept as they were, never response identifiers, answer excerpts or cohort filters. An action written by hand has no analysis link. The analysis link of ACT-001 is required for every action accepted from an analysis once ANLY is implemented; nothing else in ACT-001 to ACT-007 is relaxed.",
+      "migrationIds": [
+        "0026_actions.sql"
+      ]
     }
   },
+  "proseChanges": [
+    {
+      "document": "README.md",
+      "change": "changed",
+      "date": "2026-10-08",
+      "summary": "Document the local first-owner journey, online setup and the populated predecessor upgrade path.",
+      "was": "Local setup described a sample operator and first-release verification without a released predecessor.",
+      "now": "Local startup uses the first-owner flow and upgrade verification starts from populated 0.1.0 data; delivery and hosting evidence remain separately qualified."
+    }
+  ],
   "extensionPointChanges": [],
   "migrations": [
     {
-      "id": "0009_invitation_distribution.sql",
-      "buyerSteps": "Additive first-release distribution, recipient consent and durable delivery data; preserve all prior migration identities."
+      "id": "0011_atomic_session_progress.sql",
+      "buyerSteps": "Export first. Add the atomic session-progress view and visit triggers. Existing sessions, responses, progress events and counters are preserved; applying the migration sends no mail."
     },
     {
-      "id": "0010_base_operator_auth.sql",
-      "buyerSteps": "Export first. Configure SESSION_SECRET and maintained Base mail; apply the additive migration. Existing operators are imported, old SHA links and sessions revoked, and operators sign in again through read-only GET confirmation and single-use POST. Fresh deployments bootstrap once with SETUP_TOKEN. Restore the private export to a new database for recovery, without replaying mail."
+      "id": "0012_base_invitation_cancellation.sql",
+      "buyerSteps": "Export first. Add durable cancellation admission state without resetting existing active/inactive operators, native sessions or links. New cancellation rules do not infer historical invitation acceptance."
+    },
+    {
+      "id": "0013_base_mail_outbox.sql",
+      "buyerSteps": "Add the maintained development-mail outbox. Existing authentication credentials and older local mail records remain preserved; production mail configuration is unchanged. Local mail remains restricted to explicit development."
+    },
+    {
+      "id": "0014_response_notifications.sql",
+      "buyerSteps": "Add notification preferences and durable delivery attempts. Existing preferences are unset/Off; every predecessor response and pending response-outbox row is ineligible. Enabling Immediately or republishing does not send historical responses."
+    },
+    {
+      "id": "0015_workspace_brand.sql",
+      "buyerSteps": "Add neutral workspace brand defaults and the optional public landing selection. Save business identity and select an open flow in Settings when desired. Existing flow and response data remains intact."
+    },
+    {
+      "id": "0016_import_kit.sql",
+      "buyerSteps": "Add the maintained D1 import-job, provenance, checkpoint and reversal schema. This migration imports no files and sends no mail."
+    },
+    {
+      "id": "0017_form_import.sql",
+      "buyerSteps": "Add native import-target and pinned-revision metadata. Review and acknowledge mappings before importing files. Historical imports create no response-outbox work or outbound mail."
+    },
+    {
+      "id": "0018_question_types.sql",
+      "buyerSteps": "Expand the question-type constraint by copying step and choice rows before replacing the old tables. Stable IDs, answer links and existing question settings are preserved. For recovery, restore the pre-upgrade private export to a new database, verify it, and switch bindings with its compatible deployment; never overwrite the live database or replay mail."
+    },
+    {
+      "id": "0019_import_custody.sql",
+      "buyerSteps": "Export first. Add maintained private indexed custody, cold fingerprint verification, bounded native publication and monotonic stream guards. Interrupted preparation remains private and requires Continue import or cancellation. Preserve existing imports and erasure tombstones; historical imports send no mail."
+    },
+    {
+      "id": "0020_reporting_consistency.sql",
+      "buyerSteps": "Export first, then add reporting mutation generations and indexed response pages. Existing responses, answers, labels, participants and historical counters are retained. Active downloads abort visibly if their evidence changes; retry after refreshing. Recovery uses a private export restored into a new database with the compatible deployment."
+    },
+    {
+      "id": "0021_first_run_setup.sql",
+      "buyerSteps": "Mark existing workspaces complete without changing their owner or content. Fresh owners finish their business name and time zone at /setup."
+    },
+    {
+      "id": "0022_owner_claim.sql",
+      "buyerSteps": "Apply after 0021. This additive Base owner-claim ledger preserves existing owners and refuses claims on an initialized installation. Preserve consumed claim records in exports and restores; never prune the ledger."
+    },
+    {
+      "id": "0023_dev_sessions.sql",
+      "buyerSteps": "Preserve applied migration bytes. The Base dev-session migration retains native sessions and separates local personas and their credentials from exports."
+    },
+    {
+      "id": "0024_domain_rules_step_up.sql",
+      "buyerSteps": "Export before upgrading. Apply the unchanged additive Base domain-rules and step-up migration before serving the updated auth module; existing owners, sessions and product records remain. Restore backups using their matching source version first, then apply this migration."
+    },
+    {
+      "id": "0025_audiences.sql",
+      "buyerSteps": "Export before upgrading and apply this additive migration after the existing ordered migrations. Contacts gain custom fields, segments are added and invitation launches record their evaluated candidates; existing contacts, participants and deliveries are preserved and no mail is sent."
+    },
+    {
+      "id": "0026_actions.sql",
+      "buyerSteps": "Export before upgrading and apply this additive migration after 0025. It adds actions, their history, frozen evidence figures, measurements and external task deliveries; existing data is unchanged and nothing is sent. TASK_PROVIDER, TASK_WEBHOOK_URL and TASK_API_KEY stay optional."
     }
   ],
   "breaking": true,
-  "agentUpdateInstructions": "Read docs/FIRST-RELEASE.md and OPERATIONS.md. Adopt pinned Base auth/mail source through edition mappings and preserve owner inputs and migrations0000\u20130009. Update callers from legacy GET redemption to GET/HEAD confirmation and POST consumption; no legacy session cookie authenticates. Exactly AUD, ANLY, ACT and NOTIFY are deferred; full contract mode remains unsatisfied. Run full pnpm verify and frozen clean-clone checks. This metadata is a candidate, not a tag, publication or hosted acceptance receipt."
+  "publicReleaseNotes": "Pencil 0.2.0 adds a new-response email, answers-first results, saved business identity with a script embed, six more question types, reviewed form and response imports, and export and restore against a deployed database.\n\nEach operator chooses Immediately or Off per flow. Publishing turns it on for the publisher only. Flows from 0.1.0 that are not republished start on Off for everyone: open the flow's Results page and choose Immediately, or republish it. MAIL_FROM must be a noreply@ or no-reply@ address for this email; sign-in keeps working with any sender.\n\nResults lead with answer summaries. Imported responses contribute to answers and completed counts without inventing native starts, completion rates, durations or device data. Imports admit up to 8 MiB combined file bytes and 100,000 responses, subject to the configured form and answer limits; full-limit Worker qualification remains pending.\n\nExport before upgrading from 0.1.0 and apply 0011 through 0026 in order. The additive credential changes preserve native sessions and links; migration 0018 preserves stable step and choice identities while expanding the type constraint.\n\nHistorical and imported responses never send new-response mail.\n\nActions turn what results show into an owned action with a metric, a review date and a frozen copy of the counts it rests on; operators record what changed and set the verdict themselves, and can send a confirmed task to their own task system through an optional webhook. Recommendations are written by people. Apply additive 0026_actions.sql after 0025.\n\nExactly 18 clauses remain deferred: ANLY-001\u2013016, NOTIFY-001 and NOTIFY-003. Hidden-field fidelity, an import check against a real export, hosted capacity and live delivery are not claimed.\n\nMigration 0019 adds private import preparation and cold verification before reporting migration 0020. Publish only after final-source verification, clean-clone qualification and release checks. Hosted proof and live delivery require a separately authorised deployment.\n\nOptional managed delivery supports signed first-owner admission and the owner editor. Existing initialized stores refuse claims. Apply 0022 for the durable consumed-claim ledger; hosted admission remains an owner verification step.\n\nFresh owners finish their business name and time zone at /setup; migration 0021 preserves established workspaces as complete.\n\nAudience now supports editable contacts and custom fields, reviewed CSV imports, saved segments and frozen invitation launches with actual outcome counts. Export before upgrading and apply additive 0025_audiences.sql after the existing ordered migrations; older archives can restore erased contacts, fields and prior consent state.",
+  "agentUpdateInstructions": "Read OPERATIONS.md, docs/FIRST-RELEASE.md and docs/HOSTING.md. Export first to a private path outside source paths or in this checkout\u2019s ignored exports directory and verify recovery into a new local database or an explicitly selected empty migrated D1 database. Preserve the documented archive redactions and never restore over existing application records. Preserve migrations 0000 through 0011 byte-for-byte, owner configuration, native credentials and all retained rows. Apply 0011 through 0026 in order before serving the new source. The question table constraint expands through copy and replacement; use the prior compatible deployment and restored database for recovery. Never replay historical or imported mail. Run populated predecessor upgrade tests and the complete verification gate on the integrated source. Exactly ANLY-001\u2013016, NOTIFY-001 and NOTIFY-003 remain deferred; full-contract verification remains unsatisfied. Migration 0019 adds maintained private preparation and bounded publication; complete final-source qualification before release."
 }

@@ -1,0 +1,59 @@
+/* Cards, quiet panels, the cream note sheet and the pencilled margin note. */
+.panel { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); box-shadow: var(--shadow); }
+.quiet-panel { border: 1px solid var(--line); border-radius: 12px; background: var(--panel-quiet); }
+.card-title { display: flex; align-items: center; gap: 12px; margin: 0; }
+.card-title svg { flex: none; color: var(--ink); }
+.card-title h2, h2.card-title { margin: 0; font-size: 28px; line-height: 1.1; }
+
+/*
+ * The note sheet: the landing's drawn cream sheet (features/landing/marks/SketchFrame.tsx) without its markup. The
+ * paper, its tooth and the double graphite outline are one layer (::before) and the graphite rubbed in beneath it is
+ * another (::after), so a sheet can turn its paper by --sheet-tilt while its real interface text stays level and crisp.
+ * Elements that turn as a whole (the builder canvas, the template preview) set `rotate` instead. Static, so it stays
+ * under reduced motion.
+ */
+.note-sheet, .preview-surface, .respondent-note-sheet {
+  --sheet-tilt: 0deg;
+  position: relative;
+  isolation: isolate;
+  color: var(--ink);
+  rotate: -1deg;
+}
+.note-sheet::before, .preview-surface::before, .respondent-note-sheet::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 4px;
+  pointer-events: none;
+  rotate: var(--sheet-tilt);
+  background: var(--sheet-paper);
+}
+.note-sheet::after, .preview-surface::after, .respondent-note-sheet::after {
+  content: "";
+  position: absolute;
+  inset: 10px 6px 2px 8px;
+  z-index: -2;
+  border-radius: 8px;
+  pointer-events: none;
+  rotate: var(--sheet-tilt);
+  translate: -7px 10px;
+  background: var(--sheet-rub);
+  filter: blur(7px);
+  opacity: 0.75;
+}
+@media (max-width: 620px) { .note-sheet, .preview-surface, .respondent-note-sheet { rotate: -0.6deg; } }
+
+/* The plate's answer washes on a sheet: the first three choices by position, the rest on paper-deep. */
+.answer-stack > .choice-button:nth-child(1) { background: var(--wash-great); }
+.answer-stack > .choice-button:nth-child(2) { background: var(--wash-good); }
+.answer-stack > .choice-button:nth-child(3) { background: var(--wash-better); }
+
+/* Margin note: one per screen, Caveat in pencil with a small curved arrow. Decorative; the page says it elsewhere. */
+.app-note { display: flex; align-items: flex-start; gap: 0.15em; margin: 0; color: var(--pencil); font-family: var(--font-hand); font-size: 20px; line-height: 1; white-space: nowrap; pointer-events: none; }
+.app-note .margin-note__arrow { flex: none; width: 2.3em; height: 1.6em; overflow: visible; transform: var(--note-turn, none); }
+.app-note .margin-note__arrow path { fill: none; stroke: var(--graphite); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.app-note .margin-note__text { display: inline-block; rotate: var(--note-tilt, -6deg); }
+.app-note-anchor { position: absolute; z-index: 1; }
+@media (max-width: 620px) { .app-note { font-size: 17px; } }
+@media (max-width: 1100px) { .app-note-anchor[data-wide-only] { display: none; } }

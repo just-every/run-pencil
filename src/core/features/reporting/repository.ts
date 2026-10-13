@@ -1,6 +1,10 @@
-import { composeQuestionReports, type ReportStep, type ReportAnswer, type ReportChoice } from './questionReport'
-export type LedgerFilter = { revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
-export type LedgerResponse = { participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string; answers: Array<{ stepId: string; label: string; questionType: string; value: unknown; displayValue: string }> }
+import { retainedAnswer } from './retainedAnswer'
+import { aggregateRevision } from './aggregate'
+import { booleanAnswer } from './answerSummary'
+import { responseScope } from './scope'
+import { type ReportStep, type ReportChoice } from './questionReport'
+export type LedgerFilter = { revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown' | 'imported'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
+export type LedgerResponse = { omittedQuestions: Array<{ stepId: string; label: string; position: number; questionType?: string }>; participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string; answers: Array<{ stepId: string; label: string; position: number; questionType: string; value: unknown; displayValue: string }> }
 
 export class ReportingRepository {
   constructor(private readonly binding: D1Database) {}
@@ -10,79 +14,95 @@ export class ReportingRepository {
   async revisions(flowId: string) {
     return (await this.binding.prepare("SELECT id, number, is_current AS isCurrent FROM flow_revisions WHERE flow_id = ? AND state = 'published' ORDER BY number DESC").bind(flowId).all<{ id: string; number: number; isCurrent: number }>()).results
   }
-  async ledger(workspaceId: string, flowId: string, filter: LedgerFilter, cutoff: string, state: 'released' | 'quarantined' = 'released', limit = 50) {
-    const parts = ['r.workspace_id = ?', 'r.flow_id = ?', 'r.state = ?', 'r.completed_at <= ?']
-    const bindings: unknown[] = [workspaceId, flowId, state, cutoff]
-    if (state === 'released') { parts.push('r.released_at <= ?'); bindings.push(cutoff) }
-    for (const [value, sql] of [[filter.revisionId, 'r.revision_id = ?'], [filter.source, 'r.source = ?'], [filter.from, 'r.completed_at >= ?'], [filter.to, 'r.completed_at <= ?']] as const) if (value) { parts.push(sql); bindings.push(value) }
-    if (filter.answerStepId && filter.answerValue !== undefined) {
-      parts.push(`EXISTS (SELECT 1 FROM response_answers a JOIN flow_steps s ON s.revision_id = r.revision_id AND s.stable_id = a.step_id
-        WHERE a.response_id = r.id AND a.step_id = ? AND (
-          (s.question_type = 'email' AND lower(json_extract(a.value_json, '$')) = lower(?))
-          OR (s.question_type IN ('multiple_choice', 'priority') AND EXISTS (SELECT 1 FROM json_each(a.value_json) WHERE CAST(value AS TEXT) = ?))
-          OR (s.question_type NOT IN ('email', 'multiple_choice', 'priority') AND CAST(json_extract(a.value_json, '$') AS TEXT) = ?)))`)
-      bindings.push(filter.answerStepId, filter.answerValue, filter.answerValue, filter.answerValue)
+  async ledger(workspaceId: string, flowId: string, filter: LedgerFilter, cutoff: string, state: 'released' | 'quarantined' = 'released', limit = 50, continuation?: { total: number; after?: { time: string; id: string } }, signal?: AbortSignal) {
+    signal?.throwIfAborted()
+    const { where, bindings } = responseScope(workspaceId, flowId, filter, cutoff, state)
+    const total = continuation ? { count: continuation.total } : await this.binding.prepare(`SELECT count(*) AS count FROM responses r WHERE ${where}`).bind(...bindings).first<{ count: number }>()
+    signal?.throwIfAborted()
+    const pageBindings = [...bindings]
+    const after = continuation?.after ? ' AND (r.completed_at < ? OR (r.completed_at = ? AND r.id < ?))' : ''
+    if (continuation?.after) pageBindings.push(continuation.after.time, continuation.after.time, continuation.after.id)
+    const rows = (await this.binding.prepare(`WITH candidates AS (
+      SELECT r.id, r.revision_id AS revisionId, revision.number AS revisionNumber, r.source, r.started_at AS startedAt,
+      r.completed_at AS completedAt, r.released_at AS releasedAt,
+      32768 + 12 * COALESCE((SELECT SUM(length(CAST(a.value_json AS BLOB))) FROM response_answers a WHERE a.response_id = r.id),0)
+      + 12 * COALESCE((SELECT SUM(length(CAST(s.prompt AS BLOB))) FROM flow_steps s WHERE s.revision_id = r.revision_id),0)
+      + 12 * COALESCE((SELECT SUM(length(CAST(c.label AS BLOB))) FROM response_answers a JOIN flow_steps s ON s.revision_id=r.revision_id AND s.stable_id=a.step_id JOIN json_each(a.value_json) j JOIN choice_options c ON c.step_id=s.id AND c.stable_id=j.value WHERE a.response_id=r.id AND s.question_type IN ('single_choice','dropdown','multiple_choice','priority')),0) AS cost
+      FROM responses r JOIN flow_revisions revision ON revision.id = r.revision_id AND revision.flow_id = r.flow_id
+      WHERE ${where}${after} ORDER BY r.completed_at DESC,r.id DESC LIMIT ? OFFSET ?),
+      budget AS (SELECT *, SUM(cost) OVER (ORDER BY completedAt DESC,id DESC) AS bytes, ROW_NUMBER() OVER (ORDER BY completedAt DESC,id DESC) AS ordinal FROM candidates)
+      SELECT id,revisionId,revisionNumber,source,startedAt,completedAt,releasedAt FROM budget WHERE bytes <= 1048576 OR ordinal = 1 ORDER BY completedAt DESC,id DESC`).bind(...pageBindings,limit,continuation ? 0 : filter.offset ?? 0).all<Omit<LedgerResponse, 'answers'>>()).results
+    signal?.throwIfAborted()
+    const participants = rows.length ? (await this.binding.prepare(`SELECT r.id AS responseId, p.id, p.name_snapshot AS name, p.email_snapshot AS email FROM responses r JOIN invitation_participants p ON p.id = r.participant_id WHERE p.workspace_id = r.workspace_id AND r.id IN (${rows.map(() => '?').join(',')})`).bind(...rows.map(row => row.id)).all<{ responseId: string; id: string; name: string | null; email: string | null }>()).results : []
+    signal?.throwIfAborted()
+    const answers = rows.length ? (await this.binding.prepare(`SELECT a.response_id AS responseId, a.step_id AS stepId, s.prompt AS label, s.question_type AS questionType, s.position, s.question_settings_json AS settingsJson, s.required, CASE WHEN length(CAST(a.value_json AS BLOB)) <= 30002 THEN a.value_json ELSE 'null' END AS valueJson
+      FROM response_answers a JOIN responses r ON r.id = a.response_id LEFT JOIN flow_steps s ON s.revision_id = r.revision_id AND s.stable_id = a.step_id
+      WHERE a.response_id IN (${rows.map(() => '?').join(',')}) ORDER BY s.position`).bind(...rows.map((row) => row.id)).all<{ responseId: string; stepId: string; label: string; position: number; questionType: string; settingsJson: string | null; required: number; valueJson: string }>()).results : []
+    signal?.throwIfAborted()
+    const optionRows = rows.length ? (await this.binding.prepare(`WITH selected_responses AS (
+      SELECT id,revision_id FROM responses WHERE id IN (${rows.map(()=>'?').join(',')})),
+      selected_questions AS (SELECT DISTINCT r.revision_id,a.step_id FROM response_answers a JOIN selected_responses r ON r.id=a.response_id),
+      selected_choices AS (SELECT DISTINCT r.revision_id,a.step_id,j.value FROM response_answers a JOIN selected_responses r ON r.id=a.response_id JOIN json_each(a.value_json) j)
+      SELECT c.stable_id AS id, CASE WHEN picked.value IS NOT NULL THEN c.label END AS label, s.stable_id AS stepId,s.revision_id AS revisionId
+      FROM choice_options c JOIN flow_steps s ON s.id=c.step_id JOIN selected_questions q ON q.revision_id=s.revision_id AND q.step_id=s.stable_id
+      LEFT JOIN selected_choices picked ON picked.revision_id=s.revision_id AND picked.step_id=s.stable_id AND picked.value=c.stable_id`).bind(...rows.map(row=>row.id)).all<{id:string;label:string|null;stepId:string;revisionId:string}>()).results : []
+    signal?.throwIfAborted()
+    const questionRows = rows.length ? (await this.binding.prepare(`SELECT revision_id AS revisionId, stable_id AS stepId, prompt AS label, position, question_type AS questionType FROM flow_steps WHERE kind = 'question' AND revision_id IN (${[...new Set(rows.map(row => row.revisionId))].map(() => '?').join(',')}) ORDER BY position`).bind(...new Set(rows.map(row => row.revisionId))).all<{ revisionId: string; stepId: string; label: string; position: number; questionType: string }>()).results : []
+    signal?.throwIfAborted()
+    const optionIds = new Map<string,string[]>()
+    const optionLabels = new Map<string,string>()
+    for (const option of optionRows) {
+      const key = `${option.revisionId}\0${option.stepId}`
+      const ids = optionIds.get(key) ?? []; ids.push(option.id); optionIds.set(key,ids)
+      if (option.label !== null) optionLabels.set(`${key}\0${option.id}`,option.label)
     }
-    if (filter.participantStatus) {
-      parts.push(`EXISTS (SELECT 1 FROM invitation_participants p LEFT JOIN distribution_contacts c ON c.id = p.contact_id WHERE p.id = r.participant_id AND ${filter.participantStatus === 'bounced' ? "p.delivery_status = 'bounced'" : filter.participantStatus === 'opted-out' ? 'c.opted_out_at IS NOT NULL' : "c.id IS NOT NULL AND c.opted_out_at IS NULL AND p.delivery_status != 'bounced'"})`)
-    }
-    const where = parts.join(' AND ')
-    const total = await this.binding.prepare(`SELECT count(*) AS count FROM responses r WHERE ${where}`).bind(...bindings).first<{ count: number }>()
-    const rows = (await this.binding.prepare(`SELECT r.id, r.revision_id AS revisionId, revision.number AS revisionNumber, r.source, r.started_at AS startedAt,
-      r.completed_at AS completedAt, r.released_at AS releasedAt FROM responses r JOIN flow_revisions revision ON revision.id = r.revision_id
-      WHERE ${where} ORDER BY r.completed_at DESC, r.id DESC LIMIT ? OFFSET ?`).bind(...bindings, limit, filter.offset ?? 0).all<Omit<LedgerResponse, 'answers'>>()).results
-    const participants = rows.length ? (await this.binding.prepare(`SELECT r.id AS responseId, p.id, p.name_snapshot AS name, p.email_snapshot AS email FROM responses r JOIN invitation_participants p ON p.id = r.participant_id WHERE r.id IN (${rows.map(() => '?').join(',')})`).bind(...rows.map(row => row.id)).all<{ responseId: string; id: string; name: string | null; email: string | null }>()).results : []
-    const answers = rows.length ? (await this.binding.prepare(`SELECT a.response_id AS responseId, a.step_id AS stepId, s.prompt AS label, s.question_type AS questionType, a.value_json AS valueJson
-      FROM response_answers a JOIN responses r ON r.id = a.response_id JOIN flow_steps s ON s.revision_id = r.revision_id AND s.stable_id = a.step_id
-      WHERE a.response_id IN (${rows.map(() => '?').join(',')}) ORDER BY s.position`).bind(...rows.map((row) => row.id)).all<{ responseId: string; stepId: string; label: string; questionType: string; valueJson: string }>()).results : []
-    const optionRows = rows.length ? (await this.binding.prepare(`SELECT c.stable_id AS id, c.label, s.stable_id AS stepId, s.revision_id AS revisionId FROM choice_options c JOIN flow_steps s ON s.id = c.step_id WHERE s.revision_id IN (${[...new Set(rows.map((row) => row.revisionId))].map(() => '?').join(',')})`).bind(...new Set(rows.map((row) => row.revisionId))).all<{ id: string; label: string; stepId: string; revisionId: string }>()).results : []
     const display = (value: unknown, stepId: string, revisionId: string, questionType: string) => {
-      const label = (id: unknown) => optionRows.find((option) => option.id === id && option.stepId === stepId && option.revisionId === revisionId)?.label ?? String(id)
-      if (['single_choice', 'multiple_choice', 'priority'].includes(questionType)) return Array.isArray(value) ? value.map((id, index) => `${questionType === 'priority' ? `${index + 1}. ` : ''}${label(id)}`).join('\n') : label(value)
+      const label = (id: unknown) => {
+        const label = optionLabels.get(`${revisionId}\0${stepId}\0${String(id)}`)
+        if (label === undefined) throw new Error('A retained answer is missing its published choice label')
+        return label
+      }
+      if (['single_choice', 'multiple_choice', 'dropdown', 'priority'].includes(questionType)) return Array.isArray(value) ? value.map((id, index) => `${questionType === 'priority' ? `${index + 1}. ` : ''}${label(id)}`).join('\n') : label(value)
+      if (questionType === 'yes_no') return booleanAnswer(value) ? 'Yes' : 'No'
+      if (questionType === 'consent') {
+        const accepted = booleanAnswer(value)
+        if (!value || typeof value !== 'object' || !('statement' in value) || typeof value.statement !== 'string') throw new Error('Stored consent statement is missing')
+        return `${accepted ? 'Accepted' : 'Declined'}\n${value.statement}`
+      }
       return typeof value === 'string' ? value : JSON.stringify(value)
     }
-    return { total: total?.count ?? 0, responses: rows.map((row) => ({ ...row, ...(participants.some(p => p.responseId === row.id) ? { participant: (() => { const { responseId: _responseId, ...p } = participants.find(p => p.responseId === row.id)!; return p })() } : {}), answers: answers.filter((answer) => answer.responseId === row.id).map(({ stepId, label, questionType, valueJson }) => ({ stepId, label, questionType, value: JSON.parse(valueJson) as unknown, displayValue: display(JSON.parse(valueJson), stepId, row.revisionId, questionType) })) })) }
+    return { total: total?.count ?? 0, responses: rows.map((row) => ({ ...row, omittedQuestions: questionRows.filter(question => question.revisionId === row.revisionId && !answers.some(answer => answer.responseId === row.id && answer.stepId === question.stepId)).map(({ stepId, label, position, questionType }) => ({ stepId, label, position, questionType })), ...(participants.some(p => p.responseId === row.id) ? { participant: (() => { const { responseId: _responseId, ...p } = participants.find(p => p.responseId === row.id)!; return p })() } : {}), answers: answers.filter((answer) => answer.responseId === row.id).map(({ stepId, label, position, questionType, settingsJson, required, valueJson }) => { const value: unknown = JSON.parse(valueJson); retainedAnswer(questionType,value,optionIds.get(`${row.revisionId}\0${stepId}`) ?? [],JSON.parse(settingsJson ?? '{}'),Boolean(required)); return ({ stepId, label, position, questionType, value, displayValue: display(value, stepId, row.revisionId, questionType) }) }) })) }
   }
   async questionReport(revisionId: string) {
-    const [steps, answers, choices] = await this.binding.batch([
+    const [steps, choices] = await this.binding.batch([
       this.binding.prepare(`SELECT s.revision_id AS revisionId, s.stable_id AS id, s.prompt, s.question_type AS questionType, s.position,
-        COALESCE(m.reached, 0) AS reached, COALESCE(m.dropped, 0) AS dropped FROM flow_steps s
+        COALESCE(m.reached,0) AS reached, COALESCE(m.dropped,0) AS dropped FROM flow_steps s
         LEFT JOIN revision_step_metric_counters m ON m.revision_id = s.revision_id AND m.step_stable_id = s.stable_id
         WHERE s.revision_id = ? ORDER BY s.position`).bind(revisionId),
-      this.binding.prepare(`SELECT r.revision_id AS revisionId, a.step_id AS stepId, a.value_json AS valueJson FROM response_answers a JOIN responses r ON r.id = a.response_id
-        WHERE r.revision_id = ? AND r.state = 'released'`).bind(revisionId),
-      this.binding.prepare(`SELECT s.revision_id AS revisionId, c.stable_id AS id, c.label, s.stable_id AS stepId FROM choice_options c JOIN flow_steps s ON s.id = c.step_id
-        WHERE s.revision_id = ? ORDER BY c.position`).bind(revisionId),
+      this.binding.prepare(`SELECT s.revision_id AS revisionId, c.stable_id AS id, c.label, s.stable_id AS stepId FROM choice_options c JOIN flow_steps s ON s.id = c.step_id WHERE s.revision_id = ? ORDER BY c.position`).bind(revisionId),
     ])
-    return composeQuestionReports(steps.results as ReportStep[], answers.results as ReportAnswer[], choices.results as ReportChoice[])
-      .map(({ revisionId: _revisionId, ...question }) => question)
+    return aggregateRevision(this.binding, revisionId, steps.results as ReportStep[], choices.results as ReportChoice[])
   }
 
-  async revisionComparison(workspaceId: string, flowId: string) {
-    const scope = "f.id = ? AND f.workspace_id = ? AND v.state = 'published'"
-    const [revisions, steps, answers, choices] = await this.binding.batch([
-      this.binding.prepare(`SELECT v.id, v.number, v.is_current AS isCurrent, COUNT(r.id) AS releasedResponses FROM flow_revisions v
-        JOIN flows f ON f.id = v.flow_id LEFT JOIN responses r ON r.revision_id = v.id AND r.state = 'released' AND r.workspace_id = f.workspace_id AND r.flow_id = f.id
-        WHERE ${scope} GROUP BY v.id, v.number, v.is_current ORDER BY v.number DESC`).bind(flowId, workspaceId),
-      this.binding.prepare(`SELECT s.revision_id AS revisionId, s.stable_id AS id, s.prompt, s.question_type AS questionType, s.position,
-        COALESCE(m.reached, 0) AS reached, COALESCE(m.dropped, 0) AS dropped FROM flow_steps s
-        JOIN flow_revisions v ON v.id = s.revision_id JOIN flows f ON f.id = v.flow_id
-        LEFT JOIN revision_step_metric_counters m ON m.revision_id = s.revision_id AND m.step_stable_id = s.stable_id
-        WHERE ${scope} AND s.kind = 'question' ORDER BY v.number DESC, s.position`).bind(flowId, workspaceId),
-      this.binding.prepare(`SELECT r.revision_id AS revisionId, a.step_id AS stepId, a.value_json AS valueJson FROM response_answers a
-        JOIN responses r ON r.id = a.response_id JOIN flow_revisions v ON v.id = r.revision_id JOIN flows f ON f.id = v.flow_id
-        WHERE ${scope} AND r.state = 'released' AND r.workspace_id = f.workspace_id AND r.flow_id = f.id`).bind(flowId, workspaceId),
-      this.binding.prepare(`SELECT s.revision_id AS revisionId, c.stable_id AS id, c.label, s.stable_id AS stepId FROM choice_options c
-        JOIN flow_steps s ON s.id = c.step_id JOIN flow_revisions v ON v.id = s.revision_id JOIN flows f ON f.id = v.flow_id
-        WHERE ${scope} ORDER BY v.number DESC, s.position, c.position`).bind(flowId, workspaceId),
-    ])
-    const revisionRows = revisions.results as Array<{ id: string; number: number; isCurrent: number; releasedResponses: number }>
-    const revisionCounts = new Map(revisionRows.map(row => [row.id, row.releasedResponses]))
-    const groups = new Map<string, { id: string; versions: Array<ReturnType<typeof composeQuestionReports>[number] & { eligibleResponses: number }> }>()
-    for (const question of composeQuestionReports(steps.results as ReportStep[], answers.results as ReportAnswer[], choices.results as ReportChoice[])) {
-      const group = groups.get(question.id) ?? { id: question.id, versions: [] }
-      group.versions.push({ ...question, eligibleResponses: revisionCounts.get(question.revisionId) ?? 0 }); groups.set(question.id, group)
+  async revisionComparison(workspaceId: string, flowId: string, offset = 0) {
+    const revisions = (await this.binding.prepare(`SELECT v.id, v.number, v.is_current AS isCurrent, COUNT(r.id) AS releasedResponses,
+      32768 + 12 * COALESCE((SELECT SUM(length(CAST(s.prompt AS BLOB)) + COALESCE((SELECT SUM(length(CAST(c.label AS BLOB))+128) FROM choice_options c WHERE c.step_id=s.id),0)) FROM flow_steps s WHERE s.revision_id=v.id),0) AS bytes FROM flow_revisions v
+      JOIN flows f ON f.id = v.flow_id LEFT JOIN responses r ON r.revision_id = v.id AND r.state = 'released' AND r.workspace_id = f.workspace_id AND r.flow_id = f.id
+      WHERE f.id = ? AND f.workspace_id = ? AND v.state = 'published' GROUP BY v.id ORDER BY v.number DESC`).bind(flowId,workspaceId).all<{id:string;number:number;isCurrent:number;releasedResponses:number;bytes:number}>()).results
+    const groups = new Map<string, { id: string; versions: Array<Awaited<ReturnType<ReportingRepository['questionReport']>>[number] & { eligibleResponses: number }> }>()
+    const selected: typeof revisions = []
+    let bytes = 0
+    for (const revision of revisions.slice(offset)) {
+      if (selected.length && (bytes + revision.bytes > 1048576 || selected.length === 8)) break
+      selected.push(revision); bytes += revision.bytes
     }
-    return { revisions: revisionRows, questions: [...groups.values()].map(group => ({ ...group, answered: group.versions.reduce((total, version) => total + version.answered, 0), eligibleResponses: group.versions.reduce((total, version) => total + version.eligibleResponses, 0) })) }
+    // A page contains complete revision cohorts. Even maximum-length option labels
+    // cannot multiply the per-request serialization by all one hundred revisions.
+    for (const revision of selected) for (const question of await this.questionReport(revision.id)) {
+      if (!question.questionType) continue
+      const group = groups.get(question.id) ?? { id: question.id, versions: [] }
+      group.versions.push({ ...question, eligibleResponses: revision.releasedResponses }); groups.set(question.id,group)
+    }
+    return { revisions: selected.map(({bytes: _bytes,...revision})=>revision), revisionCount: revisions.length, offset, ...(offset + selected.length < revisions.length ? {nextOffset:offset+selected.length} : {}), questions: [...groups.values()].map(group => ({ ...group, answered: group.versions.reduce((n,q)=>n+q.answered,0), eligibleResponses: group.versions.reduce((n,q)=>n+q.eligibleResponses,0) })) }
   }
 }

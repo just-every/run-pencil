@@ -1,0 +1,5 @@
+import type { FlowStep } from '../../../app/api'
+export function TypeSettings({ type, settings, onChange, disabled }: { type: FlowStep['questionType']; settings: Record<string, unknown>; onChange: (key: string, value: unknown) => void; disabled: boolean }) {
+  const fields = type === 'number' ? [['min', 'Minimum', 'number'], ['max', 'Maximum', 'number'], ['decimalPlaces', 'Decimal places', 'number']] : type === 'date' ? [['earliest', 'Earliest date', 'date'], ['latest', 'Latest date', 'date']] : type === 'nps' ? [['lowLabel', 'Zero label', 'text'], ['highLabel', 'Ten label', 'text']] : type === 'consent' ? [['statement', 'Consent statement', 'text']] : []
+  return <>{fields.map(([key, label, inputType]) => <label className="inspector-field" key={key}>{label}<input className="text-input" disabled={disabled} type={inputType} step="any" value={typeof settings[key] === 'string' || typeof settings[key] === 'number' ? settings[key] as string | number : ''} onChange={event => onChange(key, event.target.value === '' ? undefined : inputType === 'number' ? event.target.valueAsNumber : event.target.value)} /></label>)}</>
+}

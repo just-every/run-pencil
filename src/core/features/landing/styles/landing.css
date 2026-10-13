@@ -1,0 +1,8 @@
+/* The homepage below the hero, linked from the page head (landingHead). Vite inlines these imports into one file under /assets. */
+@import './sections.css';
+@import './marks.css';
+@import './plates-base.css';
+@import './plates-flow.css';
+@import './plates-reach.css';
+@import './plates-own.css';
+@import './close.css';

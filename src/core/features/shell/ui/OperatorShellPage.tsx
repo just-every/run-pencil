@@ -1,12 +1,12 @@
+import { OwnerEditorShell } from '../../../../editor/owner-editor'
 import { useEffect, useState } from 'react'
 import { Link, Outlet, useRouterState, useNavigate } from '@tanstack/react-router'
-import { Home, LogOut, Settings } from 'lucide-react'
 import { BrandMark } from '../../../app/ui/BrandMark'
 import type { PublicSeedConfig } from '../../../shared/config'
 import { useUnsavedChanges } from '../../../shared/ui/UnsavedChanges'
 import { api } from '../../../app/api'
 
-export function OperatorShellPage({ config }: { config: PublicSeedConfig }) {
+export function OperatorShellPage({ config, editorEnabled }: { config: PublicSeedConfig; editorEnabled: boolean }) {
   const [hydrated, setHydrated] = useState(false)
   useEffect(() => { setHydrated(true) }, [])
   const navigate = useNavigate()
@@ -15,24 +15,31 @@ export function OperatorShellPage({ config }: { config: PublicSeedConfig }) {
   const [error, setError] = useState<string>()
   const signOut = async () => {
     if (dirty && !window.confirm('Sign out and discard unsaved changes?')) return
+    window.dispatchEvent(new Event('pencil:auth-lost'))
     setSigningOut(true); setError(undefined)
     try { await api.signOut() }
     catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Sign-out failed. Your session may still be active; try again.')
       setSigningOut(false)
+      window.dispatchEvent(new Event('pencil:auth-changed'))
       return
     }
     await navigate({ to: '/signin', ignoreBlocker: true })
   }
   const pathname = useRouterState({ select: (state) => state.location.pathname })
+  const flowsCurrent = pathname === '/app' || pathname === '/app/' || pathname.startsWith('/app/flows/')
+  const actionsCurrent = pathname === '/app/actions' || pathname.startsWith('/app/actions/')
   return <main className="pencil-canvas operator-shell" data-hydrated={hydrated}>
-    <header className="operator-header">
+    {editorEnabled ? <OwnerEditorShell /> : null}
+    <header className="operator-header" style={{ flexWrap: 'wrap' }}>
       <BrandMark href="/app" name={config.productName} />
       <nav className="operator-nav" aria-label="Operator navigation">
-        <Link data-active={pathname === '/app' || pathname === '/app/' || pathname.startsWith('/app/flows/')} to="/app"><Home aria-hidden="true" size={15} style={{ verticalAlign: 'text-bottom' }} /> Flows</Link>
-        <Link data-active={pathname === '/app/settings'} to="/app/settings"><Settings aria-hidden="true" size={15} style={{ verticalAlign: 'text-bottom' }} /> Settings</Link>
-        <button className="quiet-button focus-ring" disabled={signingOut} onClick={() => void signOut()} type="button"><LogOut aria-hidden="true" size={15} /> {signingOut ? 'Signing out…' : 'Sign out'}</button>
+        <Link activeOptions={{ exact: true }} aria-current={flowsCurrent ? 'page' : undefined} to="/app">Flows</Link>
+        <Link activeOptions={{ exact: true }} to="/app/audience">Audience</Link>
+        <Link aria-current={actionsCurrent ? 'page' : undefined} to="/app/actions">Actions</Link>
+        <Link activeOptions={{ exact: true }} to="/app/settings">Settings</Link>
       </nav>
+      <button className="secondary-button operator-signout focus-ring" disabled={signingOut} onClick={() => void signOut()} type="button">{signingOut ? 'Signing out…' : 'Sign out'}</button>
     </header>
     {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
     <div className="operator-content" id="workspace"><Outlet /></div>

@@ -1,0 +1,54 @@
+/*
+ * Hero layout (approved hero composition): copy on the left, the note card and pencil on the right with plenty of
+ * paper, the pencil running a little into the right gutter; the proof row hangs under the actions. At 900px and below
+ * the card stacks under the copy at full width; on phones it bleeds past the right edge so the handwriting stays
+ * large, and the proof row moves under it. The section clips that bleed, so no width scrolls sideways.
+ */
+:where(.pencil-site) .hero {
+  overflow-x: clip;
+  padding-block: clamp(36px, 10.6vw, 152px) clamp(48px, 8vw, 120px);
+}
+/* The empty rows above and below centre the copy and proof row as one block beside the card. */
+:where(.pencil-site) .hero__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 48.5fr) minmax(0, 51.5fr);
+  grid-template-rows: 1fr auto auto 1fr;
+  grid-template-areas: '. card' 'copy card' 'proof card' '. card';
+}
+:where(.pencil-site) .hero__copy { grid-area: copy; padding-top: clamp(0px, 1.2vw, 18px); }
+/* DM Serif Display is darker than the approved image's serif, so the headline sits a little smaller to match its weight. */
+:where(.pencil-site) .hero__copy h1 { max-width: 7em; font-size: clamp(48px, 6vw, 88px); }
+:where(.pencil-site) .hero__lede { max-width: 22.5em; margin-top: clamp(20px, 2.1vw, 30px); }
+:where(.pencil-site) .hero__actions { margin-top: clamp(28px, 2.9vw, 42px); }
+/* What Pencil replaces: one line of the page's proof-row type under the lede; it wraps in balanced lines on phones. */
+:where(.pencil-site) .hero__alt { margin: 14px 0 0; color: var(--ink-soft); font-size: 15px; line-height: 1.5; text-wrap: balance; }
+/* The page's own bold (the landing sentence's strong): the three names. */
+:where(.pencil-site) .hero__alt strong { font-weight: 600; }
+:where(.pencil-site) .hero__grid .note-card { grid-area: card; align-self: center; width: 106%; }
+/* Beside two-column story sections, the card's foot sits on the hero's foot, so its trail reaches the first section. */
+@media (min-width: 1024px) { :where(.pencil-site) .hero__grid .note-card { align-self: end; } }
+
+/* Dots only between claims on the same line: a claim that starts a line has its dot clipped off the left edge. */
+:where(.pencil-site) .hero__proof { grid-area: proof; margin-top: 30px; overflow: hidden; }
+:where(.pencil-site) .hero__proof .site-proof { margin-left: -1.6em; }
+:where(.pencil-site) .hero__proof .site-proof li { position: relative; margin-left: 1.6em; }
+:where(.pencil-site) .hero__proof .site-proof li::after { content: none; }
+:where(.pencil-site) .hero__proof .site-proof li::before { content: '·'; position: absolute; left: -0.95em; color: var(--graphite); }
+/* One line beside the card at 1440 in DM Sans and in its fallback alike, so a late font never re-wraps it. */
+@media (min-width: 901px) { :where(.pencil-site) .hero__proof .site-proof { font-size: 14px; } }
+
+@media (max-width: 900px) {
+  :where(.pencil-site) .hero__grid { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; grid-template-areas: 'copy' 'proof' 'card'; }
+  :where(.pencil-site) .hero__copy { padding-top: 0; }
+  :where(.pencil-site) .hero__copy h1 { font-size: clamp(40px, 9.4vw, 76px); }
+  :where(.pencil-site) .hero__grid .note-card { width: 100%; margin-top: clamp(36px, 7vw, 64px); }
+}
+
+@media (max-width: 600px) {
+  :where(.pencil-site) .hero__grid { grid-template-areas: 'copy' 'card' 'proof'; }
+  :where(.pencil-site) .hero__copy h1 { font-size: clamp(40px, 13.2vw, 52px); }
+  :where(.pencil-site) .hero__lede { margin-top: 18px; }
+  :where(.pencil-site) .hero__actions { margin-top: 26px; gap: 14px 28px; }
+  :where(.pencil-site) .hero__grid .note-card { width: 132%; margin: 30px 0 0 -1.6%; }
+  :where(.pencil-site) .hero__proof { margin-top: 6px; }
+}

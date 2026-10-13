@@ -1,0 +1,21 @@
+/* Pencil's theme for Base's installer and sign-in confirmation frames, from the tokens of its landing page
+   (src/core/features/site/styles/tokens.css): paper, ink, soft ink, white cards, ink pills, the pencil mark.
+   Faces are the landing's own DM Serif Display (headlines) and DM Sans (text), served from /fonts. */
+@font-face { font-family: "DM Serif Display"; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/dm-serif-display-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: "DM Sans"; font-style: normal; font-weight: 400; font-display: swap; src: url('/fonts/dm-sans-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: "DM Sans"; font-style: normal; font-weight: 500 700; font-display: swap; src: url('/fonts/dm-sans-latin-600-normal.woff2') format('woff2'); }
+:root {
+  --rer-font-body: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --rer-font-heading: "DM Serif Display", Georgia, serif;
+  --rer-page: #fbfaf6;
+  --rer-surface: #ffffff;
+  --rer-text: #1e2124;
+  --rer-muted: #4a4f55;
+  --rer-border: #7b8188;
+  --rer-focus: #1e2124;
+  --rer-accent: #1e2124;
+  --rer-accent-text: #ffffff;
+  --rer-link: #1e2124;
+  --rer-radius: 14px;
+  --rer-logo: url('/brand/pencil-mark.svg');
+}

@@ -51,6 +51,11 @@
       "type": "boolean",
       "description": "True when adopting this release can break a conforming installation: a clause meaning narrowed or removed, an extension point removed, or a migration that needs owner action before the app runs."
     },
+    "publicReleaseNotes": {
+      "type": "string",
+      "description": "Public release summary, including remaining acceptance limits.",
+      "minLength": 1
+    },
     "agentUpdateInstructions": {
       "type": "string",
       "minLength": 1,

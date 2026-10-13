@@ -6,6 +6,8 @@ import { createOperatorAuth, type OperatorAuth, type MailSender } from '../../..
 import { baseMailSender } from '../../platform/mail/base.server'
 import type { PencilPlatform } from '../../platform/runtime'
 import { sendAuthMail } from './mailDelivery'
+import { nativeAuthConfiguration } from './native-config'
+import { productAdmission } from './product-admission'
 
 export type AuthRuntimeConfiguration = { readonly appOrigin: string }
 
@@ -30,10 +32,7 @@ export class AuthService {
     this.binding = platform.databaseBinding
     const config = platform.configuration
     const native = createOperatorAuth({ db: this.binding,
-      config: { origin: config.appOrigin, OWNER_EMAIL: config.bootstrapAdminEmail ?? 'owner@aurora-coffee.test',
-        SESSION_SECRET: config.sessionSecret, SETUP_TOKEN: config.setupToken,
-        MAIL_FROM: config.mail.kind === 'local-development' ? 'no-reply@pencil.test' : config.mail.from,
-        local: config.isLocalDevelopment, sessionSeconds: 30 * 86400 },
+      config: nativeAuthConfiguration(config),
       mailSender: { send: async message => {
         await this.attachTokenOperator(message.deliveryId)
         const target = await this.repository.findOperatorByEmail(message.to[0])
@@ -65,22 +64,9 @@ export class AuthService {
   private async attachOperator(authId: string, setup: boolean) {
     const linked = await this.binding.prepare('SELECT operator_id FROM operator_auth_links WHERE auth_id=?').bind(authId).first()
     if (linked) return
-    const id = ulid(), now = new Date().toISOString()
-    await this.binding.batch([
-      this.binding.prepare(`INSERT INTO operators(id,workspace_id,email,display_name,is_setup_operator,created_at,updated_at)
-        SELECT ?,w.id,o.email,o.display_name,CASE WHEN ? AND w.setup_operator_initialized_at IS NULL THEN 1 ELSE 0 END,?,?
-        FROM oa_operators o JOIN workspaces w ON w.id=COALESCE(
-          (SELECT p.workspace_id FROM oa_tokens t JOIN operator_auth_links l ON l.auth_id=t.issuer_id JOIN operators p ON p.id=l.operator_id WHERE t.operator_id=o.id LIMIT 1),
-          (SELECT id FROM workspaces ORDER BY created_at,id LIMIT 1))
-        WHERE o.id=? AND NOT EXISTS(SELECT 1 FROM operator_auth_links WHERE auth_id=o.id)`)
-        .bind(id,setup ? 1 : 0,now,now,authId),
-      this.binding.prepare(`UPDATE workspaces SET setup_operator_initialized_at=COALESCE(setup_operator_initialized_at,?)
-        WHERE id IN (SELECT workspace_id FROM operators WHERE id=? AND is_setup_operator=1)`).bind(now,id),
-      this.binding.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at)
-        SELECT ?,workspace_id,'operator.setup_bootstrapped',id,'operator',id,'{"feature":"operator-auth"}',?
-        FROM operators WHERE id=? AND is_setup_operator=1`).bind(ulid(),now,id),
-    ])
-    return id
+    const admission = productAdmission(this.binding, authId, setup)
+    await this.binding.batch(admission.statements)
+    return admission.operatorId
   }
 
   async ensureSetupOperator(input: { workspaceId: string; email: string }) {
@@ -101,11 +87,8 @@ export class AuthService {
     return initialized.operatorId
   }
 
-  async listLocalInbox(input: { email: string; isLocalDevelopment: boolean }) {
-    if (!input.isLocalDevelopment) {
-      throw new PencilError('NOT_FOUND', 'The local development inbox is unavailable.')
-    }
-    return this.repository.listLocalInbox(normalizeEmail(input.email))
+  async needsBootstrap() {
+    return !await this.binding.prepare('SELECT id FROM oa_operators LIMIT 1').first()
   }
 
   async inviteOperator(input: { workspaceId: string; actorOperatorId: string; email: string; displayName: string; runtime: AuthRuntimeConfiguration; request: Request }) {

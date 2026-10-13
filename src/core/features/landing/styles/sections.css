@@ -1,0 +1,75 @@
+/*
+ * Section rhythm and layout, and the pencil tokens for the plates. The sheet is the hero card's cream paper. Contrast
+ * on the sheet (#fbf6e9): --lead 10.3:1, the site's --pencil (the hero card's ink) 6.4:1, --pencil-soft 5.1:1; on the page paper
+ * each is higher. The washes sit behind --lead text only (sage 8.1:1, yellow 8.4:1, eraser 7.1:1).
+ */
+:where(.pencil-site) .landing {
+  --sheet: #fbf6e9;
+  --sheet-back: #f3ecdc;
+  --stroke: #5d5f62;
+  --stroke-soft: rgba(93, 95, 98, 0.4);
+  --lead: #3a3c3f;
+  --pencil-soft: #6b6964;
+  --wash-sage: #cfe2c2;
+  --wash-sage-light: #e5efdc;
+  --line-sage: #7d9b6e;
+  --wash-yellow: #f8df98;
+  --line-yellow: #cf9620;
+  --wash-eraser: #f1c4c6;
+  --wash-eraser-light: #f8e1e2;
+  --line-eraser: #cc7f85;
+  --hand: clamp(19px, 0.55vw + 17px, 26px);
+  overflow-x: clip;
+}
+
+:where(.pencil-site) .landing-section { padding-block: clamp(44px, 5vw, 72px); }
+:where(.pencil-site) .landing-section__grid { display: grid; gap: clamp(28px, 4vw, 56px); }
+:where(.pencil-site) .landing-copy { min-width: 0; max-width: 34rem; }
+:where(.pencil-site) .landing-sentence {
+  max-width: 27em;
+  margin: clamp(14px, 1.5vw, 22px) 0 0;
+  color: var(--ink-soft);
+  font-size: clamp(18px, 1.35vw, 21px);
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+:where(.pencil-site) .landing-sentence strong { color: var(--ink); font-weight: 600; }
+/* Each section's one guide link, on a line of its own, quieter than the sentence. */
+:where(.pencil-site) .landing-more { margin: clamp(12px, 1.2vw, 18px) 0 0; font-size: 16px; line-height: 1.6; }
+:where(.pencil-site) .landing-more .site-link { color: var(--ink-soft); text-decoration-thickness: 1px; text-underline-offset: 5px; }
+:where(.pencil-site) .landing-plate-slot { min-width: 0; }
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  :where(.pencil-site) .landing-plate-slot { width: min(100%, 680px); }
+}
+/* Side by side, copy and sheets keep --copy-gap of paper between them on both sides of the zig-zag (plates-base.css). */
+@media (min-width: 1024px) {
+  :where(.pencil-site) .landing-section__grid {
+    --column-gap: clamp(24px, 3vw, 48px);
+    --copy-gap: 64px;
+    --plate-inset: calc(var(--copy-gap) - var(--column-gap));
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--column-gap);
+    align-items: center;
+  }
+  :where(.pencil-site) .landing-copy { grid-column: 1 / span 5; grid-row: 1; max-width: none; }
+  :where(.pencil-site) .landing-plate-slot { grid-column: 6 / span 7; grid-row: 1; }
+  :where(.pencil-site) .landing-section--flip .landing-copy { grid-column: 8 / span 5; }
+  :where(.pencil-site) .landing-section--flip .landing-plate-slot { grid-column: 1 / span 7; }
+}
+
+/* Gentle reveal: only elements below the fold at hydration wait; the server markup is always visible. */
+:where(.pencil-site) .landing [data-reveal] { transition: opacity 0.7s ease, transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1); }
+:where(.pencil-site) .landing [data-reveal='waiting'] { opacity: 0; transform: translateY(12px); }
+:where(.pencil-site) .landing .landing-plate-slot[data-reveal] { transition-delay: 0.12s; }
+
+/* The forking line halfway down the story. */
+:where(.pencil-site) .fork-line { padding-block: clamp(4px, 1vw, 16px); }
+:where(.pencil-site) .fork-line__drawing { --branch-delay: 0.8s; display: block; width: 100%; height: clamp(44px, 5.5vw, 80px); }
+:where(.pencil-site) .landing .fork-line[data-reveal='waiting'] { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.pencil-site) .landing [data-reveal] { transition: none; }
+  :where(.pencil-site) .landing [data-reveal='waiting'] { opacity: 1; transform: none; }
+  :where(.pencil-site) .landing [data-reveal] path { transition: none; stroke-dashoffset: 0; }
+}

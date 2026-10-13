@@ -6,7 +6,7 @@ import type { RequestServices } from '../../app/request-context'
 import { FlowClosedError, PencilError, RateLimitError } from '../../shared/errors'
 import { requireSameOriginRequest } from '../auth'
 
-const questionType = z.enum(['short_text', 'long_text', 'email', 'single_choice', 'multiple_choice', 'rating', 'priority'])
+const questionType = z.enum(['short_text', 'long_text', 'email', 'single_choice', 'multiple_choice', 'rating', 'priority', 'dropdown', 'yes_no', 'nps', 'number', 'date', 'consent'])
 const stepSchema = z.object({
   kind: z.enum(['welcome', 'question', 'completion']),
   questionType: questionType.nullable(),
@@ -16,18 +16,6 @@ const stepSchema = z.object({
   nextStepId: resourceId.nullable().optional(),
   questionSettings: z.record(z.string(), z.unknown()).nullable().optional(),
   choices: z.array(z.object({ value: z.string().trim().min(1).max(200), label: z.string().trim().min(1).max(300) })).max(100).optional(),
-})
-
-const updateDraftSchema = z.object({
-  stepId: resourceId,
-  prompt: z.string().trim().min(1).max(1000),
-  required: z.boolean(),
-  expectedVersion: z.number().int().nonnegative(),
-  helperText: z.string().trim().max(1000).nullable().optional(),
-  nextStepId: resourceId.nullable().optional(),
-  questionSettings: z.record(z.string(), z.unknown()).nullable().optional(),
-  questionType: questionType.nullable().optional(),
-  choices: z.array(z.object({ id: resourceId.optional(), value: z.string().trim().max(200), label: z.string().trim().max(300) })).max(100).optional(),
 })
 
 const branchesSchema = z.object({
@@ -40,6 +28,19 @@ const branchesSchema = z.object({
     destinationStepId: resourceId,
     position: z.number().int().nonnegative(),
   })).max(100),
+})
+
+const updateDraftSchema = z.object({
+  rules: branchesSchema.shape.rules.optional(),
+  stepId: resourceId,
+  prompt: z.string().trim().min(1).max(1000),
+  required: z.boolean(),
+  expectedVersion: z.number().int().nonnegative(),
+  helperText: z.string().trim().max(1000).nullable().optional(),
+  nextStepId: resourceId.nullable().optional(),
+  questionSettings: z.record(z.string(), z.unknown()).nullable().optional(),
+  questionType: questionType.nullable().optional(),
+  choices: z.array(z.object({ id: resourceId.optional(), newId: resourceId.optional(), value: z.string().trim().max(200), label: z.string().trim().max(300) })).max(100).optional(),
 })
 
 function failure(context: Context<WorkerEnvironment>, error: unknown) {
@@ -60,7 +61,7 @@ export function registerFlowRoutes(app: Hono<WorkerEnvironment>, services: Reque
     }
   })
 
-  app.post('/api/app/flows', zValidator('json', z.object({ title: z.string().trim().min(1).max(200), slug: z.string().trim().min(1).max(120) })), async (context) => {
+  app.post('/api/app/flows', zValidator('json', z.object({ title: z.string().trim().min(1).max(200), slug: z.string().trim().min(1).max(120), template: z.enum(['feedback', 'nps', 'lead']).optional() })), async (context) => {
     try {
       requireSameOriginRequest(context.req.raw)
       return context.json(await services(context).flows.createDraftFlow({ workspaceId: context.get('operatorSession').workspaceId, ...context.req.valid('json') }), 201)

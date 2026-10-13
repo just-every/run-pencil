@@ -1,3 +1,4 @@
+import { fixtureExport } from '../helpers/report-download'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect, vi } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -22,7 +23,7 @@ contract(['BASE-DATA-004', 'BASE-DATA-005', 'BASE-SECRET-001'], 'Worker collecti
     expect((await run(`/api/public/flows/${f.slug}`)).status).toBe(200)
     const session = await f.start(); await f.mature(session.sessionId)
     await f.final(session, [{ stepId: session.flow.steps[0].id, value: 'Private answer must never leave through mail' }])
-    expect((await f.services.reporting.export(f.scope.workspaceId, f.flow.flowId, {})).responses).toHaveLength(1)
+    expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, {})).responses).toHaveLength(1)
     await maintainPencil(bindings, Date.now())
     expect(outbound).not.toHaveBeenCalled()
     // Test transport only: no real provider, inbox or external request.
@@ -32,9 +33,10 @@ contract(['BASE-DATA-004', 'BASE-DATA-005', 'BASE-SECRET-001'], 'Worker collecti
     const [url, options] = outbound.mock.calls[0]
     expect(url).toBe('https://api.resend.com/emails')
     const payload = JSON.parse(String(options!.body))
-    expect(Object.keys(payload).sort()).toEqual(['from','headers','subject','text','to'])
+    expect(Object.keys(payload).sort()).toEqual(['from','headers','html','subject','text','to'])
     expect(payload.to).toEqual(['owner@aurora-coffee.test'])
     expect(payload.text).toContain('https://pencil.example.test/auth/confirm?token=')
+    expect(payload.html).toContain('https://pencil.example.test/auth/confirm?token=')
     expect(JSON.stringify(payload)).not.toContain(secret)
     expect(JSON.stringify(payload)).not.toContain('Private answer must never leave')
     outbound.mockRejectedValueOnce(new Error(secret))

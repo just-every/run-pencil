@@ -26,6 +26,8 @@ contract(['BASE-ACCESS-001','OPER-003','BASE-SECRET-001'], 'Base bootstraps once
     const incomplete = await worker.fetch(new Request(origin+'/health'), {...bindings(), SETUP_TOKEN:undefined}, {} as ExecutionContext)
     expect(incomplete.status).toBe(503)
     expect(await incomplete.json()).toEqual({status:'not-ready',message:'SETUP_TOKEN is required until the first operator is established.'})
+    expect((await run('/auth/bootstrap', { token: 'incorrect', displayName: 'Unadmitted' })).status).toBe(403)
+    expect(await env.DB.prepare('SELECT count(*) n FROM oa_operators').first()).toEqual({ n: 0 })
     const first = await bootstrap()
     expect(first).toMatch(/^__Host-operator_session=[A-Za-z0-9_-]{43}$/)
     expect((await run('/auth/bootstrap', { token: setup, displayName: 'Replacement' })).status).toBe(409)
@@ -43,6 +45,12 @@ contract(['BASE-ACCESS-001','OPER-003','BASE-SECRET-001'], 'Base bootstraps once
     const payload = JSON.parse(String(options!.body))
     const link = payload.content.find((part: { type: string }) => part.type === 'text/plain').value.match(/https[^\s]+/)[0]
     const token = new URL(link).searchParams.get('token')!
+    expect(payload.subject).toBe('Your sign-in link for Pencil')
+    expect(payload.content.map((part: { type: string }) => part.type).sort()).toEqual(['text/html', 'text/plain'])
+    for (const part of payload.content) {
+      expect(part.value).toContain('This link works once and expires in 15 minutes.')
+      expect(part.value.split(token)).toHaveLength(2)
+    }
     expect(JSON.stringify(payload)).not.toContain(secret)
     expect(JSON.stringify(payload)).not.toContain('synthetic-mail-key')
     const before = await counts()
@@ -50,6 +58,9 @@ contract(['BASE-ACCESS-001','OPER-003','BASE-SECRET-001'], 'Base bootstraps once
       const response = await raw(new Request(link, { method }))
       expect(response.status).toBe(200)
       expect(response.headers.get('set-cookie')).toBeNull()
+      const document = await response.text()
+      if (method === 'HEAD') expect(document).toBe('')
+      else { expect(document).toContain('Confirm sign-in to Pencil'); expect(document).toContain('This link works once') }
       expect(await counts()).toEqual(before)
     }
     const responses = await Promise.all([run('/auth/confirm', { token }), run('/auth/confirm', { token })])

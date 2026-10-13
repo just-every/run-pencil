@@ -3,11 +3,19 @@ import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqli
 export const workspaces = sqliteTable('workspaces', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
+  brandConfigured: integer('brand_configured', { mode: 'boolean' }).notNull().default(false),
+  brandSupportingLine: text('brand_supporting_line').notNull().default(''),
+  brandAccent: text('brand_accent').notNull().default('#d4d4d4'),
+  brandLogoBase64: text('brand_logo_base64'),
+  brandLogoMime: text('brand_logo_mime'),
+  brandLogoVersion: text('brand_logo_version'),
+  publicFlowSlug: text('public_flow_slug'),
   timeZone: text('time_zone').notNull(),
   embedAllowedOriginsJson: text('embed_allowed_origins_json').notNull().default('[]'),
   sendingWindowStart: text('sending_window_start').notNull(),
   sendingWindowEnd: text('sending_window_end').notNull(),
   setupOperatorInitializedAt: text('setup_operator_initialized_at'),
+  firstRunCompletedAt: text('first_run_completed_at'),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 })
@@ -134,7 +142,7 @@ export const flowSteps = sqliteTable(
     position: integer('position').notNull(),
     stableId: text('stable_id').notNull(),
     kind: text('kind', { enum: ['welcome', 'question', 'completion'] }).notNull(),
-    questionType: text('question_type', { enum: ['short_text', 'long_text', 'email', 'single_choice', 'multiple_choice', 'rating', 'priority'] }),
+    questionType: text('question_type', { enum: ['short_text', 'long_text', 'email', 'single_choice', 'multiple_choice', 'rating', 'priority', 'dropdown', 'yes_no', 'nps', 'number', 'date', 'consent'] }),
     prompt: text('prompt').notNull(),
     helperText: text('helper_text'),
     required: integer('required', { mode: 'boolean' }).notNull(),
@@ -249,7 +257,7 @@ export const responses = sqliteTable(
     revisionId: text('revision_id')
       .notNull()
       .references(() => flowRevisions.id),
-    source: text('source', { enum: ['direct', 'embed', 'invitation', 'unknown'] }).notNull().default('unknown'),
+    source: text('source', { enum: ['direct', 'embed', 'invitation', 'unknown', 'imported'] }).notNull().default('unknown'),
     startedAt: text('started_at'),
     sessionId: text('session_id')
       .notNull(),

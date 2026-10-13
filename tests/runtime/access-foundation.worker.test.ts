@@ -1,3 +1,5 @@
+import { devKeyHeaders } from '../helpers/dev-key.mjs'
+import { developmentInbox } from '../helpers/development-outbox'
 import { applyD1Migrations, env, SELF, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -6,11 +8,11 @@ declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 let serial = 0
 async function request(path: string, method = 'GET', cookie = '', body?: string, origin = 'http://localhost') {
-  return SELF.fetch(`http://localhost${path}`, { method, redirect: 'manual', headers: { Host: 'localhost', cookie, origin, 'content-type': 'application/json', 'CF-Connecting-IP': `198.19.1.${++serial}` }, ...(body === undefined ? {} : { body }) })
+  return SELF.fetch(`http://localhost${path}`, { method, redirect: 'manual', headers: { Host: 'localhost', ...devKeyHeaders, cookie, origin, 'content-type': 'application/json', 'CF-Connecting-IP': `198.19.1.${++serial}` }, ...(body === undefined ? {} : { body }) })
 }
 async function login(email: string) {
   expect((await request('/auth/magic-link', 'POST', '', JSON.stringify({ email }))).status).toBe(202)
-  const inbox = await (await request(`/auth/local-inbox?email=${encodeURIComponent(email)}`)).json<{ messages: Array<{ magicLinkToken: string }> }>()
+  const inbox = await developmentInbox(path => request(path), email)
   return (await request('/auth/confirm', 'POST', '', JSON.stringify({ token: inbox.messages[0].magicLinkToken }))).headers.get('set-cookie')!.split(';')[0]
 }
 contract(['BASE-INPUT-001', 'BASE-ACCESS-004'], 'every private mutation route rejects sessionless, cross-origin and malformed requests before product writes', async () => {
@@ -50,11 +52,11 @@ contract(['OPER-001', 'BASE-ACCESS-004'], 'a second equal operator edits another
   expect((await request(`/api/app/flows/${f.flow.flowId}/draft`, 'PUT', peer, JSON.stringify({ stepId: draft.steps[0].id, prompt: 'Peer accepted edit', required: true, expectedVersion: draft.flow.draftVersion, workspaceId: 'forged' }))).status).toBe(200)
   expect((await f.draft()).steps[0].prompt).toBe('Peer accepted edit')
   await f.publish()
-  for (const path of ['results','ledger','distribution','responses/export']) expect((await request(`/api/app/flows/${f.flow.flowId}/${path}`, 'GET', peer)).status).toBe(200)
+  for (const path of ['results','ledger','distribution','responses/export/start?format=json']) expect((await request(`/api/app/flows/${f.flow.flowId}/${path}`, 'GET', peer)).status).toBe(200)
   const stamp = new Date().toISOString()
   await env.DB.prepare("INSERT INTO workspaces (id,name,time_zone,created_at,updated_at) VALUES ('foreign-boundary-workspace','Foreign','UTC',?,?)").bind(stamp,stamp).run()
   const other = await f.services.flows.createDraftFlow({ workspaceId: 'foreign-boundary-workspace', title: 'Private foreign title', slug: 'private-foreign-title' })
-  for (const path of ['draft','results','ledger','distribution','responses/export']) {
+  for (const path of ['draft','results','ledger','distribution','responses/export/start?format=json']) {
     const response = await request(`/api/app/flows/${other.id}/${path}`, 'GET', peer)
     expect(response.status, path).toBe(404)
     expect(await response.text()).not.toContain('Private foreign title')
@@ -65,3 +67,44 @@ contract(['OPER-001', 'BASE-ACCESS-004'], 'a second equal operator edits another
   const operator = await env.DB.prepare("SELECT id FROM operators WHERE email = 'peer@example.test'").first<{ id: string }>()
   expect(actors).toEqual([{ actor_operator_id: operator!.id }])
 }, 60_000)
+
+contract(['WS-001', 'WS-002', 'BASE-PUBLIC-002'], 'workspace settings persist through authenticated routes and reject invalid clocks and embed hosts without writes', async () => {
+  await foundationFixture('workspace-settings-validation')
+  const cookie = await login('owner@aurora-coffee.test')
+  const read = async () => {
+    const response = await request('/api/app/workspace', 'GET', cookie)
+    expect(response.status).toBe(200)
+    return response.json() as Promise<import('../../src/core/app/api').WorkspaceSettings>
+  }
+  const update = (input: unknown) => request('/api/app/workspace', 'PUT', cookie, JSON.stringify(input))
+  const original = await read()
+  const clock = { timeZone: 'Australia/Brisbane', sendingWindowStart: '09:00', sendingWindowEnd: '17:00' }
+  const settings = { ...clock, reminderDelayHours: 37, embedAllowedOrigins: ['https://embed.example.test'] }
+  try {
+    const saved = await update(settings)
+    expect(saved.status).toBe(200)
+    expect(await saved.json()).toMatchObject(settings)
+    const retained = await update(clock)
+    expect(retained.status).toBe(200)
+    expect(await retained.json()).toMatchObject(settings)
+    const snapshot = () => env.DB.prepare('SELECT * FROM workspaces WHERE id = ?').bind(original.id).first()
+    const before = await snapshot()
+    expect(before).toMatchObject({ time_zone: clock.timeZone, sending_window_start: clock.sendingWindowStart, sending_window_end: clock.sendingWindowEnd, reminder_delay_hours: settings.reminderDelayHours, embed_allowed_origins_json: JSON.stringify(settings.embedAllowedOrigins) })
+    expect(await read()).toMatchObject(settings)
+    const invalidInputs = [
+      { timeZone: 'GMT', sendingWindowStart: '09:00', sendingWindowEnd: '17:00' },
+      { timeZone: 'UTC', sendingWindowStart: '17:00', sendingWindowEnd: '09:00' },
+      { timeZone: 'UTC', sendingWindowStart: '24:00', sendingWindowEnd: '25:00' },
+      ...['https://*.example.com', 'https://example.com/path', 'http://example.com', 'https://example.com?secret=x'].map(origin => ({ timeZone: 'UTC', sendingWindowStart: '09:00', sendingWindowEnd: '17:00', embedAllowedOrigins: [origin] })),
+    ]
+    for (const input of invalidInputs) {
+      const response = await update({ ...settings, ...input })
+      expect(response.status, JSON.stringify(input)).toBe(400)
+      expect(await response.json()).toMatchObject({ error: 'VALIDATION_ERROR' })
+      expect(await snapshot()).toEqual(before)
+      expect(await read()).toMatchObject(settings)
+    }
+  } finally {
+    expect((await update(original)).status).toBe(200)
+  }
+})

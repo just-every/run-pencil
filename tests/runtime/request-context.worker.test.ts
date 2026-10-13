@@ -1,3 +1,4 @@
+import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { applyD1Migrations, createExecutionContext, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect, it } from 'vitest'
 import worker from '../../src/core/app/worker'
@@ -26,13 +27,13 @@ it('keeps concurrent and later requests tied to their own configuration and init
   const invalid = await request({ ...first, MAIL_API_KEY: '' })
   expect(invalid.status).toBe(503)
   expect(await invalid.json()).toMatchObject({ message: expect.stringContaining('MAIL_API_KEY') })
-  expect((await request(first, '/auth/local-inbox?email=first%40example.test')).status).toBe(404)
+  expect((await request(first, '/__dev/outbox')).status).toBe(404)
   // Warm routes must still recheck current setup state, rather than treating a
   // prior configured request as proof that an operator now exists.
   const uninitialized = await request({ ...first, SETUP_TOKEN: undefined })
   expect(uninitialized.status).toBe(503)
   expect(await uninitialized.json()).toMatchObject({ message: expect.stringContaining('SETUP_TOKEN') })
-  expect((await worker.fetch(new Request('http://localhost/auth/local-inbox?email=first%40example.test', { headers: { host: 'localhost' } }), env, createExecutionContext())).status).toBe(200)
+  expect((await worker.fetch(new Request('http://localhost/__dev/outbox', { headers: { host: 'localhost', ...devKeyHeaders } }), env, createExecutionContext())).status).toBe(200)
   expect((await request({ ...first, SETUP_TOKEN: undefined })).status).toBe(200)
 })
 

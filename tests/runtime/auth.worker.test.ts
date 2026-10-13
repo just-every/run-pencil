@@ -1,3 +1,5 @@
+import { devKeyHeaders } from '../helpers/dev-key.mjs'
+import { developmentInbox } from '../helpers/development-outbox'
 import { contract } from '../../src/test/contract'
 import { applyD1Migrations, env, SELF, type D1Migration } from 'cloudflare:test'
 import { beforeAll, describe, expect, it } from 'vitest'
@@ -20,6 +22,7 @@ const ownerEmail = 'owner@aurora-coffee.test'
 async function request(path: string, init?: RequestInit) {
   const headers = new Headers(init?.headers)
   headers.set('Host', 'localhost')
+  for (const [name, value] of Object.entries(devKeyHeaders)) headers.set(name, value)
   if (!headers.has('Origin')) headers.set('Origin', 'http://localhost')
   return SELF.fetch(`http://localhost${path}`, { ...init, headers })
 }
@@ -35,9 +38,9 @@ async function issueTokenFor(email: string) {
     body: JSON.stringify({ email }),
   })
   expect(sent.status).toBe(202)
-  const inbox = await request(`/auth/local-inbox?email=${encodeURIComponent(email)}`)
+  const inbox = await request('/__dev/outbox')
   expect(inbox.status).toBe(200)
-  const payload = await inbox.json<{ messages: Array<{ magicLinkToken: string }> }>()
+  const payload = await developmentInbox(path => request(path), email)
   expect(payload.messages[0]?.magicLinkToken).toMatch(/^[A-Za-z0-9_-]{43}$/)
   return payload.messages[0].magicLinkToken
 }
@@ -344,7 +347,7 @@ it.each(['auth.magic_link_sent', 'operator.invited'])('preserves the last access
   } finally { await env.DB.exec('DROP TRIGGER fail_last_invitation_audit') }
   expect(await env.DB.prepare('SELECT id FROM operators WHERE workspace_id = ?').bind(f.workspaceId).all()).toMatchObject({ results: [{ id: invitedId }] })
   expect(await service.getSession(new Request('http://localhost/app', { headers: { Host: 'localhost', Cookie: `operator_session_local=${redeemedToken}` } }))).toMatchObject({ operatorId: invitedId })
-  expect(await f.repository.listLocalInbox(email)).toHaveLength(1)
+  expect((await developmentInbox(path => request(path), email)).messages).toHaveLength(1)
   expect(await env.DB.prepare("SELECT count(*) AS n FROM audit_entries WHERE workspace_id = ? AND kind = 'operator.invitation_rolled_back'").bind(f.workspaceId).first()).toEqual({ n: 0 })
   expect(await env.DB.prepare("SELECT actor_operator_id, subject_id FROM audit_entries WHERE workspace_id = ? AND kind = 'operator.invitation_retained'").bind(f.workspaceId).first()).toEqual({ actor_operator_id: null, subject_id: invitedId })
 }, 60000)

@@ -8,7 +8,7 @@ export class WorkspaceRepository {
 
   async checkHealth() {
     const probes = Object.values(schema).map(table => sql`(SELECT 1 FROM ${table} LIMIT 1)`)
-    for (const name of ['distribution_contacts', 'invitation_launches', 'invitation_participants', 'mail_deliveries', 'mail_delivery_attempts', 'contact_consent_events']) probes.push(sql`(SELECT 1 FROM ${sql.identifier(name)} LIMIT 1)`)
+    for (const name of ['distribution_contacts', 'invitation_launches', 'invitation_participants', 'mail_deliveries', 'mail_delivery_attempts', 'contact_consent_events', 'notification_preferences', 'notification_deliveries', 'notification_attempts']) probes.push(sql`(SELECT 1 FROM ${sql.identifier(name)} LIMIT 1)`)
     await this.database.run(sql`SELECT ${sql.join(probes, sql`, `)}`)
   }
 
@@ -24,6 +24,11 @@ export class WorkspaceRepository {
     await this.database.insert(operators).values(operator).onConflictDoNothing()
   }
 
+  async reminderDelay(id:string) {
+    const result=await this.database.get<{delay:number|null}>(sql`SELECT reminder_delay_hours AS delay FROM workspaces WHERE id=${id}`)
+    return result?.delay ?? null
+  }
+  async setReminderDelay(id:string,delay:number) { await this.database.run(sql`UPDATE workspaces SET reminder_delay_hours=${delay} WHERE id=${id}`) }
   async getWorkspace(id: string) {
     const [workspace] = await this.database.select().from(workspaces).where(eq(workspaces.id, id)).limit(1)
     return workspace
@@ -31,6 +36,13 @@ export class WorkspaceRepository {
 
   async getFirstWorkspace() {
     const [workspace] = await this.database.select().from(workspaces).orderBy(workspaces.createdAt).limit(1)
+    return workspace
+  }
+
+  async completeSetup(id: string, name: string, timeZone: string, now: string) {
+    const [workspace] = await this.database.update(workspaces)
+      .set({ name, timeZone, brandConfigured: true, firstRunCompletedAt: now, updatedAt: now })
+      .where(eq(workspaces.id, id)).returning()
     return workspace
   }
 

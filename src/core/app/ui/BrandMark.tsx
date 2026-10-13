@@ -1,14 +1,15 @@
-import { PanelsTopLeft } from 'lucide-react'
+import { PencilMark } from '../../features/site/PencilMark'
 
 interface BrandMarkProps {
   readonly name: string
   readonly href?: string
 }
 
+/** The product lockup: Pencil's drawn mark and its name in DM Sans. */
 export function BrandMark({ name, href = '/' }: BrandMarkProps) {
   return (
     <a className="pencil-wordmark focus-ring" href={href}>
-      <PanelsTopLeft aria-hidden="true" className="pencil-mark" size={25} strokeWidth={2.2} />
+      <PencilMark className="pencil-mark" size={30} />
       <span>{name}</span>
     </a>
   )

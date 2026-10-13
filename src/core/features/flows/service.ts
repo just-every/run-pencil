@@ -1,3 +1,6 @@
+import { typeSettingsValid } from '../../shared/questionTypes'
+import { templateStructure, type FlowTemplateId } from './templates'
+import { structureContent } from './unpublished'
 import { defaultFlowPolicies, evaluateFlowPolicies, revisionBranchSelection, type FlowPolicies } from '../../shared/flowPolicies'
 import { publicSteps, publicChoices, publicRules } from './serialization'
 import { ulid } from 'ulid'
@@ -6,7 +9,7 @@ import type { ResponseRepository } from '../responses'
 import { resolveNextStep, validateRevisionGraph, type BranchPredicateKind } from './graph'
 import type { FlowRepository, StoredBranchRule, StoredChoice, StoredStep } from './repository'
 
-type QuestionType = 'short_text' | 'long_text' | 'email' | 'single_choice' | 'multiple_choice' | 'rating' | 'priority'
+type QuestionType = 'short_text' | 'long_text' | 'email' | 'single_choice' | 'multiple_choice' | 'rating' | 'priority' | 'dropdown' | 'yes_no' | 'nps' | 'number' | 'date' | 'consent'
 type StepKind = 'welcome' | 'question' | 'completion'
 type DraftStepInput = {
   kind: StepKind
@@ -91,6 +94,7 @@ export class FlowService {
         title: flow.title,
         status: flow.status,
         draftVersion: flow.draftVersion,
+        hasUnpublishedChanges: await this.hasUnpublishedChanges(workspaceId, flow.id),
         lastActivityAt: flow.lastActivityAt,
         completedResponses: result?.completedResponses ?? 0,
         starts: result?.counter?.starts ?? 0,
@@ -100,16 +104,18 @@ export class FlowService {
     }))
   }
 
-  async createDraftFlow(input: { workspaceId: string; title: string; slug: string }) {
+  async createDraftFlow(input: { workspaceId: string; title: string; slug: string; template?: FlowTemplateId }) {
     const title = input.title.trim()
     const slug = input.slug.trim().toLowerCase()
     if (!title || title.length > 200) throw new ValidationError('A flow title must be between 1 and 200 characters.')
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) throw new ValidationError('A flow link must use lowercase letters, numbers, and single hyphens.')
     const now = new Date().toISOString()
     const flowId = ulid()
+    const revisionId = ulid()
     const created = await this.repository.createStructure({
       flow: { id: flowId, workspaceId: input.workspaceId, title, slug, status: 'draft', draftVersion: 0, lastActivityAt: now, createdAt: now, updatedAt: now },
-      revision: { id: ulid(), flowId, number: 1, state: 'draft', title, publishedAt: null, isCurrent: false, admissionClosedAt: null, admissionCloseReason: null, deadlineAt: null, deadlineTimeZone: null, targetCompletedResponses: null, policySnapshotJson: null, createdAt: now, updatedAt: now },
+      revision: { id: revisionId, flowId, number: 1, state: 'draft', title, publishedAt: null, isCurrent: false, admissionClosedAt: null, admissionCloseReason: null, deadlineAt: null, deadlineTimeZone: null, targetCompletedResponses: null, policySnapshotJson: null, createdAt: now, updatedAt: now },
+      ...(input.template ? templateStructure(input.template, revisionId, now) : {}),
     })
     if (!created) throw new ValidationError('That flow link is already in use.')
     return { id: flowId, slug, title }
@@ -165,15 +171,28 @@ export class FlowService {
     return { branchSelection: evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'], flow, revision: this.publicRevision(revision), steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) }
   }
 
+  private async hasUnpublishedChanges(workspaceId: string, flowId: string) {
+    const published = await this.repository.findCurrentPublishedRevision(flowId)
+    if (!published) return false
+    const [draft, steps, rules] = await Promise.all([
+      this.requireDraftSnapshot(workspaceId, flowId),
+      this.repository.getSteps(published.id),
+      this.repository.getBranchRules(published.id),
+    ])
+    const choices = await this.repository.getChoices(steps.map(step => step.id))
+    return structureContent(draft.steps, draft.choices, draft.rules) !== structureContent(steps, choices, rules)
+  }
+
   async getBuilderDraft(workspaceId: string, flowId: string) {
-    return this.builderDraft(await this.requireDraftSnapshot(workspaceId, flowId))
+    const draft = this.builderDraft(await this.requireDraftSnapshot(workspaceId, flowId))
+    return { ...draft, flow: { ...draft.flow, hasUnpublishedChanges: await this.hasUnpublishedChanges(workspaceId, flowId) } }
   }
 
   async getFlowResults(workspaceId: string, flowId: string, revisionId?: string) {
     const flow = await this.requireWorkspaceFlow(workspaceId, flowId)
     const revision = revisionId ? await this.repository.findRevisionById(revisionId) : await this.repository.findCurrentPublishedRevision(flow.id)
     if (!revision || revision.flowId !== flow.id || revision.state !== 'published') throw new NotFoundError('This flow has no matching published revision.')
-    const { counter, completedResponses } = await this.responseRepository.getResults(revision.id)
+    const { counter, completedResponses, liveCompletedResponses, importedResponses } = await this.responseRepository.getResults(revision.id)
     const metrics = counter ?? {
       starts: 0,
       completions: 0,
@@ -187,15 +206,16 @@ export class FlowService {
       revision: this.publicRevision(revision),
       starts: metrics.starts,
       completedResponses,
-      completionRate: metrics.starts === 0 ? 0 : completedResponses / metrics.starts,
-      averageCompletionMilliseconds: completedResponses === 0 ? 0 : Math.round(metrics.totalCompletionMilliseconds / completedResponses),
+      liveCompletedResponses,
+      importedResponses,
+      completionRate: metrics.starts === 0 ? 0 : liveCompletedResponses / metrics.starts,
+      averageCompletionMilliseconds: liveCompletedResponses === 0 ? 0 : Math.round(metrics.totalCompletionMilliseconds / liveCompletedResponses),
       deviceStarts: { mobile: metrics.mobileStarts, tablet: metrics.tabletStarts, desktop: metrics.desktopStarts },
       analysis: { status: 'unconfigured' as const, configuration: 'AI_PROVIDER, AI_MODEL, and AI_API_KEY' },
-      taskDestination: { status: 'unconfigured' as const, configuration: 'TASK_PROVIDER and TASK_API_KEY' },
     }
   }
 
-  async updateBuilderDraft(input: { operatorId?: string; workspaceId: string; flowId: string; stepId: string; prompt: string; required: boolean; expectedVersion: number; helperText?: string | null; nextStepId?: string | null; questionSettings?: Record<string, unknown> | null; questionType?: QuestionType | null; choices?: Array<{ id?: string; value: string; label: string }> }) {
+  async updateBuilderDraft(input: { operatorId?: string; workspaceId: string; flowId: string; stepId: string; prompt: string; required: boolean; expectedVersion: number; helperText?: string | null; nextStepId?: string | null; questionSettings?: Record<string, unknown> | null; questionType?: QuestionType | null; choices?: Array<{ id?: string; newId?: string; value: string; label: string }>; rules?: BranchInput[] }) {
     if (!input.prompt.trim() || input.prompt.length > 1000) throw new ValidationError('A step prompt must be between 1 and 1000 characters.')
     const snapshot = await this.requireDraftSnapshot(input.workspaceId, input.flowId)
     const draft = this.builderDraft(snapshot)
@@ -210,7 +230,8 @@ export class FlowService {
     const selectedRawStep = rawSteps.find((step) => step.stableId === input.stepId)
     if (!selectedRawStep) throw new NotFoundError('The requested draft step does not exist.')
     const currentChoices = rawChoices.filter((choice) => choice.stepId === selectedRawStep.id)
-    const structured = ['single_choice', 'multiple_choice', 'priority'].includes(selectedQuestionType ?? '')
+    if (!typeSettingsValid(selectedQuestionType, input.questionSettings === undefined ? selected.questionSettings ?? {} : input.questionSettings ?? {})) throw new ValidationError('This question has invalid type-specific settings.')
+    const structured = ['single_choice', 'multiple_choice', 'priority', 'dropdown'].includes(selectedQuestionType ?? '')
     if (input.choices !== undefined && !structured && input.choices.length > 0) throw new ValidationError('Only structured questions can have choices.')
     const requestedChoices = input.choices ?? currentChoices.map((choice) => ({ id: choice.stableId, value: choice.value, label: choice.label }))
     if (input.choices !== undefined && input.choices.some((choice) => !choice.value.trim() || !choice.label.trim())) throw new ValidationError('Every choice needs a value and label.')
@@ -220,16 +241,26 @@ export class FlowService {
     const persistedChoices = structured ? requestedChoices.map((choice, position) => {
       const existing = choice.id ? choicesByStableId.get(choice.id) : undefined
       if (choice.id && !existing) throw new ValidationError('A choice edit must refer to a choice on this question.')
-      return { id: existing?.id ?? ulid(), stableId: existing?.stableId ?? ulid(), value: choice.value.trim(), label: choice.label.trim(), position, createdAt: existing?.createdAt ?? now, updatedAt: now }
+      if ('newId' in choice && choice.newId && rawChoices.some(existingChoice => existingChoice.stableId === choice.newId)) throw new ValidationError('A new choice must have a unique identifier.')
+      return { id: existing?.id ?? ulid(), stableId: existing?.stableId ?? ('newId' in choice ? choice.newId : undefined) ?? ulid(), value: choice.value.trim(), label: choice.label.trim(), position, createdAt: existing?.createdAt ?? now, updatedAt: now }
     }) : []
-    if (new Set(persistedChoices.map((choice) => choice.value)).size !== persistedChoices.length || new Set(persistedChoices.map((choice) => choice.label.toLocaleLowerCase())).size !== persistedChoices.length) throw new ValidationError('Choices must have distinct stable values and labels.')
+    if (new Set(persistedChoices.map((choice) => choice.label.toLocaleLowerCase())).size !== persistedChoices.length) throw new ValidationError('Each choice needs a different label.')
+    if (new Set(persistedChoices.map((choice) => choice.value)).size !== persistedChoices.length) throw new ValidationError('Each choice needs a different answer value.')
+    if (new Set(persistedChoices.map(choice => choice.stableId)).size !== persistedChoices.length) throw new ValidationError('Choices must be distinct.')
+    const rules = input.rules?.map(rule => ({ id: rule.id ?? ulid(), revisionId: draft.revision.id, sourceStepStableId: rule.sourceStepId, predicateKind: rule.predicateKind, expectedValueJson: JSON.stringify(rule.expectedValue), destinationStepStableId: rule.destinationStepId, position: rule.position, createdAt: now, updatedAt: now }))
+    if (rules) {
+      const nextSteps = rawSteps.map(step => step.stableId === input.stepId ? { ...step, questionType: selectedQuestionType, nextStepStableId: input.nextStepId === undefined ? step.nextStepStableId : input.nextStepId } : step)
+      const nextChoices = [...rawChoices.filter(choice => choice.stepId !== selectedRawStep.id), ...persistedChoices.map(choice => ({ ...choice, stepId: selectedRawStep.id }))]
+      const issues = validateRevisionGraph(nextSteps, nextChoices, rules, evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1']).filter(issue => issue.reason.includes('branch') || issue.reason.includes('predicate'))
+      if (issues.length) throw new ValidationError('Answer paths are invalid.', issues)
+    }
     const updated = await this.repository.updateDraftStep({ operatorId: input.operatorId,
       flowId: input.flowId, revisionId: draft.revision.id, expectedVersion: input.expectedVersion, now,
       stepStableId: input.stepId, questionType: selected.kind === 'question' ? selectedQuestionType : null, prompt: input.prompt.trim(), required: selected.kind === 'question' ? input.required : false,
       helperText: input.helperText === undefined ? selected.helperText : input.helperText,
       nextStepStableId: input.nextStepId === undefined ? selected.nextStepId : input.nextStepId,
       questionSettingsJson: input.questionSettings === undefined ? (selected.questionSettings ? JSON.stringify(selected.questionSettings) : null) : (input.questionSettings ? JSON.stringify(input.questionSettings) : null),
-      choices: persistedChoices,
+      choices: persistedChoices, rules,
     })
     if (!updated) return draftConflict((await this.requireWorkspaceFlow(input.workspaceId, input.flowId)).draftVersion)
     return { kind: 'updated' as const, draftVersion: input.expectedVersion + 1, step: publicSteps([updated])[0] }
@@ -251,6 +282,7 @@ export class FlowService {
     const stepId = ulid()
     if (input.step.kind === 'question' && !input.step.questionType) throw new ValidationError('A question needs a question type.')
     if (input.step.kind !== 'question' && input.step.questionType) throw new ValidationError('Only questions can have a question type.')
+    if (!typeSettingsValid(input.step.questionType, input.step.questionSettings ?? {})) throw new ValidationError('This question has invalid type-specific settings.')
     const choices = (input.step.choices ?? []).map((choice, position) => ({ id: ulid(), stepId, stableId: ulid(), value: choice.value.trim(), label: choice.label.trim(), position, createdAt: now, updatedAt: now }))
     if (choices.some((choice) => !choice.value || !choice.label)) throw new ValidationError('Every choice needs a value and label.')
     const created = await this.repository.createDraftStep({ operatorId: input.operatorId,

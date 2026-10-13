@@ -12,7 +12,7 @@ function services() {
   } })
   return {
     flows: feature(), reporting: feature(), workspace: feature(),
-    auth: new Proxy(feature(), { get(target, key) { return key === 'native' ? { previewLink: vi.fn().mockResolvedValue(null) } : key === 'getSession' ? vi.fn().mockResolvedValue({ workspaceId: 'workspace', operatorId: 'operator' }) : Reflect.get(target, key) } }),
+    auth: new Proxy(feature(), { get(target, key) { return key === 'native' ? { presentation: { productName: 'Pencil', accentColor: '#c89cf5', signInPath: '/signin' }, previewLink: vi.fn().mockResolvedValue(null) } : key === 'getSession' ? vi.fn().mockResolvedValue({ workspaceId: 'workspace', operatorId: 'operator' }) : Reflect.get(target, key) } }),
     responses: new Proxy(feature(), { get(target, key) { return key === 'enforcePublicRequestRateLimit' ? vi.fn().mockResolvedValue(undefined) : Reflect.get(target, key) } }),
   } as unknown as PencilServices
 }
@@ -52,7 +52,6 @@ const failures = [
   ['GET', '/api/app/flows/legacy-flow/ledger?offset=Infinity&answerValue=private-secret', undefined],
   ['GET', '/api/app/flows/legacy-flow/questions?revisionId=', undefined],
   ['GET', '/api/app/flows/legacy-flow/responses/export?from=private-secret', undefined],
-  ['GET', '/auth/local-inbox?email=private-secret', undefined],
   ['GET', `/api/app/flows/${'x'.repeat(201)}/draft`, undefined],
   ['GET', '/api/app/flows/%00/draft', undefined],
   ['GET', '/api/public/flows/not%20a%20slug', undefined],
@@ -90,4 +89,12 @@ it('retains empty action requests, opaque legacy IDs and native invalid-link rea
   expect(response.headers.get('Set-Cookie')).toBeNull()
   expect(await response.text()).toContain('invalid or expired')
   expect(domainCalls).toHaveLength(0)
+})
+
+it('refuses the removed local inbox without any product effect or echoed input', async () => {
+  const app = createWorkerApp(services(), platform)
+  const response = await app.request('https://pencil.test/auth/local-inbox?email=private-secret')
+  expect(response.status).toBe(404)
+  expect(await response.text()).not.toContain('private-secret')
+  expect(domainCalls.every(call => call.mock.calls.length === 0)).toBe(true)
 })

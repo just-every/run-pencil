@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { developmentInbox, devKeyHeaders } from './local-outbox.mjs'
 import assert from 'node:assert/strict'
 import { request } from '@playwright/test'
 
@@ -10,7 +11,7 @@ assert.ok(Number(target.port) >= 15620 && Number(target.port) <= 15659)
 const slug = 'pencil-revision-review-20261002'
 const title = 'Pencil synthetic revision review'
 const context = await request.newContext({ baseURL: target.origin })
-const headers = { Origin: target.origin, 'CF-Connecting-IP': '198.18.159.47' }
+const headers = { ...devKeyHeaders(), Origin: target.origin, 'CF-Connecting-IP': '198.18.159.47' }
 async function ok(path, data, method = data === undefined ? 'GET' : 'POST') {
   const response = await context.fetch(path, { method, headers, ...(data === undefined ? {} : { data }) })
   assert.ok(response.status() >= 200 && response.status() < 300, `${method} ${path}: status ${response.status()}`)
@@ -23,7 +24,7 @@ try {
   const existing = await context.get(`/api/public/flows/${slug}`, { headers })
   assert.equal(existing.status(), 404, 'Existing review detected: stop before changing it')
   await ok('/auth/magic-link', { email: 'owner@aurora-coffee.test' })
-  const inbox = await ok('/auth/local-inbox?email=owner%40aurora-coffee.test')
+  const inbox = await developmentInbox(path => context.get(path, { headers }), 'owner@aurora-coffee.test')
   assert.ok(inbox.messages[0]?.magicLinkToken)
   assert.equal((await context.post('/auth/confirm', { headers, data: { token: inbox.messages[0].magicLinkToken }, maxRedirects: 0 })).status(), 303)
   const flow = await ok('/api/app/flows', { title, slug })

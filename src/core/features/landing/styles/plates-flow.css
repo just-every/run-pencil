@@ -1,0 +1,82 @@
+/* Plates for asking: the respondent screen, the answer-path map and rules, the preview, and revisions. */
+
+/* #one-at-a-time: the note stands above the sheet, its arrow turned down onto the circled count. */
+:where(.pencil-site) .plate--one-at-a-time__note { --note-inset: 6.2em; --note-margin: 0 0 0.15em var(--note-inset); --note-turn: rotate(-58deg); }
+/* Beside the copy the note is placed in plate units, where the hero card's pencil trail (PencilTrail.tsx) arrives. */
+@media (min-width: 1024px) { :where(.pencil-site) .plate--one-at-a-time__note { --note-inset: 22cqw; } }
+:where(.pencil-site) .respondent-sheet__ticks { top: -0.9em; right: -0.7em; }
+@media (min-width: 640px) { :where(.pencil-site) .respondent-sheet__ticks { top: -0.3em; right: -2.2em; } }
+:where(.pencil-site) .respondent-sheet { --tilt: -1.2deg; padding: 1.1em 1.4em 1.25em; }
+:where(.pencil-site) .respondent-sheet__top { color: var(--pencil-soft); font-size: max(16px, 0.88em); }
+:where(.pencil-site) .respondent-sheet__circled { --ring-x: 0.62em; --ring-gap-x: 0.72em; }
+:where(.pencil-site) .respondent-sheet__count { display: inline-flex; flex-wrap: wrap; gap: 0 1.1em; }
+:where(.pencil-site) .respondent-sheet__progress { display: block; height: 0.28em; margin: 0.55em 0 0.9em; overflow: hidden; border-radius: 4px; background: rgba(93, 95, 98, 0.12); }
+:where(.pencil-site) .respondent-sheet__progress > span {
+  display: block;
+  height: 100%;
+  background: repeating-linear-gradient(112deg, var(--stroke) 0 1.3px, transparent 1.3px 3.2px), rgba(93, 95, 98, 0.26);
+}
+:where(.pencil-site) .respondent-sheet__question { color: var(--lead); font-size: 1.45em; line-height: 1.1; }
+:where(.pencil-site) .respondent-sheet__answer { min-height: 2.5em; margin-top: 0.55em; padding: 0.35em 0.7em; color: var(--pencil-soft); }
+:where(.pencil-site) .respondent-sheet__actions { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.6em; margin-top: 1em; }
+
+/* #answer-paths: the map. Coloured pencil appears only here, always behind --lead text. */
+:where(.pencil-site) .path-map {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) 2.9em minmax(0, 1fr);
+  row-gap: 0.5em;
+  align-items: center;
+  padding: 0.9em 0 1em;
+}
+:where(.pencil-site) .path-map__card { grid-column: 1; grid-row: 1 / 5; align-self: stretch; margin: -0.85em 0 -0.95em; --tilt: -0.8deg; transform: rotate(calc(var(--tilt) * var(--tilt-k))); }
+:where(.pencil-site) .path-map__prompt { position: relative; grid-column: 1; grid-row: 1; margin: 0 0.8em 0.1em; color: var(--lead); font-size: 1.05em; }
+:where(.pencil-site) .path-map__row { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: center; }
+:where(.pencil-site) .path-map__answer { justify-self: stretch; margin-inline: 0.75em 0.6em; padding: 0.06em 0.5em; color: var(--lead); text-align: center; }
+:where(.pencil-site) .path-map__arrow { width: 2.9em; height: 2.2em; overflow: visible; }
+:where(.pencil-site) .path-map__arrow path { fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+:where(.pencil-site) .path-map__arrow--great path { stroke: var(--line-sage); }
+:where(.pencil-site) .path-map__arrow--good path { stroke: var(--line-yellow); }
+:where(.pencil-site) .path-map__arrow--better path { stroke: var(--line-eraser); }
+:where(.pencil-site) .path-map__next { padding: 0.3em 0.65em; line-height: 1.1; }
+:where(.pencil-site) .path-map__next--great { transform: translateY(-0.55em) rotate(-1.2deg); }
+:where(.pencil-site) .path-map__next--better { transform: translateY(0.55em) rotate(1deg); }
+
+/* #answer-paths: both rules and the default, on a sheet tucked under the map; the note below points up at the default. */
+:where(.pencil-site) .plate--answer-paths__note { --note-flow: row-reverse; --note-margin: 0.3em 7% 0 auto; --note-turn: scaleX(-1) rotate(100deg); }
+:where(.pencil-site) .rules-sheet { --tilt: 0.8deg; margin: 0.4em 3% 0 8%; padding: 0.6em 1.15em 0.75em; }
+:where(.pencil-site) .rules-sheet__rule + .rules-sheet__rule { margin-top: 0.35em; }
+:where(.pencil-site) .rules-sheet__name { color: var(--lead); }
+:where(.pencil-site) .rules-sheet__fields { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.3em 0.9em; margin-top: 0.05em; }
+:where(.pencil-site) .rules-sheet__field { display: inline-flex; flex-direction: column; gap: 0.05em; }
+:where(.pencil-site) .rules-sheet__value { padding: 0.04em 0.5em; }
+:where(.pencil-site) .rules-sheet__value:is(.sketch--sage, .sketch--eraser) { color: var(--lead); }
+:where(.pencil-site) .rules-sheet__default { margin-top: 0.45em; padding-top: 0.4em; border-top: 1px dashed var(--stroke-soft); }
+:where(.pencil-site) .rules-sheet__default .pencil-circle--block { --ring-y: 0.6em; padding-inline: 0.5em 0.4em; }
+:where(.pencil-site) .rules-sheet__default .rules-sheet__field { flex-flow: row wrap; align-items: center; gap: 0.2em 0.6em; }
+
+/* #preview: the matching rule is the sheet's last line, circled whole; the note stands below it. */
+:where(.pencil-site) .plate--preview__note { --note-flow: row-reverse; --note-margin: 0.3em 8% 0 auto; --note-turn: scaleX(-1) rotate(100deg); }
+:where(.pencil-site) .preview-sheet { --tilt: 0.7deg; display: grid; gap: 1em; padding: 1.05em 1.3em 1.2em; }
+:where(.pencil-site) .preview-sheet__question { margin-top: 0.15em; color: var(--lead); font-size: 1.1em; }
+:where(.pencil-site) .preview-sheet__choices { display: grid; gap: 0.15em; margin: 0.35em 0 0.85em; }
+:where(.pencil-site) .preview-sheet__choices li { display: flex; align-items: center; gap: 0.5em; }
+:where(.pencil-site) .preview-sheet__rules { display: grid; gap: 0.4em; margin-top: 0.4em; }
+:where(.pencil-site) .preview-sheet__rules li:first-child { color: var(--pencil-soft); }
+:where(.pencil-site) .preview-sheet__rules li + li { color: var(--lead); }
+@container (min-width: 520px) {
+  :where(.pencil-site) .preview-sheet { grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr); gap: 1.3em; }
+  :where(.pencil-site) .preview-sheet__trace { padding-left: 1.3em; border-left: 1px solid var(--stroke-soft); }
+}
+
+/* #revisions: the note stands above revision 1, its arrow turned down onto that sheet's circled label. */
+:where(.pencil-site) .plate--revisions { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+:where(.pencil-site) .plate--revisions__note { grid-column: 1 / -1; grid-row: 1; --note-inset: 3.6em; --note-margin: 0 0 0.1em var(--note-inset); --note-turn: rotate(-62deg); }
+:where(.pencil-site) .revision-sheet { padding: 0.8em 1.1em 0.9em; }
+:where(.pencil-site) .revision-sheet--earlier { grid-column: 1 / span 8; grid-row: 2; align-self: start; --tilt: -2.6deg; color: var(--pencil-soft); }
+:where(.pencil-site) .revision-sheet--current { position: relative; grid-column: 4 / span 9; grid-row: 2; margin-top: 3em; }
+:where(.pencil-site) .revision-sheet__ticks { top: -1.5em; right: 0.6em; z-index: 1; transform: rotate(-80deg); }
+:where(.pencil-site) .revision-sheet--front { --tilt: 1.2deg; }
+:where(.pencil-site) .revision-sheet__label { color: var(--lead); }
+:where(.pencil-site) .revision-sheet__steps { display: grid; margin-top: 0.35em; }
+:where(.pencil-site) .revision-sheet__steps li { padding: 0.16em 0; border-bottom: 1px solid var(--stroke-soft); line-height: 1.15; }
+:where(.pencil-site) .revision-notice { margin: 0.85em 0 0 0.4em; padding: 0.28em 0.65em; color: var(--lead); transform: rotate(-0.6deg); }

@@ -1,3 +1,4 @@
+import { fixtureExport } from '../helpers/report-download'
 import { contract } from '../../src/test/contract'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect, test } from 'vitest'
@@ -17,11 +18,11 @@ async function launched(slug: string) {
   const delivery = (await f.services.distribution.launches.list(f.scope.workspaceId, f.flow.flowId))[0] as { deliveryId: string }
   return { ...f, contact, input, launch, p, delivery }
 }
-contract(['DIST-003', 'DIST-005', 'FLOW-008'], 'launch snapshots eligible recipient once, consent blocks sending and renewal records actor and source', async () => {
+contract(['AUD-003', 'AUD-006', 'DIST-003', 'DIST-005', 'FLOW-008'], 'launch snapshots eligible recipient once, consent blocks sending and renewal records actor and source', async () => {
   const f = await launched('distribution-consent')
   expect(await f.services.distribution.launches.launch(f.input)).toEqual(f.launch)
   expect((await f.services.distribution.launches.list(f.scope.workspaceId, f.flow.flowId))).toHaveLength(1)
-  await f.services.distribution.contacts.save(f.scope.workspaceId, { name: 'Changed name', email: 'distribution-consent@example.test' })
+  await f.services.distribution.contacts.edit(f.scope.workspaceId, f.contact.id, { name: 'Changed name', email: 'changed-email@example.test' })
   const prepared = await f.services.distribution.deliveries.prepare(f.delivery.deliveryId, 'https://synthetic.example.test')
   expect(prepared).toMatchObject({ ordinal: 1, to: 'distribution-consent@example.test', idempotencyKey: `invitation:${f.p.id}`, headers: { 'Auto-Submitted': 'auto-generated' } })
   expect(prepared!.text).toContain(`/i/${f.p.token}`)
@@ -74,15 +75,15 @@ contract(['LEDG-001', 'LEDG-003', 'DATA-002', 'BASE-DATA-003', 'DIST-005'], 'ide
   const s = await f.services.responses.startPublicSession({ slug: f.slug, deviceClass: 'mobile', source: 'direct', invitationToken: f.p.token })
   await f.mature(s.sessionId)
   const done = await f.final(s, [{ stepId: s.flow.steps[0].id, value: 'Retained until erased' }], '', f.p.token)
-  const report = await f.services.reporting.export(f.scope.workspaceId, f.flow.flowId, { source: 'invitation', participantStatus: 'eligible' })
+  const report = await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, { source: 'invitation', participantStatus: 'eligible' })
   expect(report.responses).toHaveLength(1)
   expect(report.responses[0]).toMatchObject({ id: done.responseId, revisionId: f.p.revision_id, participant: { id: f.p.id, name: 'Synthetic recipient', email: 'distribution-erasure@example.test' } })
   await f.services.distribution.contacts.optOut(f.p.opt_out_token)
-  expect((await f.services.reporting.export(f.scope.workspaceId, f.flow.flowId, { participantStatus: 'eligible' })).responses).toEqual([])
-  expect((await f.services.reporting.export(f.scope.workspaceId, f.flow.flowId, { participantStatus: 'opted-out' })).responses.map(r => r.id)).toEqual([done.responseId])
+  expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, { participantStatus: 'eligible' })).responses).toEqual([])
+  expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, { participantStatus: 'opted-out' })).responses.map(r => r.id)).toEqual([done.responseId])
   const consentAuditId = (await env.DB.prepare("SELECT id FROM audit_entries WHERE kind = 'contact.consent-changed' AND subject_id = ?").bind(f.contact.id).first<{ id: string }>())!.id
   await f.services.distribution.contacts.erase(f.scope.workspaceId, f.contact.id, f.operatorId)
-  expect((await f.services.reporting.export(f.scope.workspaceId, f.flow.flowId, {})).responses).toEqual([])
+  expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, {})).responses).toEqual([])
   await expect(f.services.responses.invitationFlow(f.p.token)).rejects.toThrow('no longer available')
   expect(await env.DB.prepare('SELECT contact_id, email_snapshot, name_snapshot, token, opt_out_token FROM invitation_participants WHERE id = ?').bind(f.p.id).first()).toEqual({ contact_id: null, email_snapshot: null, name_snapshot: null, token: null, opt_out_token: null })
   expect(await env.DB.prepare('SELECT id FROM response_answers WHERE response_id = ?').bind(done.responseId).first()).toBeNull()
@@ -161,7 +162,7 @@ contract(['DASH-002', 'LEDG-002'], 'dashboard derives participant denominators f
   await f.services.distribution.contacts.consent({ ...f.scope, contactId: f.contact.id, actor: f.operatorId, source: 'Explicit synthetic renewed consent', renewed: true })
   await env.DB.prepare("UPDATE invitation_participants SET delivery_status = 'bounced' WHERE id = ?").bind(f.p.id).run()
   expect((await row()).audience.eligibleParticipants).toBe(0)
-  expect((await f.services.reporting.export(f.scope.workspaceId, f.flow.flowId, { participantStatus: 'bounced' })).responses.map(r => r.id)).toEqual([receipt.responseId])
+  expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, { participantStatus: 'bounced' })).responses.map(r => r.id)).toEqual([receipt.responseId])
   await f.services.flows.closeFlow(f.scope.workspaceId, f.flow.flowId)
   expect((await f.services.flows.listDashboard(f.scope.workspaceId, 'closed')).map(r => r.id)).toContain(f.flow.flowId)
   expect((await f.services.flows.listDashboard(f.scope.workspaceId, 'open')).map(r => r.id)).not.toContain(f.flow.flowId)
@@ -191,7 +192,7 @@ contract('BASE-DATA-003', 'operator removal anonymizes launch, consent and retry
 contract('DIST-004', 'a launch snapshots the evaluated buyer reminder schedule before later configuration changes', async () => {
   const f = await launched('reminder-policy-setup')
   const { InvitationLaunches } = await import('../../src/core/features/distribution/launches')
-  const policies = { 'flow.reminder-schedule.v1': { delayHours: 12 } }
+  const policies = { 'flow.reminder-schedule.v1': { delayHours: 12 }, 'flow.audience-eligibility.v1': { excludePreviouslyInvitedToFlow:false } }
   const launcher = new InvitationLaunches(env.DB, policies)
   const contact = await f.services.distribution.contacts.save(f.scope.workspaceId, { name: 'Policy recipient', email: 'policy@example.test' }) as { id: string }
   const launch = await launcher.launch({ ...f.input, commandKey: 'policy-snapshot-command', contactIds: [contact.id] })

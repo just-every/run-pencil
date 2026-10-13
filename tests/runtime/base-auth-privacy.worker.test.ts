@@ -36,7 +36,7 @@ async function assertMagicLinkPrivacy(scenario: typeof senderScenarios[keyof typ
     const token = new URL(f.messages[0].text.match(/https[^\s]+/)![0]).searchParams.get('token')!
     const failed = scenario.name !== 'accepted'
     expect(await env.DB.prepare('SELECT count(*) n FROM oa_tokens WHERE operator_id=? AND revoked_at IS NOT NULL').bind(f.operatorId).first()).toEqual({ n: failed ? 1 : 0 })
-    expect(await f.auth.previewLink(new Request(origin + '/auth/confirm'), token)).toEqual(failed ? null : { kind: 'magic' })
+    expect(await f.auth.previewLink(new Request(origin + '/auth/confirm'), token)).toEqual(failed ? null : { kind: 'magic', expiresInMinutes: 15 })
     if (failed) {
       // The product HTTP privacy boundary must not make native delivery succeed.
       await expect(f.auth.requestMagicLink(f.request(known), { email: known })).rejects.toMatchObject({ code: 'mail_unavailable', status: 503 })

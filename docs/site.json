@@ -1,0 +1,66 @@
+{
+  "sections": [
+    { "title": "Start here", "pages": [
+      { "slug": "", "source": "docs/guide/overview.md", "label": "Overview" },
+      { "slug": "install", "source": "docs/guide/install.md", "label": "Install and run locally" }
+    ]},
+    { "title": "Use Pencil", "pages": [
+      { "slug": "build-a-form", "source": "docs/guide/build-a-form.md", "label": "Build a form" },
+      { "slug": "branching", "source": "docs/guide/branching.md", "label": "Answer paths" },
+      { "slug": "publish-and-share", "source": "docs/guide/publish-and-share.md", "label": "Publish and share" },
+      { "slug": "invitations", "source": "docs/guide/invitations.md", "label": "Invitations, reminders and consent" },
+      { "slug": "results", "source": "docs/guide/results.md", "label": "Results, review and exports" },
+      { "slug": "actions", "source": "docs/guide/actions.md", "label": "Actions and follow-up" },
+      { "slug": "moving-in", "source": "docs/guide/moving-in.md", "label": "Moving in" }
+    ]},
+    { "title": "Run it", "pages": [
+      { "slug": "hosting", "source": "docs/guide/hosting.md", "label": "Hosting on Cloudflare" },
+      { "slug": "backup", "source": "docs/guide/backup.md", "label": "Backup and restore" },
+      { "slug": "privacy", "source": "docs/guide/privacy.md", "label": "Privacy and security" }
+    ]}
+  ],
+  "githubOnly": [
+    { "source": "scripts/delivery/README.md", "reason": "Developer documentation for the managed source artifact and its build contract" },
+    { "source": "src/base/owner-claim/README.md", "reason": "Developer documentation for the copied native owner admission module" },
+    { "source": "ACCEPTANCE.md", "reason": "Release acceptance journey and evidence gates, for maintainers" },
+    { "source": "AGENTS.consumer.md", "reason": "Instructions for coding agents working in an owner's copy of the source" },
+    { "source": "AGENTS.md", "reason": "Contributor and coding-agent rules for working on Pencil" },
+    { "source": "ASSET-PROVENANCE.md", "reason": "Licence and provenance record for fonts and icons, for maintainers" },
+    { "source": "BASELINE.md", "reason": "Security, privacy and operations requirement clauses, for maintainers; the plain-language summary is Privacy and security" },
+    { "source": "CHANGELOG.md", "reason": "Release history for maintainers, which names internal requirement records; the Overview links it on GitHub" },
+    { "source": "CLAUDE.md", "reason": "A one-line pointer to AGENTS.md for coding agents" },
+    { "source": "CONTRACT.md", "reason": "Product requirement clauses, for maintainers and reviewers" },
+    { "source": "DIVERGENCE.md", "reason": "Record of design decisions that depart from the starting documents, for maintainers" },
+    { "source": "HANDOVER.md", "reason": "Maintainer orientation and the current verification scope" },
+    { "source": "OPERATIONS.md", "reason": "Maintainer operating description; the owner steps are in Install and run locally, Hosting on Cloudflare and Backup and restore" },
+    { "source": "README.md", "reason": "The repository front page, with developer verification commands; the docs home is Overview" },
+    { "source": "docs/FIRST-RELEASE.md", "reason": "Release scope, upgrade migrations and evidence boundaries for maintainers; the owner view is in the guide pages" },
+    { "source": "docs/HOSTING.md", "reason": "Dense maintainer hosting reference including acceptance evidence; the owner steps are in Hosting on Cloudflare" },
+    { "source": "docs/LOCAL-DATA-RECOVERY.md", "reason": "Full recovery reference for local and deployed data; the owner summary is in Backup and restore, which links it on GitHub" },
+    { "source": "docs/moving.md", "reason": "Detailed import notes in maintainer terms, linked from the import page; the owner guide is Moving in" },
+    { "source": "docs/production-mail.md", "reason": "Maintainer mail notes; the owner summary is Set up email in Hosting on Cloudflare" },
+    { "source": "RUN-LOCALLY.md", "reason": "Maintainer reference for the rer commands that run a local copy; the owner steps are in Install and run locally" },
+    { "source": "SEED-COMMAND-CONTRACT.md", "reason": "Command contract that the rer command line follows, for maintainers" },
+    { "source": "src/base/hydration/README.md", "reason": "Developer convention for hydrating page sections as separate units, from Base" },
+    { "source": "src/base/import-kit/CONTRACT.md", "reason": "Source documentation for the bundled import engine, for developers" },
+    { "source": "src/base/import-kit/FIXTURES.md", "reason": "Test fixture layout for the bundled import engine, for developers" },
+    { "source": "src/base/import-kit/README.md", "reason": "Source documentation for the bundled import engine, for developers" },
+    { "source": "src/base/import-kit/src/d1/README.md", "reason": "Source documentation for the import engine's D1 port, for developers" },
+    { "source": "src/base/import-kit/src/readers/README.md", "reason": "Source documentation for the import engine's file readers, for developers" },
+    { "source": "src/base/mail/README.md", "reason": "Source documentation for the bundled mail module, for developers" },
+    { "source": "src/base/mail/live-proof/README.md", "reason": "Maintainer notes on a pending live mail proof, not a delivery claim" },
+    { "source": "src/base/mail/src/adapters/cloudflare/README.md", "reason": "Source documentation for a mail adapter, for developers" },
+    { "source": "src/base/mail/src/adapters/resend/README.md", "reason": "Source documentation for the Resend mail adapter, for developers" },
+    { "source": "src/base/mail/src/adapters/sendgrid/README.md", "reason": "Source documentation for the SendGrid mail adapter, for developers" },
+    { "source": "src/base/mail/src/doctor/README.md", "reason": "Source documentation for the mail configuration checker, for developers" },
+    { "source": "src/base/mail/src/events/README.md", "reason": "Source documentation for delivery-event intake in the mail module, for developers" },
+    { "source": "src/base/mail/src/inbound/README.md", "reason": "Source documentation for inbound mail normalization in the mail module, for developers" },
+    { "source": "src/base/operator-auth/README.md", "reason": "Source documentation for the bundled operator sign-in module, for developers" },
+    { "source": "src/base/operator-auth/conformance/README.md", "reason": "Test conformance notes for the operator sign-in module, for developers" },
+    { "source": "src/base/operator-auth/docs/README.md", "reason": "Adoption notes for the operator sign-in module, for developers" },
+    { "source": "src/base/operator-auth/docs/tanstack-start.md", "reason": "Framework adoption notes for the operator sign-in module, for developers" },
+    { "source": "src/base/operator-auth/docs/vite-spa.md", "reason": "Framework adoption notes for the operator sign-in module, for developers" },
+    { "source": "src/base/operator-auth/identity/oidc/README.md", "reason": "Source documentation for an optional sign-in client that Pencil does not enable, for developers" },
+    { "source": "src/core/features/importing/NATIVE-STAGING.md", "reason": "Design notes on how imports are staged, for developers" }
+  ]
+}

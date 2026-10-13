@@ -1,7 +1,11 @@
+import { devKeyHeaders } from '../helpers/dev-key.mjs'
+import { eraseResponseAndImportCustody } from '../../src/core/features/importing/erasure'
+import { allTexts } from '../helpers/report-download'
+import { developmentInbox } from '../helpers/development-outbox'
 import { applyD1Migrations, env, SELF, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect, it } from 'vitest'
 import { contract } from '../../src/test/contract'
-import type { BuilderDraft, PublicFlow } from '../../src/core/app/api'
+import type { BuilderDraft, PublicFlow, QuestionReport } from '../../src/core/app/api'
 import { ResponseRepository } from '../../src/core/features/responses/repository'
 import { createPencilPlatform } from '../../src/core/platform/runtime'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
@@ -20,7 +24,7 @@ beforeAll(async () => {
   await applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__)
   await ok('/health')
   await ok('/auth/magic-link', { email: 'owner@aurora-coffee.test' })
-  const inbox = await ok<{ messages: Array<{ magicLinkToken: string }> }>('/auth/local-inbox?email=owner%40aurora-coffee.test')
+  const inbox = await developmentInbox(path => SELF.fetch('http://localhost' + path, { headers: { Host: 'localhost', ...devKeyHeaders } }), 'owner@aurora-coffee.test')
   const login = await SELF.fetch('http://localhost/auth/confirm', { method: 'POST', headers: { Host: 'localhost', Origin: 'http://localhost', 'Content-Type': 'application/json' }, body: JSON.stringify({ token: inbox.messages[0].magicLinkToken }), redirect: 'manual' })
   expect(login.status).toBe(303)
   cookie = login.headers.get('set-cookie')!.split(';')[0]
@@ -54,14 +58,14 @@ async function fixture(slug: string, target?: number) {
     if (!fast) await env.DB.prepare('UPDATE respondent_sessions SET created_at = ? WHERE id = ?').bind(new Date(Date.now() - 5000).toISOString(), session.sessionId).run()
     return session
   }
-  const submit = (session: { sessionId: string; sessionToken: string }, answers: unknown[], key = 'journey-idempotency-123') => req(`/api/public/flows/${slug}/responses`, { ...session, answers, idempotencyKey: key })
+  const submit = (session: { sessionId: string; sessionToken: string }, answers: unknown[], key = 'synthetic-journey-idempotency-123') => req(`/api/public/flows/${slug}/responses`, { ...session, answers, idempotencyKey: key })
   return { path, flow, draft, current, route, detail, end, skip, more, start, submit, publicFlow }
 }
 
 contract('RSLT-002', 'counts the validated final path once and keeps skipped, expired, quarantined, erased and later-revision cohorts distinct', async () => {
   const f = await fixture('question-stage-counts')
   const answers = [{ stepId: f.route.id, value: f.more.id }, { stepId: f.detail.id, value: 'Private stage-count answer' }]
-  const report = () => ok<Array<{ id: string; reached: number; dropped: number; answered: number }>>(`${f.path}/questions?revisionId=${f.publicFlow.revision.id}`)
+  const report = () => ok<QuestionReport[]>(`${f.path}/questions?revisionId=${f.publicFlow.revision.id}`)
   const detailed = await f.start()
   const receipt = await (await f.submit(detailed, answers, 'stage-original-key')).json<{ responseId: string }>()
   // A validated final proves the path even when progress acknowledgements were absent.
@@ -74,7 +78,7 @@ contract('RSLT-002', 'counts the validated final path once and keeps skipped, ex
   for (let i = 0; i < 2; i++) await ok(`/api/public/flows/question-stage-counts/sessions/advance`, { ...abandoned, stepId: f.detail.id })
   await env.DB.prepare('UPDATE respondent_sessions SET expires_at = ? WHERE id = ?').bind('2000-01-01T00:00:00.000Z', abandoned.sessionId).run()
   const platform = createPencilPlatform('http://localhost', env)
-  await new ResponseRepository(platform.database, env.DB).foldExpiredSessions(new Date().toISOString())
+  await new ResponseRepository(platform.database, env.DB, eraseResponseAndImportCustody).foldExpiredSessions(new Date().toISOString())
   expect((await report()).find(q => q.id === f.detail.id)).toMatchObject({ reached: 2, dropped: 1, answered: 1 })
   const fast = await f.start(true)
   for (let i = 0; i < 2; i++) await ok(`/api/public/flows/question-stage-counts/sessions/advance`, { ...fast, stepId: f.detail.id })
@@ -88,7 +92,8 @@ contract('RSLT-002', 'counts the validated final path once and keeps skipped, ex
   expect(old.find(q => q.id === f.detail.id)).toMatchObject({ reached: 3, dropped: 1, answered: 1 })
   expect(old.find(q => q.id === f.route.id)).toMatchObject({ reached: 4, dropped: 0, answered: 2 })
   expect(old.find(q => q.id === f.end.id)).toMatchObject({ reached: 3, dropped: 0, answered: 0 })
-  for (const secret of [answers[1].value, receipt.responseId, quarantine.responseId, abandoned.sessionToken]) expect(JSON.stringify(old)).not.toContain(secret)
+  expect(await allTexts(ok,f.path,f.publicFlow.revision.id,f.detail.id)).toEqual([answers[1].value])
+  for (const secret of [receipt.responseId, quarantine.responseId, abandoned.sessionToken]) expect(JSON.stringify(old)).not.toContain(secret)
   const draft = await f.draft()
   await ok(`${f.path}/publish`, { expectedVersion: draft.flow.draftVersion })
   const fresh = await f.start()

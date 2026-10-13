@@ -1,3 +1,4 @@
+import { eraseResponseAndImportCustody } from '../../src/core/features/importing/erasure'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -30,7 +31,7 @@ contract(['FLOW-006', 'FLOW-013', 'FLOW-016'], 'publication rejects impossible s
   expect(await f.draft()).toEqual(before)
 
   const platform = createPencilPlatform('http://localhost', env)
-  const last = new FlowService(new FlowRepository(platform.database, env.DB), new ResponseRepository(platform.database, env.DB), { ...defaultFlowPolicies, 'flow.branch-selection.v1': 'last-matching-rule' })
+  const last = new FlowService(new FlowRepository(platform.database, env.DB), new ResponseRepository(platform.database, env.DB, eraseResponseAndImportCustody), { ...defaultFlowPolicies, 'flow.branch-selection.v1': 'last-matching-rule' })
   // This same authored graph is valid under last-match selection: 3 reaches
   // first, 4/5 reach alternate, and 1/2 use the default first completion.
   await last.publishDraft({ ...f.flow, expectedVersion: before.flow.draftVersion })

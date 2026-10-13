@@ -19,7 +19,7 @@ function audit() {
 describe('magic-link redemption', () => {
   it('creates exactly one session when concurrent redeemers race the same one-time link', async () => {
     const database = new DatabaseSync(':memory:')
-    database.exec(readFileSync('src/base/operator-auth/schema/operator-auth.sql', 'utf8'))
+    database.exec(readFileSync('src/base/operator-auth/accounts/schema/operator-auth.sql', 'utf8'))
     database.prepare("INSERT INTO oa_operators VALUES ('operator','owner@example.com','Owner','owner','active',1,?)").run(Date.now())
     let token = ''
     const db = sqliteD1(database)

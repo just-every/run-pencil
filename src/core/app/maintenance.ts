@@ -29,5 +29,6 @@ export async function runScheduledMaintenance(controller: ScheduledController, e
   const result = await maintainPencil(environment, controller.scheduledTime)
   const services = createPencilServices(createScheduledPencilPlatform(environment))
   await services.distribution.dispatcher.run(new Date(controller.scheduledTime).toISOString())
+  await services.notifications.dispatcher.run(new Date(controller.scheduledTime).toISOString())
   console.log('Pencil retention maintenance', result)
 }

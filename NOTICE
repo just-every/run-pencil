@@ -7,6 +7,12 @@ packages ship SIL Open Font License notices, and Lucide ships ISC and retained F
 See ASSET-PROVENANCE.md for the distributed visual inputs. No competitor
 screenshot, design-run output or historical review capture is a product asset.
 
+The documentation site engine under src/core/features/docs is a port of the docs feature of
+Slate, a sibling product by the same copyright holder (Run Edit Run, MIT). It renders the
+repository's Markdown at build time with react-markdown and remark-gfm (MIT) and
+highlight.js (BSD-3-Clause), which are build-time development dependencies and ship in no
+Worker or browser bundle.
+
 Maintained operator-auth and mail source from Run Edit Run Base is included under
 the MIT notice in src/base/LICENSE. See edition.json and sources.lock.json for
-the exact reviewed origin and src/base/provenance.json for copied file hashes.
+the exact reviewed origin and base-copies.json for the copied file hashes.

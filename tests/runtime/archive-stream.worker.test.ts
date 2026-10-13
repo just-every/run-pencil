@@ -1,0 +1,91 @@
+import { Buffer } from 'node:buffer'
+import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
+import { beforeAll, expect } from 'vitest'
+import { contract } from '../../src/test/contract'
+import { archiveFixture, restoreFixture } from './archive-fixture'
+import { stagingPlan, destinationGuards, stageRows, cleanupStage } from '../../scripts/deployment-data-staging.mjs'
+import { pageStatement } from '../../scripts/deployment-data-page.mjs'
+import { canonicalSchema } from '../../scripts/deployment-data-schema.mjs'
+import { schemaQuery, quote, insertStatement } from '../../scripts/deployment-data-sql.mjs'
+
+declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
+beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
+type Statement = { sql: string; params?: unknown[] }
+const query = (batch: Statement[]) => env.DB.batch(batch.map(({ sql, params = [] }) => env.DB.prepare(sql).bind(...params)))
+
+contract(['DATA-001','BASE-DATA-001','BASE-OPS-003'], 'native D1 stages bounded writes and atomically publishes all tables with exact constraints and concurrent-writer refusal', async () => {
+  const empty = await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__)
+  const stamp = '2026-10-01T00:00:00Z'
+  const exact = '😀\u0000"\\\n'.repeat(600)
+  await env.DB.prepare('INSERT INTO workspaces(id,name,time_zone,created_at,updated_at,brand_logo_base64) VALUES(?,?,?,?,?,?)').bind('workspace','Restore','UTC',stamp,stamp,'a'.repeat(349_524)).run()
+  await env.DB.prepare('INSERT INTO flows(id,workspace_id,slug,title,status,draft_version,last_activity_at,created_at,updated_at) VALUES(?,?,?,?,?,1,?,?,?)').bind('flow','workspace','recovery','Recovery','closed',stamp,stamp,stamp).run()
+  await env.DB.prepare('INSERT INTO flow_revisions(id,flow_id,number,state,title,created_at,updated_at) VALUES(?,?,1,?,?,?,?)').bind('revision','flow','published','Recovery',stamp,stamp).run()
+  for(let index=0;index<26;index++)await env.DB.prepare('INSERT INTO flow_steps(id,revision_id,position,kind,question_type,prompt,required,stable_id,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?)').bind(`step-${index}`,'revision',index,'question','long_text','Question',1,`step-${index}`,stamp,stamp).run()
+  for(let index=0;index<5;index++)await env.DB.prepare('INSERT INTO responses(id,workspace_id,flow_id,revision_id,session_id,session_token_hash,idempotency_key,state,completed_at,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)').bind(`response-${index}`,'workspace','flow','revision',`session-${index}`,`hash-${index}`,`receipt-${index}`,'released',stamp,stamp,stamp).run()
+  for (let index = 0; index < 130; index++) await env.DB.prepare('INSERT INTO response_answers(id,response_id,step_id,value_json,created_at,updated_at) VALUES(?,?,?,?,?,?)').bind(`answer-${index}`,`response-${Math.floor(index/26)}`,`step-${index%26}`,JSON.stringify(exact),stamp,stamp).run()
+  const archive = await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__)
+  const allSchema = (await env.DB.prepare("SELECT type,name,tbl_name,sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*' AND name!='_cf_METADATA' ORDER BY type,name").all()).results
+  const tables = [archive.payload.d1Migrations,...archive.payload.tables]
+  const foreignKeys = Object.fromEntries(await Promise.all(tables.map(async table => [table.name,(await env.DB.prepare(`PRAGMA foreign_key_list(${quote(table.name)})`).all()).results])))
+  await restoreFixture(env.DB, empty)
+  const store = { ...archive, sha256:'a'.repeat(64), *rows(index:number) { yield* archive.payload.tables[index].rows } }
+  const plan = stagingPlan(store, {schema:allSchema,foreignKeys})
+  await query([...destinationGuards(store,empty.payload.schema),...plan.create])
+  await stageRows(query,store,plan)
+  expect(await env.DB.prepare('SELECT count(*) n FROM response_answers').first()).toEqual({n:0})
+  expect(await env.DB.prepare(`SELECT count(*) n FROM ${quote(plan.names.response_answers)}`).first()).toEqual({n:130})
+  const answerTable = archive.payload.tables.find(table=>table.name==='response_answers')!
+  let cursor: string | undefined, rows = 0, pages = 0
+  for (;;) {
+    const statement = pageStatement({...answerTable,name:plan.names.response_answers},cursor)
+    const page = (await env.DB.prepare(statement.sql).bind(...statement.params).all<{cursor:string;v3:string}>()).results
+    if (!page.length) break
+    expect(page.length).toBeLessThanOrEqual(128)
+    for (const row of page) expect(JSON.parse(row.v3)).toBe(JSON.stringify(exact))
+    cursor=page.at(-1)!.cursor;rows+=page.length;pages++
+  }
+  expect(rows).toBe(130);expect(pages).toBeGreaterThan(1)
+  const stagedSchema=JSON.stringify((await env.DB.prepare(schemaQuery).all()).results)
+  const publish=[...destinationGuards(store,stagedSchema),...plan.publish]
+  await expect(query([...publish,{sql:"SELECT json('forced publication failure')"}])).rejects.toThrow()
+  expect(await env.DB.prepare('SELECT count(*) n FROM response_answers').first()).toEqual({n:0})
+  expect(await env.DB.prepare(`SELECT count(*) n FROM ${quote(plan.names.response_answers)}`).first()).toEqual({n:130})
+  await env.DB.prepare('INSERT INTO local_fixture_initializations VALUES(?,?)').bind('concurrent',stamp).run()
+  await expect(query(publish)).rejects.toThrow()
+  expect(await env.DB.prepare('SELECT count(*) n FROM local_fixture_initializations').first()).toEqual({n:1})
+  await cleanupStage(query,plan)
+  expect(JSON.stringify((await env.DB.prepare(schemaQuery).all()).results)).toBe(empty.payload.schema)
+  expect((await env.DB.prepare("SELECT name FROM sqlite_schema WHERE name GLOB '_pencil_restore_*'").all()).results).toEqual([])
+  expect(await env.DB.prepare('SELECT count(*) n FROM local_fixture_initializations').first()).toEqual({n:1})
+  expect(await env.DB.prepare('SELECT count(*) n FROM responses').first()).toEqual({n:0})
+  await env.DB.prepare('DELETE FROM local_fixture_initializations WHERE id=?').bind('concurrent').run()
+  await query([...destinationGuards(store,empty.payload.schema),...plan.create])
+  await stageRows(query,store,plan)
+  const lostAcknowledgment=async () => {await query(publish);throw new Error('Publication acknowledgment lost')}
+  await expect(lostAcknowledgment()).rejects.toThrow('Publication acknowledgment lost')
+  await cleanupStage(query,plan)
+  const restored = await archiveFixture(env.DB,__PENCIL_CORE_MIGRATIONS__)
+  canonicalSchema(JSON.parse(restored.payload.schema),archive.payload.schema)
+  expect({...restored,payload:{...restored.payload,schema:archive.payload.schema}}).toEqual(archive)
+  expect((await env.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([])
+  expect((await env.DB.prepare("SELECT name FROM sqlite_schema WHERE name GLOB '_pencil_restore_*'").all()).results).toEqual([])
+  await expect(env.DB.prepare('INSERT INTO response_answers SELECT * FROM response_answers LIMIT 1').run()).rejects.toThrow()
+})
+
+contract(['DATA-001','BASE-DATA-001'], 'native D1 reconstructs a large binary row with bounded string parameters and exact zero bytes', async () => {
+  await env.DB.prepare('CREATE TABLE archive_binary_probe(value BLOB)').run()
+  try {
+    const bytes=Buffer.alloc(1_900_000)
+    for(let index=0;index<bytes.length;index++)bytes[index]=index%256
+    const statement=insertStatement({name:'archive_binary_probe',columns:['value']},[{type:'blob',value:bytes.toString('base64')}],(value:string)=>Buffer.from(value,'base64').toString('hex'))
+    expect(statement.params.length).toBeLessThanOrEqual(100)
+    for(const parameter of statement.params)expect(Buffer.byteLength(parameter)).toBeLessThanOrEqual(128*1024)
+    await env.DB.prepare(statement.sql).bind(...statement.params).run()
+    expect(await env.DB.prepare('SELECT typeof(value) type,length(value) size FROM archive_binary_probe').first()).toEqual({type:'blob',size:bytes.length})
+    for(let offset=0;offset<bytes.length;offset+=65536) {
+      const row=await env.DB.prepare('SELECT hex(substr(value,?,65536)) bytes FROM archive_binary_probe').bind(offset+1).first<{bytes:string}>()
+      expect(row!.bytes).toBe(bytes.subarray(offset,offset+65536).toString('hex').toUpperCase())
+    }
+  } finally {await env.DB.prepare('DROP TABLE archive_binary_probe').run()}
+})
+

@@ -4,6 +4,8 @@ import '@testing-library/jest-dom/vitest'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import { api } from '../core/app/api'
+import { brandApi } from '../core/features/brand/api'
+import { neutralBrand } from '../core/features/brand/brand'
 import { DraftPreview } from '../core/features/flows/ui/DraftPreview'
 import { draft } from './ui-fixtures'
 
@@ -11,7 +13,8 @@ vi.mock('../core/app/api', async original => {
   const actual = await original<typeof import('../core/app/api')>()
   return { ...actual, api: Object.fromEntries(Object.keys(actual.api).map(key => [key, vi.fn()])) }
 })
-beforeEach(() => vi.resetAllMocks())
+vi.mock('../core/features/brand/api', () => ({ brandApi: { get: vi.fn() } }))
+beforeEach(() => { vi.resetAllMocks(); vi.mocked(brandApi.get).mockResolvedValue(neutralBrand) })
 afterEach(() => { cleanup(); vi.restoreAllMocks() })
 function deferred<T>() { let resolve!: (value: T) => void; let reject!: (error: Error) => void; const promise = new Promise<T>((yes, no) => { resolve = yes; reject = no }); return { promise, resolve, reject } }
 const trace = { preview: true as const, draftVersion: 1, complete: true, screens: [{ stepId: 'question', evaluations: [], selectedRuleId: null, nextStepId: 'completion' }, { stepId: 'completion', evaluations: [], selectedRuleId: null, nextStepId: null }] }
@@ -20,7 +23,9 @@ contract(['FLOW-007'], 'identifies preview, waits for its matching draft evaluat
   const inspection = deferred<typeof trace>()
   vi.mocked(api.previewDraft).mockReturnValue(inspection.promise)
   render(<DraftPreview draft={draft} onClose={vi.fn()} onReload={vi.fn()} />)
-  expect(screen.getByText('Preview · draft v1')).toBeInTheDocument()
+  expect(screen.getByText('Preview', { exact: true })).toBeInTheDocument()
+  expect(screen.getByText('Try your questions here. Preview answers are not collected.')).toBeInTheDocument()
+  expect(screen.getByRole('region', { name: 'Draft preview' })).not.toHaveTextContent(/draft v\d+/i)
   fireEvent.change(screen.getByLabelText('How can we improve?'), { target: { value: 'Synthetic test answer' } })
   fireEvent.click(screen.getByRole('button', { name: 'Continue preview' }))
   expect(screen.queryByText('Preview complete')).not.toBeInTheDocument()

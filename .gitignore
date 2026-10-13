@@ -1,10 +1,14 @@
 node_modules/
+exports/
+*.rer
+.exports/
+.rer/
+.seed/
 dist/
 coverage/
 .DS_Store
 .wrangler/
 .dev.vars*
-wrangler.toml
 .tanstack/
 test-results/
 playwright-report/
@@ -19,3 +23,8 @@ deploy/wrangler.production.toml
 # Owner-specific remote targets; the portable template remains tracked.
 deploy/*.toml
 !deploy/wrangler.template.toml
+
+delivery-artifact/
+.rer-tools/
+.pencil-delivery-check-*/
+.pencil-delivery-build-*/

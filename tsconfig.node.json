@@ -12,5 +12,5 @@
     "skipLibCheck": true,
     "strict": true
   },
-  "include": ["vite.config.ts"]
+  "include": ["vite.config.ts", "vite.site.config.ts", "src/core/features/docs/build", "src/core/features/embedding/build"]
 }

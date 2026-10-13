@@ -1,0 +1,4 @@
+﻿"Timestamp","Answer","Notes","Same","Same","Colors","Email Address","Verified email","Score","Feedback","Attachment","Service [Speed]"
+"23/04/2026 09:10:11","Google historical answer – 日本語","First line, café
+Second ""quoted"" line","left","right","Red, Blue","GOOGLE-SKIPPED-IDENTITY-73f2a@example.test","GOOGLE-SKIPPED-IDENTITY-73f2a@example.test","2 / 2","PRIVATE-GRADE-73f2a","https://drive.google.com/file/d/SYNTHETIC-PRIVATE-73f2a/view","Good"
+"24/04/2026 11:12:13","Second answer","","second-left","second-right","Blue","GOOGLE-SKIPPED-IDENTITY-73f2a@example.test","GOOGLE-SKIPPED-IDENTITY-73f2a@example.test","1 / 2","","","Bad"

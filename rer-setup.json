@@ -1,0 +1,109 @@
+{
+  "schema": 1,
+  "title": "Pencil",
+  "groups": [
+    {
+      "id": "owner",
+      "label": "First owner"
+    },
+    {
+      "id": "mail",
+      "label": "Hosted sign-in and response email"
+    }
+  ],
+  "fields": [
+    {
+      "name": "SEED_ADMIN_EMAIL",
+      "label": "Owner email",
+      "help": "Use the actual first-owner mailbox. Local sign-in uses the development outbox.",
+      "kind": "email",
+      "required": true,
+      "prefill": "account-email",
+      "group": "owner"
+    },
+    {
+      "name": "SESSION_SECRET",
+      "label": "Session secret",
+      "kind": "secret",
+      "required": true,
+      "ownerVisible": false,
+      "input": "managed",
+      "generate": "hex",
+      "group": "owner"
+    },
+    {
+      "name": "SETUP_TOKEN",
+      "label": "Setup token",
+      "kind": "secret",
+      "required": true,
+      "ownerVisible": false,
+      "generate": "hex",
+      "group": "owner"
+    },
+    {
+      "name": "MAIL_PROVIDER",
+      "label": "Email provider",
+      "kind": "select",
+      "required": true,
+      "default": "resend",
+      "options": [
+        {
+          "value": "local",
+          "label": "Local outbox"
+        },
+        {
+          "value": "resend",
+          "label": "Resend"
+        },
+        {
+          "value": "sendgrid",
+          "label": "SendGrid"
+        }
+      ],
+      "group": "mail"
+    },
+    {
+      "name": "MAIL_FROM",
+      "label": "Verified sender email",
+      "kind": "email",
+      "required": true,
+      "group": "mail"
+    },
+    {
+      "name": "MAIL_API_KEY",
+      "label": "Mail provider API key",
+      "kind": "secret",
+      "input": "entered",
+      "ownerVisible": true,
+      "required": false,
+      "group": "mail",
+      "presentations": [
+        {
+          "when": {
+            "field": "MAIL_PROVIDER",
+            "equals": "resend"
+          },
+          "required": true,
+          "label": "Mail API key"
+        },
+        {
+          "when": {
+            "field": "MAIL_PROVIDER",
+            "equals": "sendgrid"
+          },
+          "required": true,
+          "label": "Mail API key"
+        }
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "type": "owner-claim",
+      "mode": "signed",
+      "emailField": "SEED_ADMIN_EMAIL",
+      "tokenField": "SETUP_TOKEN",
+      "path": "/auth/owner-claim"
+    }
+  ]
+}

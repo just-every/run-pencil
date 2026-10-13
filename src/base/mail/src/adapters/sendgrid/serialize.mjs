@@ -84,7 +84,8 @@ export function serializeSendGridMessage(message) {
     const body = JSON.stringify({
       personalizations: [personalization], from, subject: message.subject, content,
       ...(message.replyTo === undefined ? {} : { reply_to: parseAddress(message.replyTo) }),
-      ...(message.headers === undefined ? {} : { headers: message.headers }),
+      // The facade always supplies a headers object; an empty one is the same request as none.
+      ...(message.headers === undefined || !Reflect.ownKeys(message.headers).length ? {} : { headers: message.headers }),
       ...(attachments?.length ? { attachments } : {}),
       custom_args: { ...message.customArgs, rer_delivery_id: message.deliveryId },
       ...(message.asmGroupId === undefined ? {} : { asm: { group_id: message.asmGroupId } }),

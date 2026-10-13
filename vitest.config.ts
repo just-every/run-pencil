@@ -6,6 +6,6 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
-    exclude: ['node_modules/**', 'dist/**', 'tests/e2e/**', 'tests/runtime/**'],
+    exclude: ['src/base/mail/tests/**', 'src/base/operator-auth/tests/**', 'src/base/operator-auth/oidc/tests/**', 'src/base/operator-auth/conformance/tests/**', 'tests/local-access/**', 'scripts/base-onboarding/**', 'tests/local-cli/**', 'tests/local/**', 'node_modules/**', 'dist/**', 'tests/e2e/**', 'tests/runtime/**', 'tests/release/**', 'tests/admission/**', 'tests/release-browser/**', 'tests/docs/**'],
   },
 })

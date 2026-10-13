@@ -1,42 +1,41 @@
-# Pencil operations
+# Operating Pencil
 
-`rer-project.json` records public project identity and links to `OPERATIONS.json`, the versioned descriptor read by `scripts/operations.mjs`. Deployment uses the documented package scripts and explicit Wrangler configuration.
+Use `rer VERB` or `pnpm run VERB -- FLAGS`. `describe` lists actual capabilities and effects. `check --profile first-party` validates command contract 1 before dependencies or private configuration exist. OPERATIONS.json declares the first-party adapter.
 
-Use Node 26.8.1 and pnpm 10.12.4 for the verification toolchain. `node scripts/operations.mjs describe` reports command effects; `check` validates named configuration without provider calls.
+## Local operation
 
-## Local development
+Use Node 22.20.0 and pnpm 10.12.4. Run `rer install`, `rer setup --owner-email EMAIL --owner-name NAME`, then `rer dev`. Installation is frozen. Setup builds, applies ordered migrations, creates the real owner through Base operator-auth and checks ordinary outbox sign-in, then stops its temporary production runtime. Dev serves assets and HMR, printing readiness after application health and sign-in. Open the printed Base outbox and finish `/setup`. Other app routes send an unfinished owner there; completed setup enters the app.
 
-```sh
-pnpm install --frozen-lockfile
-pnpm run setup
-pnpm dev --host 127.0.0.1 --port 15621 --strictPort
-```
+Private bindings are in `.dev.vars` (0600); canonical data is `.wrangler/state`. CLI bookkeeping is `.rer/local`; drafts and captures are `.seed/installer`. Setup preserves existing owner, rows and exact private bytes. Conflicting identity, ambiguous legacy state, unsafe symlinks and occupied ports fail before effects. Preserve any reported legacy location: export with compatible source, verify restoration into an empty canonical database and remove legacy state only after explicit recovery. Rer moves or deletes no ambiguous state.
 
-Setup prepares local configuration and applies D1 migrations. Sign in as `owner@aurora-coffee.test` using `/signin` and the synthetic inbox. Sample initialization is durable and runs once; subsequent requests preserve edited or deleted records. Local mail and sample data must never run in production.
+Use `--port PORT` for an explicit loopback port. `preview` serves fixed production output. `outbox` prints the viewer and requests sign-in only with explicit `--owner-email EMAIL`. Remote viewer access is refused. Ctrl-C or the corresponding `--stop` tears down owned processes. `doctor` performs no provider request. `build` excludes private settings temporarily and restores their bytes and permissions.
 
-`pnpm build` emits the Worker and assets to dist. To inspect that build, use the same local persistence directory as the migration command:
+## Reset and recovery
 
-```sh
-pnpm exec wrangler dev --config dist/server/wrangler.json --local \
-  --persist-to "$PWD/.wrangler/state" --ip 127.0.0.1 --port 15620 --inspector-port 15659
-```
+`rer reset --yes` prints and removes `.wrangler/state`, `.rer/local`, `.seed/installer`, `.dev.vars` and `.dev.vars.previous` when present. Active runtimes and unsafe inventory are refused. Source, dependencies, `exports` and `.rer/deploy` receipts survive. Setup after reset starts a fresh empty installation.
 
-Install the test browser with `pnpm exec playwright install chromium --only-shell`, then run `pnpm verify` for the full local gate. `pnpm test:worker` uses isolated native Worker/D1 state; `pnpm test:load` retains the declared workload and thresholds. `pnpm verify:contract` executes native desktop/mobile journeys and reports the first-release profile. `pnpm verify:contract:full` retains the 33 deferred TODOs. Generated review outputs belong under ignored test-results.
+Create `exports` with mode 0700. `rer export --output exports/installation.rer` creates a new 0600 typed integrity archive. `rer import --input exports/installation.rer --yes` applies ordered schema and restores atomically only into an empty database. This uses Pencil's maintained archive engine. Form graphs, response history, importer originals/custody, contacts, invitations, operators and credential hashes remain; plaintext secrets, captured mail and private settings are excluded. Historical notification eligibility is disabled and no mail is replayed. Source paths and archives in other checkouts are refused; this checkout's ignored `exports` is permitted. Public transfer supports local state and refuses remote targets.
 
-## Data and recovery
+Restore before setup, since setup creates owner/workspace records. Supply the retained owner's email when preparing fresh private settings after restore and sign in again. Check recovered forms, ledger, import resume/undo and delivery states before choosing the recovered installation. Never overwrite owner data or replay mail.
 
-```sh
-pnpm run export -- --database SOURCE.sqlite --output PRIVATE.json
-pnpm run import -- --archive PRIVATE.json --database NEW.sqlite
-pnpm verify:data
-```
+## Verification and release
 
-Export reads a consistent snapshot of all application records and migration history. Archives contain personal data and credentials and are created mode 0600. Import validates the entire archive and compiled schema and exclusively creates a new database; it refuses existing destinations and performs no provider effects. See [local recovery](docs/LOCAL-DATA-RECOVERY.md) for D1 binding placement.
+Publication inspection uses the complete maintained Base scanner on a byte-exact parentless export. It requires Gitleaks 8.30.1; `bash scripts/install-gitleaks.sh` installs the reviewed binary after checksum verification. CI installs it before `pnpm verify:publication`. This inspection creates no tag, runs no scale case and publishes nothing.
 
-Export before migration. `0010_base_operator_auth.sql` imports identities and revokes legacy links and sessions, signing operators out. Configure Base mail and SESSION_SECRET and sign in again afterward. Preserve applied migration names and bytes. Recovery restores the private export into a new database before changing bindings; sent, failed and unknown delivery states must survive without replay.
+Install Chromium with `pnpm exec playwright install chromium --only-shell`. `rer verify` runs types, product units, isolated Worker/D1, the entire recursive portable onboarding suite, native rer journeys, source provenance, archives, populated predecessor upgrades, boundaries, production build and desktop/mobile contract journeys. Internal targets have distinct names to prevent recursion. CI retains the functional and high-stakes wall.
 
-The minute Cron dispatches due reminders and runs privacy maintenance. Reminder schedules are snapshotted per launch and use the workspace IANA zone and sending window. Ambiguous mail stays unknown without automatic resend; explicit operator retry acknowledges duplicate risk. Response outbox records remain durable while deferred AI/action dispatch is unavailable.
+Run **`pnpm run verify:release` before every release** for unchanged capacity, maximum-isolate memory, browser maximum heap and load workloads/assertions/thresholds. They are absent from CI and default verify. The maintained Base producer at 6b19df1343fe21e38262790185492f46f7eca36b or a descendant runs default verify and declared `verify:release`; either failure blocks release.
 
-## Hosting
+`pnpm run release -- --repo . --ref HEAD --project just-every/pencil --repository https://github.com/just-every/run-pencil --onto https://github.com/just-every/run-pencil#main --tag vVERSION --dry-run --output ../pencil-release` (with the committed `RELEASE.json` version) produces one child of the public repository's current `main`, with that commit as its sole parent and a tree equal to the source tree, and runs the complete scanner over it and the public history. Edition baselines retain copied origins, and source checks compare their actual bytes. Require PASS, complete scan, zero findings and zero reviews without exclusions or allowlists. Dry run tags no source commit and pushes nothing; its `PUBLISH.md` holds the fast-forward push. The 31 deliberately deferred clauses remain unsatisfied by full-contract verification.
 
-[Hosting instructions](docs/HOSTING.md) cover explicit resource targeting, required secrets, bootstrap, deployment, health, real mail and capacity acceptance. Local setup never creates remote resources. The SQLite export/import commands do not download or replace remote D1; remote backups and resource binding changes are explicit Cloudflare operations.
+## Hosted operation
+
+`pnpm run deploy -- --dry-run` builds real Worker/assets/migrations and validates deploy.json with zero provider calls. Actual deployment needs the intended `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN`, `SESSION_SECRET`, `SETUP_TOKEN`, `SEED_ADMIN_EMAIL`, `MAIL_FROM` and `MAIL_API_KEY`. The declaration selects production mail and disables sample data and local capture. Keep secrets out of argv and output. Health does not prove hosted installation, delivery, permissions or capacity. Read docs/HOSTING.md.
+
+The Base importer row identifies public just-every/pencil, whose source is https://github.com/just-every/run-pencil. Point Base at a reachable public guide commit on its `main` and verify its bytes.
+
+## Managed delivery
+
+`pnpm run build:delivery` builds production artifacts and `pnpm run verify:admission` exercises the actual package, signed admission and owner editor at both viewports. The trusted build workflow uses the project’s pinned Node. Apply migrations through `0022_owner_claim.sql` before serving this source. The consumed-claim ledger survives export and restore; initialized stores refuse further claims. Optional management configuration comes from the intended installation’s issuer and origin. A native owner session gates editor configuration; expiry and sign-out revoke the widget. Hosted install, issuer/account configuration and real management-edge proof require the owner.
+
+For recovery into a fresh clone, run `rer install`, copy the archive into private `exports/`, then import before setup or build. The committed `wrangler.jsonc` supplies the schema configuration. Run setup afterwards with the restored owner email.

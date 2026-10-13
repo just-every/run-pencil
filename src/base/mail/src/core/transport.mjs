@@ -2,12 +2,13 @@ import { validateSendResult } from './validation.mjs';
 
 /** One bounded request. Fetch exceptions never escape with credential/body text. */
 export async function requestProvider(url, init, dependencies = {}) {
+  const timeout = dependencies.timeoutMilliseconds ?? 15_000;
   let timer;
   try {
-    const deadline = new Promise(resolve => { timer = setTimeout(() => resolve(null), 15_000); });
+    const deadline = new Promise(resolve => { timer = setTimeout(() => resolve(null), timeout); });
     return await Promise.race([
       Promise.resolve().then(() => (dependencies.fetch ?? globalThis.fetch)(url, {
-        ...init, redirect: 'manual', signal: AbortSignal.timeout(15_000),
+        ...init, redirect: 'manual', signal: AbortSignal.timeout(timeout),
       })).then(response => response instanceof Response ? response : null, () => null),
       deadline,
     ]);

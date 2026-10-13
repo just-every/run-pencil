@@ -1,3 +1,8 @@
+import { devKeyHeaders } from '../helpers/dev-key.mjs'
+import { scheduledNotificationPrestate, assertScheduledNotificationEffects } from './retention-notification-evidence'
+import { eraseResponseAndImportCustody } from '../../src/core/features/importing/erasure'
+import { httpExport, allTexts } from '../helpers/report-download'
+import { developmentInbox } from '../helpers/development-outbox'
 import { applyD1Migrations, createScheduledController, env, SELF, type D1Migration } from 'cloudflare:test'
 import worker from '../../src/core/app/worker'
 import { contract } from '../../src/test/contract'
@@ -18,6 +23,7 @@ async function req(path: string, body?: unknown, method = body === undefined ? '
   return response
 }
 async function ok<T>(path: string, body?: unknown, method?: string): Promise<T> {
+  if (path.includes('/responses/export') && !path.includes('/start') && !path.includes('token=')) return httpExport<T>(target => req(target),path)
   const response = await req(path, body, method)
   const text = await response.text()
   expect(response.status, `${path}: ${text}`).toBeLessThan(300)
@@ -27,7 +33,7 @@ beforeAll(async () => {
   await applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__)
   await ok('/health')
   await ok('/auth/magic-link', { email: 'owner@aurora-coffee.test' })
-  const inbox = await ok<{ messages: Array<{ magicLinkToken: string }> }>('/auth/local-inbox?email=owner%40aurora-coffee.test')
+  const inbox = await developmentInbox(path => SELF.fetch('http://localhost' + path, { headers: { Host: 'localhost', ...devKeyHeaders } }), 'owner@aurora-coffee.test')
   const login = await SELF.fetch('http://localhost/auth/confirm', { method: 'POST', headers: { Host: 'localhost', Origin: 'http://localhost', 'Content-Type': 'application/json' }, body: JSON.stringify({ token: inbox.messages[0].magicLinkToken }), redirect: 'manual' })
   expect(login.status).toBe(303)
   cookie = login.headers.get('set-cookie')!.split(';')[0]
@@ -202,7 +208,7 @@ async function fixture(slug: string, target?: number) {
     if (!fast) await env.DB.prepare('UPDATE respondent_sessions SET created_at = ? WHERE id = ?').bind(new Date(Date.now() - 5000).toISOString(), session.sessionId).run()
     return session
   }
-  const submit = (session: { sessionId: string; sessionToken: string }, answers: unknown[], key = 'journey-idempotency-123') => req(`/api/public/flows/${slug}/responses`, { ...session, answers, idempotencyKey: key })
+  const submit = (session: { sessionId: string; sessionToken: string }, answers: unknown[], key = 'synthetic-journey-idempotency-123') => req(`/api/public/flows/${slug}/responses`, { ...session, answers, idempotencyKey: key })
   return { path, flow, draft, current, route, detail, end, skip, more, start, submit, publicFlow }
 }
 
@@ -223,13 +229,37 @@ contract(['BASE-DATA-002','RESP-013','RESP-019'], 'scheduled retention folds aba
   for (const [id, end] of [['retention-expired-rate', '2000-01-01T00:00:00.000Z'], ['retention-active-rate', '2099-01-01T00:00:00.000Z']]) {
     await env.DB.prepare(`INSERT INTO public_rate_limit_windows (id, scope, address_hash, window_started_at, count, expires_at, created_at, updated_at) VALUES (?, 'request', ?, ?, 1, ?, ?, ?)`).bind(id, id, cutoff, end, cutoff, cutoff).run()
   }
+  const scheduledTime = Date.now()
+  const dispatchedAt = new Date(scheduledTime).toISOString()
+  const outboxIndex = protectedTables.indexOf('response_outbox'), auditIndex = protectedTables.indexOf('audit_entries')
+  const notificationPrestate = await scheduledNotificationPrestate(env.DB, dispatchedAt, before[outboxIndex], before[protectedTables.indexOf('responses')])
+  const expectedOutbox = before[outboxIndex].filter(row => row.response_id === receipt.responseId)
+  expect(expectedOutbox).toHaveLength(1)
+  expect(notificationPrestate.ids).toContain(expectedOutbox[0].id)
+  const recipients = await env.DB.prepare(`SELECT p.operator_id,r.workspace_id FROM notification_preferences p
+    JOIN responses r ON r.flow_id=p.flow_id WHERE r.id=? AND p.mode='immediately' ORDER BY p.operator_id`).bind(receipt.responseId).all<{ operator_id: string; workspace_id: string }>()
+  expect(recipients.results).toHaveLength(1)
+  expect(notificationPrestate.recipients.filter(row => row.outbox_id === expectedOutbox[0].id))
+    .toEqual([{ outbox_id: expectedOutbox[0].id, response_id: receipt.responseId, ...recipients.results[0] }])
+  expect(await env.DB.prepare('SELECT * FROM notification_deliveries').all().then(result => result.results)).toEqual([])
   const log = vi.spyOn(console, 'log').mockImplementation(() => {})
   try {
-    await Promise.all([worker.scheduled(createScheduledController({ scheduledTime: Date.now(), cron: '15 * * * *' }), env), worker.scheduled(createScheduledController({ scheduledTime: Date.now(), cron: '15 * * * *' }), env)])
+    await Promise.all([worker.scheduled(createScheduledController({ scheduledTime, cron: '15 * * * *' }), env), worker.scheduled(createScheduledController({ scheduledTime, cron: '15 * * * *' }), env)])
     expect(JSON.stringify(log.mock.calls)).not.toMatch(/retention-expired-secret|sessionToken|sessionId|owner@|retention-runtime|responseId|answer/)
     expect(log.mock.calls).toHaveLength(2)
   } finally { log.mockRestore() }
-  expect(await Promise.all(protectedTables.map(table => env.DB.prepare(`SELECT * FROM ${table} ORDER BY id`).all().then(result => result.results)))).toEqual(before)
+  const after = await Promise.all(protectedTables.map(table => env.DB.prepare(`SELECT * FROM ${table} ORDER BY id`).all().then(result => result.results)))
+  // Every previously committed eligible command dispatches at this instant;
+  // all other persisted rows and fields remain exactly as snapshotted.
+  const expected = before.map(rows => rows.map(row => ({ ...row })))
+  expected[outboxIndex] = expected[outboxIndex].map(row => notificationPrestate.ids.includes(String(row.id))
+    ? { ...row, status: 'dispatched', dispatched_at: dispatchedAt, updated_at: dispatchedAt } : row)
+  const addedAudit = after[auditIndex].filter(row => !before[auditIndex].some(previous => previous.id === row.id))
+  await assertScheduledNotificationEffects(env.DB, dispatchedAt, notificationPrestate, addedAudit)
+  // Match SELECT ... ORDER BY id's binary collation, including retained
+  // migration-owned IDs and newly generated audit IDs on every host locale.
+  expected[auditIndex] = [...expected[auditIndex], ...addedAudit].sort((left, right) => String(left.id) < String(right.id) ? -1 : String(left.id) > String(right.id) ? 1 : 0)
+  expect(after).toEqual(expected)
   for (const session of expired) {
     expect(await env.DB.prepare('SELECT id FROM respondent_sessions WHERE id = ?').bind(session.sessionId).first()).toBeNull()
     expect(await env.DB.prepare('SELECT id FROM respondent_session_step_events WHERE session_id = ?').bind(session.sessionId).first()).toBeNull()
@@ -249,7 +279,7 @@ it('bounds each expiry transaction and rolls counters and session/event deletion
   const f = await fixture('retention-transaction')
   const session = await f.start()
   const platform = createPencilPlatform('http://localhost', env)
-  const repository = new ResponseRepository(platform.database, env.DB)
+  const repository = new ResponseRepository(platform.database, env.DB, eraseResponseAndImportCustody)
   const now = new Date().toISOString()
   await env.DB.prepare('UPDATE respondent_sessions SET expires_at = ? WHERE id = ?').bind('2000-01-01T00:00:00.000Z', session.sessionId).run()
   await env.DB.prepare(`CREATE TRIGGER retention_abort BEFORE DELETE ON respondent_sessions WHEN OLD.id = '${session.sessionId}' BEGIN SELECT RAISE(ABORT, 'synthetic retention failure'); END`).run()
@@ -394,7 +424,7 @@ it('retains the authenticated completion receipt when another request removes a 
       return row as never
     })
     try {
-      const retry = await services.responses.submitPublicResponse({ slug: f.publicFlow.flow.slug, ...session, idempotencyKey: 'journey-idempotency-123', answers })
+      const retry = await services.responses.submitPublicResponse({ slug: f.publicFlow.flow.slug, ...session, idempotencyKey: 'synthetic-journey-idempotency-123', answers })
       expect(retry).toMatchObject({ responseId: committed!.responseId, idempotent: true, disposition: 'released', completionStepId: f.end.id })
       expect(await env.DB.prepare('SELECT completions FROM revision_metric_counters WHERE revision_id = ?').bind(session.revisionId).first()).toEqual({ completions: 1 })
       expect(await env.DB.prepare('SELECT count(*) AS n FROM response_outbox WHERE response_id = ?').bind(committed!.responseId).first()).toEqual({ n: 1 })
@@ -419,7 +449,7 @@ contract(['RESP-013','RESP-019'], 'rejects nonexistent and foreign-revision prog
   await ok(`/api/public/flows/${f.publicFlow.flow.slug}/sessions/advance`, { ...session, stepId: f.route.id })
   const platform = createPencilPlatform('http://localhost', env)
   await env.DB.prepare('UPDATE respondent_sessions SET expires_at = ? WHERE id = ?').bind('2000-01-01T00:00:00.000Z', session.sessionId).run()
-  const repository = new ResponseRepository(platform.database, env.DB)
+  const repository = new ResponseRepository(platform.database, env.DB, eraseResponseAndImportCustody)
   await repository.foldExpiredSessions(new Date().toISOString())
   expect(await env.DB.prepare('SELECT dropped FROM revision_step_metric_counters WHERE revision_id = ? AND step_stable_id = ?').bind(session.revisionId, f.route.id).first()).toEqual({ dropped: 1 })
 }, 60000)
@@ -456,7 +486,7 @@ contract(['DATA-002','BASE-DATA-003'], 'erases released data exactly once, recom
   expect((await SELF.fetch(`http://localhost${path}`, { method: 'DELETE', headers: { Host: 'localhost' } })).status).toBe(401)
   expect((await SELF.fetch(`http://localhost${path}`, { method: 'DELETE', headers: { Host: 'localhost', cookie, origin: 'https://untrusted.invalid' } })).status).toBe(403)
   const platform = createPencilPlatform('http://localhost', env)
-  const repository = new ResponseRepository(platform.database, env.DB)
+  const repository = new ResponseRepository(platform.database, env.DB, eraseResponseAndImportCustody)
   expect(await repository.eraseReleasedResponse({ workspaceId: 'foreign-workspace', responseId: receipt.responseId, operatorId: 'wrong-operator', now: new Date().toISOString() })).toBe(false)
   expect(await ok(`${f.path}/ledger`)).toMatchObject({ total: 1 })
   const priorAudits = await env.DB.prepare("SELECT id FROM audit_entries WHERE kind = 'response.erased'").all<{ id: string }>()
@@ -508,7 +538,7 @@ it('keeps released responses while erasing operator custody and prevents delayed
         return typeof value === 'function' ? value.bind(target) : value
       },
     })
-    const repository = new ResponseRepository(platform.database, delayedBinding)
+    const repository = new ResponseRepository(platform.database, delayedBinding, eraseResponseAndImportCustody)
     const input = { workspaceId: owner!.workspace_id, responseId: receipt.responseId, operatorId: actorId, now }
     const changed = action === 'release' ? await repository.releaseQuarantinedResponse(input)
       : action === 'delete' ? await repository.deleteQuarantinedResponse(input)
@@ -551,7 +581,7 @@ contract('RESP-012', 'retains the committed completion across changed-answer ret
   expect((await f.submit(session, changed, 'different-key-is-refused')).status).toBe(400)
   const other = await ok<{ id: string }>('/api/app/flows', { title: 'Another actual flow', slug: 'journey-completion-wrong-slug' })
   expect(other.id).not.toBe(f.flow.id)
-  expect((await req('/api/public/flows/journey-completion-wrong-slug/responses', { ...session, answers: changed, idempotencyKey: 'journey-idempotency-123' })).status).toBe(404)
+  expect((await req('/api/public/flows/journey-completion-wrong-slug/responses', { ...session, answers: changed, idempotencyKey: 'synthetic-journey-idempotency-123' })).status).toBe(404)
   expect(await env.DB.prepare('SELECT completions FROM revision_metric_counters WHERE revision_id = ?').bind(session.revisionId).first()).toEqual({ completions: 1 })
   expect(await env.DB.prepare('SELECT COUNT(*) AS n FROM response_outbox WHERE response_id = ?').bind(receipt.responseId).first()).toEqual({ n: 1 })
   expect(await env.DB.prepare('SELECT value_json FROM response_answers WHERE response_id = ? AND step_id = ?').bind(receipt.responseId, f.route.id).first()).toEqual({ value_json: JSON.stringify(f.more.id) })
@@ -933,7 +963,7 @@ async function assertSummarySnapshot(operation: 'final' | 'release' | 'erasure')
     secondResponse = receipt.responseId
   }
   const platform = createPencilPlatform('http://localhost', env)
-  const repository = new ResponseRepository(platform.database, env.DB)
+  const repository = new ResponseRepository(platform.database, env.DB, eraseResponseAndImportCustody)
   let committed = false
   const commit = async () => {
     if (committed) return

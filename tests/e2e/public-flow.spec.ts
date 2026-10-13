@@ -1,3 +1,5 @@
+import { developmentInbox } from '../helpers/development-outbox'
+import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { operatorEmail } from './auth-identity'
 import AxeBuilder from '@axe-core/playwright'
 import type { FrameLocator, Page } from '@playwright/test'
@@ -10,18 +12,18 @@ type FlowSurface = Page | FrameLocator
 async function verifyHealth(page: Page) {
   const response = await page.request.get('/health')
   expect(response.status()).toBe(200)
-  const health = await response.json<{ status: string; product: string; version: string; buildId: string }>()
+  const health = await response.json() as { status: string; product: string; version: string; buildId: string }
   expect(health).toMatchObject({
     status: 'ok',
     product: 'pencil',
-    version: '0.1.0',
+    version: '0.2.0',
     buildId: process.env.PENCIL_EXPECTED_BUILD_ID ?? 'local-development',
   })
 }
 
 async function completeResponse(surface: FlowSurface) {
   await surface.getByRole('button', { name: 'Begin' }).click()
-  await surface.getByRole('button', { name: '5 out of 5' }).click()
+  await surface.getByRole('radio', { name: '5 out of 5' }).click()
   await surface.getByRole('button', { name: 'Continue' }).click()
   await surface.getByRole('radio', { name: 'The coffee' }).click()
   await new Promise((resolve) => setTimeout(resolve, 3_100))
@@ -60,7 +62,7 @@ contract('DIST-002', 'the embedded route completes the same flow inside a real i
   await page.goto(`/f/${slug}`)
   const source = new URL(`/embed/${slug}`, page.url()).toString()
   await request.post('/auth/magic-link', { data: { email: operatorEmail() } })
-  const inbox = await request.get(`/auth/local-inbox?email=${encodeURIComponent(operatorEmail())}`).then((response) => response.json())
+  const inbox = await developmentInbox(path => request.get(path, { headers: devKeyHeaders }), operatorEmail())
   await request.post('/auth/confirm', { headers: { Origin: new URL(process.env.PENCIL_E2E_BASE_URL!).origin }, data: { token: inbox.messages[0].magicLinkToken }, maxRedirects: 0 })
   const workspace = await request.get('/api/app/workspace').then((response) => response.json())
   const configured = await request.put('/api/app/workspace', { headers: { origin: new URL(page.url()).origin }, data: { timeZone: workspace.timeZone, sendingWindowStart: workspace.sendingWindowStart, sendingWindowEnd: workspace.sendingWindowEnd, embedAllowedOrigins: [new URL(page.url()).origin] } })

@@ -62,7 +62,7 @@ describe('Pencil Worker session boundary', () => {
     const response = await app.request('https://pencil.test/health')
 
     expect(response.status).toBe(200)
-    await expect(response.json()).resolves.toEqual({ status: 'ok', product: 'pencil', version: '0.1.0', buildId: 'test-build' })
+    await expect(response.json()).resolves.toEqual({ status: 'ok', product: 'pencil', version: '0.2.0', buildId: 'test-build' })
   })
 
   it('rejects an operator cookie mutation that lacks its exact Origin header', async () => {

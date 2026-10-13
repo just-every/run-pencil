@@ -1,3 +1,5 @@
+import { developmentInbox } from '../helpers/development-outbox'
+import { createD1DevelopmentOutbox, createDevelopmentOutboxHandler } from '../../src/base/mail/src/development/index.mjs'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { expect } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -5,8 +7,8 @@ import { createPencilPlatform } from '../../src/core/platform/runtime'
 import { createPencilServices } from '../../src/core/app/services'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 contract(['BASE-OPS-002','BASE-ACCESS-001','OPER-002'], 'additive Base adoption preserves existing operators and migration history, revokes legacy bearers and imports their authority exactly once', async () => {
-  expect(__PENCIL_CORE_MIGRATIONS__.at(-1)!.name).toBe('0010_base_operator_auth.sql')
-  await applyD1Migrations(env.DB,__PENCIL_CORE_MIGRATIONS__.slice(0,-1))
+  expect(__PENCIL_CORE_MIGRATIONS__[10].name).toBe('0010_base_operator_auth.sql')
+  await applyD1Migrations(env.DB,__PENCIL_CORE_MIGRATIONS__.slice(0,10))
   const now = new Date().toISOString(), future=new Date(Date.now()+86400_000).toISOString()
   const id='01J00000000000000000000991'
   await env.DB.batch([
@@ -29,7 +31,8 @@ contract(['BASE-OPS-002','BASE-ACCESS-001','OPER-002'], 'additive Base adoption 
   expect(await services.auth.getSession(new Request('http://localhost/app',{headers:{Host:'localhost',Cookie:'pencil_operator_session=old-credential'}}))).toBeUndefined()
   const request=new Request('http://localhost/auth/magic-link',{method:'POST',headers:{Host:'localhost',Origin:'http://localhost'}})
   await services.auth.native.requestMagicLink(request,{email:'existing@example.test'})
-  const inbox=await services.auth.listLocalInbox({email:'existing@example.test',isLocalDevelopment:true})
+  const viewer=createDevelopmentOutboxHandler({local:true,origin:'http://localhost',outbox:createD1DevelopmentOutbox({db:env.DB})})
+  const {messages:inbox}=await developmentInbox(async path => (await viewer(new Request('http://localhost'+path,{headers:{Host:'localhost'}})))!, 'existing@example.test')
   const result=await services.auth.native.confirmLink(new Request('http://localhost/auth/confirm',{method:'POST',headers:{Host:'localhost',Origin:'http://localhost'}}),{token:inbox[0].magicLinkToken})
   expect(await services.auth.getSession(new Request('http://localhost/app',{headers:{Host:'localhost',Cookie:result.cookie.split(';')[0]}}))).toMatchObject({operatorId:id,workspaceId:'legacy-workspace',email:'existing@example.test'})
 })

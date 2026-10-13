@@ -1,10 +1,11 @@
+import { developmentInbox, devKeyHeaders } from './local-outbox.mjs'
 import { mkdir, writeFile } from 'node:fs/promises'
 
 const origin = new URL(process.argv[2] ?? 'http://127.0.0.1:15620')
 if (origin.origin !== origin.href.replace(/\/$/, '') || origin.protocol !== 'http:' || !['127.0.0.1', 'localhost'].includes(origin.hostname) || Number(origin.port) < 15620 || Number(origin.port) > 15659) throw Error('Use the assigned Pencil loopback review origin.')
 let cookie = ''
 async function call(path, data, method = data === undefined ? 'GET' : 'POST') {
-  const response = await fetch(new URL(path, origin), { method, redirect: 'manual', headers: { Cookie: cookie, Origin: origin.origin, 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.18.254.201' }, ...(data === undefined ? {} : { body: JSON.stringify(data) }) })
+  const response = await fetch(new URL(path, origin), { method, redirect: 'manual', headers: { ...devKeyHeaders(), Cookie: cookie, Origin: origin.origin, 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.18.254.201' }, ...(data === undefined ? {} : { body: JSON.stringify(data) }) })
   if (response.status >= 400) throw Error(`Local review ${method} ${path} failed (${response.status}): ${await response.text()}`)
   return response
 }
@@ -14,7 +15,7 @@ if (health.product !== 'pencil' || health.buildId !== 'local-development') throw
 const email = 'owner@aurora-coffee.test'
 const mail = await json('/auth/magic-link', { email })
 if (mail.delivery !== 'local') throw Error('The synthetic local mail adapter is required.')
-const inbox = await json(`/auth/local-inbox?email=${encodeURIComponent(email)}`)
+const inbox = await developmentInbox(path => call(path), email)
 const login = await call('/auth/confirm', { token: inbox.messages[0].magicLinkToken })
 cookie = login.headers.get('set-cookie')?.split(';')[0] ?? ''
 if (!cookie) throw Error('Native synthetic operator sign-in did not create a session.')

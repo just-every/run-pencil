@@ -1,0 +1,80 @@
+/*
+ * What every plate shares: light Caveat 400 at --hand (never under 16px; 20px and up at desktop widths) in the hero
+ * card's pencil ink, tilted cream sheets, drawn buttons and bars, and the margin note's place in the paper beside the
+ * sheet edge nearest its circled detail.
+ */
+:where(.pencil-site) .plate {
+  position: relative;
+  container-type: inline-size;
+  margin: 0;
+  color: var(--pencil);
+  font-family: var(--font-hand);
+  font-size: var(--hand);
+  font-weight: 400;
+  line-height: 1.3;
+  --tilt-k: 1;
+}
+:where(.pencil-site) :where(.plate) :where(p, ul, ol, dl, dd) { margin: 0; padding: 0; list-style: none; }
+/* The handwriting takes the paper's tooth, the same filter as the hero card's (site/PencilFilters.tsx). */
+:where(.pencil-site) .plate :is(p, li, dt) { filter: var(--filter-tooth); }
+:where(.pencil-site) .plate strong { color: var(--lead); font-weight: 400; }
+:where(.pencil-site) .plate-sheet { transform: rotate(calc(var(--tilt, -1deg) * var(--tilt-k))); }
+:where(.pencil-site) .plate-title { color: var(--lead); font-size: 1.16em; line-height: 1.15; }
+:where(.pencil-site) .plate-eyebrow { color: var(--pencil-soft); font-size: max(16px, 0.84em); }
+:where(.pencil-site) .plate-label { color: var(--pencil-soft); font-size: max(16px, 0.84em); line-height: 1.2; }
+
+:where(.pencil-site) .drawn-button {
+  display: inline-flex;
+  min-height: 1.9em;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.1em 0.85em;
+  color: var(--lead);
+  white-space: nowrap;
+}
+:where(.pencil-site) .drawn-button.sketch--ink { color: #fff; }
+:where(.pencil-site) .plate .nowrap { white-space: nowrap; }
+:where(.pencil-site) .drawn-radio { flex: none; width: 0.74em; height: 0.74em; border: 1.3px solid var(--stroke); border-radius: 50%; }
+:where(.pencil-site) [data-chosen] > .drawn-radio { background: radial-gradient(circle, var(--lead) 0 36%, transparent 40%); }
+:where(.pencil-site) [data-chosen] { color: var(--lead); }
+:where(.pencil-site) .drawn-bar { display: block; height: 0.42em; overflow: hidden; border-radius: 4px; background: rgba(93, 95, 98, 0.12); }
+:where(.pencil-site) .drawn-bar > span {
+  display: block;
+  height: 100%;
+  background: repeating-linear-gradient(112deg, var(--stroke) 0 1.3px, transparent 1.3px 3.2px), rgba(93, 95, 98, 0.24);
+}
+:where(.pencil-site) .drawn-mono {
+  display: block;
+  overflow: hidden;
+  padding: 0.3em 0.6em;
+  color: var(--pencil);
+  font-family: var(--font-mono);
+  font-size: max(13px, 0.58em);
+  line-height: 1.5;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/*
+ * Margin notes sit in the paper just outside the sheet edge nearest their circled detail, at every width: above the
+ * sheet (arrow turned down onto the circle) or below it (arrow turned up). Each plate sets the note's inset and turn.
+ */
+:where(.pencil-site) .plate__note {
+  position: relative;
+  z-index: 1;
+  flex-direction: var(--note-flow, row);
+  max-width: calc(100% - var(--note-inset, 0em));
+  margin: var(--note-margin, 0.5em 0 0 auto);
+}
+
+@media (max-width: 639px) {
+  :where(.pencil-site) .plate { --tilt-k: 0.5; }
+}
+/*
+ * Beside the copy, every plate runs to the content edge on its outer side and keeps the same paper between its sheets
+ * and the copy on the inner side (sections.css sets --plate-inset), so the zig-zag mirrors itself.
+ */
+@media (min-width: 1024px) {
+  :where(.pencil-site) .plate { padding-left: var(--plate-inset); }
+  :where(.pencil-site) .landing-section--flip .plate { padding: 0 var(--plate-inset) 0 0; }
+}
