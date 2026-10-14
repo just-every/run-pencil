@@ -19,7 +19,7 @@ export interface RunData {
   clone: string
   /** The folder the clone makes, where `rer dev` runs: "cradle". */
   folder: string
-  /** Platforms and tools: "Needs Node 22 or later and pnpm 10.12.4, on macOS, Linux or Windows with WSL2." */
+  /** Platforms and automatic tool installation for this seed. */
   requirements: string
   /** "MIT". */
   licence: string
@@ -108,7 +108,7 @@ export function runPageHtml(identity: EditionIdentity, run: RunData): string {
   const name = escape(run.name), source = escape(run.repository.replace(/^https:\/\//, ''))
   const hosted = run.hosted.map(option => `<li class="step option"><div class="body"><h2>${escape(option.title)}</h2><p>${escape(option.body)}</p><p class="go"><a href="${escape(option.href)}">${escape(option.action)}</a></p></div></li>`).join('')
   const body = `${header(identity, run)}<main><div class="intro"><h1>Run ${name} on your computer.</h1><p class="sub">100% free and open source. Two steps, and ${name} opens in your browser.</p></div>`
-    + `<ol class="steps"><li class="step"><span class="num" aria-hidden="true">1</span><div class="body"><h2>Install rer</h2><p>The Run Edit Run command. Once per computer.</p>${codeBlock([installRer.script], 'Install rer')}<p class="alt">or <code>${escape(installRer.npm)}</code></p></div></li>`
+    + `<ol class="steps"><li class="step"><span class="num" aria-hidden="true">1</span><div class="body"><h2>Install rer</h2><p>The Run Edit Run command. Once per computer.</p>${codeBlock([installRer.npm], 'Install rer')}<p class="alt">or <code>${escape(installRer.script)}</code></p></div></li>`
     + `<li class="step"><span class="num" aria-hidden="true">2</span><div class="body"><h2>Get ${name} and start it</h2>${codeBlock([run.clone, `cd ${run.folder} && rer dev`], `Get ${run.name} and start it`)}`
     + `<p class="note"><code>rer dev</code> installs everything, makes you the owner and prints a link that opens ${name} signed in.</p></div></li>${hosted}</ol>`
     + `<footer class="facts"><p>${escape(run.requirements)}</p><p>Source: <a href="${escape(run.repository)}">${source}</a> · ${escape(run.licence)} licence</p></footer></main>`

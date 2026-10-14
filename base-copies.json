@@ -1317,17 +1317,6 @@
       }
     },
     {
-      "path": "src/base/run-site.ts",
-      "originPath": "foundation/runtime/run-site.ts",
-      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
-      "files": {
-        "src/base/run-site.ts": "a9bf7a49e00918a694b8dc33f45584531cb6d99f76ac181a34d8ea1aed154241"
-      },
-      "modes": {
-        "src/base/run-site.ts": "100644"
-      }
-    },
-    {
       "path": "src/base/setup-state.ts",
       "originPath": "foundation/runtime/setup-state.ts",
       "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",

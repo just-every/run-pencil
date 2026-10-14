@@ -797,7 +797,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "f05c04d568882c9ebd778e99bf302e9b0cc137ab49c908f1ed7746fb982f6758",
+      "sha256": "46c860cf2ef9f79084d53d57a6ea6bac1b12bff8f19a8ea94a5bad7a1b29ed2a",
       "executable": false
     },
     "BASELINE.md": {
@@ -3085,7 +3085,7 @@
       "executable": false
     },
     "src/base/run-site.ts": {
-      "sha256": "a9bf7a49e00918a694b8dc33f45584531cb6d99f76ac181a34d8ea1aed154241",
+      "sha256": "15297c94383257734dbf67e3bde8ee8e3fdd976097481e473d27190870eca92f",
       "executable": false
     },
     "src/base/setup-state.ts": {
