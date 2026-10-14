@@ -148,9 +148,8 @@ export const exclusions = {
   ik_d1_original_chunks: { bytes: { type: 'blob', value: '' } },
   // A respondent's resume token never travels: a restored session or response cannot be continued by an old cookie.
   respondent_sessions: { session_token_hash: nul },
-  responses: { session_token_hash: { type: 'text', value: '' } },
   // Restoring old response history cannot make it eligible for a new send.
-  responses: { notification_eligible: { type: 'integer', value: '0' } },
+  responses: { session_token_hash: { type: 'text', value: '' }, notification_eligible: { type: 'integer', value: '0' } },
   response_outbox: { notification_eligible: { type: 'integer', value: '0' } },
   notification_deliveries: { explicit_retry_authorized: { type: 'integer', value: '0' } },
   // A restored analysis never calls a provider by itself: a queued run waits for an operator's retry, a running one fails.

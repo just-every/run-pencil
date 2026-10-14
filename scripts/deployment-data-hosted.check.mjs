@@ -24,6 +24,10 @@ test('owner recovery command round-trips a kit-created installation filled throu
     const respondent=await fixture.call('/api/public/flows/preserved-form/sessions',{deviceClass:'desktop'},201);
     const resume=()=>({sessionId:respondent.sessionId,sessionToken:respondent.sessionToken,stepId:respondent.flow.steps[0].id});
     await fixture.call('/api/public/flows/preserved-form/sessions/advance',resume(),204);
+    // A respondent who completed the form holds a resume credential too.
+    const finished=await fixture.call('/api/public/flows/preserved-form/sessions',{deviceClass:'desktop'},201);
+    const submission={sessionId:finished.sessionId,sessionToken:finished.sessionToken,idempotencyKey:'completed-before-backup',answers:finished.flow.steps.filter(step=>step.kind==='question').map(step=>({stepId:step.id,value:step.questionType==='single_choice'?finished.flow.choices.find(choice=>choice.stepId===step.id).id:step.questionType==='long_text'?'Completed answer':5}))};
+    await fixture.call('/api/public/flows/preserved-form/responses',submission,201);
     assert.ok(network.length>0);
     assert.ok(source.prepare("SELECT count(*) n FROM mail_deliveries WHERE status='sent'").get().n>0);
     timers=mock.method(globalThis,'setTimeout',(fn,_delay,...args)=>{queueMicrotask(()=>fn(...args));return {unref(){}};});
@@ -50,6 +54,8 @@ test('owner recovery command round-trips a kit-created installation filled throu
     for(const table of ['oa_sessions','oa_tokens','oa_credentials','oa_step_up_challenges','oa_provider_sessions','oa_provider_session_pins','operator_sessions','auth_magic_links'])assert.equal(original.payload.tables.find(row=>row.name===table).rows.length,0,table);
     const respondentHash=source.prepare('SELECT session_token_hash h FROM respondent_sessions WHERE id=?').get(respondent.sessionId).h;
     assert.ok(respondentHash);assert.equal(bytes.includes(respondentHash),false);
+    const completedHash=source.prepare('SELECT session_token_hash h FROM responses WHERE session_id=?').get(finished.sessionId).h;
+    assert.ok(completedHash);assert.equal(bytes.includes(completedHash),false);
     assert.ok(original.payload.tables.find(row=>row.name==='respondent_sessions').rows.length>0);
     assert.ok(original.payload.tables.find(row=>row.name==='oa_operators').rows.length>0);
     assert.ok(original.payload.tables.find(row=>row.name==='audit_entries').rows.length>0);
@@ -83,6 +89,7 @@ test('owner recovery command round-trips a kit-created installation filled throu
     restoredApp.setCookie(signedOut);
     assert.equal((await restoredApp.request('/api/app/dashboard')).status,401);
     assert.equal((await restoredApp.request('/api/public/flows/preserved-form/sessions/advance',resume())).status,400);
+    assert.equal((await restoredApp.request('/api/public/flows/preserved-form/responses',submission)).status,400);
     restoredApp.setCookie(undefined);
     timers.mock.restore();timers=undefined;
     assert.equal((await restoredApp.request('/auth/magic-link',{email:'owner@example.test'})).status,202);

@@ -1369,7 +1369,7 @@
       "executable": false
     },
     "scripts/deployment-data-hosted.check.mjs": {
-      "sha256": "06c7a503076db4130cbb5c9676e23b44de32b7ad7c0c73ab9a861b3406e8dec7",
+      "sha256": "bc375d43a2aa496b4a4ffdede5ed4ed43b2b6d2b598bc99848d265988b99976b",
       "executable": false
     },
     "scripts/deployment-data-import-custody.check.mjs": {
@@ -1421,7 +1421,7 @@
       "executable": false
     },
     "scripts/deployment-data-policy.mjs": {
-      "sha256": "88fb29468d0648ccf8a4f753022f0e5e5fb7642ed43c00203e05cf72c2c74223",
+      "sha256": "7ac628c9fd6e8f1de700a6869f5b43425b9de8fb545b5b53fab5e2a14ea64b79",
       "executable": false
     },
     "scripts/deployment-data-portability.check.mjs": {
