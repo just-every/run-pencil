@@ -20,7 +20,10 @@ export async function installation() {
  // ownership applies to that caller's checkout, never to this separate copy.
  // The caller's queue or runner admitted this journey; as in Base's local
  // journeys, its own servers are not refused again by the machine-load guard.
- const fixtureEnv = { ...process.env, CI: 'true', RER_SERVER_JOURNEY: '1', WRANGLER_SEND_METRICS: 'false', RER_SERVERS_DIR: join(directory, 'server-registry'), RER_SERVERS_LOAD_THRESHOLD: '100000' };
+ // Poll the copied fixture's real files, as the docs-sync journey does. Delayed
+ // macOS creation events can otherwise look like edits to Vite's imported
+ // config modules and restart Miniflare during its startup export probe.
+ const fixtureEnv = { ...process.env, CHOKIDAR_USEPOLLING: 'true', CI: 'true', RER_SERVER_JOURNEY: '1', WRANGLER_SEND_METRICS: 'false', RER_SERVERS_DIR: join(directory, 'server-registry'), RER_SERVERS_LOAD_THRESHOLD: '100000' };
  delete fixtureEnv.RER_LOCAL_OPERATION;
  delete fixtureEnv.RER_ONBOARDING_PROCESS_OWNER;
  // The queue's policy and membership belong to the verify caller's own checkout; this copy is its own caller and CI=true is its policy.

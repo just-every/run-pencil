@@ -5569,7 +5569,7 @@
       "executable": false
     },
     "tests/helpers/rer-installation.mjs": {
-      "sha256": "c5fe1d3dfcabc8cb85bf3b584c6bb7cbc9035e7d6e9fd565398b9f338bbac8ac",
+      "sha256": "10bb1ec5d02a1dc57cda8872253c1450dcc498900ff43f44663efe54fae54008",
       "executable": false
     },
     "tests/helpers/scheduled-notification.mjs": {
