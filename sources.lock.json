@@ -869,7 +869,7 @@
       "executable": false
     },
     "docs/guide/hosting.md": {
-      "sha256": "7342b9aef094640016b686fa73f00d38fcb4a5d9536aa2a2d316a6fb217e3217",
+      "sha256": "abdad6a03fd3d44bf33895e103fc9475e72b21db21da0a7d66cf15177fb5f143",
       "executable": false
     },
     "docs/guide/install.md": {
@@ -901,7 +901,7 @@
       "executable": false
     },
     "docs/HOSTING.md": {
-      "sha256": "8cba64ef489107733de7281f9f6576b8d7c199aa092407c0d2e81a9744b04155",
+      "sha256": "5c02da918a1cffd409f6b8a46ecaeb353c4a6c0656c2865348108303ba0774b8",
       "executable": false
     },
     "docs/IMMUTABLE-MIGRATIONS.json": {
@@ -1089,11 +1089,11 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "1202818c34cfc2538593ea04a42a35ac087494af9cd34f3aca286c8104f097b3",
+      "sha256": "ed378c10f62ba0ac20c73287f547681a51509b68bc7ce157b804fd6a943e8f2c",
       "executable": false
     },
     "package.json": {
-      "sha256": "0728a09a183482dff052f2874347cd704d6f95d224bb4a45c3ec4a228b4b0982",
+      "sha256": "96227e4c54bc64804da8ec63fc36050437b09fbd77748369c4cb98fd0bc615e8",
       "executable": false
     },
     "playwright.admission.config.ts": {
@@ -1113,7 +1113,7 @@
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "c2ff834e8b4547c728e0201ae3bb806bdf4feb2a5edf87315f4a7887cc7a44ae",
+      "sha256": "63075a133fa1516d98671a270176d67147a292a2bdec483f463cd0718811ff85",
       "executable": false
     },
     "public/brand/band.svg": {

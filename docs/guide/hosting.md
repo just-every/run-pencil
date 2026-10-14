@@ -51,7 +51,7 @@ A healthy Worker shows that the code runs. It does not show that email arrives o
 
 ## Sign in as the first owner
 
-With the pinned rer 0.2.2, deploy claims the hosted owner automatically using `SEED_ADMIN_EMAIL` (or the owner email from your local setup), then removes the one-time `SETUP_TOKEN` and records the new Worker version. Wait for deploy to confirm the owner claim and token removal. There is no manual setup-token form to complete after a successful deploy.
+With the pinned rer 0.2.5, deploy claims the hosted owner automatically using `SEED_ADMIN_EMAIL` (or the owner email from your local setup), then removes the one-time `SETUP_TOKEN` and records the new Worker version. Deploy prints the hosted application address on first deploy and updates. The build step reports that the application is built; it does not start a local server. Wait for deploy to confirm the owner claim and token removal. There is no manual setup-token form to complete after a successful deploy.
 
 1. Open `/signin` at the hosted address printed by deploy.
 2. Enter the owner's email and choose **Send magic link**. Open the email and choose **Confirm**.
