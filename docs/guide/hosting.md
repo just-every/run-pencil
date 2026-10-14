@@ -22,12 +22,12 @@ Deploy reads everything from environment variables. Start with the address you w
 | Variable | What it is |
 |---|---|
 | `APP_ORIGIN` | The exact HTTPS origin of your deployment, with no path. Sign-in links, reports and public links point here. If it differs from the address people open, every page there, `/health` included, answers **Not found**. |
-| `SEED_ADMIN_EMAIL` | The email address of the first owner. |
+| `SEED_ADMIN_EMAIL` | The email address of the first owner. If omitted, rer uses the owner email from this checkout’s local setup. |
 | `PENCIL_MAIL_PROVIDER` | `sendgrid` (the default) or `resend`. `rer deploy` binds the choice as the Worker’s `MAIL_PROVIDER`. The earlier `MAIL_PROVIDER` environment setting is also accepted; if both are set, they must agree. |
 | `MAIL_FROM` | Your verified sender. It must be a plain `noreply@` or `no-reply@` address, with no display name. |
 | `MAIL_API_KEY` | Your mail provider's API key. A secret. |
-| `SESSION_SECRET` | A random string of at least 32 characters, used to sign people in. A secret. Keep it the same for the life of the deployment. |
-| `SETUP_TOKEN` | A different random string of at least 32 characters. A secret used to create the first owner. Keep the deployed secret after setup, as explained below. |
+| `SESSION_SECRET` | A secret used to sign people in. rer generates a fresh hosted value when omitted; you may supply a random string of at least 32 characters. Keep the deployed value stable for the life of the installation. |
+| `SETUP_TOKEN` | A one-time secret for the first owner. rer generates it when omitted, uses it to claim the hosted owner and removes it after a successful claim. Do not retain it on the Worker. |
 | `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` | The account to deploy into and its token. The token is a secret. |
 
 External tasks are optional. To send actions to your own task system, also set `TASK_PROVIDER`, `TASK_WEBHOOK_URL` and `TASK_API_KEY` as Worker secrets; [Actions and follow-up](actions.md) explains the webhook your receiver must honour. Without them, everything else works and the action page says what to set.
@@ -49,16 +49,19 @@ The dry run builds the real Worker, its assets and its database migrations, and 
 
 A healthy Worker shows that the code runs. It does not show that email arrives or how much traffic your deployment will carry. See [Check that it works](#check-that-it-works).
 
-## Create the first owner
+## Sign in as the first owner
 
-1. Open `/signin` at your `APP_ORIGIN`. While there are no operators yet, it sends you to `/setup`, titled **Set up your workspace**.
-2. Enter your name and the `SETUP_TOKEN` you supplied.
-3. Choose **Set up the first owner**.
-4. The same page then asks for your business name and your time zone. Fill them in and choose **Finish setup**. Until you do, the rest of the app sends you back there.
+With the pinned rer 0.2.2, deploy claims the hosted owner automatically using `SEED_ADMIN_EMAIL` (or the owner email from your local setup), then removes the one-time `SETUP_TOKEN` and records the new Worker version. Wait for deploy to confirm the owner claim and token removal. There is no manual setup-token form to complete after a successful deploy.
 
-The new owner's email is your `SEED_ADMIN_EMAIL`. After it works, keep the `SETUP_TOKEN` secret on the Worker. You may unset it in your terminal: repeat deployments inherit the existing Worker secrets. An installation that already has an owner cannot be set up a second time, even while the token remains installed.
+1. Open `/signin` at the hosted address printed by deploy.
+2. Enter the owner's email and choose **Send magic link**. Open the email and choose **Confirm**.
+3. Complete your business name and time zone on `/setup`, then choose **Finish setup**. Until you do, the rest of the app sends you back there.
 
-Do not delete or change Worker secrets in the dashboard between deployments. With rer 0.2.1, those changes create a Worker version outside the saved deployment receipt; the next deploy refuses it as `owned-resource-replaced`. Preserve `.rer/deploy/production.json` (or the file for your chosen environment) privately and back it up after each successful deploy. Do not edit the receipt or bypass an ownership refusal. A deployment whose Worker version has already changed outside rer needs the deploy kit's supported ownership recovery; simply putting the token back does not restore its identity.
+If deploy reports that the application is deployed but owner claim or token retirement failed, follow its recovery instructions and rerun the same deployment command with the same environment credentials. Do not assume setup completed from health alone, and do not remove the token by hand before the claim is confirmed.
+
+After success, unset `SETUP_TOKEN` in your terminal or secret environment. Updates preserve the existing owner and deployed secrets, and do not upload the retired token again. Keep `SESSION_SECRET` stable. An initialized installation refuses another owner claim.
+
+Do not delete or change Worker secrets in the dashboard between deployments. Those changes create a Worker version outside the saved deployment receipt; the next deploy refuses it as `owned-resource-replaced`. Preserve `.rer/deploy/production.json` (or the file for your chosen environment) privately and back it up after each successful deploy. Do not edit the receipt or bypass an ownership refusal. A deployment whose Worker version has already changed outside rer needs the deploy kit's supported ownership recovery.
 
 ## Check that it works
 
@@ -97,7 +100,7 @@ The Worker has a schedule that runs every minute. It sends invitations still wai
 
 ## Upgrading
 
-For installations already on this version’s migration history, back up first using the deployed recovery command in [Backup and restore](backup.md), and verify its archive in a new empty target before changing the running installation. The public `rer export` and `rer import` commands remain local; `node scripts/deployment-data-cli.mjs` handles deployed D1, including the deployment kit's migration ledger. Keep the previous deployment until you have checked the new one. For compatible migration histories, deploy the new source with `pnpm run deploy -- --environment production`, which applies the new database migrations in order. `RELEASE.json` lists every migration with its steps.
+For installations already on this version’s migration history, back up first using the deployed recovery command in [Backup and restore](backup.md), and verify its archive in a new empty target before changing the running installation. The public `rer export` and `rer import` commands remain local; `node scripts/deployment-data-cli.mjs` handles deployed D1, including the deployment kit's migration ledger. Keep the previous deployment until you have checked the new one. For compatible migration histories, leave `SETUP_TOKEN` unset, retain the deployment receipt and deploy the new source with `pnpm run deploy -- --environment production`, which applies the new database migrations in order. `RELEASE.json` lists every migration with its steps.
 
 **Hosted upgrades from released 0.2.0 are blocked with rer 0.2.1.** The deployment kit checks every applied migration hash before writing. The released `0019_import_custody.sql` hash differs from the current file, so it refuses `changed-or-uncertain-migration-history` before applying 0027–0034. It does not consume Pencil’s released-rewrite declaration. The separate name-based Workers D1 upgrade test reaches 0034; it does not qualify this hosted deployment path. Retain the existing source and database, keep that installation running, and obtain and verify backups only through a supported path matching its version. This source’s deployed recovery CLI also checks migration hashes and must not be assumed to export the old 0019 history. Keep that backup intact until a maintained deploy-kit upgrade contract supports that exact released hash and the additive convergence migration. Do not edit the ledger, migration hashes or receipt, and do not switch migration controllers or restore into a fresh installation as an assumed workaround. The [release scope](../FIRST-RELEASE.md) records this limit.
 

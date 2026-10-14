@@ -869,7 +869,7 @@
       "executable": false
     },
     "docs/guide/hosting.md": {
-      "sha256": "5b5a06c2182fcb21789348517137262f492a33cb70d88666ccd97bd76094480c",
+      "sha256": "7342b9aef094640016b686fa73f00d38fcb4a5d9536aa2a2d316a6fb217e3217",
       "executable": false
     },
     "docs/guide/install.md": {
@@ -901,7 +901,7 @@
       "executable": false
     },
     "docs/HOSTING.md": {
-      "sha256": "4d05445e0a66a3f121ed9b2499ffd067d9ecaa0964e585bde3eef3b4e395977d",
+      "sha256": "8cba64ef489107733de7281f9f6576b8d7c199aa092407c0d2e81a9744b04155",
       "executable": false
     },
     "docs/IMMUTABLE-MIGRATIONS.json": {
@@ -1089,7 +1089,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "69bad33c38828ea59127bf7150401fa4bd0b4270ff1492b361193dc2a1cdf2bd",
+      "sha256": "1202818c34cfc2538593ea04a42a35ac087494af9cd34f3aca286c8104f097b3",
       "executable": false
     },
     "package.json": {
