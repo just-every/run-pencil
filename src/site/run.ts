@@ -6,8 +6,13 @@ export const run: RunData = {
   repository: 'https://github.com/just-every/run-pencil',
   clone: 'git clone https://github.com/just-every/run-pencil.git pencil',
   folder: 'pencil',
-  requirements: 'Needs Node 22 or later and pnpm 10.12.4, on macOS, Linux or Windows with WSL2.',
+  requirements: 'Works on macOS, Linux or Windows with WSL2. rer installs the pinned Node and pnpm for you. Local rer setup is optional.',
   licence: 'MIT',
   docs: true,
-  hosted: [],
+  hosted: [{
+    title: 'Host Pencil on your own account',
+    body: 'Set OWNER_EMAIL at deploy, using the hosting guide’s mapping to Pencil’s owner binding. rer claims the hosted owner automatically; sign in by email, with no manual setup-token step.',
+    href: 'https://run-pencil.com/docs/hosting',
+    action: 'Read the hosting guide',
+  }],
 }

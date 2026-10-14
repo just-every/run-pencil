@@ -4,26 +4,25 @@ This page takes you from the Pencil source code to a working copy on your own co
 
 ## What you need
 
-- **Node 22.20.0 and pnpm 10.12.4.** These are the versions Pencil's tooling is checked with. The `rer` commands below select the Node version for you when it is missing.
 - **rer, the Run Edit Run command.** Install it once per computer with `npm install -g @runeditrun/rer`. In the source folder it runs the exact version Pencil pins.
 - **The source code.** Get it from https://github.com/just-every/run-pencil and open a terminal in its folder.
-- **An email address for the first owner**, and the name to show for them.
+rer installs the pinned Node and pnpm itself. You do not need to install either version separately. `rer dev` prepares a local owner automatically; choosing your own local owner details with `rer setup` is optional.
 
 ## Start Pencil on your computer
 
 ```sh
-rer install
-rer setup --owner-email you@example.com --owner-name "Your Name"
+npm install -g @runeditrun/rer
+git clone https://github.com/just-every/run-pencil.git pencil && cd pencil
 rer dev
 ```
 
-`install` adds the exact dependencies from the lockfile. `setup` builds your copy, applies the database migrations to a local database, creates your first owner, checks that signing in works through the local outbox and then stops its temporary app. Run it again later and it keeps your owner, your data and your private settings. `dev` runs your copy and, once the app answers, prints its address and a `RER_OPEN` link that opens it signed in as you. `pnpm run setup` and `pnpm dev` do the same as the `rer` commands.
+`rer dev` installs the exact locked dependencies, applies local migrations and prepares a local owner on first launch. It then prints the app’s address and a `RER_OPEN` link that opens it signed in. Later launches keep your owner, data and private settings. To choose local owner details, optionally run `rer setup --owner-email you@example.com --owner-name "Your Name"`; no separate setup command is needed for the normal launch.
 
 Setup writes a private `.dev.vars` file. Keep it private. It holds your local secrets. Stop `dev` with Ctrl-C, or with `rer dev --stop`.
 
 ## Sign in and finish setup
 
-1. Open the `RER_OPEN` link that `dev` printed, on the computer that runs it. The link carries a private key for this copy, and it signs you in as the owner you set up.
+1. Open the `RER_OPEN` link that `dev` printed, on the computer that runs it. The link carries a private key for this copy, and it signs you in as the local owner.
 2. You arrive at `/setup`. Enter your **Business name** and choose your time zone, then continue.
 
 To try the ordinary email sign-in instead, run `rer dev --login`. A local copy sends no real email, so your sign-in link waits in the local outbox: open the outbox address that `dev` printed, choose the newest message, choose **Open this link**, then **Confirm**. The outbox opens only with the same key, so a request that is forwarded to your computer finds nothing.
@@ -54,7 +53,7 @@ Pencil has no passwords. To sign in after you have signed out, enter your email 
 
 A sign-in link works once and expires after 15 minutes. Opening it only shows a confirmation page, and nothing happens until you choose **Confirm**.
 
-## Options at setup
+## Optional local setup
 
 | Option | What it does |
 |---|---|

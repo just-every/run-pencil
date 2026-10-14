@@ -1,7 +1,15 @@
 # Run it locally
 
-Install the `rer` command once: `npx -y @runeditrun/rer cli install`, or the
-installer script on the RER site (`curl -fsSL https://runeditrun.com/install.sh | sh`).
+Start Pencil with npm and Git:
+
+```sh
+npm install -g @runeditrun/rer
+git clone https://github.com/just-every/run-pencil.git pencil && cd pencil
+rer dev
+```
+
+rer installs the pinned Node and pnpm itself. No separate Node or pnpm version
+is required. Local `rer setup` is optional after the zero-setup `rer dev` launch.
 `rer` runs every verb with the checkout's own pinned copy: a vendored
 `scripts/rer.mjs`, or in package mode the exact `@runeditrun/rer` devDependency in
 `node_modules`. The `OPERATIONS.json` argv and the `package.json` aliases are the
@@ -48,13 +56,10 @@ with exit 3 and a message naming the field.
 
 ## Install for a real owner
 
-Use Node 22.20.0 and pnpm 10.12.4 for maintained first-party checkouts. To
-install with a real owner mailbox, run the verbs yourself from the runnable
-edition's root: install locked dependencies, prepare its local owner, then start
-development:
+To choose a local owner mailbox instead of the automatic local owner, optionally
+run setup from the checkout’s root before starting development:
 
 ```sh
-rer install
 rer setup --owner-email you@example.com
 rer dev
 ```

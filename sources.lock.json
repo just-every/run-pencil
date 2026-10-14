@@ -797,7 +797,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "fc373096e1b957330c58f521bc24a90a82898840ac3d73462d1e166ed853c52a",
+      "sha256": "f05c04d568882c9ebd778e99bf302e9b0cc137ab49c908f1ed7746fb982f6758",
       "executable": false
     },
     "BASELINE.md": {
@@ -869,11 +869,11 @@
       "executable": false
     },
     "docs/guide/hosting.md": {
-      "sha256": "abdad6a03fd3d44bf33895e103fc9475e72b21db21da0a7d66cf15177fb5f143",
+      "sha256": "53f24595aef616e0e9ab9af2cb1845f11ab116467c443d91ada018fe8d173bbb",
       "executable": false
     },
     "docs/guide/install.md": {
-      "sha256": "5b8f3da0a1f521da2e33c5fd71c5790721ddaaa9eed5b25867d878cdee85bd9c",
+      "sha256": "7113e10e6c7fe2f61e95b45190264214d9f42ff067a2956141813d9131fbf8ed",
       "executable": false
     },
     "docs/guide/invitations.md": {
@@ -901,7 +901,7 @@
       "executable": false
     },
     "docs/HOSTING.md": {
-      "sha256": "5c02da918a1cffd409f6b8a46ecaeb353c4a6c0656c2865348108303ba0774b8",
+      "sha256": "475aba6ddbff8b2d24ba438b06538a50ab063e24735f05f8a45323f3ef2a982b",
       "executable": false
     },
     "docs/IMMUTABLE-MIGRATIONS.json": {
@@ -1089,7 +1089,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "ed378c10f62ba0ac20c73287f547681a51509b68bc7ce157b804fd6a943e8f2c",
+      "sha256": "dcb0b2fa586fe91073766ebf29625ade7b9a3120dce5a501433311790dcc412d",
       "executable": false
     },
     "package.json": {
@@ -1149,7 +1149,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "2b8b169cd3d642d48489e6ad2eed3e9d2be3c9e3a46aeaa9cdac7696d073f5fe",
+      "sha256": "cdd416cf0322297e5081b43cf7d9b63a13b831be7bcbf947425425fcf4190a69",
       "executable": false
     },
     "RELEASE.json": {
@@ -1165,7 +1165,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "5eeb33783fc12fb09530716aa885e630f84123aa7f0fb79458fee4c5a2683e1d",
+      "sha256": "b88babedcccaef61a01a8ae36d2d2797762e55b74eae2a0f3bd321eee491e917",
       "executable": false
     },
     "sample-data/auroraCoffee.ts": {
@@ -5077,7 +5077,7 @@
       "executable": false
     },
     "src/site/run.ts": {
-      "sha256": "d1cf32a35a8504685b179b0e484896d13cdcab5318ed5f440d904da1bf9d2ef4",
+      "sha256": "c1d7b541f63c7ef0f6757f0954585c26737ec9885237adc9f7b52a6f5c485251",
       "executable": false
     },
     "src/site/virtual-client.d.ts": {

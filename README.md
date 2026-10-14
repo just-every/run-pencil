@@ -35,15 +35,15 @@ Pencil is an editable form builder and feedback workspace with branching questio
 
 ## Run it on your computer
 
-Use Node **22.20.0** and pnpm **10.12.4**. From this checkout:
+Start with npm and Git. rer installs the pinned Node and pnpm itself; neither is a separate version prerequisite:
 
 ```sh
-rer install
-rer setup --owner-email owner@example.com --owner-name Owner
+npm install -g @runeditrun/rer
+git clone https://github.com/just-every/run-pencil.git pencil && cd pencil
 rer dev
 ```
 
-Install uses the frozen lockfile. Setup builds, migrates and creates one real owner through Base authentication, checks ordinary sign-in in the private outbox, then stops its temporary app. Reruns preserve existing owner, data and exact private settings. Dev prints its health-gated application URL and opens signed in: it prints `RER_SIGNED_IN` (who the browser will be) and `RER_OPEN`, a link for this computer that carries this checkout's private dev key in its fragment. Open it and the app signs you in as the owner you set up and takes you to **`/setup`** to finish your business name and time zone; finished setup enters the app. `RER_OPEN` is the only way in: the local outbox, the dev sign-in and the persona list answer 404 to any request without the key, including one a tunnel or a local proxy forwards to this computer. Use `rer dev --as operator` to start as the **Dev operator** persona (a colleague, `operator@dev.localhost`) or `--as signed-out` to start signed out; the dev badge at the bottom of every page switches between them. Use `rer dev --login` to turn dev identity off and sign in the ordinary way: read the newest sign-in message in the outbox (`RER_SIGN_IN`), open its link and confirm. A link works once; local capture sends no email.
+`rer dev` installs locked dependencies and prepares a local owner on first launch, without a separate setup command. Optional `rer setup --owner-email owner@example.com --owner-name Owner` prepares a local owner with your chosen details; reruns preserve existing owner, data and exact private settings. Dev prints its health-gated application URL and opens signed in: it prints `RER_SIGNED_IN` (who the browser will be) and `RER_OPEN`, a link for this computer that carries this checkout's private dev key in its fragment. Open it and the app signs you in as the local owner and takes you to **`/setup`** to finish your business name and time zone; finished setup enters the app. `RER_OPEN` is the only way in: the local outbox, the dev sign-in and the persona list answer 404 to any request without the key, including one a tunnel or a local proxy forwards to this computer. Use `rer dev --as operator` to start as the **Dev operator** persona (a colleague, `operator@dev.localhost`) or `--as signed-out` to start signed out; the dev badge at the bottom of every page switches between them. Use `rer dev --login` to turn dev identity off and sign in the ordinary way: read the newest sign-in message in the outbox (`RER_SIGN_IN`), open its link and confirm. A link works once; local capture sends no email.
 
 Read the guide at `/docs` on your copy (its source is [docs/guide](docs/guide/overview.md)); `/` is the Lobby (**Finish setup** until first-run setup is confirmed, then **Sign in**), with `/pencil` redirecting there. An explicitly selected public landing flow in Settings keeps its existing respondent experience at `/`; Pencil's product page is the run site, run-pencil.com, built by `rer build --site`; published forms also keep their `/f/<slug>` links.
 
@@ -74,7 +74,7 @@ rer describe
 rer check --profile first-party
 ```
 
-Deployment needs the intended owner account and production inputs. Dry run builds and validates with zero provider calls. Read [OPERATIONS.md](OPERATIONS.md), [RUN-LOCALLY.md](RUN-LOCALLY.md) and [SEED-COMMAND-CONTRACT.md](SEED-COMMAND-CONTRACT.md).
+Deployment needs the intended Cloudflare account and production inputs. Set `OWNER_EMAIL` to the hosted owner’s email and use `SEED_ADMIN_EMAIL="$OWNER_EMAIL" rer deploy` as documented in the hosting guide: Pencil’s current declaration maps that input to its owner binding. Deploy claims the owner automatically; sign in by email at the printed hosted address and finish `/setup`. No manual setup-token step is needed. Dry run builds and validates with zero provider calls. Read [OPERATIONS.md](OPERATIONS.md), [RUN-LOCALLY.md](RUN-LOCALLY.md) and [SEED-COMMAND-CONTRACT.md](SEED-COMMAND-CONTRACT.md).
 
 Before **every release**, run `pnpm run verify:release` for unchanged capacity, maximum-size native memory, browser heap and load cases. These run outside CI and default verify. Publication inspection requires Gitleaks 8.30.1; `bash scripts/install-gitleaks.sh` installs the reviewed binary after checksum verification. CI uses the same installer and complete Base scanner. The maintained release dry run runs both commands:
 

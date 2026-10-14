@@ -7,7 +7,7 @@ Deploy acts only on the Cloudflare account you select. No command in Pencil depl
 ## What you need
 
 - **A Cloudflare account on Workers Paid**, and an API token for it that may edit Workers and D1. You give Pencil the account's ID and the token as `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`, through your secret manager or the secret environment of your terminal.
-- **Node 22.20.0 and pnpm 10.12.4**, and the installed dependencies from [Install and run locally](install.md).
+- **rer and the source**, from [Install and run locally](install.md). rer installs the pinned Node and pnpm for you; local `rer setup` is optional.
 - **A mail provider**, SendGrid or Resend, with a verified sender address and an API key. See [Set up email](#set-up-email).
 - **A passing local check of the exact source you will deploy.** Run `rer verify` first. It includes browser journeys, so install the test browser once:
 
@@ -22,7 +22,7 @@ Deploy reads everything from environment variables. Start with the address you w
 | Variable | What it is |
 |---|---|
 | `APP_ORIGIN` | The exact HTTPS origin of your deployment, with no path. Sign-in links, reports and public links point here. If it differs from the address people open, every page there, `/health` included, answers **Not found**. |
-| `SEED_ADMIN_EMAIL` | The email address of the first owner. If omitted, rer uses the owner email from this checkout’s local setup. |
+| `OWNER_EMAIL` | Set this to the hosted owner’s email. The deploy commands below pass it as `SEED_ADMIN_EMAIL`, the owner input in Pencil’s current declaration. |
 | `PENCIL_MAIL_PROVIDER` | `sendgrid` (the default) or `resend`. `rer deploy` binds the choice as the Worker’s `MAIL_PROVIDER`. The earlier `MAIL_PROVIDER` environment setting is also accepted; if both are set, they must agree. |
 | `MAIL_FROM` | Your verified sender. It must be a plain `noreply@` or `no-reply@` address, with no display name. |
 | `MAIL_API_KEY` | Your mail provider's API key. A secret. |
@@ -41,8 +41,8 @@ Leave the local-only options off: `PENCIL_LOCAL_DEVELOPMENT`, `SEED_SAMPLE_DATA`
 ## Check, then deploy
 
 ```sh
-pnpm run deploy -- --dry-run
-pnpm run deploy -- --environment production
+SEED_ADMIN_EMAIL="$OWNER_EMAIL" rer deploy --dry-run
+SEED_ADMIN_EMAIL="$OWNER_EMAIL" rer deploy --environment production
 ```
 
 The dry run builds the real Worker, its assets and its database migrations, and checks your inputs, without contacting any provider. Use it first. The second command deploys into the Cloudflare account you selected and checks the Worker's health afterwards. If a step fails, it stops and tells you which. The migrations are applied to your database in order. Never edit a migration that has already been applied.
@@ -51,7 +51,7 @@ A healthy Worker shows that the code runs. It does not show that email arrives o
 
 ## Sign in as the first owner
 
-With the pinned rer 0.2.5, deploy claims the hosted owner automatically using `SEED_ADMIN_EMAIL` (or the owner email from your local setup), then removes the one-time `SETUP_TOKEN` and records the new Worker version. Deploy prints the hosted application address on first deploy and updates. The build step reports that the application is built; it does not start a local server. Wait for deploy to confirm the owner claim and token removal. There is no manual setup-token form to complete after a successful deploy.
+Deploy claims the hosted owner automatically from `OWNER_EMAIL`, passed to Pencil’s current `SEED_ADMIN_EMAIL` input by the commands above, then removes the one-time `SETUP_TOKEN` and records the new Worker version. Deploy prints the hosted application address on first deploy and updates. The build step reports that the application is built; it does not start a local server. Wait for deploy to confirm the owner claim and token removal. There is no manual setup-token form to complete after a successful deploy.
 
 1. Open `/signin` at the hosted address printed by deploy.
 2. Enter the owner's email and choose **Send magic link**. Open the email and choose **Confirm**.
