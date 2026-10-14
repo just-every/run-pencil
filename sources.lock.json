@@ -1341,7 +1341,7 @@
       "executable": false
     },
     "scripts/deployment-data-core.mjs": {
-      "sha256": "d04cb502a9a0dda8a50378367f9b9f17d6f132b136e6799a7831ada45090f260",
+      "sha256": "b0d2c7c7f1517c07b107cb2925535b0d4cc835ce8a753c9125d3b65470e78138",
       "executable": false
     },
     "scripts/deployment-data-custody-replay.check.mjs": {
@@ -1365,11 +1365,11 @@
       "executable": false
     },
     "scripts/deployment-data-hosted-test-helpers.mjs": {
-      "sha256": "275b7715b002a6b2737ab312ebc674945c3daabf35e273b32de00d813c1de20f",
+      "sha256": "520d2503c4f57a4630fef80e0725c455a11a7a92e0b7f6fe2422ddc15225894b",
       "executable": false
     },
     "scripts/deployment-data-hosted.check.mjs": {
-      "sha256": "bc375d43a2aa496b4a4ffdede5ed4ed43b2b6d2b598bc99848d265988b99976b",
+      "sha256": "0be977220cdf9217e40a26b6b0d159e5157ecb29c3af3e8c075b5e515efad8ba",
       "executable": false
     },
     "scripts/deployment-data-import-custody.check.mjs": {
@@ -1393,7 +1393,11 @@
       "executable": false
     },
     "scripts/deployment-data-json.mjs": {
-      "sha256": "89ff8ab2536ddbe77b3c678e6f1fc11f0444e19430e18a2351e89f2486e97394",
+      "sha256": "f7a30e04bc48118c564dd63247b1e6b25d96b59a1d2705ee8446ab4261df4815",
+      "executable": false
+    },
+    "scripts/deployment-data-ledger-compatibility.check.mjs": {
+      "sha256": "cb48fb5aa8b2cf81d2af170daa6629e03ae3133bf1330e17e6256eee932d0b11",
       "executable": false
     },
     "scripts/deployment-data-ledger.check.mjs": {
@@ -1401,7 +1405,7 @@
       "executable": false
     },
     "scripts/deployment-data-ledger.mjs": {
-      "sha256": "bf14b377e9a1aa7ebcf4035d69a20eae81ad92ce092e00bbf9908c003646961d",
+      "sha256": "5326cc4ec4dd166c49d702d17084d061cc911ff7151dfe06e5bd280c85170045",
       "executable": false
     },
     "scripts/deployment-data-local.mjs": {
@@ -1421,7 +1425,7 @@
       "executable": false
     },
     "scripts/deployment-data-policy.mjs": {
-      "sha256": "7ac628c9fd6e8f1de700a6869f5b43425b9de8fb545b5b53fab5e2a14ea64b79",
+      "sha256": "2528b4af381c4b4a9ca2ff76fd6c8cac699657a82637ca44e069438a5ac949a8",
       "executable": false
     },
     "scripts/deployment-data-portability.check.mjs": {
@@ -1437,7 +1441,7 @@
       "executable": false
     },
     "scripts/deployment-data-remote.mjs": {
-      "sha256": "d0bccff8a9fc6d69df2d32d3de9e5dcc61f00804aab60e9675254cde80a81a38",
+      "sha256": "f2820aefadf4a2e9c4b150d3cb3e9f83c5c96b95335ae431a517dee082c2a248",
       "executable": false
     },
     "scripts/deployment-data-reporting.check.mjs": {
@@ -1449,11 +1453,11 @@
       "executable": false
     },
     "scripts/deployment-data-sql.mjs": {
-      "sha256": "57591b6aaf1227c25c69ec6c37d997a0427d9a79cbd9e335c9c2b13954127ae8",
+      "sha256": "63933bf4bcc74658ea5cfc56d1faa4a66177937e56ea647716db1ff700b947a8",
       "executable": false
     },
     "scripts/deployment-data-staging.mjs": {
-      "sha256": "ecdadc3c1b50e19c872e9452e08c8cbffe09c33612db298f92e2a618bbcaac48",
+      "sha256": "c500bf00c7c07e9fabcea0b1a5c533394cf565cee663332f92048676ad4766ea",
       "executable": false
     },
     "scripts/deployment-data-stream.check.mjs": {
@@ -5609,7 +5613,7 @@
       "executable": false
     },
     "tests/native/closure-recovery.mjs": {
-      "sha256": "aac3780b014e41330f73f90b7497eb4b947ae7d3f7cd7fb02e46b81486e87ba8",
+      "sha256": "2e78c59716a195600cdd6f0b99bb788f326a2e2438d8abdcd6cee06f34aa55dc",
       "executable": false
     },
     "tests/release-browser/import-memory.spec.ts": {

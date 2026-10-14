@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { initialize, inventory, metadata, failure, schema, quote } from './deployment-data-core.mjs';
 import { privateArchivePath } from './deployment-data-paths.mjs';
 import { ledger, schemaQuery } from './deployment-data-sql.mjs';
-import { assertLedgerShape, ledgerShapeQuery, validateLedger } from './deployment-data-ledger.mjs';
+import { assertLedgerShape, ledgerShapeQuery, sameLedger, validateLedger } from './deployment-data-ledger.mjs';
 import { createStore, readStore, storeDigest, storeSummary, validateStore, writeStore } from './deployment-data-stream.mjs';
 import { cloudflareClient, primaryQuery } from './deployment-data-provider.mjs';
 import { remoteRows } from './deployment-data-page.mjs';
@@ -83,7 +83,7 @@ export async function importRemote(archivePath, query = cloudflareClient(), jour
     // One read-only preflight preserves the no-write refusal. Preparation
     // repeats all guards atomically before creating any inert staging schema.
     const preflight = await query([{ sql: schemaQuery }, { sql: ledgerShapeQuery }, ...expected.tables.map(table=>{ const expected = initializedPredicate(table); return { sql: `SELECT CASE WHEN (${expected.sql}) THEN 0 ELSE 1 END AS occupied`, params: expected.params }; })]);
-    if (assertLedgerShape(preflight[1].results).name !== store.payload.d1Migrations.name) throw failure('MIGRATION_MISMATCH', 'Destination uses a different migration controller.'); canonicalSchema(preflight[0].results, expected.schema);
+    if (!sameLedger(assertLedgerShape(preflight[1].results), store.payload.d1Migrations)) throw failure('MIGRATION_MISMATCH', 'Destination uses a different migration controller.'); canonicalSchema(preflight[0].results, expected.schema);
     if (preflight.slice(2).some(result=>result.results[0]?.occupied !== 0)) throw failure('NONEMPTY_TARGET', 'Destination contains application records; nothing was written.');
     plan = stagingPlan(store, expected.trusted);
     await query([...destinationGuards(store, JSON.stringify(preflight[0].results)),...plan.create]);

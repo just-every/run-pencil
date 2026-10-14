@@ -37,7 +37,7 @@ async function ok(path, body, options) {
 }
 function privateAbsent(text, values) { for (const value of values) assert.ok(!text.includes(value), 'Private data appeared in a public response') }
 try {
-  runtime = await unstable_dev('dist/server/index.js', { config: 'dist/server/wrangler.json', vars: { RER_DEV_KEY: testDevKey }, local: true, bundle: true, persistTo: state, ip: '127.0.0.1', port: 15683, inspectorPort: 15684, logLevel: 'error', vars: { SESSION_SECRET: 'synthetic-native-closure-session-secret-at-least-32-characters', APP_ORIGIN: origin, MAIL_PROVIDER: 'local', PENCIL_LOCAL_DEVELOPMENT: 'true', SEED_SAMPLE_DATA: 'true' }, experimental: { watch: false, disableDevRegistry: true, disableExperimentalWarning: true, showInteractiveDevSession: false } })
+  runtime = await unstable_dev('dist/server/index.js', { config: 'dist/server/wrangler.json', local: true, bundle: true, persistTo: state, ip: '127.0.0.1', port: 15683, inspectorPort: 15684, logLevel: 'error', vars: { RER_DEV_KEY: testDevKey, SESSION_SECRET: 'synthetic-native-closure-session-secret-at-least-32-characters', APP_ORIGIN: origin, MAIL_PROVIDER: 'local', PENCIL_LOCAL_DEVELOPMENT: 'true', SEED_SAMPLE_DATA: 'true' }, experimental: { watch: false, disableDevRegistry: true, disableExperimentalWarning: true, showInteractiveDevSession: false } })
   await ok('/health')
   const directory = join(state, 'v3/d1/miniflare-D1DatabaseObject')
   const filename = (await readdir(directory)).find(name => name.endsWith('.sqlite'))

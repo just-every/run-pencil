@@ -3,7 +3,7 @@ import { Buffer } from 'node:buffer';
 import { randomBytes } from 'node:crypto';
 import { quote } from './deployment-data-sql.mjs';
 import { insertStatement, insertRowsStatement, schemaQuery } from './deployment-data-sql.mjs';
-import { ledgerShape, ledgerShapeQuery, kitLedgerShape, kitLedger, historyGuard } from './deployment-data-ledger.mjs';
+import { ledgerDefinition, ledgerShapeQuery, historyGuard } from './deployment-data-ledger.mjs';
 import { renameSQL, canonicalSchema } from './deployment-data-schema.mjs';
 import { assertQueryBudget, queryLimits } from './deployment-data-provider.mjs';
 
@@ -13,7 +13,7 @@ export function destinationGuards(store, actualSchema) {
   const history = historyGuard(store.payload.d1Migrations, store.payload.migrations);
   return [
     guard(`(${schemaExpression})=?`, [actualSchema]),
-    guard(`(SELECT json_group_array(json_object('cid',cid,'name',name,'type',type,'notnull',"notnull",'dflt_value',dflt_value,'pk',pk,'hidden',hidden)) FROM (${ledgerShapeQuery}))=?`, [JSON.stringify(store.payload.d1Migrations.name === kitLedger.name ? kitLedgerShape : ledgerShape)]),
+    guard(`(SELECT json_group_array(json_object('cid',cid,'name',name,'type',type,'notnull',"notnull",'dflt_value',dflt_value,'pk',pk,'hidden',hidden)) FROM (${ledgerShapeQuery}))=?`, [JSON.stringify(ledgerDefinition(store.payload.d1Migrations).shape)]),
     guard(history.sql, history.params),
     ...store.payload.tables.map(table => { const expected = initializedPredicate(table); return guard(expected.sql, expected.params); }),
   ];

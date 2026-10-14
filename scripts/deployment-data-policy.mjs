@@ -3,7 +3,7 @@ import { failure } from './deployment-data-errors.mjs';
 // Every persisted column is reviewed here. A migration cannot silently add data
 // to an archive: both new tables and new columns fail closed until classified.
 const retained = {
-  d1_migrations: 'id name applied_at',
+  d1_migrations: 'id name applied_at sha256 state',
   _rer_deploy_migrations: 'name sha256 state',
   // Actions hold operator-written text and frozen aggregate counts, never answers or response IDs. The task key is
   // never stored, so nothing here is a credential; the confirmed payload and every attempt travel as recorded.

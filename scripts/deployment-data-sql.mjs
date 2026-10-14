@@ -1,7 +1,7 @@
 import { initializedPredicate, initializedReplacement } from './deployment-data-initialized.mjs';
 // Shared by the REST client and real D1 runtime checks. Values are always bound;
 // the only executable schema is supplied by the locally committed migrations.
-import { ledgerShape, ledgerShapeQuery } from './deployment-data-ledger.mjs';
+import { ledgerDefinition, ledgerShapeQuery, historyGuard } from './deployment-data-ledger.mjs';
 export { ledger } from './deployment-data-ledger.mjs';
 export const quote = name => `"${name.replaceAll('"', '""')}"`;
 export const schemaQuery = "SELECT type, name, tbl_name, sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*' AND name != '_cf_METADATA' AND name NOT IN ('d1_migrations','_rer_deploy_migrations') ORDER BY type, name";
@@ -32,12 +32,13 @@ export function insertStatement(table, row, toHex) {
 }
 export function restoreStatements(archive, trustedSchema, toHex) {
   const tables = archive.payload.tables;
+  const history = historyGuard(archive.payload.d1Migrations, archive.payload.migrations);
   const schemaExpression = `SELECT json_group_array(json_object('type',type,'name',name,'tbl_name',tbl_name,'sql',sql)) FROM (${schemaQuery})`;
   const failUnless = (expression, params = []) => ({ sql: `SELECT CASE WHEN (${expression}) THEN 1 ELSE json('Restore precondition failed') END AS verified`, params });
   const statements = [
-    failUnless(`(SELECT json_group_array(json_object('cid',cid,'name',name,'type',type,'notnull',"notnull",'dflt_value',dflt_value,'pk',pk,'hidden',hidden)) FROM (${ledgerShapeQuery})) = ?`, [JSON.stringify(ledgerShape)]),
+    failUnless(`(SELECT json_group_array(json_object('cid',cid,'name',name,'type',type,'notnull',"notnull",'dflt_value',dflt_value,'pk',pk,'hidden',hidden)) FROM (${ledgerShapeQuery})) = ?`, [JSON.stringify(ledgerDefinition(archive.payload.d1Migrations).shape)]),
     failUnless(`(${schemaExpression}) = ?`, [archive.payload.schema]),
-    failUnless(`(SELECT group_concat(name, ',') FROM (SELECT name FROM d1_migrations ORDER BY name)) = ?`, [archive.payload.migrations.map(row => row.name).join(',')]),
+    failUnless(history.sql, history.params),
     // Independent guards avoid D1's compound-SELECT term limit. They still all
     // run before any write in this same atomic restore batch.
     ...tables.map(table => { const expected = initializedPredicate(table); return failUnless(expected.sql, expected.params); }),
@@ -45,7 +46,7 @@ export function restoreStatements(archive, trustedSchema, toHex) {
   ];
   const triggers = trustedSchema.filter(entry => entry.type === 'trigger');
   statements.push(...triggers.map(trigger => ({ sql: `DROP TRIGGER ${quote(trigger.name)}` })));
-  statements.push({ sql: 'DELETE FROM d1_migrations' }, ...initializedReplacement(tables));
+  statements.push({ sql: `DELETE FROM ${quote(archive.payload.d1Migrations.name)}` }, ...initializedReplacement(tables));
   for (const table of [archive.payload.d1Migrations, ...tables]) {
     for (const row of table.rows) statements.push(insertStatement(table, row, toHex));
   }

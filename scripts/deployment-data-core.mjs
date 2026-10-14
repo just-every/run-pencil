@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 import { classify, sanitize, refuseAuthorization } from './deployment-data-policy.mjs';
 import { refuseDevRows } from './deployment-data-dev.mjs';
-import { checkedLedger, kitLedger, kitLedgerSQL, validateLedger } from './deployment-data-ledger.mjs';
+import { checkedLedger, ledger, kitLedger, kitLedgerSQL, hashedLedger, hashedLedgerSQL, ledgerDefinition, sameLedger, validateLedger } from './deployment-data-ledger.mjs';
 import { failure } from './deployment-data-errors.mjs';
 import { canonicalSchema } from './deployment-data-schema.mjs';
 import { tableRows } from './deployment-data-values.mjs';
@@ -38,10 +38,14 @@ export function migrations() {
   return readdirSync(directory).filter(name => name.endsWith('.sql')).sort().map(name => ({ name, sql: readFileSync(join(directory, name), 'utf8') }));
 }
 
-export function initialize(database, history = { name: 'd1_migrations' }) {
-  if (history.name === kitLedger.name) {
-    database.exec(kitLedgerSQL);
-    for (const migration of migrations()) { database.exec(migration.sql); database.prepare("INSERT INTO _rer_deploy_migrations VALUES (?,?,'applied')").run(migration.name, hash(migration.sql)); }
+export function initialize(database, history = ledger) {
+  const { table } = ledgerDefinition(history);
+  if (table === kitLedger || table === hashedLedger) {
+    database.exec(table === kitLedger ? kitLedgerSQL : hashedLedgerSQL);
+    for (const migration of migrations()) {
+      database.exec(migration.sql);
+      database.prepare(`INSERT INTO ${table.name} (name,sha256,state) VALUES (?,?,'applied')`).run(migration.name, hash(migration.sql));
+    }
     return;
   }
   database.exec('CREATE TABLE d1_migrations (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)');
@@ -149,7 +153,7 @@ export function assertEmpty(database, archive) {
   const ledger = checkedLedger(database);
   if (canonicalDatabaseSchema(database) !== archive.payload.schema) throw failure('SCHEMA_MISMATCH', 'Destination schema differs; apply all migrations first.');
   validateLedger(readTable(database, ledger), metadata());
-  if (ledger.name !== archive.payload.d1Migrations.name) throw failure('MIGRATION_MISMATCH', 'Destination uses a different migration controller.');
+  if (!sameLedger(ledger, archive.payload.d1Migrations)) throw failure('MIGRATION_MISMATCH', 'Destination uses a different migration controller.');
   assertInitialized(database, inventory(database));
 }
 export function summary(archive) {
