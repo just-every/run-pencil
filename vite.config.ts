@@ -26,5 +26,7 @@ export default defineConfig(({ command, isPreview }) => ({ plugins: [
   // The Worker imports the optional bundled sample-data module; seed.json is the browser's manifest import.
   // The product pages import their fonts from node_modules by URL. When that folder is a link to an install elsewhere, its real location must be served too.
   // Preflights belong to the Worker, as deployed: the embedded form's public API calls (Origin: null) are answered by its opaque-embed CORS.
-  server: { cors: { origin: defaultAllowedOrigins, preflightContinue: true }, fs: { strict: true, allow: ['src', 'public', 'node_modules', 'seed.json', 'sample-data', realpathSync('node_modules')], deny: ['**/.env', '**/.env.*', '**/*.{crt,pem}', '**/.git/**', '**/.rer/**', '**/.seed/**', '**/exports/**', '**/*.rer'] } },
+  // The bundled watcher selects FSEvents before reading CHOKIDAR_USEPOLLING.
+  // Pass a requested polling backend explicitly so it takes effect on macOS.
+  server: { watch: process.env.CHOKIDAR_USEPOLLING === 'true' ? { usePolling: true } : undefined, cors: { origin: defaultAllowedOrigins, preflightContinue: true }, fs: { strict: true, allow: ['src', 'public', 'node_modules', 'seed.json', 'sample-data', realpathSync('node_modules')], deny: ['**/.env', '**/.env.*', '**/*.{crt,pem}', '**/.git/**', '**/.rer/**', '**/.seed/**', '**/exports/**', '**/*.rer'] } },
 }))
