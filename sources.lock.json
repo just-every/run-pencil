@@ -1093,7 +1093,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "0728a09a183482dff052f2874347cd704d6f95d224bb4a45c3ec4a228b4b0982",
+      "sha256": "6d046caf93c4fc0165997e65581faba8a4e6b6e0f77d99ce6c334cc4d44b6cd1",
       "executable": false
     },
     "playwright.admission.config.ts": {
@@ -1113,7 +1113,7 @@
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "c2ff834e8b4547c728e0201ae3bb806bdf4feb2a5edf87315f4a7887cc7a44ae",
+      "sha256": "2b71c9e6b016ea29134417207ac839e116602c580c8872b739eb5169d67e3e48",
       "executable": false
     },
     "public/brand/band.svg": {
@@ -5609,7 +5609,7 @@
       "executable": false
     },
     "tests/local/setup.spec.ts": {
-      "sha256": "b7da8da011a25d15c59a3a98a439d9e966e827a3406efdd7f8e56253f8e48e6c",
+      "sha256": "b76b711c31879bf2b49296b596e87ad24d9abf6d994ea06e791461a86fa0b202",
       "executable": false
     },
     "tests/native/closure-recovery.mjs": {
