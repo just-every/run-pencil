@@ -5,7 +5,7 @@ contract(['DATA-001','BASE-DATA-001','FLOW-015','ACT-007'], 'whole-data CLI expo
   // The child exits unsuccessfully if any real archive journey fails. Its
   // number of checks grows when retained table shapes and custody evolve.
   try {
-    execFileSync(process.execPath,['--test','--test-concurrency=2','scripts/deployment-data.check.mjs','scripts/distribution-data.check.mjs','scripts/action-data.check.mjs','scripts/analysis-data.check.mjs'],{encoding:'utf8'})
+    execFileSync('pnpm',['run','verify:data'],{encoding:'utf8'})
   } catch (failure) {
     const child = failure as Error & { status?: number; stdout?: string; stderr?: string }
     const output = `${child.stdout ?? ''}\n${child.stderr ?? ''}`

@@ -132,5 +132,3 @@ test('kit recovery refuses incomplete, uncertain, altered and mixed migration le
     }
   }finally{source.close();rmSync(dir,{recursive:true});}
 });
-
-import "./deployment-data-ledger-compatibility.check.mjs";

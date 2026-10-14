@@ -3,9 +3,6 @@ import assert from 'node:assert/strict';
 import { DatabaseSync } from 'node:sqlite';
 import { initialize, inventory } from './deployment-data-core.mjs';
 import { classify, sanitize } from './deployment-data-policy.mjs';
-import './deployment-data-custody-replay.check.mjs';
-import './deployment-data-initialized.check.mjs';
-import './deployment-data-preparation.check.mjs';
 
 const custody = {
   ik_jobs: 'reversal_policy reversal_policy_hash reversal_cursor reversal_hash',

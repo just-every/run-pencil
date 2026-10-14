@@ -155,15 +155,3 @@ test('a target appearing during private staging is never overwritten and only ow
     assert.deepEqual(readdirSync(f.directory).filter(name => name.startsWith('.pencil-restore-')), []);
   } finally { interception?.mock.restore(); rmSync(f.directory, { recursive: true }); }
 });
-
-import './deployment-data-portability.check.mjs';
-
-import './deployment-data-install.check.mjs';
-import './deployment-data-ledger.check.mjs';
-import './deployment-data-notification.check.mjs';
-
-import "./deployment-data-stream.check.mjs";
-import './deployment-data-reporting.check.mjs';
-import './deployment-data-import-custody.check.mjs';
-
-import './deployment-data-hosted.check.mjs';
