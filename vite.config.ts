@@ -3,7 +3,6 @@ import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { realpathSync } from 'node:fs'
-import { createHash } from 'node:crypto'
 import { defaultAllowedOrigins, defineConfig } from 'vite'
 import { docsSite } from './src/core/features/docs/build/plugin.ts'
 import { embedDevFrameCors } from './src/core/features/embedding/build/dev-frame-cors.ts'
@@ -17,9 +16,7 @@ const devServedByVite = ['/*', '!/@*', '!/src/*', '!/node_modules/*', '!/seed.js
 const local = (name: string): Record<string, string> => process.env[name] ? { [name]: process.env[name]! } : {}
 const origin: Record<string, string> = process.env.RER_DEV_ORIGIN ? { APP_ORIGIN: process.env.RER_DEV_ORIGIN } : {}
 const serve = { main: './src/server.dev.ts', vars: { ...origin, ...local('RER_DEV_KEY'), ...local('RER_DEV_IDENTITY'), ...local('RER_MODELS_SERVICE'), ...local('RER_MODELS_KEY') }, assets: { run_worker_first: devServedByVite } }
-// Separate checkouts can share a linked dependency install. Their optimized modules must keep their own Worker/Vite paths.
-const cacheDir = `node_modules/.vite/${createHash('sha256').update(realpathSync(process.cwd())).digest('hex').slice(0, 16)}`
-export default defineConfig(({ command, isPreview }) => ({ cacheDir, plugins: [
+export default defineConfig(({ command, isPreview }) => ({ plugins: [
   cloudflare({ configPath: process.env.PENCIL_WRANGLER_CONFIG ?? './wrangler.jsonc', config: () => command === 'serve' && !isPreview ? serve : Object.keys(origin).length ? { vars: origin } : {}, viteEnvironment: { name: 'ssr' }, inspectorPort: false, persistState: process.env.PENCIL_E2E_STATE ? { path: process.env.PENCIL_E2E_STATE } : true }),
   // /docs: the repository's Markdown rendered when Vite loads it (DOCS-001), never in the Worker or the browser.
   docsSite(),

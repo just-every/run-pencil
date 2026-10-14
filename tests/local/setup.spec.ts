@@ -26,7 +26,8 @@ test('fresh rer owner finishes setup before hydration, then collects a response 
     // This copy links the checkout's node_modules from outside its root, so Vite serves those modules through /@fs/,
     // which rer dev answers only with the checkout's key; a real checkout serves them under its own root.
     const linkedModules = (each: typeof context) => each.route(app.origin + '/@fs/**', route => route.continue({ headers: { ...route.request().headers(), 'x-rer-dev-key': key } }))
-    runtime = app.start(['dev', '--port', String(app.port)]); await app.wait(runtime)
+    // Prove native forms against the emitted Worker, before client hydration or Vite's dependency reloads.
+    runtime = app.start(['preview', '--port', String(app.port)]); await app.wait(runtime)
     const page = await context.newPage()
     await page.goto(app.origin + '/setup'); await expect(page).toHaveURL(app.origin + '/signin')
     await page.goto(app.origin + '/__dev/outbox')
@@ -45,6 +46,8 @@ test('fresh rer owner finishes setup before hydration, then collects a response 
     await expect(page).toHaveURL(app.origin + '/app')
     await page.goto(app.origin + '/setup'); await expect(page).toHaveURL(app.origin + '/app')
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    await app.stop(runtime)
+    runtime = app.start(['dev', '--port', String(app.port)]); await app.wait(runtime)
     // Under rer dev the product pages hydrate, and so does the sandboxed (Origin: null) embed on an allowed loopback host.
     const headers = { Origin: app.origin }
     const flow = await page.request.post(app.origin + '/api/app/flows', { headers, data: { title: 'Local embed', slug: 'local-embed', template: 'feedback' } }).then(r => r.json())
