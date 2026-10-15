@@ -1707,7 +1707,7 @@
       "executable": false
     },
     "scripts/verify-boundaries.mjs": {
-      "sha256": "3c4e467ef04dcfa57f3372dd6fa654dbb3ab3210cf134883cdeaab8849d764ad",
+      "sha256": "b9a33af9c424226dfe1eb9890318f8486b1ee70da92c03925f5230706b0d2961",
       "executable": false
     },
     "scripts/verify-contract-coverage.mjs": {

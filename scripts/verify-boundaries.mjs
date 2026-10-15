@@ -27,6 +27,12 @@ function isString(node) {
   return ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)
 }
 
+// Base's demo guard (src/base/demo, maintained upstream) is the one exception to two rules, each for one file: it reads
+// RER_DEMO from cloudflare:workers so it guards the whole isolate before any other module loads, and its sockets.mjs
+// reaches the runtime's cloudflare:sockets through a computed import, which Vite would otherwise resolve back to itself.
+const upstreamDemoCloudflareImport = (shown, specifier) => shown === 'src/base/demo/index.mjs' && specifier === 'cloudflare:workers'
+const upstreamDemoComputedImport = shown => shown === 'src/base/demo/sockets.mjs'
+
 const errors = []
 const files = await sourceFiles(resolve(root, 'src'))
 for (const file of files) {
@@ -36,7 +42,7 @@ for (const file of files) {
   if (/^src\/base\/(?:mail|operator-auth)\/(?:tests|oidc\/tests|conformance)\//.test(shown)) continue
   const source = ts.createSourceFile(file, await readFile(file, 'utf8'), ts.ScriptTarget.Latest, true)
   const inspectSpecifier = (specifier) => {
-    if (specifier.startsWith('cloudflare:') && !shown.startsWith('src/core/platform/')) {
+    if (specifier.startsWith('cloudflare:') && !shown.startsWith('src/core/platform/') && !upstreamDemoCloudflareImport(shown, specifier)) {
       errors.push(`${shown} imports ${specifier} outside src/core/platform`)
     }
     const target = resolveSpecifier(specifier, file)
@@ -64,7 +70,7 @@ for (const file of files) {
       if (node.moduleSpecifier && isString(node.moduleSpecifier)) inspectSpecifier(node.moduleSpecifier.text)
     }
     if (ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword) {
-      if (!isString(node.arguments[0])) errors.push(`${shown} has a non-literal dynamic import`)
+      if (!isString(node.arguments[0])) { if (!upstreamDemoComputedImport(shown)) errors.push(`${shown} has a non-literal dynamic import`) }
       else inspectSpecifier(node.arguments[0].text)
     }
     if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 'eval') errors.push(`${shown} uses runtime code evaluation`)
