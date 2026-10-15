@@ -9,5 +9,5 @@
     "TASK_PROVIDER": "webhook",
     "TASK_WEBHOOK_URL": "https://tasks.example.com/pencil"
   },
-  "instanceType": "standard-3"
+  "instanceType": "standard-4"
 }

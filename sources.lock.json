@@ -865,7 +865,7 @@
       "executable": false
     },
     "deploy-demo.json": {
-      "sha256": "f5e09e504f83187aa2c275ce7136291f4a3cb87164f2d13b3ab3e947df6a612f",
+      "sha256": "3901781d064f484e24c4bca5321d3bf6ec51efd77362a921f05487e5b336dd81",
       "executable": false
     },
     "deploy-site.json": {
@@ -985,7 +985,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "b817a6b547f40578fb473518092777c1917d88b1560a03dcfe212772e5931629",
+      "sha256": "56786103107c6c8d7994cf47262646a2c1266b927ed6d12ddb4f8aab53ac4f97",
       "executable": false
     },
     "migrations/core/0000_seeded_flowly_data_spine.sql": {
