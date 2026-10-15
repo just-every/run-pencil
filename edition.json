@@ -432,7 +432,7 @@
         ],
         "origin": {
           "repository": "https://github.com/runeditrun/base.git",
-          "revision": "dd916c4811b077c74ae75636cdff6438440be39f",
+          "revision": "343d555ca482393ca986617e8730c80e827123b8",
           "paths": [
             "modules/demo/README.md",
             "modules/demo/index.d.mts",

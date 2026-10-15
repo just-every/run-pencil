@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "parent": null,
   "edition": "just-every/pencil",
-  "manifest": "ef088b9095a919664d7bfcb758a55ad9fc5985c69150480bcefcd35535cce23d",
+  "manifest": "417d1799348b13ed062d65e94ac3e9897fb82775a2f414d98c6bce9b9cd6c2d6",
   "toolchain": {
     "id": "runeditrun/edition-authoring",
     "version": "1.1.0",
@@ -445,7 +445,7 @@
         ],
         "origin": {
           "repository": "https://github.com/runeditrun/base.git",
-          "revision": "dd916c4811b077c74ae75636cdff6438440be39f",
+          "revision": "343d555ca482393ca986617e8730c80e827123b8",
           "paths": [
             "modules/demo/README.md",
             "modules/demo/index.d.mts",
@@ -468,9 +468,9 @@
         ]
       },
       "baseline": {
-        "key": "4aec7fa5efc3a90b182976efb57b75167ae78a6a59db95464f64985f9ee90526",
-        "digest": "735a21455c1f7146ee85ac652b802159f71e3b0eaa3bb53fafa61c30b8099526",
-        "sha256": "870d76cf480c7494991102e4353f77aee198ed16b2de579e89ed76aad886d5ad"
+        "key": "9b2f7ad4784314ce87f62df62acf04e911c765fbd4c5142d06c2318a9dfc4dfe",
+        "digest": "2e0ff4ab34c55cc6a96c54cfcc1d8f4cd1e638f857be056f41e533afed060750",
+        "sha256": "82325ba26932fdcc95f737ac90ddd253cdb6eb2cab4d60027f5130e0ac16fcb5"
       }
     },
     {
@@ -839,7 +839,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "4ed0f4d8324b32eeb9f39c4cb3326ffa8e48159495c8ca0331de7287561bc430",
+      "sha256": "2fe9e14e5eaf20305a40902e3019c266d28a1de2f29f535eeb6893c45748e2ff",
       "executable": false
     },
     "BASELINE.md": {
@@ -975,7 +975,7 @@
       "executable": false
     },
     "edition.json": {
-      "sha256": "ef088b9095a919664d7bfcb758a55ad9fc5985c69150480bcefcd35535cce23d",
+      "sha256": "417d1799348b13ed062d65e94ac3e9897fb82775a2f414d98c6bce9b9cd6c2d6",
       "executable": false
     },
     "HANDOVER.md": {
@@ -1151,7 +1151,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "9de5aba0f0e1e459cbb619453de812c13041f567c566148b8d014d85b5182933",
+      "sha256": "c12319ae629f9a433e80aeaf464db7701f0855541197d0b3f60246f54a83554e",
       "executable": false
     },
     "playwright.admission.config.ts": {
@@ -1171,7 +1171,7 @@
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "2b4172001da0ad3e5c4d9c5a520b8fd12554545dc0d6ab62de49b68bff9f0473",
+      "sha256": "3ff48be6b6e8e18583ea94bf0b55d9ae9992646cab297ff6b9dc38d36e0bc3c6",
       "executable": false
     },
     "public/brand/band.svg": {
@@ -1799,11 +1799,11 @@
       "executable": false
     },
     "src/base/demo/index.mjs": {
-      "sha256": "2f4bfd0a4348c4266308a04f43d725c0e22792cb9f3484a3a5ca3571b82ab43a",
+      "sha256": "1168a0581e12bf8dac1fc73da592d3e8e110919a0b92f79291b2fb51da1c119e",
       "executable": false
     },
     "src/base/demo/README.md": {
-      "sha256": "2c79b0a5a4c1998f7bdd8638a442159c4eb3cb0eee07032d67d521347751b9f7",
+      "sha256": "44b7b2dfea231d0df6620b2abbf3c6ca11dc866f4d4c8f3b4dcef6f832d5604e",
       "executable": false
     },
     "src/base/demo/sockets.mjs": {
