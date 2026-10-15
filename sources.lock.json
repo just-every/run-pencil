@@ -3325,7 +3325,7 @@
       "executable": false
     },
     "src/core/features/analysis/index.ts": {
-      "sha256": "5ef77756cbb8f4fc81123d5e61acc5cb4165da7a2aad12867db9c51574dbac82",
+      "sha256": "5ee9348ed5d27e1911320b0fdc59ab18e123672c19d966b5772e7904bceadec4",
       "executable": false
     },
     "src/core/features/analysis/model.ts": {
@@ -3378,6 +3378,10 @@
     },
     "src/core/features/analysis/ui/FindingsPage.tsx": {
       "sha256": "cee1835ffbbf2aec87fdce87dcaf20cc1e3c91bc049064e52006e7271d8055ba",
+      "executable": false
+    },
+    "src/core/features/analysis/ui/index.ts": {
+      "sha256": "10edffa874b27eeba791473f3fccfde99311a86d297678480d61ec26f9ab0485",
       "executable": false
     },
     "src/core/features/analysis/ui/RequestAnalysisPage.tsx": {
@@ -3861,7 +3865,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/FlowBuilderPage.tsx": {
-      "sha256": "78c4d69133fecdc9b3eb8bf4bba902dc77ae59eb57e228902506283888392cee",
+      "sha256": "395caa2a937db2e55e1aa6495ddef04e02925043251ccfd71db15de9e675e570",
       "executable": false
     },
     "src/core/features/flows/ui/FlowSharePanel.tsx": {

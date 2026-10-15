@@ -1,4 +1,4 @@
-import { DraftRewritePanel } from '../../analysis'
+import { DraftRewritePanel } from '../../analysis/ui'
 import { TypeSettings } from './TypeSettings'
 import { stepRules, type AuthoringDraft, type EditableChoice, type EditableRule } from '../authoring'
 import { StepCanvas } from './StepCanvas'
