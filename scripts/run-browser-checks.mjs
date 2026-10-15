@@ -8,12 +8,17 @@ import { spawn } from 'node:child_process'
 // 30 per 15 minutes, so each viewport's journeys run in two shards, each with
 // its own runtime and empty ledgers. Browser evidence retains every outcome.
 const shards = 2
-const output = process.argv[2]
+const [output, selectedProject, selectedShard] = process.argv.slice(2)
+if ((selectedProject || selectedShard) && (!['desktop', 'mobile'].includes(selectedProject) || !['1', '2'].includes(selectedShard))) {
+  throw new Error('A browser lane requires desktop or mobile and shard 1 or 2.')
+}
+const projects = selectedProject ? [selectedProject] : ['desktop', 'mobile']
+const selectedShards = selectedShard ? [Number(selectedShard)] : [1, 2]
 const directory = await mkdtemp(join(process.env.PENCIL_VERIFICATION_TMPDIR ?? tmpdir(), 'pencil-browser-projects-'))
 const reports = []
 let failed = false
 try {
-  for (const project of ['desktop','mobile']) for (let shard = 1; shard <= shards; shard++) {
+  for (const project of projects) for (const shard of selectedShards) {
     const file = join(directory,`${project}-${shard}.json`)
     const code = await new Promise((resolve,reject) => {
       const child = spawn(process.execPath,['node_modules/@playwright/test/cli.js','test',`--project=${project}`,`--shard=${shard}/${shards}`,`--output=test-results/${project}-${shard}`,'--reporter=json'], {

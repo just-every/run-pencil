@@ -5,7 +5,7 @@ import type { AuditService } from '../audit'
 // Only maintained sender diagnostic names may enter logs or audit records.
 // Provider bodies, exception messages, recipients and credentials never do.
 const diagnosticCodes = new Set([
-  'transport_uncertain', 'provider_rejected', 'provider_rate_limited', 'provider_uncertain',
+  'transport_uncertain', 'provider_rejected', 'provider_redirected', 'provider_rate_limited', 'provider_uncertain',
   'transport_error', 'idempotency_conflict', 'idempotency_in_progress', 'idempotency_unknown_conflict',
   'rate_limited', 'unexpected_response', 'invalid_provider_response',
 ])

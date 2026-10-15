@@ -2,15 +2,131 @@ name: Verify candidate
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
+  schedule:
+    - cron: '23 16 * * *'
+  workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: verify-${{ github.ref }}
+  group: verify-${{ github.ref }}-${{ github.sha }}
   cancel-in-progress: false
 jobs:
-  verify:
+  checks:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.20.0
+      - run: npm install --global pnpm@10.12.4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck && pnpm verify:base && pnpm verify:cli && pnpm verify:manifest && pnpm verify:boundaries && pnpm source:check
+      - name: Install the maintained publication scanner
+        run: |
+          bash scripts/install-gitleaks.sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - run: pnpm verify:publication
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [unit, worker]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.20.0
+      - run: npm install --global pnpm@10.12.4
+      - run: pnpm install --frozen-lockfile
+      - name: Build the production Worker for native Managed mail proof
+        if: matrix.lane == 'unit'
+        run: pnpm build:delivery
+      - name: Prove all released migration cases
+        if: matrix.lane == 'worker'
+        run: pnpm verify:migrations
+      - run: node scripts/run-contract-lane.mjs "${{ matrix.lane }}" "$RUNNER_TEMP/contract-evidence"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: contract-${{ matrix.lane }}
+          path: ${{ runner.temp }}/contract-evidence/*.json
+          if-no-files-found: error
+          retention-days: 1
+
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [desktop-1, desktop-2, mobile-1, mobile-2]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.20.0
+      - run: npm install --global pnpm@10.12.4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      # Each shard still owns fresh migrated runtimes and the original rate limits.
+      - run: node scripts/run-contract-lane.mjs "${{ matrix.lane }}" "$RUNNER_TEMP/contract-evidence"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: contract-${{ matrix.lane }}
+          path: ${{ runner.temp }}/contract-evidence/*.json
+          if-no-files-found: error
+          retention-days: 1
+
+  admission:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.20.0
+      - run: npm install --global pnpm@10.12.4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm verify:admission
+
+  hosted:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.20.0
+      - run: npm install --global pnpm@10.12.4
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm build:app
+      - run: node scripts/verify-hosted-output.mjs
+
+  journeys:
+    # Slow copied-checkout installer and README journeys retain their complete
+    # assertions nightly and on release tags, outside the push budget.
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,16 +142,33 @@ jobs:
           df -h . /tmp
           sudo rm -rf -- /usr/share/dotnet /usr/local/lib/android
           df -h . /tmp
-      - run: pnpm verify
-      - run: pnpm source:check
-      - name: Install the maintained publication scanner
-        run: |
-          bash scripts/install-gitleaks.sh
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-      - name: Restore full history for the publication scan
-        run: |
-          # pnpm verify leaves the pull-request checkout shallow; the scan refuses shallow history and must keep inspecting all of it.
-          if [ "$(git rev-parse --is-shallow-repository)" = true ]; then git fetch --unshallow --no-tags origin; fi
-      - run: pnpm verify:publication
+      - run: pnpm verify:setup
+
+  verify:
+    if: always()
+    needs: [checks, runtime, browser, admission, hosted, journeys]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require every verification lane
         env:
-          GH_TOKEN: ${{ github.token }}
+          VERIFICATION_RESULTS: ${{ toJSON(needs) }}
+        run: |
+          node -e 'const lanes = Object.entries(JSON.parse(process.env.VERIFICATION_RESULTS)); if (lanes.some(([name, lane]) => lane.result !== "success" && !(name === "journeys" && lane.result === "skipped"))) process.exit(1)'
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.20.0
+      - run: npm install --global pnpm@10.12.4
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: contract-*
+          path: ${{ runner.temp }}/contract-evidence
+          merge-multiple: true
+      - name: Evaluate the complete existing contract wall from this run
+        run: pnpm verify:contract
+        env:
+          PENCIL_CONTRACT_EVIDENCE_DIR: ${{ runner.temp }}/contract-evidence

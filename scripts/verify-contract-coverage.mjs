@@ -1,12 +1,11 @@
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
-import { spawn } from 'node:child_process'
+import { readFile, writeFile } from 'node:fs/promises'
+import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { contractRegistry } from './contract-registry.mjs'
 import { withReleaseUpgradeInputs } from './release-upgrade-inputs.mjs'
 import { runVitestJson, vitestPassedTests, vitestRunSummary } from './vitest-evidence.mjs'
-import { playwrightPassedTests } from './contract-evidence.mjs'
+import { runPlaywrightJson } from './browser-evidence.mjs'
+import { readCiContractEvidence } from './ci-contract-evidence.mjs'
 import { readProfile } from './contract-profile.mjs'
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
@@ -21,45 +20,6 @@ async function supersededBaselineClauses() {
   return new Map([...document.matchAll(/^- \*\*([A-Z][A-Z0-9]*(?:-[A-Z][A-Z0-9]*)*-\d{3})\s+—[^\n]*\*Supersedes `([A-Z][A-Z0-9]*(?:-[A-Z][A-Z0-9]*)*-\d{3})`/gm)].map((match) => [match[2], match[1]]))
 }
 
-async function runPlaywrightJson() {
-  const directory = await mkdtemp(join(tmpdir(), 'pencil-browser-contract-coverage-'))
-  const output = join(directory, 'results.json')
-  try {
-    const result = await new Promise((resolveResult, reject) => {
-      const child = spawn(process.execPath, ['scripts/run-browser-checks.mjs', output], {
-        cwd: root,
-        env: { ...process.env, PLAYWRIGHT_JSON_OUTPUT_NAME: output },
-        stdio: ['ignore', 'pipe', 'pipe'],
-      })
-      // Reporters write their result file; always drain diagnostic stdout so a full pipe cannot stall the child.
-      child.stdout.resume()
-      let stderr = ''
-      child.stderr.on('data', (chunk) => { stderr += chunk })
-      child.on('error', reject)
-      child.on('close', (code) => resolveResult({ code, stderr }))
-    })
-    const report = JSON.parse(await readFile(output, 'utf8'))
-    const failures = suites => {
-      for (const suite of suites ?? []) {
-        for (const spec of suite.specs ?? []) for (const test of spec.tests ?? []) {
-          if (test.status !== 'unexpected') continue
-          const result = test.results.at(-1)
-          const location = result?.error?.location
-          const trace = result?.error?.stack?.match(/([^\s()]+\/tests\/[^:\s]+):(\d+):(\d+)/)
-          // Print source coordinates only. Assertion values and browser traces
-          // can contain transient credentials and stay in the private report.
-          console.error(`Browser failure: ${location?.file ?? trace?.[1] ?? spec.file}:${location?.line ?? trace?.[2] ?? spec.line}:${location?.column ?? trace?.[3] ?? spec.column} (${test.projectName}, ${result?.status})`)
-        }
-        failures(suite.suites)
-      }
-    }
-    failures(report.suites)
-    return { ...result, report, passed: playwrightPassedTests(report) }
-  } finally {
-    await rm(directory, { recursive: true, force: true })
-  }
-}
-
 const [registry, ids, superseded] = await Promise.all([
   contractRegistry(root),
   Promise.all([clauses('CONTRACT.md'), clauses('BASELINE.md')]).then(([contract, baseline]) => [...new Set([...contract, ...baseline])]),
@@ -69,12 +29,15 @@ const [registry, ids, superseded] = await Promise.all([
 const profileMode = process.argv[2] ?? 'first-release'
 const deferred = await readProfile(root, ids, profileMode)
 const browserContracts = [...registry.values()].flatMap((entry) => entry.covered).filter((entry) => entry.browser)
-// Extract predecessor inputs for this invocation; evidence never comes from a prior run.
-const runtime = await withReleaseUpgradeInputs(root, async (upgrade) => [
+// Local verification extracts fresh predecessor inputs. CI accepts only every lane
+// from this commit and this run attempt.
+const ci = process.env.PENCIL_CONTRACT_EVIDENCE_DIR
+  ? await readCiContractEvidence(root, process.env.PENCIL_CONTRACT_EVIDENCE_DIR) : undefined
+const runtime = ci?.runtime ?? await withReleaseUpgradeInputs(root, async (upgrade) => [
   await runVitestJson(root),
   await runVitestJson(root, { config: 'vitest.worker.config.ts', env: upgrade.env }),
 ])
-const browserRuntime = browserContracts.length > 0 ? await runPlaywrightJson() : undefined
+const browserRuntime = ci?.browserRuntime ?? (browserContracts.length > 0 ? await runPlaywrightJson(root) : undefined)
 for (const [index, run] of runtime.entries()) {
   const summary = vitestRunSummary(run)
   console.log(`${index === 0 ? 'Unit' : 'Worker'} evidence: ${summary.passed} passed, ${summary.failed} failed, ${summary.pending} pending; exit ${summary.code}.`)

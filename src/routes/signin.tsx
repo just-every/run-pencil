@@ -2,11 +2,11 @@ import { editorLeaf } from '../editor/leaf'
 import { createFileRoute } from '@tanstack/react-router'
 import { loadSignIn } from '../core/app/loaders'
 import { SignInPage } from '../core/features/auth/ui/SignInPage'
+// @ts-expect-error Base's shared value rules are maintained JavaScript.
+import { normalizeEmail } from '../base/operator-auth/policy.mjs'
 
 function emailHint(value: unknown) {
-  if (typeof value !== 'string') return undefined
-  const email = value.trim().toLowerCase()
-  return email.length <= 254 && /^[^\s@<>\x00-\x1f]+@[^\s@<>\x00-\x1f]+\.[^\s@<>\x00-\x1f]+$/.test(email) ? email : undefined
+  try { return normalizeEmail(value) } catch { return undefined }
 }
 
 export const Route = createFileRoute('/signin')({
