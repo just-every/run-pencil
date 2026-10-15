@@ -849,7 +849,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "acf2021cd8b02ebe62407117787a99be3f8ad530fe491dc0e073570ac05ea36c",
+      "sha256": "bf2290a83ea4cda4d49cbd11324f520f5b394015c3eb53a108880008696d9338",
       "executable": false
     },
     "CLAUDE.md": {
@@ -969,7 +969,7 @@
       "executable": false
     },
     "docs/production-mail.md": {
-      "sha256": "d739edc78a5e5eb28f2e63ee789e544abf1ff9241bd86f853527ac90c69f2715",
+      "sha256": "62cf7a79afff206666fe8956d28dbdba7e51c06ff4c69448d1e4e1cb45146c36",
       "executable": false
     },
     "docs/site.json": {
@@ -1221,7 +1221,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "b655d546c0d44b4bb4576cc5d648fa4350cc94366c293a632db4df7894c9dcb2",
+      "sha256": "f6977dabf61300900e52f57499e29fdda05bd2c4912f666935ed11da660d449f",
       "executable": false
     },
     "rer-project.json": {

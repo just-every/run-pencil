@@ -2,7 +2,7 @@
 
 Pencil uses maintained Base mail for operator sign-in, invitations, reminders, response notifications and Daily digests.
 
-Managed hosting through RER sends through the RER relay. Owners need no separate SendGrid or Resend account or API key; RER supplies the managed mail configuration. The relay accepts one recipient, text and optional HTML, without attachments. Response notifications containing a saved inline logo cannot be sent through this contract; their delivery problem remains visible on Results. Sign-in, invitations and notifications without a logo use the relay.
+Managed hosting through RER sends through the RER relay. Owners need no separate SendGrid or Resend account or API key; RER supplies the managed mail configuration. The relay accepts one recipient, text and optional HTML, without attachments. Response notifications containing a saved inline logo cannot be sent through this contract; their delivery problem remains visible on Results. Sign-in and invitations use the relay. Response notifications and Daily digests stay off on Managed hosting for now: Pencil sends notification mail only from a plain `noreply@` or `no-reply@` sender, and RER's relay sender is neither. Results says so.
 
 Free and Assisted installations keep the ordinary SendGrid or Resend choices. For direct Cloudflare deployment, configure MAIL_PROVIDER as `sendgrid` or `resend`, MAIL_API_KEY as a secret and MAIL_FROM as a verified sender. APP_ORIGIN, SEED_ADMIN_EMAIL and SESSION_SECRET are also required for production. See [hosting](HOSTING.md) for bootstrap and resource configuration.
 
