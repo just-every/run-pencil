@@ -7,7 +7,7 @@ export interface MailMessage { deliveryId: string; from: string; to: string[]; s
 export interface MailSender { send(message: MailMessage): Promise<{ status: 'accepted' | 'rejected' | 'rate_limited' | 'uncertain' | 'development'; provider: string; providerMessageId: string | null; code?: string }> }
 export interface AuthBranding { productName?: string; accentColor?: string; signInPath?: string; /** Same-origin path of the seed's served rer-theme.css. */ theme?: string }
 export interface AuthPresentation { readonly productName: string; readonly accentColor: string; readonly signInPath: string; readonly theme?: string }
-export interface LinkPreview { kind: 'magic' | 'invite' | 'step_up' | 'owner'; expiresInMinutes: number }
+export interface LinkPreview { kind: 'magic' | 'invite' | 'step_up'; expiresInMinutes: number }
 /** A step-up confirmation proves the session's operator again; it issues no new session. */
 export interface StepUpConfirmed { stepUp: StepUpAction; returnTo: string; cookie?: undefined }
 export type StepUpAction = 'providers:unlink' | 'providers:relink' | 'domains:change' | 'owner:transfer' | 'export' | 'delete' | 'credentials:mint';
@@ -179,10 +179,6 @@ export interface OperatorAuth<R extends string = Role> {
   requestStepUp(request: Request, input: { action: StepUpAction; returnTo?: string }): Promise<{ status: 'accepted' }>;
   /** Refuse unless this session holds a fresh (10-minute) app-local email-link proof. Provider sessions never do by themselves. */
   requireStepUp(request: Request, action: StepUpAction): Promise<Session<R>>;
-  /** Preview the single-use `rer signin` owner link. Absent with native accounts. */
-  previewOwnerSignIn?(request: Request, token: string | null): Promise<LinkPreview | null>;
-  /** Consume the owner link once, recording an audit entry and fresh step-up proof. */
-  confirmOwnerSignIn?(request: Request, input: { token: string }): Promise<CompletedSession<R>>;
   listDomainRules(request: Request): Promise<DomainRule[]>;
   /** provider null lifts the rule. Needs a fresh step-up proof. */
   setDomainRule(request: Request, input: { domain: string; provider: string | null }): Promise<DomainRule[]>;

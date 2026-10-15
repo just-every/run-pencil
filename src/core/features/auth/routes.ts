@@ -1,6 +1,9 @@
 import type { Hono } from 'hono'
 import { AuthError, createAuthHandler, securityHeaders } from '../../../base/operator-auth/index.mjs'
 import { z } from 'zod'
+import { nativeAuthConfiguration } from './native-config'
+// @ts-expect-error The pinned rer owner-sign-in adapter is server-only JavaScript.
+import { ownerSignInResponse } from './owner-signin.server.mjs'
 // @ts-expect-error Maintained Base bounded duplicate-aware parser.
 import { readInput, readParameters } from '../../../base/operator-auth/input.mjs'
 import type { WorkerEnvironment } from '../../app/environment'
@@ -36,6 +39,7 @@ export function registerAuthRoutes(app: Hono<WorkerEnvironment>, services: Penci
       if (error instanceof AuthError && error.status !== 400) return Response.json({ error: error.code }, { status: error.status, headers: securityHeaders() })
       return invalid()
     }
+    if (context.req.path === '/auth/owner-signin') return ownerSignInResponse(context.req.raw, context.get('platform').databaseBinding, nativeAuthConfiguration(getRuntime(context)))
     const response = await createAuthHandler(getServices(context).auth.native)(context.req.raw)
     if (response?.status === 400 && response.headers.get('content-type')?.includes('application/json')) return invalid()
     if (response && context.req.path === '/auth/magic-link') {
