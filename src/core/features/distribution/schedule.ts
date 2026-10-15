@@ -3,7 +3,7 @@ export type SendingWindow = { timeZone: string; sendingWindowStart: string; send
 export function insideSendingWindow(instant: Date, settings: SendingWindow) {
   const parts = new Intl.DateTimeFormat('en-GB', { timeZone: settings.timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(instant)
   const time = `${parts.find(p => p.type === 'hour')!.value}:${parts.find(p => p.type === 'minute')!.value}`
-  return time >= settings.sendingWindowStart && time < settings.sendingWindowEnd
+  return settings.sendingWindowStart < settings.sendingWindowEnd ? time >= settings.sendingWindowStart && time < settings.sendingWindowEnd : time >= settings.sendingWindowStart || time < settings.sendingWindowEnd
 }
 export function nextSendingInstant(due: string, settings: SendingWindow): string {
   const start = new Date(due)

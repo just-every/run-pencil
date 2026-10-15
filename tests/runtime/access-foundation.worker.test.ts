@@ -93,7 +93,7 @@ contract(['WS-001', 'WS-002', 'BASE-PUBLIC-002'], 'workspace settings persist th
     expect(await read()).toMatchObject(settings)
     const invalidInputs = [
       { timeZone: 'GMT', sendingWindowStart: '09:00', sendingWindowEnd: '17:00' },
-      { timeZone: 'UTC', sendingWindowStart: '17:00', sendingWindowEnd: '09:00' },
+      { timeZone: 'UTC', sendingWindowStart: '17:00', sendingWindowEnd: '17:00' },
       { timeZone: 'UTC', sendingWindowStart: '24:00', sendingWindowEnd: '25:00' },
       ...['https://*.example.com', 'https://example.com/path', 'http://example.com', 'https://example.com?secret=x'].map(origin => ({ timeZone: 'UTC', sendingWindowStart: '09:00', sendingWindowEnd: '17:00', embedAllowedOrigins: [origin] })),
     ]

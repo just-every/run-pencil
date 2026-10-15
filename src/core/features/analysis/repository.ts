@@ -1,9 +1,10 @@
+import { civilOpening, civilParts, nextDay } from '../../shared/civilTime'
 import { NotFoundError } from '../../shared/errors'
 import { defaultPolicies, type Level, type Policies, type PolicySnapshot, type RunState } from './model'
 
 export type RunSummary = {
   id: string; flowId: string; flowTitle: string; revisionId: string; revisionNumber: number; state: RunState; trigger: 'operator' | 'autorun'
-  evidenceCount: number; evidenceCutoff: string; staleResponses: number; createdAt: string; finishedAt: string | null; errorCode: string | null; errorMessage: string | null
+  timeZone: string; redacted: boolean; stale: boolean; evidenceCount: number; evidenceCutoff: string; staleResponses: number; createdAt: string; finishedAt: string | null; errorCode: string | null; errorMessage: string | null
   nextAttemptAt: string | null; attempts: number
 }
 export type ThemeView =
@@ -19,10 +20,10 @@ export type RunDetail = RunSummary & {
 type RunRow = {
   id: string; flowId: string; flowTitle: string; revisionId: string; revisionNumber: number; state: RunState; trigger: 'operator' | 'autorun'; evidenceCount: number; evidenceCutoff: string
   createdAt: string; finishedAt: string | null; errorCode: string | null; errorMessage: string | null; nextAttemptAt: string | null; attempts: number; staleResponses: number
-  questionIds: string; policy: string; providerOrigin: string | null; model: string | null; insufficientReason: string | null; redactedAt: string | null
+  timeZone: string; questionIds: string; policy: string; providerOrigin: string | null; model: string | null; insufficientReason: string | null; redactedAt: string | null
 }
 // A run is stale when a released, completed response of its revision is not in its fixed evidence set (ANLY-002, ANLY-007).
-const runColumns = `a.id, a.flow_id AS flowId, f.title AS flowTitle, a.revision_id AS revisionId, r.number AS revisionNumber, a.state, a.trigger,
+const runColumns = `(SELECT time_zone FROM workspaces WHERE id=a.workspace_id) AS timeZone, a.id, a.flow_id AS flowId, f.title AS flowTitle, a.revision_id AS revisionId, r.number AS revisionNumber, a.state, a.trigger,
   (SELECT COUNT(*) FROM analysis_evidence e WHERE e.run_id = a.id) AS evidenceCount, a.evidence_cutoff AS evidenceCutoff, a.created_at AS createdAt, a.finished_at AS finishedAt,
   a.error_code AS errorCode, a.error_message AS errorMessage, a.next_attempt_at AS nextAttemptAt, a.attempts,
   (SELECT COUNT(*) FROM responses x WHERE x.revision_id = a.revision_id AND x.workspace_id = a.workspace_id AND x.state = 'released' AND x.completed_at IS NOT NULL
@@ -31,13 +32,15 @@ const runColumns = `a.id, a.flow_id AS flowId, f.title AS flowTitle, a.revision_
 const fromRuns = 'FROM analysis_runs a JOIN flows f ON f.id = a.flow_id JOIN flow_revisions r ON r.id = a.revision_id'
 
 const summary = (row: RunRow): RunSummary => ({
-  id: row.id, flowId: row.flowId, flowTitle: row.flowTitle, revisionId: row.revisionId, revisionNumber: row.revisionNumber, state: row.state, trigger: row.trigger,
+  timeZone: row.timeZone, redacted: row.redactedAt !== null, stale: row.redactedAt !== null || row.staleResponses > 0, id: row.id, flowId: row.flowId, flowTitle: row.flowTitle, revisionId: row.revisionId, revisionNumber: row.revisionNumber, state: row.state, trigger: row.trigger,
   evidenceCount: row.evidenceCount, evidenceCutoff: row.evidenceCutoff, staleResponses: row.state === 'completed' || row.state === 'insufficient_evidence' ? row.staleResponses : 0,
   createdAt: row.createdAt, finishedAt: row.finishedAt, errorCode: row.errorCode, errorMessage: row.errorMessage, nextAttemptAt: row.nextAttemptAt, attempts: row.attempts,
 })
 
 export class AnalysisRepository {
   constructor(private readonly db: D1Database) {}
+
+  async timeZone(workspaceId: string) { return (await this.db.prepare('SELECT time_zone AS zone FROM workspaces WHERE id=?').bind(workspaceId).first<{zone:string}>())!.zone }
 
   async policies(workspaceId: string): Promise<Policies> {
     const row = await this.db.prepare('SELECT autorun_enabled AS autorunEnabled, autorun_minimum AS autorunMinimum, disclosure_threshold AS disclosureThreshold, selection FROM analysis_policies WHERE workspace_id = ?').bind(workspaceId).first<{ autorunEnabled: number; autorunMinimum: number; disclosureThreshold: number; selection: 'highest-impact' }>()
@@ -108,14 +111,23 @@ export class AnalysisRepository {
       const value = row.value === null ? null : JSON.parse(row.value)
       if (row.questionId && typeof value === 'string') response.answers.push({ questionId: row.questionId, prompt: detail.questions.find(question => question.id === row.questionId)?.prompt ?? '', text: value })
     }
-    return { flowId: detail.flowId, theme: { id: theme.id, rank: theme.rank, title: theme.title }, responses: [...responses.values()] }
+    return { timeZone: detail.timeZone, flowId: detail.flowId, theme: { id: theme.id, rank: theme.rank, title: theme.title }, responses: [...responses.values()] }
   }
 
-  /** ANLY-010: totals by day (UTC) and feature. */
+  /** WS-001 / ANLY-010: regroup historical calls using the current saved workspace zone. */
   async usage(workspaceId: string) {
-    const { results } = await this.db.prepare(`SELECT day, feature, COUNT(*) AS calls, SUM(COALESCE(input_tokens, 0)) AS inputTokens, SUM(COALESCE(output_tokens, 0)) AS outputTokens,
-      SUM(cost_microusd) AS costMicrousd, SUM(CASE WHEN cost_microusd IS NULL THEN 1 ELSE 0 END) AS unreportedCalls
-      FROM analysis_calls WHERE workspace_id = ? GROUP BY day, feature ORDER BY day DESC, feature LIMIT 90`).bind(workspaceId).all<{ day: string; feature: string; calls: number; inputTokens: number; outputTokens: number; costMicrousd: number | null; unreportedCalls: number }>()
+    const zone = await this.timeZone(workspaceId)
+    // At most 91 UTC dates can intersect the latest 90 occupied local days. Fetch labels, never historical call rows.
+    const dates=await this.db.prepare(`SELECT day FROM (SELECT DISTINCT substr(created_at,1,10) AS day FROM analysis_calls WHERE workspace_id=? ORDER BY day DESC LIMIT 91)
+      UNION SELECT day FROM (SELECT DISTINCT substr(created_at,1,10) AS day FROM draft_ai_calls WHERE workspace_id=? ORDER BY day DESC LIMIT 91) ORDER BY day DESC LIMIT 91`).bind(workspaceId,workspaceId).all<{day:string}>()
+    const days=new Set<string>()
+    for(const {day} of dates.results) for(const hour of ['00:00:00','23:59:59']) days.add(civilParts(new Date(`${day}T${hour}Z`),zone).day)
+    const intervals=[...days].map(day=>({day,start:civilOpening(day,'00:00',zone),end:civilOpening(nextDay(day),'00:00',zone)}))
+    const {results}=await this.db.prepare(`WITH intervals AS (SELECT json_extract(value,'$.day') AS day,json_extract(value,'$.start') AS start,json_extract(value,'$.end') AS end FROM json_each(?)), calls AS (
+      SELECT i.day,c.feature,c.input_tokens,c.output_tokens,c.cost_microusd FROM intervals i JOIN analysis_calls c ON c.workspace_id=? AND c.created_at>=i.start AND c.created_at<i.end
+      UNION ALL SELECT i.day,c.feature,c.input_tokens,c.output_tokens,c.cost_microusd FROM intervals i JOIN draft_ai_calls c ON c.workspace_id=? AND c.created_at>=i.start AND c.created_at<i.end)
+      SELECT day,feature,COUNT(*) AS calls,SUM(input_tokens) AS inputTokens,SUM(output_tokens) AS outputTokens,SUM(cost_microusd) AS costMicrousd,
+      SUM(input_tokens IS NULL) AS unknownInputCalls,SUM(output_tokens IS NULL) AS unknownOutputCalls,SUM(cost_microusd IS NULL) AS unreportedCalls FROM calls GROUP BY day,feature ORDER BY day DESC,feature LIMIT 90`).bind(JSON.stringify(intervals),workspaceId,workspaceId).all<{day:string;feature:string;calls:number;inputTokens:number|null;outputTokens:number|null;costMicrousd:number|null;unknownInputCalls:number;unknownOutputCalls:number;unreportedCalls:number}>()
     return results
   }
 }

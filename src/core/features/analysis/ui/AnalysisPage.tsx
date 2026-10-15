@@ -1,3 +1,4 @@
+import { AnalysisAttentionPanel } from './AnalysisAttentionPanel'
 import './analysis.css'
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
@@ -21,7 +22,7 @@ function PolicyForm({ policies, onSaved }: { policies: Policies; onSaved: (polic
 }
 
 export function AnalysisPage() {
-  const [data, setData] = useState<{ provider: ProviderStatus; policies: Policies; runs: RunSummary[]; usage: UsageRow[] }>(), [error, setError] = useState<string>()
+  const [data, setData] = useState<{ timeZone: string; provider: ProviderStatus; policies: Policies; runs: RunSummary[]; usage: UsageRow[] }>(), [error, setError] = useState<string>()
   useEffect(() => { analysisApi.overview().then(setData).catch(reason => setError(reason instanceof Error ? reason.message : 'Analysis could not load.')) }, [])
   return <section aria-labelledby="analysis-title">
     <header className="dashboard-heading">
@@ -37,16 +38,16 @@ export function AnalysisPage() {
         {data.runs.length ? <ul className="analysis-run-list">{data.runs.map(run => <li key={run.id} className="quiet-panel">
           <Link className="focus-ring" to="/app/analysis/$runId" params={{ runId: run.id }}>{run.flowTitle} · Revision {run.revisionNumber}</Link>
           <span className="badge" data-status={run.state}>{stateLabels[run.state]}</span>
-          {run.staleResponses ? <span className="badge" data-status="queued">Stale</span> : null}
-          <p className="analysis-figure">{run.evidenceCount} responses · cutoff {when(run.evidenceCutoff)}{run.trigger === 'autorun' ? ' · started when the flow closed' : ''}{run.state === 'failed' && run.errorMessage ? ` · ${run.errorMessage}` : ''}</p>
+          {run.stale ? <span className="badge" data-status="queued">Stale</span> : null}
+          {run.redacted ? <span className="badge">Redacted</span> : null}<p className="analysis-figure">{run.evidenceCount} responses · cutoff {when(run.evidenceCutoff, data.timeZone)}{run.trigger === 'autorun' ? ' · started when the flow closed' : ''}{run.state === 'failed' && run.errorMessage ? ` · ${run.errorMessage}` : ''}</p>
         </li>)}</ul> : <p className="muted">No analysis yet. Request one for a revision with completed responses.</p>}
       </section>
       <div style={{ display: 'grid', gap: '1.25rem', minWidth: 0 }}>
-        <section className="panel analysis-card" aria-labelledby="provider-title"><p className="eyebrow" id="provider-title">Provider</p><ProviderNote provider={data.provider} /></section>
+        <AnalysisAttentionPanel timeZone={data.timeZone}/><section className="panel analysis-card" aria-labelledby="provider-title"><p className="eyebrow" id="provider-title">Provider</p><ProviderNote provider={data.provider} /></section>
         <section className="panel analysis-card" aria-labelledby="usage-title">
-          <p className="eyebrow" id="usage-title">Usage by day and feature (UTC)</p>
+          <p className="eyebrow" id="usage-title">Usage by day and feature ({data.timeZone})</p>
           {data.usage.length ? <div style={{ overflowX: 'auto' }} tabIndex={0} role="region" aria-label="Usage table" className="focus-ring"><table className="analysis-table"><thead><tr><th>Day</th><th>Feature</th><th>Calls</th><th>Tokens in / out</th><th>Cost</th></tr></thead>
-            <tbody>{data.usage.map(row => <tr key={`${row.day}:${row.feature}`}><td>{row.day}</td><td>{row.feature}</td><td>{row.calls}</td><td>{row.inputTokens.toLocaleString()} / {row.outputTokens.toLocaleString()}</td><td>{row.costMicrousd === null ? 'Not reported' : `US$${(row.costMicrousd / 1_000_000).toFixed(4)}${row.unreportedCalls ? ` + ${row.unreportedCalls} unreported` : ''}`}</td></tr>)}</tbody></table></div>
+            <tbody>{data.usage.map(row => <tr key={`${row.day}:${row.feature}`}><td>{row.day}</td><td>{row.feature}</td><td>{row.calls}</td><td>{row.inputTokens?.toLocaleString() ?? 'Unknown'} / {row.outputTokens?.toLocaleString() ?? 'Unknown'}{row.unknownInputCalls || row.unknownOutputCalls ? ' + unreported usage' : ''}</td><td>{row.costMicrousd === null ? 'Not reported' : `US$${(row.costMicrousd / 1_000_000).toFixed(4)}${row.unreportedCalls ? ` + ${row.unreportedCalls} unreported` : ''}`}</td></tr>)}</tbody></table></div>
             : <p className="muted">No provider call yet.</p>}
         </section>
         <section className="panel analysis-card" aria-labelledby="policy-title"><p className="eyebrow" id="policy-title">Settings</p><PolicyForm policies={data.policies} onSaved={policies => setData({ ...data, policies })} /></section>

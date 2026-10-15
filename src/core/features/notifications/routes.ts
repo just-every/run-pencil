@@ -8,7 +8,7 @@ export function registerNotificationRoutes(app: Hono<WorkerEnvironment>, service
     const session=c.get('operatorSession')
     return c.json(await services(c).notifications.preferences.read(session.workspaceId,c.req.param('flowId'),session.operatorId))
   })
-  app.put('/api/app/flows/:flowId/notifications',validateInput('param',z.object({flowId:resourceId})),validateInput('json',z.object({mode:z.enum(['immediately','off'])}).strict()),async c => {
+  app.put('/api/app/flows/:flowId/notifications',validateInput('param',z.object({flowId:resourceId})),validateInput('json',z.object({mode:z.enum(['immediately','daily','off'])}).strict()),async c => {
     const session=c.get('operatorSession')
     return c.json(await services(c).notifications.preferences.set(session.workspaceId,c.req.param('flowId'),session.operatorId,c.req.valid('json').mode))
   })

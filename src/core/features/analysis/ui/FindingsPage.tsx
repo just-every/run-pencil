@@ -16,7 +16,7 @@ function Responses({ runId, theme, focus }: { runId: string; theme: Shown; focus
     {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
     {!responses && !error ? <p className="status-note" role="status">Loading responses…</p> : null}
     {responses ? <ol>{responses.responses.map(response => <li key={response.id} id={`response-${response.id}`} data-focused={response.id === focus}>
-      <p className="analysis-figure" style={{ marginTop: 0 }}>Response {shortId(response.id)} · {response.source === 'imported' ? 'Imported' : 'Completed'} {when(response.completedAt)}</p>
+      <p className="analysis-figure" style={{ marginTop: 0 }}>Response {shortId(response.id)} · {response.source === 'imported' ? 'Imported' : 'Completed'} {when(response.completedAt, responses.timeZone)}</p>
       {response.answers.map(answer => <p key={answer.questionId} style={{ margin: '.4rem 0 0' }}><span className="muted">{answer.prompt}: </span>{answer.text}</p>)}
     </li>)}</ol> : null}
     <p style={{ marginTop: '.8rem' }}><Link className="analysis-link" to="/app/flows/$flowId/results" params={{ flowId: responses?.flowId ?? '' }} disabled={!responses}>Open the flow's results and ledger</Link></p>
@@ -58,10 +58,10 @@ export function FindingsPage({ runId }: { runId: string }) {
       <h1 className="display" id="findings-title">{title}</h1>
       <p className="analysis-status">
         <span className="badge" data-status={run.state}>{stateLabels[run.state]}</span>
-        <span>Evidence cutoff {when(run.evidenceCutoff)}</span><span aria-hidden="true">·</span><span>{run.evidenceCount} responses read</span>
+        <span>Evidence cutoff {when(run.evidenceCutoff, run.timeZone)}</span><span aria-hidden="true">·</span><span>{run.evidenceCount} responses read</span>
         {run.providerOrigin ? <><span aria-hidden="true">·</span><span>{run.calls[0] ? transportLabel(run.calls[0].provider) : run.providerOrigin}</span><span aria-hidden="true">·</span><span>{run.model}</span></> : null}
       </p>
-      {run.staleResponses ? <p className="analysis-stale"><TriangleAlert aria-hidden="true" size={15} /> Stale: {run.staleResponses} {run.staleResponses === 1 ? 'response arrived' : 'responses arrived'} after the cutoff. <Link to="/app/analysis/new" search={{ flowId: run.flowId, revisionId: run.revisionId }}>Run a new analysis</Link></p> : null}
+      {run.stale ? <p className="analysis-stale"><TriangleAlert aria-hidden="true" size={15} /> Stale{run.redacted ? ' after erasure' : ''}: {run.staleResponses} {run.staleResponses === 1 ? 'response arrived' : 'responses arrived'} after the cutoff. <Link to="/app/analysis/new" search={{ flowId: run.flowId, revisionId: run.revisionId }}>Run a new analysis</Link></p> : null}
       {run.redacted ? <p className="status-note" style={{ marginTop: '.8rem' }}>A response this analysis read was erased afterwards. It is no longer counted or quoted, and text that may have described it is withheld.</p> : null}
     </header>
     {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
@@ -71,7 +71,7 @@ export function FindingsPage({ runId }: { runId: string }) {
       <p className="muted">No finding, quote or recommendation was made{run.errorCode ? <> · <code>{run.errorCode}</code></> : null}. Publishing, collecting, results and exports keep working.</p>
       <button className="primary-button focus-ring" type="button" style={{ marginTop: '.9rem' }} disabled={busy} onClick={retry}><RotateCcw aria-hidden="true" size={15} /> {busy ? 'Retrying…' : 'Retry'}</button>
     </section> : null}
-    {run.state === 'queued' && run.nextAttemptAt ? <p className="status-note" role="status" style={{ marginTop: '1.4rem' }}>The provider did not answer ({run.errorMessage}). Pencil retries the same request at {when(run.nextAttemptAt)}; attempt {run.attempts} of 4.</p> : null}
+    {run.state === 'queued' && run.nextAttemptAt ? <p className="status-note" role="status" style={{ marginTop: '1.4rem' }}>The provider did not answer ({run.errorMessage}). Pencil retries the same request at {when(run.nextAttemptAt, run.timeZone)}; attempt {run.attempts} of 4.</p> : null}
     {run.state === 'running' ? <p className="status-note" role="status" style={{ marginTop: '1.4rem' }}>Pencil is waiting for the provider’s answer.</p> : null}
     {run.state === 'insufficient_evidence' ? <section className="panel analysis-card" style={{ marginTop: '1.4rem' }} aria-labelledby="insufficient-title">
       <p className="eyebrow">Insufficient evidence</p><h2 id="insufficient-title">No theme, quote or recommendation</h2>
@@ -116,7 +116,7 @@ function RunFacts({ run }: { run: RunDetail }) {
       <dt>Sent to</dt><dd>{run.providerOrigin ? <>{new URL(run.providerOrigin.split(' ')[0]).host}: only these answers and response IDs</> : 'Nothing was sent'}</dd>
       <dt>Cost</dt><dd>{run.calls.length ? costLabel(run.calls) : 'No provider call'}</dd>
       <dt>Policies</dt><dd>Disclosure threshold {run.policy.disclosure.threshold} · highest-impact recommendation</dd>
-      <dt>Requested</dt><dd>{run.trigger === 'autorun' ? 'Automatically when the flow closed' : 'By an operator'} · {when(run.createdAt)}</dd>
+      <dt>Requested</dt><dd>{run.trigger === 'autorun' ? 'Automatically when the flow closed' : 'By an operator'} · {when(run.createdAt, run.timeZone)}</dd>
     </dl>
   </section>
 }

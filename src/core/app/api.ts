@@ -41,6 +41,7 @@ export type DashboardFlow = {
   lastActivityAt: string
   completedResponses: number
   starts: number
+  analysis: { id:string; state:import('../features/analysis/model').RunState; revisionId:string; revisionNumber:number; evidenceCutoff:string; redacted:number; stale:number } | null
   audience: { launchedParticipants: number; eligibleParticipants: number; completedParticipants?: number }
 }
 

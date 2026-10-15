@@ -11,7 +11,7 @@ export const config: PublicSeedConfig = {
   publicFlowPurpose: 'Improve the next visit.', publicFlowTheme: { accent: '#4f6b3a', background: '#fbfaf6', surface: '#ffffff', text: '#1e2124' }, showPoweredByCredit: false,
 }
 export const workspace: WorkspaceSettings = { id: 'workspace', name: 'Review workspace', timeZone: 'Australia/Brisbane', sendingWindowStart: '09:00', sendingWindowEnd: '17:00', reminderDelayHours: 48, embedAllowedOrigins: [] }
-export const flow: DashboardFlow = { id: 'flow', title: 'Visit review', slug: 'review', status: 'open', draftVersion: 1, lastActivityAt: '2026-10-02T00:00:00.000Z', completedResponses: 1, starts: 2, audience: { launchedParticipants: 0, eligibleParticipants: 0 } }
+export const flow: DashboardFlow = { analysis: null, id: 'flow', title: 'Visit review', slug: 'review', status: 'open', draftVersion: 1, lastActivityAt: '2026-10-02T00:00:00.000Z', completedResponses: 1, starts: 2, audience: { launchedParticipants: 0, eligibleParticipants: 0 } }
 export const draft: BuilderDraft = {
   flow: { ...flow }, revision: { id: 'revision', number: 1, publishedAt: null, deadlineAt: null, targetCompletedResponses: null },
   steps: [

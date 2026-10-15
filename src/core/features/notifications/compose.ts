@@ -10,11 +10,13 @@ export function buttonTextColor(accent: string) {
   return (luminance+.05)/.05 >= 4.5 ? '#000000' : '#ffffff'
 }
 /** Only explicit public brand and notification fields cross the mail boundary. */
-export function composeResponseNotification(input: { businessName: string; flowTitle: string; submittedAt: string; timeZone: string; resultsUrl: string; accentColor: string; supportingLine?: string; logo?: NotificationLogo }) {
+export function composeResponseNotification(input: { businessName: string; flowTitle: string; submittedAt: string; timeZone: string; resultsUrl: string; accentColor: string; supportingLine?: string; logo?: NotificationLogo; digest?: {day:string;count:number} }) {
   const url = new URL(input.resultsUrl)
   if (!['https:','http:'].includes(url.protocol) || url.username || url.password || url.search || url.hash || !/^\/app\/flows\/[^/]+\/results$/.test(url.pathname)) throw new Error('Notification links must use the authenticated results page.')
   const submitted = new Intl.DateTimeFormat('en', { timeZone: input.timeZone, dateStyle: 'medium', timeStyle: 'long' }).format(new Date(input.submittedAt))
   const title = header(input.flowTitle), business = header(input.businessName)
+  const heading = input.digest ? `${input.digest.count} new completed responses to ${input.flowTitle}` : `New response to ${input.flowTitle}`
+  const timing = input.digest ? `Daily digest for ${input.digest.day}, cutoff ${submitted} (${input.timeZone}).` : `Submitted ${submitted} (${input.timeZone}).`
   const foreground = buttonTextColor(input.accentColor)
   const supportingLine = input.supportingLine ?? ''
   let attachment
@@ -25,9 +27,9 @@ export function composeResponseNotification(input: { businessName: string; flowT
   }
   return {
     ...(attachment ? { attachments: [attachment] } : {}),
-    subject: `${business}: new response to ${title}`,
-    text: `${input.businessName}\n${supportingLine ? `${supportingLine}\n` : ''}New response to ${input.flowTitle}\nSubmitted ${submitted} (${input.timeZone}).\n\nSign in to view results: ${url.href}\n\nThis is an automated notification. Replies are not monitored.`,
-    html: `<!doctype html><html><body style="margin:0;background:#f7f7f5;color:#202720;font-family:Arial,sans-serif"><main style="max-width:560px;margin:32px auto;padding:24px;background:#fff;overflow-wrap:anywhere">${attachment ? `<img src="cid:${attachment.contentId}" alt="${escape(input.businessName)}" style="display:block;max-width:160px;max-height:80px" />` : ''}<p dir="auto">${escape(input.businessName)}</p>${supportingLine ? `<p dir="auto">${escape(supportingLine)}</p>` : ''}<h1 style="font-size:24px" dir="auto">New response to ${escape(input.flowTitle)}</h1><p>Submitted ${escape(submitted)} (${escape(input.timeZone)}).</p><p><a href="${escape(url.href)}" style="display:inline-block;padding:14px 20px;background:${input.accentColor};color:${foreground};text-decoration:underline;border-radius:6px">Sign in to view results</a></p><p style="font-size:14px">This is an automated notification. Replies are not monitored.</p></main></body></html>`,
+    subject: `${business}: ${input.digest ? `daily digest (${input.digest.count})` : 'new response'} to ${title}`,
+    text: `${input.businessName}\n${supportingLine ? `${supportingLine}\n` : ''}${heading}\n${timing}\n\nSign in to view results: ${url.href}\n\nThis is an automated notification. Replies are not monitored.`,
+    html: `<!doctype html><html><body style="margin:0;background:#f7f7f5;color:#202720;font-family:Arial,sans-serif"><main style="max-width:560px;margin:32px auto;padding:24px;background:#fff;overflow-wrap:anywhere">${attachment ? `<img src="cid:${attachment.contentId}" alt="${escape(input.businessName)}" style="display:block;max-width:160px;max-height:80px" />` : ''}<p dir="auto">${escape(input.businessName)}</p>${supportingLine ? `<p dir="auto">${escape(supportingLine)}</p>` : ''}<h1 style="font-size:24px" dir="auto">${escape(heading)}</h1><p>${escape(timing)}</p><p><a href="${escape(url.href)}" style="display:inline-block;padding:14px 20px;background:${input.accentColor};color:${foreground};text-decoration:underline;border-radius:6px">Sign in to view results</a></p><p style="font-size:14px">This is an automated notification. Replies are not monitored.</p></main></body></html>`,
     headers: { 'Auto-Submitted': 'auto-generated' },
   }
 }

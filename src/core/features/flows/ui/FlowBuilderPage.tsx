@@ -1,3 +1,4 @@
+import { DraftRewritePanel } from '../../analysis/ui/DraftRewritePanel'
 import { TypeSettings } from './TypeSettings'
 import { stepRules, type AuthoringDraft, type EditableChoice, type EditableRule } from '../authoring'
 import { StepCanvas } from './StepCanvas'
@@ -253,6 +254,7 @@ export function FlowBuilderPage() {
           {selected ? <>
             <p className="eyebrow">Content</p>
             <label className="inspector-field">Prompt<textarea aria-label="Prompt" disabled={saving} className="text-area" onChange={(event) => setPrompt(event.target.value)} value={prompt} /></label>
+            {selected.kind === 'question' ? <DraftRewritePanel key={`${flowId}:${selected.id}`} flowId={flowId} stepId={selected.id} version={draft.flow.draftVersion} source={selected.prompt} disabled={saving || dirty} onAccepted={load} /> : null}
             <details><summary className="focus-ring">Extra wording</summary><label className="inspector-field">Why ask this?<textarea aria-label="Why ask this?" disabled={saving} className="text-area" onChange={(event) => setHelperText(event.target.value)} value={helperText} /></label></details>
             {selected.kind === 'question' ? <label className="inspector-field">Question type<select disabled={saving} className="text-input" onChange={(event) => {
               const nextType = event.target.value as FlowStep['questionType']

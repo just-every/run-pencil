@@ -217,7 +217,7 @@ export class ResponseRepository {
           json_object('responseId', r.id, 'revisionId', r.revision_id, 'notificationOperatorIds', (
             SELECT json_group_array(p.operator_id) FROM notification_preferences p JOIN operators o ON o.id = p.operator_id
             WHERE p.flow_id = r.flow_id AND p.mode = 'immediately' AND o.workspace_id = r.workspace_id
-          )), 'pending', ?, NULL, NULL, ?, ?, r.notification_eligible
+          ), 'digestOperatorIds', (SELECT json_group_array(json_object('operatorId',p.operator_id,'epoch',p.epoch)) FROM digest_preferences p JOIN operators o ON o.id=p.operator_id WHERE p.flow_id=r.flow_id AND p.enabled=1 AND o.workspace_id=r.workspace_id)), 'pending', ?, NULL, NULL, ?, ?, r.notification_eligible
         FROM responses r WHERE r.id = ? AND r.state = 'released'
       `).bind(`outbox-${response.id}`, `response.completed:${response.id}`, input.completedAt, input.completedAt, input.completedAt, response.id),
       this.binding.prepare(`
@@ -278,7 +278,7 @@ export class ResponseRepository {
           json_object('responseId', r.id, 'revisionId', r.revision_id, 'notificationOperatorIds', (
             SELECT json_group_array(p.operator_id) FROM notification_preferences p JOIN operators o ON o.id = p.operator_id
             WHERE p.flow_id = r.flow_id AND p.mode = 'immediately' AND o.workspace_id = r.workspace_id
-          )), 'pending', ?, NULL, NULL, ?, ?, r.notification_eligible FROM responses r
+          ), 'digestOperatorIds', (SELECT json_group_array(json_object('operatorId',p.operator_id,'epoch',p.epoch)) FROM digest_preferences p JOIN operators o ON o.id=p.operator_id WHERE p.flow_id=r.flow_id AND p.enabled=1 AND o.workspace_id=r.workspace_id)), 'pending', ?, NULL, NULL, ?, ?, r.notification_eligible FROM responses r
         WHERE r.id = ? AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`).bind(`outbox-release-${input.responseId}`, `response.completed:${input.responseId}`, input.now, input.now, input.now, input.responseId, auditId),
     ])
     // Reporting triggers also write rows; identify the response transition itself.
