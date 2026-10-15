@@ -19,12 +19,12 @@ release producer.
 `pnpm integration:sync` builds the deployment and writes its Base-derived spec
 to `management/integration/deployment-spec.json`. After the deployment build,
 `pnpm verify:admission` (included in CI) rejects a stale spec. `MAIL_API_KEY` is an optional
-deployment secret; the setup manifest requires it for Resend and SendGrid.
+deployment secret; the setup manifest requires it for RER, Resend and SendGrid. Managed Configure supplies and hides all four mail fields; Free and Assisted retain their provider inputs.
 
 `rer-setup.json` names the first owner's SEED_ADMIN_EMAIL, hidden generated
 SETUP_TOKEN and SESSION_SECRET, and the selected hosted mail settings. Local
-sign-in uses the Base outbox. Hosting requires a configured Resend or SendGrid
-sender and entered MAIL_API_KEY. The private hidden setup token is never shown to
+sign-in uses the Base outbox. Managed hosting uses RER mail without a provider account. Free and Assisted hosting
+require a configured Resend or SendGrid sender and entered MAIL_API_KEY. The private hidden setup token is never shown to
 the owner. Deployment origin and signed-claim issuer, installation ID, app origin
 and public P-256 keys come from trusted installation configuration, never requests.
 The claim handler calls native operator-auth and permanently refuses another

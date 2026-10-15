@@ -1,5 +1,9 @@
 # Release notes
 
+## Unreleased
+
+**Managed mail.** Managed hosting through RER sends Pencil email through the RER relay, without a separate mail provider account or API key. Free and Assisted installations retain the ordinary SendGrid or Resend choices; direct Cloudflare hosting still needs your own verified sender and provider key. Installation instructions now use rer 0.2.22.
+
 ## 0.4.0 - 2026-10-15
 
 **Upgrading a local install.** Stop dev (`rer dev --stop`), export (`rer export --output exports/before-upgrade.rer`), pull, then run `rer install`, `rer setup` and `rer dev`. Upgrading from 0.3.0 applies migrations `0035_feedback.sql` and `0036_owner_signin.sql`. Both are additive. `rer dev` now applies pending migrations itself before it serves, and names them in its server log. If it cannot apply them, it refuses to start and tells you to run `rer setup`. Before this, a pulled source served by `rer dev` alone answered respondents with HTTP 500 and failed its scheduled job every minute until `rer setup` ran. Hosted deployments apply both migrations through `rer deploy`. See docs/guide/install.md.

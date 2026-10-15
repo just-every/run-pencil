@@ -43,7 +43,7 @@
     {
       "name": "MAIL_PROVIDER",
       "label": "Email provider",
-      "help": "Hosted installs send real sign-in email and need Resend or SendGrid. Local dev/demo silently suppress email.",
+      "help": "Managed hosting uses RER mail without a provider account. Free and Assisted hosting use Resend or SendGrid. Local development suppresses email.",
       "kind": "select",
       "required": true,
       "default": "resend",
@@ -51,6 +51,10 @@
         {
           "value": "local",
           "label": "Local (suppress email)"
+        },
+        {
+          "value": "rer",
+          "label": "RER managed mail"
         },
         {
           "value": "resend",
@@ -73,6 +77,18 @@
       "group": "mail"
     },
     {
+      "name": "MAIL_RELAY_URL",
+      "label": "Managed mail relay URL",
+      "kind": "url",
+      "required": true,
+      "when": {
+        "field": "MAIL_PROVIDER",
+        "equals": "rer"
+      },
+      "help": "Provided automatically by Run Edit Run for Managed hosting.",
+      "group": "mail"
+    },
+    {
       "name": "MAIL_API_KEY",
       "label": "Mail provider API key",
       "kind": "secret",
@@ -81,6 +97,14 @@
       "required": false,
       "group": "mail",
       "presentations": [
+        {
+          "when": {
+            "field": "MAIL_PROVIDER",
+            "equals": "rer"
+          },
+          "required": true,
+          "label": "Managed mail credential"
+        },
         {
           "when": {
             "field": "MAIL_PROVIDER",

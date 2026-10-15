@@ -56,8 +56,17 @@ export function deploymentConfigurationErrors(requestUrl: string, environment: W
     if (!environment[name]?.trim()) errors.push(`${name} is required`)
   }
   if (demo && environment.OWNER_EMAIL && !isEmail(environment.OWNER_EMAIL.trim())) errors.push('OWNER_EMAIL must be an email address')
-  if (!demo && environment.MAIL_PROVIDER && !['resend','sendgrid'].includes(environment.MAIL_PROVIDER)) {
-    errors.push('MAIL_PROVIDER must be resend or sendgrid outside explicit loopback development')
+  if (!demo && environment.MAIL_PROVIDER && !['rer','resend','sendgrid'].includes(environment.MAIL_PROVIDER)) {
+    errors.push('MAIL_PROVIDER must be rer, resend or sendgrid outside explicit loopback development')
+  }
+  if (environment.MAIL_PROVIDER === 'rer') {
+    if (!environment.MAIL_RELAY_URL?.trim()) errors.push('MAIL_RELAY_URL is required')
+    else {
+      try {
+        const url = new URL(environment.MAIL_RELAY_URL)
+        if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash || url.href !== environment.MAIL_RELAY_URL) errors.push('MAIL_RELAY_URL must be an absolute HTTPS URL without credentials, query or fragment')
+      } catch { errors.push('MAIL_RELAY_URL must be an absolute HTTPS URL') }
+    }
   }
   if (environment.SESSION_SECRET && environment.SESSION_SECRET.length < 32) errors.push('SESSION_SECRET must contain at least 32 characters')
   if (environment.SESSION_SECRET && hasLineBreak(environment.SESSION_SECRET)) errors.push('SESSION_SECRET must not contain line breaks')
@@ -113,7 +122,9 @@ export function readRuntimeConfiguration(requestUrl: string, environment: Worker
     sessionSecret: environment.SESSION_SECRET!,
     setupToken: environment.SETUP_TOKEN,
     bootstrapAdminEmail: environment.SEED_ADMIN_EMAIL!.trim().toLowerCase(),
-    mail: { kind: environment.MAIL_PROVIDER as 'resend' | 'sendgrid', apiKey: environment.MAIL_API_KEY!.trim(), from: environment.MAIL_FROM!.trim() },
+    mail: environment.MAIL_PROVIDER === 'rer'
+      ? { kind: 'rer', apiKey: environment.MAIL_API_KEY!.trim(), from: environment.MAIL_FROM!.trim(), relayUrl: environment.MAIL_RELAY_URL! }
+      : { kind: environment.MAIL_PROVIDER as 'resend' | 'sendgrid', apiKey: environment.MAIL_API_KEY!.trim(), from: environment.MAIL_FROM!.trim() },
     task: readTaskDestination(environment, false),
     isLocalDevelopment: false,
     seedSampleData: false,

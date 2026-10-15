@@ -19,6 +19,7 @@ export interface WorkerBindings {
   readonly SEED_SAMPLE_DATA?: string
   readonly MAIL_PROVIDER?: string
   readonly MAIL_API_KEY?: string
+  readonly MAIL_RELAY_URL?: string
   readonly MAIL_FROM?: string
   readonly TASK_PROVIDER?: string
   readonly TASK_WEBHOOK_URL?: string

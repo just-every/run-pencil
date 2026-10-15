@@ -14,7 +14,7 @@ export function notificationConfigurationFailure(error: unknown) {
 }
 const providerCodes = new Set(['provider_rejected','provider_rate_limited','provider_uncertain','transport_uncertain','transport_error','rate_limited','unexpected_response','invalid_provider_response','idempotency_conflict','idempotency_in_progress','idempotency_unknown_conflict'])
 export function safeNotificationReceipt(provider: string, code?: string) {
-  return { provider: ['sendgrid','resend','development'].includes(provider) ? provider : null, code: code && providerCodes.has(code) ? code : null }
+  return { provider: ['rer','sendgrid','resend','development'].includes(provider) ? provider : null, code: code && providerCodes.has(code) ? code : null }
 }
 
 export const notificationPreparationReasons = {

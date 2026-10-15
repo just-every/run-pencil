@@ -42,7 +42,7 @@ export function guardedDevelopmentOutbox(db: D1Database, additionalClaim?: Devel
 
 // A fake paid mail edge used only by the native/browser suites. Product dev/demo mail is suppressed.
 export function baseMailSender(configuration: any, db: D1Database, claim?: DevelopmentCaptureClaim) {
-  if (configuration.kind !== 'local-development') return createMailSender({ provider: configuration.kind, mode: 'production', apiKey: configuration.apiKey })
+  if (configuration.kind !== 'local-development') return productionMailSender(configuration)
   return { async send(message: DevelopmentMessage) {
     const prepared = applyUnsubscribeHeaders(structuredClone(message))
     await createMailSender({ provider: 'development', mode: 'development' }).send(message)
@@ -57,3 +57,5 @@ import { createMailSender } from '../../src/base/mail/index.mjs'
 import { DevelopmentOutboxError, MailValidationError } from '../../src/base/mail/src/core/errors.mjs'
 // @ts-expect-error Maintained JavaScript unsubscribe assembly.
 import { applyUnsubscribeHeaders } from '../../src/base/mail/src/unsubscribe/index.mjs'
+
+import { productionMailSender } from '../../src/core/platform/mail/production.server'

@@ -236,13 +236,18 @@
   ],
   "durableObjects": [],
   "durableObjectMigrations": [],
-  "publicVariables": {},
+  "publicVariables": {
+    "MAIL_PROVIDER": "resend",
+    "MAIL_FROM": "",
+    "MAIL_RELAY_URL": ""
+  },
   "secretNames": [
     "SESSION_SECRET",
-    "SETUP_TOKEN",
+    "SETUP_TOKEN"
+  ],
+  "optionalSecretNames": [
     "MAIL_API_KEY"
   ],
-  "optionalSecretNames": [],
   "schedules": [
     "* * * * *"
   ],
@@ -265,5 +270,10 @@
         }
       ]
     }
+  },
+  "mail": {
+    "providers": [
+      "rer"
+    ]
   }
 }

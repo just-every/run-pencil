@@ -318,10 +318,16 @@
       "why": "Selects the mail sender adapter. Required: magic-link sign-in depends on it (OPER-003)."
     },
     {
+      "name": "MAIL_RELAY_URL",
+      "required": false,
+      "secret": false,
+      "why": "Required when MAIL_PROVIDER is rer. Run Edit Run supplies its Managed mail relay URL."
+    },
+    {
       "name": "MAIL_API_KEY",
-      "required": true,
+      "required": false,
       "secret": true,
-      "why": "Authenticates transactional sign-in, invitation, reminder, and notification mail."
+      "why": "Required for the selected hosted provider: supplied by RER for Managed mail or entered for Resend/SendGrid. Local development needs no key."
     },
     {
       "name": "MAIL_FROM",

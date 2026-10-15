@@ -1,13 +1,15 @@
 # Hosting on Cloudflare
 
-Pencil runs on your own Cloudflare account as one Worker with a D1 database. This page takes you from a working local copy to a deployed one: setting your secrets, deploying, and signing in as the first owner. It also covers setting up email, which Pencil cannot work without.
+For Managed hosting through RER, Pencil sends email through the RER relay. You do not need a SendGrid or Resend account or API key. Free and Assisted installations keep the ordinary SendGrid or Resend choices.
+
+For direct hosting, Pencil runs on your own Cloudflare account as one Worker with a D1 database. This page takes you from a working local copy to a deployed one: setting your secrets, deploying, and signing in as the first owner. It also covers setting up email, which Pencil cannot work without.
 
 Deploy acts only on the Cloudflare account you select. No command in Pencil deploys anything on its own, and local setup never creates anything in Cloudflare.
 
 ## What you need
 
 - **A Cloudflare account on Workers Paid**, and an API token for it that may edit Workers and D1. You give Pencil the account's ID and the token as `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`, through your secret manager or the secret environment of your terminal.
-- **Node.js 22 or later with npm, rer 0.2.20 and the source**, from [Install and run locally](install.md). Node must be available before installing rer. rer installs Pencil's pinned runtime and pnpm for its own commands; local `rer setup` is optional.
+- **Node.js 22 or later with npm, rer 0.2.22 and the source**, from [Install and run locally](install.md). Node must be available before installing rer. rer installs Pencil's pinned runtime and pnpm for its own commands; local `rer setup` is optional.
 - **A mail provider**, SendGrid or Resend, with a verified sender address and an API key. See [Set up email](#set-up-email).
 - **Installed dependencies.** Run `rer install` if you have not run Pencil locally yet. Deploy builds and validates the checkout. If you changed the source, follow the [source checks](install.md#changing-the-source); the complete `rer verify` suite is separate from the deployment commands below.
 
@@ -88,7 +90,7 @@ Enter your email at `/signin` and choose **Send magic link**. The link in the em
 
 ## Set up email
 
-Pencil sends email for three things: sign-in links, invitations and reminders, and new-response notices to operators. It uses SendGrid by default, or Resend when you set `PENCIL_MAIL_PROVIDER=resend` before the first deploy.
+Pencil sends sign-in links, invitations and reminders, and new-response notices and Daily digests to operators. Managed hosting through RER supplies the RER mail relay without a separate provider account or API key. The following setup applies to direct Cloudflare hosting, including Free and Assisted installations: SendGrid is the default, or choose Resend by setting `PENCIL_MAIL_PROVIDER=resend` before the first deploy.
 
 - Choose the provider before the first deploy. A fresh installation defaults to SendGrid. Released installations stored `MAIL_PROVIDER=resend` as a plain variable: on their first transition, deploy reads that existing setting and preserves Resend as a secret while inheriting the existing `MAIL_API_KEY`. An explicit conflicting provider is refused before deployment. Once both bindings are secrets, later deployments inherit them; changing your terminal setting does not rotate either one. This preserves provider configuration only; the 0.2.0 database upgrade remains blocked as explained below.
 - Verify your sender with the provider, and set `MAIL_FROM` to that address. A plain `noreply@` or `no-reply@` address enables new-response notices and Daily digests. With a different verified sender, sign-in still works and each flow's Results page explains why response notification mail is off.
@@ -112,7 +114,7 @@ The Worker has a schedule that runs every minute. It sends invitations still wai
 
 For installations already on this version’s migration history, back up first using the deployed recovery command in [Backup and restore](backup.md), and verify its archive in a new empty target before changing the running installation. The public `rer export` and `rer import` commands remain local; `node scripts/deployment-data-cli.mjs` handles deployed D1, including the deployment kit's migration ledger. Keep the previous deployment until you have checked the new one. For compatible migration histories, leave `SETUP_TOKEN` unset, retain the deployment receipt and deploy the new source with `rer deploy --environment production`, which applies the new database migrations in order. `RELEASE.json` lists every migration with its steps.
 
-**Released 0.2.0 needs a separately qualified hosted upgrade.** The released `0019_import_custody.sql` hash differs from this source. The recorded rer 0.2.1 attempt refused that history before writing, and the separate name-based Workers D1 proof does not qualify the hosted deployment path. The current rer pin is 0.2.20; that version change alone does not establish a safe transition. Retain the existing source and database and obtain backups through a supported path matching that installation's version until a reviewed transition preserves the actual applied history and applies the additive convergence migration. This source's deployed recovery CLI also checks migration hashes and must not be assumed to export the old 0019 history. Do not edit the ledger, migration hashes or receipt, switch migration controllers or assume export/restore qualifies the transition. The [release scope](../FIRST-RELEASE.md) records the earlier result.
+**Released 0.2.0 needs a separately qualified hosted upgrade.** The released `0019_import_custody.sql` hash differs from this source. The recorded rer 0.2.1 attempt refused that history before writing, and the separate name-based Workers D1 proof does not qualify the hosted deployment path. The current rer pin is 0.2.22; that version change alone does not establish a safe transition. Retain the existing source and database and obtain backups through a supported path matching that installation's version until a reviewed transition preserves the actual applied history and applies the additive convergence migration. This source's deployed recovery CLI also checks migration hashes and must not be assumed to export the old 0019 history. Do not edit the ledger, migration hashes or receipt, switch migration controllers or assume export/restore qualifies the transition. The [release scope](../FIRST-RELEASE.md) records the earlier result.
 
 Migrations cannot be undone in place. Keep the previous deployment's source and its database until the new one has been checked.
 

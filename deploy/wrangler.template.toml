@@ -16,3 +16,9 @@ run_worker_first = true
 # Retain anonymous metrics and dispatch due durable invitations/reminders.
 [triggers]
 crons = ["* * * * *"]
+
+# Configure supplies these values for hosted mail; Managed assigns all three.
+[vars]
+MAIL_PROVIDER = "resend"
+MAIL_FROM = ""
+MAIL_RELAY_URL = ""

@@ -38,7 +38,7 @@ Pencil is an editable form builder and feedback workspace with branching questio
 Install **Node.js 22 or later**, including npm, from [nodejs.org](https://nodejs.org/en/download), and install Git. Node must be on your `PATH` before installing rer. rer then installs Pencil's pinned runtime and pnpm for its own commands; you do not need a global pnpm install:
 
 ```sh
-npm install -g @runeditrun/rer@0.2.21
+npm install -g @runeditrun/rer@0.2.22
 git clone https://github.com/just-every/run-pencil.git pencil && cd pencil
 rer dev
 ```
@@ -78,7 +78,9 @@ rer describe
 rer check --profile first-party
 ```
 
-Deployment needs the intended Cloudflare account and production inputs. Before deploying, find the account's Workers & Pages `workers.dev` subdomain: the default address is `https://pencil-production.<workers-subdomain>.workers.dev`. A named environment uses `https://pencil-<environment>.<workers-subdomain>.workers.dev`. rer looks up the real subdomain and sets the Worker's `APP_ORIGIN` to that generated address; you do not need to guess or supply it. Set `OWNER_EMAIL` to the hosted owner’s email and use `SEED_ADMIN_EMAIL="$OWNER_EMAIL" rer deploy` as documented in the [hosting guide](docs/guide/hosting.md): Pencil’s current declaration maps that input to its owner binding. Deploy claims the owner automatically; sign in at `/signin` on the printed hosted address and finish `/setup`. No manual setup-token step is needed. Dry run builds and validates with zero provider calls. Read [OPERATIONS.md](OPERATIONS.md), [RUN-LOCALLY.md](RUN-LOCALLY.md) and [SEED-COMMAND-CONTRACT.md](SEED-COMMAND-CONTRACT.md).
+Managed hosting through RER sends production email through the RER relay; you need no SendGrid or Resend account or API key. Free and Assisted installations keep the ordinary SendGrid or Resend choices.
+
+Direct Cloudflare deployment needs the intended Cloudflare account and your own production mail provider, verified sender and API key. Before deploying, find the account's Workers & Pages `workers.dev` subdomain: the default address is `https://pencil-production.<workers-subdomain>.workers.dev`. A named environment uses `https://pencil-<environment>.<workers-subdomain>.workers.dev`. rer looks up the real subdomain and sets the Worker's `APP_ORIGIN` to that generated address; you do not need to guess or supply it. Set `OWNER_EMAIL` to the hosted owner’s email and use `SEED_ADMIN_EMAIL="$OWNER_EMAIL" rer deploy` as documented in the [hosting guide](docs/guide/hosting.md): Pencil’s current declaration maps that input to its owner binding. Deploy claims the owner automatically; sign in at `/signin` on the printed hosted address and finish `/setup`. No manual setup-token step is needed. Dry run builds and validates with zero provider calls. Read [OPERATIONS.md](OPERATIONS.md), [RUN-LOCALLY.md](RUN-LOCALLY.md) and [SEED-COMMAND-CONTRACT.md](SEED-COMMAND-CONTRACT.md).
 
 `rer signin --environment production` uses that deployment's Cloudflare credentials to issue a private, single-use link for its recorded owner without email. See [owner sign-in](docs/guide/hosting.md#sign-in-as-the-first-owner) for requirements. Keep the printed link private.
 
