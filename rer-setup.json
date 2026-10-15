@@ -15,7 +15,7 @@
     {
       "name": "SEED_ADMIN_EMAIL",
       "label": "Owner email",
-      "help": "Use the actual first-owner mailbox. Local sign-in uses the development outbox.",
+      "help": "Use the actual first-owner mailbox. Local sign-in uses the private one-click RER_OPEN link.",
       "kind": "email",
       "required": true,
       "prefill": "account-email",
@@ -43,14 +43,14 @@
     {
       "name": "MAIL_PROVIDER",
       "label": "Email provider",
-      "help": "Hosted installs send real sign-in email and need Resend or SendGrid. The local outbox is only for running Pencil on this computer.",
+      "help": "Hosted installs send real sign-in email and need Resend or SendGrid. Local dev/demo silently suppress email.",
       "kind": "select",
       "required": true,
       "default": "resend",
       "options": [
         {
           "value": "local",
-          "label": "Local outbox"
+          "label": "Local (suppress email)"
         },
         {
           "value": "resend",

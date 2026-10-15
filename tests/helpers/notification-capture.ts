@@ -1,4 +1,4 @@
-import type { DevelopmentCaptureClaim } from '../../platform/mail/development.server'
+import type { DevelopmentCaptureClaim } from './captured-mail.server'
 /** Optional product predicate, evaluated in Base's capture transaction. */
 export const notificationCaptureClaim: DevelopmentCaptureClaim = message => ({
   sql: `EXISTS (SELECT 1 FROM notification_deliveries d

@@ -7,8 +7,8 @@ import { archiveFixture, restoreFixture, snapshotFixture } from './archive-fixtu
 import { initializePencil } from '../../src/core/app/worker'
 import { createPencilPlatform } from '../../src/core/platform/runtime'
 import { baseMailSender } from '../../src/core/platform/mail/base.server'
-import { guardedDevelopmentOutbox } from '../../src/core/platform/mail/development.server'
-import { notificationCaptureClaim } from '../../src/core/features/notifications/capture'
+import { guardedDevelopmentOutbox } from '../helpers/captured-mail.server'
+import { notificationCaptureClaim } from '../helpers/notification-capture'
 
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 let baseline: Awaited<ReturnType<typeof snapshotFixture>>

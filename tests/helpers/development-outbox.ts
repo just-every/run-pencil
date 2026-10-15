@@ -1,1 +1,1 @@
-export { developmentInbox } from '../../scripts/local-outbox.mjs'
+export { developmentInbox } from './mail-capture.mjs'

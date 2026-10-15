@@ -1,14 +1,12 @@
+import { developmentInbox } from '../helpers/mail-capture.mjs'
 import { test as base, expect, type Page } from '@playwright/test'
 import { testDevKey } from '../helpers/dev-key.mjs'
 export { expect }
-// The local outbox opens only for the checkout's key. A person trades it once for the gate cookie (RER_OPEN); a test does the same
-// just before it opens the outbox, so no other page carries a cookie and no request carries a header.
-export async function grantOutboxKey(page: Page) {
-  expect((await page.request.post('/__dev/key', { data: { key: testDevKey } })).status()).toBe(204)
-}
-export async function openLocalOutbox(page: Page) {
-  await grantOutboxKey(page)
-  await page.getByRole('link', { name: 'Open the local outbox' }).click()
+// The test-only mail transport captures native links; the application has no inbox UI.
+export async function openMailLink(page: Page, email: string) {
+  const inbox = await developmentInbox(path => page.request.get(path, { headers: { 'x-rer-dev-key': testDevKey } }), email)
+  expect(inbox.messages.length).toBeGreaterThan(0)
+  await page.goto('/auth/confirm?token=' + inbox.messages[0].magicLinkToken)
 }
 // Each independent run (including a retry) starts with its own address, then keeps it
 // for the entire journey. The product's real per-address limits remain enforced.

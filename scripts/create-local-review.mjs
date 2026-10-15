@@ -1,4 +1,4 @@
-import { developmentInbox, devKeyHeaders } from './local-outbox.mjs'
+import { devKeyHeaders } from './local-dev-key.mjs'
 import { mkdir, writeFile } from 'node:fs/promises'
 
 const origin = new URL(process.argv[2] ?? 'http://127.0.0.1:15620')
@@ -13,10 +13,7 @@ async function json(path, data, method) { return (await call(path, data, method)
 const health = await json('/health')
 if (health.product !== 'pencil' || health.deployment?.sourceSha !== null || health.deployment?.versionId !== null) throw Error('This command only creates synthetic data in explicit local Pencil development.')
 const email = 'owner@aurora-coffee.test'
-const mail = await json('/auth/magic-link', { email })
-if (mail.delivery !== 'local') throw Error('The synthetic local mail adapter is required.')
-const inbox = await developmentInbox(path => call(path), email)
-const login = await call('/auth/confirm', { token: inbox.messages[0].magicLinkToken })
+const login = await call('/auth/dev/enter?as=owner')
 cookie = login.headers.get('set-cookie')?.split(';')[0] ?? ''
 if (!cookie) throw Error('Native synthetic operator sign-in did not create a session.')
 const dashboard = await json('/api/app/dashboard')

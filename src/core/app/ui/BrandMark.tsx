@@ -10,7 +10,7 @@ export function BrandMark({ name, href = '/' }: BrandMarkProps) {
   return (
     <a className="pencil-wordmark focus-ring" href={href}>
       <PencilMark className="pencil-mark" size={30} />
-      <span>{name}</span>
+      <span data-rer-name>{name}</span>
     </a>
   )
 }

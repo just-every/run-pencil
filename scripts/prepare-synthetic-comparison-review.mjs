@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { developmentInbox, devKeyHeaders } from './local-outbox.mjs'
+import { devKeyHeaders } from './local-dev-key.mjs'
 import assert from 'node:assert/strict'
 import { request } from '@playwright/test'
 
@@ -23,10 +23,7 @@ try {
   assert.deepEqual([health.deployment?.sourceSha, health.deployment?.versionId], [null, null], 'Require explicit local development, never a deployed Worker')
   const existing = await context.get(`/api/public/flows/${slug}`, { headers })
   assert.equal(existing.status(), 404, 'Existing review detected: stop before changing it')
-  await ok('/auth/magic-link', { email: 'owner@aurora-coffee.test' })
-  const inbox = await developmentInbox(path => context.get(path, { headers }), 'owner@aurora-coffee.test')
-  assert.ok(inbox.messages[0]?.magicLinkToken)
-  assert.equal((await context.post('/auth/confirm', { headers, data: { token: inbox.messages[0].magicLinkToken }, maxRedirects: 0 })).status(), 303)
+  assert.equal((await context.get('/auth/dev/enter?as=owner', { headers, maxRedirects: 0 })).status(), 303)
   const flow = await ok('/api/app/flows', { title, slug })
   const root = `/api/app/flows/${flow.id}`
   const draft = () => ok(`${root}/draft`)

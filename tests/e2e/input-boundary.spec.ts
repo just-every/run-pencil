@@ -22,9 +22,6 @@ test('native public input failures use safe 400 JSON and retain read-only invali
     expect(response.status()).toBe(400)
     expect(await response.json()).toMatchObject({ error: 'VALIDATION_ERROR' })
   }
-  const outboxInvalid = await request.get('/__dev/outbox?message=', { headers: devKeyHeaders })
-  expect(outboxInvalid.status()).toBe(400)
-  expect(await outboxInvalid.text()).toContain('Invalid message request.')
   expect((await request.get('/auth/local-inbox?email=private-secret')).status()).toBe(404)
   const invalid = await request.get('/auth/confirm?token=invalid-token', { maxRedirects: 0 })
   expect(invalid.status()).toBe(400)

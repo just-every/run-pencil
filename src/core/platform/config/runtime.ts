@@ -27,8 +27,8 @@ export function isLocalDevelopmentRequest(requestUrl: string, environment: Worke
     && environment.MAIL_PROVIDER === 'local'
 }
 
-/** A hosted demo container (Base demo host): RER_DEMO=1 behind its https origin, with mail explicitly kept in the outbox.
- * The front supplies the origin, the demo owner (OWNER_EMAIL) and fresh secrets; nothing is sent and AI stays off. */
+/** A hosted demo container (Base demo host): RER_DEMO=1 behind its https origin, with mail silently suppressed.
+ * The front supplies the origin, the demo owner (OWNER_EMAIL) and fresh secrets; effects are mocked. */
 export function isHostedDemoRequest(requestUrl: string, environment: WorkerBindings) {
   return environment.RER_DEMO === '1' && environment.MAIL_PROVIDER === 'local' && !isLoopbackRequest(requestUrl)
 }
@@ -102,8 +102,7 @@ export function readRuntimeConfiguration(requestUrl: string, environment: Worker
       setupToken: environment.SETUP_TOKEN,
       bootstrapAdminEmail: environment.OWNER_EMAIL!.trim().toLowerCase(),
       mail: { kind: 'local-development' },
-      // Demo settings never carry keys, so a demo's task webhook gets a stand-in one: demo mode refuses the call before it
-      // leaves and the Demo bar lists it, so a visitor can try external tasks and see that nothing is sent.
+      // Demo settings never carry keys; the task adapter returns provider success without sending.
       task: readTaskDestination({ ...environment, TASK_API_KEY: environment.TASK_API_KEY ?? 'demo-stand-in-never-sent' }, false),
       isLocalDevelopment: false,
       seedSampleData: false,

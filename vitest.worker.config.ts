@@ -1,4 +1,5 @@
 import { testDevKey } from './tests/helpers/dev-key.mjs'
+import { fileURLToPath } from 'node:url'
 import { readFile } from 'node:fs/promises'
 import { cloudflareTest, readD1Migrations } from '@cloudflare/vitest-plugin'
 import { defineConfig } from 'vitest/config'
@@ -16,6 +17,7 @@ const upgradeChecks = process.env.PENCIL_UPGRADE_CHECKS_JSON
   : []
 
 export default defineConfig({
+  resolve: { alias: [{ find: /(?:.*\/)?platform\/mail\/(?:base|development)\.server(?:\.ts)?$/, replacement: fileURLToPath(new URL('./tests/helpers/captured-mail.server.ts', import.meta.url)) }] },
   define: {
     __PENCIL_CORE_MIGRATIONS__: JSON.stringify(migrations),
     __PENCIL_PREVIOUS_CORE_MIGRATIONS__: JSON.stringify(previousMigrations),
@@ -25,7 +27,7 @@ export default defineConfig({
   },
   plugins: [
     cloudflareTest(({ inject }) => ({
-      main: './src/core/app/worker.ts',
+      main: './tests/helpers/mail-worker.ts',
       miniflare: {
         d1Databases: ['DB', 'IMPORT_SECOND'],
         bindings: {

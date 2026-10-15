@@ -38,19 +38,20 @@ Pencil is an editable form builder and feedback workspace with branching questio
 Install **Node.js 22 or later**, including npm, from [nodejs.org](https://nodejs.org/en/download), and install Git. Node must be on your `PATH` before installing rer. rer then installs Pencil's pinned runtime and pnpm for its own commands; you do not need a global pnpm install:
 
 ```sh
-npm install -g @runeditrun/rer@0.2.19
+npm install -g @runeditrun/rer@0.2.20
 git clone https://github.com/just-every/run-pencil.git pencil && cd pencil
 rer dev
 ```
 
-`rer dev` installs locked dependencies and prepares a local owner on first launch, without a separate setup command. Optional `rer setup --owner-email owner@example.com --owner-name Owner` prepares a local owner with your chosen details; reruns preserve existing owner, data and exact private settings. Dev prints its health-gated application URL and opens signed in: it prints `RER_SIGNED_IN` (who the browser will be) and `RER_OPEN`, a link for this computer that carries this checkout's private dev key in its fragment. Open it and the app signs you in as the local owner and takes you to **`/setup`** to finish your business name and time zone; finished setup enters the app. `RER_OPEN` is the only way in: the local outbox, the dev sign-in and the persona list answer 404 to any request without the key, including one a tunnel or a local proxy forwards to this computer. Use `rer dev --as operator` to start as the **Dev operator** persona (a colleague, `operator@dev.localhost`) or `--as signed-out` to start signed out; the dev badge at the bottom of every page switches between them. Use `rer dev --login` to turn dev identity off and sign in the ordinary way: read the newest sign-in message in the outbox (`RER_SIGN_IN`), open its link and confirm. A link works once; local capture sends no email.
+`rer dev` installs locked dependencies and prepares a local owner on first launch, without a separate setup command. Optional `rer setup --owner-email owner@example.com --owner-name Owner` prepares a local owner with your chosen details; reruns preserve existing owner, data and exact private settings. Dev prints its health-gated application URL and opens signed in: it prints `RER_SIGNED_IN` (who the browser will be) and `RER_OPEN`, a link for this computer that carries this checkout's private dev key in its fragment. Open it and the app signs you in as the local owner and takes you to **`/setup`** to finish your business name and time zone; finished setup enters the app. Open the private `RER_OPEN` link to continue as the owner in one click. Local mail is silently suppressed. Use `rer dev --as operator` or `--as signed-out` to select a different dev persona. The product name and title read **Pencil Dev**, without an injected bar or captured-mail inbox.
+
+`rer demo` runs a disposable, signed-in **Pencil Demo** with the Aurora Coffee sample workspace. Public reads run for real; mail and third-party effects return success without sending. Demo state lives in `.rer/demo/` and is removed on stop; the owner's `.wrangler/state` is preserved.
 
 Read the guide at `/docs` on your copy (its source is [docs/guide](docs/guide/overview.md)); `/` is the Lobby (**Finish setup** until first-run setup is confirmed, then **Sign in**), with `/pencil` redirecting there. An explicitly selected public landing flow in Settings keeps its existing respondent experience at `/`; Pencil's product page is the run site, run-pencil.com, built by `rer build --site`; published forms also keep their `/f/<slug>` links.
 
 Keep `.dev.vars` private. Use `--port PORT` for an explicit loopback port. Stop dev with Ctrl-C or `rer dev --stop`.
 
 ```sh
-rer outbox
 npx --no-install playwright install chromium --only-shell
 rer verify
 ```

@@ -46,7 +46,7 @@ await mkdir(state, { recursive: true })
 // never relies on, replaces or reads the owner's local setup file.
 const config = resolve(state, 'wrangler.toml')
 const template = (await readFile(resolve(root, 'deploy/wrangler.template.toml'), 'utf8'))
-  .replace('main = "src/server.ts"', 'main = "../src/server.ts"')
+  .replace('main = "src/server.ts"', 'main = "../tests/helpers/mail-browser-worker.ts"')
   .replace('migrations_dir = "migrations/core"', 'migrations_dir = "../migrations/core"')
 const managementVars = process.argv[3] === '--management' ? `\nRER_MANAGEMENT_ORIGIN = "http://127.0.0.1:${Number(port) + 1}"\nRER_INSTALLATION_ID = "synthetic-pencil-admission"\n` : ''
 // The actions journey starts its own loopback task receiver on this port (tests/e2e/task-receiver.ts).
@@ -61,7 +61,7 @@ const common = { ...process.env, PENCIL_WRANGLER_CONFIG: config, CI: '1', WRANGL
 let management
 let exitCode
 try {
-  const built = await run('pnpm', ['run', 'build:app'], common)
+  const built = await run('pnpm', ['exec', 'vite', 'build', '--config', 'tests/helpers/vite-mail.config.ts'], common)
   if (receivedSignal) exitCode = 0
   else if (built !== 0) exitCode = built
   else {

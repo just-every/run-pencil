@@ -3,7 +3,6 @@ import { createD1BatchExecutor, type D1BatchExecutor } from './db/batch'
 import { readRuntimeConfiguration, type RuntimeConfiguration } from './config/runtime'
 import type { WorkerBindings } from '../app/environment'
 import { readManagementConfiguration, type ManagementConfiguration } from './management'
-import { developmentOutboxResponse } from './mail/development.server'
 import { deploymentHealth } from '../../base/deployment-health'
 import { readAiProvider, type AiProvider } from './ai/provider'
 
@@ -18,8 +17,6 @@ export type PencilPlatform = {
   fetchAsset(request: Request): Promise<Response>
   /** ai.provider.v1 for analysis: off until configured (WS-003); a local runtime uses the dev client server.dev.ts supplies. */
   readonly ai: AiProvider
-  /** The key-gated local outbox and key exchange (`/__dev/outbox`, `/__dev/key`): 404 unless a local runtime holds RER_DEV_KEY. */
-  developmentOutbox(request: Request): Promise<Response>
 }
 
 export function createPencilPlatform(requestUrl: string, environment: WorkerBindings): PencilPlatform {
@@ -33,7 +30,6 @@ export function createPencilPlatform(requestUrl: string, environment: WorkerBind
     deployment: deploymentHealth(environment),
     fetchAsset: (request) => environment.ASSETS.fetch(request),
     ai: readAiProvider(environment, configuration.isLocalDevelopment),
-    developmentOutbox: (request) => developmentOutboxResponse(request, environment, environment.DB),
   }
 }
 

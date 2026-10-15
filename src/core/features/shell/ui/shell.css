@@ -34,6 +34,13 @@
 @media (max-width: 440px) {
   .operator-header .pencil-wordmark span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 }
+/* Demo/dev identification remains visible when the ordinary phone lockup is icon-only. */
+@media (max-width: 620px) {
+  html:has(style[data-rer-label]) .operator-header { flex-wrap: wrap; padding-block: 12px; }
+  html:has(style[data-rer-label]) .operator-header .pencil-wordmark [data-rer-name] { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: nowrap; }
+  html:has(style[data-rer-label]) .operator-nav { order: 1; flex-basis: 100%; margin-left: 0; justify-content: space-between; }
+  html:has(style[data-rer-label]) .operator-signout { margin-left: auto; }
+}
 /* Titles of pages without their own heading block (import, opt-out). */
 :where(.operator-content) h1.display { margin: 10px 0 24px; font-size: clamp(40px, 5vw, 64px); line-height: 1.02; }
 :where(.operator-content) h2.display { font-size: 28px; line-height: 1.1; }

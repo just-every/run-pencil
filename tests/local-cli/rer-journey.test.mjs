@@ -4,9 +4,8 @@ import { mkdir, readFile, writeFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { request as httpRequest } from 'node:http';
 import { installation } from '../helpers/rer-installation.mjs';
-import { developmentInbox } from '../../scripts/local-outbox.mjs';
 
-test('real rer setup, native one-use sign-in, preserved owner/settings, confirmed reset and complete local archive round trip', { timeout: 600_000 }, async () => {
+test('real rer setup, one-click sign-in, preserved owner/settings, confirmed reset and complete local archive round trip', { timeout: 600_000 }, async () => {
  const app = await installation(); const email = 'synthetic-rer-owner@example.test';
  const setup = ['setup', '--owner-email', email, '--owner-name', 'Synthetic owner', '--port', String(app.port)];
  let cookie = '';
@@ -24,11 +23,8 @@ test('real rer setup, native one-use sign-in, preserved owner/settings, confirme
   assert.notEqual((await app.run(['setup', '--owner-email', 'synthetic-other@example.test', '--port', String(app.port)])).code, 0);
   assert.equal(Buffer.compare(await readFile(join(app.root, '.dev.vars')), settings), 0, 'private settings bytes stay exact');
   const runtime = app.start(['dev', '--port', String(app.port)]); await app.wait(runtime);
-  const inbox = await developmentInbox(path => request(path), email);
-  const confirm = await post('/auth/confirm', { token: inbox.messages[0].magicLinkToken });
-  assert.equal(confirm.status, 303); assert.equal(new URL(confirm.headers.get('location'), app.origin).pathname, '/setup');
-  cookie = confirm.headers.get('set-cookie').split(';')[0];
-  assert.notEqual((await post('/auth/confirm', { token: inbox.messages[0].magicLinkToken })).status, 303);
+  const confirm = await request('/auth/dev/enter?as=owner');
+  assert.equal(confirm.status, 303); cookie = confirm.headers.getSetCookie().map(line => line.split(';')[0]).join('; ');
   assert.equal((await request('/app')).status, 302);
   assert.equal((await post('/setup', { name: 'Synthetic business', timeZone: 'Australia/Brisbane' })).status, 303);
   const created = await post('/api/app/flows', { title: 'Retained via rer', slug: 'retained-via-rer' }); assert.equal(created.status, 201);
@@ -53,9 +49,8 @@ test('real rer setup, native one-use sign-in, preserved owner/settings, confirme
   const after = JSON.parse(await readFile(join(app.root, 'exports/after.rer'), 'utf8'));
   assert.deepEqual(after.payload, before.payload, 'complete retained payload round trips');
   assert.equal((await app.run(setup)).code, 0, 'restored owner signs in with fresh private settings');
-  const restored = app.start(['preview', '--port', String(app.port)]); await app.wait(restored);
-  cookie = ''; const fresh = await developmentInbox(path => request(path), email);
-  const signedIn = await post('/auth/confirm', { token: fresh.messages[0].magicLinkToken }); cookie = signedIn.headers.get('set-cookie').split(';')[0];
+  const restored = app.start(['dev', '--port', String(app.port)]); await app.wait(restored);
+  cookie = ''; const signedIn = await request('/auth/dev/enter?as=owner'); cookie = signedIn.headers.getSetCookie().map(line => line.split(';')[0]).join('; ');
   const flows = await request('/api/app/dashboard'); assert.equal(flows.status, 200); assert.ok((await flows.json()).some(item => item.id === flow.id));
   assert.equal((await request('/__dev/outbox', { keyless: true })).status, 404, 'a forwarded request without the key finds no outbox');
   // Node's fetch rewrites supplied Host. Use actual HTTP ingress for this guard.
@@ -73,9 +68,8 @@ test('real rer setup, native one-use sign-in, preserved owner/settings, confirme
   await assert.rejects(fetch(app.origin + '/health'));
   const empty = app.start(['dev', '--port', String(app.port)]); await app.wait(empty);
   cookie = '';
-  const emptyInbox = await developmentInbox(path => request(path), email);
-  const emptySignIn = await post('/auth/confirm', { token: emptyInbox.messages[0].magicLinkToken });
-  assert.equal(emptySignIn.status, 303); cookie = emptySignIn.headers.get('set-cookie').split(';')[0];
+  const emptySignIn = await request('/auth/dev/enter?as=owner');
+  assert.equal(emptySignIn.status, 303); cookie = emptySignIn.headers.getSetCookie().map(line => line.split(';')[0]).join('; ');
   assert.equal((await post('/setup', { name: 'Fresh business', timeZone: 'Australia/Brisbane' })).status, 303);
   const emptyFlows = await request('/api/app/dashboard'); assert.equal(emptyFlows.status, 200);
   assert.deepEqual(await emptyFlows.json(), [], 'confirmed reset leaves the fresh installation empty');

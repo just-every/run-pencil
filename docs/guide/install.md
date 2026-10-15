@@ -27,7 +27,7 @@ Setup writes a private `.dev.vars` file. Keep it private. It holds your local se
 1. Open the `RER_OPEN` link that `dev` printed, on the computer that runs it. The link carries a private key for this copy, and it signs you in as the local owner.
 2. You arrive at `/setup`. Enter your **Business name** and choose your time zone, then continue.
 
-To try the ordinary email sign-in instead, run `rer dev --login`. A local copy sends no real email, so your sign-in link waits in the local outbox: open the outbox address that `dev` printed, choose the newest message, choose **Open this link**, then **Confirm**. The outbox opens only with the same key, so a request that is forwarded to your computer finds nothing.
+Local mail is silently suppressed. The nav and title read **Pencil Dev**. Use `rer demo` for a disposable **Pencil Demo** with the Aurora Coffee sample workspace; demo reads are real and effects that reach people return success without sending.
 
 You land in the operator app, at `/app`, with an empty workspace. There are no sample flows and no sample responses. Until you finish `/setup`, every page of the app sends you back to it. Go on to [Build a form](build-a-form.md).
 
@@ -48,12 +48,7 @@ Without a selected landing flow, `/` shows the Lobby. Selecting a flow in Settin
 
 ## Sign in again later
 
-Pencil has no passwords. To sign in after you have signed out, enter your email at `/signin` and choose **Send magic link**. A local copy sends no real email, so the link waits in a local outbox instead. Run `rer outbox` to print its address and a key link that opens it, or choose **Open the local outbox** on the sign-in page (after opening `RER_OPEN` once in this browser):
-
-1. Choose **Read message**.
-2. Choose **Open this link**, then **Confirm**.
-
-A sign-in link works once and expires after 15 minutes. Opening it only shows a confirmation page, and nothing happens until you choose **Confirm**.
+Open the private `RER_OPEN` link from `rer dev` again, or choose **Continue as owner** at `/signin` after opening it once. Hosted production installs use one-time email links; each link expires after 15 minutes and is consumed only when you confirm it.
 
 ## Optional local setup
 
@@ -83,4 +78,4 @@ Pencil is the complete product source. You may change the code, the database sch
 
 ## What local mode is not
 
-A local copy proves that the app works, not that email reaches inboxes or that a deployment will carry your traffic. Local mail is a synthetic outbox, not delivery. Those checks belong to your real deployment: see [Hosting on Cloudflare](hosting.md).
+A local copy proves that the app works, not that email reaches inboxes or that a deployment will carry your traffic. Local mail is suppressed. Those checks belong to your real deployment: see [Hosting on Cloudflare](hosting.md).

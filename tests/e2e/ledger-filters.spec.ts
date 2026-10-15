@@ -2,7 +2,7 @@ import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import AxeBuilder from '@axe-core/playwright'
 import { contract } from './contract'
-import { expect, test, openLocalOutbox } from './fixtures'
+import { expect, test, openMailLink } from './fixtures'
 import { operatorEmail } from './auth-identity'
 import { downloadedText, csvRows } from './export-helpers'
 import { collectLedgerFilterScenario, consentStatement } from '../ledger-filter-scenario'
@@ -15,9 +15,7 @@ contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'FLOW-019', 'IMPORT-003', 'BASE-PU
   const email = operatorEmail()
   await page.goto('/signin'); await page.getByLabel('Operator email').fill(email)
   await page.getByRole('button', { name: /Send.*link/i }).click()
-  await openLocalOutbox(page)
-  await page.locator('article').filter({ hasText: email }).getByRole('link', { name: 'Read message' }).first().click()
-  await page.getByRole('link', { name: 'Open this link' }).click()
+  await openMailLink(page, email)
   await page.getByRole('button', { name: 'Confirm', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Your flows' })).toBeVisible()
   let serial = 0

@@ -1,7 +1,7 @@
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { contract } from './contract'
-import { expect, test, openLocalOutbox } from './fixtures'
+import { expect, test, openMailLink } from './fixtures'
 import { operatorEmail } from './auth-identity'
 import AxeBuilder from '@axe-core/playwright'
 import type { BuilderDraft } from '../../src/core/app/api'
@@ -10,9 +10,7 @@ contract(['RSLT-001','RSLT-003','LEDG-001','LEDG-003','BASE-PUBLIC-003'], 'full 
   const capture=async(name:string)=> { if(process.env.PENCIL_CAPTURE_DIR) { await mkdir(process.env.PENCIL_CAPTURE_DIR,{recursive:true});await page.screenshot({path:join(process.env.PENCIL_CAPTURE_DIR,`${info.project.name}-${name}.png`)}) } }
   await page.setViewportSize(info.project.name==='mobile'?{width:390,height:844}:{width:1440,height:900})
   await page.goto('/signin');await page.getByLabel('Operator email').fill(operatorEmail())
-  await page.getByRole('button',{name:/Send.*link/i}).click();await openLocalOutbox(page)
-  await page.locator('article').filter({hasText:operatorEmail()}).getByRole('link',{name:'Read message'}).first().click()
-  await page.getByRole('link',{name:'Open this link'}).click();await page.getByRole('button',{name:'Confirm',exact:true}).click()
+  await page.getByRole('button',{name:/Send.*link/i}).click();await openMailLink(page, operatorEmail());await page.getByRole('button',{name:'Confirm',exact:true}).click()
   await expect(page.getByRole('heading',{name:'Your flows'})).toBeVisible()
   let serial=0
   const call=async<T,>(path:string,data?:unknown):Promise<T>=> {

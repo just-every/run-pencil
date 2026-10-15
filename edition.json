@@ -447,10 +447,6 @@
           {
             "path": "src/base/demo",
             "originPath": "modules/demo"
-          },
-          {
-            "path": "src/base/demo/csp.mjs",
-            "originPath": "modules/operator-auth/csp.mjs"
           }
         ]
       }

@@ -2,7 +2,7 @@ import { openStateDatabase, stateDatabaseFile } from './state-database'
 import { createHash } from 'node:crypto'
 import { ulid } from 'ulid'
 import type { Page } from '@playwright/test'
-import { expect, openLocalOutbox } from './fixtures'
+import { expect, openMailLink } from './fixtures'
 
 export async function signInEmptyWorkspace(page: Page) {
   const workspace = ulid()
@@ -24,9 +24,7 @@ export async function signInEmptyWorkspace(page: Page) {
   } finally { db.close() }
   await page.getByLabel('Operator email').fill(email)
   await page.getByRole('button', { name: /Send.*link/i }).click()
-  await openLocalOutbox(page)
-  await page.locator('article').filter({ hasText: email }).getByRole('link', { name: 'Read message' }).first().click()
-  await page.getByRole('link', { name: 'Open this link' }).click()
+  await openMailLink(page, email)
   await page.getByRole('button', { name: 'Confirm', exact: true }).click()
   await expect(page).toHaveURL(/\/setup$/)
   await page.getByLabel('Business name', { exact: true }).fill('Synthetic business')

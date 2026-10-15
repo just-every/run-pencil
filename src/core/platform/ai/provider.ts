@@ -1,3 +1,4 @@
+import { demoAiClient } from './demo'
 import { aiConfig, aiDiagnostics, createAiClient, type AiClient } from '../../../base/ai/index.mjs'
 import type { WorkerBindings } from '../../app/environment'
 
@@ -6,7 +7,7 @@ export type AiRates = { inputPerMillion: number; outputPerMillion: number }
 export type AiProvider =
   | { state: 'off'; setup: string }
   | { state: 'misconfigured'; setup: string; code: string }
-  | { state: 'on'; client: AiClient; transport: 'direct' | 'models' | 'dev'; origin: string; model: string; rates: AiRates | null }
+  | { state: 'on'; client: AiClient; transport: 'direct' | 'models' | 'dev' | 'demo'; origin: string; model: string; rates: AiRates | null }
 
 /** A local-only client (server.dev.ts): Base's dev double, or a capped Models dev app under `rer dev --models live`. */
 export type DevAiClient = { client: AiClient; transport: 'dev' | 'models'; origin: string }
@@ -14,7 +15,6 @@ export type DevAiFactory = (environment: WorkerBindings) => DevAiClient
 
 export const aiSetupText = 'AI is off. To analyse responses or rewrite questions, set AI_ENABLED=true and AI_MODEL, then either AI_API_KEY (with AI_BASE_URL for a provider other than OpenAI) or MODELS_SERVICE and MODELS_KEY for a linked Models service.'
 
-export const demoAiText = 'AI is off in this demo, so nothing is sent to an AI provider. An installation analyses responses once AI_ENABLED, AI_MODEL and one AI transport are set.'
 
 function rates(environment: WorkerBindings): AiRates | null {
   const input = Number(environment.AI_INPUT_USD_PER_MILLION_TOKENS), output = Number(environment.AI_OUTPUT_USD_PER_MILLION_TOKENS)
@@ -24,8 +24,7 @@ function rates(environment: WorkerBindings): AiRates | null {
 
 /** ai.provider.v1 for this request or tick. Configuration problems are reported here; nothing is sent until a run calls it. */
 export function readAiProvider(environment: WorkerBindings, local: boolean): AiProvider {
-  // A demo never calls an AI provider, whatever the checkout's private settings hold.
-  if (environment.RER_DEMO === '1') return { state: 'off', setup: demoAiText }
+  if (environment.RER_DEMO === '1') return { state: 'on', client: demoAiClient(), transport: 'demo', origin: 'Demo', model: 'demo', rates: null }
   const config = aiConfig({ ...environment })
   if (!config.enabled) return { state: 'off', setup: aiSetupText }
   const model = environment.AI_MODEL?.trim()

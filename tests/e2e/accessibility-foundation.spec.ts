@@ -1,6 +1,6 @@
 import { operatorEmail } from './auth-identity'
 import AxeBuilder from '@axe-core/playwright'
-import { expect, test, grantOutboxKey } from './fixtures'
+import { expect, test, openMailLink } from './fixtures'
 import { contract } from './contract'
 import { mkdir } from 'node:fs/promises'
 // Isolate this new journey's API traffic; actual per-address rate limits stay enabled.
@@ -55,15 +55,7 @@ contract(['SHELL-001', 'BASE-PUBLIC-003', 'HOME-001'], 'keyboard and axe cover t
   await page.keyboard.type(operatorEmail())
   await page.keyboard.press('Tab')
   await page.keyboard.press('Enter')
-  await expect(page.getByRole('link', { name: 'Open the local outbox' })).toBeVisible()
-  await grantOutboxKey(page)
-  await tabTo(page, page.getByRole('link', { name: 'Open the local outbox' }))
-  await page.keyboard.press('Enter')
-  await tabTo(page, page.locator('article').filter({ hasText: operatorEmail() }).getByRole('link', { name: 'Read message' }).first())
-  await page.keyboard.press('Enter')
-  await expect(page.getByRole('link', { name: 'Open this link' })).toBeVisible()
-  await tabTo(page, page.getByRole('link', { name: 'Open this link' }))
-  await page.keyboard.press('Enter')
+  await openMailLink(page, operatorEmail())
   await expect(page.getByRole('heading', { name: 'Confirm sign-in to Pencil', exact: true })).toBeVisible()
   await page.waitForLoadState('load')
   expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([])

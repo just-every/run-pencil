@@ -81,6 +81,6 @@ export async function seedDemo(env: WorkerBindings, { ownerEmail, now }: { owner
   })
   await services.brand.save(workspaceId, sample.brand)
   await services.workspace.completeSetup(workspaceId, sample.workspace.name, sample.workspace.timeZone)
-  // A response a visitor submits notifies the owner, so its mail shows up captured in the Demo bar.
+  // A response a visitor submits notifies the owner, with mail silently suppressed.
   await services.notifications.preferences.set(workspaceId, sample.flow.id, owner.id, 'immediately')
 }

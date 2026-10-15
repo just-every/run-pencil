@@ -1,6 +1,6 @@
 # Pencil source handover
 
-Start with rer: install, setup, dev, sign in through the printed Base outbox, finish `/setup`, then verify. The portable dispatcher and shared onboarding lifecycle preserve existing owners, data and private settings. Reset and restore require explicit confirmation; restore requires an empty destination.
+Start with rer: install, setup, dev, open the private one-click RER_OPEN link, finish `/setup`, then verify. The portable dispatcher and shared onboarding lifecycle preserve existing owners, data and private settings. Reset and restore require explicit confirmation; restore requires an empty destination.
 
 Results, response email, branding, additional questions, embed, the bounded Typeform importer and Google Forms CSV-first move-in with an optional `forms.get` definition are integrated through the shared import kit. Source provenance and applied migration bytes remain checked. First-run completion is persisted per workspace; the additive migration marks established workspaces complete. Fresh owners finish their business name and time zone at `/setup` before entering other app routes.
 

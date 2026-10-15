@@ -1,0 +1,2 @@
+export const digestEligibility = `p.enabled=1 AND d.replay_enabled=1 AND NOT EXISTS(SELECT 1 FROM operator_auth_links l JOIN oa_operators a ON a.id=l.auth_id WHERE l.operator_id=d.operator_id AND a.status='inactive')`
+export const digestLiveCount = `(SELECT COUNT(*) FROM digest_members m JOIN responses r ON r.id=m.response_id WHERE m.delivery_id=d.id AND r.state='released' AND r.notification_eligible=1 AND r.source IN ('direct','embed','invitation'))`

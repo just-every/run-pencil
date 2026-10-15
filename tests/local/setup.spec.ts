@@ -22,18 +22,14 @@ test('fresh rer owner finishes setup before hydration, then collects a response 
     expect(setup.code).toBe(0)
     // The outbox opens only for a request that holds this checkout's key; a person gets it from the RER_OPEN link, this journey presents it as the CLI does.
     const key = /^RER_DEV_KEY=(\S+)$/m.exec(await readFile(join(app.root, '.rer/local/dev-key.env'), 'utf8'))![1]
-    await context.route(app.origin + '/__dev/**', route => route.continue({ headers: { ...route.request().headers(), 'x-rer-dev-key': key } }))
+    await context.route(app.origin + '/auth/dev/**', route => route.continue({ headers: { ...route.request().headers(), 'x-rer-dev-key': key } }))
     // This copy links the checkout's node_modules from outside its root, so Vite serves those modules through /@fs/,
     // which rer dev answers only with the checkout's key; a real checkout serves them under its own root.
     const linkedModules = (each: typeof context) => each.route(app.origin + '/@fs/**', route => route.continue({ headers: { ...route.request().headers(), 'x-rer-dev-key': key } }))
     runtime = app.start(['dev', '--port', String(app.port)]); await app.wait(runtime)
     const page = await context.newPage()
     await page.goto(app.origin + '/setup'); await expect(page).toHaveURL(app.origin + '/signin')
-    await page.goto(app.origin + '/__dev/outbox')
-    await page.getByRole('link', { name: 'Read message' }).first().click()
-    await page.getByRole('link', { name: 'Open this link' }).click()
-    const confirmation = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === '/auth/confirm')
-    await page.getByRole('button', { name: 'Confirm' }).click(); expect((await confirmation).status()).toBe(303)
+    await page.goto(app.origin + '/auth/dev/enter?as=owner')
     await expect(page).toHaveURL(app.origin + '/setup')
     await page.goto(app.origin + '/app/settings'); await expect(page).toHaveURL(app.origin + '/setup')
     await expect(page.getByLabel('Business name')).toBeEnabled()

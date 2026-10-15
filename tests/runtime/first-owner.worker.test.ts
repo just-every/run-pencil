@@ -3,7 +3,7 @@ import { checkConfirmation, checkMail } from '../../src/base/operator-auth/confo
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
-import worker from '../../src/core/app/worker'
+import worker from '../helpers/mail-worker'
 import { createPencilPlatform } from '../../src/core/platform/runtime'
 import { initializePencil } from '../../src/core/app/worker'
 import { developmentInbox } from '../helpers/development-outbox'

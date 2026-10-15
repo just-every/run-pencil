@@ -3,7 +3,7 @@ import { readNotificationBrand, type NotificationBrand } from './brand.server'
 import { composeResponseNotification, notificationSenderError } from './compose'
 import { insideSendingWindow, retryInstant } from '../distribution'
 import { freezeDigests } from './digest-cohorts'
-import { digestEligibility, digestLiveCount } from './digest-capture'
+import { digestEligibility, digestLiveCount } from './digest-eligibility'
 import { safeNotificationReceipt } from './failure'
 type Due={id:string;flowId:string;operatorId:string;workspaceId:string;flowTitle:string;email:string;day:string;zone:string;cutoffEnd:string;key:string;attempts:number;retryCount:number;firstAttempt:string|null;retryAuthorized:number;timeZone:string;sendingWindowStart:string;sendingWindowEnd:string}
 export class DigestDispatcher {

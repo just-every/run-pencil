@@ -4,7 +4,7 @@ import { contract } from '../../src/test/contract'
 import { localMailErasureFixture } from './local-mail-erasure-fixture'
 import { audienceFixture } from './audience-fixture'
 import { NotificationDispatcher } from '../../src/core/features/notifications/dispatcher'
-import { notificationCaptureClaim } from '../../src/core/features/notifications/capture'
+import { notificationCaptureClaim } from '../helpers/notification-capture'
 import { baseMailSender } from '../../src/core/platform/mail/base.server'
 
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]

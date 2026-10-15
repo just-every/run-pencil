@@ -81,14 +81,7 @@ this computer set differently (each distinct pin keeps its own copy), and about
 a checkout on another volume than your home folder, where pnpm cannot clone
 packages from its store.
 
-After `RER_READY`, a seed with dev identity prints `RER_SIGNED_IN EMAIL` and
-`RER_OPEN URL`: open that URL on this computer and the app opens signed in as
-the owner, at `/setup` until first-run is finished. Other seeds, and
-`dev --login`, print `RER_SIGN_IN URL` for the local outbox: open it, follow
-the newest ordinary sign-in link and finish first-run setup at `/setup`. Until
-first-run completion is stored durably, app routes send the signed-in owner to
-`/setup`; signed-out visitors sign in and return there. Once complete,
-`/setup` opens the app or settings. The local outbox sends no external email.
+Dev uses the private `RER_OPEN` link for one-click sign-in. Mail is silently suppressed. The nav and title read Pencil Dev; `rer demo` uses a disposable sample workspace labelled Pencil Demo. Use `dev --as PERSONA` to select a dev persona.
 
 The saved local port is used; a first setup saves the first free port from 8787. Explicit ports are decimal
 integers from 1 through 65535 and must be free; a busy requested port fails
@@ -139,19 +132,7 @@ migrations, prepares the first owner, requests an ordinary sign-in message and
 stops its temporary app before it exits. Existing owner data and private
 settings are preserved on a repeated setup.
 
-Dev starts the real local app with assets and HMR and prints `RER_READY URL`
-after the application health check. With dev identity it then prints
-`RER_SIGNED_IN EMAIL` and `RER_OPEN URL`. The `RER_OPEN` URL carries this
-checkout's dev key in its fragment: opening it signs the browser in through a
-real dev session, and the key is removed from the address bar and kept only as a
-host-only cookie. Treat that line as a credential and open it only on this
-computer. A dev-only badge switches between the owner, signed out and the
-seed's personas (`admin@dev.localhost` and so on). `dev --as PERSONA` starts as
-another persona or `signed-out`; `dev --login` turns dev identity off and uses
-the outbox: it prints `RER_SIGN_IN URL` and a `RER_OPEN` URL that opens that
-outbox. Choose the newest ordinary sign-in message and follow its link. No
-external email is sent. A successful sign-in consumes the link once. Seeds
-without dev identity print only `RER_SIGN_IN URL` for the local outbox.
+Dev uses the private `RER_OPEN` link for one-click sign-in. Mail is silently suppressed. The nav and title read Pencil Dev; `rer demo` uses a disposable sample workspace labelled Pencil Demo. Use `dev --as PERSONA` to select a dev persona.
 
 Dev and preview are managed servers. In a terminal the first invocation stays
 active while serving; without one, `rer dev` returns once the app is ready and
@@ -247,16 +228,7 @@ Package aliases, when used, take the form `pnpm run VERB -- FLAGS`; use
 command. `pnpm install --frozen-lockfile` is the equivalent dependency action
 to `rer install`.
 
-Local durable state is `.wrangler/state`; CLI bookkeeping is `.rer/local`,
-installer state is `.seed/installer`, and the default private settings file is
-`.dev.vars` with mode 0600. Setup writes this checkout's dev key to
-`.rer/local/dev-key.env` (mode 0600); a repeat setup keeps it and reset removes
-it, which also ends every browser's earlier dev cookie. Dev sign-in, personas
-and the development outbox answer only a request holding that key's cookie, so
-a tunnel or local proxy to the app cannot reach them; anything else returns 404.
-Any local user or process that can read the checkout can read the key and sign
-in as the owner. `rer deploy` refuses the key, and `rer build` refuses output
-that contains the dev layer.
+Dev uses the private `RER_OPEN` link for one-click sign-in. Mail is silently suppressed. The nav and title read Pencil Dev; `rer demo` uses a disposable sample workspace labelled Pencil Demo. Use `dev --as PERSONA` to select a dev persona.
 
 The first-party command profile is optional for independently authored
 projects. They may keep their own runtime, tools, installer, commands and

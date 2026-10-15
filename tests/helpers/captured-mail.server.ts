@@ -1,7 +1,6 @@
-import { createD1DevelopmentOutbox, createDevelopmentOutboxHandler, type DevelopmentMessage, type DevelopmentD1Statement } from '../../../base/mail/src/development/index.mjs'
-import { devGate, devNotFound } from '../../../base/operator-auth/index.mjs'
-import type { WorkerBindings } from '../../app/environment'
-import { isLocalDevelopmentRequest } from '../config/runtime'
+import { notificationCaptureClaim } from './notification-capture'
+import { digestCaptureClaim } from './notification-digest-capture'
+import { createD1DevelopmentOutbox, type DevelopmentMessage, type DevelopmentD1Statement } from '../../src/base/mail/src/development/index.mjs'
 
 /** Trusted product SQL, evaluated atomically with capture. The predicate must
  * bind this message's durable delivery key and require its current sending claim.
@@ -40,18 +39,21 @@ export function guardedDevelopmentOutbox(db: D1Database, additionalClaim?: Devel
   } }
 }
 
-/** The checkout's key gate: only a local runtime (loopback, local mail) that holds RER_DEV_KEY has one. */
-export function localDevGate(request: Request, environment: WorkerBindings) {
-  return isLocalDevelopmentRequest(request.url, environment) ? devGate({ key: environment.RER_DEV_KEY, origin: new URL(request.url).origin, local: true }) : null
-}
 
-/** The outbox and the key exchange answer only a local runtime holding RER_DEV_KEY. A tunnel or local proxy makes remote
- * requests look local, so the outbox also needs the gate's cookie (or the rer harness's key header). Everything else is 404. */
-export async function developmentOutboxResponse(request: Request, environment: WorkerBindings, db: D1Database) {
-  const url = new URL(request.url), gate = localDevGate(request, environment)
-  if (!gate) return devNotFound()
-  if (url.pathname === '/__dev/key') return await gate.exchange(request) ?? devNotFound()
-  if (request.headers.get('host') !== url.host || (request.headers.has('origin') && request.headers.get('origin') !== url.origin)
-    || request.headers.get('sec-fetch-site') === 'cross-site' || !await gate.admits(request)) return devNotFound()
-  return await createDevelopmentOutboxHandler({ local: true, origin: url.origin, outbox: createD1DevelopmentOutbox({ db }) })(request) ?? devNotFound()
+// A fake paid mail edge used only by the native/browser suites. Product dev/demo mail is suppressed.
+export function baseMailSender(configuration: any, db: D1Database, claim?: DevelopmentCaptureClaim) {
+  if (configuration.kind !== 'local-development') return createMailSender({ provider: configuration.kind, mode: 'production', apiKey: configuration.apiKey })
+  return { async send(message: DevelopmentMessage) {
+    const prepared = applyUnsubscribeHeaders(structuredClone(message))
+    await createMailSender({ provider: 'development', mode: 'development' }).send(message)
+    try { await guardedDevelopmentOutbox(db, claim ?? (message.headers?.['X-Pencil-Digest-Claim'] ? digestCaptureClaim : notificationCaptureClaim)).put(prepared) } catch (error) { if (error instanceof MailValidationError) throw error; throw new DevelopmentOutboxError() }
+    return { provider: 'development', status: 'development', providerMessageId: null } as const
+  } }
 }
+// @ts-expect-error Maintained JavaScript mail adapter.
+import { createMailSender } from '../../src/base/mail/index.mjs'
+
+// @ts-expect-error Maintained JavaScript error type.
+import { DevelopmentOutboxError, MailValidationError } from '../../src/base/mail/src/core/errors.mjs'
+// @ts-expect-error Maintained JavaScript unsubscribe assembly.
+import { applyUnsubscribeHeaders } from '../../src/base/mail/src/unsubscribe/index.mjs'

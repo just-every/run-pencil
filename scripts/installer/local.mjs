@@ -29,8 +29,8 @@ export const commandAdapter = createCommandAdapter(lifecycle, {
  dev: developmentTarget, preview: production, verify: ['pnpm', ['run', 'verify:app']],
  deploy: pencilDeploy(lifecycle), portability,
  // Local dev identity: the local-only Worker entry, the build output rer build scans for the dev layer, and the kept
- // end-to-end email-link test.
- devIdentity: { entry: 'src/server.dev.ts', output: ['dist'], emailLinkTest: 'tests/local-cli/rer-journey.test.mjs' },
+ // local owner-entry test.
+ devIdentity: { entry: 'src/server.dev.ts', output: ['dist'] },
  // The run site (run-pencil.com): the approved homepage, /run and /docs, written by rer build --site.
  site: { entry: 'src/site/pages.tsx', output: 'dist/site', declaration: 'deploy-site.json', config: 'vite.site.config.ts' },
  localOnlyKeys: ['RER_DEV_ORIGIN', 'RER_DEV_IDENTITY'],

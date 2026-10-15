@@ -1,4 +1,4 @@
-import { developmentInbox } from '../../scripts/local-outbox.mjs'
+import { developmentInbox } from '../helpers/mail-capture.mjs'
 import { devKeyHeaders, testDevKey } from '../helpers/dev-key.mjs'
 // Browser-free emitted workerd proof. This runner owns fresh synthetic D1 only.
 import assert from 'node:assert/strict'

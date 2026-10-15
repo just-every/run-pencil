@@ -1,10 +1,8 @@
 import { DigestDispatcher } from '../features/notifications/digest-dispatcher'
-import { digestCaptureClaim } from '../features/notifications/digest-capture'
 import { AnalysisAttention } from '../features/analysis/attention'
 import { DraftRewrites } from '../features/analysis/rewrites'
 import { eraseResponseAndImportCustody } from '../features/importing/erasure'
 import { readNotificationBrand } from '../features/notifications/brand.server'
-import { notificationCaptureClaim } from '../features/notifications/capture'
 import type { MailSender } from '../../base/operator-auth/index.mjs'
 import { notificationConfigurationFailure } from '../features/notifications/failure'
 import { NotificationDispatcher } from '../features/notifications/dispatcher'
@@ -49,7 +47,7 @@ export function createPencilServices(platform: PencilPlatform) {
   const deliveries = new MailDeliveries(platform.databaseBinding)
   let sender: MailSender
   let senderFailure: string | null = null
-  try { sender = baseMailSender(platform.configuration.mail, platform.databaseBinding, message => message.headers?.['X-Pencil-Digest-Claim'] ? digestCaptureClaim(message) : notificationCaptureClaim(message)) }
+  try { sender = baseMailSender(platform.configuration.mail, platform.databaseBinding) }
   catch (error) {
     senderFailure = notificationConfigurationFailure(error)
     if (!senderFailure) throw error

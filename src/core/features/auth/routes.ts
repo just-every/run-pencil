@@ -49,7 +49,7 @@ export function registerAuthRoutes(app: Hono<WorkerEnvironment>, services: Penci
       const failedDelivery = response.status === 503
         && z.object({ error: z.literal('mail_unavailable') }).safeParse(await response.clone().json()).success
       if (response.status === 202 || failedDelivery) {
-        return Response.json({ status: 'accepted', delivery: getRuntime(context).isLocalDevelopment ? 'local' : 'email', inboxAvailable: getRuntime(context).isLocalDevelopment }, { status: 202, headers: securityHeaders() })
+        return Response.json({ status: 'accepted', delivery: 'email' }, { status: 202, headers: securityHeaders() })
       }
     }
     return response ?? context.notFound()

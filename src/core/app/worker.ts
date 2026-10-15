@@ -73,8 +73,6 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
   app.use('*', enforcePublicRateLimit)
   app.use('/api/public/*', opaqueEmbedCors)
 
-  app.all('/__dev/outbox', context => context.get('platform').developmentOutbox(context.req.raw))
-  app.all('/__dev/key', context => context.get('platform').developmentOutbox(context.req.raw))
 
   app.get('/health', async (context) => {
     try {

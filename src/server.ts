@@ -44,7 +44,7 @@ const worker = {
       return Response.json({ status: 'not-ready', message: error instanceof DeploymentConfigurationError ? error.message : 'Invalid deployment configuration.' }, { status: 503, headers: { 'Cache-Control': 'no-store' } })
     }
     const path = new URL(request.url).pathname
-    if ((path === '/setup' && request.method === 'POST') || path === '/__dev/outbox' || path === '/__dev/key' || path === '/embed.js' || path === '/health' || path === '/api' || path.startsWith('/api/') || path === '/auth' || path.startsWith('/auth/')) {
+    if ((path === '/setup' && request.method === 'POST') || path === '/embed.js' || path === '/health' || path === '/api' || path.startsWith('/api/') || path === '/auth' || path.startsWith('/auth/')) {
       return workerApp.fetch(request, bindings, execution)
     }
     let services

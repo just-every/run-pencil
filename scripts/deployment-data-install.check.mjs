@@ -60,16 +60,3 @@ test('fully migrated install roundtrips provider receipts, immutable import publ
     assert.throws(()=>restored.prepare('INSERT INTO oc_owner_claims(singleton,jti,installation_id,email,issued_at,expires_at,consumed_at,operator_id,session_id) VALUES(1,?,?,?,?,?,?,?,?)').run('another','synthetic-installation',claim.email,100,300,200,'another','another'),/owner_claim_already_initialized/);
   } finally {f.db.close();restored.close();rmSync(f.dir,{recursive:true});}
 });
-test('unchanged Base development viewer reads a restored install without invalid capture messages', async () => {
-  const {createD1DevelopmentOutbox,createDevelopmentOutboxHandler}=await import('../src/base/mail/src/development/index.mjs');
-  const f=fixture();let db;
-  try {
-    f.db.prepare('INSERT INTO rer_mail_development_outbox(id,created_at,message) VALUES(?,?,?)').run('captured',Date.now(),JSON.stringify({from:'sender@example.test',to:['operator@example.test'],subject:'Private',text:'planted-auth-link'}));
-    f.db.close();exportData(f.source,f.archive);importData(f.archive,f.target);db=new DatabaseSync(f.target);
-    const transport=sqliteTransport(db);
-    const adapter={prepare(sql){return{bind(...params){return{sql,params}}}},batch:transport.query};
-    const handler=createDevelopmentOutboxHandler({local:true,origin:'http://localhost:15621',outbox:createD1DevelopmentOutbox({db:adapter})});
-    const response=await handler(new Request('http://localhost:15621/__dev/outbox',{headers:{Host:'localhost:15621'}}));
-    assert.equal(response.status,200);const body=await response.text();assert.match(body,/No messages yet/);assert.equal(body.includes('planted-auth-link'),false);
-  } finally {if(f.db.isOpen)f.db.close();db?.close();rmSync(f.dir,{recursive:true});}
-});

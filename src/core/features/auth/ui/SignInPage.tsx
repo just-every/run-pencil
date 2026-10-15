@@ -1,4 +1,4 @@
-import { ArrowLeft, ArrowRight, MailCheck } from 'lucide-react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { BrandMark } from '../../../app/ui/BrandMark'
 import { NoteIllustration } from '../../../app/ui/NoteIllustration'
@@ -11,7 +11,6 @@ export function SignInPage({ config, emailHint, invalid, notice }: { local?: boo
   const [hydrated, setHydrated] = useState(false)
   useEffect(() => { setHydrated(true) }, [])
   const [status, setStatus] = useState<'form' | 'sending' | 'sent'>('form')
-  const [delivery, setDelivery] = useState<'local' | 'email'>()
   const [error, setError] = useState(invalid)
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -19,8 +18,7 @@ export function SignInPage({ config, emailHint, invalid, notice }: { local?: boo
     setStatus('sending')
     setError(undefined)
     try {
-      const response = await api.requestMagicLink(email, '/setup')
-      setDelivery(response.delivery)
+      await api.requestMagicLink(email, '/setup')
       setStatus('sent')
     } catch (reason) {
       setStatus('form')
@@ -35,9 +33,8 @@ export function SignInPage({ config, emailHint, invalid, notice }: { local?: boo
       <h1 id="sign-in-title" className="display">Sign in</h1>
       {notice === 'access-removed' ? <p className="status-note" role="status">Your operator access was removed. Use another operator email to sign in.</p> : null}
       {status === 'sent' ? <>
-        <p className="muted">{delivery === 'local' ? 'If this address is an operator, its sign-in link is in the local outbox.' : 'Check your email. If this address is an operator, a sign-in link is on its way.'} The link works once and expires in 15 minutes.</p>
+        <p className="muted">Check your email. If this address is an operator, a sign-in link is on its way. The link works once and expires in 15 minutes.</p>
         <div className="access-actions">
-          {delivery === 'local' ? <a className="primary-button focus-ring" href="/__dev/outbox"><MailCheck aria-hidden="true" size={18} /> Open the local outbox</a> : null}
           <button className="quiet-button focus-ring" onClick={() => setStatus('form')} type="button"><ArrowLeft aria-hidden="true" size={17} /> Use another email</button>
         </div>
       </> : <form onSubmit={submit}>

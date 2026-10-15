@@ -4,7 +4,7 @@ import AxeBuilder from '@axe-core/playwright'
 import type { BuilderDraft } from '../../src/core/app/api'
 import { operatorEmail } from './auth-identity'
 import { contract } from './contract'
-import { expect, test, openLocalOutbox } from './fixtures'
+import { expect, test, openMailLink } from './fixtures'
 
 contract(['RSLT-001', 'RSLT-002', 'BASE-PUBLIC-003'], 'selects answer grammar from matching text results through search', async ({ page }, info) => {
   test.setTimeout(180000)
@@ -18,9 +18,7 @@ contract(['RSLT-001', 'RSLT-002', 'BASE-PUBLIC-003'], 'selects answer grammar fr
   await page.goto('/signin')
   await page.getByLabel('Operator email').fill(email)
   await page.getByRole('button', { name: /Send.*link/i }).click()
-  await openLocalOutbox(page)
-  await page.locator('article').filter({ hasText: email }).getByRole('link', { name: 'Read message' }).first().click()
-  await page.getByRole('link', { name: 'Open this link' }).click()
+  await openMailLink(page, email)
   await page.getByRole('button', { name: 'Confirm', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Your flows' })).toBeVisible()
 

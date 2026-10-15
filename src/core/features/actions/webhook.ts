@@ -1,3 +1,4 @@
+import { demoEffect } from '../../../base/demo/index.mjs'
 import { loopbackHosts } from '../../platform/config/task-destination'
 import type { TaskDestination, TaskOutcome, TaskPayload } from './task-destination'
 
@@ -17,11 +18,11 @@ export function webhookTaskDestination(configuration: { url: string; apiKey: str
       if (url.protocol !== 'https:' && !(configuration.allowLoopbackHttp && url.protocol === 'http:' && loopbackHosts.has(url.hostname))) return { outcome: 'failed', outcomeClass: 'refused' }
       let response: Response
       try {
-        response = await fetch(url, {
+        response = await demoEffect(() => fetch(url, {
           method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(timeoutMilliseconds),
           headers: { 'content-type': 'application/json', accept: 'application/json', authorization: `Bearer ${configuration.apiKey}`, 'idempotency-key': idempotencyKey },
           body: JSON.stringify(payload),
-        })
+        }), () => Response.json({ taskId: `demo-${idempotencyKey}` }, { status: 201 }))
       } catch (error) {
         // The request may have arrived before the connection ended or the time ran out.
         return { outcome: 'unknown', outcomeClass: error instanceof Error && error.name === 'TimeoutError' ? 'timeout' : 'network' }

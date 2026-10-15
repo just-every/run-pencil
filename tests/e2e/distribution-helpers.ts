@@ -27,15 +27,11 @@ export async function inviteAudienceOperator(page: Page, info: TestInfo) {
 /** Reads actual captured mail through the key-gated viewer; capabilities stay in process memory. */
 export async function invitationMail(page: Page, email: string) {
   const headers = audienceOutboxHeaders()
-  const listing = await page.request.get('/__dev/outbox', { headers })
+  const listing = await page.request.get('/__test/mail', { headers })
   expect(listing.status()).toBe(200)
-  for (const match of (await listing.text()).matchAll(/<article>([\s\S]*?)<\/article>/g)) {
-    if (!match[1].includes(`<p>To: ${email}</p>`)) continue
-    const path = match[1].match(/href="([^\"]+\?message=[^\"]+)"/)?.[1]
-    if (!path) continue
-    const response = await page.request.get(decode(path), { headers })
-    expect(response.status()).toBe(200)
-    const body = decode(await response.text())
+  for (const message of (await listing.json()).messages) {
+    if (!(Array.isArray(message.to) ? message.to : [message.to]).some((to: any) => (typeof to === 'string' ? to : to.email) === email)) continue
+    const body = decode(message.text ?? message.html ?? '')
     const invitation = body.match(/https?:\/\/[^\s<>"']+\/i\/[a-f0-9]{64}/)?.[0]
     const optout = body.match(/https?:\/\/[^\s<>"']+\/optout\/[a-f0-9]{64}/)?.[0]
     if (invitation && optout) return { invitation, optout }

@@ -2,7 +2,7 @@ import { httpExport } from '../helpers/report-download'
 import { operatorEmail } from './auth-identity'
 import { contract } from './contract'
 import AxeBuilder from '@axe-core/playwright'
-import { expect, test, openLocalOutbox } from './fixtures'
+import { expect, test, openMailLink } from './fixtures'
 import { mkdir } from 'node:fs/promises'
 
 contract(['FLOW-002','FLOW-005','RESP-004','RESP-007','RESP-014','LEDG-004','BASE-PUBLIC-003'], 'an operator builds and previews an adaptive form, a respondent changes branches, and the report retains only final reachable answers', async ({ page, request }, info) => {
@@ -13,9 +13,7 @@ contract(['FLOW-002','FLOW-005','RESP-004','RESP-007','RESP-014','LEDG-004','BAS
   await page.goto('/signin')
   await page.getByLabel('Operator email').fill(operatorEmail())
   await page.getByRole('button', { name: /Send.*link/i }).click()
-  await openLocalOutbox(page)
-  await page.locator('article').filter({ hasText: operatorEmail() }).getByRole('link', { name: 'Read message' }).first().click()
-  await page.getByRole('link', { name: 'Open this link' }).click()
+  await openMailLink(page, operatorEmail())
   await page.getByRole('button', { name: 'Confirm', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Your flows' })).toBeVisible()
   await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()

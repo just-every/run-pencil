@@ -4,7 +4,7 @@ Pencil's product guarantees. Every clause has a stable ID. `rer verify` reports 
 
 ## Run and first setup
 
-Use the pinned tools and rer commands in README.md: `rer install`, `rer setup --owner-email EMAIL --owner-name NAME`, then `rer dev`. Sign in through the printed Base outbox. A fresh owner finishes the business name and IANA time zone at `/setup`; other app routes send an unfinished owner there. Finished setup enters the app, and established workspaces retain their completed state. Setup preserves existing owner, data and exact private settings, then exits with no app running. Native authentication and session policy follow BASELINE.md. Use `rer describe` for verification, reset, data movement and owner deployment commands; OPERATIONS.md records their effects.
+Use the pinned tools and rer commands in README.md: `rer install`, `rer setup --owner-email EMAIL --owner-name NAME`, then `rer dev`. Open the private one-click RER_OPEN link. A fresh owner finishes the business name and IANA time zone at `/setup`; other app routes send an unfinished owner there. Finished setup enters the app, and established workspaces retain their completed state. Setup preserves existing owner, data and exact private settings, then exits with no app running. Native authentication and session policy follow BASELINE.md. Use `rer describe` for verification, reset, data movement and owner deployment commands; OPERATIONS.md records their effects.
 
 ## Scope
 

@@ -31,7 +31,7 @@ async function issueTokenFor(email: string) {
     body: JSON.stringify({ email }),
   })
   expect(sent.status).toBe(202)
-  const inbox = await request('/__dev/outbox')
+  const inbox = await request('/__test/mail')
   expect(inbox.status).toBe(200)
   const payload = await developmentInbox(path => request(path), email)
   expect(payload.messages[0]?.magicLinkToken).toMatch(/^[A-Za-z0-9_-]{43}$/)
