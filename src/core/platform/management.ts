@@ -6,7 +6,8 @@ export function readManagementConfiguration(bindings: WorkerBindings) {
     editor: { managementOrigin: bindings.RER_MANAGEMENT_ORIGIN, installationId: bindings.RER_INSTALLATION_ID },
     ownerClaim: {
       issuer: bindings.RER_OWNER_CLAIM_ISSUER, installationId: bindings.RER_OWNER_CLAIM_INSTALLATION_ID,
-      appOrigin: bindings.RER_OWNER_CLAIM_APP_ORIGIN, publicKeys: bindings.RER_OWNER_CLAIM_PUBLIC_KEYS,
+      // A hosted demo's front signs the claim for the origin it supplies as APP_ORIGIN; everywhere else the claim origin is explicit.
+      appOrigin: bindings.RER_OWNER_CLAIM_APP_ORIGIN ?? (bindings.RER_DEMO === '1' ? bindings.APP_ORIGIN : undefined), publicKeys: bindings.RER_OWNER_CLAIM_PUBLIC_KEYS,
     },
   }
 }

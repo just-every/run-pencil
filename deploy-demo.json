@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "domain": "run-pencil.com",
+  "name": "Pencil",
+  "settings": {
+    "MAIL_PROVIDER": "local",
+    "PENCIL_LOCAL_DEVELOPMENT": "false",
+    "SEED_SAMPLE_DATA": "false",
+    "TASK_PROVIDER": "webhook",
+    "TASK_WEBHOOK_URL": "https://tasks.example.com/pencil"
+  }
+}

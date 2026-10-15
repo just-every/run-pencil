@@ -41,6 +41,10 @@
     "* * * * *"
   ],
   "originVar": "APP_ORIGIN",
+  "platforms": [
+    "workers",
+    "container"
+  ],
   "vars": {
     "PENCIL_LOCAL_DEVELOPMENT": "false",
     "SEED_SAMPLE_DATA": "false"

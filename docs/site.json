@@ -23,7 +23,9 @@
   "githubOnly": [
     { "source": "scripts/delivery/README.md", "reason": "Developer documentation for the managed source artifact and its build contract" },
     { "source": "src/base/owner-claim/README.md", "reason": "Developer documentation for the copied native owner admission module" },
+    { "source": "src/base/demo/README.md", "reason": "Developer documentation for the copied demo-mode guard module" },
     { "source": "ACCEPTANCE.md", "reason": "Release acceptance journey and evidence gates, for maintainers" },
+    { "source": "DEMO.md", "reason": "How rer demo and the hosted demo work in Pencil, for maintainers" },
     { "source": "AGENTS.consumer.md", "reason": "Instructions for coding agents working in an owner's copy of the source" },
     { "source": "AGENTS.md", "reason": "Contributor and coding-agent rules for working on Pencil" },
     { "source": "ASSET-PROVENANCE.md", "reason": "Licence and provenance record for fonts and icons, for maintainers" },

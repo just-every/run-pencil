@@ -1,3 +1,6 @@
+// Demo mode (Base modules/demo) first, so it guards fetch before any other module loads; without RER_DEMO=1 it changes nothing.
+import { withDemo } from './base/demo/index.mjs'
+import { seedDemo } from './demo'
 import { editorPolicy } from './core/platform/management'
 import { decodePublicSlug } from './core/app/public-slug'
 import { AuthError } from './base/operator-auth/index.mjs'
@@ -29,7 +32,7 @@ function assetResponse(path: string, asset: Response): Response {
   return new Response(asset.body, { status: asset.status, headers })
 }
 
-export default {
+const worker = {
   scheduled: runScheduledMaintenance,
   async fetch(request: Request, bindings: WorkerBindings, execution: ExecutionContext): Promise<Response> {
     // Built files first: a hosted deploy runs this Worker before its static assets (run_worker_first).
@@ -105,3 +108,5 @@ export default {
     return new Response(request.method === 'HEAD' ? null : response.body, { status: response.status, headers })
   },
 } satisfies ExportedHandler<WorkerBindings>
+
+export default withDemo(worker, { seed: seedDemo })
