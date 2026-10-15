@@ -805,7 +805,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "569d9694372ec0de57f3e05ef5cbea23d22dbaf9283644d71ca76fae586fa19e",
+      "sha256": "1f9de8442c6be4607508d31eda95eeecaa18a9a82f9f6f9bf7e1908d7590dfbc",
       "executable": false
     },
     "CLAUDE.md": {
@@ -1165,11 +1165,11 @@
       "executable": false
     },
     "rer-project.json": {
-      "sha256": "a790d94e7820d141a1dea427843ecf36d2b773fecb7a3cce1bee6cb465bb6069",
+      "sha256": "eb63e02e5d62601a04702df9f8bd666fd26a2584064c497fa8599e22faf9f9ed",
       "executable": false
     },
     "rer-setup.json": {
-      "sha256": "f39c3e2e69c747f3643f863b7afd39c33d827b9d4407b1434a81bbfe43ed4a7e",
+      "sha256": "511344801dab66c538662da0a4964cf6232b0682688d9abed8e96e0dfd19d31f",
       "executable": false
     },
     "RUN-LOCALLY.md": {
@@ -1609,11 +1609,11 @@
       "executable": false
     },
     "scripts/release-upgrade-inputs.check.mjs": {
-      "sha256": "39ee01ff5b4d2be2aa993a3d1aece452377dd3900275f801d3b5a1a91bd5327b",
+      "sha256": "7fa870e3a173d780042750dd5ba6118dc3d62b37c19cced6c4fb5fdf9f22ac62",
       "executable": false
     },
     "scripts/release-upgrade-inputs.mjs": {
-      "sha256": "b74f291c36002c531762c195de7d8494d7fb828267741af93c9401518a90c664",
+      "sha256": "4c78c1441554cb567760a3bbddd22b7a1b0886b01287c6382c98d993b28eccac",
       "executable": false
     },
     "scripts/run-browser-checks.mjs": {
@@ -4437,7 +4437,7 @@
       "executable": false
     },
     "src/core/features/notifications/compose.ts": {
-      "sha256": "106ebbe81b989660f59a4ab48df15066769246b5617a6696d4e1e79c31b6a7dd",
+      "sha256": "c0993a0e9013ac6bd30d60fc7ef3e5f4114383ff1280c52873c4929e88124479",
       "executable": false
     },
     "src/core/features/notifications/digest-capture.ts": {
@@ -5229,7 +5229,7 @@
       "executable": false
     },
     "tests/contract/data-release.contract.test.ts": {
-      "sha256": "c9022d95e70cff0189a32a2a0069e7e96d763109d8701ebfca9105d2da25108b",
+      "sha256": "ba801fe052571db9a198c64d626cebbaa662391dfbf6ec84d07da7535f0a2eb0",
       "executable": false
     },
     "tests/contract/upgrade-query.contract.test.ts": {

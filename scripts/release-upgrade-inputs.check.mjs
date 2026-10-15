@@ -133,6 +133,32 @@ test('BASE-OPS-002 a released migration may change only as declared with both ex
   }
 })
 
+test('BASE-OPS-002 a tagless depth-1 copy reads the released migrations from the published tag and still refuses an edited one', async () => {
+  for (const mode of ['published', 'changed-migration', 'no-source', 'absent-tag']) {
+    await repository(async (source, git) => {
+      // RER's Managed copy: one unrelated commit, no tags, cloned at depth 1, naming the release source.
+      if (mode === 'absent-tag') git('tag', '-d', 'v0.1.0')
+      const copy = await mkdtemp(join(tmpdir(), 'pencil-managed-copy-'))
+      const origin = join(copy, 'origin'), checkout = join(copy, 'checkout')
+      const inCopy = dir => (...args) => execFileSync('git', args, { cwd: dir, stdio: 'pipe' })
+      try {
+        await mkdir(origin)
+        inCopy(origin)('init', '-q'); inCopy(origin)('config', 'user.email', 'tests@example.test'); inCopy(origin)('config', 'user.name', 'Managed copy')
+        execFileSync('sh', ['-c', 'tar -C "$0" --exclude .git -cf - . | tar -x -C "$1"', source, origin])
+        if (mode === 'changed-migration') await writeFile(join(origin, 'migrations/core/0000_schema.sql'), '-- changed\n')
+        if (mode !== 'no-source') await writeFile(join(origin, 'rer-project.json'), JSON.stringify({ sourceRepository: `file://${source}` }))
+        inCopy(origin)('add', '.'); inCopy(origin)('commit', '-qm', 'Install')
+        execFileSync('git', ['clone', '-q', '--depth=1', '--no-tags', `file://${origin}`, checkout], { stdio: 'pipe' })
+        assert.equal(inCopy(checkout)('tag').toString(), '')
+        let forwarded
+        const result = withReleaseUpgradeInputs(checkout, async upgrade => { forwarded = await readFile(join(upgrade.env.PENCIL_PREVIOUS_MIGRATIONS_DIR, '0000_schema.sql'), 'utf8') })
+        if (mode === 'published') { await result; assert.equal(forwarded, 'CREATE TABLE sample(value INTEGER);\n') }
+        else { await assert.rejects(result, mode === 'changed-migration' ? /Released core migrations are immutable/ : /previousVersion 0\.1\.0/, mode); assert.equal(forwarded, undefined) }
+      } finally { await rm(copy, { recursive: true, force: true }) }
+    })
+  }
+})
+
 const invalidMetadata = [
   ['null metadata', null, /Upgrade metadata must be an object/],
   ['array metadata', [], /Upgrade metadata must be an object/],

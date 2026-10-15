@@ -34,5 +34,5 @@ export function composeResponseNotification(input: { businessName: string; flowT
   }
 }
 export function notificationSenderError(from: string) {
-  return from.length <= 254 && /^(?:noreply|no-reply)@(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(from) ? null : 'MAIL_FROM must be a plain noreply@ or no-reply@ address to enable response notifications.'
+  return from.length <= 254 && /^(?:noreply|no-reply)@(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(from) ? null : 'Response notification email is off: the verified sender (MAIL_FROM) must be a plain noreply@ or no-reply@ address. Sign-in email still works. Change the sender in this installation\'s setup to turn notifications on.'
 }

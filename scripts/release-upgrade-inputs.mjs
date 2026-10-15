@@ -16,16 +16,44 @@ function command(root, file, args, options = {}) {
   })
 }
 
-async function gitShow(root, tag, path) {
-  const result = await command(root, 'git', ['show', `${tag}:${path}`])
+async function gitShow(repository, tag, path) {
+  const result = await command(repository, 'git', ['show', `${tag}:${path}`])
   if (result.code !== 0) throw new Error(result.output.trim())
   return result.bytes
 }
 
-async function releasedMigrationFiles(root, tag) {
-  const result = await command(root, 'git', ['ls-tree', '-r', '--name-only', tag, 'migrations/core'])
+async function releasedMigrationFiles(repository, tag) {
+  const result = await command(repository, 'git', ['ls-tree', '-r', '--name-only', tag, 'migrations/core'])
   if (result.code !== 0) throw new Error(result.output.trim())
   return result.output.split(/\r?\n/).filter((path) => /^migrations\/core\/[^/]+\.sql$/.test(path))
+}
+
+const noPrompt = { ...process.env, GIT_TERMINAL_PROMPT: '0' }
+
+// A copy without the release tag (a depth-1, tagless checkout such as RER's Managed copy) shares no
+// history with the release, so the published tag is fetched by exact name from rer-project.json's
+// sourceRepository into a throwaway repository and only its migration bytes are compared.
+async function publishedRelease(root, candidates) {
+  let source
+  try { source = JSON.parse(await readFile(resolve(root, 'rer-project.json'), 'utf8')).sourceRepository } catch { source = undefined }
+  if (typeof source !== 'string' || !source.trim()) return undefined
+  const listed = await command(root, 'git', ['ls-remote', '--tags', source, ...candidates.map((candidate) => `refs/tags/${candidate}`)], { env: noPrompt })
+  if (listed.code !== 0) throw new Error(`Cannot list release tags at ${source}: ${listed.output.trim()}`)
+  const names = new Set(listed.output.split(/\r?\n/).map((line) => line.split('\t')[1]).filter(Boolean))
+  const candidate = candidates.find((name) => names.has(`refs/tags/${name}`))
+  if (!candidate) return undefined
+  const repository = await mkdtemp(join(tmpdir(), 'pencil-published-release-'))
+  const ref = `refs/tags/${candidate}`
+  try {
+    const init = await command(repository, 'git', ['init', '-q', '--bare'])
+    if (init.code !== 0) throw new Error(init.output.trim())
+    const fetched = await command(repository, 'git', ['fetch', '-q', '--depth=1', '--no-tags', source, `+${ref}:${ref}`], { env: noPrompt })
+    if (fetched.code !== 0) throw new Error(`Cannot fetch ${ref} from ${source}: ${fetched.output.trim()}`)
+  } catch (error) {
+    await rm(repository, { recursive: true, force: true })
+    throw error
+  }
+  return { repository, ref, label: `${source} ${ref}` }
 }
 
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex')
@@ -104,14 +132,29 @@ export async function withReleaseUpgradeInputs(root, run) {
       break
     }
   }
-  if (!previousTag) throw new Error(`RELEASE.json declares previousVersion ${previous}, but neither ${previous} nor v${previous} resolves to a commit.`)
-  const ancestor = await command(root, 'git', ['merge-base', '--is-ancestor', previousTag, 'HEAD'])
-  if (ancestor.code !== 0) throw new Error(`Declared previous release tag ${previousTag} is not an ancestor of this candidate.`)
-  const releasedFiles = new Set(await releasedMigrationFiles(root, previousTag))
+  let predecessor = { repository: root, ref: previousTag, label: previousTag }
+  if (previousTag) {
+    const ancestor = await command(root, 'git', ['merge-base', '--is-ancestor', previousTag, 'HEAD'])
+    if (ancestor.code !== 0) throw new Error(`Declared previous release tag ${previousTag} is not an ancestor of this candidate.`)
+  } else {
+    const published = await publishedRelease(root, candidates)
+    if (!published) throw new Error(`RELEASE.json declares previousVersion ${previous}, but neither ${previous} nor v${previous} resolves to a commit here or at rer-project.json's sourceRepository.`)
+    console.log(`No local ${previous} release tag: comparing released migrations with ${published.label}.`)
+    predecessor = published
+  }
+  try {
+    return await upgradeFrom(root, previous, predecessor, run)
+  } finally {
+    if (predecessor.repository !== root) await rm(predecessor.repository, { recursive: true, force: true })
+  }
+}
+
+async function upgradeFrom(root, previous, release, run) {
+  const releasedFiles = new Set(await releasedMigrationFiles(release.repository, release.ref))
   const rewrites = await releasedRewrites(root)
   const migrations = []
   for (const path of releasedFiles) {
-    const bytes = await gitShow(root, previousTag, path)
+    const bytes = await gitShow(release.repository, release.ref, path)
     let current
     try { current = await readFile(resolve(root, path)) } catch { throw new Error(`Released core migrations are immutable: ${path} is absent.`) }
     if (!current.equals(bytes) && !await declaredRewrite(root, rewrites, path, bytes, current, releasedFiles)) throw new Error(`Released core migrations are immutable: ${path} changed.`)
@@ -137,7 +180,7 @@ export async function withReleaseUpgradeInputs(root, run) {
     }
     const fixturePath = join(temporary, 'fixture.sql.input')
     await writeFile(fixturePath, fixtureText)
-    return await run({ tag: previousTag, migrationCount: migrations.length, env: {
+    return await run({ tag: release.label, migrationCount: migrations.length, env: {
       PENCIL_PREVIOUS_MIGRATIONS_DIR: temporary,
       PENCIL_UPGRADE_FIXTURE_PATH: fixturePath,
       PENCIL_UPGRADE_CHECKS_JSON: JSON.stringify(checks),
