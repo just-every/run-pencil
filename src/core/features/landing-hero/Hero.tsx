@@ -35,6 +35,7 @@ export function Hero() {
           <p className="hero__alt">{alternativeLead} <AlternativeNames /></p>
           <div className="site-actions hero__actions">
             <PrimaryAction className="site-pill" />
+            {variant === 'site' ? <a className="site-pill" href="https://demo.run-pencil.com/">Try the demo</a> : null}
             <Link className="site-link" to={links.docsUrl}>Read the docs</Link>
           </div>
         </div>

@@ -4243,7 +4243,7 @@
       "executable": false
     },
     "src/core/features/landing-hero/Hero.tsx": {
-      "sha256": "8f88d0acdb37edd33d76d1718c99fb36edc850a0b38b12e6c09ecb90499f4ed9",
+      "sha256": "9e392b843f7edf1c4e657ed56eeaf2719df8482aa2139d8617397fea8c61b973",
       "executable": false
     },
     "src/core/features/landing-hero/Hint.tsx": {
