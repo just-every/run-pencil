@@ -124,6 +124,10 @@ const retained = {
   ik_d1_staging_chunks: 'stage_id page_ordinal ordinal body body_hash body_size',
   ik_d1_staging_index: 'stage_id page_ordinal ordinal source_identity target_identity',
   ik_d1_staging_originals: 'stage_id original_key name sha256 size',
+  // Preparation checkpoints retain staged import progress; completed erasure progress retains replay protection.
+  ik_d1_preparation_steps: 'id destination namespace mapping_version principal_id operation_key reversal_policy codec_id source_digest total records stages phase hash_json fingerprint verified_revision revision',
+  ik_d1_stream_sources: 'stream_id destination source_digest',
+  ik_d1_erasure_progress: 'id destination request_hash generation phase index_rows value_rows revision records_erased field_matches_json created_at',
   ik_d1_preparation_receipts: 'stage_id generation codec_id header_hash header_size header_chunks',
   ik_d1_staging_headers: 'stage_id ordinal body body_hash body_size',
   ik_d1_publication_fences: 'stream_id job_id',
