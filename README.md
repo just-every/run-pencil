@@ -38,7 +38,7 @@ Pencil is an editable form builder and feedback workspace with branching questio
 Install **Node.js 22 or later**, including npm, from [nodejs.org](https://nodejs.org/en/download), and install Git. Node must be on your `PATH` before installing rer. rer then installs Pencil's pinned runtime and pnpm for its own commands; you do not need a global pnpm install:
 
 ```sh
-npm install -g @runeditrun/rer@0.2.20
+npm install -g @runeditrun/rer@0.2.21
 git clone https://github.com/just-every/run-pencil.git pencil && cd pencil
 rer dev
 ```

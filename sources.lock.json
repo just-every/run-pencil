@@ -1151,7 +1151,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "e125d1857fa7582343d4a842d79f9b78e3d9e01c3cbc3735744ca23c60d3b674",
+      "sha256": "1db6eed57ccc6ec1a291e9fe0cb28eba82022809411a2bebca25ec89cfb57b86",
       "executable": false
     },
     "playwright.admission.config.ts": {
@@ -1171,7 +1171,7 @@
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "8db5ba6a05a2a83d86e7af9a333b7451b0d82a8117c07ce25af244039a9e2dec",
+      "sha256": "4d323a5a4ab85c6a1281732956a3c150a0909035eb8769a344c142053a926dc5",
       "executable": false
     },
     "public/brand/band.svg": {
@@ -1207,7 +1207,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "ba9807104288a9a19127aedde960c70dd8f0008bbbe3d6cd86bd8042ee4cbd42",
+      "sha256": "8f77010e5d6285bb56dd83702644c3fdace4c5d40b81fed02ee6013091f25fef",
       "executable": false
     },
     "RELEASE.json": {
@@ -3199,7 +3199,7 @@
       "executable": false
     },
     "src/core/app/api.ts": {
-      "sha256": "65c8c251b8d284bd5e55a74440792bc459a5fca42bd872f0cf4c140f1720d431",
+      "sha256": "7838474a024e83724eac54ea473abedbf63e1134b12573533c085bda9c201771",
       "executable": false
     },
     "src/core/app/capability-paths.ts": {
@@ -5455,7 +5455,7 @@
       "executable": false
     },
     "tests/local/setup.spec.ts": {
-      "sha256": "115ccd87bc0029da35a140f61d917589287f97e6cb68e45011cff8cf278d946f",
+      "sha256": "57f8b16f5d24b55ccc6d212fbf55a916dd22aaea106f7f80939849730f606fed",
       "executable": false
     },
     "tests/native/closure-recovery.mjs": {

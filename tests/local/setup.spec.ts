@@ -20,7 +20,7 @@ test('fresh rer owner finishes setup before hydration, then collects a response 
   try {
     const setup = await app.run(['setup', '--owner-email', 'synthetic-setup@example.test', '--owner-name', 'Synthetic owner', '--port', String(app.port)])
     expect(setup.code).toBe(0)
-    // The outbox opens only for a request that holds this checkout's key; a person gets it from the RER_OPEN link, this journey presents it as the CLI does.
+    // With JavaScript off, exchange the private RER_OPEN key as the bootstrap page does, then use its one-click owner link.
     const key = /^RER_DEV_KEY=(\S+)$/m.exec(await readFile(join(app.root, '.rer/local/dev-key.env'), 'utf8'))![1]
     await context.route(app.origin + '/auth/dev/**', route => route.continue({ headers: { ...route.request().headers(), 'x-rer-dev-key': key } }))
     // This copy links the checkout's node_modules from outside its root, so Vite serves those modules through /@fs/,
@@ -28,8 +28,9 @@ test('fresh rer owner finishes setup before hydration, then collects a response 
     const linkedModules = (each: typeof context) => each.route(app.origin + '/@fs/**', route => route.continue({ headers: { ...route.request().headers(), 'x-rer-dev-key': key } }))
     runtime = app.start(['dev', '--port', String(app.port)]); await app.wait(runtime)
     const page = await context.newPage()
+    expect((await context.request.post(app.origin + '/__dev/key', { headers: { Origin: app.origin }, data: { key } })).status()).toBe(204)
     await page.goto(app.origin + '/setup'); await expect(page).toHaveURL(app.origin + '/signin')
-    await page.goto(app.origin + '/auth/dev/enter?as=owner')
+    await page.getByRole('link', { name: 'Continue as owner' }).click()
     await expect(page).toHaveURL(app.origin + '/setup')
     await page.goto(app.origin + '/app/settings'); await expect(page).toHaveURL(app.origin + '/setup')
     await expect(page.getByLabel('Business name')).toBeEnabled()
