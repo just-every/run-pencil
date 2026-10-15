@@ -4957,15 +4957,19 @@
       "executable": false
     },
     "src/demo.ts": {
-      "sha256": "b0e13a5edc5b3c6d67383e06608e8d7d52ce6c33c351b9f9b04ebe81a072c80a",
+      "sha256": "87f4dc0854a5001d26d657ef8aac4466d90eeee4b7deac1c3b0575a4639e87a7",
       "executable": false
     },
     "src/demo/aurora.ts": {
       "sha256": "6d315d34d028b04dac9be697a01251743e997caeea9afc31ad7b02b4e196a627",
       "executable": false
     },
+    "src/demo/seed-aurora.ts": {
+      "sha256": "bd527bda8aaa7987996928f9897542873c15dfd4633b371c0d0170e2cacf096e",
+      "executable": false
+    },
     "src/demo/workspace.ts": {
-      "sha256": "d5395effaf2e41cbe703b5586686cc13ebd5fc4b04041a27bfd900db0843cf3a",
+      "sha256": "f56fdefedac98f15d234d96b09555c5275df254b6609c3d4c3460b6d43996334",
       "executable": false
     },
     "src/editor/leaf.tsx": {

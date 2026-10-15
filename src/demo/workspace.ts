@@ -17,7 +17,7 @@ export async function ensureDemoAnalysis(services: PencilServices, db: D1Databas
 }
 
 export async function seedWorkspaceFlows(services: PencilServices, db: D1Database, workspaceId: string, operatorId: string, now: Date) {
-  for (const flow of flows) {
+  await Promise.all(flows.map(async flow => {
     const key = flow.number * 1000
     const flowId = demoId('DF', key), revisionId = demoId('DV', key), questionId = demoId('DQ', key)
     const at = (days: number) => new Date(now.getTime() - days * DAY).toISOString()
@@ -37,7 +37,7 @@ export async function seedWorkspaceFlows(services: PencilServices, db: D1Databas
         ...(flow.status === 'draft' ? [] : [{ ...step, id: `${step.id.slice(0, -3)}100`, revisionId: demoId('DV', key + 100), createdAt, updatedAt }]),
       ]), choices: [],
     })
-    if (!flow.count) continue
+    if (!flow.count) return
     const sessions = Array.from({ length: flow.count }, (_, n) => ({
       id: demoId('DX', key + n), source: 'direct' as const, deviceClass: n % 3 ? 'mobile' as const : 'desktop' as const,
       furthestStepId: questionId, completedAt: at(flow.age + n / 3), expiresAt: at(flow.age + n / 3 - 30),
@@ -51,5 +51,5 @@ export async function seedWorkspaceFlows(services: PencilServices, db: D1Databas
         mobileStarts: sessions.filter(s => s.deviceClass === 'mobile').length, tabletStarts: 0, desktopStarts: sessions.filter(s => s.deviceClass === 'desktop').length, createdAt, updatedAt },
     })
     await ensureDemoAnalysis(services, db, workspaceId, operatorId, flowId, revisionId, new Date(updatedAt))
-  }
+  }))
 }
