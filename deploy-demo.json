@@ -8,5 +8,6 @@
     "SEED_SAMPLE_DATA": "false",
     "TASK_PROVIDER": "webhook",
     "TASK_WEBHOOK_URL": "https://tasks.example.com/pencil"
-  }
+  },
+  "instanceType": "standard-1"
 }
