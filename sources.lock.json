@@ -1409,7 +1409,7 @@
       "executable": false
     },
     "scripts/demo-host-observe.mjs": {
-      "sha256": "9c13afe7f9d98251c0a4126eafffd300090df58a2d1357af441aea1584561450",
+      "sha256": "56d2a351ba3be95bd7a0325754c2a4cb6c633a655838b715e86f3b02d7660dcc",
       "executable": false
     },
     "scripts/deployment-data-cli.mjs": {

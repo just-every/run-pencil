@@ -5,7 +5,7 @@ const account = process.env.CLOUDFLARE_ACCOUNT_ID
 if (account !== 'b20c0ca9cab0c2b70e13d7cf724b89bd') throw Error('Wrong demo account')
 const endpoint = `https://api.cloudflare.com/client/v4/accounts/${account}/workers/scripts/pencil-demo-test--demo/tails`
 const headers = { authorization: `Bearer ${process.env.CLOUDFLARE_API_TOKEN}`, 'content-type': 'application/json' }
-const response = await fetch(endpoint, { method: 'POST', headers, body: '{}' })
+const response = await fetch(endpoint, { method: 'POST', headers, body: '{}', signal: AbortSignal.timeout(10000) })
 const result = await response.json()
 if (!result.success) throw Error(`Cannot observe demo admissions: HTTP ${response.status}`)
 const { id, url } = result.result
@@ -20,7 +20,7 @@ try {
   })
   // Workers tails can close when idle. A plain GET emits a tail event without
   // solving Turnstile, starting a visitor or setting a demo cookie.
-  keepalive = setInterval(() => { fetch('https://demo.test.run-pencil.com/', { signal: AbortSignal.timeout(10000) }).catch(() => {}) }, 30000)
+  keepalive = setInterval(() => { fetch('https://demo.test.run-pencil.com/', { signal: AbortSignal.timeout(10000) }).then(response => response.body?.cancel()).catch(() => {}) }, 30000)
   await new Promise((resolve, reject) => {
     const timer = setTimeout(resolve, 15 * 60 * 1000)
     socket.addEventListener('close', event => { clearTimeout(timer); reject(Error(`Demo tail closed before observation completed (${event.code})`)) }, { once: true })
@@ -41,11 +41,15 @@ try {
 finally {
   clearInterval(keepalive)
   socket?.close()
-  const deleted = await fetch(`${endpoint}/${id}`, { method: 'DELETE', headers })
-  if (!deleted.ok) failure ??= `Cannot remove demo tail: HTTP ${deleted.status}`
+  try {
+    const deleted = await fetch(`${endpoint}/${id}`, { method: 'DELETE', headers, signal: AbortSignal.timeout(10000) })
+    if (!deleted.ok) failure ??= `Cannot remove demo tail: HTTP ${deleted.status}`
+    await deleted.body?.cancel()
+  } catch (error) { failure ??= `Cannot remove demo tail: ${error.name}` }
 }
 await mkdir('.rer', { recursive: true })
 const report = { startedAt, endedAt: new Date().toISOString(), admissions, failure: failure ?? null, quiet: !failure && admissions.length === 0 }
 await writeFile('.rer/demo-test-admissions.json', JSON.stringify(report, null, 2) + '\n')
 console.log(JSON.stringify(report))
-if (!report.quiet) process.exitCode = 1
+// A closed live-tail WebSocket may retain an Undici handle after cleanup.
+process.exit(report.quiet ? 0 : 1)
