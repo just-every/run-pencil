@@ -1,10 +1,16 @@
 # Release notes
 
-## Unreleased
+## 0.5.0 - 2026-10-16
 
-- Mark credential fixtures and examples explicitly synthetic so hosted source checks accept them.
+**Upgrading a local install.** Stop dev (`rer dev --stop`), create the ignored exports folder (`mkdir -p exports`), export (`rer export --output exports/before-upgrade.rer`), pull, then run `rer install`, `rer setup` and `rer dev`. Upgrading from 0.4.0 applies the additive migration `0037_import_progress.sql`, which adds the refreshed Base import kit's preparation checkpoints, stream sources and erasure progress; backups keep them. Hosted deployments apply it through `rer deploy`.
 
-**Managed mail.** Managed hosting through RER sends Pencil email through the RER relay, without a separate mail provider account or API key. Free and Assisted installations retain the ordinary SendGrid or Resend choices; direct Cloudflare hosting still needs your own verified sender and provider key. Pencil pins rer 0.2.23 and its maintained mail adapter, fixing sign-in and invitation delivery from Cloudflare Workers. Relay redirects are refused, rate-limited notifications retry on schedule, and rejected notifications show the owner a plain explanation. RER's Open app link prefills the sign-in email from `login_hint`, using Base's email validation.
+**Managed mail.** Managed hosting through RER sends Pencil email through the RER relay, without a separate mail provider account or API key. Free and Assisted installations retain the ordinary SendGrid or Resend choices; direct Cloudflare hosting still needs your own verified sender and provider key. Pencil pins rer 0.2.24, whose maintained mail adapter (since 0.2.23) fixes sign-in and invitation delivery from Cloudflare Workers. Relay redirects are refused, rate-limited notifications retry on schedule, and rejected notifications show the owner a plain explanation. RER's Open app link prefills the sign-in email from `login_hint`, using Base's email validation.
+
+**Sign-in and health.** A local Lobby's **Sign in** link carries `login_hint` for the one active owner on a loopback origin; a hosted Lobby is the same page for every visitor and never names its owner. On Managed hosting `/health` reports the built source commit, the release digest and the Worker version.
+
+**Source checks.** Credential fixtures and examples are marked explicitly synthetic so hosted source checks accept them.
+
+**Screenshot.** `.github/assets/release/pencil-0.5.0-results-1440.png` shows Results at 1440 px in local dev with sample responses.
 
 ## 0.4.0 - 2026-10-15
 

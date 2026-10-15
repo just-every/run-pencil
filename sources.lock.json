@@ -792,6 +792,10 @@
       "sha256": "712eb2a5fbaede1103a32d9639939d8a4e65f0db94923ae97a89baad7c5d2a94",
       "executable": false
     },
+    ".github/assets/release/pencil-0.5.0-results-1440.png": {
+      "sha256": "56017487ec3148fcd8b45e108266e2cd70d70aecb5aa7a32c9a4717aaa298eb6",
+      "executable": false
+    },
     ".github/workflows/rer-managed.yml": {
       "sha256": "4438b6e2ab1aa8eac1ccb92a7a6063ed222ac3b8575417824951e80a0bf4c40a",
       "executable": false
@@ -845,7 +849,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "569fba62fc360675dbe7523f72e1e87bd6ac0171026901e3a419f19f96b19ff1",
+      "sha256": "acf2021cd8b02ebe62407117787a99be3f8ad530fe491dc0e073570ac05ea36c",
       "executable": false
     },
     "CLAUDE.md": {
@@ -893,7 +897,7 @@
       "executable": false
     },
     "docs/FIRST-RELEASE.md": {
-      "sha256": "704ecfbb02855912e9acc60050fcb2c1db965526353919df377798ad02bab228",
+      "sha256": "4ea68da3be0aa4230728d71ed48ffb9e9a5457f4f67573c30c4988c20c9b85f9",
       "executable": false
     },
     "docs/guide/actions.md": {
@@ -933,7 +937,7 @@
       "executable": false
     },
     "docs/guide/overview.md": {
-      "sha256": "a19830499c072781fc07e9c773f728aa2a96901c328355fa5fdd7956b419b9b8",
+      "sha256": "58756cc8fb88468aba5d8bb42ade969457b9323424df62b576728295135b0ccc",
       "executable": false
     },
     "docs/guide/privacy.md": {
@@ -977,7 +981,7 @@
       "executable": false
     },
     "HANDOVER.md": {
-      "sha256": "924e843124fc601ca229c786afe021a7a26eac369f33e0a6829b79d4d1ff0cb9",
+      "sha256": "5f442e0eb09cf2541ffd33e49d09f39afd816f9a40591a40757b7d178b4f2fc1",
       "executable": false
     },
     "LICENSE": {
@@ -1157,7 +1161,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "ca243e5ae5820704119eaae76bde21e7bfb18cb8587f1f54aee3be3c788763e7",
+      "sha256": "8d994a2c04e32652630a6d742ecec88a67cd53e1e172823a7531574f43b6ed45",
       "executable": false
     },
     "playwright.admission.config.ts": {
@@ -1217,7 +1221,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "dd49803f461f289d80059cd9f9391148cbb1df6d50a05db833a9eafed6e89231",
+      "sha256": "b655d546c0d44b4bb4576cc5d648fa4350cc94366c293a632db4df7894c9dcb2",
       "executable": false
     },
     "rer-project.json": {
@@ -1729,7 +1733,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "435a82a9a154f755024513195d97ad5c229cce9c3aab31cbb68e41f6f72270fb",
+      "sha256": "f543e4ad0bfcb763aa5b08ae29b6d743888a8bcd158c27dddf207b366252c7ae",
       "executable": false
     },
     "src/base/ai/client.mjs": {
@@ -5864,12 +5868,12 @@
       "sha256": "dde863e54fdbbdab5df251e79449279383fd2359372436eff341ec815fcfc290",
       "executable": false
     },
-    "tests/runtime/upgrades/0.3.0.json": {
-      "sha256": "985ee6e0af812a8bf41486e9ac0e300b424ca392d7e48e870a79a258e69cf900",
+    "tests/runtime/upgrades/0.4.0.json": {
+      "sha256": "965adbc49fa9fca6e4304832867712be2db0625b7c5b98ec0f43322556a6e8d4",
       "executable": false
     },
-    "tests/runtime/upgrades/0.3.0.sql": {
-      "sha256": "39ab9d71b358a0fdf6fb37a10eeb2432fd7f0524a52f35dff08df073892ba664",
+    "tests/runtime/upgrades/0.4.0.sql": {
+      "sha256": "7529ebef8e48f2e0ba92185adbb28e4556dc058b0f9ab603c59d105852f6646f",
       "executable": false
     },
     "tests/runtime/upgrades/queued-retry-dispatch.ts": {

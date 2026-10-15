@@ -1,38 +1,26 @@
 {
-  "version": "0.4.0",
-  "previousVersion": "0.3.0",
-  "date": "2026-10-15",
+  "version": "0.5.0",
+  "previousVersion": "0.4.0",
+  "date": "2026-10-16",
   "contractChanges": {},
   "proseChanges": [
     {
       "document": "README.md",
       "change": "changed",
-      "date": "2026-10-15",
-      "summary": "State that every clause is active and give the local upgrade steps.",
-      "was": "Exactly ANLY-009 (builder assistance), NOTIFY-001 and NOTIFY-003 (3 clauses) remain deferred; rer dev was described only for a first launch.",
-      "now": "contract-profile.json defers no clause. Upgrading a local install means stop dev, export, pull, rer install, rer setup, rer dev, and rer dev applies pending migrations or refuses with run rer setup."
-    },
-    {
-      "document": "AGENTS.md",
-      "change": "changed",
-      "date": "2026-10-15",
-      "summary": "Tell the owner's agent that no clause is deferred.",
-      "was": "The first-release profile defers ANLY-009 (builder assistance), NOTIFY-001 and NOTIFY-003 (3 clauses).",
-      "now": "The contract profile defers no clause; draft rewrites (ANLY-009), analysis attention (NOTIFY-001) and daily digests (NOTIFY-003) are implemented."
+      "date": "2026-10-16",
+      "summary": "Describe Managed mail through the RER relay and pin rer 0.2.24.",
+      "was": "Deployment needed a Cloudflare account and production inputs, with no Managed mail path; install used rer 0.2.21.",
+      "now": "Managed hosting sends mail through the RER relay with no provider account or API key; Free and Assisted keep SendGrid or Resend, and direct Cloudflare deployment needs your own provider, verified sender and key. Install uses rer 0.2.24."
     }
   ],
   "extensionPointChanges": [],
   "migrations": [
     {
-      "id": "0035_feedback.sql",
-      "buyerSteps": "Add draft rewrites and their AI call ledger, in-app analysis notifications with a per-operator mute, and Daily digest preferences, deliveries, members and attempts, with triggers that notify on finished analysis runs, erase captured digest mail with its responses and skip captured analysis requests for responses that are no longer released. Additive: existing notification preferences, analysis runs and responses are unchanged. Local installs: run rer setup after pulling, or rer dev applies it before serving."
-    },
-    {
-      "id": "0036_owner_signin.sql",
-      "buyerSteps": "Add single-use owner sign-in grants for rer signin. Grants are minted with the deployment's Cloudflare credentials, expire after 15 minutes and are excluded from every backup. Existing operators and sessions are unchanged."
+      "id": "0037_import_progress.sql",
+      "buyerSteps": "Add the refreshed Base import kit's preparation checkpoints, stream sources and erasure progress records. Additive: existing import custody, responses and applied migrations are unchanged, and the new records are kept in backups. Local installs: run rer setup after pulling, or rer dev applies it before serving. Hosted deployments apply it through rer deploy."
     }
   ],
   "breaking": false,
-  "publicReleaseNotes": "Pencil 0.4.0 adds Daily response digests, AI rewrites of a draft question that you accept explicitly, in-app analysis notifications, and rer signin owner links for a hosted deployment.\n\nEach operator can now choose Daily for a flow's response email: one digest at the opening of the workspace's sending window, with counts only and never answers. Rewrite this question sends only the saved question, style and context to your configured AI provider, and changes the draft only when you accept the proposal. Analysis notifications list your finished runs on the Analysis page. Sending windows may cross midnight.\n\nAdd question no longer reroutes the previous question. A new question leads to your completion screen and stays unconnected until an earlier question's rule or default next screen points to it; Publish refuses an unreachable question.\n\nPrivacy: /signin no longer fills in the owner's email for visitors. The field is filled only from a login_hint parameter on a link the owner was given. While analysis is on, the form notice now says that names or emails typed into a selected text answer are sent with that answer.\n\nUpgrading a local install: stop dev, export, pull, then run rer install, rer setup and rer dev. rer dev now applies pending migrations before it serves, and refuses to start, telling you to run rer setup, if it cannot. Migrations 0035 and 0036 are additive. Pencil pins rer 0.2.20; rer deploy --remove is documented, and deployed backups exclude Cloudflare's internal _cf_KV table.\n\nrer demo opens a disposable, signed-in Pencil Demo on sample data, whose mail and third-party effects return success without sending. Local dev reads Pencil Dev and suppresses mail.\n\nNo contract clause is deferred. The importers were checked with documented-format synthetic files only, and AI features only against scripted local providers. This release does not claim hosted capacity beyond the measured ceiling or live mail delivery.",
-  "agentUpdateInstructions": "Read OPERATIONS.md, docs/FIRST-RELEASE.md and docs/HOSTING.md. Export first to a private path outside source paths or in this checkout's ignored exports directory, and verify recovery into a new local database or an explicitly selected empty migrated D1 database. Preserve the documented archive redactions and never restore over existing application records. Preserve every applied migration's bytes, including 0019 as your database applied it (migrations/released-rewrites.json), and apply 0035 and 0036 in order before serving the new source: locally with rer setup (rer dev also applies pending migrations before it serves and refuses with run rer setup when it cannot), and hosted with rer deploy, which applies them in order. Keep SETUP_TOKEN unset after the owner claim. Add question no longer reroutes the previous question: connect a newly added question before publishing. /signin prefills only from login_hint; never reintroduce a lookup of an operator's email for anonymous visitors. AI stays off unless AI_ENABLED and a transport are set; rewrites change a draft only on explicit accept. Never replay historical or imported mail, and Daily digests never resend restored history. Run the populated 0.3.0 predecessor upgrade test and the complete verification gate on the integrated source. No contract clause is deferred."
+  "publicReleaseNotes": "Pencil 0.5.0 sends Managed hosting mail through the RER relay: a Managed installation needs no SendGrid or Resend account or API key. Free and Assisted installations keep the ordinary SendGrid or Resend choices, and direct Cloudflare hosting still needs your own verified sender and provider key.\n\nPencil pins rer 0.2.24, whose maintained mail adapter (since 0.2.23) fixes sign-in and invitation delivery from Cloudflare Workers. A relay redirect is refused rather than followed, rate-limited notifications retry on schedule, and a rejected notification shows the owner a plain explanation. The relay carries one recipient, text and optional HTML; a response notification with a saved inline logo cannot be sent through it and its delivery problem stays visible on Results.\n\nRER's Open app link and a local Lobby's Sign in link fill in the sign-in email from login_hint, validated by Base. A hosted Lobby never names its owner. /health reports the built source, release digest and Worker version on Managed hosting.\n\nMigration 0037 is additive: it adds the refreshed Base import kit's preparation checkpoints, stream sources and erasure progress, all kept in backups.\n\nUpgrading a local install: stop dev, create the ignored exports folder (mkdir -p exports), export to exports/before-upgrade.rer, pull, then run rer install, rer setup and rer dev.\n\nScreenshot: .github/assets/release/pencil-0.5.0-results-1440.png (Results at 1440 px, local dev with sample responses).\n\nThe relay path was proved against Base's adapter and a native Worker build, not by live inbox delivery. This release does not claim hosted capacity beyond the measured ceiling or live mail delivery.",
+  "agentUpdateInstructions": "Read OPERATIONS.md, docs/FIRST-RELEASE.md, docs/HOSTING.md and docs/production-mail.md. Export first to a private path outside source paths or in this checkout's ignored exports directory (create it with mkdir -p exports; rer export refuses a missing folder), and verify recovery into a new local database or an explicitly selected empty migrated D1 database. Preserve every applied migration's bytes, including 0019 as your database applied it (migrations/released-rewrites.json), and apply 0037 after 0036 before serving the new source: locally with rer setup (rer dev also applies pending migrations before it serves), and hosted with rer deploy. MAIL_PROVIDER rer requires MAIL_RELAY_URL (an absolute HTTPS URL without credentials, query or fragment) and the RER-supplied MAIL_API_KEY; keep resend or sendgrid with your own key and verified sender for direct hosting. Never transmit Pencil's private X-Pencil queue headers to the relay, never follow a relay redirect, and never replay historical or imported mail. /signin prefills only from login_hint; never look up an operator's email for anonymous visitors, and keep the Lobby's hint to loopback origins with exactly one active owner. Keep SETUP_TOKEN unset after the owner claim. Run the populated 0.4.0 predecessor upgrade test and the complete verification gate on the integrated source."
 }
