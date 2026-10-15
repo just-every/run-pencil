@@ -11,6 +11,10 @@ export class DigestDispatcher {
  async run(now=new Date().toISOString()) {
   await freezeDigests(this.db,now)
   await this.db.batch([
+   this.db.prepare(`INSERT OR IGNORE INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at)
+    SELECT lower(hex(randomblob(16))),f.workspace_id,'digest.delivery',NULL,'digest',NULL,'{"status":"unknown"}',?
+    FROM digest_deliveries d JOIN flows f ON f.id=d.flow_id JOIN digest_attempts a ON a.delivery_id=d.id AND a.ordinal=d.attempts AND a.event='started'
+    WHERE d.status='sending' AND d.replay_enabled=1 AND d.last_attempt_at<?`).bind(now,new Date(Date.parse(now)-300_000).toISOString()),
    this.db.prepare(`INSERT OR IGNORE INTO digest_attempts(id,delivery_id,ordinal,event,created_at) SELECT 'interrupted:'||id||':'||attempts,id,attempts,'unknown',? FROM digest_deliveries WHERE status='sending' AND replay_enabled=1 AND last_attempt_at<?`).bind(now,new Date(Date.parse(now)-300_000).toISOString()),
    this.db.prepare(`UPDATE digest_deliveries SET status='unknown',reason='Sender interrupted. Sending again requires duplicate-risk acceptance.',updated_at=? WHERE status='sending' AND replay_enabled=1 AND last_attempt_at<?`).bind(now,new Date(Date.parse(now)-300_000).toISOString()),
   ])
@@ -58,6 +62,11 @@ export class DigestDispatcher {
    this.db.prepare(`INSERT OR IGNORE INTO digest_attempts(id,delivery_id,ordinal,event,provider,provider_code,created_at) SELECT ?,id,attempts,?,?,?,? FROM digest_deliveries WHERE id=? AND status='sending' AND attempts=?`).bind(crypto.randomUUID(),outcome,receipt.provider,receipt.code,now,row.id,row.attempts),
    this.db.prepare("UPDATE digest_deliveries SET status=?,reason=?,provider_id=?,available_at=?,updated_at=? WHERE id=? AND status='sending' AND attempts=?").bind(status,reason,providerId,retry??now,now,row.id,row.attempts),
    this.db.prepare('UPDATE digest_preferences SET failure_reason=? WHERE flow_id=? AND operator_id=?').bind(reason,row.flowId,row.operatorId),
+   // Like immediate mail, retain only the feature, time and outcome. Audit IDs
+   // are independent of recipient, delivery, attempt and local capture claims.
+   // Do not join the live recipient here: removal can commit during sender I/O.
+   this.db.prepare(`INSERT OR IGNORE INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at)
+    VALUES(?,?,'digest.delivery',NULL,'digest',NULL,?,?)`).bind(crypto.randomUUID(),row.workspaceId,JSON.stringify({status}),now),
   ])
  }
 }

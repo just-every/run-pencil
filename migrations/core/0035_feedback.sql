@@ -2,7 +2,7 @@
 CREATE TABLE draft_rewrites (
  id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
  flow_id TEXT NOT NULL REFERENCES flows(id) ON DELETE CASCADE, draft_id TEXT NOT NULL REFERENCES flow_revisions(id) ON DELETE CASCADE,
- step_id TEXT NOT NULL, operator_id TEXT NOT NULL REFERENCES operators(id), draft_version INTEGER NOT NULL,
+ step_id TEXT NOT NULL, operator_id TEXT REFERENCES operators(id) ON DELETE SET NULL, draft_version INTEGER NOT NULL,
  source TEXT NOT NULL, style TEXT NOT NULL, context TEXT NOT NULL, proposal TEXT,
  decision_token TEXT, state TEXT NOT NULL CHECK(state IN ('requested','ready','failed','accepted','rejected')), error TEXT,
  created_at TEXT NOT NULL, updated_at TEXT NOT NULL
@@ -68,3 +68,16 @@ CREATE INDEX analysis_calls_workspace_time ON analysis_calls(workspace_id,create
 CREATE INDEX draft_ai_calls_workspace_time ON draft_ai_calls(workspace_id,created_at);
 
 CREATE INDEX digest_members_response ON digest_members(response_id,delivery_id);
+
+-- Local analysis captures carry the exact selected response IDs in Pencil's request.
+-- Check their custody in the insert itself: an in-flight dev call cannot restore
+-- an answer after response/contact erasure commits. Receipt-only live captures
+-- and captures for other features contain no response payload and are unaffected.
+CREATE TRIGGER analysis_capture_live_evidence BEFORE INSERT ON rer_ai_development_outbox
+WHEN json_extract(NEW.record,'$.feature')='analysis' AND EXISTS (
+ SELECT 1 FROM json_each(CASE WHEN json_valid(json_extract(NEW.record,'$.request.input[1].content[0].text'))
+   THEN json_extract(NEW.record,'$.request.input[1].content[0].text') ELSE '{}' END,'$.responses') captured
+ WHERE NOT EXISTS (SELECT 1 FROM responses WHERE id=json_extract(captured.value,'$.id') AND state='released')
+) BEGIN
+ SELECT RAISE(IGNORE);
+END;

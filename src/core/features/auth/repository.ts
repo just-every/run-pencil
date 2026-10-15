@@ -157,6 +157,9 @@ export class AuthRepository {
           input.workspaceId, input.actorOperatorId, now, ...guardParameters] },
       { sql: `DELETE FROM operators WHERE id = ? AND ${guard}`, parameters: [target.id, ...guardParameters] },
     ])
-    return results.at(-1)?.changes === 1 ? 'removed' as const : 'last-operator' as const
+    // D1 counts FK cascades too; removing one operator can anonymise multiple
+    // rewrites and delete preferences. The guarded primary-key delete is still
+    // the only statement here that can report a nonzero final result.
+    return (results.at(-1)?.changes ?? 0) > 0 ? 'removed' as const : 'last-operator' as const
   }
 }
