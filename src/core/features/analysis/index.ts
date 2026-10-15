@@ -1,4 +1,5 @@
 export { AnalysisService, providerStatus } from './service'
 export { registerAnalysisRoutes } from './routes'
 export { analysisErasureStatements } from './erasure'
+export { DraftRewritePanel } from './ui/DraftRewritePanel'
 export type { RunDetail, RunSummary, ThemeView } from './repository'

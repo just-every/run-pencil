@@ -1,3 +1,3 @@
 export { DistributionPanel } from './ui/DistributionPanel'
 
-export { retryInstant } from './schedule'
+export { insideSendingWindow, retryInstant } from './schedule'

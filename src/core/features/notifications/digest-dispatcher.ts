@@ -1,7 +1,7 @@
 import type { MailSender } from '../../../base/operator-auth/index.mjs'
 import { readNotificationBrand, type NotificationBrand } from './brand.server'
 import { composeResponseNotification, notificationSenderError } from './compose'
-import { insideSendingWindow, retryInstant } from '../distribution/schedule'
+import { insideSendingWindow, retryInstant } from '../distribution'
 import { freezeDigests } from './digest-cohorts'
 import { digestEligibility, digestLiveCount } from './digest-capture'
 import { safeNotificationReceipt } from './failure'
