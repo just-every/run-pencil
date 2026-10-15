@@ -59,7 +59,7 @@ describe.skipIf(!hasUpgradeInput)('declared release migration in a Workers D1 ru
     }
     await verifyRetainedRows()
 
-    // Recreate the 0.2.0 state after its explicit retry was queued: attempts 4,
+    // Recreate the predecessor state after its explicit retry was queued: attempts 4,
     // an old first-attempt timestamp, and a current operator-retry marker at 4.
     // The released retry preserved that old timestamp, so only the normal
     // post-upgrade dispatcher can prove that the queued send still happens.

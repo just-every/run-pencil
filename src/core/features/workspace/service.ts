@@ -14,11 +14,12 @@ export type WorkspaceSettings = {
   readonly reminderDelayHours: number
 }
 
-// The canonical IANA name (australia/brisbane -> Australia/Brisbane), or undefined for anything else.
+// UTC or an Area/Location name, stored in its canonical IANA form (australia/brisbane -> Australia/Brisbane).
 function ianaTimeZone(timeZone: string) {
+  timeZone = timeZone.trim()
+  if (timeZone !== 'UTC' && !timeZone.includes('/')) return undefined
   try {
-    const canonical = new Intl.DateTimeFormat('en-US', { timeZone: timeZone.trim() }).resolvedOptions().timeZone
-    return canonical === 'UTC' || canonical.includes('/') ? canonical : undefined
+    return new Intl.DateTimeFormat('en-US', { timeZone }).resolvedOptions().timeZone
   } catch {
     return undefined
   }

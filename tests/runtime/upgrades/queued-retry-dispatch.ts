@@ -30,7 +30,7 @@ export async function dispatchQueuedLegacyRetry(db: D1Database, previous: D1Migr
       ]
     }),
     db.prepare(`INSERT INTO mail_delivery_attempts (id,delivery_id,ordinal,event,actor_operator_id,reason,created_at)
-      VALUES ('upgrade-operator-retry-4',?,4,'operator-retry','upgrade-operator-1','Explicit retry queued by 0.2.0',?)`).bind(deliveryId, queuedAt),
+      VALUES ('upgrade-operator-retry-4',?,4,'operator-retry','upgrade-operator-1','Explicit retry queued before the upgrade',?)`).bind(deliveryId, queuedAt),
   ])
   const historyBefore = (await db.prepare('SELECT id,ordinal,event FROM mail_delivery_attempts WHERE delivery_id=? ORDER BY id')
     .bind(deliveryId).all<{ id: string; ordinal: number; event: string }>()).results
@@ -46,7 +46,7 @@ export async function dispatchQueuedLegacyRetry(db: D1Database, previous: D1Migr
     .bind(deliveryId).all<{ id: string; ordinal: number; event: string }>()).results
   const captured = (await db.prepare("SELECT message FROM rer_mail_development_outbox WHERE json_extract(message,'$.deliveryId')=?")
     .bind('upgrade-delivery-key-2').all<{ message: string }>()).results
-  console.log('Queued 0.2.0 operator retry after migration:', JSON.stringify({
+  console.log('Queued predecessor operator retry after migration:', JSON.stringify({
     concurrentDispatcherAttempts: concurrentDrains.reduce((sum, result) => sum + result.attempted, 0),
     repeatedDispatcherAttempts: repeatedDrains.reduce((sum, result) => sum + result.attempted, 0),
     delivery,

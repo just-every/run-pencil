@@ -1,7 +1,7 @@
 {
   "id": "pencil",
   "name": "Pencil",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "maturity": "first-release-profile-candidate-local-runtime",
   "category": "forms",
   "spine": {

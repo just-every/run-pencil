@@ -843,7 +843,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "55b88de45fe3721855f7ddeab50e08e368a833ef269cd541f6bb7218dd55f962",
+      "sha256": "da855cf7885a772b1aa0094df9e2f508f3401205b209add55cabe0e39c57107a",
       "executable": false
     },
     "CLAUDE.md": {
@@ -919,7 +919,7 @@
       "executable": false
     },
     "docs/guide/install.md": {
-      "sha256": "ac1f34fb513a2ee2777125ce72d1ca61321f5a3591eb47506d46aa69f8bcb77f",
+      "sha256": "4d89bfca724e6056c100c86abbe0c3752f4ebc5712e703ad89b5ebbb91d4ce23",
       "executable": false
     },
     "docs/guide/invitations.md": {
@@ -1151,7 +1151,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "d5c31a1de32bb8089104c53cfef2937f16e37346c5c78e3c54ca92ad37c6def8",
+      "sha256": "e125d1857fa7582343d4a842d79f9b78e3d9e01c3cbc3735744ca23c60d3b674",
       "executable": false
     },
     "playwright.admission.config.ts": {
@@ -1211,7 +1211,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "0c1f4f4576cfb7e8ac4f13e9ee612a24468a9b121d42bff7c16d85ee3f9e7a98",
+      "sha256": "dd49803f461f289d80059cd9f9391148cbb1df6d50a05db833a9eafed6e89231",
       "executable": false
     },
     "rer-project.json": {
@@ -1695,7 +1695,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "6ed830b657a1fd0a012caa94af00f6538bd6f596739cd764dbd4d0f83bbec6a0",
+      "sha256": "bb836f93cde0ca84b4d37590b857e120a085a1df509d705c3c4d404f57bfb2e0",
       "executable": false
     },
     "src/base/ai/client.mjs": {
@@ -4695,7 +4695,7 @@
       "executable": false
     },
     "src/core/features/workspace/service.ts": {
-      "sha256": "7052a23cf48fcf7a04f3cbcaf653346bb4134181f1a1cc7a09e4a074ba7cb310",
+      "sha256": "6ecc4309a7b3b7c33134254ed2e1fcc7053b4944a85fb7717c5cc3a8c564e47c",
       "executable": false
     },
     "src/core/features/workspace/setup.ts": {
@@ -5707,19 +5707,19 @@
       "executable": false
     },
     "tests/runtime/upgrades.worker.test.ts": {
-      "sha256": "35d5b8fba89b3873f446400ead60d1d5a81a1475b422673edc3752a128f41350",
+      "sha256": "dde863e54fdbbdab5df251e79449279383fd2359372436eff341ec815fcfc290",
       "executable": false
     },
-    "tests/runtime/upgrades/0.2.0.json": {
-      "sha256": "cc6933ecea0f135eba922e6d3a4ca11ba1c45bf3cfb9779ae5ae5160b64a4229",
+    "tests/runtime/upgrades/0.3.0.json": {
+      "sha256": "985ee6e0af812a8bf41486e9ac0e300b424ca392d7e48e870a79a258e69cf900",
       "executable": false
     },
-    "tests/runtime/upgrades/0.2.0.sql": {
-      "sha256": "4e8a6764ede91d760c6c2a2b0df9ee085cf1162ed47319cb8188419665d4007c",
+    "tests/runtime/upgrades/0.3.0.sql": {
+      "sha256": "39ab9d71b358a0fdf6fb37a10eeb2432fd7f0524a52f35dff08df073892ba664",
       "executable": false
     },
     "tests/runtime/upgrades/queued-retry-dispatch.ts": {
-      "sha256": "fc3231a65887c43e9665c341d4dc5ebc4346d9a029bd08eebe177bbebe2556a2",
+      "sha256": "9eae98e496e374606f9d1385e6327ff28f5a3d3f3b224f4ebf39b641c43e9334",
       "executable": false
     },
     "tsconfig.app.json": {

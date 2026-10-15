@@ -1,59 +1,31 @@
 {
-  "version": "0.3.0",
-  "previousVersion": "0.2.0",
-  "date": "2026-10-13",
+  "version": "0.4.0",
+  "previousVersion": "0.3.0",
+  "date": "2026-10-15",
   "contractChanges": {},
   "proseChanges": [
     {
       "document": "README.md",
       "change": "changed",
-      "date": "2026-10-13",
-      "summary": "State the 3-clause first-release profile.",
-      "was": "Exactly ANLY-001 to ANLY-016, NOTIFY-001 and NOTIFY-003 (18 clauses) remained deferred.",
-      "now": "Exactly ANLY-009 (builder assistance), NOTIFY-001 and NOTIFY-003 (3 clauses) remain deferred, with explicit TODOs and the unsatisfied full-contract check."
+      "date": "2026-10-15",
+      "summary": "State that every clause is active and give the local upgrade steps.",
+      "was": "Exactly ANLY-009 (builder assistance), NOTIFY-001 and NOTIFY-003 (3 clauses) remain deferred; rer dev was described only for a first launch.",
+      "now": "contract-profile.json defers no clause. Upgrading a local install means stop dev, export, pull, rer install, rer setup, rer dev, and rer dev applies pending migrations or refuses with run rer setup."
     },
     {
       "document": "AGENTS.md",
       "change": "changed",
-      "date": "2026-10-13",
-      "summary": "State the 3-clause first-release profile to the owner's agent.",
-      "was": "The first-release profile deferred ANLY-001 to ANLY-016, NOTIFY-001 and NOTIFY-003 (18 clauses).",
-      "now": "The first-release profile defers ANLY-009 (builder assistance), NOTIFY-001 and NOTIFY-003 (3 clauses)."
+      "date": "2026-10-15",
+      "summary": "Tell the owner's agent that no clause is deferred.",
+      "was": "The first-release profile defers ANLY-009 (builder assistance), NOTIFY-001 and NOTIFY-003 (3 clauses).",
+      "now": "The contract profile defers no clause; draft rewrites (ANLY-009), analysis attention (NOTIFY-001) and daily digests (NOTIFY-003) are implemented."
     }
   ],
   "extensionPointChanges": [],
   "migrations": [
     {
-      "id": "0027_base_provider_control.sql",
-      "buyerSteps": "Add Base provider sign-in controls, provider-session bindings, consumed logout ids and minted credential hashes. Provider sign-in stays off: existing operators, native sessions and links are unchanged."
-    },
-    {
-      "id": "0028_base_provider_pins.sql",
-      "buyerSteps": "Add provider session pins for a later linked identity provider. Existing sessions are unchanged."
-    },
-    {
-      "id": "0029_base_dependency_setup.sql",
-      "buyerSteps": "Add app-local provider setup attempts (never exported) and the trigger that binds them to the first native owner. Installations without an identity provider are unchanged."
-    },
-    {
-      "id": "0030_base_idp_owner.sql",
-      "buyerSteps": "Add the identity-provider owner grant ledger used only by an idp owner claim. Existing owner claims are unchanged."
-    },
-    {
-      "id": "0031_import_reversal_retirement.sql",
-      "buyerSteps": "Add Base import-kit undo fences and indexes, the append-only erasure journal and retirements, and the retired-stream revision rule. Existing imports keep resume and undo; no import row changes."
-    },
-    {
-      "id": "0032_restore_erasure_checkpoint.sql",
-      "buyerSteps": "Add the restore erasure checkpoint that every later erasure advances, so rer import --journal can refuse older archives. It starts empty."
-    },
-    {
-      "id": "0033_analysis.sql",
-      "buyerSteps": "Add analysis runs, fixed evidence, validated themes, quotes, recommendations, policies and per-call usage, and Base ai's local dev capture table. Analysis stays off until a provider is configured; nothing is sent by the migration."
-    },
-    {
-      "id": "0034_import_fence_triggers_d1.sql",
-      "buyerSteps": "Recreate the 39 import publication-fence triggers of 0019 in the form Cloudflare D1 parses. 0.3.0 rewrites 0019 itself, which 0.2.0 released in a form D1 refuses, so a new database applies it. A database that applied 0.2.0's 0019 (a local installation; no D1 database could) keeps it in its ledger and ends with the same triggers and schema as a new database; rows and fence behaviour are unchanged. migrations/released-rewrites.json records both hashes."
+      "id": "0035_feedback.sql",
+      "buyerSteps": "Add draft rewrites and their AI call ledger, in-app analysis notifications with a per-operator mute, and Daily digest preferences, deliveries, members and attempts, with triggers that notify on finished analysis runs, erase captured digest mail with its responses and skip captured analysis requests for responses that are no longer released. Additive: existing notification preferences, analysis runs and responses are unchanged. Local installs: run rer setup after pulling, or rer dev applies it before serving."
     },
     {
       "id": "0036_owner_signin.sql",
@@ -61,6 +33,6 @@
     }
   ],
   "breaking": false,
-  "publicReleaseNotes": "Pencil 0.3.0 adds grounded analysis of completed text answers, actions taken from an analysis's recommendation, a Typeform move-in audited against Typeform's documented export format, and a respondent notice whenever answers can reach an AI provider.\n\nAnalysis is optional and off until you configure a provider. It groups a revision's completed text answers into ranked themes; Pencil recomputes every count, checks every quote character for character against the stored answer, withholds themes below the disclosure threshold, and fails a run with nothing shown when the provider's answer does not check out. Only the selected answers and response IDs are sent. While a provider is configured, the Before you share note on every form tells respondents that their written answers may be sent to the AI service the business chose, and that their name, email address and network address are never sent. Analysis was checked against a scripted local provider, not against a live model.\n\nInvitation and reminder retries now stay inside their one-hour budget and six attempts even when a queue wakes late, and closing the current revision by target or deadline no longer stops invitations pinned to an older revision.\n\n/health reports the deployment that answered from rer deploy's own record; PENCIL_BUILD_ID is retired. Pencil runs the published rer 0.2.0 CLI.\n\n0.2.0's migration 0019 could not be applied by Cloudflare D1, so 0.2.0 could not be hosted there. 0.3.0 rewrites 0019 in a form D1 parses, with the same checks, and 0034 brings a database that applied 0.2.0's text to the same schema. Export before upgrading from 0.2.0 and apply 0027 through 0034 in order; every one is additive.\n\nExactly 3 clauses remain deferred: ANLY-009 (builder assistance), NOTIFY-001 and NOTIFY-003. The importers were checked with documented-format synthetic files only. Hosted capacity beyond the measured ceiling and live delivery are not claimed.",
-  "agentUpdateInstructions": "Read OPERATIONS.md, docs/FIRST-RELEASE.md and docs/HOSTING.md. Export first to a private path outside source paths or in this checkout’s ignored exports directory and verify recovery into a new local database or an explicitly selected empty migrated D1 database. Preserve the documented archive redactions and never restore over existing application records. Preserve every applied migration's bytes except 0019, the one released file 0.3.0 rewrites (migrations/released-rewrites.json gives both hashes): keep whichever 0019 your database applied and apply 0027 through 0034 in order before serving the new source; 0034 converges the 0019 triggers. Remove PENCIL_BUILD_ID from the environment; /health identifies the deployment from rer deploy's bindings. AI stays off unless AI_ENABLED and a transport are set; when it is on, respondents are told on the form. Never replay historical or imported mail. Run populated predecessor upgrade tests from 0.2.0 and the complete verification gate on the integrated source. Exactly ANLY-009, NOTIFY-001 and NOTIFY-003 remain deferred; full-contract verification remains unsatisfied."
+  "publicReleaseNotes": "Pencil 0.4.0 adds Daily response digests, AI rewrites of a draft question that you accept explicitly, in-app analysis notifications, and rer signin owner links for a hosted deployment.\n\nEach operator can now choose Daily for a flow's response email: one digest at the opening of the workspace's sending window, with counts only and never answers. Rewrite this question sends only the saved question, style and context to your configured AI provider, and changes the draft only when you accept the proposal. Analysis notifications list your finished runs on the Analysis page. Sending windows may cross midnight.\n\nAdd question no longer reroutes the previous question. A new question leads to your completion screen and stays unconnected until an earlier question's rule or default next screen points to it; Publish refuses an unreachable question.\n\nPrivacy: /signin no longer fills in the owner's email for visitors. The field is filled only from a login_hint parameter on a link the owner was given. While analysis is on, the form notice now says that names or emails typed into a selected text answer are sent with that answer.\n\nUpgrading a local install: stop dev, export, pull, then run rer install, rer setup and rer dev. rer dev now applies pending migrations before it serves, and refuses to start, telling you to run rer setup, if it cannot. Migrations 0035 and 0036 are additive. Pencil pins rer 0.2.20; rer deploy --remove is documented, and deployed backups exclude Cloudflare's internal _cf_KV table.\n\nrer demo opens a disposable, signed-in Pencil Demo on sample data, whose mail and third-party effects return success without sending. Local dev reads Pencil Dev and suppresses mail.\n\nNo contract clause is deferred. The importers were checked with documented-format synthetic files only, and AI features only against scripted local providers. This release does not claim hosted capacity beyond the measured ceiling or live mail delivery.",
+  "agentUpdateInstructions": "Read OPERATIONS.md, docs/FIRST-RELEASE.md and docs/HOSTING.md. Export first to a private path outside source paths or in this checkout's ignored exports directory, and verify recovery into a new local database or an explicitly selected empty migrated D1 database. Preserve the documented archive redactions and never restore over existing application records. Preserve every applied migration's bytes, including 0019 as your database applied it (migrations/released-rewrites.json), and apply 0035 and 0036 in order before serving the new source: locally with rer setup (rer dev also applies pending migrations before it serves and refuses with run rer setup when it cannot), and hosted with rer deploy, which applies them in order. Keep SETUP_TOKEN unset after the owner claim. Add question no longer reroutes the previous question: connect a newly added question before publishing. /signin prefills only from login_hint; never reintroduce a lookup of an operator's email for anonymous visitors. AI stays off unless AI_ENABLED and a transport are set; rewrites change a draft only on explicit accept. Never replay historical or imported mail, and Daily digests never resend restored history. Run the populated 0.3.0 predecessor upgrade test and the complete verification gate on the integrated source. No contract clause is deferred."
 }

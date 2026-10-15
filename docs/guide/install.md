@@ -61,7 +61,7 @@ A newer Pencil can add database migrations. Take these steps in the source folde
 5. Apply the new migrations: `rer setup`. It keeps your owner, data and private settings.
 6. Start Pencil again: `rer dev`.
 
-If you skip step 5, `rer dev` applies the pending migrations itself before it serves and names them as it does. If they cannot be applied, it refuses to start and tells you to run `rer setup`; your forms never answer respondents from an out-of-date database. Keep the export until you have checked your forms and results.
+If you skip step 5, `rer dev` applies the pending migrations itself before it serves, and names them in its server log. If they cannot be applied, it refuses to start and tells you to run `rer setup`; your forms never answer respondents from an out-of-date database. Keep the export until you have checked your forms and results.
 
 ## Optional local setup
 
