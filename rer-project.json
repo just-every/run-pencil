@@ -11,7 +11,7 @@
   "operations": {
     "setup": "bash scripts/delivery/setup-build.sh",
     "build": "pnpm run build:delivery",
-    "verify": "pnpm run verify",
+    "verify": "pnpm run verify:manifest && pnpm run verify:boundaries && pnpm run verify:cli && pnpm run source:check",
     "artifact": "pnpm run build:delivery && node scripts/build-delivery-artifact.mjs",
     "recovery": "Preserve the private deployment receipt and ordered D1 migration ledger. Export before upgrades. Restore to an empty installation; imported historical responses never replay mail. Verify the owner, forms and retained responses before switching traffic."
   },

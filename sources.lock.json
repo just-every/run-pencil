@@ -1165,7 +1165,7 @@
       "executable": false
     },
     "rer-project.json": {
-      "sha256": "eb63e02e5d62601a04702df9f8bd666fd26a2584064c497fa8599e22faf9f9ed",
+      "sha256": "dbe54f8c500833a99ce3e3a4a9b331262a3112599fb8cf197141db0383fbedc6",
       "executable": false
     },
     "rer-setup.json": {
@@ -1297,7 +1297,7 @@
       "executable": false
     },
     "scripts/delivery/base/packaging.json": {
-      "sha256": "14fc45a385d1996dfe4e833775a893f1e5ef6bc68fdf36b139b5b4f57c276bf5",
+      "sha256": "f0a5a0e660effdff6cabdeeea83b48a80397eef1bd65f304bcc50eaa05025edc",
       "executable": false
     },
     "scripts/delivery/base/paths.mjs": {
@@ -1341,7 +1341,7 @@
       "executable": false
     },
     "scripts/delivery/setup-build.sh": {
-      "sha256": "1e56c2d89810953a3221f04fc7e99f11edde4b453f66cb5ccd9200791d52e167",
+      "sha256": "fdbd129c586e43252d5e88c8b7ad4e043fd2099deaeed342dcc32aa873d7456b",
       "executable": false
     },
     "scripts/deployment-data-cli.mjs": {
