@@ -1411,11 +1411,11 @@
       "executable": false
     },
     "scripts/deployment-data-hosted-fixture.mjs": {
-      "sha256": "6ad6bc7c9e3e73bbe4759c012005100852326560f329bc2795b01e98e0b05d7a",
+      "sha256": "563de9b1be49c4d6f2975e83a8cdc890c9e2137abceee23402c484343e15fd94",
       "executable": false
     },
     "scripts/deployment-data-hosted-test-helpers.mjs": {
-      "sha256": "520d2503c4f57a4630fef80e0725c455a11a7a92e0b7f6fe2422ddc15225894b",
+      "sha256": "fc10a6e2b566337aada459093f12cdccd949f89212702c552e86203aed64c007",
       "executable": false
     },
     "scripts/deployment-data-hosted.check.mjs": {
@@ -5527,7 +5527,7 @@
       "executable": false
     },
     "tests/runtime/analysis-time-proof.ts": {
-      "sha256": "8203681eb69a18fe11b4f491a257f2e4a2e9ac2d31ec7c8da6780e38e61b8dee",
+      "sha256": "e72533b85c0ce3cecbadda733e0f10f7be2ec6a027fc29a69d830312f88e3eed",
       "executable": false
     },
     "tests/runtime/archive-fixture.ts": {

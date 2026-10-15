@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { application } from './deployment-data-hosted-test-helpers.mjs';
+import { createD1DevelopmentOutbox } from '../src/base/mail/src/development/index.mjs';
 
 export async function hostedFixture(directory, db) {
   const app = await application(directory, db);
@@ -21,12 +22,14 @@ export async function hostedFixture(directory, db) {
   let job=await call('/api/app/imports/commit',{...input,plannedAt:review.plannedAt,columns:review.columns,fingerprint:review.fingerprint,acknowledged:true});
   for(let i=0;i<15&&job.state!=='completed';i++)job=await call(`/api/app/imports/${job.id}/resume`,{});
   assert.equal(job.state,'completed');
-  // A real development sign-in exercises private capture using the same schema.
-  // It is a local test runtime only; deployed mail above used the network edge.
-  const original={...app.bindings};
-  Object.assign(app.bindings,{APP_ORIGIN:'http://127.0.0.1:8787',PENCIL_LOCAL_DEVELOPMENT:'true',MAIL_PROVIDER:'local'});
+  // Pending hosted sign-in authorization must stay behind in the source too.
   await call('/auth/magic-link',{email:'owner@example.test'},202);
-  Object.assign(app.bindings,original);
+  // Older installations can retain captured mail; recovery must exclude it.
+  // Current dev delivery suppresses silently and never creates these rows.
+  await createD1DevelopmentOutbox({db:app.bindings.DB}).put({
+    deliveryId:'legacy-captured-mail',from:'sender@example.test',to:['owner@example.test'],
+    subject:'Legacy development message',text:'Saved before silent development delivery.',
+  });
   assert.ok(db.prepare('SELECT count(*) n FROM rer_mail_development_outbox').get().n>0);
   const erased=db.prepare("SELECT r.id FROM responses r JOIN response_answers a ON a.response_id=r.id WHERE a.value_json LIKE '%Erased imported answer%'").get().id;
   return {app,call,flow,launch,job,input,erased};

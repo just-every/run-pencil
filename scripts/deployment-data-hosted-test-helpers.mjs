@@ -41,14 +41,21 @@ export const providerEnv = { CLOUDFLARE_ACCOUNT_ID:'0'.repeat(32), CLOUDFLARE_DA
 export async function application(directory, db) {
   const require = createRequire(import.meta.resolve('wrangler/package.json'));
   const {build} = require('esbuild');
-  const output = resolve(directory, 'app.mjs');
+  const output = resolve(directory, `app-${crypto.randomUUID()}.mjs`);
+  const bindingKey = Symbol.for(output);
   await build({entryPoints:[resolve('src/core/app/worker.ts')], bundle:true, platform:'node', format:'esm', outfile:output, logLevel:'silent', plugins:[{
     name:'vite-raw', setup(build) {
       build.onResolve({filter:/\?raw$/}, args=>({path:resolve(args.resolveDir,args.path.slice(0,-4)),namespace:'raw'}));
       build.onLoad({filter:/.*/,namespace:'raw'}, args=>({contents:readFileSync(args.path,'utf8'),loader:'text'}));
     },
+  }, {
+    // The Node host exposes the same Cloudflare bindings passed to fetch.
+    // Maintained Base demo code still decides whether effects run for real.
+    name:'worker-bindings', setup(build) {
+      build.onResolve({filter:/^cloudflare:workers$/},()=>({path:output,namespace:'worker-bindings'}));
+      build.onLoad({filter:/.*/,namespace:'worker-bindings'},()=>({contents:`export const env = globalThis[Symbol.for(${JSON.stringify(output)})];`,loader:'js'}));
+    },
   }]});
-  const worker = (await import(pathToFileURL(output))).default;
   const statements = new WeakMap();
   const execute = (sql, params, raw=false) => {
     const statement = db.prepare(sql); if(raw) statement.setReturnArrays(true);
@@ -65,6 +72,10 @@ export async function application(directory, db) {
   }};
   const origin='https://recovery.example.test';
   const bindings={DB,APP_ORIGIN:origin,SESSION_SECRET:'synthetic-restoration-secret-at-least-32-characters',SETUP_TOKEN:'synthetic-restoration-setup-at-least-32-characters',SEED_ADMIN_EMAIL:'owner@example.test',MAIL_PROVIDER:'sendgrid',MAIL_API_KEY:'synthetic-mail-edge-only',MAIL_FROM:'sender@example.test',PENCIL_LOCAL_DEVELOPMENT:'false',SEED_SAMPLE_DATA:'false'};
+  globalThis[bindingKey] = bindings;
+  let worker;
+  try { worker = (await import(pathToFileURL(output))).default; }
+  finally { delete globalThis[bindingKey]; }
   let cookie;
   return {bindings,worker, cookie:()=>cookie, setCookie(value){cookie=value;}, async request(path, body, method=body===undefined?'GET':'POST') {
     const requestOrigin=bindings.APP_ORIGIN;
