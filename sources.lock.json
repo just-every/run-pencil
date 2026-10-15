@@ -797,7 +797,7 @@
       "executable": false
     },
     ".github/workflows/run-demo.yml": {
-      "sha256": "ad8b3f4245f287b807375258e1dd705f3d39d4d9e04c2bb0f00829d1dc06dfef",
+      "sha256": "bfa6e2f97b6c42d5691fa14d0ab2c96dc085d09d870e215a230a3f7d1689e4f4",
       "executable": false
     },
     ".github/workflows/run-site.yml": {
@@ -1405,7 +1405,7 @@
       "executable": false
     },
     "scripts/demo-host-observe.mjs": {
-      "sha256": "be6a13ad392ad664c9d2a247b1d1a84c5cbaff762752c73070bf9e2c34efca1e",
+      "sha256": "9c13afe7f9d98251c0a4126eafffd300090df58a2d1357af441aea1584561450",
       "executable": false
     },
     "scripts/deployment-data-cli.mjs": {
