@@ -55,4 +55,14 @@ contract(['ANLY-009','ANLY-008','ANLY-010','BASE-INPUT-001'],'rewrite requests p
  const off=await analysisHttp({AI_ENABLED:'false'}),offDraft=await off.services.flows.getBuilderDraft(off.workspaceId,off.flowId),offStep=offDraft.steps.find(s=>s.kind==='question')!
  const unavailable=await (await off.call(`/api/app/flows/${off.flowId}/rewrites`,{...source,expectedVersion:offDraft.flow.draftVersion,stepId:offStep.id,source:offStep.prompt})).json() as any
  expect(unavailable).toMatchObject({state:'failed',proposal:null});expect(await ai.requests()).toHaveLength(6)
+ // Accepted proposals and their usage remain history after their author loses access.
+ const history=await env.DB.prepare('SELECT id,state,source,proposal FROM draft_rewrites WHERE workspace_id=? ORDER BY id').bind(f.workspaceId).all()
+ const peer=crypto.randomUUID(),at=new Date().toISOString()
+ await env.DB.prepare('INSERT INTO operators(id,workspace_id,email,display_name,created_at,updated_at) VALUES(?,?,?,?,?,?)').bind(peer,f.workspaceId,`${peer}@example.test`,'Retained peer',at,at).run()
+ await f.services.auth.removeOperator({workspaceId:f.workspaceId,actorOperatorId:peer,targetOperatorId:f.operatorId})
+ expect((await f.call('/api/app/operators')).status).toBe(401)
+ expect((await env.DB.prepare('SELECT id,state,source,proposal FROM draft_rewrites WHERE workspace_id=? ORDER BY id').bind(f.workspaceId).all()).results).toEqual(history.results)
+ expect(await env.DB.prepare('SELECT COUNT(*) n FROM draft_rewrites WHERE workspace_id=? AND operator_id IS NOT NULL').bind(f.workspaceId).first()).toEqual({n:0})
+ expect((await env.DB.prepare('SELECT feature,draft_id AS draftId,input_tokens AS inputTokens,cost_microusd AS cost FROM draft_ai_calls WHERE workspace_id=?').bind(f.workspaceId).all()).results).toEqual(calls.results)
+ expect((await other.call('/api/app/operators')).status).toBe(200)
 })

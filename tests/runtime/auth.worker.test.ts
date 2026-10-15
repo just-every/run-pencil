@@ -206,10 +206,19 @@ async function custodyFixture(suffix: string, sameEmailWorkspace = false) {
   return { workspaceId, actorOperatorId: actorId, targetOperatorId: targetId, repository, message, now, email, token, linkId }
 }
 
-contract(['BASE-DATA-003', 'BASE-ACCESS-004'], 'removes owned old/new inbox credentials and anonymises audit references while preserving another workspace with the same email', async () => {
+contract(['BASE-DATA-003', 'BASE-ACCESS-004', 'OPER-002'], 'removes owned old/new inbox credentials after a rewrite and anonymises audit references while preserving another workspace with the same email', async () => {
   const f = await custodyFixture('101', true)
   await f.repository.addLocalInboxMessage(f.message)
   const cookie = await sessionCookie(f.email)
+  const services = createPencilServices(createPencilPlatform('http://localhost', env))
+  const flow = await services.flows.createDraftFlow({ workspaceId: f.workspaceId, slug: 'removal-after-rewrite', title: 'Rewrite custody' })
+  const initial = await services.flows.getBuilderDraft(f.workspaceId, flow.id)
+  await services.flows.addDraftStep({ workspaceId: f.workspaceId, flowId: flow.id, expectedVersion: initial.flow.draftVersion, step: { kind: 'question', questionType: 'long_text', prompt: 'How was your visit?', required: false } })
+  const draft = await services.flows.getBuilderDraft(f.workspaceId, flow.id), question = draft.steps.find(step => step.kind === 'question')!
+  const rewriteResponse = await request(`/api/app/flows/${flow.id}/rewrites`, { method: 'POST', headers: { cookie, 'content-type': 'application/json' }, body: JSON.stringify({ stepId: question.id, expectedVersion: draft.flow.draftVersion, source: question.prompt, style: 'sharper' }) })
+  expect(rewriteResponse.status).toBe(201)
+  const rewrite = await rewriteResponse.json<{ id: string; state: string }>()
+  expect(rewrite.state).toBe('failed')
   const session = await env.DB.prepare('SELECT id FROM oa_sessions WHERE operator_id = ?').bind(f.targetOperatorId).first<{ id: string }>()
   await new AuditRepository(createDatabase(env.DB)).create({ id: 'session-audit-101', workspaceId: f.workspaceId, kind: 'review.session', actorOperatorId: f.actorOperatorId, subjectType: 'operator_session', subjectId: session!.id, detailsJson: '{}', createdAt: f.now })
   await env.DB.prepare("INSERT INTO audit_entries (id, workspace_id, kind, actor_operator_id, subject_type, subject_id, details_json, created_at) VALUES ('historical-session-101', ?, 'operator.session_signed_out', ?, 'operator_session', 'already-expired-session', ?, ?)").bind(f.workspaceId, f.targetOperatorId, JSON.stringify({ legacyOperatorEmail: f.email }), f.now).run()
@@ -221,11 +230,13 @@ contract(['BASE-DATA-003', 'BASE-ACCESS-004'], 'removes owned old/new inbox cred
     expect(await env.DB.prepare(`SELECT count(*) AS n FROM ${table} WHERE operator_id = ?`).bind(f.targetOperatorId).first()).toEqual({ n: 0 })
   }
   expect(await env.DB.prepare('SELECT id FROM operators WHERE id = ?').bind(f.targetOperatorId).first()).toBeNull()
+  expect(await env.DB.prepare('SELECT operator_id, state, source FROM draft_rewrites WHERE id=?').bind(rewrite.id).first()).toEqual({ operator_id: null, state: 'failed', source: question.prompt })
   expect(await env.DB.prepare('SELECT id FROM operators WHERE id = ?').bind(`${f.targetOperatorId}-other`).first()).toEqual({ id: `${f.targetOperatorId}-other` })
-  const references = await env.DB.prepare('SELECT actor_operator_id, subject_id FROM audit_entries WHERE workspace_id = ?').bind(f.workspaceId).all()
+  const references = await env.DB.prepare("SELECT actor_operator_id, subject_id FROM audit_entries WHERE workspace_id = ? AND subject_type <> 'flow'").bind(f.workspaceId).all()
   expect(await env.DB.prepare("SELECT actor_operator_id, subject_id, details_json FROM audit_entries WHERE id = 'historical-session-101'").first()).toEqual({ actor_operator_id: null, subject_id: null, details_json: '{}' })
   expect(references.results.length).toBeGreaterThanOrEqual(3)
   expect(references.results.every((row) => row.actor_operator_id !== f.targetOperatorId && row.subject_id === null)).toBe(true)
+  expect((await env.DB.prepare("SELECT actor_operator_id,subject_id FROM audit_entries WHERE workspace_id=? AND subject_type='flow'").bind(f.workspaceId).all()).results).toEqual([{actor_operator_id:null,subject_id:flow.id}])
   expect(await env.DB.prepare("SELECT count(*) AS n FROM audit_entries WHERE workspace_id = ? AND kind = 'operator.removed'").bind(f.workspaceId).first()).toEqual({ n: 1 })
   const denied = await request('/api/app/operators', { headers: { cookie } })
   expect(denied.status).toBe(401)

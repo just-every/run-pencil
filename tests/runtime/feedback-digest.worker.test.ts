@@ -67,7 +67,7 @@ contract(['NOTIFY-003','WS-001','WS-002','NOTIFY-004'],'Daily freezes independen
  const changed=await f.respond('After zone change');clock('2026-11-04T16:15:00.000Z');await tick()
  expect((await env.DB.prepare('SELECT COUNT(*) n FROM digest_members WHERE response_id=? AND delivery_id IN(SELECT id FROM digest_deliveries WHERE operator_id=?)').bind(changed,f.operatorId).first())).toEqual({n:1})
 })
-contract(['NOTIFY-003','DIST-006','DATA-002','NOTIFY-004'],'digest retries retain their frozen day and key, unknown requires consent, Off and erasure stop sends, and local capture requires a live durable claim',async()=>{
+contract(['NOTIFY-003','DIST-006','DATA-002','NOTIFY-004','BASE-OPS-005','BASE-DATA-003'],'digest retries retain their frozen day and key, unknown requires consent, erasure stops sends and retains anonymous audit facts, and local capture requires a live durable claim',async()=>{
  vi.useFakeTimers({toFake:['Date']});clock('2026-10-01T08:00:00.000Z')
  const f=await fixture();await f.services.notifications.preferences.set(f.workspaceId,f.flowId,f.operatorId,'daily');const response=await f.respond('Private retry answer')
  const send=vi.fn(async()=>({status:'rate_limited' as const,provider:'sendgrid',providerMessageId:null,code:'provider_rate_limited'}))
@@ -99,4 +99,22 @@ contract(['NOTIFY-003','DIST-006','DATA-002','NOTIFY-004'],'digest retries retai
  expect(await env.DB.prepare("SELECT id FROM rer_mail_development_outbox WHERE json_extract(message,'$.deliveryId')=?").bind(empty.idempotency_key).first()).toBeNull()
  await expect(baseMailSender({kind:'local-development'},env.DB,digestCaptureClaim).send({deliveryId:empty.idempotency_key,from:'no-reply@pencil.test',to:[`${f.operatorId}@operators.example.test`],subject:'Synthetic forged',text:'No capture',headers:{'X-Pencil-Digest-Claim':'forged','X-Pencil-Digest-Attempt':'1','X-Pencil-Digest-Count':'1'}})).rejects.toThrow()
  expect((await env.DB.prepare("SELECT id FROM invitation_participants WHERE delivery_status='bounced'").all()).results).toEqual([])
+ const audits=()=>env.DB.prepare("SELECT id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at FROM audit_entries WHERE workspace_id=? AND kind='digest.delivery' ORDER BY created_at,id").bind(f.workspaceId).all<any>()
+ const priorAudits=(await audits()).results
+ expect(priorAudits.some(a=>JSON.parse(a.details_json).status==='failed')).toBe(true)
+ expect(priorAudits.some(a=>JSON.parse(a.details_json).status==='unknown')).toBe(true)
+ await f.respond('Private recipient-erasure answer')
+ const peer=crypto.randomUUID(),at=new Date().toISOString()
+ await env.DB.prepare('INSERT INTO operators(id,workspace_id,email,display_name,created_at,updated_at) VALUES(?,?,?,?,?,?)').bind(peer,f.workspaceId,`${peer}@example.test`,'Retained peer',at,at).run()
+ const duringRemoval=new DigestDispatcher(env.DB,{async send(){
+  await f.services.auth.removeOperator({workspaceId:f.workspaceId,actorOperatorId:peer,targetOperatorId:f.operatorId})
+  return {status:'accepted',provider:'sendgrid',providerMessageId:'synthetic-private-provider-receipt',code:null}
+ }},'https://forms.example.test','no-reply@example.test')
+ clock('2026-10-05T09:00:00.000Z');await duringRemoval.run();await duringRemoval.run()
+ expect((await f.call('/api/app/operators')).status).toBe(401)
+ expect((await deliveries(f.flowId)).results).toEqual([])
+ const retained=(await audits()).results
+ expect(retained).toEqual([...priorAudits,expect.objectContaining({kind:'digest.delivery',actor_operator_id:null,subject_type:'digest',subject_id:null,details_json:JSON.stringify({status:'sent'}),created_at:new Date().toISOString()})])
+ expect(retained.every(a=>a.actor_operator_id===null&&a.subject_id===null&&Object.keys(JSON.parse(a.details_json)).join()==='status')).toBe(true)
+ expect(JSON.stringify(retained)).not.toMatch(/Private|operators\.example\.test|synthetic-private-provider-receipt/)
 })
