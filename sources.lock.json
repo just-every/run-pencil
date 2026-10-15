@@ -1097,7 +1097,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "9c404cbcbe95f4cce348dbcd2c6289d5536de6a207f612322ae094f2cd9b02b8",
+      "sha256": "f690da75cdf45f35f9ab6d2eab44ea83537c801d41901d431821f27296612835",
       "executable": false
     },
     "playwright.admission.config.ts": {
@@ -1333,7 +1333,7 @@
       "executable": false
     },
     "scripts/delivery/README.md": {
-      "sha256": "d761f4f645fe33d0a8cea6e8635deb79fc2a5b46d7b7b79fc3db3ba3dcf2183f",
+      "sha256": "c0cadd7e38edeb1d3bdccf4db9725b88b814beab04b962bb919e1581d28de025",
       "executable": false
     },
     "scripts/delivery/setup-build.sh": {
