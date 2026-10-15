@@ -10,7 +10,7 @@ const result = await response.json()
 if (!result.success) throw Error(`Cannot observe demo admissions: HTTP ${response.status}`)
 const { id, url } = result.result
 const admissions = [], startedAt = new Date().toISOString()
-let failure, socket
+let failure, socket, keepalive
 try {
   socket = new WebSocket(url, 'trace-v1')
   socket.binaryType = 'arraybuffer'
@@ -18,9 +18,12 @@ try {
     socket.addEventListener('open', resolve, { once: true })
     socket.addEventListener('error', () => reject(Error('Demo tail connection failed')), { once: true })
   })
+  // Workers tails can close when idle. A plain GET emits a tail event without
+  // solving Turnstile, starting a visitor or setting a demo cookie.
+  keepalive = setInterval(() => { fetch('https://demo.test.run-pencil.com/', { signal: AbortSignal.timeout(10000) }).catch(() => {}) }, 30000)
   await new Promise((resolve, reject) => {
     const timer = setTimeout(resolve, 15 * 60 * 1000)
-    socket.addEventListener('close', () => { clearTimeout(timer); reject(Error('Demo tail closed before observation completed')) }, { once: true })
+    socket.addEventListener('close', event => { clearTimeout(timer); reject(Error(`Demo tail closed before observation completed (${event.code})`)) }, { once: true })
     socket.addEventListener('error', () => { clearTimeout(timer); reject(Error('Demo tail failed during observation')) }, { once: true })
     socket.addEventListener('message', message => {
       try {
@@ -36,6 +39,7 @@ try {
   })
 } catch (error) { failure = error.message }
 finally {
+  clearInterval(keepalive)
   socket?.close()
   const deleted = await fetch(`${endpoint}/${id}`, { method: 'DELETE', headers })
   if (!deleted.ok) failure ??= `Cannot remove demo tail: HTTP ${deleted.status}`
