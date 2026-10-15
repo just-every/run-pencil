@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+**Demo mode.** `rer demo` opens a throwaway Pencil signed in on the Aurora Coffee sample (four weeks of responses ending today) with a Demo bar, on fresh data that is deleted when it stops; mail stays in the outbox, task webhooks are refused, AI is off, and the checkout's own data is untouched. `deploy-demo.json` and `.github/workflows/run-demo.yml` host the same demo at `demo.run-pencil.com`, one private container per visitor. See [DEMO.md](DEMO.md). `MAIL_PROVIDER` is no longer a variable in `wrangler.jsonc` (deploy.json declares it a deploy secret); `rer setup` writes it to `.dev.vars`. Pencil pins `rer` 0.2.14.
+
 Deployment selects SendGrid by default or the explicitly configured Resend provider. The hosting guide retains the deployed setup token after bootstrap so the next deployment preserves the kit's ownership receipt. Deployed backup and empty-target recovery now support the kit's migration ledger through `scripts/deployment-data-cli.mjs`, with matching re-export and no mail replay. An explicit retry queued by 0.2.0 survives upgrade and sends once with its original idempotency key. Pencil pins `rer` 0.2.1 and updates the vulnerable dependency graph.
 
 The moving-in guide now distinguishes the 8 MiB / 100,000-row admission bounds from request CPU limits. Large review and preparation requests still exceed the Workers Paid default budget; full-size hosted move-in requires resumable planning and preparation in the maintained import kit. Local provider-edge deployment and recovery checks do not establish live hosted acceptance.

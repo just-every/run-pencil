@@ -43,6 +43,10 @@ export interface WorkerBindings {
   readonly RER_MODELS_SERVICE?: string
   readonly RER_MODELS_KEY?: string
   readonly PENCIL_DEV_AI?: import('../platform/ai/provider').DevAiFactory
+  /** Demo mode only (`rer demo` or a hosted demo container; Base modules/demo): `rer deploy` refuses it. The hosted demo's
+   * front also supplies the demo owner as OWNER_EMAIL. */
+  readonly RER_DEMO?: string
+  readonly OWNER_EMAIL?: string
 }
 
 export type WorkerEnvironment = {
