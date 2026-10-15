@@ -3,7 +3,7 @@ import { createD1BatchExecutor, type D1BatchExecutor } from './db/batch'
 import { readRuntimeConfiguration, type RuntimeConfiguration } from './config/runtime'
 import type { WorkerBindings } from '../app/environment'
 import { readManagementConfiguration, type ManagementConfiguration } from './management'
-import { deploymentHealth } from '../../base/deployment-health'
+import { deploymentHealth } from './deployment-health'
 import { readAiProvider, type AiProvider } from './ai/provider'
 
 export type PencilPlatform = {
@@ -12,7 +12,7 @@ export type PencilPlatform = {
   readonly databaseBatch: D1BatchExecutor
   readonly configuration: RuntimeConfiguration
   readonly management: ManagementConfiguration
-  /** Which deployment answers: the identity rer deploy binds and reads back from /health. */
+  /** Which source, release and Worker version answer /health. */
   readonly deployment: ReturnType<typeof deploymentHealth>
   fetchAsset(request: Request): Promise<Response>
   /** ai.provider.v1 for analysis: off until configured (WS-003); a local runtime uses the dev client server.dev.ts supplies. */

@@ -18,6 +18,7 @@ const local = (name: string): Record<string, string> => process.env[name] ? { [n
 const origin: Record<string, string> = process.env.RER_DEV_ORIGIN ? { APP_ORIGIN: process.env.RER_DEV_ORIGIN } : {}
 const serve = { main: './src/server.dev.ts', vars: { ...origin, ...local('RER_DEV_KEY'), ...local('RER_DEV_IDENTITY'), ...local('RER_MODELS_SERVICE'), ...local('RER_MODELS_KEY'), ...local('RER_DEMO'), ...local('RER_DEMO_EXPIRES') }, assets: { run_worker_first: devServedByVite } }
 export default defineConfig(({ command, isPreview }) => ({
+  define: { __PENCIL_MANAGED_SOURCE_SHA__: JSON.stringify(process.env.PENCIL_MANAGED_SOURCE_SHA ?? null) },
   plugins: [
   // `rer demo`: the Worker's cloudflare:sockets imports get demo mode's guarded connect (Base modules/demo).
   demoSockets(),

@@ -1221,11 +1221,11 @@
       "executable": false
     },
     "rer-project.json": {
-      "sha256": "f3cb4f8dd66cd8fc64959ee37a51e7514f9c50351bfe8f07803f50225cf8581e",
+      "sha256": "0e9a7042e1d596b835c4aa186254c8f3da0642a917c24947995dbb8ea35b8417",
       "executable": false
     },
     "rer-setup.json": {
-      "sha256": "5b5cbd3d0a6f990d69825bf80a0b60610ff92a3a9096057cc7c9bd59bb4daac6",
+      "sha256": "2b74ba41a5791073d64de3c48f1cdb8e7a46e117142d7ef31ea7036f43178323",
       "executable": false
     },
     "RUN-LOCALLY.md": {
@@ -1385,11 +1385,11 @@
       "executable": false
     },
     "scripts/delivery/build.mjs": {
-      "sha256": "9dbc11e962ef49b62932ac655828a83b238aa0000a348f1cbd9597865888276b",
+      "sha256": "ee55fb3b96281c110e5126ca6bfbc06ed1fab5b9bf7b6b04222f4c28ba350acb",
       "executable": false
     },
     "scripts/delivery/README.md": {
-      "sha256": "a88aaed1480c1272ffadd35979489cbf57d7959a66bf32d847e40b5638e0d48b",
+      "sha256": "4cd31ef6b00a8ca6f992aeaa753b3186e114f5ba6f3ad342f525ac90527d26b2",
       "executable": false
     },
     "scripts/delivery/setup-build.sh": {
@@ -3301,7 +3301,7 @@
       "executable": false
     },
     "src/core/app/environment.ts": {
-      "sha256": "c6b869d79a52558b6c3f0a4d027a85d911049e8569ac284b7e8d579550c2324e",
+      "sha256": "6b2954c143fe86aa1adf08ceb2353799d0db2d9f7f58d5b09fd7ac8f4d45bf38",
       "executable": false
     },
     "src/core/app/loaders.ts": {
@@ -4852,6 +4852,10 @@
       "sha256": "4a7650a9222056079a7d9e0f8c6e41958e311b7a1f83c86f044fcd2ae29118f2",
       "executable": false
     },
+    "src/core/platform/deployment-health.ts": {
+      "sha256": "66d0ba4f721f7a752d8c0b639b87557fa3c66f001d3f9198162adcad144c2d15",
+      "executable": false
+    },
     "src/core/platform/mail/base.server.ts": {
       "sha256": "e05bd4e4c28aa5de5bacafde84200ee9aef463df5a135214302c8a0c5ffab10e",
       "executable": false
@@ -4881,7 +4885,7 @@
       "executable": false
     },
     "src/core/platform/runtime.ts": {
-      "sha256": "69650421b459df9fbb62a9f932c7e04b4738fe17ab473d730d2a0911feac6225",
+      "sha256": "cfcf82c0c8e0602dca535ba6f3830619e603f6b90bf1ffdd3de228517a845eb8",
       "executable": false
     },
     "src/core/shared/answers.ts": {
@@ -5861,7 +5865,7 @@
       "executable": false
     },
     "vite.config.ts": {
-      "sha256": "27a490d68c417cc502496f631a317981ed83638bdc90c86ac79c7f9247bd2fcf",
+      "sha256": "d2186139c0a9ed45207d87bbe6cc1d51f6fbfe3ec5e5295d37766bd82011fc5e",
       "executable": false
     },
     "vite.site.config.ts": {

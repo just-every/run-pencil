@@ -15,7 +15,7 @@
     {
       "name": "SEED_ADMIN_EMAIL",
       "label": "Owner email",
-      "help": "Use the actual first-owner mailbox. Local sign-in uses the private one-click RER_OPEN link.",
+      "help": "Use the first owner's email address. On your hosted Pencil, choose Sign in and follow the sign-in email sent to this mailbox.",
       "kind": "email",
       "required": true,
       "prefill": "account-email",

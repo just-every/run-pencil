@@ -1,5 +1,12 @@
 # Pencil managed delivery
 
+Managed `/health` reports the source commit embedded by `build:delivery`, the
+broker's `RER_RELEASE_DIGEST` as the release fingerprint, and the active Worker
+version from `RER_VERSION_METADATA.id`. Direct `rer deploy` retains its deploy-kit
+source, plan fingerprint and `RER_VERSION.id`. Local development has no deployment
+identity. A release fingerprint identifies the Managed release; it is distinct
+from the direct deploy kit's plan fingerprint.
+
 `base/packaging.json` is the maintained source policy. Base's delivery producer
 was exported from main 947fed73ec5f3018672992a2304296d25694ea96. The export
 relocates only setup-manifest.mjs's schema imports; the remaining runtime and
