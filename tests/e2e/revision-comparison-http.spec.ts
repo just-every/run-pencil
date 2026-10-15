@@ -38,6 +38,8 @@ contract('RSLT-005', 'native revision comparison keeps absent questions, contain
   await add({ kind: 'question', questionType: 'rating', prompt: original.prompt, required: false, questionSettings: { min: 1, max: 5 } })
   current = await draft(); const added = current.steps.find(step => step.questionType === 'rating')!
   expect(added.id).not.toBe(original.id)
+  await ok(`${path}/draft`, { stepId: original.id, prompt: original.prompt, required: true, nextStepId: added.id, expectedVersion: current.flow.draftVersion }, 'PUT')
+  current = await draft()
   await ok(`${path}/publish`, { expectedVersion: current.flow.draftVersion })
   const answered = await submit([{ stepId: original.id, value: choice.id }, { stepId: added.id, value: 5 }], `${slug}-new-answered-key`); await release(answered)
   const omitted = await submit([{ stepId: original.id, value: choice.id }], `${slug}-new-optional-key`); await release(omitted)
