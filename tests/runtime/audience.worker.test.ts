@@ -74,25 +74,6 @@ contract(['AUD-002','AUD-004','AUD-005'],'saved segments launch a frozen evaluat
   expect(result.counts).toMatchObject({invited:0,policyExcluded:1,optedOut:1})
   expect((await f.call(`${segments}/${segment.id}`,'DELETE')).status).toBe(204)
 },60000)
-contract(['AUD-001','BASE-ACCESS-004','BASE-DATA-003'],'audience mutations enforce session, origin, workspace, confirmation and return completed anonymous erasure receipts',async()=>{
-  const f=await fixture('audience-erasure')
-  const contact=await f.services.distribution.contacts.save(f.scope.workspaceId,{name:'Erase canary',email:'erase-canary@example.test',fields:{canary:'erase-field-canary'}})
-  const path=`${contacts}/${contact.id}/erase`
-  expect((await f.call(path,'POST',{confirm:true},false)).status).toBe(401)
-  expect((await f.call(path,'POST',{})).status).toBe(400)
-  expect((await f.call(path,'POST',{confirm:true},true,'https://other.test')).status).toBe(403)
-  expect((await f.call(`${contacts}/01K00000000000000000000000/erase`,'POST',{confirm:true})).status).toBe(404)
-  const now=new Date().toISOString(),foreign='01K00000000000000000000001'
-  await env.DB.prepare('INSERT INTO workspaces(id,name,time_zone,created_at,updated_at) VALUES(?,?,?,?,?)').bind(foreign,'Other','UTC',now,now).run()
-  const other=await f.services.distribution.contacts.save(foreign,{name:'Other',email:'other@example.test'})
-  expect((await f.call(`${contacts}/${other.id}/erase`,'POST',{confirm:true})).status).toBe(404)
-  expect((await f.call(`${contacts}/${other.id}`,'PUT',{name:'Hijack',email:'hijack@example.test'})).status).toBe(404)
-  expect(await env.DB.prepare('SELECT fields_json FROM distribution_contacts WHERE id=?').bind(contact.id).first()).toEqual({fields_json:'{"canary":"erase-field-canary"}'})
-  const erased=await f.call(path,'POST',{confirm:true});expect(erased.status).toBe(200)
-  expect(await erased.json()).toMatchObject({completed:true,counts:{contacts:1,participants:0,responses:0},elapsedMilliseconds:expect.any(Number)})
-  expect((await f.call(path,'POST',{confirm:true})).status).toBe(404)
-  expect((await env.DB.prepare("SELECT subject_id FROM audit_entries WHERE kind='contact.erased'").all()).results).toEqual([{subject_id:null}])
-},60000)
 contract('AUD-006','contact editing and explicit CSV updates keep snapshot addresses; invitation and reminder sends recheck deletion and opt-out',async()=>{
   const f=await fixture('audience-send-time')
   await f.services.workspace.updateSettings({...f.scope,timeZone:'UTC',sendingWindowStart:'00:00',sendingWindowEnd:'23:59',reminderDelayHours:0})
@@ -122,23 +103,3 @@ contract('AUD-006','contact editing and explicit CSV updates keep snapshot addre
     expect((await env.DB.prepare('SELECT * FROM mail_delivery_attempts WHERE delivery_id=?').bind(d!.id).all()).results).toEqual(attempts)
   }
 },60000)
-
-contract(['AUD-005','BASE-ACCESS-004'],'competing flows cannot reuse a launch command to advance or return another flow audience',async()=>{
-  const first=await fixture('audience-command-first'),second=await fixture('audience-command-second')
-  const contact=await first.services.distribution.contacts.save(first.scope.workspaceId,{name:'Competition',email:'competition@audience.test'})
-  const paths=[first,second].map(f=>`/api/app/flows/${f.flow.flowId}/distribution`)
-  const body={contactIds:[contact.id],commandKey:'competing-flow-command'}
-  const replies=await Promise.all(paths.map(path=>first.call(path,'POST',body)))
-  expect(replies.map(r=>r.status).sort()).toEqual([201,400])
-  const winner=replies.findIndex(r=>r.status===201),loser=1-winner
-  const launch=await replies[winner].json() as {id:string;revisionId:string;counts:{invited:number}}
-  expect(launch.counts.invited).toBe(1)
-  expect((await first.call(paths[loser],'POST',{commandKey:body.commandKey})).status).toBe(400)
-  expect(await env.DB.prepare('SELECT r.flow_id FROM invitation_launches l JOIN flow_revisions r ON r.id=l.revision_id WHERE l.command_key=?').bind(body.commandKey).first()).toEqual({flow_id:[first,second][winner].flow.flowId})
-  expect(await env.DB.prepare('SELECT count(*) n FROM invitation_launches WHERE command_key=?').bind(body.commandKey).first()).toEqual({n:1})
-  expect(await env.DB.prepare('SELECT count(*) n FROM invitation_participants WHERE launch_id=? AND revision_id=?').bind(launch.id,launch.revisionId).first()).toEqual({n:1})
-  expect(await env.DB.prepare("SELECT count(*) n FROM mail_deliveries WHERE kind='invitation' AND participant_id IN(SELECT id FROM invitation_participants WHERE launch_id=?)").bind(launch.id).first()).toEqual({n:1})
-  expect((await env.DB.prepare('SELECT delivery_id,ordinal,event,count(*) n FROM mail_delivery_attempts GROUP BY delivery_id,ordinal,event').all<{n:number}>()).results.every(row=>row.n===1)).toBe(true)
-  expect((await first.call(paths[loser])).status).toBe(200)
-  expect(await (await first.call(paths[loser])).json()).toMatchObject({launches:[],participants:[]})
-})

@@ -54,6 +54,10 @@
     {
       "id": "0034_import_fence_triggers_d1.sql",
       "buyerSteps": "Recreate the 39 import publication-fence triggers of 0019 in the form Cloudflare D1 parses. 0.3.0 rewrites 0019 itself, which 0.2.0 released in a form D1 refuses, so a new database applies it. A database that applied 0.2.0's 0019 (a local installation; no D1 database could) keeps it in its ledger and ends with the same triggers and schema as a new database; rows and fence behaviour are unchanged. migrations/released-rewrites.json records both hashes."
+    },
+    {
+      "id": "0036_owner_signin.sql",
+      "buyerSteps": "Add single-use owner sign-in grants for rer signin. Grants are minted with the deployment's Cloudflare credentials, expire after 15 minutes and are excluded from every backup. Existing operators and sessions are unchanged."
     }
   ],
   "breaking": false,

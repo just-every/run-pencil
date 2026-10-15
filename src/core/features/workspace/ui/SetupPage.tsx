@@ -1,8 +1,21 @@
+import { useEffect, useRef } from 'react'
 import { AppNote } from '../../../app/ui/AppNote'
 import { BrandMark } from '../../../app/ui/BrandMark'
 import { NoteIllustration } from '../../../app/ui/NoteIllustration'
 import { FirstOwnerForm } from './FirstOwnerForm'
 import { HydrationUnit } from '../../../../base/hydration/unit'
+
+function SetupTimeZone({ timeZone }: { timeZone?: string }) {
+  const timeZoneInput = useRef<HTMLInputElement>(null)
+  const timeZoneEdited = useRef(false)
+  useEffect(() => {
+    const input = timeZoneInput.current
+    // Completed workspaces never reach this page; retain any saved non-default zone or entered value.
+    if (!input || timeZoneEdited.current || (timeZone && timeZone !== 'UTC') || input.value !== (timeZone ?? 'UTC')) return
+    input.value = Intl.DateTimeFormat().resolvedOptions().timeZone
+  }, [timeZone])
+  return <label className="inspector-field">Time zone<input ref={timeZoneInput} className="text-input" name="timeZone" required maxLength={100} defaultValue={timeZone ?? 'UTC'} onInput={() => { timeZoneEdited.current = true }} placeholder="Australia/Brisbane" /></label>
+}
 
 export function SetupPage({ bootstrap, local, name, timeZone }: { bootstrap: boolean; local: boolean; name?: string; timeZone?: string }) {
   return <main className="pencil-canvas access-shell setup-shell">
@@ -15,7 +28,7 @@ export function SetupPage({ bootstrap, local, name, timeZone }: { bootstrap: boo
           <label className="inspector-field">Business name<input className="text-input" name="name" autoComplete="organization" required maxLength={100} defaultValue={name} /></label>
           <AppNote className="setup-note" wideOnly>shown on your forms</AppNote>
         </div>
-        <label className="inspector-field">Time zone<input className="text-input" name="timeZone" required maxLength={100} defaultValue={timeZone} placeholder="Australia/Brisbane" /></label>
+        <SetupTimeZone timeZone={timeZone} />
         <button className="primary-button focus-ring" type="submit">Finish setup</button>
       </form>}
     </section></HydrationUnit>

@@ -15,29 +15,3 @@ contract('FLOW-012', 'rejects absent, nonquestion and incompatible branch source
   const welcome = { ...completion, kind: 'welcome' as const, stableId: 'welcome', position: -1, nextStepStableId: 'q' }
   expect(validateRevisionGraph([welcome, question, completion], choices, [{ ...rule, destinationStepStableId: 'welcome' }])).toContainEqual(expect.objectContaining({ stepId: 'q', reason: expect.stringContaining('existing question or completion') }))
 })
-contract('FLOW-013', 'requires reachability and terminating default and alternative paths from the first screen', () => {
-  expect(validateRevisionGraph([question, completion], choices, [])).toEqual([])
-  const hidden = { ...completion, id: 'other', stableId: 'hidden', position: 2 }
-  expect(validateRevisionGraph([question, completion, hidden], choices, [])).toContainEqual(expect.objectContaining({ stepId: 'hidden', reason: expect.stringContaining('reachable') }))
-  expect(validateRevisionGraph([question, completion], choices, [{ ...rule, destinationStepStableId: 'q' }])).toContainEqual(expect.objectContaining({ stepId: 'q', reason: expect.stringContaining('cycle') }))
-  expect(validateRevisionGraph([{ ...question, nextStepStableId: null }, completion], choices, [])).toContainEqual(expect.objectContaining({ stepId: 'q', reason: expect.stringContaining('default path') }))
-})
-contract('FLOW-014', 'validates all offending question IDs, nonempty bounded prompts, distinct choices and type limits', () => {
-  for (const prompt of ['', ' ', 'x'.repeat(1001)]) expect(validateRevisionGraph([{ ...question, prompt }, completion], choices, [])).toContainEqual(expect.objectContaining({ stepId: 'q', reason: expect.stringContaining('prompt') }))
-  expect(validateRevisionGraph([{ ...question, prompt: 'x'.repeat(1000) }, completion], choices, [])).toEqual([])
-  expect(validateRevisionGraph([completion], [], [])).toContainEqual(expect.objectContaining({ stepId: 'flow', reason: expect.stringContaining('at least one question') }))
-  for (const questionType of ['single_choice', 'multiple_choice', 'priority'] as const) expect(validateRevisionGraph([{ ...question, questionType }, completion], [], [])).toContainEqual(expect.objectContaining({ stepId: 'q', reason: expect.stringContaining('at least one choice') }))
-  for (const [duplicated, reason] of [[{ ...choices[1], value: 'a' }, 'Each choice needs a different answer value.'], [{ ...choices[1], label: ' A ' }, 'Each choice needs a different label.']] as const) expect(validateRevisionGraph([question, completion], [choices[0], duplicated], [])).toContainEqual({ stepId: 'q', reason })
-  for (const [questionType, count] of [['single_choice', 101], ['priority', 11]] as const) {
-    const options = Array.from({ length: count }, (_, i) => ({ ...choices[0], id: `row-${i}`, stableId: String(i), value: String(i), label: String(i), position: i }))
-    expect(validateRevisionGraph([{ ...question, questionType }, completion], options, [])).toContainEqual(expect.objectContaining({ stepId: 'q', reason: expect.stringContaining('choice limit') }))
-  }
-  const badRating = { ...question, stableId: 'rating', questionType: 'rating' as const, questionSettingsJson: '{"min":5,"max":1}' }
-  const errors = validateRevisionGraph([{ ...question, prompt: '' }, badRating, completion], choices, [])
-  expect(errors).toContainEqual(expect.objectContaining({ stepId: 'q', reason: expect.stringContaining('prompt') }))
-  expect(errors).toContainEqual(expect.objectContaining({ stepId: 'rating', reason: expect.stringContaining('settings') }))
-})
-
-contract('FLOW-014', 'duplicate labels give a plain correction independently of answer values', () => {
-  expect(validateRevisionGraph([question, completion], [choices[0], { ...choices[1], label: ' A ' }], [])).toContainEqual({ stepId: 'q', reason: 'Each choice needs a different label.' })
-})

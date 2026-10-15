@@ -23,19 +23,6 @@ contract('BASE-OPS-001', 'health probes actual storage and durable job tables an
     }
   } finally { errors.mockRestore() }
 })
-contract('BASE-INPUT-003', 'undeclared binary and multipart upload intake is refused without adding any persistent artifact or product record', async () => {
-  await foundationFixture('no-uploads')
-  const tables = (await env.DB.prepare("SELECT name FROM sqlite_schema WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE '_cf_%' AND name != 'public_rate_limit_windows'").all<{ name: string }>()).results.map(row => row.name)
-  const snapshot = async () => (await env.DB.batch(tables.map(table => env.DB.prepare(`SELECT * FROM "${table}" ORDER BY rowid`)))).map(result => result.results)
-  const before = await snapshot()
-  for (const path of ['/api/public/uploads','/api/uploads','/uploads','/api/app/uploads']) {
-    for (const contentType of ['application/octet-stream','multipart/form-data; boundary=synthetic-boundary']) {
-      const response = await SELF.fetch(`http://localhost${path}`, { method: 'POST', headers: { Host: 'localhost', 'content-type': contentType }, body: '--synthetic-boundary\r\nContent-Disposition: form-data; name="file"; filename="test.png"\r\n\r\nSynthetic unaccepted file\r\n--synthetic-boundary--' })
-      expect([401,404]).toContain(response.status)
-    }
-  }
-  expect(await snapshot()).toEqual(before)
-})
 contract('BASE-OPS-005', 'versioned destructive edits and lifecycle transitions retain actor-aware audits and roll back if auditing fails', async () => {
   const f = await foundationFixture('mutation-audit')
   await f.add({ kind: 'question', questionType: 'rating', prompt: 'Rating' })

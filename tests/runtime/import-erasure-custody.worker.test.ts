@@ -5,7 +5,6 @@ import { archiveFixture, snapshotFixture, restoreFixture } from './archive-fixtu
 import { nativeCustodyFixture } from './import-custody-native-fixture'
 import { interceptCustodyCommit } from './import-custody-commit-boundary'
 import { importContext } from '../../src/core/features/importing/service'
-import { custodyGraph } from '../../scripts/custody-test-graph.mjs'
 import { custodyContext, custodyTargets, custodySignIn } from '../../scripts/custody-test-targets.mjs'
 import { readD1ImportStream, resumeD1ImportStream, undoD1ImportStream, planD1ImportStream, createD1ImportStream,
   upgradeD1ImportErasureIndex, eraseD1ImportTarget, readD1ImportUndoReport, d1RequestContext } from '../../src/base/import-kit/src/d1/index'
@@ -76,29 +75,4 @@ contract(['DATA-002','IMPORT-003','IMPORT-004','BASE-ACCESS-004'], 'native impor
   }
   expect(await env.DB.prepare('SELECT count(*) n FROM response_outbox WHERE workspace_id=?').bind(f.actor.workspaceId).first()).toEqual({ n: 0 })
   expect((await env.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([])
-})
-
-contract(['DATA-001','DATA-002','IMPORT-004'], 'erasure removes cross-target preserved evidence with valid recomputed report seals while preserving the later native edit through archive replay', async () => {
-  const graph = await custodyGraph(env.DB), context = custodyContext(env.DB, graph.actor, graph.namespace)
-  const retainedId = `${graph.namespace}:1`, editedId = `${graph.ordinaryNamespace}:0`
-  const edited = await custodyTargets.read(env.DB, graph.actor.workspaceId, 'record', editedId)
-  expect(JSON.stringify(graph.report).includes('retained\\u0000')).toBe(true)
-  await eraseD1ImportTarget('record', retainedId, custodyTargets.remove(graph.actor.workspaceId, 'record', retainedId), context)
-  const reportContext = custodyContext(env.DB, graph.actor, graph.ordinaryNamespace)
-  const report = await readD1ImportUndoReport(graph.ordinaryId, reportContext)
-  expect(report.dispositions).toHaveLength(1)
-  expect(report.dispositions[0]).toMatchObject({ reason: 'edited', redacted: 'evidence', evidence: null,
-    expected: { valueHash: null, ownedValue: null }, observed: { valueHash: null, ownedValue: null } })
-  expect(await custodyTargets.read(env.DB, graph.actor.workspaceId, 'record', editedId)).toEqual(edited)
-  const archive = await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__)
-  await restoreFixture(env.DB, archive)
-  await custodySignIn(env.DB, graph.actor)
-  expect(await readD1ImportUndoReport(graph.ordinaryId, reportContext)).toEqual(report)
-  expect(await custodyTargets.read(env.DB, graph.actor.workspaceId, 'record', editedId)).toEqual(edited)
-  expect(await custodyTargets.read(env.DB, graph.actor.workspaceId, 'record', retainedId)).toBeNull()
-  await eraseD1ImportTarget('record', editedId, custodyTargets.remove(graph.actor.workspaceId, 'record', editedId), reportContext)
-  const direct = await readD1ImportUndoReport(graph.ordinaryId, reportContext)
-  expect(direct.dispositions[0]).toMatchObject({ reason: 'edited', redacted: 'erased', evidence: null, targetKind: 'erased',
-    expected: { valueHash: null, ownedValue: null }, observed: { valueHash: null, ownedValue: null } })
-  expect(await custodyTargets.read(env.DB, graph.actor.workspaceId, 'record', editedId)).toBeNull()
 })

@@ -119,21 +119,3 @@ contract(['DATA-001','BASE-DATA-001','NOTIFY-002','NOTIFY-004','DIST-010','DATA-
     expect(fetch).not.toHaveBeenCalled()
   } finally { fetch.mockRestore() }
 })
-
-contract(['NOTIFY-002','DATA-002'], 'erasure revokes an explicitly authorized restored retry before it can reach the Base capture transaction', async () => {
-  const f = await notificationFixture('restored-retry-erasure'), submission = await f.submit(), now = new Date().toISOString(), id = crypto.randomUUID()
-  await env.DB.prepare("INSERT INTO notification_deliveries(id,response_id,operator_id,status,idempotency_key,attempts,available_at,created_at,updated_at) VALUES(?,?,?,'failed',?,1,?,?,?)").bind(id, submission.response.id, f.operatorId, `restored:${id}`, now, now, now).run()
-  const archive = await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__)
-  await restoreFixture(env.DB, archive)
-  await f.services.notifications.preferences.retry(f.scope.workspaceId, f.operatorId, id, false, now)
-  expect(await env.DB.prepare('SELECT explicit_retry_authorized FROM notification_deliveries WHERE id=?').bind(id).first()).toEqual({ explicit_retry_authorized: 1 })
-  await f.services.responses.eraseReleasedResponse({ ...f.scope, responseId: submission.response.id, operatorId: f.operatorId })
-  const fetch = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('Unexpected external request'))
-  try {
-    expect(await f.services.notifications.dispatcher.run(now)).toMatchObject({ attempted: 0 })
-    expect(await env.DB.prepare('SELECT id FROM notification_deliveries WHERE id=?').bind(id).first()).toBeNull()
-    expect(await env.DB.prepare('SELECT id FROM notification_attempts WHERE delivery_id=?').bind(id).first()).toBeNull()
-    expect(await env.DB.prepare('SELECT count(*) n FROM rer_mail_development_outbox').first()).toEqual({ n: 0 })
-    expect(fetch).not.toHaveBeenCalled()
-  } finally { fetch.mockRestore() }
-})

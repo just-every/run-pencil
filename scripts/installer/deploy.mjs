@@ -7,6 +7,10 @@ import { cloudflare } from '@runeditrun/rer/modules/deploy-kit/provider';
 export function pencilDeploy(lifecycle) {
  const deploy = ownerDeploy('deploy.json', lifecycle);
  return Object.assign(async context => {
+  if (context.options.dryRun) {
+   const worker = ownerWorkerName('just-every/pencil', context.options.environment ?? 'production');
+   context.store.report(`Worker: ${worker}. Address: https://${worker}.<your-workers.dev-subdomain>.workers.dev. Deploy looks up your account's subdomain and sets APP_ORIGIN to that exact address.`);
+  }
   const previous = process.env.PENCIL_MAIL_PROVIDER;
   const selected = previous ?? process.env.MAIL_PROVIDER;
   if (selected !== undefined && !['sendgrid', 'resend'].includes(selected)) throw Error('PENCIL_MAIL_PROVIDER must be sendgrid or resend.');
@@ -32,5 +36,5 @@ export function pencilDeploy(lifecycle) {
    if (previous === undefined) delete process.env.PENCIL_MAIL_PROVIDER;
    else process.env.PENCIL_MAIL_PROVIDER = previous;
   }
- }, { declaration: deploy.declaration });
+ }, { declaration: deploy.declaration, managesHostedOwner: deploy.managesHostedOwner });
 }

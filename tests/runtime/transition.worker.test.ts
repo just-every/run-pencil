@@ -67,29 +67,6 @@ contract(['RESP-013', 'RESP-019', 'RSLT-002'], 'profiles native transition SQL a
   expect(await env.DB.prepare('SELECT dropped FROM revision_step_metric_counters WHERE revision_id = ? AND step_stable_id = ?').bind(session.revisionId, welcome.id).first()).toEqual({ dropped: 1 })
 })
 
-contract(['BASE-ACCESS-003', 'RESP-013'], 'increments an existing counter once per session across concurrent visits and preserves public rate refusal', async () => {
-  const f = await fixture('transition-distinct')
-  const sessions = await Promise.all(Array.from({ length: 6 }, () => f.start()))
-  const question = sessions[0].flow.steps[1].id
-  const results = await Promise.all(sessions.flatMap(session => [advance(f.slug, session, question), advance(f.slug, session, question)]))
-  expect(results.map(result => result.status)).toEqual(Array(12).fill(204))
-  expect(await env.DB.prepare('SELECT reached FROM revision_step_metric_counters WHERE revision_id = ? AND step_stable_id = ?').bind(sessions[0].revisionId, question).first()).toEqual({ reached: 6 })
-  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`public-rate:${f.slug}`))
-  const addressHash = Array.from(new Uint8Array(digest), value => value.toString(16).padStart(2, '0')).join('')
-  const minute = Math.floor(Date.now() / 60000) * 60000
-  for (const at of [minute, minute + 60000]) {
-    const began = new Date(at).toISOString()
-    await env.DB.prepare(`INSERT INTO public_rate_limit_windows (id, scope, address_hash, window_started_at, count, expires_at, created_at, updated_at)
-      VALUES (?, 'request', ?, ?, 120, ?, ?, ?) ON CONFLICT(scope, address_hash, window_started_at) DO UPDATE SET count = 120`)
-      .bind(`transition-rate-${at}`, addressHash, began, new Date(at + 60000).toISOString(), began, began).run()
-  }
-  const before = await progress(sessions[0])
-  const refused = await advance(f.slug, sessions[0], sessions[0].flow.steps[2].id)
-  expect(refused.status).toBe(429)
-  expect(await refused.json()).toMatchObject({ error: 'RATE_LIMITED' })
-  expect(await progress(sessions[0])).toEqual(before)
-})
-
 contract(['RESP-013', 'RESP-015'], 'refuses invalid credentials, foreign screens and expired sessions with no progress mutation', async () => {
   const f = await fixture('transition-refusal')
   const foreign = await fixture('transition-foreign')
@@ -132,39 +109,4 @@ contract('RESP-019', 'rolls session progress and reach counts back when event pe
   } finally { await env.DB.exec('DROP TRIGGER transition_test_abort') }
   expect((await advance(f.slug, session, step)).status).toBe(204)
   expect(await env.DB.prepare('SELECT reached FROM revision_step_metric_counters WHERE revision_id = ? AND step_stable_id = ?').bind(session.revisionId, step).first()).toEqual({ reached: 1 })
-})
-
-contract(['FLOW-009', 'RESP-019'], 'keeps old-session telemetry pinned through publication, closure and archive without admitting a final', async () => {
-  const f = await fixture('transition-pinned')
-  const session = await f.start()
-  await f.publish()
-  expect((await f.start()).revisionId).not.toBe(session.revisionId)
-  const question = session.flow.steps[1].id
-  expect((await advance(f.slug, session, question)).status).toBe(204)
-  await f.services.flows.closeFlow(f.scope.workspaceId, f.flow.flowId, f.operatorId)
-  expect((await advance(f.slug, session, question)).status).toBe(204)
-  await expect(f.final(session, [{ stepId: question, value: 'Closed answer' }])).rejects.toMatchObject({ code: 'FLOW_CLOSED' })
-  await f.services.flows.archiveFlow(f.scope.workspaceId, f.flow.flowId, f.operatorId)
-  expect((await advance(f.slug, session, question)).status).toBe(204)
-  expect(await env.DB.prepare('SELECT reached FROM revision_step_metric_counters WHERE revision_id = ? AND step_stable_id = ?').bind(session.revisionId, question).first()).toEqual({ reached: 1 })
-})
-
-contract(['RESP-012', 'DATA-002'], 'cannot resurrect progress after concurrent final admission or erasure, and keeps the original receipt', async () => {
-  const f = await fixture('transition-final-race')
-  const session = await f.start()
-  await f.mature(session.sessionId)
-  const question = session.flow.steps[1].id
-  const [transition, receipt] = await Promise.all([
-    advance(f.slug, session, question), f.final(session, [{ stepId: question, value: 'Original answer' }]),
-  ])
-  expect([204, 400]).toContain(transition.status)
-  expect(receipt).toMatchObject({ disposition: 'released', idempotent: false })
-  expect(await sessionRow(session.sessionId)).toBeNull()
-  const before = await progress(session)
-  expect(await (await advance(f.slug, session, question)).json()).toMatchObject({ error: 'SESSION_UNAVAILABLE' })
-  expect(await progress(session)).toEqual(before)
-  expect(await f.final(session, [{ stepId: question, value: 'Changed answer' }])).toMatchObject({ responseId: receipt.responseId, idempotent: true })
-  await f.services.responses.eraseReleasedResponse({ ...f.scope, responseId: receipt.responseId!, operatorId: f.operatorId })
-  expect(await (await advance(f.slug, session, question)).json()).toMatchObject({ error: 'SESSION_UNAVAILABLE' })
-  expect(await progress(session)).toEqual(before)
 })

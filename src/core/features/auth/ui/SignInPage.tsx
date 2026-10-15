@@ -6,8 +6,8 @@ import { api } from '../../../app/api'
 import type { PublicSeedConfig } from '../../../shared/config'
 import { HydrationUnit } from '../../../../base/hydration/unit'
 
-export function SignInPage({ config, invalid, notice }: { local?: boolean; config: Pick<PublicSeedConfig, 'productName'>; invalid?: string; notice?: 'access-removed' }) {
-  const [email, setEmail] = useState('')
+export function SignInPage({ config, emailHint, invalid, notice }: { local?: boolean; config: Pick<PublicSeedConfig, 'productName'>; emailHint?: string; invalid?: string; notice?: 'access-removed' }) {
+  const [email, setEmail] = useState(emailHint ?? '')
   const [hydrated, setHydrated] = useState(false)
   useEffect(() => { setHydrated(true) }, [])
   const [status, setStatus] = useState<'form' | 'sending' | 'sent'>('form')

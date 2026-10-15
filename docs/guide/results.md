@@ -74,14 +74,17 @@ Quarantined responses appear in **Quarantined responses**, under **Human review*
 
 Open a response in the ledger with **View answers**, choose **Erase response**, then **Confirm erasure**. Pencil removes the response and all its answers, and updates your totals and answer reports. Anonymous start and device counts remain, because they cannot be traced to anyone. Only an anonymous record that an erasure happened is kept. To remove an invited person and everything they gave, use **Erase contact and responses** in [Invitations, reminders and consent](invitations.md#opt-outs-and-consent).
 
-## Get an email for each new response
+## Get an email for new responses
 
 At the bottom of the results page, **Response notifications** lets each operator choose whether to be emailed about new completed responses on that flow.
 
-- Under **Email me about completed responses**, choose **Immediately** or **Off**. Your choice applies only to you and only to this flow.
+- Under **Email me about completed responses**, choose **Immediately**, **Daily** or **Off**. Your choice applies only to you and only to this flow.
+- **Immediately** queues one notice after each new released response. The scheduled Worker dispatches it; it is not sent inside the respondent's request.
+- **Daily** starts a new interval when you enable it, without historical mail. At the daily sending window's opening in your workspace time zone, Pencil groups the interval's new released responses into one digest. The panel shows the opening time, time zone and next cutoff. A day without new responses sends nothing.
 - When you publish a flow and have not chosen yet, it is set to **Immediately** for you. It starts at **Off** for every other operator, and for flows that were published before this feature existed and have not been published again.
-- The email names your business, the flow and the submission time in your workspace time zone, and links to the results, which need a sign-in. It carries no answers and no information about the respondent.
+- The email names your business and flow and links to results, which need a sign-in. An immediate notice shows the submission time; a digest shows its day, cutoff and response count. Neither carries answers or respondent details.
 - A response in quarantine sends nothing until you release it. Imported and historical responses never send email.
 - **Recent notification deliveries** shows each attempt. Use **Refresh delivery status**, and **Retry** on a failed one. For one whose outcome is unknown, **Send again** asks you to confirm, because it might email you twice.
+- A failed digest keeps its original day and interval when retried; it is not merged into the next day. Switching away from Daily cancels pending digests. Enabling Daily again starts from that moment, and restored digest history cannot be resent.
 
-Emails come from your no-reply sender address (`MAIL_FROM`). If that address is not a plain `noreply@` or `no-reply@` address, collecting responses carries on but this page says why notification email is off. Daily digests and an in-app notification list are not available in this release.
+Emails come from your no-reply sender address (`MAIL_FROM`). If that address is not a plain `noreply@` or `no-reply@` address, collecting responses and sign-in email carry on but this page says why response notification mail is off. Analysis outcomes have their own [in-app notifications](analysis.md#analysis-notifications), separate from these email choices.

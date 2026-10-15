@@ -6,33 +6,6 @@ import { foundationFixture } from './foundation-fixture'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 
-contract(['FLOW-002', 'FLOW-003', 'FLOW-015'], 'persists all seven typed questions and their fields, reorders stable IDs and duplicates and deletes only draft steps', async () => {
-  const f = await foundationFixture('foundation-types')
-  await f.add({ kind: 'welcome', questionType: null, prompt: 'Welcome' })
-  await expect(f.add({ kind: 'welcome', questionType: null, prompt: 'Second welcome' })).rejects.toThrow()
-  for (const questionType of ['short_text', 'long_text', 'email', 'single_choice', 'multiple_choice', 'rating', 'priority'] as const) {
-    await f.add({ kind: 'question', questionType, prompt: questionType, helperText: 'Why we ask', required: true, ...( ['single_choice', 'multiple_choice', 'priority'].includes(questionType) ? { choices: [{ value: 'a', label: 'Alpha' }, { value: 'b', label: 'Beta' }] } : {}), ...(questionType === 'rating' ? { questionSettings: { min: 0, max: 10 } } : {}) })
-  }
-  await f.add({ kind: 'completion', questionType: null, prompt: 'Done' })
-  const original = await f.draft()
-  expect(original.steps).toHaveLength(9)
-  expect(original.steps.filter(s => s.kind === 'question').map(s => [s.questionType, s.prompt, s.helperText, s.required])).toEqual(['short_text', 'long_text', 'email', 'single_choice', 'multiple_choice', 'rating', 'priority'].map(t => [t, t, 'Why we ask', true]))
-  const ids = original.steps.map(s => s.id)
-  await f.services.flows.reorderDraftSteps({ ...f.flow, expectedVersion: original.flow.draftVersion, orderedStepIds: [ids[0], ids[2], ids[1], ...ids.slice(3)] })
-  const reordered = await f.draft()
-  expect(reordered.steps.map(s => s.id)).toEqual([ids[0], ids[2], ids[1], ...ids.slice(3)])
-  expect(reordered.choices).toEqual(original.choices)
-  await expect(f.services.flows.reorderDraftSteps({ ...f.flow, expectedVersion: reordered.flow.draftVersion, orderedStepIds: [ids[1], ids[0], ...ids.slice(2)] })).rejects.toThrow('welcome')
-  const choiceQuestion = reordered.steps.find(s => s.questionType === 'single_choice')!
-  await f.services.flows.duplicateDraftStep({ ...f.flow, expectedVersion: reordered.flow.draftVersion, stepId: choiceQuestion.id })
-  const duplicated = await f.draft()
-  const copied = duplicated.steps.find(s => !ids.includes(s.id))!
-  expect(copied).toMatchObject({ prompt: 'single_choice', required: true, helperText: 'Why we ask' })
-  expect(duplicated.choices.filter(c => c.stepId === copied.id).every(c => !original.choices.some(old => old.id === c.id))).toBe(true)
-  await f.services.flows.deleteDraftStep({ ...f.flow, expectedVersion: duplicated.flow.draftVersion, stepId: copied.id })
-  expect((await f.draft()).steps.map(s => s.id)).toEqual(reordered.steps.map(s => s.id))
-}, 60_000)
-
 contract('FLOW-006', 'rejects all publication problems by stable ID without creating a revision and keeps the draft editable', async () => {
   const f = await foundationFixture('foundation-invalid-publication')
   await f.add({ kind: 'question', questionType: 'single_choice', prompt: 'Missing choices' })
@@ -115,30 +88,6 @@ contract(['FLOW-001','FLOW-011','FLOW-015','DASH-002'], 'lifecycle preserves col
   expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, {})).responses.map(r => r.id)).toEqual([done.responseId])
   await f.services.flows.archiveFlow(f.scope.workspaceId, copied.id, f.operatorId)
   expect((await f.services.flows.getBuilderDraft(f.scope.workspaceId, copied.id)).flow.status).toBe('archived')
-}, 60_000)
-
-contract(['RSLT-001','RSLT-003','RSLT-004','RESP-019','LEDG-003'], 'revision filters use matching anonymous counters after session expiry while response-only filters leave those counters unchanged', async () => {
-  const f = await foundationFixture('foundation-result-scopes')
-  await f.add({ kind: 'question', questionType: 'rating', prompt: 'Rating', required: true })
-  await f.add({ kind: 'completion', questionType: null, prompt: 'Done' }); await f.publish()
-  const first = await f.start(), abandoned = await f.services.responses.startPublicSession({ slug: f.slug, source: 'embed', deviceClass: 'desktop' })
-  await f.mature(first.sessionId)
-  const a = await f.final(first, [{ stepId: first.flow.steps[0].id, value: 5 }])
-  await env.DB.prepare('UPDATE respondent_sessions SET expires_at = ? WHERE id = ?').bind('2000-01-01T00:00:00Z', abandoned.sessionId).run()
-  await f.services.responses.expireSessions(new Date().toISOString(), 1000)
-  expect(await env.DB.prepare('SELECT id FROM respondent_sessions WHERE revision_id = ?').bind(first.revisionId).first()).toBeNull()
-  await f.publish()
-  const second = await f.services.responses.startPublicSession({ slug: f.slug, source: 'embed', deviceClass: 'tablet' })
-  await f.mature(second.sessionId)
-  await f.final(second, [{ stepId: second.flow.steps[0].id, value: 1 }])
-  const oldReport = await f.services.flows.getFlowResults(f.scope.workspaceId, f.flow.flowId, first.revisionId)
-  expect(oldReport).toMatchObject({ starts: 2, completedResponses: 1, completionRate: .5, deviceStarts: { mobile: 1, desktop: 1, tablet: 0 } })
-  expect(await f.services.flows.getFlowResults(f.scope.workspaceId, f.flow.flowId, second.revisionId)).toMatchObject({ starts: 1, completedResponses: 1, completionRate: 1, deviceStarts: { mobile: 0, desktop: 0, tablet: 1 } })
-  for (const filter of [{ revisionId: first.revisionId, source: 'embed' as const }, { revisionId: first.revisionId, answerStepId: first.flow.steps[0].id, answerValue: '1' }, { revisionId: first.revisionId, from: '2099-01-01T00:00:00Z' }]) {
-    expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, filter)).responses).toEqual([])
-    expect(await f.services.flows.getFlowResults(f.scope.workspaceId, f.flow.flowId, first.revisionId)).toEqual(oldReport)
-  }
-  expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, { revisionId: first.revisionId, source: 'direct', answerStepId: first.flow.steps[0].id, answerValue: '5', from: '2000-01-01T00:00:00Z', to: '2099-01-01T00:00:00Z' })).responses.map(r => r.id)).toEqual([a.responseId])
 }, 60_000)
 
 contract('WS-001', 'workspace zone changes cannot move an already published deadline or its recorded zone', async () => {

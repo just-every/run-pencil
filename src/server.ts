@@ -41,9 +41,7 @@ const worker = {
     let platform
     try { platform = createPencilPlatform(request.url, bindings) } catch (error) {
       if (bindings.PENCIL_LOCAL_DEVELOPMENT === 'true' && !isLoopbackRequest(request.url)) return new Response('Not found', { status: 404 })
-      // A configured deployment never answers another host with its documents.
-      if (bindings.APP_ORIGIN) { try { if (new URL(request.url).origin !== new URL(bindings.APP_ORIGIN).origin) return new Response('Not found', { status: 404 }) } catch { /* typed configuration error below */ } }
-      return Response.json({ status: 'not-ready', message: error instanceof DeploymentConfigurationError ? error.message : 'Invalid deployment configuration.' }, { status: 503 })
+      return Response.json({ status: 'not-ready', message: error instanceof DeploymentConfigurationError ? error.message : 'Invalid deployment configuration.' }, { status: 503, headers: { 'Cache-Control': 'no-store' } })
     }
     const path = new URL(request.url).pathname
     if ((path === '/setup' && request.method === 'POST') || path === '/__dev/outbox' || path === '/__dev/key' || path === '/embed.js' || path === '/health' || path === '/api' || path.startsWith('/api/') || path === '/auth' || path.startsWith('/auth/')) {

@@ -12,9 +12,10 @@ The archive contains every record Pencil keeps:
 - Flows, revisions, steps, choices and answer paths, with their stable IDs.
 - Every response and answer, including quarantined ones and their state.
 - Contacts with custom fields and consent state, saved segments, frozen launch audiences and evaluated policies, invitations and the history of every delivery attempt, including failed and unknown ones.
-- The audit log, the counters behind your starts and drop-off figures, and each person's notification choices.
+- The audit log, the counters behind your starts and drop-off figures, notification choices and delivery history, and analysis notifications.
+- Analysis runs and their evidence links, draft rewrite sources and decisions, and AI usage records.
 - Actions with their history, frozen evidence figures, measurements, external task deliveries and every attempt.
-- Operators with their roles and linked sign-in identities, so restored operators can sign in again with a fresh emailed link.
+- Operators and linked sign-in identities, so restored operators can sign in again with a fresh emailed link. Every Pencil operator has equal access.
 
 Some things are left out or changed on purpose:
 
@@ -43,9 +44,11 @@ When a backup or restore finishes, the command prints a short JSON result that i
 
 ## Back up a local copy
 
-Stop `dev` or `preview` first. Then:
+Stop `dev` or `preview` first. From the checkout:
 
 ```sh
+rer dev --stop
+rer preview --stop
 rer export --output exports/install-2026-10-10.rer
 ```
 
@@ -57,7 +60,7 @@ Use the matching source checkout and its maintained owner recovery command. The 
 
 **Released 0.2.0 installations:** this source’s recovery command does not establish compatibility with the old 0019 migration hash. Retain your existing source and database and use only a supported matching-version backup path. Do not edit ledger hashes or archives, or treat restore as a workaround for the [blocked hosted upgrade](hosting.md#upgrading). The current-version recovery proof is separate.
 
-Set `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID` and `CLOUDFLARE_API_TOKEN` in your private shell environment. Use the actual source D1 ID from your deployment receipt, and a token authorized for that account's D1 database. Never put the token in an archive or commit it.
+Set `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID` and `CLOUDFLARE_API_TOKEN` in your private shell environment. Use the actual source D1 ID from `.rer/deploy/production.json` (or your chosen environment's receipt), and a token authorized for that account's D1 database. The recovery command reads these values from its environment; none belongs in its arguments, archive or a commit.
 
 Stop every database writer as described below, then:
 
@@ -68,7 +71,7 @@ node scripts/deployment-data-cli.mjs export --output exports/deployed.rer --writ
 `--writers-stopped` confirms that you stopped the Worker, schedules and any other process that writes this database. The exporter also checks D1 consistency bookmarks and primary reads, and refuses if the source changes. This creates the same redacted archive described above, including import custody, the erasure checkpoint and delivery history.
 
 The recovery command is verified against a local Cloudflare API stand-in using the installed deployment kit and real SQL. This is not a live-account recovery acceptance result. In the older October 13 hosted run, the previous exporter refused the kit ledger; a raw Wrangler dump restored only after its SQL was manually regrouped. That workaround did not produce a redacted Pencil archive. Raw D1 exports and Time Travel remain provider tools with their own semantics.
-Your running Worker writes to the database as it works: visits to public pages and signed-in pages record rate-limit counters and sessions, and its schedule runs every minute. If you are about to move your data, stop the Worker for the length of the backup. Pencil has no command for this. Use the Cloudflare dashboard: in your Worker's settings, turn off its `workers.dev` address and remove its Cron trigger. Your forms, sign-in and `/health` are unreachable until you turn them back on. The database is not touched. Afterwards, turn both back on in the dashboard, or deploy again.
+Your running Worker writes to the database as it works: visits to public pages and signed-in pages record rate-limit counters and sessions, and its schedule runs every minute. Pause every writer for the length of the backup. Pencil has no command that pauses a Worker while preserving its database. In the Cloudflare dashboard, turn off its `workers.dev` address, remove its Cron trigger, disable any custom-domain or route access, and stop any other writer to that D1 database. Wait for in-flight work to finish. Your forms, sign-in and `/health` remain unreachable until you restore their routes. Afterwards, restore the routes and Cron trigger or deploy again. Do not use `rer deploy --remove --yes` for this: it deletes the database as well as the Worker.
 
 ## Restore into a new database
 
@@ -103,7 +106,7 @@ Restore before setup. Give setup the email of the owner you had when you made th
 
 ### To a deployed database
 
-Create a new deployment with the same source and kit, then stop its Worker routes, schedules and all other database writers **before setup or first-owner admission**. The target must contain only its fully applied migrations and their initialization rows. Keep the previous deployment and database available until you have verified recovery.
+Use an empty D1 target with the same source, deployment kit and migration-ledger kind. It must contain only its fully applied migrations and their initialization rows. Keep its Worker routes, schedules and other writers stopped throughout recovery. The recovery command does not provision this target. A normal `rer deploy` automatically claims an owner, making its database nonempty, so it is not an empty restore target; do not delete owner records to bypass that guard. Provisioning and attaching a migration-only D1 target requires a deployment procedure appropriate to your installation. Keep the previous deployment and database available until you have verified recovery.
 
 Change `CLOUDFLARE_DATABASE_ID` to the new empty target's actual D1 ID, then:
 

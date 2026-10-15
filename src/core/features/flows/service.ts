@@ -275,7 +275,9 @@ export class FlowService {
     const following = draft.steps[position]
     const previous = draft.steps[position - 1]
     const nextId = input.step.nextStepId ?? (input.step.kind === 'completion' ? null : following?.id ?? null)
-    const connectPrevious = previous && previous.kind !== 'completion' && previous.nextStepId === (following?.id ?? null) ? previous.id : undefined
+    // Complete an unfinished sequence, but preserve every existing answer path.
+    // Inserting before a completion never opts earlier questions into this one.
+    const connectPrevious = !following && previous && previous.kind !== 'completion' && previous.nextStepId === null ? previous.id : undefined
     const now = new Date().toISOString()
     const stableId = ulid()
     const stepId = ulid()

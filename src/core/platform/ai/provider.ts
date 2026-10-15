@@ -12,7 +12,7 @@ export type AiProvider =
 export type DevAiClient = { client: AiClient; transport: 'dev' | 'models'; origin: string }
 export type DevAiFactory = (environment: WorkerBindings) => DevAiClient
 
-export const aiSetupText = 'AI is off. To analyse responses, set AI_ENABLED=true and AI_MODEL, then either AI_API_KEY (with AI_BASE_URL for a provider other than OpenAI) or MODELS_SERVICE and MODELS_KEY for a linked Models service.'
+export const aiSetupText = 'AI is off. To analyse responses or rewrite questions, set AI_ENABLED=true and AI_MODEL, then either AI_API_KEY (with AI_BASE_URL for a provider other than OpenAI) or MODELS_SERVICE and MODELS_KEY for a linked Models service.'
 
 export const demoAiText = 'AI is off in this demo, so nothing is sent to an AI provider. An installation analyses responses once AI_ENABLED, AI_MODEL and one AI transport are set.'
 

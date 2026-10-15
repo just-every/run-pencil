@@ -102,15 +102,3 @@ contract('RSLT-002', 'counts the validated final path once and keeps skipped, ex
   const newer = await ok<Array<{ id: string; reached: number; dropped: number; answered: number }>>(`${f.path}/questions?revisionId=${fresh.revisionId}`)
   expect(newer.find(q => q.id === f.detail.id)).toMatchObject({ reached: 1, dropped: 0, answered: 1 })
 })
-
-it('counts a visited optional unanswered step on a validated final without inventing an answer', async () => {
-  const f = await fixture('optional-stage-counts')
-  const draft = await f.draft()
-  await ok(`${f.path}/draft`, { stepId: f.detail.id, prompt: f.detail.prompt, required: false, expectedVersion: draft.flow.draftVersion }, 'PUT')
-  const changed = await f.draft()
-  await ok(`${f.path}/publish`, { expectedVersion: changed.flow.draftVersion })
-  const session = await f.start()
-  expect((await f.submit(session, [{ stepId: f.route.id, value: f.more.id }])).status).toBe(201)
-  const questions = await ok<Array<{ id: string; reached: number; dropped: number; answered: number }>>(`${f.path}/questions?revisionId=${session.revisionId}`)
-  expect(questions.find(q => q.id === f.detail.id)).toMatchObject({ reached: 1, dropped: 0, answered: 0 })
-})

@@ -57,6 +57,17 @@ While a step has unsaved changes you cannot switch steps, add or move steps, pre
 
 If two operators edit the same flow, the first to save wins. The second sees **Another operator saved first. The latest draft has been reloaded.** and nothing is overwritten.
 
+## Rewrite a question
+
+With an [AI provider configured](analysis.md#turn-analysis-on), open **Rewrite this question** on a question step:
+
+1. Save current edits first.
+2. Choose **Sharper**, **Broader** or **Contextual**, and optionally enter **Context**.
+3. Choose **Request rewrite**. The saved question, style and context go to your configured provider; respondent answers are not included.
+4. Compare **Source** with **Proposal**. Choose **Accept and save wording** to save only the proposed question wording to the current draft, or **Reject** to leave it alone.
+
+Accepting does not change choices or answer paths and never publishes. If the draft changed while you reviewed the proposal, Pencil refuses to overwrite it; reload and request a new rewrite. An unavailable provider or failed request shows an error and leaves the saved question unchanged. **Retry rewrite** makes a new request.
+
 ## Question types
 
 Pick the type that matches how people should answer. The types are:

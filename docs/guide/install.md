@@ -4,14 +4,16 @@ This page takes you from the Pencil source code to a working copy on your own co
 
 ## What you need
 
-- **rer, the Run Edit Run command.** Install it once per computer with `npm install -g @runeditrun/rer`. In the source folder it runs the exact version Pencil pins.
+- **Node.js 22 or later, including npm, and Git.** Install Node from [nodejs.org](https://nodejs.org/en/download), then check `node --version` and `npm --version` in your terminal. Node must be on your `PATH` before you install rer.
+- **rer, the Run Edit Run command.** Install it once per computer with `npm install -g @runeditrun/rer@0.2.19`. In the source folder it runs the exact version Pencil pins.
 - **The source code.** Get it from https://github.com/just-every/run-pencil and open a terminal in its folder.
-rer installs the pinned Node and pnpm itself. You do not need to install either version separately. `rer dev` prepares a local owner automatically; choosing your own local owner details with `rer setup` is optional.
+
+With Node available, rer installs Pencil's pinned runtime and pnpm for its own commands. It does not put pnpm on your shell's `PATH`; the commands below use npm or npx when needed. `rer dev` prepares a local owner automatically; choosing your own local owner details with `rer setup` is optional.
 
 ## Start Pencil on your computer
 
 ```sh
-npm install -g @runeditrun/rer
+npm install -g @runeditrun/rer@0.2.19
 git clone https://github.com/just-every/run-pencil.git pencil && cd pencil
 rer dev
 ```
@@ -73,11 +75,11 @@ To start again from nothing, run `rer reset --yes`. It prints what it will remov
 
 Pencil is the complete product source. You may change the code, the database schema, the interface and the setup. If you do:
 
-- Install the test browser once with `pnpm exec playwright install chromium --only-shell`, then run `rer verify`. It is the full local check: types, unit and Worker tests, the command-line journeys, data export and import round trips, migrations, source boundaries, the build and browser journeys on desktop and mobile. The capacity and load workloads are separate: they run with `pnpm run verify:release` before a release.
-- Record your changes before you check them. Stage them with `git add`, run `node scripts/edition-authoring/cli.mjs changes` to inspect what changed, then `node scripts/edition-authoring/cli.mjs lock` to record the new file hashes in `sources.lock.json`. Commit your changes together with `sources.lock.json`, and only then run `pnpm source:check`. It checks that the source still matches its recorded provenance, and it fails with "Stale lock" if you skipped `lock`.
+- After `rer install` or the first `rer dev`, install the test browser once with `npx --no-install playwright install chromium --only-shell`, then run `rer verify`. It is the full local check: types, unit and Worker tests, the command-line journeys, data export and import round trips, migrations, source boundaries, the build and browser journeys on desktop and mobile. The capacity and load workloads are separate: they run with `npm run verify:release` before a release. These source checks are separate from deploying an unchanged checkout.
+- Record your changes before you check them. Stage them with `git add`, run `node scripts/edition-authoring/cli.mjs changes` to inspect what changed, then `node scripts/edition-authoring/cli.mjs lock` to record the new file hashes in `sources.lock.json`. Commit your changes together with `sources.lock.json`, and only then run `npm run source:check`. It checks that the source still matches its recorded provenance, and it fails with "Stale lock" if you skipped `lock`.
 - Never edit a migration that has already been applied. Add a new one.
 
-`pnpm verify:contract:full` is expected to fail in this release. It keeps the features that are [not in this release](overview.md#what-is-not-in-this-release) as open items on purpose.
+`npm run verify:contract:full` checks the complete product contract. The features listed as [not in this release](overview.md#what-is-not-in-this-release) are outside Pencil's supported scope.
 
 ## What local mode is not
 

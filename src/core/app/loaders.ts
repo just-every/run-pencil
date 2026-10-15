@@ -58,7 +58,9 @@ export const loadSignIn = createServerFn({ method: 'GET' }).handler(async () => 
   const { services, platform } = await requestServices()
   const { mountServerExtensions } = await import('./mountExtensions.server')
   if (await services.auth.needsBootstrap()) throw redirect({ to: '/setup' })
-  return { config: mountServerExtensions().publicSeedConfig, local: platform.configuration.isLocalDevelopment }
+  // Only the sole active native owner may be offered publicly as a sign-in hint.
+  const owner = await platform.databaseBinding.prepare("SELECT min(email) AS email FROM oa_operators WHERE role = 'owner' AND status = 'active' HAVING count(*) = 1").first<{ email: string }>()
+  return { config: mountServerExtensions().publicSeedConfig, local: platform.configuration.isLocalDevelopment, emailHint: owner?.email }
 })
 
 export const loadSetup = createServerFn({ method: 'GET' }).handler(async () => {

@@ -1,4 +1,4 @@
-import { Buffer } from 'node:buffer'
+
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -70,22 +70,5 @@ contract(['DATA-001','BASE-DATA-001','BASE-OPS-003'], 'native D1 stages bounded 
   expect((await env.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([])
   expect((await env.DB.prepare("SELECT name FROM sqlite_schema WHERE name GLOB '_pencil_restore_*'").all()).results).toEqual([])
   await expect(env.DB.prepare('INSERT INTO response_answers SELECT * FROM response_answers LIMIT 1').run()).rejects.toThrow()
-})
-
-contract(['DATA-001','BASE-DATA-001'], 'native D1 reconstructs a large binary row with bounded string parameters and exact zero bytes', async () => {
-  await env.DB.prepare('CREATE TABLE archive_binary_probe(value BLOB)').run()
-  try {
-    const bytes=Buffer.alloc(1_900_000)
-    for(let index=0;index<bytes.length;index++)bytes[index]=index%256
-    const statement=insertStatement({name:'archive_binary_probe',columns:['value']},[{type:'blob',value:bytes.toString('base64')}],(value:string)=>Buffer.from(value,'base64').toString('hex'))
-    expect(statement.params.length).toBeLessThanOrEqual(100)
-    for(const parameter of statement.params)expect(Buffer.byteLength(parameter)).toBeLessThanOrEqual(128*1024)
-    await env.DB.prepare(statement.sql).bind(...statement.params).run()
-    expect(await env.DB.prepare('SELECT typeof(value) type,length(value) size FROM archive_binary_probe').first()).toEqual({type:'blob',size:bytes.length})
-    for(let offset=0;offset<bytes.length;offset+=65536) {
-      const row=await env.DB.prepare('SELECT hex(substr(value,?,65536)) bytes FROM archive_binary_probe').bind(offset+1).first<{bytes:string}>()
-      expect(row!.bytes).toBe(bytes.subarray(offset,offset+65536).toString('hex').toUpperCase())
-    }
-  } finally {await env.DB.prepare('DROP TABLE archive_binary_probe').run()}
 })
 

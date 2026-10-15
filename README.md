@@ -35,10 +35,10 @@ Pencil is an editable form builder and feedback workspace with branching questio
 
 ## Run it on your computer
 
-Start with npm and Git. rer installs the pinned Node and pnpm itself; neither is a separate version prerequisite:
+Install **Node.js 22 or later**, including npm, from [nodejs.org](https://nodejs.org/en/download), and install Git. Node must be on your `PATH` before installing rer. rer then installs Pencil's pinned runtime and pnpm for its own commands; you do not need a global pnpm install:
 
 ```sh
-npm install -g @runeditrun/rer
+npm install -g @runeditrun/rer@0.2.19
 git clone https://github.com/just-every/run-pencil.git pencil && cd pencil
 rer dev
 ```
@@ -51,15 +51,16 @@ Keep `.dev.vars` private. Use `--port PORT` for an explicit loopback port. Stop 
 
 ```sh
 rer outbox
-pnpm exec playwright install chromium --only-shell
+npx --no-install playwright install chromium --only-shell
 rer verify
-rer reset --yes
 ```
 
-Verify runs the functional and high-stakes wall. After intended source changes, stage them, inspect `node scripts/edition-authoring/cli.mjs changes`, run `node scripts/edition-authoring/cli.mjs lock`, commit with `sources.lock.json`, then run `pnpm source:check`; without `lock` it fails with a stale lock. Reset prints and removes only inventoried local data, settings, owner, outbox and drafts; source, dependencies, exports and deployment receipts survive. Export first to retain data:
+Verify runs the functional and high-stakes wall for source changes; it is separate from deploying an unchanged checkout. After intended source changes, stage them, inspect `node scripts/edition-authoring/cli.mjs changes`, run `node scripts/edition-authoring/cli.mjs lock`, commit with `sources.lock.json`, then run `npm run source:check`; without `lock` it fails with a stale lock. Reset prints and removes only inventoried local data, settings, owner, outbox and drafts; source, dependencies, exports and deployment receipts survive. Stop dev or preview before exporting, and export first to retain data:
 
 ```sh
 mkdir -m 700 exports
+rer dev --stop
+rer preview --stop
 rer export --output exports/installation.rer
 rer reset --yes
 rer import --input exports/installation.rer --yes
@@ -69,17 +70,27 @@ rer setup --owner-email owner@example.com --owner-name Owner
 Import validates integrity and restores atomically into an empty destination without replaying mail. Archives retain the complete product graph, import custody, delivery history and operator identities; sessions, sign-in links, other credentials, captured mail and private settings are excluded, so everyone signs in again after a restore. These rer commands support local state; the separate maintained deployed D1 command is documented in [Backup and restore](docs/guide/backup.md).
 
 ```sh
-pnpm run deploy -- --dry-run
+rer deploy --dry-run
 rer describe
 rer check --profile first-party
 ```
 
-Deployment needs the intended Cloudflare account and production inputs. Set `OWNER_EMAIL` to the hosted owner’s email and use `SEED_ADMIN_EMAIL="$OWNER_EMAIL" rer deploy` as documented in the hosting guide: Pencil’s current declaration maps that input to its owner binding. Deploy claims the owner automatically; sign in by email at the printed hosted address and finish `/setup`. No manual setup-token step is needed. Dry run builds and validates with zero provider calls. Read [OPERATIONS.md](OPERATIONS.md), [RUN-LOCALLY.md](RUN-LOCALLY.md) and [SEED-COMMAND-CONTRACT.md](SEED-COMMAND-CONTRACT.md).
+Deployment needs the intended Cloudflare account and production inputs. Before deploying, find the account's Workers & Pages `workers.dev` subdomain: the default address is `https://pencil-production.<workers-subdomain>.workers.dev`. A named environment uses `https://pencil-<environment>.<workers-subdomain>.workers.dev`. rer looks up the real subdomain and sets the Worker's `APP_ORIGIN` to that generated address; you do not need to guess or supply it. Set `OWNER_EMAIL` to the hosted owner’s email and use `SEED_ADMIN_EMAIL="$OWNER_EMAIL" rer deploy` as documented in the [hosting guide](docs/guide/hosting.md): Pencil’s current declaration maps that input to its owner binding. Deploy claims the owner automatically; sign in at `/signin` on the printed hosted address and finish `/setup`. No manual setup-token step is needed. Dry run builds and validates with zero provider calls. Read [OPERATIONS.md](OPERATIONS.md), [RUN-LOCALLY.md](RUN-LOCALLY.md) and [SEED-COMMAND-CONTRACT.md](SEED-COMMAND-CONTRACT.md).
 
-Before **every release**, run `pnpm run verify:release` for unchanged capacity, maximum-size native memory, browser heap and load cases. These run outside CI and default verify. Publication inspection requires Gitleaks 8.30.1; `bash scripts/install-gitleaks.sh` installs the reviewed binary after checksum verification. CI uses the same installer and complete Base scanner. The maintained release dry run runs both commands:
+`rer signin --environment production` uses that deployment's Cloudflare credentials to issue a private, single-use link for its recorded owner without email. See [owner sign-in](docs/guide/hosting.md#sign-in-as-the-first-owner) for requirements. Keep the printed link private.
+
+To delete a deployment and its data after making a [hosted backup](docs/guide/backup.md#back-up-a-deployed-database):
 
 ```sh
-pnpm run release -- --repo . --ref HEAD --project just-every/pencil --repository https://github.com/just-every/run-pencil --onto https://github.com/just-every/run-pencil#main --tag vVERSION --dry-run --output ../pencil-release
+rer deploy --remove --yes --environment production
+```
+
+Removal deletes only resources recorded as created by rer in that environment and reads back that they are gone. Keep the private deployment receipt; removal is not a way to pause a Worker for backup.
+
+Before **every release**, run `npm run verify:release` for unchanged capacity, maximum-size native memory, browser heap and load cases. These run outside CI and default verify. Publication inspection requires Gitleaks 8.30.1; `bash scripts/install-gitleaks.sh` installs the reviewed binary after checksum verification. CI uses the same installer and complete Base scanner. The maintained release dry run runs both commands:
+
+```sh
+rer release --repo . --ref HEAD --project just-every/pencil --repository https://github.com/just-every/run-pencil --onto https://github.com/just-every/run-pencil#main --tag vVERSION --dry-run --output ../pencil-release
 ```
 
 Require a complete scan with zero findings and reviews, without exclusions or an allowlist. Hosted installation, real-export validation, tags, public publication and site listing require the owner. Draft rewrites require explicit acceptance, analysis outcomes appear on the Analysis page, and each operator can choose Immediately, Daily or Off per flow. All contract clauses are active. These paths have local behavioral proof; live provider and inbox receipts remain separate. CONTRACT.md and BASELINE.md record product guarantees.

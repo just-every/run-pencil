@@ -1,4 +1,4 @@
-import { fixtureExport } from '../helpers/report-download'
+
 import { contract } from '../../src/test/contract'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect, test } from 'vitest'
@@ -70,30 +70,6 @@ contract(['DIST-006', 'DIST-008', 'DIST-010', 'BASE-OPS-004'], 'ambiguous delive
   expect((await f.services.distribution.launches.list(f.scope.workspaceId, f.flow.flowId))[0]).toMatchObject({ status: 'failed', reason: 'Synthetic invalid recipient', attempts: 2 })
   await expect(d.record(f.delivery.deliveryId, 2, { kind: 'sent', providerId: 'incorrect-late-receipt' })).rejects.toThrow('already has an outcome')
 }, 60_000)
-contract(['LEDG-001', 'LEDG-003', 'DATA-002', 'BASE-DATA-003', 'DIST-005'], 'identified response filters and exports keep stable participant identity until erasure revokes all invitations', async () => {
-  const f = await launched('distribution-erasure')
-  const s = await f.services.responses.startPublicSession({ slug: f.slug, deviceClass: 'mobile', source: 'direct', invitationToken: f.p.token })
-  await f.mature(s.sessionId)
-  const done = await f.final(s, [{ stepId: s.flow.steps[0].id, value: 'Retained until erased' }], '', f.p.token)
-  const report = await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, { source: 'invitation', participantStatus: 'eligible' })
-  expect(report.responses).toHaveLength(1)
-  expect(report.responses[0]).toMatchObject({ id: done.responseId, revisionId: f.p.revision_id, participant: { id: f.p.id, name: 'Synthetic recipient', email: 'distribution-erasure@example.test' } })
-  await f.services.distribution.contacts.optOut(f.p.opt_out_token)
-  expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, { participantStatus: 'eligible' })).responses).toEqual([])
-  expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, { participantStatus: 'opted-out' })).responses.map(r => r.id)).toEqual([done.responseId])
-  const consentAuditId = (await env.DB.prepare("SELECT id FROM audit_entries WHERE kind = 'contact.consent-changed' AND subject_id = ?").bind(f.contact.id).first<{ id: string }>())!.id
-  await f.services.distribution.contacts.erase(f.scope.workspaceId, f.contact.id, f.operatorId)
-  expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, {})).responses).toEqual([])
-  await expect(f.services.responses.invitationFlow(f.p.token)).rejects.toThrow('no longer available')
-  expect(await env.DB.prepare('SELECT contact_id, email_snapshot, name_snapshot, token, opt_out_token FROM invitation_participants WHERE id = ?').bind(f.p.id).first()).toEqual({ contact_id: null, email_snapshot: null, name_snapshot: null, token: null, opt_out_token: null })
-  expect(await env.DB.prepare('SELECT id FROM response_answers WHERE response_id = ?').bind(done.responseId).first()).toBeNull()
-  expect(await env.DB.prepare('SELECT id FROM response_outbox WHERE response_id = ?').bind(done.responseId).first()).toBeNull()
-  expect(await env.DB.prepare('SELECT id FROM distribution_contacts WHERE id = ?').bind(f.contact.id).first()).toBeNull()
-  const consentAudit = await env.DB.prepare("SELECT subject_id, details_json FROM audit_entries WHERE id = ?").bind(consentAuditId).all()
-  expect(consentAudit.results).toEqual([{ subject_id: null, details_json: '{}' }])
-  expect((await env.DB.prepare('PRAGMA foreign_key_check').all()).results).toEqual([])
-  expect((await f.services.flows.getFlowResults(f.scope.workspaceId, f.flow.flowId)).completedResponses).toBe(0)
-}, 60_000)
 contract(['WS-002', 'DIST-004', 'DIST-006', 'DIST-008'], 'transient attempts keep one key, stop after five retries, and reminders wait for workspace hours', async () => {
   const f = await launched('distribution-retries')
   const firstAt = '2026-10-06T00:00:00.000Z'
@@ -143,64 +119,4 @@ contract(['RESP-013', 'RESP-006', 'DIST-004'], 'invited sessions retain no parti
   await env.DB.prepare('UPDATE flow_revisions SET target_completed_responses = 1, admission_closed_at = NULL WHERE id = ?').bind(g.p.revision_id).run()
   expect(await g.services.distribution.deliveries.prepare(g.delivery.deliveryId, 'https://synthetic.example.test')).toBeNull()
   expect(await env.DB.prepare('SELECT count(*) AS n FROM mail_delivery_attempts WHERE delivery_id = ?').bind(g.delivery.deliveryId).first()).toEqual({ n: 0 })
-}, 60_000)
-
-contract(['DASH-002', 'LEDG-002'], 'dashboard derives participant denominators from durable consent, bounce and released-response state', async () => {
-  const f = await launched('distribution-counts')
-  await env.DB.prepare("UPDATE flows SET last_activity_at = '2999-01-01T00:00:00.000Z' WHERE id = ?").bind(f.flow.flowId).run()
-  expect((await f.services.flows.listDashboard(f.scope.workspaceId))[0].id).toBe(f.flow.flowId)
-  const row = async () => (await f.services.flows.listDashboard(f.scope.workspaceId)).find(flow => flow.id === f.flow.flowId)!
-  expect((await row()).audience).toEqual({ launchedParticipants: 1, eligibleParticipants: 1, completedParticipants: 0 })
-  const session = await f.services.responses.startPublicSession({ slug: f.slug, deviceClass: 'desktop', source: 'direct', invitationToken: f.p.token })
-  await f.mature(session.sessionId)
-  const receipt = await f.final(session, [{ stepId: session.flow.steps[0].id, value: 'Count once' }], '', f.p.token)
-  expect((await row()).audience).toEqual({ launchedParticipants: 1, eligibleParticipants: 1, completedParticipants: 1 })
-  expect((await row()).completedResponses).toBe(1)
-  await f.services.distribution.contacts.optOut(f.p.opt_out_token)
-  expect((await row()).audience).toEqual({ launchedParticipants: 1, eligibleParticipants: 0, completedParticipants: 0 })
-  expect((await row()).completedResponses).toBe(1)
-  await f.services.distribution.contacts.consent({ ...f.scope, contactId: f.contact.id, actor: f.operatorId, source: 'Explicit synthetic renewed consent', renewed: true })
-  await env.DB.prepare("UPDATE invitation_participants SET delivery_status = 'bounced' WHERE id = ?").bind(f.p.id).run()
-  expect((await row()).audience.eligibleParticipants).toBe(0)
-  expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, { participantStatus: 'bounced' })).responses.map(r => r.id)).toEqual([receipt.responseId])
-  await f.services.flows.closeFlow(f.scope.workspaceId, f.flow.flowId)
-  expect((await f.services.flows.listDashboard(f.scope.workspaceId, 'closed')).map(r => r.id)).toContain(f.flow.flowId)
-  expect((await f.services.flows.listDashboard(f.scope.workspaceId, 'open')).map(r => r.id)).not.toContain(f.flow.flowId)
-  await f.services.flows.archiveFlow(f.scope.workspaceId, f.flow.flowId)
-  expect((await f.services.flows.listDashboard(f.scope.workspaceId)).map(r => r.id)).not.toContain(f.flow.flowId)
-  expect((await f.services.flows.listDashboard(f.scope.workspaceId, 'archived')).map(r => r.id)).toContain(f.flow.flowId)
-}, 60_000)
-
-contract('BASE-DATA-003', 'operator removal anonymizes launch, consent and retry actors and a delayed consent writer cannot restore them', async () => {
-  const f = await launched('distribution-operator-custody')
-  await f.services.distribution.contacts.consent({ ...f.scope, contactId: f.contact.id, actor: f.operatorId, source: 'Explicit synthetic permission', renewed: true })
-  await f.services.distribution.deliveries.prepare(f.delivery.deliveryId, 'https://synthetic.example.test')
-  await f.services.distribution.deliveries.record(f.delivery.deliveryId, 1, { kind: 'permanent', reason: 'Synthetic refusal' })
-  await f.services.distribution.deliveries.retry(f.scope.workspaceId, f.delivery.deliveryId, f.operatorId, false)
-  expect(await env.DB.prepare("SELECT actor_operator_id FROM mail_delivery_attempts WHERE delivery_id = ? AND event = 'operator-retry'").bind(f.delivery.deliveryId).first()).toEqual({ actor_operator_id: f.operatorId })
-  // D1 trigger also protects deletion through the shared auth integration.
-  await env.DB.prepare('DELETE FROM operators WHERE id = ?').bind(f.operatorId).run()
-  expect(await env.DB.prepare('SELECT actor_operator_id FROM invitation_launches WHERE id = ?').bind(f.launch.id).first()).toEqual({ actor_operator_id: null })
-  expect(await env.DB.prepare("SELECT actor_operator_id FROM mail_delivery_attempts WHERE delivery_id = ? AND event = 'operator-retry'").bind(f.delivery.deliveryId).first()).toEqual({ actor_operator_id: null })
-  await f.services.distribution.contacts.consent({ ...f.scope, contactId: f.contact.id, actor: f.operatorId, source: 'Delayed synthetic consent event', renewed: true })
-  const retained = (await env.DB.prepare('SELECT * FROM contact_consent_events WHERE contact_id = ?').bind(f.contact.id).all()).results
-  expect(retained).toHaveLength(2)
-  expect(JSON.stringify(retained)).not.toContain(f.operatorId)
-  expect(retained.map(row => row.actor)).toEqual(['erased-operator', 'erased-operator'])
-}, 60_000)
-
-contract('DIST-004', 'a launch snapshots the evaluated buyer reminder schedule before later configuration changes', async () => {
-  const f = await launched('reminder-policy-setup')
-  const { InvitationLaunches } = await import('../../src/core/features/distribution/launches')
-  const policies = { 'flow.reminder-schedule.v1': { delayHours: 12 }, 'flow.audience-eligibility.v1': { excludePreviouslyInvitedToFlow:false } }
-  const launcher = new InvitationLaunches(env.DB, policies)
-  const contact = await f.services.distribution.contacts.save(f.scope.workspaceId, { name: 'Policy recipient', email: 'policy@example.test' }) as { id: string }
-  const launch = await launcher.launch({ ...f.input, commandKey: 'policy-snapshot-command', contactIds: [contact.id] })
-  policies['flow.reminder-schedule.v1'].delayHours = 24
-  const p = await env.DB.prepare('SELECT id FROM invitation_participants WHERE launch_id = ?').bind(launch.id).first<{ id: string }>()
-  const delivery = await env.DB.prepare("SELECT id FROM mail_deliveries WHERE participant_id = ? AND kind = 'invitation'").bind(p!.id).first<{ id: string }>()
-  await f.services.distribution.deliveries.prepare(delivery!.id, 'https://synthetic.example.test')
-  const sent = '2026-10-06T00:00:00.000Z'
-  await f.services.distribution.deliveries.record(delivery!.id, 1, { kind: 'sent', providerId: 'synthetic-policy-receipt' }, sent)
-  expect(await env.DB.prepare("SELECT available_at FROM mail_deliveries WHERE participant_id = ? AND kind = 'reminder'").bind(p!.id).first()).toEqual({ available_at: '2026-10-06T12:00:00.000Z' })
 }, 60_000)

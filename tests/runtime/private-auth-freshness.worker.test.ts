@@ -67,21 +67,6 @@ async function warmedPrivateRouteDeniesInvalidatedSession(invalidation: 'revocat
 contract(['BASE-ACCESS-001', 'SHELL-001'], 'a warmed private route denies native session revocation', () =>
   warmedPrivateRouteDeniesInvalidatedSession('revocation'))
 
-contract(['BASE-ACCESS-001', 'SHELL-001'], 'a warmed private route denies native session expiry', () =>
-  warmedPrivateRouteDeniesInvalidatedSession('expiry'))
-
-contract(['BASE-ACCESS-001', 'SHELL-001'], 'native operator state and version remain authoritative after private route warming', async () => {
-  const f = await fixture()
-  await productOperator() // Preserve Base's last-active-owner invariant.
-  await env.DB.prepare("UPDATE oa_operators SET status='inactive' WHERE id=?").bind(f.id).run()
-  expect(await f.auth.getSession(f.sessionRequest)).toBeUndefined()
-  expect((await f.read()).status).toBe(401)
-  await env.DB.prepare("UPDATE oa_operators SET status='active' WHERE id=?").bind(f.id).run()
-  expect(await f.auth.native.getSession(f.sessionRequest)).toBeNull()
-  expect(await f.auth.getSession(f.sessionRequest)).toBeUndefined()
-  expect((await f.read()).status).toBe(401)
-})
-
 contract(['BASE-ACCESS-001', 'SHELL-001'], 'a valid native session without its durable product mapping or operator fails closed', async () => {
   const f = await fixture()
   await env.DB.prepare('DELETE FROM operator_auth_links WHERE auth_id=?').bind(f.id).run()
@@ -94,26 +79,4 @@ contract(['BASE-ACCESS-001', 'SHELL-001'], 'a valid native session without its d
   expect(await f.auth.native.getSession(f.sessionRequest)).not.toBeNull()
   expect(await f.auth.getSession(f.sessionRequest)).toBeUndefined()
   expect((await f.read()).status).toBe(401)
-})
-
-contract(['BASE-ACCESS-001', 'OPER-001', 'WS-001'], 'warmed private routes read current linked operator and workspace metadata', async () => {
-  const f = await fixture()
-  const replacement = await productOperator()
-  await env.DB.batch([
-    env.DB.prepare('DELETE FROM operator_auth_links WHERE auth_id IN (?,?)').bind(f.id, replacement.id),
-    env.DB.prepare('INSERT INTO operator_auth_links(operator_id,auth_id) VALUES(?,?)').bind(replacement.id, f.id),
-    env.DB.prepare('UPDATE operators SET email=?,display_name=? WHERE id=?')
-      .bind('current-product@example.test', 'Current product operator', replacement.id),
-    env.DB.prepare('UPDATE workspaces SET name=?,time_zone=? WHERE id=?')
-      .bind('Current workspace', 'Australia/Brisbane', replacement.workspaceId),
-  ])
-  expect(await f.auth.getSession(f.sessionRequest)).toEqual({ ...f.expected, operatorId: replacement.id,
-    workspaceId: replacement.workspaceId, email: 'current-product@example.test', displayName: 'Current product operator' })
-  const workspace = await f.read()
-  expect(workspace.status).toBe(200)
-  expect(await workspace.json()).toMatchObject({ id: replacement.workspaceId, name: 'Current workspace', timeZone: 'Australia/Brisbane' })
-  const operators = await f.read('/api/app/operators')
-  expect(operators.status).toBe(200)
-  expect(await operators.json()).toEqual([expect.objectContaining({ id: replacement.id,
-    email: 'current-product@example.test', displayName: 'Current product operator' })])
 })

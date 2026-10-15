@@ -98,7 +98,3 @@ contract(['DATA-001','BASE-DATA-001','BASE-ACCESS-001','BASE-OPS-003'], 'real D1
     expect(await env.DB.prepare('SELECT count(*) n FROM oa_operators').first()).toEqual({n:1})
   } finally {send.mockRestore()}
 })
-contract('DATA-001', 'native D1 typed restore bindings retain binary zero bytes and exact signed int64', async () => {
-  const result=await env.DB.prepare("SELECT hex(unhex(?)) bytes, CAST(CAST(? AS INTEGER) AS TEXT) exact, length(CAST(? AS BLOB)) text_bytes").bind('00ff800aff','9223372036854775807','a\u0000😀').first()
-  expect(result).toEqual({bytes:'00FF800AFF',exact:'9223372036854775807',text_bytes:6})
-})

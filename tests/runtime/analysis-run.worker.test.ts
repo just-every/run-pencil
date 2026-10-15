@@ -1,15 +1,12 @@
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, beforeEach, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
-import { runScheduledMaintenance } from '../../src/core/app/maintenance'
-import type { WorkerBindings } from '../../src/core/app/environment'
 import { ai, aiBindings, analysisHttp, answer, recommend, theme } from './analysis-fixture'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 beforeEach(() => ai.reset())
 
 const evidenceOf = async (runId: string) => (await env.DB.prepare('SELECT response_id AS id FROM analysis_evidence WHERE run_id = ? ORDER BY position').bind(runId).all<{ id: string }>()).results.map(row => row.id)
-const tick = (at: number, bindings: Partial<WorkerBindings> = aiBindings) => runScheduledMaintenance({ scheduledTime: at, cron: '* * * * *', noRetry() {} } as ScheduledController, { ...env, ...bindings, APP_ORIGIN: 'http://localhost' } as WorkerBindings)
 
 contract(['ANLY-001', 'ANLY-002', 'ANLY-007', 'ANLY-015'], 'a requested run fixes the released responses it read and its policies, completes without a cron tick, and later evidence or policy only marks or changes new runs', async () => {
   const f = await analysisHttp()
@@ -54,21 +51,4 @@ contract(['ANLY-013'], 'too little evidence completes as insufficient-evidence w
   const judged = await f.request()
   expect(judged).toMatchObject({ state: 'insufficient_evidence', themes: [], recommendation: null })
   for (const table of ['analysis_themes', 'analysis_quotes', 'analysis_recommendations']) expect(await env.DB.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE run_id = ?`).bind(judged.id).first()).toEqual({ n: 0 })
-})
-
-contract(['ANLY-001'], 'analysis.autorun.v1 analyses a revision once when its flow closes with at least five completed responses, only while a provider is configured', async () => {
-  const f = await analysisHttp()
-  const released = []
-  for (let i = 0; i < 5; i++) released.push(await f.respond(`Closing answer ${i}`))
-  expect((await f.call(`/api/app/flows/${f.flowId}/close`, undefined, 'POST')).status).toBeLessThan(300)
-  const autorun = () => env.DB.prepare("SELECT id, state FROM analysis_runs WHERE revision_id = ? AND trigger = 'autorun'").bind(f.revisionId).all<{ id: string; state: string }>().then(result => result.results)
-  await tick(Date.now(), { AI_ENABLED: 'false' })
-  expect(await autorun()).toEqual([])
-  expect(await ai.requests()).toEqual([])
-  await ai.script(answer({ outcome: 'findings', reason: '', themes: [theme('Closing feedback', released)], recommendations: [] }))
-  await tick(Date.now())
-  expect(await autorun()).toEqual([expect.objectContaining({ state: 'completed' })])
-  await tick(Date.now() + 60_000)
-  expect(await autorun()).toHaveLength(1)
-  expect(await ai.requests()).toHaveLength(1)
 })

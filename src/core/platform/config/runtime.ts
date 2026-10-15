@@ -75,7 +75,7 @@ export function deploymentConfigurationErrors(requestUrl: string, environment: W
   if (environment.MAIL_FROM && !isValidMailFrom(environment.MAIL_FROM.trim())) errors.push('MAIL_FROM must be a sender email address')
   if (environment.MAIL_API_KEY && hasLineBreak(environment.MAIL_API_KEY)) errors.push('MAIL_API_KEY must not contain line breaks')
   if (errors.length === 0 && new URL(requestUrl).origin !== new URL(environment.APP_ORIGIN!).origin) {
-    errors.push('The request host must match APP_ORIGIN')
+    errors.push('This address does not match APP_ORIGIN. Set APP_ORIGIN to the exact HTTPS origin people open, then deploy again')
   }
   return errors
 }

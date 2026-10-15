@@ -422,6 +422,7 @@
       "/favicon.ico",
       "/assets/",
       "/auth/",
+      "/auth/owner-signin",
       "/f/",
       "/embed/",
       "/api/public/",

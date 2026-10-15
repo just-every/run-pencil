@@ -60,6 +60,7 @@ const retained = {
   oa_external_identities: 'issuer subject operator_id',
   oa_limits: 'key window count',
   oa_operators: 'id email display_name role status version created_at',
+  oa_owner_signins: 'id token_hash operator_id operator_version created_at expires_at consumed_at',
   oa_sessions: 'id token_hash operator_id operator_version kind source_token_id created_at expires_at revoked_at',
   oa_tokens: 'id token_hash kind operator_id operator_version issuer_id issuer_version return_to created_at expires_at consumed_at revoked_at',
   oa_invitation_cancellations: 'operator_id operator_version',
@@ -178,7 +179,7 @@ const excludedCaptureTables = new Set(['local_mail_outbox', 'rer_mail_developmen
 // Sign-in authorization never travels: sessions (native, dev, review, provider), sign-in and invitation links, step-up
 // challenges, minted API credentials and the provider bindings of those sessions. A restore cannot revive a session that
 // was signed out or revoked after the backup, so everyone signs in again. Operators, roles and the audit history stay.
-export const authorizationTables = new Set(['oa_sessions', 'oa_tokens', 'oa_credentials', 'oa_step_up_challenges', 'oa_provider_sessions', 'oa_provider_session_pins', 'operator_sessions', 'auth_magic_links']);
+export const authorizationTables = new Set(['oa_sessions', 'oa_tokens', 'oa_owner_signins', 'oa_credentials', 'oa_step_up_challenges', 'oa_provider_sessions', 'oa_provider_session_pins', 'operator_sessions', 'auth_magic_links']);
 export const rowsNeverTravel = name => excludedCaptureTables.has(name) || authorizationTables.has(name);
 export function refuseAuthorization(table, rows) {
   if (authorizationTables.has(table.name) && rows.length) throw failure('LIVE_AUTHORIZATION', 'Archive holds sign-in authorization (sessions, sign-in or invitation links, or credentials). Export again from the source; sign-in authorization never travels.');

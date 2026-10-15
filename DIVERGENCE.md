@@ -59,3 +59,7 @@ Pencil now carries exactly eight. The three rules above are cheap to state and w
 ## 11 — Owner-approved product page at the default root — **Deviation**
 
 The owner's 11 October 2026 instruction replaces HOME-001's unconfigured root 404 with the existing approved Pencil product page, without changing its visible content or styling. `/pencil` redirects to `/`. Explicitly configured respondent root landings and direct `/f/<slug>` links retain their existing admission, closed and missing states. Pencil accepts only its configured APP_ORIGIN; it has no separate form-host mapping. This records the owner override in HOME-001 and SITE-001.
+
+## Owner sign-in (15 October 2026)
+
+Adopt rer 0.2.19's one-time owner sign-in grant, consumer and confirmation page from Base e17843562355e1b6e5068289c8e037951fbc8d3d, with additive migration 0036. Pencil adapts operator-auth's service, routes and type declarations only to expose this flow, retaining its existing email and provider behavior. Those three adapted files are removed from the verbatim copy record; unchanged files retain their original provenance individually. Owner grant rows are excluded from portable archives.

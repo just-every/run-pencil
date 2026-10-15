@@ -2,7 +2,7 @@
 
 Analysis reads the completed answers to one published revision and groups them into themes. It is built so you can check every part of it: each count is recomputed by Pencil from the responses it names, each quote is an exact excerpt of a stored answer, and a theme with too few responses is never shown.
 
-Analysis uses a language model you configure. It is off until you set it up, and nothing leaves your deployment until you request an analysis or a flow closes with analysis turned on.
+Analysis uses a language model you configure. The same provider powers the builder's [question rewrites](build-a-form.md#rewrite-a-question). AI is off until you set it up; requests leave only when you request an analysis or rewrite, or a flow closes with analysis turned on.
 
 ## What leaves, and where it goes
 
@@ -12,6 +12,8 @@ When an analysis runs, Pencil sends one request to the provider shown on the req
 - for each completed response in the analysis, its response ID and its answers to those questions.
 
 Nothing else is sent: no contact names or emails, no answers to email questions or to questions you did not tick, no network addresses, devices or session data, and no workspace or operator details. By default only long text questions are ticked. A short text question is often a name, so it is sent only if you tick it.
+
+For a draft rewrite, the provider receives the saved question text, selected rewrite style and the context you enter. It receives no response evidence. Do not put private respondent details in that context. Pencil shows the source beside the proposal and changes no wording until you choose **Accept and save wording**.
 
 While AI is on, the **Before you share** note on your forms adds that, if you analyse feedback, a respondent's written answers may be sent to the AI service you chose, and that their name, email address and network address are never sent. With AI off the note does not mention it.
 
@@ -25,7 +27,7 @@ Set these on your Worker, as secrets or variables in the Cloudflare dashboard, a
 
 | Variable | What it is |
 |---|---|
-| `AI_ENABLED` | `true` turns analysis on. Without it nothing is sent and the Analysis page says what to set. |
+| `AI_ENABLED` | `true` enables analysis and draft rewrites. Without it nothing is sent and requests explain what to set. |
 | `AI_MODEL` | The exact model name your provider serves. |
 | `AI_API_KEY` | A direct key for an OpenAI-compatible provider. A secret. |
 | `AI_BASE_URL` | Optional, with a direct key: the provider's `https` base URL, such as an OpenRouter or Cloudflare AI Gateway address. OpenAI's `https://api.openai.com/v1` when unset. |
@@ -69,9 +71,13 @@ If the provider does not answer or is briefly unavailable, Pencil retries the sa
 
 With a provider configured, Pencil analyses a revision once when its flow closes, if it has at least 5 completed responses and a long text question. Turn this off, or change the minimum and the disclosure threshold, under **Settings** on the Analysis page. A change applies to new runs only; each run keeps the settings it used.
 
+## Analysis notifications
+
+The Analysis page's **Analysis notifications** lists completed, insufficient-evidence and failed runs for you. Your own requests notify you; automatic close-time runs notify each operator who has not muted them. **Mute automatic analysis notifications** affects only you and leaves your own request notifications on. Choose a run to read it, **Mark read** to acknowledge it, or **Refresh notifications** to update the list. These controls are separate from each flow's [response email preferences](results.md#get-an-email-for-new-responses).
+
 ## Cost
 
-Every provider call records the provider, model, input and output tokens, the feature (`analysis`), the run, and its cost: the Models service's receipt, your rates times the usage, or "not reported". The Analysis page totals calls, tokens and cost by day (UTC) and feature.
+Every provider call records the provider, model, input and output tokens, feature (`analysis` or `draft-rewrite`), run or draft, and cost: the Models service's receipt, your rates times the usage, or "not reported". The Analysis page totals calls, tokens and cost by day in the current workspace time zone and by feature.
 
 ## Erasure, backups and restore
 

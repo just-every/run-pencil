@@ -52,6 +52,7 @@ Your data lives in the D1 database in your Cloudflare account. It leaves that da
 - **Exports and backups that you make.** They go where you put them. See [Backup and restore](backup.md).
 
 - **AI analysis, only if you turn it on.** When you request an analysis, or a flow closes with close-time analysis on, the provider you configured receives the prompts of the selected text questions and, for each completed response, its ID and its answers to those questions. Never contact names or emails, email answers, other answers, network addresses or devices. While AI is on, respondents are told so on the form before they answer. See [Analysis](analysis.md#what-leaves-and-where-it-goes).
+- **AI draft rewrites, only when requested.** The same configured provider receives the saved question, chosen rewrite style and context you enter. No responses are included. You review the source and proposal before accepting any draft wording; publishing remains separate. See [Rewrite a question](build-a-form.md#rewrite-a-question).
 
 Pencil also has no telemetry, no phone-home, no licence check and no kill switch, and it makes no requests to the people who wrote it.
 

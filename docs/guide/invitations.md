@@ -45,7 +45,7 @@ Pencil sends one reminder, by default **2 days** after the invitation. A reminde
 
 Set **Reminder delay (hours)** in Settings, from 0 to 8,760 hours. The source policy supplies the initial default. A launch keeps the schedule that was in force when you queued it.
 
-Reminders are the one kind of message that respects your sending hours. In **Settings**, under **Time and embeds**, set your **Time zone** and the daily window with **Send from** and **Send until**. Until you change them, the window is 09:00 to 17:00 and the time zone is UTC. A reminder that falls due outside the window waits until it opens. It is never dropped. Sign-in links and invitations you queue ignore the window.
+Reminders and Daily response digests respect your sending hours. In **Settings**, under **Time and embeds**, set your **Time zone** and the daily window with **Send from** and **Send until**. Until you change them, the window is 09:00 to 17:00 and the time zone is UTC. A reminder that falls due outside the window waits until it opens. It is never dropped. Sign-in links and invitations you queue ignore the window.
 
 ## Opt-outs and consent
 
@@ -57,7 +57,7 @@ You can also record this yourself, for example when someone replies and asks to 
 - **Record renewed consent** is for someone who has explicitly agreed to hear from you again. Pencil asks where they agreed, and records that source with who recorded it and when. Messages that were cancelled stay cancelled. If they already had an invitation for the current revision, queueing them again sends nothing: publish the flow again and queue them for the new revision.
 - **Erase contact and responses** removes the person, revokes their invitation links and erases the identified responses they gave. Pencil first names the contact, fields, consent history, identified responses and answers, local mail copies and invitation links it removes. After confirmation the count-only completion receipt shows elapsed time and affected counts. Delivery facts and audit references remain anonymised. The erased contact no longer matches any segment. It also erases their opt-out record. If you save the same address again later, Pencil treats it as a new recipient who has not opted out.
 
-Replies to your emails are not read. Pencil does not receive inbound mail, so a reply, an out-of-office message or a bounce can never create a response or trigger more mail. All messages go out from your no-reply sender address and are marked as automatically generated.
+Replies to your emails are not read. Pencil does not receive inbound mail, so a reply, an out-of-office message or a bounce can never create a response or trigger more mail. Invitations and reminders go out from your configured verified sender and are marked as automatically generated. Choose a plain `noreply@` or `no-reply@` sender to enable response notifications and Daily digests as well.
 
 ## When an email does not go through
 
@@ -73,9 +73,9 @@ A message waits as pending, then becomes sent, failed or unknown. It is cancelle
 Everything that does not need email keeps running: people already signed in, public links, embeds, collecting responses, results and exports. There is no general warning. This is what you see instead:
 
 - **Invitations and reminders** are still tried one by one. Each one the provider refuses is marked failed, with a short code such as `provider_rejected`. Each one where Pencil cannot tell what happened, for example because the provider did not answer, is marked unknown. Once mail works again, an unknown one needs **Queue retry (duplicate risk)**, even if nothing went out.
-- **Sign-in links.** The sign-in page always shows its usual **Check your email** reply, so that it never reveals who is an operator. When the provider fails, the link is cancelled and no email arrives. Pencil records the failure but shows it nowhere in the app. It appears in your Worker's log as `auth.magic_link_failed`, with the provider's outcome code. To watch for it, run `pnpm exec wrangler tail --config "$PENCIL_WRANGLER_CONFIG"` and try to sign in. Pencil has no password or other way around email sign-in, so the provider has to work before anyone can sign in again.
-- **New-response emails** show each attempt and its result under **Recent notification deliveries** on the results page. If Pencil cannot use your mail settings at all, for example because `MAIL_FROM` is not a plain `noreply@` address, the **Response notifications** panel says so.
+- **Sign-in links.** The sign-in page always shows its usual **Check your email** reply, so that it never reveals who is an operator. When the provider fails, the link is cancelled and no email arrives. Pencil records the failure but shows it nowhere in the app. It appears in your Worker's log as `auth.magic_link_failed`, with the provider's outcome code. To watch for it, run `npx --no-install wrangler tail --config "$PENCIL_WRANGLER_CONFIG"` and try to sign in. Pencil has no password. The hosted owner can use [rer signin](hosting.md#sign-in-as-the-first-owner) with the deployment's Cloudflare credentials; other operators need mail restored.
+- **New-response emails and Daily digests** show each attempt and its result under **Recent notification deliveries** on the results page. If `MAIL_FROM` is not a plain `noreply@` or `no-reply@` address, the **Response notifications** panel explains that response notification mail is off; sign-in mail can still work from that verified sender.
 
 ## Emails to you about new responses
 
-Operators can also get an email for each new completed response. That is separate from invitations and is set per flow on the **Results** page. See [Results, review and exports](results.md#get-an-email-for-each-new-response).
+Operators can also get immediate or Daily email about new completed responses. That is separate from invitations and is set per flow on the **Results** page. See [Results, review and exports](results.md#get-an-email-for-new-responses).
