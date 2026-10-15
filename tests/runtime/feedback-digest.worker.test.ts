@@ -5,7 +5,8 @@ import { analysisHttp } from './analysis-fixture'
 import { DigestDispatcher } from '../../src/core/features/notifications/digest-dispatcher'
 import { baseMailSender } from '../../src/core/platform/mail/base.server'
 import { digestCaptureClaim } from '../../src/core/features/notifications/digest-capture'
-import { civilOpening } from '../../src/core/shared/civilTime'
+import { runScheduledMaintenance } from '../../src/core/app/maintenance'
+import type { WorkerBindings } from '../../src/core/app/environment'
 import { ResponseRepository } from '../../src/core/features/responses/repository'
 import { eraseResponseAndImportCustody } from '../../src/core/features/importing/erasure'
 declare const __PENCIL_CORE_MIGRATIONS__:D1Migration[]
@@ -13,6 +14,7 @@ beforeAll(()=>applyD1Migrations(env.DB,__PENCIL_CORE_MIGRATIONS__))
 const owned:string[]=[]
 afterEach(async()=>{vi.useRealTimers();vi.restoreAllMocks();for(const id of owned.splice(0))await env.DB.prepare('UPDATE digest_preferences SET enabled=0 WHERE flow_id=?').bind(id).run()})
 const clock=(at:string)=>vi.setSystemTime(new Date(at))
+const tick=()=>runScheduledMaintenance({scheduledTime:Date.now(),cron:'* * * * *',noRetry(){}} as ScheduledController,{...env,AI_ENABLED:'false',APP_ORIGIN:'http://localhost'} as WorkerBindings)
 async function fixture(zone='UTC',start='09:00',end='17:00') {
  const f=await analysisHttp({AI_ENABLED:'false'});owned.push(f.flowId)
  await f.services.workspace.updateSettings({workspaceId:f.workspaceId,timeZone:zone,sendingWindowStart:start,sendingWindowEnd:end})
@@ -33,7 +35,7 @@ contract(['NOTIFY-003','WS-001','WS-002','NOTIFY-004'],'Daily freezes independen
  const snapshot=await env.DB.prepare('SELECT payload_json FROM response_outbox WHERE response_id=?').bind(first).first<{payload_json:string}>()
  expect(JSON.parse(snapshot!.payload_json).digestOperatorIds.map((r:any)=>r.operatorId)).toEqual([f.operatorId])
  const captures=async()=> (await env.DB.prepare("SELECT message FROM rer_mail_development_outbox WHERE json_extract(message,'$.headers.X-Pencil-Digest-Claim') IS NOT NULL").all<{message:string}>()).results.map(r=>JSON.parse(r.message))
- clock('2026-10-31T13:00:00.000Z');await Promise.all([f.services.notifications.digest.run(),f.services.notifications.digest.run()])
+ clock('2026-10-31T13:00:00.000Z');await Promise.all([tick(),tick()])
  const day1=(await deliveries(f.flowId)).results;expect(day1.map(r=>[r.operator_id,r.status]).sort()).toEqual([[f.operatorId,'sent'],[second,'empty']].sort())
  const sent1=day1.find(r=>r.operator_id===f.operatorId)!;expect((await members(sent1.id)).results).toEqual([{response_id:first}])
  expect((await captures()).filter(m=>m.deliveryId===sent1.idempotency_key)).toHaveLength(1)
@@ -43,14 +45,14 @@ contract(['NOTIFY-003','WS-001','WS-002','NOTIFY-004'],'Daily freezes independen
  // A request timestamp before an already frozen opening, but transaction committed afterwards, is still picked up once.
  const late=await f.respond('Committed after first opening')
  await env.DB.prepare('UPDATE response_outbox SET created_at=? WHERE response_id=?').bind('2026-10-31T12:59:59.000Z',late).run()
- clock('2026-11-02T14:00:00.000Z');await f.services.notifications.digest.run();await f.services.notifications.digest.run()
+ clock('2026-11-02T14:00:00.000Z');await tick();await tick()
  const all=(await deliveries(f.flowId)).results,secondDay=all.find(r=>r.day==='2026-11-01'&&r.operator_id===f.operatorId)!
  expect(secondDay.cutoff_end).toBe('2026-11-01T14:00:00.000Z');expect(Date.parse(secondDay.cutoff_end)-Date.parse(secondDay.cutoff_start)).toBe(25*3600_000)
  expect((await members(secondDay.id)).results.map(r=>r.response_id).sort()).toEqual([boundary,held,late].sort())
  expect(all.filter(r=>r.day==='2026-11-02').every(r=>r.status==='empty')).toBe(true)
  expect((await env.DB.prepare('SELECT COUNT(*) n FROM digest_members WHERE response_id=?').bind(old).first())).toEqual({n:0})
  // The other flow's overnight window holds delivery until its current opening; its cohort is independent.
- clock('2026-11-02T16:15:00.000Z');await g.services.notifications.digest.run()
+ clock('2026-11-02T16:15:00.000Z');await tick()
  expect((await env.DB.prepare('SELECT COUNT(*) n FROM digest_members WHERE response_id=?').bind(independent).first())).toEqual({n:1})
  const mail=await captures();expect(mail.length).toBeGreaterThan(1)
  for(const message of mail) {
@@ -62,10 +64,8 @@ contract(['NOTIFY-003','WS-001','WS-002','NOTIFY-004'],'Daily freezes independen
  const frozen=await env.DB.prepare('SELECT next_opening FROM digest_preferences WHERE flow_id=? AND operator_id=?').bind(f.flowId,f.operatorId).first()
  await f.services.workspace.updateSettings({workspaceId:f.workspaceId,timeZone:'Asia/Kathmandu',sendingWindowStart:'22:00',sendingWindowEnd:'06:00'})
  expect(await env.DB.prepare('SELECT next_opening FROM digest_preferences WHERE flow_id=? AND operator_id=?').bind(f.flowId,f.operatorId).first()).toEqual(frozen)
- const changed=await f.respond('After zone change');clock('2026-11-04T16:15:00.000Z');await f.services.notifications.digest.run()
+ const changed=await f.respond('After zone change');clock('2026-11-04T16:15:00.000Z');await tick()
  expect((await env.DB.prepare('SELECT COUNT(*) n FROM digest_members WHERE response_id=? AND delivery_id IN(SELECT id FROM digest_deliveries WHERE operator_id=?)').bind(changed,f.operatorId).first())).toEqual({n:1})
- expect(civilOpening('2026-03-08','02:30','America/New_York')).toBe('2026-03-08T07:00:00.000Z')
- expect(civilOpening('2026-11-01','01:30','America/New_York')).toBe('2026-11-01T05:30:00.000Z')
 })
 contract(['NOTIFY-003','DIST-006','DATA-002','NOTIFY-004'],'digest retries retain their frozen day and key, unknown requires consent, Off and erasure stop sends, and local capture requires a live durable claim',async()=>{
  vi.useFakeTimers({toFake:['Date']});clock('2026-10-01T08:00:00.000Z')

@@ -6,10 +6,10 @@ async function request<T>(path:string,body:unknown):Promise<T> {
   if(!response.ok) throw new Error(value?.message??'The rewrite request failed.')
   return value as T
 }
-export function DraftRewritePanel({flowId,stepId,version,source,disabled,onAccepted}:{flowId:string;stepId:string;version:number;source:string;disabled:boolean;onAccepted:()=>Promise<void>}) {
+export function DraftRewritePanel({flowId,stepId,version,source,disabled,onAccepted,onBusy}:{flowId:string;stepId:string;version:number;source:string;disabled:boolean;onAccepted:()=>Promise<void>;onBusy:(value:boolean)=>void}) {
   const [style,setStyle]=useState<'sharper'|'broader'|'contextual'>('sharper'),[context,setContext]=useState(''),[proposal,setProposal]=useState<Rewrite>(),[error,setError]=useState<string>(),[busy,setBusy]=useState(false)
-  const run=async()=>{setBusy(true);setError(undefined);setProposal(undefined);try {setProposal(await request<Rewrite>(`/api/app/flows/${encodeURIComponent(flowId)}/rewrites`,{stepId,expectedVersion:version,source,style,context}))}catch(e){setError((e as Error).message)}finally{setBusy(false)}}
-  const decide=async(accept:boolean)=>{if(!proposal)return;setBusy(true);setError(undefined);try{await request(`/api/app/rewrites/${encodeURIComponent(proposal.id)}/decision`,{accept});setProposal(undefined);if(accept)await onAccepted()}catch(e){setError((e as Error).message)}finally{setBusy(false)}}
+  const run=async()=>{setBusy(true);onBusy(true);setError(undefined);setProposal(undefined);try {setProposal(await request<Rewrite>(`/api/app/flows/${encodeURIComponent(flowId)}/rewrites`,{stepId,expectedVersion:version,source,style,context}))}catch(e){setError((e as Error).message)}finally{setBusy(false);onBusy(false)}}
+  const decide=async(accept:boolean)=>{if(!proposal)return;setBusy(true);onBusy(true);setError(undefined);try{await request(`/api/app/rewrites/${encodeURIComponent(proposal.id)}/decision`,{accept});setProposal(undefined);if(accept)await onAccepted()}catch(e){setError((e as Error).message)}finally{setBusy(false);onBusy(false)}}
   return <details className="quiet-panel"><summary className="focus-ring">Rewrite this question</summary>
     <p className="muted">The saved question and context go to your configured AI provider. Save current edits first. Accepting saves only this question’s proposed wording to the draft; publishing remains separate.</p>
     <label className="inspector-field">Rewrite style<select className="text-input" value={style} disabled={busy} onChange={e=>setStyle(e.target.value as typeof style)}><option value="sharper">Sharper</option><option value="broader">Broader</option><option value="contextual">Contextual</option></select></label>

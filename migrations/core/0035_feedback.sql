@@ -25,7 +25,7 @@ CREATE TABLE analysis_attention (
 -- Fanout commits with every terminal outcome, including interruption/provider-off and insufficient evidence.
 -- Same-run retries retain one record. The view always joins the current run outcome.
 CREATE TRIGGER analysis_terminal_attention AFTER UPDATE OF state ON analysis_runs
-WHEN NEW.state IN ('completed','insufficient_evidence','failed') BEGIN
+WHEN NEW.state IN ('completed','insufficient_evidence','failed') AND NEW.state<>OLD.state BEGIN
  INSERT OR IGNORE INTO analysis_attention(run_id,operator_id,created_at)
  SELECT NEW.id,o.id,NEW.updated_at FROM operators o
  WHERE o.workspace_id=NEW.workspace_id

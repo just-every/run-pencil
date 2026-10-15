@@ -20,7 +20,7 @@ const retained = {
   draft_ai_calls: 'id workspace_id draft_id rewrite_id feature provider provider_origin model outcome error_code input_tokens output_tokens cost_microusd cost_source receipt_id created_at',
   analysis_attention_preferences: 'operator_id muted',
   analysis_attention: 'run_id operator_id created_at read_at',
-  digest_preferences: 'flow_id operator_id epoch cutoff next_opening next_day zone window_start failure_reason',
+  digest_preferences: 'flow_id operator_id epoch enabled cutoff next_opening next_day zone window_start failure_reason',
   digest_deliveries: 'id flow_id operator_id day zone epoch cutoff_start cutoff_end status idempotency_key attempts retry_count first_attempt_at last_attempt_at available_at reason provider_id created_at updated_at',
   digest_members: 'delivery_id response_id',
   digest_attempts: 'id delivery_id ordinal event provider provider_code created_at',
@@ -147,7 +147,6 @@ const retained = {
 const nul = { type: 'null' };
 const captured = { local_mail_outbox: ['message_json'], rer_mail_development_outbox: ['message'], rer_ai_development_outbox: ['record'] };
 export const exclusions = {
-  digest_preferences: { enabled: { type: 'integer', value: '0' } },
   digest_deliveries: { replay_enabled: { type: 'integer', value: '0' }, retry_authorized: { type: 'integer', value: '0' } },
   invitation_launches: { resume_enabled: { type: 'integer', value: '0' } },
   invitation_participants: { token: nul, opt_out_token: nul },

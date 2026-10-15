@@ -69,7 +69,7 @@ test('archive roundtrip keeps analysis history, evidence, findings and usage, le
       assert.equal(restored.prepare('SELECT feature FROM draft_ai_calls').get().feature,'draft-rewrite')
       assert.equal(restored.prepare('SELECT read_at FROM analysis_attention').get().read_at,later)
       assert.equal(restored.prepare('SELECT muted FROM analysis_attention_preferences').get().muted,1)
-      assert.equal(restored.prepare('SELECT enabled FROM digest_preferences').get().enabled,0)
+      assert.equal(restored.prepare('SELECT enabled FROM digest_preferences').get().enabled,1)
       assert.deepEqual({...restored.prepare('SELECT status,replay_enabled,retry_authorized,idempotency_key FROM digest_deliveries').get()},{status:'pending',replay_enabled:0,retry_authorized:0,idempotency_key:'digest-key'})
       assert.equal(restored.prepare('SELECT event FROM digest_attempts').get().event,'unknown')
       assert.equal(restored.prepare('SELECT response_id FROM digest_members').get().response_id,'digest-response')

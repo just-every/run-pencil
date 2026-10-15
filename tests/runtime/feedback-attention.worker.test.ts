@@ -1,7 +1,9 @@
+import { runScheduledMaintenance } from '../../src/core/app/maintenance'
+import type { WorkerBindings } from '../../src/core/app/environment'
 import { applyD1Migrations,env,type D1Migration } from 'cloudflare:test'
 import { beforeAll,beforeEach,expect } from 'vitest'
 import { contract } from '../../src/test/contract'
-import { ai,analysisHttp,answer,theme } from './analysis-fixture'
+import { ai,aiBindings,analysisHttp,answer,theme } from './analysis-fixture'
 declare const __PENCIL_CORE_MIGRATIONS__:D1Migration[]
 beforeAll(()=>applyD1Migrations(env.DB,__PENCIL_CORE_MIGRATIONS__))
 beforeEach(()=>ai.reset())
@@ -12,12 +14,12 @@ contract(['NOTIFY-001','DASH-002'],'terminal attention is scoped and duplicate-s
  const inbox=async()=>await (await f.call('/api/app/analysis-attention')).json() as any
  const second=crypto.randomUUID(),muted=crypto.randomUUID(),inactive=crypto.randomUUID()
  for(const id of [second,muted,inactive])await env.DB.prepare('INSERT INTO operators(id,workspace_id,email,display_name,created_at,updated_at) VALUES(?,?,?,?,?,?)').bind(id,f.workspaceId,`${id}@example.test`,'Operator',at,at).run()
- await env.DB.prepare("INSERT INTO oa_operators(id,email,display_name,role,status,version,created_at) VALUES(?,?,?,'member','inactive',1,?)").bind(inactive,`${inactive}@example.test`,'Inactive',Date.now()).run()
- await env.DB.prepare('INSERT INTO operator_auth_links(operator_id,auth_id) VALUES(?,?)').bind(inactive,inactive).run()
+ await env.DB.prepare("UPDATE oa_operators SET status='inactive' WHERE id=(SELECT auth_id FROM operator_auth_links WHERE operator_id=?)").bind(inactive).run()
  await f.services.attention.mute(muted,true)
  expect((await f.call('/api/app/analysis-attention/preference',{muted:true},'PUT')).status).toBe(200)
  await f.respond('Only one response')
  const small=await f.request();expect(small.state).toBe('insufficient_evidence')
+ expect((await dashboard()).find(r=>r.id===f.flowId).analysis).toMatchObject({id:small.id,state:'insufficient_evidence',revisionId:f.revisionId})
  expect((await inbox()).items).toMatchObject([{runId:small.id,state:'insufficient_evidence',readAt:null}])
  expect((await other.call(`/api/app/analysis-attention/${small.id}/read`,{},'PUT')).status).toBe(404)
  expect((await f.call(`/api/app/analysis-attention/${small.id}/read`,{},'PUT')).status).toBe(200)
@@ -28,7 +30,7 @@ contract(['NOTIFY-001','DASH-002'],'terminal attention is scoped and duplicate-s
  expect((await dashboard()).find(r=>r.id===f.flowId)).toMatchObject({completedResponses:5,analysis:{id:queued.id,state:'queued',revisionId:f.revisionId}})
  await env.DB.prepare("UPDATE analysis_runs SET state='running',lease_until=NULL WHERE id=?").bind(queued.id).run()
  expect((await dashboard()).find(r=>r.id===f.flowId).analysis.state).toBe('running')
- await f.services.analysis.tick(new Date())
+ await runScheduledMaintenance({scheduledTime:Date.now(),cron:'* * * * *',noRetry(){}} as ScheduledController,{...env,...aiBindings,APP_ORIGIN:'http://localhost'} as WorkerBindings)
  expect((await inbox()).items.find((n:any)=>n.runId===queued.id).state).toBe('failed')
  await ai.script(answer({outcome:'findings',reason:'',themes:[theme('Feedback',ids)],recommendations:[]}))
  expect((await f.call(`/api/app/analysis/${queued.id}/retry`,undefined,'POST')).status).toBe(200)
@@ -37,7 +39,7 @@ contract(['NOTIFY-001','DASH-002'],'terminal attention is scoped and duplicate-s
  expect(automatic).toBeTruthy()
  // Exhaust a transport retry through the terminal interruption path, then replay its terminal update.
  await env.DB.prepare("UPDATE analysis_runs SET state='running',lease_until=NULL WHERE id=?").bind(automatic).run()
- await f.services.analysis.tick(new Date())
+ await runScheduledMaintenance({scheduledTime:Date.now(),cron:'* * * * *',noRetry(){}} as ScheduledController,{...env,...aiBindings,APP_ORIGIN:'http://localhost'} as WorkerBindings)
  await env.DB.prepare("UPDATE analysis_runs SET state='failed' WHERE id=?").bind(automatic).run()
  expect((await env.DB.prepare('SELECT operator_id FROM analysis_attention WHERE run_id=?').bind(automatic).all()).results).toEqual([{operator_id:second}])
  expect((await dashboard()).find(r=>r.id===f.flowId)).toMatchObject({completedResponses:5,starts:5,audience:card.audience,analysis:{id:automatic,state:'failed',revisionId:f.revisionId}})
