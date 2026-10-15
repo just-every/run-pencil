@@ -6,6 +6,10 @@ on:
         description: 'The separate test host demo.test.run-pencil.com (environment demo-test), with Turnstile test keys that always pass'
         type: boolean
         default: false
+      observe_test:
+        description: 'Observe admissions for 15 minutes after test deploy; require a quiet host before timing starts'
+        type: boolean
+        default: false
       remove:
         description: 'Remove that demo (rer deploy --demo --remove --yes) instead of deploying it'
         type: boolean
@@ -79,3 +83,16 @@ jobs:
             sleep 15
           done
           ! curl --silent --show-error --doh-url "$doh" -D - -o /dev/null "https://$domain/" | grep -qi '^set-cookie:'
+      - name: Observe test admissions
+        if: inputs.test_only && inputs.observe_test && !inputs.remove
+        run: node scripts/demo-host-observe.mjs
+        env:
+          CLOUDFLARE_ACCOUNT_ID: b20c0ca9cab0c2b70e13d7cf724b89bd
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      - uses: actions/upload-artifact@v4
+        if: always() && inputs.test_only && inputs.observe_test && !inputs.remove
+        with:
+          name: demo-test-admissions
+          path: .rer/demo-test-admissions.json
+          if-no-files-found: ignore
+          retention-days: 1
