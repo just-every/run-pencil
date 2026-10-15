@@ -11,7 +11,7 @@ with a fresh `delivery-artifact` directory. This prepares source artifacts and
 makes no provider call. The generated descriptor and workflow follow this policy;
 rerun the producer's package command after changing it and retain its generated
 files. The workflow calls trusted-build.yml at
-bf7a25abb44bec1457a7bc738ff63921d90fb52e. That trusted builder selects the
+86c8b37399c901bffd9a240dbd1148a65ec83b34. That trusted builder selects the
 project's Node 22.20.0 pin before executing setup-build.sh. The production template supplies artifact configuration; generated local settings never enter the package. Trusted CI runs default functional and high-stakes checks. The separate
 release scale command runs before release and is required by the maintained
 release producer.
