@@ -6,6 +6,8 @@ Deployment selects SendGrid by default or the explicitly configured Resend provi
 
 The moving-in guide now distinguishes the 8 MiB / 100,000-row admission bounds from request CPU limits. Large review and preparation requests still exceed the Workers Paid default budget; full-size hosted move-in requires resumable planning and preparation in the maintained import kit. Local provider-edge deployment and recovery checks do not establish live hosted acceptance.
 
+A copy of Pencil without its release tags (a depth-1, tagless checkout such as a Managed installation's repository) now passes the release-upgrade gate: when the previous release's tag is absent, the gate fetches that exact tag from `rer-project.json`'s `sourceRepository` and compares the released migrations' bytes, so an edited released migration is still refused. Setup explains that the verified sender must be a `noreply@` or `no-reply@` address for response notifications, and the Results page says plainly when notification email is off and how to turn it on.
+
 ## 0.3.0 - 2026-10-13
 
 **Respondents are told when AI can read their answers.** While your deployment's AI provider is on, the **Before you share** note on every form adds that, if your business analyses feedback, the respondent's written answers may be sent to the AI service you chose, and that their name, email address and network address are never sent. With AI off the note reads as before. This is what RESP-005 asks of a configured external that may receive answers.
