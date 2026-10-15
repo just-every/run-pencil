@@ -835,7 +835,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "c4e492dc7606c37b8b8ff083c09e78605d9d0b4303c9f0ca8f3911476e3ca97c",
+      "sha256": "1e8e95b7201fd1213f39a5624e4eccd09aee168d2b4adf6367b68e34744dd69a",
       "executable": false
     },
     "BASELINE.md": {
@@ -1795,7 +1795,7 @@
       "executable": false
     },
     "src/base/dependencies/auth.mjs": {
-      "sha256": "57e53a75c99cd1f06fd6a7103f232bd4530c089bf15f17094afe8448e2ceca93",
+      "sha256": "c1e864461c204731395555b0235a9cb058a8979fde84ae58abce559053ba27f0",
       "executable": false
     },
     "src/base/dependencies/authority.mjs": {
@@ -3147,7 +3147,7 @@
       "executable": false
     },
     "src/base/owner-claim/README.md": {
-      "sha256": "400d900fbe0981f9e6e27ff40b7913ebb140680bd045167cfb9ddb2a45a4c890",
+      "sha256": "ab3ead07f6a21347c4f084c48acbdd5d62ee9abc711982cc09ffb1c53f239459",
       "executable": false
     },
     "src/base/owner-claim/schema/idp.sql": {
@@ -3159,7 +3159,7 @@
       "executable": false
     },
     "src/base/owner-claim/transaction.mjs": {
-      "sha256": "ca36db33042d7778d518b407bd9b403dd4bac82d4b89d81beeb78ed47421cca2",
+      "sha256": "56f9cf605a5a4afae2be22012e84035e661fb38c07612ec7d4f8cdc39526aa54",
       "executable": false
     },
     "src/base/owner-claim/verify.mjs": {

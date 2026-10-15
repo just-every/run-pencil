@@ -37,7 +37,7 @@
     {
       "path": "migrations/core/0022_owner_claim.sql",
       "originPath": "modules/owner-claim/schema/owner-claim.sql",
-      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
+      "revision": "38aa7efdb3cceec585d2344ed54dd559295b9059",
       "files": {
         "migrations/core/0022_owner_claim.sql": "c3ffe653727bb4867b064dc2489df5013613f08f4b5998d2fe2b6a8485cdb815"
       },
@@ -103,7 +103,7 @@
     {
       "path": "migrations/core/0030_base_idp_owner.sql",
       "originPath": "modules/owner-claim/schema/idp.sql",
-      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
+      "revision": "38aa7efdb3cceec585d2344ed54dd559295b9059",
       "files": {
         "migrations/core/0030_base_idp_owner.sql": "a870102648a2226b18a2fe8168d096389b698af88333d112fa8137e582fc2b33"
       },
@@ -503,10 +503,10 @@
     {
       "path": "src/base/dependencies",
       "originPath": "modules/dependencies",
-      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
+      "revision": "38aa7efdb3cceec585d2344ed54dd559295b9059",
       "files": {
         "src/base/dependencies/approval.mjs": "41599909a5a8d5c2b31db98a06d7fbcc3ea47564c9643c9dd8e20062eaebafbd",
-        "src/base/dependencies/auth.mjs": "57e53a75c99cd1f06fd6a7103f232bd4530c089bf15f17094afe8448e2ceca93",
+        "src/base/dependencies/auth.mjs": "c1e864461c204731395555b0235a9cb058a8979fde84ae58abce559053ba27f0",
         "src/base/dependencies/authority.mjs": "fe89cd1fb7da306cf145b8ef3ebe160902f4e4a82284681eccb97193c68e8750",
         "src/base/dependencies/crypto.mjs": "8dc3397e90b6f8ec1dad81ba68da6e1a5e966ddd8c1b9ace943e964098fea950",
         "src/base/dependencies/index.d.mts": "667f8fd42fb7319b5d43c5cced539ad0ad13bfca46887c45b52c1bee19ef7a22",
@@ -1324,16 +1324,16 @@
     {
       "path": "src/base/owner-claim",
       "originPath": "modules/owner-claim",
-      "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",
+      "revision": "38aa7efdb3cceec585d2344ed54dd559295b9059",
       "files": {
         "src/base/owner-claim/idp.mjs": "edb09dfeb0b66849cd84b651099d46c6420d1dc3f270446ae96595d91754d3e6",
         "src/base/owner-claim/index.d.mts": "33fc8d1b756cb2c0a4317ea4dbc29ae704dd137f76993278859d98ae5e9ad184",
         "src/base/owner-claim/index.mjs": "71e4b0f9f967981146dd1daa5f6b14ab30f577adac4901c8e3d47bb8a5a76991",
         "src/base/owner-claim/page.mjs": "1e03cd872c5bf95a2672e782153b71272f90f1cea7f10ee70f971fae0432e929",
-        "src/base/owner-claim/README.md": "400d900fbe0981f9e6e27ff40b7913ebb140680bd045167cfb9ddb2a45a4c890",
+        "src/base/owner-claim/README.md": "ab3ead07f6a21347c4f084c48acbdd5d62ee9abc711982cc09ffb1c53f239459",
         "src/base/owner-claim/schema/idp.sql": "a870102648a2226b18a2fe8168d096389b698af88333d112fa8137e582fc2b33",
         "src/base/owner-claim/schema/owner-claim.sql": "c3ffe653727bb4867b064dc2489df5013613f08f4b5998d2fe2b6a8485cdb815",
-        "src/base/owner-claim/transaction.mjs": "ca36db33042d7778d518b407bd9b403dd4bac82d4b89d81beeb78ed47421cca2",
+        "src/base/owner-claim/transaction.mjs": "56f9cf605a5a4afae2be22012e84035e661fb38c07612ec7d4f8cdc39526aa54",
         "src/base/owner-claim/verify.mjs": "a1cc5094a30415c60f739b67ad2eda40750e8d963d199fad45bdd562f7d0248b"
       },
       "modes": {
