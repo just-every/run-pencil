@@ -1,5 +1,6 @@
 import type { WorkspaceRepository } from './repository'
 import { NotFoundError, ValidationError } from '../../shared/errors'
+import { canonicalTimeZone } from '../../shared/ianaTimeZone'
 
 export const primaryWorkspaceId = '01K4Y1NH8N5DGBZX7HBDV00PEN'
 
@@ -12,17 +13,6 @@ export type WorkspaceSettings = {
   readonly embedAllowedOrigins: string[]
   readonly sendingWindowEnd: string
   readonly reminderDelayHours: number
-}
-
-// UTC or an Area/Location name, stored in its canonical IANA form (australia/brisbane -> Australia/Brisbane).
-function ianaTimeZone(timeZone: string) {
-  timeZone = timeZone.trim()
-  if (timeZone !== 'UTC' && !timeZone.includes('/')) return undefined
-  try {
-    return new Intl.DateTimeFormat('en-US', { timeZone }).resolvedOptions().timeZone
-  } catch {
-    return undefined
-  }
 }
 
 function isDailyTime(value: string) {
@@ -77,14 +67,14 @@ export class WorkspaceService {
   async completeSetup(workspaceId: string, name: string, timeZone: string) {
     name = name.trim(); timeZone = timeZone.trim()
     if (!name || name.length > 100 || /[\x00-\x1f\x7f]/.test(name)) throw new ValidationError('Enter a business name of at most 100 characters.')
-    const zone = ianaTimeZone(timeZone)
+    const zone = canonicalTimeZone(timeZone)
     if (!zone) throw new ValidationError('Choose a valid IANA time zone, such as UTC or Australia/Brisbane.')
     if (!await this.repository.completeSetup(workspaceId, name, zone, new Date().toISOString())) throw new NotFoundError('The operator workspace no longer exists.')
   }
 
   async updateSettings(input: { workspaceId: string; timeZone: string; sendingWindowStart: string; sendingWindowEnd: string; embedAllowedOrigins?: string[]; reminderDelayHours?:number }) {
     if(input.reminderDelayHours!==undefined && (!Number.isFinite(input.reminderDelayHours)||input.reminderDelayHours<0||input.reminderDelayHours>8760)) throw new ValidationError('Reminder delay must be between zero and 8760 hours.')
-    const timeZone = ianaTimeZone(input.timeZone)
+    const timeZone = canonicalTimeZone(input.timeZone)
     if (!timeZone) throw new ValidationError('Choose a valid IANA time zone, such as UTC or Australia/Brisbane.')
     if (!isDailyTime(input.sendingWindowStart) || !isDailyTime(input.sendingWindowEnd)) {
       throw new ValidationError('Sending hours must use 24-hour HH:MM times.')

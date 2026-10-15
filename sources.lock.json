@@ -1662,6 +1662,10 @@
       "sha256": "48e66295402b76c0fb3eee60e15d0efdc8bdeb7b4776a0ab1a6739345fb097a9",
       "executable": false
     },
+    "scripts/update-time-zone-names.mjs": {
+      "sha256": "f452024c5b434d34f766d5e4866ba88ec28392b8e02b6c1f522d860894333bba",
+      "executable": false
+    },
     "scripts/validate-manifest.mjs": {
       "sha256": "0cb6691a66a0719e1db15ad468a2cf905de0fa2fd3853ce0ce28c540ee50919c",
       "executable": false
@@ -4695,7 +4699,7 @@
       "executable": false
     },
     "src/core/features/workspace/service.ts": {
-      "sha256": "6ecc4309a7b3b7c33134254ed2e1fcc7053b4944a85fb7717c5cc3a8c564e47c",
+      "sha256": "48084633d67be5f29dab3e0224c93c4bf29ffef809332ac33141c088e52f8100",
       "executable": false
     },
     "src/core/features/workspace/setup.ts": {
@@ -4715,7 +4719,7 @@
       "executable": false
     },
     "src/core/features/workspace/ui/SettingsPage.tsx": {
-      "sha256": "45ef6abf8da05b484b5c97093d2b8a29c82bea49a257b3d9b649777f68233695",
+      "sha256": "ed05377cbd62cbf8e5996f5553062cdec0b9791c717cdb36cd34a0e8dadbb648",
       "executable": false
     },
     "src/core/features/workspace/ui/setup.css": {
@@ -4727,7 +4731,7 @@
       "executable": false
     },
     "src/core/features/workspace/ui/TimeZoneField.tsx": {
-      "sha256": "608a81fe4213f9db8c8aa2b1372daa366e18b732ac020d818ae639d0f8c7f8c3",
+      "sha256": "a67f97d2678b1f81442b00c5cbeb0f87d56d7ae6c266ce6e78784928d71a55e9",
       "executable": false
     },
     "src/core/platform/ai/demo.ts": {
@@ -4818,12 +4822,24 @@
       "sha256": "f46b16c05e7ec8fd10e4b1b6e041c5edb138d94af6cc30925a137d0a9a99002c",
       "executable": false
     },
+    "src/core/shared/ianaTimeZone.ts": {
+      "sha256": "d44b05db16d93477c2173bb517efee88545c0459eb4a6cf253727f97162952cf",
+      "executable": false
+    },
     "src/core/shared/questionTypes.ts": {
       "sha256": "8bf7f149d8e4b4177887932614efd54d0fe7841874e74dc3c9b0ed2b45fd8fd1",
       "executable": false
     },
     "src/core/shared/timeZone.ts": {
       "sha256": "4f2a26918e980ea487fbab3e5d10b57789bfbcc6729d60ed2c1f51e025c89e62",
+      "executable": false
+    },
+    "src/core/shared/timeZoneNames.json": {
+      "sha256": "05e964ce86b384c9fc29bb9cdf16ed76d33d9899b2d97e2620453b72ea628082",
+      "executable": false
+    },
+    "src/core/shared/timeZoneNames.LICENSE": {
+      "sha256": "65eb33419e22a297550a811b5b535f5e532f9a7e0114b516c0ea18afd53c3804",
       "executable": false
     },
     "src/core/shared/ui/answerKeyboard.ts": {
@@ -5527,7 +5543,7 @@
       "executable": false
     },
     "tests/runtime/analysis-time-proof.ts": {
-      "sha256": "e72533b85c0ce3cecbadda733e0f10f7be2ec6a027fc29a69d830312f88e3eed",
+      "sha256": "8203681eb69a18fe11b4f491a257f2e4a2e9ac2d31ec7c8da6780e38e61b8dee",
       "executable": false
     },
     "tests/runtime/archive-fixture.ts": {

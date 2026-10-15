@@ -1,4 +1,5 @@
-import { TimeZoneField, canonicalTimeZone } from './TimeZoneField'
+import { TimeZoneField } from './TimeZoneField'
+import { canonicalTimeZone } from '../../../shared/ianaTimeZone'
 import { BrandSettings } from '../../brand'
 import { Clock3 } from 'lucide-react'
 import { useEffect, useState } from 'react'

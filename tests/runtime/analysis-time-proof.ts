@@ -12,9 +12,7 @@ export async function verifyHistoricalUsageZones() {
  expect(rewrite.status).toBe(201)
  await env.DB.prepare('UPDATE draft_ai_calls SET created_at=? WHERE workspace_id=?').bind(stamps[0],f.workspaceId).run()
  const before=await f.detail(run.id)
- // ICU versions use different canonical spellings for Kathmandu/Katmandu.
- const nepalZone=new Intl.DateTimeFormat('en-US',{timeZone:'Asia/Kathmandu'}).resolvedOptions().timeZone
- for(const [zone,counts] of [['America/New_York',[['2026-11-01',3],['2026-10-31',1]]],[nepalZone,[['2026-11-02',1],['2026-11-01',3]]],['Australia/Adelaide',[['2026-11-02',1],['2026-11-01',3]]]] as const) {
+ for(const [zone,counts] of [['America/New_York',[['2026-11-01',3],['2026-10-31',1]]],['Asia/Kathmandu',[['2026-11-02',1],['2026-11-01',3]]],['Australia/Adelaide',[['2026-11-02',1],['2026-11-01',3]]]] as const) {
   await f.services.workspace.updateSettings({workspaceId:f.workspaceId,timeZone:zone,sendingWindowStart:'09:00',sendingWindowEnd:'17:00'})
   const overview=await (await f.call('/api/app/analysis')).json() as any
   expect(overview.timeZone).toBe(zone);expect(overview.usage.filter((r:any)=>r.feature==='analysis').map((r:any)=>[r.day,r.calls])).toEqual(counts)
