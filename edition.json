@@ -21,6 +21,7 @@
           "src/routeTree.gen.ts",
           "src/server.ts",
           "src/demo.ts",
+          "src/demo",
           "src/routes",
           "migrations",
           "sample-data",
@@ -208,7 +209,8 @@
       "source": {
         "kind": "local",
         "paths": [
-          "src/base/import-kit"
+          "src/base/import-kit",
+          "src/base/d1-transport"
         ],
         "origin": {
           "repository": "https://github.com/runeditrun/base.git",

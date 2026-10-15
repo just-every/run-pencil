@@ -6,6 +6,7 @@ import { Plus } from 'lucide-react'
 import { analysisApi, stateLabels, transportLabel, when, type Policies, type ProviderStatus, type RunSummary, type UsageRow } from './analysisApi'
 
 export function ProviderNote({ provider }: { provider: ProviderStatus }) {
+  if (provider.state === 'on' && provider.transport === 'demo') return <p className="muted" style={{ margin: 0 }}>Analysis is ready to try with this workspace’s feedback. Nothing is sent to an AI provider.</p>
   if (provider.state === 'on') return <p className="muted" style={{ margin: 0 }}>Answers you select are sent to <strong>{provider.origin}</strong> ({transportLabel(provider.transport)}, model {provider.model}). {provider.costReported ? 'Each call reports its cost.' : 'This key reports usage, not cost.'}</p>
   return <div className="analysis-setup"><p style={{ margin: 0 }}><strong>{provider.state === 'off' ? 'AI is off.' : 'AI is not configured correctly.'}</strong> Nothing is sent and no finding is made until it is set up.</p><p className="muted" style={{ margin: '.4rem 0 0' }}>{provider.setup}</p></div>
 }

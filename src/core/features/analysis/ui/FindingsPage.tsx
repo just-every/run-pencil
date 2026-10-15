@@ -113,7 +113,7 @@ function RunFacts({ run }: { run: RunDetail }) {
     <p className="eyebrow" id="run-title">This run</p>
     <dl className="analysis-facts">
       <dt>Questions read</dt><dd>{run.questions.map(question => question.prompt).join('; ') || '—'}</dd>
-      <dt>Sent to</dt><dd>{run.providerOrigin ? <>{new URL(run.providerOrigin.split(' ')[0]).host}: only these answers and response IDs</> : 'Nothing was sent'}</dd>
+      <dt>Sent to</dt><dd>{run.calls.some(call => call.provider === 'demo') ? 'Demo analysis; nothing was sent to a provider' : run.providerOrigin ? <>{new URL(run.providerOrigin.split(' ')[0]).host}: only these answers and response IDs</> : 'Nothing was sent'}</dd>
       <dt>Cost</dt><dd>{run.calls.length ? costLabel(run.calls) : 'No provider call'}</dd>
       <dt>Finished</dt><dd>{run.finishedAt ? when(run.finishedAt,run.timeZone) : 'Not finished'}</dd>
       <dt>Provider calls</dt><dd>{run.calls.length ? <ul>{run.calls.map((call,index)=><li key={index}>{when(call.createdAt,run.timeZone)} · {call.outcome} · {costLabel([call])}</li>)}</ul> : 'No provider calls'}</dd>

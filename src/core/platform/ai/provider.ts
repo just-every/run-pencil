@@ -24,7 +24,7 @@ function rates(environment: WorkerBindings): AiRates | null {
 
 /** ai.provider.v1 for this request or tick. Configuration problems are reported here; nothing is sent until a run calls it. */
 export function readAiProvider(environment: WorkerBindings, local: boolean): AiProvider {
-  if (environment.RER_DEMO === '1') return { state: 'on', client: demoAiClient(), transport: 'demo', origin: 'Demo', model: 'demo', rates: null }
+  if (environment.RER_DEMO === '1') return { state: 'on', client: demoAiClient(() => createAiClient(aiConfig({ ...environment }))), transport: 'demo', origin: 'Demo', model: 'demo', rates: null }
   const config = aiConfig({ ...environment })
   if (!config.enabled) return { state: 'off', setup: aiSetupText }
   const model = environment.AI_MODEL?.trim()
