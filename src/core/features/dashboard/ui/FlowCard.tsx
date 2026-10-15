@@ -33,6 +33,7 @@ export function FlowCard({ flow, timeZone, refreshing = false, onSavingChange }:
   return <article className="panel flow-card">
     <header><span className="badge" data-status={flow.status}>{flow.status[0].toUpperCase() + flow.status.slice(1)}</span><span className="flow-card-note">{flow.hasUnpublishedChanges ? 'Unpublished changes' : ''}</span></header>
     <div><h2 className="display">{flow.title}</h2><p className="muted flow-card-activity">{activity}</p></div>
+    <p className="muted">Analysis: {flow.analysis ? <><Link to="/app/analysis/$runId" params={{runId:flow.analysis.id}}>{flow.analysis.state.replaceAll('_',' ')} · Revision {flow.analysis.revisionNumber}</Link>{flow.analysis.stale ? ' · Stale' : ''}{flow.analysis.redacted ? ' · Redacted' : ''}</> : 'Never run'}</p>
     <p className="flow-card-counts"><strong>{flow.completedResponses} completed · {flow.starts} starts</strong></p>
     <p className="muted flow-card-audience">Audience: {flow.audience.launchedParticipants === 0 ? 'Anonymous public link' : flow.audience.eligibleParticipants === 0 ? '0 / 0 eligible participants' : `${flow.audience.completedParticipants ?? 0} / ${flow.audience.eligibleParticipants} eligible participants completed`}</p>
     <nav className="flow-card-actions" aria-label={`${flow.title} actions`}>

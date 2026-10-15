@@ -86,8 +86,8 @@ export class WorkspaceService {
     if (!isDailyTime(input.sendingWindowStart) || !isDailyTime(input.sendingWindowEnd)) {
       throw new ValidationError('Sending hours must use 24-hour HH:MM times.')
     }
-    if (input.sendingWindowStart >= input.sendingWindowEnd) {
-      throw new ValidationError('The sending window must end after it starts.')
+    if (input.sendingWindowStart === input.sendingWindowEnd) {
+      throw new ValidationError('The sending window must have distinct start and end times; it may cross midnight.')
     }
     const origins = input.embedAllowedOrigins?.map((value) => {
       let origin: URL

@@ -96,6 +96,7 @@ export class FlowService {
         draftVersion: flow.draftVersion,
         hasUnpublishedChanges: await this.hasUnpublishedChanges(workspaceId, flow.id),
         lastActivityAt: flow.lastActivityAt,
+        analysis: await this.repository.latestAnalysis(workspaceId, flow.id),
         completedResponses: result?.completedResponses ?? 0,
         starts: result?.counter?.starts ?? 0,
         audience: publishedRevision ? await this.responseRepository.audience(publishedRevision.id) : { launchedParticipants: 0, eligibleParticipants: 0, completedParticipants: 0 },

@@ -16,6 +16,14 @@ const retained = {
   // Respondent sessions and responses travel as history; the token that resumes a session does not (exclusions below).
   // Analysis: runs, their fixed evidence (response IDs), validated themes, members, exact quotes, the one recommendation, the
   // policies and per-call usage. No provider credential or request body is stored; erasure removes a response from all of them.
+  draft_rewrites: 'id workspace_id flow_id draft_id step_id operator_id draft_version source style context proposal state error decision_token created_at updated_at',
+  draft_ai_calls: 'id workspace_id draft_id rewrite_id feature provider provider_origin model outcome error_code input_tokens output_tokens cost_microusd cost_source receipt_id created_at',
+  analysis_attention_preferences: 'operator_id muted',
+  analysis_attention: 'run_id operator_id created_at read_at',
+  digest_preferences: 'flow_id operator_id epoch cutoff next_opening next_day zone window_start failure_reason',
+  digest_deliveries: 'id flow_id operator_id day zone epoch cutoff_start cutoff_end status idempotency_key attempts retry_count first_attempt_at last_attempt_at available_at reason provider_id created_at updated_at',
+  digest_members: 'delivery_id response_id',
+  digest_attempts: 'id delivery_id ordinal event provider provider_code created_at',
   analysis_policies: 'workspace_id autorun_enabled autorun_minimum disclosure_threshold selection updated_by_operator_id updated_at',
   analysis_runs: 'id workspace_id flow_id revision_id trigger requested_by_operator_id state question_ids_json policy_json evidence_count evidence_cutoff request_sha256 provider_origin model attempts first_attempt_at error_code error_message insufficient_reason summary redacted_at created_at started_at finished_at updated_at',
   analysis_evidence: 'run_id response_id position',
@@ -139,6 +147,8 @@ const retained = {
 const nul = { type: 'null' };
 const captured = { local_mail_outbox: ['message_json'], rer_mail_development_outbox: ['message'], rer_ai_development_outbox: ['record'] };
 export const exclusions = {
+  digest_preferences: { enabled: { type: 'integer', value: '0' } },
+  digest_deliveries: { replay_enabled: { type: 'integer', value: '0' }, retry_authorized: { type: 'integer', value: '0' } },
   invitation_launches: { resume_enabled: { type: 'integer', value: '0' } },
   invitation_participants: { token: nul, opt_out_token: nul },
   local_dev_inbox: { magic_link_token: { type: 'text', value: '' } },

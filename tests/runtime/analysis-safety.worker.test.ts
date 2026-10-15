@@ -20,12 +20,12 @@ async function fiveAbout(text: (i: number) => string, f: Awaited<ReturnType<type
   return ids
 }
 
-contract(['ANLY-002', 'ANLY-010'], 'only the selected answers and stable response IDs leave, to the configured origin with the key as a bearer value, and every call records its usage and cost', async () => {
+contract(['ANLY-002', 'ANLY-010', 'RESP-005'], 'only the selected answers and stable response IDs leave, to the configured origin with the key as a bearer value, and every call records its usage and cost', async () => {
   const f = await analysisHttp()
   const canaries = { email: 'contact-canary-91c2@example.test', name: 'Respondent Name Canary 91c2', address: '203.0.113.91', answerEmail: 'answer-email-canary-91c2@example.test' }
   await env.DB.prepare("INSERT INTO distribution_contacts (id, workspace_id, name, email, fields_json, created_at, updated_at) VALUES (?, ?, 'Contact Canary', ?, '{}', ?, ?)").bind(crypto.randomUUID(), f.workspaceId, canaries.email, new Date().toISOString(), new Date().toISOString()).run()
   const ids = []
-  for (let i = 0; i < 5; i++) ids.push(await f.respond(`Selected answer ${i}`, { name: canaries.name, email: canaries.answerEmail, address: canaries.address }))
+  for (let i = 0; i < 5; i++) ids.push(await f.respond(`Selected answer ${i}: My name is Selected Synthetic Person and email is selected-identity@example.test`, { name: canaries.name, email: canaries.answerEmail, address: canaries.address }))
   const logged = vi.spyOn(console, 'log'), errors = vi.spyOn(console, 'error')
   await ai.script(answer({ outcome: 'findings', reason: '', themes: [theme('Answers', ids)], recommendations: [] }))
   const run = await f.request()
@@ -38,6 +38,8 @@ contract(['ANLY-002', 'ANLY-010'], 'only the selected answers and stable respons
   expect(data.responses.map((response: any) => response.id).sort()).toEqual([...ids].sort())
   expect(data.responses.every((response: any) => JSON.stringify(Object.keys(response.answers)) === JSON.stringify([f.questions.improve]))).toBe(true)
   for (const canary of Object.values(canaries)) expect(sent.body).not.toContain(canary)
+  expect(sent.body).toContain('Selected Synthetic Person')
+  expect(sent.body).toContain('selected-identity@example.test')
   expect(sent.body).not.toContain('"mobile"')
   expect(sent.body).not.toContain(aiKey)
   expect(await everyStoredValue()).not.toContain(aiKey)
@@ -158,7 +160,7 @@ contract(['DATA-002', 'DATA-001'], 'erasing a response removes it from every ana
   expect((await f.call(`/api/app/responses/${ids[0]}`, undefined, 'DELETE')).status).toBe(204)
   expect(await everyStoredValue()).not.toContain('erasure-canary-5b1d')
   const after = await f.detail(run.id)
-  expect(after).toMatchObject({ redacted: true, evidenceCount: 4 })
+  expect(after).toMatchObject({ redacted: true, stale: true, staleResponses: 0, evidenceCount: 4, evidenceCutoff: run.evidenceCutoff })
   expect(await env.DB.prepare('SELECT COUNT(*) AS n FROM analysis_evidence WHERE response_id = ?').bind(ids[0]).first()).toEqual({ n: 0 })
   // Restore blanks a run's schedule and lease (scripts/deployment-data-policy.mjs); the tick fails an interrupted run and sends nothing.
   await ai.reset()

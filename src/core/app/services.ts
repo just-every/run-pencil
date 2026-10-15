@@ -1,3 +1,7 @@
+import { DigestDispatcher } from '../features/notifications/digest-dispatcher'
+import { digestCaptureClaim } from '../features/notifications/digest-capture'
+import { AnalysisAttention } from '../features/analysis/attention'
+import { DraftRewrites } from '../features/analysis/rewrites'
 import { eraseResponseAndImportCustody } from '../features/importing/erasure'
 import { readNotificationBrand } from '../features/notifications/brand.server'
 import { notificationCaptureClaim } from '../features/notifications/capture'
@@ -45,7 +49,7 @@ export function createPencilServices(platform: PencilPlatform) {
   const deliveries = new MailDeliveries(platform.databaseBinding)
   let sender: MailSender
   let senderFailure: string | null = null
-  try { sender = baseMailSender(platform.configuration.mail, platform.databaseBinding, notificationCaptureClaim) }
+  try { sender = baseMailSender(platform.configuration.mail, platform.databaseBinding, message => message.headers?.['X-Pencil-Digest-Claim'] ? digestCaptureClaim(message) : notificationCaptureClaim(message)) }
   catch (error) {
     senderFailure = notificationConfigurationFailure(error)
     if (!senderFailure) throw error
@@ -55,7 +59,7 @@ export function createPencilServices(platform: PencilPlatform) {
   const dispatcher = new DistributionDispatcher(platform.databaseBinding, deliveries, sender, platform.configuration.appOrigin, platform.configuration.mail.kind === 'local-development' ? 'no-reply@pencil.test' : platform.configuration.mail.from)
   const from = platform.configuration.mail.kind === 'local-development' ? 'no-reply@pencil.test' : platform.configuration.mail.from
   return {
-    notifications: { preferences: new NotificationRepository(platform.databaseBinding, notificationSenderError(from) ?? senderFailure), dispatcher: new NotificationDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,workspaceId => readNotificationBrand(platform.databaseBinding,workspaceId),senderFailure) },
+    notifications: { digest: new DigestDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,undefined,senderFailure), preferences: new NotificationRepository(platform.databaseBinding, notificationSenderError(from) ?? senderFailure), dispatcher: new NotificationDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,workspaceId => readNotificationBrand(platform.databaseBinding,workspaceId),senderFailure) },
     distribution: { segments: new DistributionSegments(platform.databaseBinding), importer: new ContactImport(platform.databaseBinding), contacts: new DistributionContacts(platform.databaseBinding), launches: new InvitationLaunches(platform.databaseBinding, extensions.distributionPolicies), deliveries, dispatcher },
     reporting: new ReportingService(new ReportingRepository(platform.databaseBinding)),
     audit,
@@ -66,6 +70,8 @@ export function createPencilServices(platform: PencilPlatform) {
     responses: new ResponseService(flowRepository, responseRepository),
     // Actions take no extension configuration: nothing but an operator's request can set a verdict (ACT-005).
     // Analysis reads only released responses and validates every provider answer before anything is shown (ANLY-002, ANLY-012).
+    attention: new AnalysisAttention(platform.databaseBinding),
+    rewrites: new DraftRewrites(platform.databaseBinding, platform.ai),
     analysis: new AnalysisService(platform.databaseBinding, platform.ai),
     actions: { records: new ActionService(platform.databaseBinding), tasks: new TaskDeliveries(platform.databaseBinding, platform.configuration.task, platform.configuration.appOrigin) },
   }

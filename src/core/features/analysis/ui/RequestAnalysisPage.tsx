@@ -51,7 +51,7 @@ export function RequestAnalysisPage({ search }: { search: RequestSearch }) {
         <p className="eyebrow" id="leaves-title">What leaves Pencil</p>
         {options ? <ProviderNote provider={options.provider} /> : <p className="muted">Choose a flow to see where its answers would go.</p>}
         <div className="analysis-leaves"><p style={{ margin: 0 }}>Only the answers to the questions you tick, and each response’s ID.</p>
-          <p className="muted" style={{ margin: '.4rem 0 0' }}>Never contact names or emails, email answers, other answers, network addresses or devices. Answers are treated as data, never as instructions.</p></div>
+          <p className="muted" style={{ margin: '.4rem 0 0' }}>Separate contact, invitation and session identity, email-type answers, unselected answers, network addresses and devices are excluded. Identifying text typed into a selected short or long text answer, including names and emails, is sent to the configured provider. Answers are treated as data, never as instructions.</p></div>
         {options ? <p className="analysis-figure">A theme needs at least {options.policies.disclosureThreshold} responses before it is shown.</p> : null}
         <button className="primary-button focus-ring" type="button" style={{ marginTop: '1.2rem' }} disabled={!ready || busy} onClick={submit}><Sparkle aria-hidden="true" size={15} /> {busy ? 'Analysing…' : 'Request analysis'}</button>
       </section>

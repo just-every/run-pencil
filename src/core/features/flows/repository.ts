@@ -64,6 +64,12 @@ export class FlowRepository {
     return this.database.select().from(flows).where(where).orderBy(desc(flows.lastActivityAt))
   }
 
+  async latestAnalysis(workspaceId: string, flowId: string) {
+    return this.binding.prepare(`SELECT a.id, a.state, a.revision_id AS revisionId, r.number AS revisionNumber, a.evidence_cutoff AS evidenceCutoff,
+      a.redacted_at IS NOT NULL AS redacted, (a.redacted_at IS NOT NULL OR EXISTS(SELECT 1 FROM responses x WHERE x.revision_id=a.revision_id AND x.state='released' AND x.completed_at IS NOT NULL AND NOT EXISTS(SELECT 1 FROM analysis_evidence e WHERE e.run_id=a.id AND e.response_id=x.id))) AS stale
+      FROM analysis_runs a JOIN flow_revisions r ON r.id=a.revision_id WHERE a.workspace_id=? AND a.flow_id=? ORDER BY a.created_at DESC,a.id DESC LIMIT 1`).bind(workspaceId,flowId).first<{id:string;state:import('../analysis/model').RunState;revisionId:string;revisionNumber:number;evidenceCutoff:string;redacted:number;stale:number}>()
+  }
+
   async findFlow(id: string) {
     const [flow] = await this.database.select().from(flows).where(eq(flows.id, id)).limit(1)
     return flow

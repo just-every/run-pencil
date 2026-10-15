@@ -28,9 +28,9 @@ function answerText(body: any): string {
 }
 
 /** One provider attempt. Never retried here; the run decides (ANLY-016). Usage is returned even when the answer fails. */
-export async function callProvider(provider: OnProvider, request: Record<string, unknown>): Promise<{ output: unknown; usage: CallUsage }> {
+export async function callProvider(provider: OnProvider, request: Record<string, unknown>, feature = 'analysis', subject?: string): Promise<{ output: unknown; usage: CallUsage }> {
   let response: Response
-  try { response = await provider.client.responses(request, { feature: 'analysis', signal: AbortSignal.timeout(callTimeoutMilliseconds) }) }
+  try { response = await provider.client.responses(request, { feature, subject, signal: AbortSignal.timeout(callTimeoutMilliseconds) }) }
   catch (error) {
     if (error instanceof AiError) throw new AnalysisFailure(error.code, error.message, transientCodes.has(error.code))
     throw new AnalysisFailure('upstream_uncertain', 'The AI provider did not answer.', true)
