@@ -5,7 +5,7 @@ This page takes you from the Pencil source code to a working copy on your own co
 ## What you need
 
 - **Node.js 22 or later, including npm, and Git.** Install Node from [nodejs.org](https://nodejs.org/en/download), then check `node --version` and `npm --version` in your terminal. Node must be on your `PATH` before you install rer.
-- **rer, the Run Edit Run command.** Install it once per computer with `npm install -g @runeditrun/rer@0.2.19`. In the source folder it runs the exact version Pencil pins.
+- **rer, the Run Edit Run command.** Install it once per computer with `npm install -g @runeditrun/rer@0.2.20`. In the source folder it runs the exact version Pencil pins.
 - **The source code.** Get it from https://github.com/just-every/run-pencil and open a terminal in its folder.
 
 With Node available, rer installs Pencil's pinned runtime and pnpm for its own commands. It does not put pnpm on your shell's `PATH`; the commands below use npm or npx when needed. `rer dev` prepares a local owner automatically; choosing your own local owner details with `rer setup` is optional.
@@ -13,12 +13,12 @@ With Node available, rer installs Pencil's pinned runtime and pnpm for its own c
 ## Start Pencil on your computer
 
 ```sh
-npm install -g @runeditrun/rer@0.2.19
+npm install -g @runeditrun/rer@0.2.20
 git clone https://github.com/just-every/run-pencil.git pencil && cd pencil
 rer dev
 ```
 
-`rer dev` installs the exact locked dependencies, applies local migrations and prepares a local owner on first launch. It then prints the app’s address and a `RER_OPEN` link that opens it signed in. Later launches keep your owner, data and private settings. To choose local owner details, optionally run `rer setup --owner-email you@example.com --owner-name "Your Name"`; no separate setup command is needed for the normal launch.
+`rer dev` installs the exact locked dependencies, applies local migrations and prepares a local owner on first launch. It then prints the app’s address and a `RER_OPEN` link that opens it signed in. Later launches keep your owner, data and private settings, and apply any migration a newer source added before serving. To move to a newer Pencil, follow [Upgrading a local install](#upgrading-a-local-install). To choose local owner details, optionally run `rer setup --owner-email you@example.com --owner-name "Your Name"`; no separate setup command is needed for the normal launch.
 
 Setup writes a private `.dev.vars` file. Keep it private. It holds your local secrets. Stop `dev` with Ctrl-C, or with `rer dev --stop`.
 
@@ -49,6 +49,19 @@ Without a selected landing flow, `/` shows the Lobby. Selecting a flow in Settin
 ## Sign in again later
 
 Open the private `RER_OPEN` link from `rer dev` again, or choose **Continue as owner** at `/signin` after opening it once. Hosted production installs use one-time email links; each link expires after 15 minutes and is consumed only when you confirm it.
+
+## Upgrading a local install
+
+A newer Pencil can add database migrations. Take these steps in the source folder to move your copy to the newest source with your data:
+
+1. Stop Pencil: `rer dev --stop` (and `rer preview --stop` if you ran preview).
+2. Export your data: `mkdir -m 700 exports` once, then `rer export --output exports/before-upgrade.rer`.
+3. Get the new source: `git pull`. If you checked out a release tag, run `git checkout main` first.
+4. Install its locked dependencies: `rer install`.
+5. Apply the new migrations: `rer setup`. It keeps your owner, data and private settings.
+6. Start Pencil again: `rer dev`.
+
+If you skip step 5, `rer dev` applies the pending migrations itself before it serves and names them as it does. If they cannot be applied, it refuses to start and tells you to run `rer setup`; your forms never answer respondents from an out-of-date database. Keep the export until you have checked your forms and results.
 
 ## Optional local setup
 

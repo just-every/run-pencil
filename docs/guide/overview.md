@@ -47,4 +47,4 @@ The dashboard line **Ask → Signal → Act** describes the whole loop: build a 
 
 ## About this release
 
-The source in this repository is version 0.3.0, which is still a candidate release. Nothing in these pages claims a live service, a measured hosting capacity, or proof that email reaches an inbox. Those depend on your own deployment and your own mail provider. The [changelog on GitHub](../../CHANGELOG.md) lists what each version changed, and the product requirements are in [CONTRACT.md](../../CONTRACT.md). Pencil is MIT licensed, and the licence is in [LICENSE](../../LICENSE).
+The source in this repository is version 0.4.0. Nothing in these pages claims a live service, a measured hosting capacity, or proof that email reaches an inbox. Those depend on your own deployment and your own mail provider. The [changelog on GitHub](../../CHANGELOG.md) lists what each version changed, and the product requirements are in [CONTRACT.md](../../CONTRACT.md). Pencil is MIT licensed, and the licence is in [LICENSE](../../LICENSE).

@@ -69,7 +69,7 @@ When you choose **Publish**, Pencil checks the whole flow before it makes a revi
 
 - Every rule points at a question and choice that exist, and every destination is a real question or completion screen.
 - The first step is the welcome screen, or the first question if there is none.
-- Every step can be reached from the start by at least one path.
+- Every step can be reached from the start by at least one path. A question you have just added is not connected yet: point an earlier question's rule or **Default next screen** at it first, or Publish refuses it as unreachable.
 - Every possible path ends at a completion screen, and none loops back on itself.
 - Every question has a prompt, every choice question has valid and distinct options, and there is at least one question.
 

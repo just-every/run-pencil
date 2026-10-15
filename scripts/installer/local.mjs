@@ -5,6 +5,7 @@ import { pencilDeploy } from './deploy.mjs';
 import { features, product } from './ui/seed.mjs';
 import { portability } from '../local/portability.mjs';
 import { localOwners, prepare } from '../local/state.mjs';
+import { applyPendingMigrations } from '../local/migrations.mjs';
 
 const production = context => {
  if (!Number.isInteger(context.runtimePort) || context.runtimePort < 1) throw Error('The local production runtime requires its internal port.');
@@ -27,6 +28,8 @@ export const { install } = lifecycle;
 export const commandAdapter = createCommandAdapter(lifecycle, {
  product: product.name, setup: { manifestFile: 'rer-setup.json' }, browserModule: 'scripts/installer/ui/seed.mjs',
  dev: developmentTarget, preview: production, verify: ['pnpm', ['run', 'verify:app']],
+ // rer dev skips setup on an existing install: a pulled source's new migrations are applied before it serves.
+ localPrerequisites: applyPendingMigrations,
  deploy: pencilDeploy(lifecycle), portability,
  // Local dev identity: the local-only Worker entry, the build output rer build scans for the dev layer, and the kept
  // local owner-entry test.

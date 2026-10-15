@@ -22,5 +22,5 @@ export const Route = createFileRoute('/signin')({
 function Page() {
   const data = Route.useLoaderData()
   const search = Route.useSearch()
-  return <SignInPage {...data} emailHint={search.login_hint ?? data.emailHint} invalid={search.invalid} notice={search.notice} />
+  return <SignInPage {...data} emailHint={search.login_hint} invalid={search.invalid} notice={search.notice} />
 }

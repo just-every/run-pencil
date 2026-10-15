@@ -51,6 +51,8 @@ Read the guide at `/docs` on your copy (its source is [docs/guide](docs/guide/ov
 
 Keep `.dev.vars` private. Use `--port PORT` for an explicit loopback port. Stop dev with Ctrl-C or `rer dev --stop`.
 
+To upgrade a local install to newer source, stop dev, export, pull, then run `rer install`, `rer setup` and `rer dev`; [Upgrading a local install](docs/guide/install.md#upgrading-a-local-install) has the steps. `rer dev` also applies pending migrations before it serves, and refuses to start with "run rer setup" if it cannot.
+
 ```sh
 npx --no-install playwright install chromium --only-shell
 rer verify

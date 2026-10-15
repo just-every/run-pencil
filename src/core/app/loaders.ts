@@ -58,9 +58,8 @@ export const loadSignIn = createServerFn({ method: 'GET' }).handler(async () => 
   const { services, platform } = await requestServices()
   const { mountServerExtensions } = await import('./mountExtensions.server')
   if (await services.auth.needsBootstrap()) throw redirect({ to: '/setup' })
-  // Only the sole active native owner may be offered publicly as a sign-in hint.
-  const owner = await platform.databaseBinding.prepare("SELECT min(email) AS email FROM oa_operators WHERE role = 'owner' AND status = 'active' HAVING count(*) = 1").first<{ email: string }>()
-  return { config: mountServerExtensions().publicSeedConfig, local: platform.configuration.isLocalDevelopment, emailHint: owner?.email }
+  // Never read an operator's email here: the form is prefilled only from a link's login_hint (routes/signin.tsx).
+  return { config: mountServerExtensions().publicSeedConfig, local: platform.configuration.isLocalDevelopment }
 })
 
 export const loadSetup = createServerFn({ method: 'GET' }).handler(async () => {

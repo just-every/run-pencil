@@ -37,7 +37,7 @@ A flow is made of three kinds of step:
 - **Questions**. A flow needs at least one.
 - **Completion** screens. A flow needs at least one, and you can have several. Each has its own wording, so different answer paths can end in different messages.
 
-Use **Add question**, **Add completion screen** and **Add welcome screen** to add steps. A new question goes in just before your completion screen. To rearrange, select a step and use **Move up** or **Move down**. **Duplicate** copies a step, and **Delete** removes it.
+Use **Add question**, **Add completion screen** and **Add welcome screen** to add steps. A new question goes in just before your completion screen, and it leads on to that screen. Earlier questions keep their answer paths, so nobody reaches the new question until you connect it: set an earlier question's **Default next screen**, or one of its rules, to the new question. **Publish** refuses a question that no path reaches. To rearrange, select a step and use **Move up** or **Move down**. **Duplicate** copies a step, and **Delete** removes it.
 
 Deleting a question from a draft never removes answers you have already collected. Those answers stay in your results, ledger and exports with the question that asked them.
 

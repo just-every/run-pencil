@@ -204,7 +204,7 @@
     },
     {
       "id": "notifications",
-      "description": "Implemented per-flow Immediately or Off response mail with durable delivery state and no mail loops. The notification centre and daily digests remain deferred.",
+      "description": "Per-flow Immediately, Daily or Off response mail with durable delivery state and no mail loops, and in-app analysis notifications.",
       "clauses": [
         "NOTIFY-001",
         "NOTIFY-002",
