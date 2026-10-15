@@ -936,6 +936,10 @@
       "sha256": "2f5076ef027045b9e0e72df8aa61ca8551e54b1877d531656d6e7985b2c32324",
       "executable": false
     },
+    "management/integration/deployment-spec.json": {
+      "sha256": "0bc469c09561c596df9a6660dba9c4962fe067b27a2bfac1ef3ac2263244524c",
+      "executable": false
+    },
     "migrations/core/0000_seeded_flowly_data_spine.sql": {
       "sha256": "e76719702be508166b72e9f2f367355930cf3b826b3b25dc85860c8ced034bde",
       "executable": false
@@ -1093,7 +1097,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "96227e4c54bc64804da8ec63fc36050437b09fbd77748369c4cb98fd0bc615e8",
+      "sha256": "9c404cbcbe95f4cce348dbcd2c6289d5536de6a207f612322ae094f2cd9b02b8",
       "executable": false
     },
     "playwright.admission.config.ts": {
@@ -1113,7 +1117,7 @@
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "63075a133fa1516d98671a270176d67147a292a2bdec483f463cd0718811ff85",
+      "sha256": "68725a37fbc61cd28604d260ceb066fdbfd31d700ef484f6dc5295719e2b692f",
       "executable": false
     },
     "public/brand/band.svg": {
@@ -1157,7 +1161,7 @@
       "executable": false
     },
     "rer-project.json": {
-      "sha256": "dd5c8bd86288c07e07ee42139cd2fdc3a4105a00c42f769cda6722373b374192",
+      "sha256": "e649895ec5f1a9b25aa7456f9649db8efc1b5fa76be2d6a90e95f1047d90aa9e",
       "executable": false
     },
     "rer-setup.json": {
@@ -1289,7 +1293,7 @@
       "executable": false
     },
     "scripts/delivery/base/packaging.json": {
-      "sha256": "f9827cd55993e81fbdd0c94803a9596bbea9c41c2352b2a527a5dc2845168de4",
+      "sha256": "45e1fb5d0caab736ec4fc20edc5a90a62e6b047c658fd5f3bb7f1fd85f3b389d",
       "executable": false
     },
     "scripts/delivery/base/paths.mjs": {
@@ -1329,7 +1333,7 @@
       "executable": false
     },
     "scripts/delivery/README.md": {
-      "sha256": "055cc69cacef4251e4f06ff120e32e523c394bfa899a49fdcf5bb0565bbee5be",
+      "sha256": "d761f4f645fe33d0a8cea6e8635deb79fc2a5b46d7b7b79fc3db3ba3dcf2183f",
       "executable": false
     },
     "scripts/delivery/setup-build.sh": {
@@ -1634,6 +1638,10 @@
     },
     "scripts/schema/validate.mjs": {
       "sha256": "d9c9d5609976e3f95b6a17f5461bdf5ab656cb487dbd93fcfb9ea2d3beaab21b",
+      "executable": false
+    },
+    "scripts/sync-integration.mjs": {
+      "sha256": "48e66295402b76c0fb3eee60e15d0efdc8bdeb7b4776a0ab1a6739345fb097a9",
       "executable": false
     },
     "scripts/validate-manifest.mjs": {

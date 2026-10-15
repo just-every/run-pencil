@@ -16,6 +16,11 @@ project's Node 22.20.0 pin before executing setup-build.sh. The production templ
 release scale command runs before release and is required by the maintained
 release producer.
 
+`pnpm integration:sync` builds the deployment and commits its Base-derived spec
+to `management/integration/deployment-spec.json`. After the deployment build,
+`pnpm source:check` rejects a stale spec in CI. `MAIL_API_KEY` is an optional
+deployment secret; the setup manifest requires it for Resend and SendGrid.
+
 `rer-setup.json` names the first owner's SEED_ADMIN_EMAIL, hidden generated
 SETUP_TOKEN and SESSION_SECRET, and the selected hosted mail settings. Local
 sign-in uses the Base outbox. Hosting requires a configured Resend or SendGrid

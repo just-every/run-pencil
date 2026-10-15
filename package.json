@@ -31,7 +31,7 @@
     "verify:publication": "node scripts/verify-publication.mjs",
     "source:inspect": "node scripts/edition-authoring/cli.mjs inspect",
     "source:lock": "node scripts/edition-authoring/cli.mjs lock",
-    "source:check": "node scripts/edition-authoring/cli.mjs check && node scripts/edition-authoring/cli.mjs verify-base --offline",
+    "source:check": "node scripts/edition-authoring/cli.mjs check && node scripts/edition-authoring/cli.mjs verify-base --offline && node scripts/sync-integration.mjs --check",
     "verify:setup": "node --test --test-concurrency=1 tests/local-cli/rer-journey.test.mjs tests/local-cli/dev-identity.test.mjs && playwright test --config playwright.local.config.ts --workers=1",
     "verify:base": "node scripts/verify-base-source.mjs",
     "verify:release": "PENCIL_RUN_LOAD=1 PENCIL_LOAD_MODE=1 vitest run --config vitest.release.config.ts && playwright test --config playwright.release.config.ts --workers=1",
@@ -47,7 +47,8 @@
     "deps": "rer install",
     "rer": "rer",
     "build:delivery": "node scripts/delivery/build.mjs",
-    "verify:admission": "pnpm run build:delivery && node --test scripts/delivery-artifact.check.mjs && playwright test --config playwright.admission.config.ts --workers=1"
+    "verify:admission": "pnpm run build:delivery && node --test scripts/delivery-artifact.check.mjs && playwright test --config playwright.admission.config.ts --workers=1",
+    "integration:sync": "pnpm run build:delivery && node scripts/sync-integration.mjs --write"
   },
   "dependencies": {
     "@fontsource/caveat": "^5.3.0",
@@ -73,7 +74,7 @@
     "@cloudflare/vitest-plugin": "1.3.7",
     "@cloudflare/workers-types": "^5.20260831.1",
     "@playwright/test": "^1.62.1",
-    "@runeditrun/rer": "0.2.5",
+    "@runeditrun/rer": "0.2.7",
     "@tailwindcss/vite": "^4.3.3",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
