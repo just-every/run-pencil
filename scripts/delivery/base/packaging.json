@@ -79,7 +79,8 @@
       ],
       "secretNames": [
         "SESSION_SECRET",
-        "SETUP_TOKEN"
+        "SETUP_TOKEN",
+        "MAIL_API_KEY"
       ],
       "providerEffects": [
         "outbound-mail"
@@ -106,10 +107,7 @@
           "optional": true
         }
       ],
-      "recovery": "Preserve the private deployment receipt and ordered D1 migration ledger. Export before upgrades. Restore to an empty installation; imported historical responses never replay mail. Verify the owner, forms and retained responses before switching traffic.",
-      "optionalSecretNames": [
-        "MAIL_API_KEY"
-      ]
+      "recovery": "Preserve the private deployment receipt and ordered D1 migration ledger. Export before upgrades. Restore to an empty installation; imported historical responses never replay mail. Verify the owner, forms and retained responses before switching traffic."
     }
   }
 }

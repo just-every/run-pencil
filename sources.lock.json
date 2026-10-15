@@ -937,7 +937,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "0bc469c09561c596df9a6660dba9c4962fe067b27a2bfac1ef3ac2263244524c",
+      "sha256": "8e8238143d88fe12f6bd5e8ecc900aa88aa52d53e019cc05af1eddf7f5c07b69",
       "executable": false
     },
     "migrations/core/0000_seeded_flowly_data_spine.sql": {
@@ -1161,11 +1161,11 @@
       "executable": false
     },
     "rer-project.json": {
-      "sha256": "e649895ec5f1a9b25aa7456f9649db8efc1b5fa76be2d6a90e95f1047d90aa9e",
+      "sha256": "a790d94e7820d141a1dea427843ecf36d2b773fecb7a3cce1bee6cb465bb6069",
       "executable": false
     },
     "rer-setup.json": {
-      "sha256": "fcfba8e66c2bbe329746990753d486005b74ce2d27d667e59d1f2cc05565203b",
+      "sha256": "f39c3e2e69c747f3643f863b7afd39c33d827b9d4407b1434a81bbfe43ed4a7e",
       "executable": false
     },
     "RUN-LOCALLY.md": {
@@ -1293,7 +1293,7 @@
       "executable": false
     },
     "scripts/delivery/base/packaging.json": {
-      "sha256": "7f3b4128684a1852d974d72b26172ed1f83e758660ef178eda2d5136dc57fdd5",
+      "sha256": "14fc45a385d1996dfe4e833775a893f1e5ef6bc68fdf36b139b5b4f57c276bf5",
       "executable": false
     },
     "scripts/delivery/base/paths.mjs": {
