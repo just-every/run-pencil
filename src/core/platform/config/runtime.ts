@@ -27,6 +27,12 @@ export function isLocalDevelopmentRequest(requestUrl: string, environment: Worke
     && environment.MAIL_PROVIDER === 'local'
 }
 
+/** A hosted demo container (Base demo host): RER_DEMO=1 behind its https origin, with mail explicitly kept in the outbox.
+ * The front supplies the origin, the demo owner (OWNER_EMAIL) and fresh secrets; nothing is sent and AI stays off. */
+export function isHostedDemoRequest(requestUrl: string, environment: WorkerBindings) {
+  return environment.RER_DEMO === '1' && environment.MAIL_PROVIDER === 'local' && !isLoopbackRequest(requestUrl)
+}
+
 function hasLineBreak(value: string) {
   return /[\r\n]/.test(value)
 }
@@ -44,11 +50,13 @@ function isValidMailFrom(value: string) {
 export function deploymentConfigurationErrors(requestUrl: string, environment: WorkerBindings) {
   if (isLocalDevelopmentRequest(requestUrl, environment)) return environment.SESSION_SECRET && environment.SESSION_SECRET.length >= 32 ? [] : ['SESSION_SECRET must contain at least 32 characters']
 
+  const demo = isHostedDemoRequest(requestUrl, environment)
   const errors: string[] = []
-  for (const name of ['APP_ORIGIN', 'SEED_ADMIN_EMAIL', 'MAIL_PROVIDER', 'MAIL_API_KEY', 'MAIL_FROM', 'SESSION_SECRET'] as const) {
+  for (const name of demo ? ['APP_ORIGIN', 'OWNER_EMAIL', 'SESSION_SECRET'] as const : ['APP_ORIGIN', 'SEED_ADMIN_EMAIL', 'MAIL_PROVIDER', 'MAIL_API_KEY', 'MAIL_FROM', 'SESSION_SECRET'] as const) {
     if (!environment[name]?.trim()) errors.push(`${name} is required`)
   }
-  if (environment.MAIL_PROVIDER && !['resend','sendgrid'].includes(environment.MAIL_PROVIDER)) {
+  if (demo && environment.OWNER_EMAIL && !isEmail(environment.OWNER_EMAIL.trim())) errors.push('OWNER_EMAIL must be an email address')
+  if (!demo && environment.MAIL_PROVIDER && !['resend','sendgrid'].includes(environment.MAIL_PROVIDER)) {
     errors.push('MAIL_PROVIDER must be resend or sendgrid outside explicit loopback development')
   }
   if (environment.SESSION_SECRET && environment.SESSION_SECRET.length < 32) errors.push('SESSION_SECRET must contain at least 32 characters')
@@ -85,6 +93,20 @@ export function readRuntimeConfiguration(requestUrl: string, environment: Worker
       task: readTaskDestination(environment, true),
       isLocalDevelopment: true,
       seedSampleData: environment.SEED_SAMPLE_DATA === 'true',
+    }
+  }
+  if (isHostedDemoRequest(requestUrl, environment)) {
+    return {
+      appOrigin: new URL(environment.APP_ORIGIN!).origin,
+      sessionSecret: environment.SESSION_SECRET!,
+      setupToken: environment.SETUP_TOKEN,
+      bootstrapAdminEmail: environment.OWNER_EMAIL!.trim().toLowerCase(),
+      mail: { kind: 'local-development' },
+      // Demo settings never carry keys, so a demo's task webhook gets a stand-in one: demo mode refuses the call before it
+      // leaves and the Demo bar lists it, so a visitor can try external tasks and see that nothing is sent.
+      task: readTaskDestination({ ...environment, TASK_API_KEY: environment.TASK_API_KEY ?? 'demo-stand-in-never-sent' }, false),
+      isLocalDevelopment: false,
+      seedSampleData: false,
     }
   }
   return {

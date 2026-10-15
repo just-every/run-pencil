@@ -461,6 +461,61 @@
       }
     },
     {
+      "path": "src/base/demo/index.d.mts",
+      "originPath": "modules/demo/index.d.mts",
+      "revision": "dd916c4811b077c74ae75636cdff6438440be39f",
+      "files": {
+        "src/base/demo/index.d.mts": "2fe3e8715a0b41cc931dbc31a0a73a01a8ddfd8363334f32ebc8978854016e22"
+      },
+      "modes": {
+        "src/base/demo/index.d.mts": "100644"
+      }
+    },
+    {
+      "path": "src/base/demo/README.md",
+      "originPath": "modules/demo/README.md",
+      "revision": "dd916c4811b077c74ae75636cdff6438440be39f",
+      "files": {
+        "src/base/demo/README.md": "2c79b0a5a4c1998f7bdd8638a442159c4eb3cb0eee07032d67d521347751b9f7"
+      },
+      "modes": {
+        "src/base/demo/README.md": "100644"
+      }
+    },
+    {
+      "path": "src/base/demo/sockets.mjs",
+      "originPath": "modules/demo/sockets.mjs",
+      "revision": "dd916c4811b077c74ae75636cdff6438440be39f",
+      "files": {
+        "src/base/demo/sockets.mjs": "be9978b79f3aeef305c6e6fa36ce041b7bda559941c6c377bc4cc2b19506177b"
+      },
+      "modes": {
+        "src/base/demo/sockets.mjs": "100644"
+      }
+    },
+    {
+      "path": "src/base/demo/vite.d.mts",
+      "originPath": "modules/demo/vite.d.mts",
+      "revision": "dd916c4811b077c74ae75636cdff6438440be39f",
+      "files": {
+        "src/base/demo/vite.d.mts": "f43b152b4a993feaf96afdbc276922bfa20d64725ea0150a12ec6ec805a7c7b3"
+      },
+      "modes": {
+        "src/base/demo/vite.d.mts": "100644"
+      }
+    },
+    {
+      "path": "src/base/demo/vite.mjs",
+      "originPath": "modules/demo/vite.mjs",
+      "revision": "dd916c4811b077c74ae75636cdff6438440be39f",
+      "files": {
+        "src/base/demo/vite.mjs": "e38556e50c954814ee8e12278babd627d5cdd051a7ea2c242a61d6c5d84d12f8"
+      },
+      "modes": {
+        "src/base/demo/vite.mjs": "100644"
+      }
+    },
+    {
       "path": "src/base/dependencies",
       "originPath": "modules/dependencies",
       "revision": "8981bc2c4d9e61feca5787c83b4ed44056659dd9",

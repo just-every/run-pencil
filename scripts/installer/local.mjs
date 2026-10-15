@@ -17,9 +17,10 @@ export const lifecycle = localInstaller({
  secrets: { file: '.dev.vars', originKey: 'APP_ORIGIN', keepExisting: true,
   values: ({ input, origin }) => ({ APP_ORIGIN: origin, SEED_ADMIN_EMAIL: input.SEED_ADMIN_EMAIL, PENCIL_LOCAL_DEVELOPMENT: 'true', SEED_SAMPLE_DATA: 'false', MAIL_PROVIDER: 'local', MAIL_FROM: 'auth@localhost.test' }) },
  build: ['pnpm', ['run', 'build:app']],
- migrate: ['pnpm', ['exec', 'wrangler', 'd1', 'migrations', 'apply', 'DB', '--local', '--persist-to', '.wrangler/state', '--config', 'dist/server/wrangler.json']],
+ // `rer demo` migrates its own fresh state folder, never the checkout's .wrangler/state.
+ migrate: ({ demo }) => ['pnpm', ['exec', 'wrangler', 'd1', 'migrations', 'apply', 'DB', '--local', '--persist-to', demo?.state ?? '.wrangler/state', '--config', 'dist/server/wrangler.json']],
  start: production,
- owner: { existingOwnerViaSignIn: true, returnTo: '/setup', displayName: input => input.displayName },
+ owner: { existingOwnerViaSignIn: true, returnTo: '/setup' },
  signIn: { emailKey: 'SEED_ADMIN_EMAIL', returnTo: '/setup' },
 });
 export const { install } = lifecycle;

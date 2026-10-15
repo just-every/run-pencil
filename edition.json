@@ -20,6 +20,7 @@
           "src/vite-env.d.ts",
           "src/routeTree.gen.ts",
           "src/server.ts",
+          "src/demo.ts",
           "src/routes",
           "migrations",
           "sample-data",
@@ -417,6 +418,39 @@
           {
             "path": "src/base/owner-claim",
             "originPath": "modules/owner-claim"
+          }
+        ]
+      }
+    },
+    {
+      "id": "runeditrun/base-demo",
+      "role": "module",
+      "source": {
+        "kind": "local",
+        "paths": [
+          "src/base/demo"
+        ],
+        "origin": {
+          "repository": "https://github.com/runeditrun/base.git",
+          "revision": "dd916c4811b077c74ae75636cdff6438440be39f",
+          "paths": [
+            "modules/demo/README.md",
+            "modules/demo/index.d.mts",
+            "modules/demo/index.mjs",
+            "modules/demo/sockets.mjs",
+            "modules/demo/vite.d.mts",
+            "modules/demo/vite.mjs",
+            "modules/operator-auth/csp.mjs"
+          ]
+        },
+        "mappings": [
+          {
+            "path": "src/base/demo",
+            "originPath": "modules/demo"
+          },
+          {
+            "path": "src/base/demo/csp.mjs",
+            "originPath": "modules/operator-auth/csp.mjs"
           }
         ]
       }

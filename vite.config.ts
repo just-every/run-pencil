@@ -8,6 +8,7 @@ import { docsSite } from './src/core/features/docs/build/plugin.ts'
 import { embedDevFrameCors } from './src/core/features/embedding/build/dev-frame-cors.ts'
 import { archiveOutputGuard } from '@runeditrun/rer/archive-output'
 import { pencilArchiveOutputGuard } from './scripts/pencil-archive-output.mjs'
+import { demoSockets } from './src/base/demo/vite.mjs'
 // The Worker runs first for every deployed path. Under the dev server, Vite's own module, client-entry and file paths, and the one
 // root file browser code imports (seed.json), must reach Vite, or no page hydrates. Every other root file stays behind the Worker.
 const devServedByVite = ['/*', '!/@*', '!/src/*', '!/node_modules/*', '!/seed.json']
@@ -15,9 +16,11 @@ const devServedByVite = ['/*', '!/@*', '!/src/*', '!/node_modules/*', '!/seed.js
 // (rer build checks its output).
 const local = (name: string): Record<string, string> => process.env[name] ? { [name]: process.env[name]! } : {}
 const origin: Record<string, string> = process.env.RER_DEV_ORIGIN ? { APP_ORIGIN: process.env.RER_DEV_ORIGIN } : {}
-const serve = { main: './src/server.dev.ts', vars: { ...origin, ...local('RER_DEV_KEY'), ...local('RER_DEV_IDENTITY'), ...local('RER_MODELS_SERVICE'), ...local('RER_MODELS_KEY') }, assets: { run_worker_first: devServedByVite } }
+const serve = { main: './src/server.dev.ts', vars: { ...origin, ...local('RER_DEV_KEY'), ...local('RER_DEV_IDENTITY'), ...local('RER_MODELS_SERVICE'), ...local('RER_MODELS_KEY'), ...local('RER_DEMO'), ...local('RER_DEMO_EXPIRES') }, assets: { run_worker_first: devServedByVite } }
 export default defineConfig(({ command, isPreview }) => ({ plugins: [
-  cloudflare({ configPath: process.env.PENCIL_WRANGLER_CONFIG ?? './wrangler.jsonc', config: () => command === 'serve' && !isPreview ? serve : Object.keys(origin).length ? { vars: origin } : {}, viteEnvironment: { name: 'ssr' }, inspectorPort: false, persistState: process.env.PENCIL_E2E_STATE ? { path: process.env.PENCIL_E2E_STATE } : true }),
+  // `rer demo`: the Worker's cloudflare:sockets imports get demo mode's guarded connect (Base modules/demo).
+  demoSockets(),
+  cloudflare({ configPath: process.env.PENCIL_WRANGLER_CONFIG ?? './wrangler.jsonc', config: () => command === 'serve' && !isPreview ? serve : Object.keys(origin).length ? { vars: origin } : {}, viteEnvironment: { name: 'ssr' }, inspectorPort: false, persistState: { path: process.env.PENCIL_E2E_STATE ?? process.env.RER_STATE_DIR ?? '.wrangler/state' } }),
   // /docs: the repository's Markdown rendered when Vite loads it (DOCS-001), never in the Worker or the browser.
   docsSite(),
   tanstackStart({ prerender: { enabled: false, autoStaticPathsDiscovery: false, crawlLinks: false } }),
