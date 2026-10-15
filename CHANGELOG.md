@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Mark credential fixtures and examples explicitly synthetic so hosted source checks accept them.
+
 **Managed mail.** Managed hosting through RER sends Pencil email through the RER relay, without a separate mail provider account or API key. Free and Assisted installations retain the ordinary SendGrid or Resend choices; direct Cloudflare hosting still needs your own verified sender and provider key. Pencil pins rer 0.2.23 and its maintained mail adapter, fixing sign-in and invitation delivery from Cloudflare Workers. Relay redirects are refused, rate-limited notifications retry on schedule, and rejected notifications show the owner a plain explanation. RER's Open app link prefills the sign-in email from `login_hint`, using Base's email validation.
 
 ## 0.4.0 - 2026-10-15

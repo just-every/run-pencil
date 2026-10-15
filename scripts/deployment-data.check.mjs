@@ -23,7 +23,7 @@ function fixture() {
   insert('operators', { id: 'operator', workspace_id: 'workspace', email: 'review@example.test', display_name: 'Review', created_at: stamp, updated_at: stamp, is_setup_operator: 1 });
   insert('operator_sessions', { id: 'revoked', operator_id: 'operator', token_hash: 'synthetic-session-hash', expires_at: stamp, last_active_at: stamp, revoked_at: stamp, created_at: stamp, updated_at: stamp });
   insert('auth_magic_links', { id: 'consumed', operator_id: 'operator', token_hash: 'synthetic-link-hash', expires_at: stamp, consumed_at: stamp, revoked_at: stamp, created_at: stamp });
-  insert('oa_tokens', { id: 'native-consumed', token_hash: 'native-hmac-link', kind: 'magic', operator_id: 'operator', operator_version: 1, return_to: '/app', created_at: 1790899200000, expires_at: 1790900100000, consumed_at: 1790899260000 });
+  insert('oa_tokens', { id: 'native-consumed', token_hash: 'synthetic-native-hmac-link', kind: 'magic', operator_id: 'operator', operator_version: 1, return_to: '/app', created_at: 1790899200000, expires_at: 1790900100000, consumed_at: 1790899260000 });
   insert('oa_sessions', { id: 'native-session', token_hash: 'native-hmac-session', operator_id: 'operator', operator_version: 1, kind: 'native', source_token_id: 'native-consumed', created_at: 1790899260000, expires_at: 1790985660000 });
   insert('oa_external_identities', { issuer: 'https://historical.example.test', subject: 'preserved-owner-association', operator_id: 'operator' });
   insert('local_fixture_initializations', { id: 'sample-data', initialized_at: stamp });

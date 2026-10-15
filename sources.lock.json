@@ -845,7 +845,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "5dbc7b518d4eee2ad6f6f403a2812a2b42dfcee2f61b32e6d01907c8731bbd72",
+      "sha256": "569fba62fc360675dbe7523f72e1e87bd6ac0171026901e3a419f19f96b19ff1",
       "executable": false
     },
     "CLAUDE.md": {
@@ -1521,7 +1521,7 @@
       "executable": false
     },
     "scripts/deployment-data.check.mjs": {
-      "sha256": "d14d874ec64677da81bb803809f99924dd51204b1a743271f385e964e434ac42",
+      "sha256": "c9533e4067e395c2e065ca8f2d1013606f27d6de1e7ad067543025eff2203ac9",
       "executable": false
     },
     "scripts/deployment-data.mjs": {
@@ -5777,7 +5777,7 @@
       "executable": false
     },
     "tests/runtime/install-restore.worker.test.ts": {
-      "sha256": "a8ae8ed749a2b23a2e1f9a9b5469408ccfb1e4f5fa0aadbf2311694f67d31006",
+      "sha256": "b2e15bfe71c842ee832ceeb991eb6883fbaab1815c150e6045009b688f83baf7",
       "executable": false
     },
     "tests/runtime/journey.worker.test.ts": {

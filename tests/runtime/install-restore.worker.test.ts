@@ -37,7 +37,7 @@ contract(['DATA-001','BASE-DATA-001','BASE-ACCESS-001','BASE-OPS-003'], 'real D1
     const bootstrap=await run('/auth/bootstrap',{token:setup,displayName:'Original owner'})
     expect(bootstrap.status).toBe(303)
     const cookie=bootstrap.headers.get('set-cookie')!.split(';')[0]
-    await env.DB.prepare('INSERT INTO local_mail_outbox(delivery_id,message_json,created_at) VALUES(?,?,?)').bind('captured',JSON.stringify({token:'planted-private-link'}),new Date().toISOString()).run()
+    await env.DB.prepare('INSERT INTO local_mail_outbox(delivery_id,message_json,created_at) VALUES(?,?,?)').bind('captured',JSON.stringify({token:'synthetic-planted-private-link'}),new Date().toISOString()).run()
     const stamp = new Date().toISOString()
     const workspace = await env.DB.prepare('SELECT id FROM workspaces').first<{id:string}>()
     await env.DB.prepare('INSERT INTO flows(id,workspace_id,slug,title,status,draft_version,last_activity_at,created_at,updated_at) VALUES(?,?,?,?,?,1,?,?,?)').bind('restore-flow',workspace!.id,'restore-flow','Recovered form','closed',stamp,stamp,stamp).run()
