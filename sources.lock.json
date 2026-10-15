@@ -1395,7 +1395,7 @@
       "executable": false
     },
     "scripts/deployment-data-core.mjs": {
-      "sha256": "b0d2c7c7f1517c07b107cb2925535b0d4cc835ce8a753c9125d3b65470e78138",
+      "sha256": "6fe09b2a2911e9a5b725fa08a07e986a5ac785781d150c360c6c75e7c988fd38",
       "executable": false
     },
     "scripts/deployment-data-custody-replay.check.mjs": {
@@ -1487,7 +1487,7 @@
       "executable": false
     },
     "scripts/deployment-data-sql.mjs": {
-      "sha256": "63933bf4bcc74658ea5cfc56d1faa4a66177937e56ea647716db1ff700b947a8",
+      "sha256": "c452c6a325ac3657b6081bb53b342653a37bf409b6d3a51a910084f23d0710c4",
       "executable": false
     },
     "scripts/deployment-data-staging.mjs": {

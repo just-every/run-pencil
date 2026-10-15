@@ -57,7 +57,7 @@ export function initialize(database, history = ledger) {
 
 export function metadata() { return migrations().map(({ name, sql }) => ({ name, sha256: hash(sql) })); }
 export function schema(database) {
-  return JSON.stringify(database.prepare("SELECT type, name, tbl_name, sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*' AND name != '_cf_METADATA' AND name NOT IN ('d1_migrations','_rer_deploy_migrations') ORDER BY type, name").all());
+  return JSON.stringify(database.prepare("SELECT type, name, tbl_name, sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*' AND name NOT IN ('_cf_METADATA','_cf_KV') AND name NOT IN ('d1_migrations','_rer_deploy_migrations') ORDER BY type, name").all());
 }
 export function canonicalDatabaseSchema(database) {
   const expected = new DatabaseSync(':memory:');
@@ -65,7 +65,7 @@ export function canonicalDatabaseSchema(database) {
   finally { expected.close(); }
 }
 export function inventory(database) {
-  return database.prepare("SELECT name FROM sqlite_schema WHERE type = 'table' AND name NOT GLOB 'sqlite_*' AND name != '_cf_METADATA' AND name NOT IN ('d1_migrations','_rer_deploy_migrations') ORDER BY name").all().map(({ name }) => ({ name, columns: database.prepare(`PRAGMA table_xinfo(${quote(name)})`).all().filter(column => column.hidden === 0).map(column => column.name) }));
+  return database.prepare("SELECT name FROM sqlite_schema WHERE type = 'table' AND name NOT GLOB 'sqlite_*' AND name NOT IN ('_cf_METADATA','_cf_KV') AND name NOT IN ('d1_migrations','_rer_deploy_migrations') ORDER BY name").all().map(({ name }) => ({ name, columns: database.prepare(`PRAGMA table_xinfo(${quote(name)})`).all().filter(column => column.hidden === 0).map(column => column.name) }));
 }
 export function encode(value) {
   if (value === null) return { type: 'null' };
