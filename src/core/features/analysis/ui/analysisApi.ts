@@ -32,5 +32,5 @@ export function costLabel(calls: Array<{ inputTokens: number | null; outputToken
   const input = calls.reduce((sum, call) => sum + (call.inputTokens ?? 0), 0), output = calls.reduce((sum, call) => sum + (call.outputTokens ?? 0), 0)
   const priced = calls.filter(call => call.costMicrousd !== null), cost = priced.reduce((sum, call) => sum + call.costMicrousd!, 0)
   const tokens = `${input.toLocaleString()} in / ${output.toLocaleString()} out known tokens${calls.some(call => call.inputTokens === null || call.outputTokens === null) ? ' + unreported usage' : ''}`
-  return priced.length === calls.length && calls.length ? `${tokens} · US$${(cost / 1_000_000).toFixed(4)}` : `${tokens} · cost not reported`
+  return priced.length ? `${tokens} · US$${(cost / 1_000_000).toFixed(4)}${priced.length < calls.length ? ` + ${calls.length - priced.length} calls with unreported cost` : ''}` : `${tokens} · cost not reported`
 }

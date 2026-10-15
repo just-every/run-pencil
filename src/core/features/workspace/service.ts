@@ -16,8 +16,8 @@ export type WorkspaceSettings = {
 
 function isIanaTimeZone(timeZone: string) {
   try {
-    const canonical = new Intl.DateTimeFormat('en-US', { timeZone }).resolvedOptions().timeZone
-    return timeZone === 'UTC' || (timeZone.includes('/') && canonical === timeZone)
+    new Intl.DateTimeFormat('en-US', { timeZone }).format(0)
+    return timeZone === 'UTC' || timeZone.includes('/')
   } catch {
     return false
   }

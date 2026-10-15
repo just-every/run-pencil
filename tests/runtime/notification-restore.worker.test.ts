@@ -1,3 +1,4 @@
+import { freezeDigests } from '../../src/core/features/notifications/digest-cohorts'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { afterEach, beforeAll, expect, vi } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -42,6 +43,13 @@ contract(['DATA-001','BASE-DATA-001','NOTIFY-002','NOTIFY-004','DIST-010','DATA-
   }
   const historical = await f.submit(), quarantined = await f.submit(true), imported = await f.submit()
   await env.DB.prepare("UPDATE responses SET source='imported',notification_eligible=0 WHERE id=?").bind(imported.response.id).run()
+  const daily=await notificationFixture('restored-digest')
+  await daily.services.notifications.preferences.set(daily.scope.workspaceId,daily.flow.flowId,daily.operatorId,'daily')
+  await daily.submit()
+  const opening=(await env.DB.prepare('SELECT next_opening FROM digest_preferences WHERE flow_id=? AND operator_id=?').bind(daily.flow.flowId,daily.operatorId).first<{next_opening:string}>())!.next_opening
+  await freezeDigests(env.DB,opening)
+  const digest=(await env.DB.prepare('SELECT id FROM digest_deliveries WHERE flow_id=?').bind(daily.flow.flowId).first<{id:string}>())!
+  await env.DB.prepare("UPDATE digest_deliveries SET status='unknown',retry_authorized=1 WHERE id=?").bind(digest.id).run()
   const archive = await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__)
   await restoreFixture(env.DB, archive)
   expect(await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__)).toEqual(archive)
@@ -52,6 +60,12 @@ contract(['DATA-001','BASE-DATA-001','NOTIFY-002','NOTIFY-004','DIST-010','DATA-
   try {
     expect(await f.services.notifications.dispatcher.run(now)).toMatchObject({ attempted: 0 })
     expect(await rows()).toEqual(before)
+    const digestBefore=await env.DB.prepare('SELECT * FROM digest_deliveries WHERE id=?').bind(digest.id).first()
+    expect(digestBefore).toMatchObject({status:'unknown',replay_enabled:0,retry_authorized:0})
+    await daily.services.notifications.digest.run(opening)
+    expect(await env.DB.prepare('SELECT * FROM digest_deliveries WHERE id=?').bind(digest.id).first()).toEqual(digestBefore)
+    await expect(daily.services.notifications.preferences.retry(daily.scope.workspaceId,daily.operatorId,digest.id,true,opening)).rejects.toThrow('Restored')
+
     expect(await env.DB.prepare('SELECT count(*) n FROM rer_mail_development_outbox').first()).toEqual({ n: 0 })
     for (const status of ['failed','unknown']) {
       const item = deliveries.find(row => row.status === status)!
@@ -94,6 +108,14 @@ contract(['DATA-001','BASE-DATA-001','NOTIFY-002','NOTIFY-004','DIST-010','DATA-
     expect(await env.DB.prepare('SELECT count(*) n FROM response_outbox WHERE notification_eligible<>0').first()).toEqual({ n: 0 })
     for (const submission of [historical, quarantined, imported]) expect(await env.DB.prepare('SELECT id FROM notification_deliveries WHERE response_id=?').bind(submission.response.id).first()).toBeNull()
     expect(await f.services.notifications.dispatcher.run(now)).toMatchObject({ attempted: 0 })
+    expect((await daily.deliveries()).mode).toBe('daily')
+    const freshResponse=await daily.submit()
+    const next=(await env.DB.prepare('SELECT next_opening FROM digest_preferences WHERE flow_id=? AND operator_id=?').bind(daily.flow.flowId,daily.operatorId).first<{next_opening:string}>())!.next_opening
+    await daily.services.notifications.digest.run(next)
+    const freshDigest=await env.DB.prepare(`SELECT d.status,d.idempotency_key FROM digest_deliveries d JOIN digest_members m ON m.delivery_id=d.id WHERE m.response_id=?`).bind(freshResponse.response.id).first<{status:string;idempotency_key:string}>()
+    expect(freshDigest?.status).toBe('sent')
+    expect(await env.DB.prepare("SELECT COUNT(*) n FROM rer_mail_development_outbox WHERE json_extract(message,'$.deliveryId')=?").bind(freshDigest!.idempotency_key).first()).toEqual({n:1})
+    expect(await env.DB.prepare('SELECT * FROM digest_deliveries WHERE id=?').bind(digest.id).first()).toEqual(digestBefore)
     expect(fetch).not.toHaveBeenCalled()
   } finally { fetch.mockRestore() }
 })

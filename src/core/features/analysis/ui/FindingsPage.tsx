@@ -115,6 +115,8 @@ function RunFacts({ run }: { run: RunDetail }) {
       <dt>Questions read</dt><dd>{run.questions.map(question => question.prompt).join('; ') || '—'}</dd>
       <dt>Sent to</dt><dd>{run.providerOrigin ? <>{new URL(run.providerOrigin.split(' ')[0]).host}: only these answers and response IDs</> : 'Nothing was sent'}</dd>
       <dt>Cost</dt><dd>{run.calls.length ? costLabel(run.calls) : 'No provider call'}</dd>
+      <dt>Finished</dt><dd>{run.finishedAt ? when(run.finishedAt,run.timeZone) : 'Not finished'}</dd>
+      <dt>Provider calls</dt><dd>{run.calls.length ? <ul>{run.calls.map((call,index)=><li key={index}>{when(call.createdAt,run.timeZone)} · {call.outcome} · {costLabel([call])}</li>)}</ul> : 'No provider calls'}</dd>
       <dt>Policies</dt><dd>Disclosure threshold {run.policy.disclosure.threshold} · highest-impact recommendation</dd>
       <dt>Requested</dt><dd>{run.trigger === 'autorun' ? 'Automatically when the flow closed' : 'By an operator'} · {when(run.createdAt, run.timeZone)}</dd>
     </dl>

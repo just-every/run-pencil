@@ -8,7 +8,7 @@ Read README.md, HANDOVER.md, CONTRACT.md, BASELINE.md and the actual package scr
 
 Keep responsibilities in small files, remove dead code, and validate inputs and authorization on the server. No production mocks, silent failures or semantic fallbacks. Keep credentials and server dependencies out of browser bundles. Parallelize independent investigation; keep ordered migrations and coupled writes under one owner.
 
-Run affected checks and the complete `rer verify` gate before release. Tests must exercise behavior and preserve assertions, workload sizes and thresholds. The first-release profile defers exactly ANLY-009 (builder assistance), NOTIFY-001 and NOTIFY-003 (3 clauses); their TODOs and the failing full-contract gate remain until implemented. Record uncovered requirements honestly. Local checks, CI, live mail delivery and hosted capacity are separate evidence.
+Run affected checks and the complete `rer verify` gate before release. Tests must exercise behavior and preserve assertions, workload sizes and thresholds. All product and baseline clauses are active. Draft rewrites (ANLY-009), analysis attention (NOTIFY-001), and daily digests (NOTIFY-003) have behavioral checks; no contract deferral remains. Record uncovered requirements honestly. Local checks, CI, live mail delivery and hosted capacity are separate evidence.
 
 Preserve applied migration filenames and bytes. Export before upgrades and verify restoration into a new database. Never overwrite owner data or replay mail during recovery.
 

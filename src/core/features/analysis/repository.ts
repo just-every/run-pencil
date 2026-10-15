@@ -117,9 +117,10 @@ export class AnalysisRepository {
   /** WS-001 / ANLY-010: regroup historical calls using the current saved workspace zone. */
   async usage(workspaceId: string) {
     const zone = await this.timeZone(workspaceId)
-    // At most 91 UTC dates can intersect the latest 90 occupied local days. Fetch labels, never historical call rows.
-    const dates=await this.db.prepare(`SELECT day FROM (SELECT DISTINCT substr(created_at,1,10) AS day FROM analysis_calls WHERE workspace_id=? ORDER BY day DESC LIMIT 91)
-      UNION SELECT day FROM (SELECT DISTINCT substr(created_at,1,10) AS day FROM draft_ai_calls WHERE workspace_id=? ORDER BY day DESC LIMIT 91) ORDER BY day DESC LIMIT 91`).bind(workspaceId,workspaceId).all<{day:string}>()
+    // A civil day can intersect up to three UTC dates across an offset transition.
+    // Retain 91 such days even for sparse activity; fetch labels, never historical call rows.
+    const dates=await this.db.prepare(`SELECT day FROM (SELECT DISTINCT substr(created_at,1,10) AS day FROM analysis_calls WHERE workspace_id=? ORDER BY day DESC LIMIT 273)
+      UNION SELECT day FROM (SELECT DISTINCT substr(created_at,1,10) AS day FROM draft_ai_calls WHERE workspace_id=? ORDER BY day DESC LIMIT 273) ORDER BY day DESC LIMIT 273`).bind(workspaceId,workspaceId).all<{day:string}>()
     const days=new Set<string>()
     for(const {day} of dates.results) for(const hour of ['00:00:00','23:59:59']) days.add(civilParts(new Date(`${day}T${hour}Z`),zone).day)
     const intervals=[...days].map(day=>({day,start:civilOpening(day,'00:00',zone),end:civilOpening(nextDay(day),'00:00',zone)}))

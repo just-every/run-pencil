@@ -11,7 +11,7 @@ export function NotificationsPanel({flowId,timeZone}:{flowId:string;timeZone:str
     {!state ? <p role="status">Loading notifications…</p> : <>
       {state.senderError && <p role="alert">{state.senderError}</p>}
       <label className="inspector-field">Email me about completed responses<select className="text-input" value={state.mode} disabled={busy} onChange={e=>void setMode(e.target.value as NotificationMode)}><option value="immediately">Immediately</option><option value="daily">Daily</option><option value="off">Off</option></select></label>
-      <p>Your choice applies only to your account and this flow. Daily starts when enabled, with no historical mail.</p>
+      <p>Your choice applies only to your account and this flow.</p><p>Daily starts when enabled, with no historical mail.</p>
       {state.daily && <p>Daily at {state.daily.opening} ({state.daily.zone}). Next cutoff: {when(state.daily.nextOpening)} ({timeZone}).</p>}
       {state.failureReason && <p role="alert">{state.failureReason}</p>}
       <h3>Recent notification deliveries</h3>

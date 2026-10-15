@@ -1,3 +1,6 @@
+import { archiveFixture, restoreFixture } from './archive-fixture'
+import { AnalysisRepository } from '../../src/core/features/analysis/repository'
+import { verifyHistoricalUsageZones } from './analysis-time-proof'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, beforeEach, expect, vi } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -20,7 +23,7 @@ async function fiveAbout(text: (i: number) => string, f: Awaited<ReturnType<type
   return ids
 }
 
-contract(['ANLY-002', 'ANLY-010', 'RESP-005'], 'only the selected answers and stable response IDs leave, to the configured origin with the key as a bearer value, and every call records its usage and cost', async () => {
+contract(['ANLY-002', 'ANLY-010', 'RESP-005', 'WS-001'], 'only the selected answers and stable response IDs leave, to the configured origin with the key as a bearer value, and every call records its usage and cost', async () => {
   const f = await analysisHttp()
   const canaries = { email: 'contact-canary-91c2@example.test', name: 'Respondent Name Canary 91c2', address: '203.0.113.91', answerEmail: 'answer-email-canary-91c2@example.test' }
   await env.DB.prepare("INSERT INTO distribution_contacts (id, workspace_id, name, email, fields_json, created_at, updated_at) VALUES (?, ?, 'Contact Canary', ?, '{}', ?, ?)").bind(crypto.randomUUID(), f.workspaceId, canaries.email, new Date().toISOString(), new Date().toISOString()).run()
@@ -59,6 +62,7 @@ contract(['ANLY-002', 'ANLY-010', 'RESP-005'], 'only the selected answers and st
   expect((await linked.request()).calls[0]).toMatchObject({ provider: 'models', costMicrousd: 4321, costSource: 'receipt' })
   const usage = (await (await linked.call('/api/app/analysis')).json() as any).usage
   expect(usage).toEqual([expect.objectContaining({ feature: 'analysis', calls: 1, costMicrousd: 4321, inputTokens: 1200, outputTokens: 300, unreportedCalls: 0 })])
+  await verifyHistoricalUsageZones()
 })
 
 contract(['ANLY-014'], 'instructions planted in answers change nothing: a tool call or webhook-shaped answer fails, and no task, job, policy or setting changes', async () => {
@@ -161,6 +165,8 @@ contract(['DATA-002', 'DATA-001'], 'erasing a response removes it from every ana
   expect(await everyStoredValue()).not.toContain('erasure-canary-5b1d')
   const after = await f.detail(run.id)
   expect(after).toMatchObject({ redacted: true, stale: true, staleResponses: 0, evidenceCount: 4, evidenceCutoff: run.evidenceCutoff })
+  const cards=await (await f.call('/api/app/dashboard')).json() as any[]
+  expect(cards.find(card=>card.id===f.flowId).analysis).toMatchObject({id:run.id,state:'completed',redacted:1,stale:1,revisionId:f.revisionId})
   expect(await env.DB.prepare('SELECT COUNT(*) AS n FROM analysis_evidence WHERE response_id = ?').bind(ids[0]).first()).toEqual({ n: 0 })
   // Restore blanks a run's schedule and lease (scripts/deployment-data-policy.mjs); the tick fails an interrupted run and sends nothing.
   await ai.reset()
@@ -174,4 +180,32 @@ contract(['DATA-002', 'DATA-001'], 'erasing a response removes it from every ana
   expect(await ai.requests()).toEqual([])
   expect((await f.detail(run.id))).toMatchObject({ state: 'failed', errorCode: 'run_interrupted' })
   expect((await queued.detail(pending.id)).state).toBe('queued')
+  // A queued transport retry loses eligibility atomically with erasure; its original request can never be resent.
+  const retryProof=await analysisHttp(), retryIds=await fiveAbout(i=>`Retry erasure ${i}`,retryProof)
+  await ai.reset();const retryRun=await retryProof.request();expect(retryRun.state).toBe('queued')
+  expect((await retryProof.call(`/api/app/responses/${retryIds[0]}`,undefined,'DELETE')).status).toBe(204)
+  await ai.reset();await tick(Date.parse(retryRun.nextAttemptAt))
+  expect(await ai.requests()).toEqual([])
+  expect(await retryProof.detail(retryRun.id)).toMatchObject({state:'failed',redacted:true,stale:true,errorCode:'evidence_erased',evidenceCount:4,evidenceCutoff:retryRun.evidenceCutoff})
+  // Contact cascade removes the same evidence and provider-derived prose, including any theme that did not cite the erased response.
+  const contactProof=await analysisHttp(), contactCanary='contact-analysis-erasure-canary-83a', contactIds=await fiveAbout(i=>i===0?contactCanary:`Unaffected ${i}`,contactProof)
+  const contact=await contactProof.services.distribution.contacts.save(contactProof.workspaceId,{name:'Synthetic contact',email:'analysis-contact@example.test'}) as {id:string}
+  const launch=await contactProof.services.distribution.launches.launch({workspaceId:contactProof.workspaceId,flowId:contactProof.flowId,operatorId:contactProof.operatorId,contactIds:[contact.id],commandKey:crypto.randomUUID()})
+  const participant=await env.DB.prepare('SELECT id FROM invitation_participants WHERE launch_id=?').bind(launch.id).first<{id:string}>()
+  await env.DB.prepare('UPDATE responses SET participant_id=? WHERE id=?').bind(participant!.id,contactIds[0]).run()
+  await ai.script(answer({outcome:'findings',reason:'',themes:[{...theme(contactCanary,contactIds),summary:contactCanary}],recommendations:[recommend(contactCanary,[0])]}))
+  const contactRun=await contactProof.request(),untouched=await env.DB.prepare('SELECT * FROM response_answers WHERE response_id=? ORDER BY id').bind(contactIds[1]).all()
+  await contactProof.services.distribution.contacts.erase(contactProof.workspaceId,contact.id,contactProof.operatorId)
+  expect(await everyStoredValue()).not.toContain(contactCanary)
+  expect(await contactProof.detail(contactRun.id)).toMatchObject({redacted:true,stale:true,staleResponses:0,evidenceCount:4,evidenceCutoff:contactRun.evidenceCutoff})
+  expect((await env.DB.prepare('SELECT * FROM response_answers WHERE response_id=? ORDER BY id').bind(contactIds[1]).all()).results).toEqual(untouched.results)
+  expect(await env.DB.prepare('SELECT token,contact_id,email_snapshot,name_snapshot FROM invitation_participants WHERE id=?').bind(participant!.id).first()).toEqual({token:null,contact_id:null,email_snapshot:null,name_snapshot:null})
+  expect(await (await contactProof.call(`/api/app/flows/${contactProof.flowId}/responses/export/start?format=json`)).text()).not.toContain(contactCanary)
+  const archive=await archiveFixture(env.DB,__PENCIL_CORE_MIGRATIONS__)
+  expect(JSON.stringify(archive)).not.toContain(contactCanary)
+  const restored=(env as unknown as {IMPORT_SECOND:D1Database}).IMPORT_SECOND
+  await applyD1Migrations(restored,__PENCIL_CORE_MIGRATIONS__);await restoreFixture(restored,archive)
+  expect(await new AnalysisRepository(restored).detail(contactProof.workspaceId,contactRun.id)).toMatchObject({redacted:true,stale:true,evidenceCount:4})
+  expect(await archiveFixture(restored,__PENCIL_CORE_MIGRATIONS__)).toEqual(archive)
+
 })
