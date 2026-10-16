@@ -4,8 +4,9 @@ import { initializedPredicate, initializedReplacement } from './deployment-data-
 import { ledgerDefinition, ledgerShapeQuery, historyGuard } from './deployment-data-ledger.mjs';
 export { ledger } from './deployment-data-ledger.mjs';
 export const quote = name => `"${name.replaceAll('"', '""')}"`;
-// Cloudflare owns both metadata tables; neither belongs to the Pencil product graph.
-export const schemaQuery = "SELECT type, name, tbl_name, sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*' AND name NOT IN ('_cf_METADATA','_cf_KV') AND name NOT IN ('d1_migrations','_rer_deploy_migrations') ORDER BY type, name";
+// Cloudflare owns both metadata tables, and Base's demo guard owns rer_demo (present only under RER_DEMO);
+// none belongs to the Pencil product graph.
+export const schemaQuery = "SELECT type, name, tbl_name, sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*' AND name NOT IN ('_cf_METADATA','_cf_KV','rer_demo') AND name NOT IN ('d1_migrations','_rer_deploy_migrations') ORDER BY type, name";
 export function rowExpression(table) {
   const cells = table.columns.map(name => {
     const column = quote(name);

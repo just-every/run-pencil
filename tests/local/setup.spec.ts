@@ -30,7 +30,7 @@ test('fresh rer owner finishes setup before hydration, then collects a response 
     const page = await context.newPage()
     expect((await context.request.post(app.origin + '/__dev/key', { headers: { Origin: app.origin }, data: { key } })).status()).toBe(204)
     await page.goto(app.origin + '/setup'); await expect(page).toHaveURL(app.origin + '/signin')
-    await page.getByRole('link', { name: 'Continue as owner' }).click()
+    await page.getByRole('link', { name: 'Sign in as Synthetic owner' }).click()
     await expect(page).toHaveURL(app.origin + '/setup')
     await page.goto(app.origin + '/app/settings'); await expect(page).toHaveURL(app.origin + '/setup')
     await expect(page.getByLabel('Business name')).toBeEnabled()

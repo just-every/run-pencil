@@ -1,13 +1,14 @@
 import { useState } from 'react'
 import type { BackupSummary } from './model'
-import type { BrowserRestoreResult } from './browser-restore'
+import type { BrowserRestoreResult, testBrowserRestore } from './browser-restore'
 
 const restoreCommand = 'node scripts/deployment-data-restore-test.mjs --input exports/pencil-backup.rer --output exports/restore-test.sqlite'
 async function responseError(response: Response) {
   const body = await response.json().catch(() => ({})) as {message?:string}
   throw new Error(body.message ?? `Backup could not finish (${response.status}). Keep your deployment and try again.`)
 }
-export function BackupPage() {
+/** The route supplies the browser-only restore test, so the Worker build never carries sql.js or its WASM. */
+export function BackupPage({loadRestoreTest}: {loadRestoreTest?: () => Promise<{testBrowserRestore: typeof testBrowserRestore}>}) {
   const [busy,setBusy] = useState<'download'|'check'|'restore'>()
   const [notice,setNotice] = useState<{error:boolean; text:string}>()
   const [checked,setChecked] = useState<BackupSummary>()
@@ -38,10 +39,10 @@ export function BackupPage() {
     finally { setBusy(undefined) }
   }
   const restore = async () => {
-    if (!file) return
+    if (!file || !loadRestoreTest) return
     setBusy('restore'); setRestored(undefined); setNotice(undefined)
     try {
-      const { testBrowserRestore } = await import('./browser-restore')
+      const { testBrowserRestore } = await loadRestoreTest()
       setRestored(await testBrowserRestore(file,laterFile))
     } catch (error) { setNotice({error:true,text:error instanceof Error ? error.message : 'Restoration did not pass. Keep the original deployment and archive.'}) }
     finally { setBusy(undefined) }

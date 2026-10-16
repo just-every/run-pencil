@@ -62,7 +62,7 @@ export function createPencilServices(platform: PencilPlatform) {
     connections: new IntegrationConnections(platform),
     notifications: {
       digest: new DigestDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,undefined,senderFailure,mailProvider),
-      preferences: new NotificationRepository(platform.databaseBinding, notificationSenderError(from,mailProvider) ?? senderFailure, mailProvider === 'local-development'),
+      preferences: new NotificationRepository(platform.databaseBinding, notificationSenderError(from,mailProvider) ?? senderFailure, mailProvider === 'local-development', platform.configuration.isHostedDemo),
       dispatcher: new NotificationDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,workspaceId => readNotificationBrand(platform.databaseBinding,workspaceId),senderFailure,mailProvider),
     },
     distribution: { segments: new DistributionSegments(platform.databaseBinding), importer: new ContactImport(platform.databaseBinding), contacts: new DistributionContacts(platform.databaseBinding), launches: new InvitationLaunches(platform.databaseBinding, extensions.distributionPolicies), deliveries, dispatcher },
