@@ -925,7 +925,7 @@
       "executable": false
     },
     "docs/guide/install.md": {
-      "sha256": "d80993277d376a5d74f5515869b8c131b2dd2d1eda62cbb126ee5896dbae5685",
+      "sha256": "5b4ad22244ed143dbc5ef1fe6fec1feb301da83e60273ee9b877fc09be6600ff",
       "executable": false
     },
     "docs/guide/invitations.md": {
@@ -5533,7 +5533,7 @@
       "executable": false
     },
     "tests/e2e/request-notifications.spec.ts": {
-      "sha256": "ba318ff7d35f0246cfa4dc20636e80cb0f2d7475bced3455940f04f90ee78559",
+      "sha256": "1744445e1da49338b3fb10f3126ef50666745a3e0a047e7e9da852298459bb08",
       "executable": false
     },
     "tests/e2e/review-corrections.spec.ts": {

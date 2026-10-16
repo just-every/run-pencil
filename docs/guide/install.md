@@ -44,7 +44,7 @@ Your copy serves these addresses, all under the origin that setup printed:
 | `/app` | The operator app, with **Flows**, **Audience** and **Settings**. You need to be signed in. |
 | `/pencil` | Redirects to `/`. |
 | `/docs` | This guide. |
-| `/` | The Lobby by default: your business name and one button, **Finish setup** until `/setup` is done and **Sign in** after. A **Public landing flow** selected in **Settings** explicitly overrides it. |
+| `/` | The Lobby by default: the Pencil installation name and one button, **Finish setup** until `/setup` is done and **Sign in** after. A **Public landing flow** selected in **Settings** explicitly overrides it. |
 
 Without a selected landing flow, `/` shows the Lobby. Selecting a flow in Settings replaces it with that flow's respondent experience, including its normal closed or not-found state. See [A form on your home page](publish-and-share.md#a-form-on-your-home-page).
 

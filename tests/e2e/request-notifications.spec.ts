@@ -23,7 +23,7 @@ contract(['NOTIFY-002','NOTIFY-004'],'a public response sends without a Cron tic
   // A real person must have had enough time to read and answer the question.
   await page.waitForTimeout(3500)
   await page.getByRole('button',{name:'Submit response'}).click()
-  await expect(page.getByText('This public link cannot edit a completed response.')).toBeVisible()
+  await expect(page.getByRole('heading',{name:'Thank you',exact:true})).toBeVisible()
   await expect.poll(async()=>(await call(`${path}/notifications`)).deliveries).toMatchObject([{status:'sent',attempts:1}])
   expect((await call(`${path}/notifications`)).timerLastStartedAt).toBe(previousTimer)
   await Promise.all([
@@ -38,5 +38,5 @@ contract(['NOTIFY-002','NOTIFY-004'],'a public response sends without a Cron tic
   const messages=(await mail.json()).messages.filter((message:{text?:string})=>message.text?.includes(`/app/flows/${flow.id}/results`))
   expect(messages).toHaveLength(1)
   await page.goto(`/app/flows/${flow.id}/results`)
-  await expect(page.getByText('Local development suppresses email.',{exact:false})).toBeVisible()
+  await expect(page.getByText('A clearer sign for the collection counter would help.',{exact:true}).first()).toBeVisible()
 })
