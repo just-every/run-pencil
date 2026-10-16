@@ -1,3 +1,4 @@
+import { appHeaders } from './api-headers'
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { contract } from './contract'
@@ -14,7 +15,7 @@ contract(['RSLT-001','RSLT-003','LEDG-001','LEDG-003','BASE-PUBLIC-003'], 'full 
   await expect(page.getByRole('heading',{name:'Your flows'})).toBeVisible()
   let serial=0
   const call=async<T,>(path:string,data?:unknown):Promise<T>=> {
-    const response=await page.request.fetch(path,{method:data===undefined?'GET':'POST',headers:{'CF-Connecting-IP':`198.18.177.${++serial % 250}`},...(data===undefined?{}:{data})})
+    const response=await page.request.fetch(path,{method:data===undefined?'GET':'POST',headers:{...appHeaders,'CF-Connecting-IP':`198.18.177.${++serial % 250}`},...(data===undefined?{}:{data})})
     expect(response.status(),path).toBeLessThan(300)
     return response.status()===204 ? undefined as T : await response.json() as T
   }
@@ -46,7 +47,12 @@ contract(['RSLT-001','RSLT-003','LEDG-001','LEDG-003','BASE-PUBLIC-003'], 'full 
   await ledger.getByRole('button',{name:'Next responses'}).click();await expect(ledger.getByText('26–50 / 71',{exact:true})).toBeVisible()
   await ledger.getByRole('button',{name:'Next responses'}).click();await expect(ledger.getByText('51–71 / 71',{exact:true})).toBeVisible()
   await ledger.getByRole('button',{name:'Previous responses'}).click();await expect(ledger.getByText('26–50 / 71',{exact:true})).toBeVisible()
-  await ledger.getByRole('button',{name:'Previous responses'}).click();await expect(ledger.getByText('1–25 / 71',{exact:true})).toBeVisible()
+  const firstPage=page.waitForResponse(response=>{
+    const url=new URL(response.url())
+    return url.pathname===`${path}/ledger` && url.searchParams.get('offset')==='0'
+  })
+  await ledger.getByRole('button',{name:'Previous responses'}).click();await firstPage
+  await expect(ledger.getByText('1–25 / 71',{exact:true})).toBeVisible()
   await expect(ledger.getByRole('button',{name:'Previous responses'})).toBeDisabled()
   await ledger.getByRole('button',{name:'Previous responses'}).scrollIntoViewIfNeeded();await capture('ledger-history')
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)

@@ -1,3 +1,4 @@
+import { appHeaders } from './api-headers'
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import AxeBuilder from '@axe-core/playwright'
@@ -26,7 +27,7 @@ contract(['RSLT-001', 'RSLT-002', 'BASE-PUBLIC-003'], 'selects answer grammar fr
   const call = async <T,>(path: string, data?: unknown): Promise<T> => {
     const response = await page.request.fetch(path, {
       method: data === undefined ? 'GET' : 'POST',
-      headers: { 'CF-Connecting-IP': `198.18.179.${++serial % 250}` },
+      headers: { ...appHeaders, 'CF-Connecting-IP': `198.18.179.${++serial % 250}` },
       ...(data === undefined ? {} : { data }),
     })
     expect(response.status(), path).toBeLessThan(300)
