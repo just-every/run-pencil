@@ -841,7 +841,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "47597b25cb66552a59f1cc42c2d0ad10dc14bcc2ac45adf4e1f80f8404c1b9a2",
+      "sha256": "7c401440d46c08d0d3fa719a456c4811335287462b83805fd43bab867ad6c829",
       "executable": false
     },
     "BASELINE.md": {
@@ -849,7 +849,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "0162618dbd55d71e72cae6be462afa1aaac36465dc5b1cb6d167feb8d4c5d72a",
+      "sha256": "c812ba6f2765de0dafb04737d9e1f73385d1a09a0753e5cfadb9e14f01d1b274",
       "executable": false
     },
     "CLAUDE.md": {
@@ -989,7 +989,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "56786103107c6c8d7994cf47262646a2c1266b927ed6d12ddb4f8aab53ac4f97",
+      "sha256": "4aa40603a616d816a42e677aed6949313b0486867f0d3f900f51d63060fcc128",
       "executable": false
     },
     "migrations/core/0000_seeded_flowly_data_spine.sql": {
@@ -1161,7 +1161,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "8d994a2c04e32652630a6d742ecec88a67cd53e1e172823a7531574f43b6ed45",
+      "sha256": "09b747a59b3eaff8f88dfeab086fca5ab4903fbab7a6f35f93d308da6bd3fd58",
       "executable": false
     },
     "playwright.admission.config.ts": {
@@ -1181,7 +1181,7 @@
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "2186cda19be12bca5172aa06aeb95ef0b1cb5fd32151aafc77a78a1ba3cb0d5e",
+      "sha256": "52ed7d531260e81e23b156604ac89d6a8c305a50ee9148dd991df89b45235f47",
       "executable": false
     },
     "public/brand/band.svg": {
@@ -1325,7 +1325,7 @@
       "executable": false
     },
     "scripts/delivery/base/declarations.mjs": {
-      "sha256": "00924a1564e172d4d210a32936afe757870e226796465c11ac148e39d0ea0a85",
+      "sha256": "d8cf67d18fdc6ff027d323d0986a7815b52c71df01c4cbb3dde428cfc7f55a0c",
       "executable": false
     },
     "scripts/delivery/base/export.mjs": {
@@ -1361,7 +1361,7 @@
       "executable": false
     },
     "scripts/delivery/base/packaging.json": {
-      "sha256": "df027af09e1055756b2a688561d06d08909b522ece085b6bb27226b449c2f457",
+      "sha256": "de913bc34885f6a855cfb034a37fe29d08f8709e2d787cca983982a6bf0940ad",
       "executable": false
     },
     "scripts/delivery/base/paths.mjs": {
@@ -5409,7 +5409,7 @@
       "executable": false
     },
     "tests/e2e/signin-hint.spec.ts": {
-      "sha256": "fcd52cc12eb1e6615800eac8caff9c53560da299708d4bc955caa9b63c58e9cf",
+      "sha256": "b5f277744ae3bee2ec67481dd9dbfcda6a50d05314caec772d133bf496f73dfa",
       "executable": false
     },
     "tests/e2e/site-hero.spec.ts": {

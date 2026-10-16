@@ -1,6 +1,6 @@
 import { openStateDatabase, stateDatabaseFile } from './state-database'
 import { expect, test } from './fixtures'
-import { mkdir } from 'node:fs/promises'
+import { mkdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 // A visitor without a cookie learns no operator's address from /signin; only a link's login_hint fills the field.
@@ -17,7 +17,11 @@ test('sign-in reveals no operator email and prefills only from login_hint', asyn
   for (const email of emails) expect(html).not.toContain(email.toLowerCase())
   await page.goto('/signin')
   await expect(page.getByLabel('Operator email')).toHaveValue('')
-  await page.goto('/signin?login_hint=Linked.Owner%40example.test')
+  // Follow the app's generated sign-in declaration as RER's Open app does.
+  const { surfaces: { app: { signIn } } } = JSON.parse(await readFile('management/integration/deployment-spec.json', 'utf8'))
+  const openApp = new URL(signIn.path, 'https://pencil.example.test')
+  if (signIn.loginHint) openApp.searchParams.set('login_hint', 'Linked.Owner@example.test')
+  await page.goto(openApp.pathname + openApp.search)
   await expect(page.getByLabel('Operator email')).toHaveValue('linked.owner@example.test')
   await expect(page.getByRole('button', { name: 'Send magic link' })).toBeEnabled()
   if (process.env.PENCIL_SCREENSHOTS_DIR) {

@@ -89,6 +89,10 @@
         "app": {
           "path": "/app",
           "originVariable": "APP_ORIGIN",
+          "signIn": {
+            "path": "/signin",
+            "loginHint": true
+          },
           "readiness": [
             {
               "path": "/health",

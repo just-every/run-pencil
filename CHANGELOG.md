@@ -1,5 +1,9 @@
 # Release notes
 
+## Unreleased
+
+**Managed sign-in.** Pencil pins rer 0.2.25 and declares `/signin` with email-hint support in its generated deployment specification. RER's **Open app** link now opens that sign-in page with the claimed owner's email filled in, while the application entry remains `/app`.
+
 ## 0.5.0 - 2026-10-16
 
 **Upgrading a local install.** Stop dev (`rer dev --stop`), create the ignored exports folder (`mkdir -p exports`), export (`rer export --output exports/before-upgrade.rer`), pull, then run `rer install`, `rer setup` and `rer dev`. Upgrading from 0.4.0 applies the additive migration `0037_import_progress.sql`, which adds the refreshed Base import kit's preparation checkpoints, stream sources and erasure progress; backups keep them. Hosted deployments apply it through `rer deploy`.
