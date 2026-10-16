@@ -925,7 +925,7 @@
       "executable": false
     },
     "docs/guide/install.md": {
-      "sha256": "839edfe442e83619c271ee86f4c487639e2eb98c8902591d966c9bddb7aeba15",
+      "sha256": "84e215e111afc35f500c150af97c589a4ad5bd15c1ae84aacf4f560cb0f63876",
       "executable": false
     },
     "docs/guide/invitations.md": {
@@ -953,7 +953,7 @@
       "executable": false
     },
     "docs/HOSTING.md": {
-      "sha256": "e7485103e0309c93aed59e281d76b305d916bb3d93f00c7fae7a0ccb2a4fdab9",
+      "sha256": "092fe7bca60e7d0c374c5b7edca0b5fd0b9e50ca53c08b89a0f317317bf7ea42",
       "executable": false
     },
     "docs/IMMUTABLE-MIGRATIONS.json": {

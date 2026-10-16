@@ -7,7 +7,7 @@ This page takes you from the Pencil source code to a working copy on your own co
 Use macOS, Linux or Windows with WSL2, as on the Run page.
 
 - **Node.js 22 or later, including npm, and Git for the npm installation route below.** Install Node from [nodejs.org](https://nodejs.org/en/download), then check `node --version` and `npm --version` in your terminal. Node and npm must be on your `PATH` before installing and starting rer.
-- **rer, the Run Edit Run command.** Install its global launcher once per computer with `npm install -g @runeditrun/rer`, the same npm command as the [Run page](https://run-pencil.com/run). In the source folder it runs the exact `@runeditrun/rer` version in Pencil's `package.json` and lockfile. `rer --version` can show the global launcher and checkout versions separately; a difference does not change the checkout pin. Do not change that pin to match your global launcher.
+- **rer, the Run Edit Run command.** The one line below installs its global launcher for you; to install it yourself, run `npm install -g @runeditrun/rer` once per computer. In the source folder it runs the exact `@runeditrun/rer` version in Pencil's `package.json` and lockfile. `rer --version` can show the global launcher and checkout versions separately; a difference does not change the checkout pin. Do not change that pin to match your global launcher.
 - **The source code.** Get it from https://github.com/just-every/run-pencil and open a terminal in its folder.
 
 With Node available, rer installs Pencil's pinned runtime and pnpm for its own commands. It does not put pnpm on your shell's `PATH`; the commands below use npm or npx when needed. `rer dev` prepares a local owner automatically; choosing your own local owner details with `rer setup` is optional.
