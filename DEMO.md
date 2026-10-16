@@ -26,7 +26,7 @@ and nothing is sent. The module is a recorded byte-exact copy in
 | Effect | In a demo |
 |---|---|
 | Response, invitation and sign-in mail | Silently suppressed; never sent. Invited people sign in with Base's one-click **Sign in as** path. |
-| Form-action task webhooks (`TASK_PROVIDER=webhook`) | The call is refused before it leaves and listed under "Blocked sends"; the action records the attempt as unknown, never delivered. |
+| Form-action task webhooks (`TASK_PROVIDER=webhook`) | Answered by `demoEffect` with a provider-shaped `demo-…` task id; nothing leaves, and the action records the task as confirmed. |
 | AI analysis and draft rewrites | Mocked in every demo, whatever the private settings hold: `src/core/platform/ai/demo.ts` answers with provider-shaped results built from the submitted responses, so themes, recommendations and accepted drafts work and no provider is called. |
 | Published public forms and embeds | Locally on the demo's loopback origin only. Hosted, every path, `/f/…` and `/embed/…` included, answers only a request carrying the visitor's demo cookie; anyone else gets the start page. |
 

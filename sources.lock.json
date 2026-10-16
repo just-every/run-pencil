@@ -841,7 +841,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "f864b1afa444c3fa795e29b35c33056c40f6e2f5352b5b77483548abd7fbea6d",
+      "sha256": "d2037837428a9b42f536d216122c6097669c70106b806ac51f7e6e09694df746",
       "executable": false
     },
     "BASELINE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "DEMO.md": {
-      "sha256": "e21d49b5589d9d9e53c82df43fcdf22546b26f5e4510aa31f14050d5d018e87c",
+      "sha256": "c6ea52bf3416c505eb728d13ab009ce0ec68937a240a9e5ac40aa7b4516874f3",
       "executable": false
     },
     "deploy-demo.json": {
@@ -1364,6 +1364,10 @@
       "sha256": "41650d5f2c22c0dbf8c4d8640bc89d872907828b558df4af89c4f70059d4878f",
       "executable": false
     },
+    "scripts/delivery/base/native-export.mjs": {
+      "sha256": "5c0f90e688f5242dbc2f62416259cbb3074647298df8daa431a7022aa10d1a41",
+      "executable": false
+    },
     "scripts/delivery/base/package.mjs": {
       "sha256": "5a32dec3274b66474e12d5141e973542248ceeecf0f8464f6e9da87d60228cb4",
       "executable": false
@@ -1400,8 +1404,16 @@
       "sha256": "cb8a88fc712f5f102c2a00454a6d46b0ca0b9ec15bd79bf4370358375ad7a009",
       "executable": false
     },
+    "scripts/delivery/base/sign-in.mjs": {
+      "sha256": "951aada2c00131ab7c808974827654b0fda20bcaeed1f2f97194b25441c03aff",
+      "executable": false
+    },
     "scripts/delivery/base/spec.mjs": {
       "sha256": "65179ca5222485513260e8d58aaae6740ae6fe1b27065e96f0d95d197fc6d3f0",
+      "executable": false
+    },
+    "scripts/delivery/base/sql-statements.mjs": {
+      "sha256": "8819f7f91b7781905796ea35b01dd1a55e08ed3893ff6d8aafaf03d2f35c1c9a",
       "executable": false
     },
     "scripts/delivery/build.mjs": {
@@ -1533,7 +1545,7 @@
       "executable": false
     },
     "scripts/deployment-data-sql.mjs": {
-      "sha256": "c452c6a325ac3657b6081bb53b342653a37bf409b6d3a51a910084f23d0710c4",
+      "sha256": "60a0eeef72f579f0fdf2db8b34f593b8feeb6b83f0538f5b423799c668ea1628",
       "executable": false
     },
     "scripts/deployment-data-staging.mjs": {
@@ -3741,7 +3753,7 @@
       "executable": false
     },
     "src/core/features/backup/BackupPage.tsx": {
-      "sha256": "83837ff2d6cf02a39c857bc34c5e1e52c5b27fc2626d0e7119a100225e7c7109",
+      "sha256": "6f487b77824d995b0361e3766b41da279a3d69047df53336f329fcf73fbba373",
       "executable": false
     },
     "src/core/features/backup/browser-restore.ts": {
@@ -5217,7 +5229,7 @@
       "executable": false
     },
     "src/routes/app.backup.tsx": {
-      "sha256": "13c7645a86e9dc8ad88ff9b75817b1f5658ee01dae7a088fe0679ea507a3f7ab",
+      "sha256": "ff6250a9a848d7c28090dbc8508e89ffb3befd6820f89bca8f1612c21ff1c96f",
       "executable": false
     },
     "src/routes/app.flows.$flowId.builder.tsx": {
@@ -5761,7 +5773,7 @@
       "executable": false
     },
     "tests/local-cli/dev-identity.test.mjs": {
-      "sha256": "21fb45741cb19402ff9d9663f909d06e7c6513cfd505e0c3275a2790633c6aa5",
+      "sha256": "762753158536e44a814eb7d8fd20070c19c3851fbb91ee68c053279bbc91fd6f",
       "executable": false
     },
     "tests/local-cli/rer-journey.test.mjs": {

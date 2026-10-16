@@ -29,6 +29,8 @@ test('rer dev opens signed in as the owner, a persona really works as an operato
   assert.equal((await get('/setup', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: 'Synthetic business', timeZone: 'Australia/Brisbane' }) })).status, 303);
   assert.equal((await get('/api/app/workspace')).status, 200);
   await scheduledNotification({ request: (path, options) => get(path, { ...options, key }), publicRequest: (path, options) => fetch(new URL(path, app.origin), { ...options, headers: { Origin: app.origin, ...options.headers } }), email });
+  // The delivery commits inside the scheduled run; rer reports the run once it has answered.
+  for (const deadline = Date.now() + 60_000; !/RER_SCHEDULED .* ok /.test(runtime.output()) && Date.now() < deadline;) await new Promise(resolve => setTimeout(resolve, 500));
   assert.match(runtime.output(), /RER_SCHEDULED .* ok /);
   // The persona is an invited colleague: its own operator, listed beside the owner, never the protected setup operator.
   assert.equal(keep(await get('/auth/dev/enter?as=operator', { key })).status, 303);
