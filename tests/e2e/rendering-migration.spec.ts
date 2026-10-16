@@ -1,3 +1,4 @@
+import { appHeaders } from './api-headers'
 import { developmentInbox } from '../helpers/development-outbox'
 import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { operatorEmail } from './auth-identity'
@@ -23,7 +24,7 @@ const rpcHeaders = { Origin: origin, 'Sec-Fetch-Site': 'same-origin', 'x-tsr-ser
 
 async function login(request: APIRequestContext) {
   const email = operatorEmail()
-  expect((await request.post('/auth/magic-link', { data: { email } })).status()).toBe(202)
+  expect((await request.post('/auth/magic-link', { headers: appHeaders, data: { email } })).status()).toBe(202)
   const inbox = await developmentInbox(path => request.get(path, { headers: devKeyHeaders }), email)
   const response = await request.post('/auth/confirm', { headers: { Origin: new URL(process.env.PENCIL_E2E_BASE_URL!).origin }, data: { token: inbox.messages[0].magicLinkToken },  maxRedirects: 0 })
   expect(response.status()).toBe(303)
@@ -108,7 +109,7 @@ contract(['SHELL-001','HOME-001','DIST-009','BASE-PUBLIC-002'], 'fresh public SS
   expect(asset.status()).toBe(200)
   expect(asset.headers()['content-type']).toMatch(/javascript/)
   expect(asset.headers()['x-content-type-options']).toBe('nosniff')
-  expect((await request.post(assetPath!)).status()).toBe(404)
+  expect((await request.post(assetPath!, { headers: appHeaders })).status()).toBe(404)
   // Explicit loopback names are supported locally; an unrelated host is not.
   expect((await request.get('/f/aurora-coffee-post-visit', { headers: { Host: 'unapproved.invalid' } })).status()).toBe(404)
   for (const referrer of ['', 'https://unapproved.invalid/host']) {

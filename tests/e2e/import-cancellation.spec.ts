@@ -1,3 +1,4 @@
+import { appHeaders } from './api-headers'
 import AxeBuilder from '@axe-core/playwright'
 import { contract } from './contract'
 import { expect } from './fixtures'
@@ -9,8 +10,8 @@ for (const action of ['cancel', 'review', 'new-file', 'replacement'] as const) {
     await signInEmptyWorkspace(page)
     const definition = JSON.stringify({ title: 'Cancellation race form', fields: [{ ref: 'answer', title: 'Answer', type: 'short_text' }] })
     const csv = 'Answer,Submit Date\n' + Array.from({ length: 201 }, (_, i) => `answer-${i},2026-09-12 10:03:00`).join('\n')
-    const reviewed = await (await page.request.post('/api/app/imports/review', { data: { definition, csv } })).json()
-    const committed = await page.request.post('/api/app/imports/commit', { data: { definition, csv, columns: reviewed.columns, plannedAt: reviewed.plannedAt, fingerprint: reviewed.fingerprint, acknowledged: true } })
+    const reviewed = await (await page.request.post('/api/app/imports/review', { headers: appHeaders, data: { definition, csv } })).json()
+    const committed = await page.request.post('/api/app/imports/commit', { headers: appHeaders, data: { definition, csv, columns: reviewed.columns, plannedAt: reviewed.plannedAt, fingerprint: reviewed.fingerprint, acknowledged: true } })
     expect(committed.status()).toBe(200)
     const prepared = await committed.json()
     expect(prepared.state).toBe('preparing')
@@ -24,16 +25,16 @@ for (const action of ['cancel', 'review', 'new-file', 'replacement'] as const) {
     await expect(page.getByText('An interrupted commit may have private import data awaiting completion. Retry the reviewed import, or Cancel to remove that private data.')).toBeVisible()
     let publishingId = prepared.id
     if (action === 'replacement') {
-      const cancelled = await page.request.post('/api/app/imports/cancel-staging', { data: { fingerprint: reviewed.fingerprint } })
+      const cancelled = await page.request.post('/api/app/imports/cancel-staging', { headers: appHeaders, data: { fingerprint: reviewed.fingerprint } })
       expect(await cancelled.json()).toEqual({ cancelled: true })
-      const replacement = await page.request.post('/api/app/imports/commit', { data: { definition, csv, columns: reviewed.columns, plannedAt: reviewed.plannedAt, fingerprint: reviewed.fingerprint, acknowledged: true } })
+      const replacement = await page.request.post('/api/app/imports/commit', { headers: appHeaders, data: { definition, csv, columns: reviewed.columns, plannedAt: reviewed.plannedAt, fingerprint: reviewed.fingerprint, acknowledged: true } })
       expect(replacement.status()).toBe(200)
       publishingId = (await replacement.json()).id
       expect(publishingId).not.toBe(prepared.id)
     }
     let published = prepared
     do {
-      const publication = await page.request.post(`/api/app/imports/${publishingId}/resume`, { data: {} })
+      const publication = await page.request.post(`/api/app/imports/${publishingId}/resume`, { headers: appHeaders, data: {} })
       expect(publication.status()).toBe(200)
       published = await publication.json()
     } while (published.state === 'preparing')

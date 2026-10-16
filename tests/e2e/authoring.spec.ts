@@ -1,3 +1,4 @@
+import { appHeaders } from './api-headers'
 import { expect, test } from './fixtures'
 import { checkAuthoringLayout, signInEmptyWorkspace } from './authoring-helpers'
 
@@ -98,7 +99,7 @@ test('labels, one Save, real controls, reorder, branching, Share and a current d
   expect((await page.request.get(publicUrl)).status()).toBe(200)
   const settings = await (await page.request.get('/api/app/workspace')).json()
   const host = new URL(page.url()).origin
-  expect((await page.request.put('/api/app/workspace', { data: { ...settings, embedAllowedOrigins: [host] } })).ok()).toBe(true)
+  expect((await page.request.put('/api/app/workspace', { headers: appHeaders, data: { ...settings, embedAllowedOrigins: [host] } })).ok()).toBe(true)
   const embedUrl = /src="([^"]+)"/.exec(embedCode)![1]
   expect((await page.request.get(embedUrl, { headers: { Referer: `${host}/host-page`, 'Sec-Fetch-Dest': 'iframe' } })).status()).toBe(200)
   await page.getByRole('button', { name: 'Edit steps', exact: true }).click()

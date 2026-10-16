@@ -1,3 +1,4 @@
+import { appHeaders } from './api-headers'
 import { developmentInbox } from '../helpers/development-outbox'
 import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { operatorEmail } from './auth-identity'
@@ -63,11 +64,11 @@ contract('DIST-002', 'the embedded route completes the same flow inside a real i
   await verifyHealth(page)
   await page.goto(`/f/${slug}`)
   const source = new URL(`/embed/${slug}`, page.url()).toString()
-  await request.post('/auth/magic-link', { data: { email: operatorEmail() } })
+  await request.post('/auth/magic-link', { headers: appHeaders, data: { email: operatorEmail() } })
   const inbox = await developmentInbox(path => request.get(path, { headers: devKeyHeaders }), operatorEmail())
   await request.post('/auth/confirm', { headers: { Origin: new URL(process.env.PENCIL_E2E_BASE_URL!).origin }, data: { token: inbox.messages[0].magicLinkToken }, maxRedirects: 0 })
   const workspace = await request.get('/api/app/workspace').then((response) => response.json())
-  const configured = await request.put('/api/app/workspace', { headers: { origin: new URL(page.url()).origin }, data: { timeZone: workspace.timeZone, sendingWindowStart: workspace.sendingWindowStart, sendingWindowEnd: workspace.sendingWindowEnd, embedAllowedOrigins: [new URL(page.url()).origin] } })
+  const configured = await request.put('/api/app/workspace', { headers: { ...appHeaders, origin: new URL(page.url()).origin }, data: { timeZone: workspace.timeZone, sendingWindowStart: workspace.sendingWindowStart, sendingWindowEnd: workspace.sendingWindowEnd, embedAllowedOrigins: [new URL(page.url()).origin] } })
   expect(configured.status()).toBe(200)
   // Use an actual host document, free of an in-flight React hydration tree.
   await page.route('**/pencil-embed-test-host', (route) => route.fulfill({ contentType: 'text/html', body: `<main><h1>Host page</h1><iframe title="Pencil feedback" src="${source}"></iframe></main>` }))

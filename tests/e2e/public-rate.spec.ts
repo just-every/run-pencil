@@ -1,3 +1,4 @@
+import { appHeaders } from './api-headers'
 import { contract } from './contract'
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
@@ -81,7 +82,7 @@ contract(['BASE-ACCESS-003','RESP-015'], 'final submissions enforce the manifest
       const date = new Date(start).toISOString()
       db.prepare("INSERT INTO public_rate_limit_windows (id,scope,address_hash,window_started_at,count,expires_at,created_at,updated_at) VALUES (?, 'submission', ?, ?, ?, ?, ?, ?)").run(`rate-submission-${hash}-${date}`, hash, date, manifest.limits.publicRateLimits.finalSubmissionsPerIpPerMinute - 1, new Date(start + 60000).toISOString(), date, date)
     }
-    const input = { headers: { 'CF-Connecting-IP': address }, data: { sessionId: 'synthetic-absent-rate-session', sessionToken: 'x'.repeat(64), answers: [], idempotencyKey: 'synthetic-rate-final-submit' } }
+    const input = { headers: { ...appHeaders, 'CF-Connecting-IP': address }, data: { sessionId: 'synthetic-absent-rate-session', sessionToken: 'x'.repeat(64), answers: [], idempotencyKey: 'synthetic-rate-final-submit' } }
     expect((await request.post('/api/public/flows/aurora-coffee-post-visit/responses', input)).status()).toBe(400)
     let denied = await request.post('/api/public/flows/aurora-coffee-post-visit/responses', input)
     if (denied.status() === 400) {

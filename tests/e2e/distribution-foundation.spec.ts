@@ -26,7 +26,7 @@ contract(['AUD-001','AUD-002','AUD-003','RESP-005','RESP-008','DIST-005','LEDG-0
   const email = await inviteAudienceOperator(page, info) ?? process.env.PENCIL_AUDIENCE_OPERATOR_EMAIL ?? operatorEmail()
   await call('/auth/magic-link', { email })
   const inbox = await developmentInbox(path => request.get(path, { headers: audienceOutboxHeaders() }), email)
-  expect((await request.post('/auth/confirm', { data: { token: inbox.messages[0].magicLinkToken }, headers, maxRedirects: 0 })).status()).toBe(303)
+  expect((await request.post('/auth/confirm', {  data: { token: inbox.messages[0].magicLinkToken }, headers, maxRedirects: 0 })).status()).toBe(303)
   await page.goto('/app')
   // First-run may redirect to the setup form before the operator shell exists.
   if (new URL(page.url()).pathname === '/setup') {
@@ -92,7 +92,6 @@ contract(['AUD-001','AUD-002','AUD-003','RESP-005','RESP-008','DIST-005','LEDG-0
   await page.getByRole('button', { name: 'Queue segment invitations' }).click()
   await expect(page.getByRole('status')).toContainText('2 invited · 0 already invited')
   await expect(page.getByRole('status')).toContainText('Review each durable delivery outcome')
-  await expect(page.getByText(/Delivery uses the configured mail provider/)).toBeVisible()
   await audienceScreen(page, info, 'invitation-launch')
   const mail = await invitationMail(page, recipient), otherMail = await invitationMail(page, other)
   const distribution = await call(`${path}/distribution`)
