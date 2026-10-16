@@ -1177,7 +1177,7 @@
       "executable": false
     },
     "playwright.config.ts": {
-      "sha256": "c27aeb9a3866c75d38f37c0e850f17d7c4ba9ed37dd8294ec2f912bbb6f8b536",
+      "sha256": "a4ede6b3e1516f21809be304f6c6c9e7b1bf6fcc66426c07c3419bd1dededbe8",
       "executable": false
     },
     "playwright.local.config.ts": {
@@ -5409,7 +5409,7 @@
       "executable": false
     },
     "tests/e2e/fixtures.ts": {
-      "sha256": "124dc377ca3d7b7eca3d172d5a9b23e5059e929704871fdc9e95d65b82eb0d59",
+      "sha256": "69911022b209bd474243caa16de7f6193556b02fe0758241996fb330ed62d9c6",
       "executable": false
     },
     "tests/e2e/form-import.spec.ts": {

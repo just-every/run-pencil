@@ -15,10 +15,11 @@ const syntheticAddress = (testId: string) => {
   return `198.18.${(number >>> 8) % 255}.${number % 255}`
 }
 export const test = base.extend({
-  extraHTTPHeaders: async ({ extraHTTPHeaders }, use, info) => {
+  extraHTTPHeaders: async ({ extraHTTPHeaders, baseURL }, use, info) => {
     // The option fixture reaches the browser context, page.request and the
     // request-only fixture. A page override left API reads sharing loopback's
     // public allowance with every preceding journey in the shard.
-    await use({ ...extraHTTPHeaders, 'CF-Connecting-IP': syntheticAddress(`${info.project.name}:${info.testId}:${info.retry}`) })
+    // Follow the test's base URL: site journeys use a different origin from the app.
+    await use({ Origin: new URL(baseURL!).origin, ...extraHTTPHeaders, 'CF-Connecting-IP': syntheticAddress(`${info.project.name}:${info.testId}:${info.retry}`) })
   },
 })

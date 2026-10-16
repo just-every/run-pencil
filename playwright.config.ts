@@ -22,7 +22,6 @@ export default defineConfig({
   use: {
     baseURL,
     launchOptions: { headless: true, args: ['--use-mock-keychain', '--password-store=basic'] },
-    extraHTTPHeaders: { Origin: new URL(baseURL).origin },
     trace: 'retain-on-failure',
   },
   projects: [
