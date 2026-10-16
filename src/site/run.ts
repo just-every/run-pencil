@@ -4,8 +4,8 @@ import type { RunData } from '../base/run-site'
 export const run: RunData = {
   name: 'Pencil',
   repository: 'https://github.com/just-every/run-pencil',
-  clone: 'git clone https://github.com/just-every/run-pencil.git pencil',
-  folder: 'pencil',
+  clone: 'npx -y @runeditrun/rer dev just-every/run-pencil',
+  folder: 'run-pencil',
   requirements: 'Works on macOS, Linux or Windows with WSL2. rer installs the pinned Node and pnpm for you. Local rer setup is optional.',
   licence: 'MIT',
   docs: true,

@@ -15,10 +15,10 @@ With Node available, rer installs Pencil's pinned runtime and pnpm for its own c
 ## Start Pencil on your computer
 
 ```sh
-npm install -g @runeditrun/rer
-git clone https://github.com/just-every/run-pencil.git pencil && cd pencil
-rer dev
+npx -y @runeditrun/rer dev just-every/run-pencil
 ```
+
+To start it again later, run `cd run-pencil && rer dev`.
 
 `rer dev` installs the exact locked dependencies, applies local migrations and prepares a local owner on first launch. It then prints the app’s address and a `RER_OPEN` link that opens it signed in. Later launches keep your owner, data and private settings, and apply any migration a newer source added before serving. To move to a newer Pencil, follow [Upgrading a local install](#upgrading-a-local-install). To choose local owner details, optionally run `rer setup --owner-email you@example.com --owner-name "Your Name"`; no separate setup command is needed for the normal launch.
 

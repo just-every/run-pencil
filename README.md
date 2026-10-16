@@ -38,10 +38,10 @@ Pencil is an editable form builder and feedback workspace with branching questio
 Pencil runs on macOS, Linux or Windows with WSL2. The npm route requires **Node.js 22 or later, including npm, and Git**. Install Node from [nodejs.org](https://nodejs.org/en/download), then check `node --version` and `npm --version`. Node and npm must already be on your `PATH` to install and start rer. The installer command matches the [Run page](https://run-pencil.com/run); rer installs Pencil's pinned runtime and pnpm for its own commands, so you do not need global pnpm:
 
 ```sh
-npm install -g @runeditrun/rer
-git clone https://github.com/just-every/run-pencil.git pencil && cd pencil
-rer dev
+npx -y @runeditrun/rer dev just-every/run-pencil
 ```
+
+To start it again later, run `cd run-pencil && rer dev`.
 
 The global rer installation is the launcher. Inside this checkout, rer uses the exact `@runeditrun/rer` version in `package.json` and its lockfile; `rer --version` can show both versions. A different global launcher version does not change Pencil's pin. Keep that pin when following these instructions.
 

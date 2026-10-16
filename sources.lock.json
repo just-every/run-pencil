@@ -925,7 +925,7 @@
       "executable": false
     },
     "docs/guide/install.md": {
-      "sha256": "5b4ad22244ed143dbc5ef1fe6fec1feb301da83e60273ee9b877fc09be6600ff",
+      "sha256": "839edfe442e83619c271ee86f4c487639e2eb98c8902591d966c9bddb7aeba15",
       "executable": false
     },
     "docs/guide/invitations.md": {
@@ -1225,7 +1225,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "8d0b70be60125fa2a8260d8b1971cd339b9c60bd9947ff64d5b4b303a2a3bc8d",
+      "sha256": "da779ecfeefe3fb6ff0e748efe2065226b979e192878466a082b69959bcd0c09",
       "executable": false
     },
     "RELEASE.json": {
@@ -5301,7 +5301,7 @@
       "executable": false
     },
     "src/site/run.ts": {
-      "sha256": "c1d7b541f63c7ef0f6757f0954585c26737ec9885237adc9f7b52a6f5c485251",
+      "sha256": "60811807aa116658cb3dfbd44dcabb4e8e49ca7f87919e7da195e245186b72ef",
       "executable": false
     },
     "src/site/virtual-client.d.ts": {
