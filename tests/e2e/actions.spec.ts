@@ -1,3 +1,4 @@
+import { appHeaders } from './api-headers'
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import AxeBuilder from '@axe-core/playwright'
@@ -31,7 +32,7 @@ contract(['ACT-001', 'ACT-002', 'ACT-003', 'ACT-005', 'ACT-006', 'ACT-007', 'ACT
 
     // Native responses collected through the public endpoints.
     const call = async <T,>(path: string, data?: unknown): Promise<T> => {
-      const response = await page.request.fetch(path, { method: data === undefined ? 'GET' : 'POST', ...(data === undefined ? {} : { data }) })
+      const response = await page.request.fetch(path, { headers: appHeaders, method: data === undefined ? 'GET' : 'POST', ...(data === undefined ? {} : { data }) })
       expect(response.status(), path).toBeLessThan(300)
       return response.status() === 204 ? undefined as T : await response.json() as T
     }
@@ -147,6 +148,6 @@ contract(['ACT-001', 'ACT-002', 'ACT-003', 'ACT-005', 'ACT-006', 'ACT-007', 'ACT
     const after = await call<{ state: string; verdict: string | null; history: unknown[] }>(`/api/app/actions/${overdue.id}`)
     expect([after.state, after.verdict, after.history.length]).toEqual(['planned', null, 1])
     expect(receiver.tasks.size).toBe(2)
-    await page.request.delete('/api/app/connections/task', { data: {} })
+    await page.request.delete('/api/app/connections/task', { headers: appHeaders, data: {} })
   } finally { await receiver.close() }
 })

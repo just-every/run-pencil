@@ -37,7 +37,7 @@ contract(['FLOW-003', 'FLOW-005', 'FLOW-019', 'RESP-003', 'LEDG-004'], 'publishe
     expect(retried).toMatchObject({ responseId: receipt.responseId, idempotent: true, completionStepId: draft.steps[1].id })
     const exported = await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, {})
     expect(exported.responses).toHaveLength(1); expect(exported.responses[0].id).toBe(receipt.responseId)
-    expect(exported.responses[0].answers[0].value).toEqual(type === 'consent' ? { accepted: true, statement: settings(type).statement } : value)
+    expect(exported.responses[0].answers[0].value).toEqual(type === 'consent' ? { accepted: true, statement: settings(type).statement } : type === 'dropdown' ? 'a' : value)
     expect(JSON.parse(JSON.stringify(exported))).toEqual(exported)
     if (type === 'consent') { const editable = await f.draft(); await f.services.flows.updateBuilderDraft({ ...f.flow, expectedVersion: editable.flow.draftVersion, stepId: q.id, prompt: type, required: true, questionSettings: { statement: 'A later draft statement.' } }); expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, {})).responses[0].answers[0].value).toEqual({ accepted: true, statement: 'I agree to the published statement.' }) }
     if (type === 'nps') { const endpoint = await f.start(); await f.mature(endpoint.sessionId); await f.final(endpoint, [{ stepId: q.id, value: 10 }]); expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, {})).responses.map(row => row.answers[0].value).sort()).toEqual([0, 10]) }

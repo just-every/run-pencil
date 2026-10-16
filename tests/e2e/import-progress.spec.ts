@@ -1,3 +1,4 @@
+import { appHeaders } from './api-headers'
 import AxeBuilder from '@axe-core/playwright'
 import { contract } from './contract'
 import { expect } from './fixtures'
@@ -8,8 +9,8 @@ contract(['IMPORT-002', 'IMPORT-004', 'BASE-PUBLIC-003'], 'paged imports pause a
   await signInEmptyWorkspace(page)
   const definition = JSON.stringify({ title: 'Paged response import', fields: [{ ref: 'answer', title: 'Answer', type: 'short_text' }] })
   const csv = 'Answer,Submit Date\n' + Array.from({ length: 201 }, (_, i) => `distinct-${i},2026-09-12 10:03:00`).join('\n')
-  const review = await (await page.request.post('/api/app/imports/review', { data: { definition, csv } })).json()
-  const committed = await page.request.post('/api/app/imports/commit', { data: { definition, csv, plannedAt: review.plannedAt, columns: review.columns, fingerprint: review.fingerprint, acknowledged: true } })
+  const review = await (await page.request.post('/api/app/imports/review', { headers: appHeaders, data: { definition, csv } })).json()
+  const committed = await page.request.post('/api/app/imports/commit', { headers: appHeaders, data: { definition, csv, plannedAt: review.plannedAt, columns: review.columns, fingerprint: review.fingerprint, acknowledged: true } })
   expect(committed.status()).toBe(200)
   expect(await committed.json()).toMatchObject({ state: 'preparing', checkpoint: 0 })
   await page.getByRole('link', { name: 'Import a form' }).click()

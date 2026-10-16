@@ -19,6 +19,7 @@ export const test = base.extend({
     // The option fixture reaches the browser context, page.request and the
     // request-only fixture. A page override left API reads sharing loopback's
     // public allowance with every preceding journey in the shard.
+    // Let Chromium supply Origin for each document, including sandboxed embeds.
     await use({ ...extraHTTPHeaders, 'CF-Connecting-IP': syntheticAddress(`${info.project.name}:${info.testId}:${info.retry}`) })
   },
 })

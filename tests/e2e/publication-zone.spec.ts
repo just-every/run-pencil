@@ -1,3 +1,4 @@
+import { appHeaders } from './api-headers'
 import AxeBuilder from '@axe-core/playwright'
 import { expect } from './fixtures'
 import { contract } from './contract'
@@ -6,7 +7,7 @@ import { checkAuthoringLayout, signInEmptyWorkspace } from './authoring-helpers'
 contract(['WS-001','FLOW-005','FLOW-010','BASE-PUBLIC-003'], 'branch and publication options show a human workspace zone with accessible compact geometry', async ({ page }, info) => {
   await signInEmptyWorkspace(page)
   const settings = await (await page.request.get('/api/app/workspace')).json()
-  expect((await page.request.put('/api/app/workspace', { data: { ...settings, timeZone: 'Australia/Brisbane' } })).ok()).toBe(true)
+  expect((await page.request.put('/api/app/workspace', { headers: appHeaders, data: { ...settings, timeZone: 'Australia/Brisbane' } })).ok()).toBe(true)
   await page.getByRole('button', { name: 'Customer feedback', exact: true }).click()
   await page.getByRole('button', { name: 'Create draft flow' }).click()
   const editor = page.getByRole('complementary', { name: 'Step settings' })

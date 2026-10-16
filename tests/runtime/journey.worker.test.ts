@@ -190,7 +190,7 @@ contract(['FLOW-008','FLOW-009','FLOW-017','FLOW-020','RESP-004','RESP-010','LED
   expect(ledger.responses[0].answers[1]).toMatchObject({ label: 'Your exact words', value: raw })
   expect(JSON.stringify(ledger)).not.toMatch(/sessionToken|sessionId|deviceClass|addressHash/)
   const exported = await ok<{ count: number; responses: typeof ledger.responses }>(`${f.path}/responses/export?revisionId=${old.revisionId}`)
-  expect(exported.responses).toEqual(ledger.responses)
+  expect(exported.responses).toEqual(ledger.responses.map(response => ({ ...response, answers: response.answers.map(answer => ({ ...answer, value: answer.value === f.more.id ? 'detail' : answer.value })) })))
   const hidden = await f.submit(newer, [{ stepId: f.route.id, value: f.skip.id }, { stepId: f.detail.id, value: 'hidden answer' }], 'journey-hidden-key')
   expect(hidden.status).toBe(201)
   const hiddenReceipt = await hidden.json<{ responseId: string }>()

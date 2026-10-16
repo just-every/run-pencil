@@ -1,3 +1,4 @@
+import { appHeaders } from './api-headers'
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import AxeBuilder from '@axe-core/playwright'
@@ -54,7 +55,7 @@ contract(['ANLY-001', 'ANLY-003', 'ANLY-004', 'ANLY-005', 'ANLY-006', 'ANLY-008'
 
     // Native responses collected through the public endpoints.
     const call = async <T,>(path: string, data?: unknown): Promise<T> => {
-      const response = await page.request.fetch(path, { method: data === undefined ? 'GET' : 'POST', ...(data === undefined ? {} : { data }) })
+      const response = await page.request.fetch(path, { headers: appHeaders, method: data === undefined ? 'GET' : 'POST', ...(data === undefined ? {} : { data }) })
       expect(response.status(), path).toBeLessThan(300)
       return response.status() === 204 ? undefined as T : await response.json() as T
     }
@@ -131,5 +132,5 @@ contract(['ANLY-001', 'ANLY-003', 'ANLY-004', 'ANLY-005', 'ANLY-006', 'ANLY-008'
     await page.getByRole('button', { name: 'Retry' }).click()
     await expect(page.getByRole('heading', { name: 'What 7 responses say' })).toBeVisible()
     expect(provider.requests.length).toBe(5)
-  } finally { await page.request.delete('/api/app/connections/analysis', { data: {} }); await provider.close() }
+  } finally { await page.request.delete('/api/app/connections/analysis', { headers: appHeaders, data: {} }); await provider.close() }
 })

@@ -27,7 +27,7 @@ export async function checkBrand(page: Page, accent = 'rgb(117, 117, 117)', with
   if (withLogo) {
     await expect(image).toBeVisible()
     expect(await image.evaluate((img: HTMLImageElement) => new URL(img.currentSrc).origin)).toBe(new URL(process.env.PENCIL_E2E_BASE_URL!).origin)
-    expect(await image.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true)
+    await expect.poll(() => image.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true)
   } else await expect(image).toHaveCount(0)
   expect(await surface.evaluate(el => getComputedStyle(el).getPropertyValue('--brand-accent').trim())).toBe('#757575')
   if (await surface.locator('.primary-button').count()) await expect.poll(() => surface.locator('.primary-button').first().evaluate(el => getComputedStyle(el).backgroundColor)).toBe(accent)

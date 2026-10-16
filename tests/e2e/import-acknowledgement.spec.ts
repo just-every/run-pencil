@@ -1,3 +1,4 @@
+import { appHeaders } from './api-headers'
 import AxeBuilder from '@axe-core/playwright'
 import { contract } from './contract'
 import { expect, test } from './fixtures'
@@ -80,12 +81,12 @@ contract(['IMPORT-002', 'IMPORT-003', 'IMPORT-004', 'BASE-PUBLIC-003'], 'native 
   expect(native.counts.response_answers).toBe(baseline.counts.response_answers + 201)
   expect(native.counts.form_import_targets).toBe(baseline.counts.form_import_targets + 202)
   for (const table of ['respondent_sessions', 'response_outbox', 'notification_deliveries', 'notification_attempts']) expect(native.counts[table]).toBe(baseline.counts[table])
-  const started = await page.request.post(`/api/app/flows/${review.flowId}/responses/export/start`, { data: { source: 'imported', format: 'json' } })
+  const started = await page.request.post(`/api/app/flows/${review.flowId}/responses/export/start`, { headers: appHeaders, data: { source: 'imported', format: 'json' } })
   expect(started.status()).toBe(200)
   let token: string | undefined = (await started.json()).token
   let content = ''
   while (token) {
-    const exported = await page.request.post(`/api/app/flows/${review.flowId}/responses/export`, { data: { token } })
+    const exported = await page.request.post(`/api/app/flows/${review.flowId}/responses/export`, { headers: appHeaders, data: { token } })
     expect(exported.status()).toBe(200)
     content += await exported.text()
     token = exported.headers()['x-export-next']

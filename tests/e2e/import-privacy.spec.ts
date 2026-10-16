@@ -1,3 +1,4 @@
+import { appHeaders } from './api-headers'
 import AxeBuilder from '@axe-core/playwright'
 import { contract } from './contract'
 import { expect } from './fixtures'
@@ -20,7 +21,7 @@ contract(['IMPORT-002', 'IMPORT-003', 'BASE-PUBLIC-003'], 'hidden names and neut
   await expect(page.getByRole('combobox', { name: '3. Answer', exact: true })).toBeEnabled()
   expect(await page.getByRole('combobox', { name: '3. Answer', exact: true }).locator('option').allTextContents()).not.toContain('Technical identifier (short_text)')
   expect(await page.locator('body').innerText()).not.toMatch(/private-hidden-value|private-network-value/)
-  const malicious = await page.request.post('/api/app/imports/review', { data: { definition, csv, columns: [{ column: 0, target: 'startedAt' }, { column: 1, target: 'submittedAt' }, { column: 2, target: 'skip' }, { column: 3, target: 'submittedAt' }] } })
+  const malicious = await page.request.post('/api/app/imports/review', { headers: appHeaders, data: { definition, csv, columns: [{ column: 0, target: 'startedAt' }, { column: 1, target: 'submittedAt' }, { column: 2, target: 'skip' }, { column: 3, target: 'submittedAt' }] } })
   expect(malicious.status()).toBe(200)
   expect((await malicious.json()).columns.slice(0, 2)).toEqual([{ column: 0, target: 'skip' }, { column: 1, target: 'skip' }])
   await page.screenshot({ path: info.outputPath('private-source-columns.png'), fullPage: true })

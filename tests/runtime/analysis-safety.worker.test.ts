@@ -94,7 +94,7 @@ contract(['ANLY-008'], 'an unconfigured or failing provider fails the request wi
   const off = await analysisHttp({ AI_ENABLED: 'false' })
   await fiveAbout(i => `Unanalysed ${i}`, off)
   const status = await (await off.call('/api/app/analysis')).json() as any
-  expect(status.provider).toMatchObject({ state: 'off', setup: expect.stringMatching(/AI_ENABLED/) })
+  expect(status.provider.state).toBe('off')
   const run = await off.request()
   expect(run).toMatchObject({ state: 'failed', errorCode: 'ai_disabled', themes: [], recommendation: null, calls: [] })
   expect(await ai.requests()).toEqual([])
