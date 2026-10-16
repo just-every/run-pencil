@@ -94,7 +94,7 @@ describe.skipIf(!hasUpgradeInput)('declared release migration in a Workers D1 ru
     const preferences = new NotificationRepository(env.DB)
     expect((await env.DB.prepare('SELECT * FROM notification_preferences').all()).results).toEqual([])
     for (const operatorId of ['upgrade-operator-1', 'upgrade-operator-2']) {
-      expect(await preferences.read('upgrade-workspace', 'upgrade-flow', operatorId)).toEqual({ mode: 'off', failureReason: null, senderError: null, deliveries: [] })
+      expect(await preferences.read('upgrade-workspace', 'upgrade-flow', operatorId)).toEqual({ localMail: false, timerLastStartedAt: null, mode: 'off', failureReason: null, senderError: null, deliveries: [] })
     }
     for (const table of ['responses', 'response_outbox']) {
       const rows = (await env.DB.prepare(`SELECT id,notification_eligible FROM ${table} ORDER BY id`).all()).results

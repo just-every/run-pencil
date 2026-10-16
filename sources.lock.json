@@ -6013,7 +6013,7 @@
       "executable": false
     },
     "tests/runtime/upgrades.worker.test.ts": {
-      "sha256": "dde863e54fdbbdab5df251e79449279383fd2359372436eff341ec815fcfc290",
+      "sha256": "6ea2c5ea5a63f02cad4c98ca0172083f36278ebaf56e943df31f857ff9980a33",
       "executable": false
     },
     "tests/runtime/upgrades/0.4.0.json": {
