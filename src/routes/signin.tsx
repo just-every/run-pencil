@@ -2,7 +2,6 @@ import { editorLeaf } from '../editor/leaf'
 import { createFileRoute } from '@tanstack/react-router'
 import { loadSignIn } from '../core/app/loaders'
 import { SignInPage } from '../core/features/auth/ui/SignInPage'
-// @ts-expect-error Base's shared value rules are maintained JavaScript.
 import { normalizeEmail } from '../base/operator-auth/policy.mjs'
 
 function emailHint(value: unknown) {

@@ -38,7 +38,8 @@ export function BackupPage() {
     finally { setBusy(undefined) }
   }
   const restore = async () => {
-    if (!file) return
+    // The restore test runs only in the browser; this keeps sql.js and its WASM out of the Worker build.
+    if (import.meta.env.SSR || !file) return
     setBusy('restore'); setRestored(undefined); setNotice(undefined)
     try {
       const { testBrowserRestore } = await import('./browser-restore')

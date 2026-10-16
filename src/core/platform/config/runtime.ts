@@ -27,7 +27,7 @@ export function isLocalDevelopmentRequest(requestUrl: string, environment: Worke
     && environment.MAIL_PROVIDER === 'local'
 }
 
-/** A hosted demo container (Base demo host): RER_DEMO=1 behind its https origin, with mail silently suppressed.
+/** A hosted demo (Base's native demo host): RER_DEMO=1 behind its https origin, with mail silently suppressed.
  * The front supplies the origin, the demo owner (OWNER_EMAIL) and fresh secrets; effects are mocked. */
 export function isHostedDemoRequest(requestUrl: string, environment: WorkerBindings) {
   return environment.RER_DEMO === '1' && environment.MAIL_PROVIDER === 'local' && !isLoopbackRequest(requestUrl)

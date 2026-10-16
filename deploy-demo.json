@@ -9,6 +9,5 @@
     "TASK_PROVIDER": "webhook",
     "TASK_WEBHOOK_URL": "https://tasks.example.com/pencil"
   },
-  "instanceType": "basic",
   "ownerEmail": "owner@aurora-coffee.test"
 }
