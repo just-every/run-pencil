@@ -4,9 +4,9 @@ import { testDevKey } from '../helpers/dev-key.mjs'
 export { expect }
 // The test-only mail transport captures native links; the application has no inbox UI.
 export async function openMailLink(page: Page, email: string) {
-  const inbox = await developmentInbox(path => page.request.get(path, { headers: { 'x-rer-dev-key': testDevKey } }), email)
-  expect(inbox.messages.length).toBeGreaterThan(0)
-  await page.goto('/auth/confirm?token=' + inbox.messages[0].magicLinkToken)
+  let inbox: Awaited<ReturnType<typeof developmentInbox>>
+  await expect.poll(async () => { inbox = await developmentInbox(path => page.request.get(path, { headers: { 'x-rer-dev-key': testDevKey } }), email); return inbox.messages.length }).toBeGreaterThan(0)
+  await page.goto('/auth/confirm?token=' + inbox!.messages[0].magicLinkToken)
 }
 // Each independent run (including a retry) starts with its own address, then keeps it
 // for the entire journey. The product's real per-address limits remain enforced.

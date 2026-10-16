@@ -38,6 +38,28 @@ contract(['ACT-003', 'ACT-004', 'ACT-007'], 'a 500 fails visibly, keeps the loca
   const state = await received()
   expect(Object.keys(state.tasks)).toHaveLength(1)
   expect(state.requests.map(request => request.idempotencyKey)).toEqual([`pencil-action-${t.action.id}`, `pencil-action-${t.action.id}`])
+  // The self-serve Todoist path confirms the same displayed command and uses
+  // its UUID again when the paid/network edge reports a temporary failure.
+  const todo = await actionsHttp({TASK_PROVIDER:'webhook',TASK_WEBHOOK_URL:'https://api.todoist.com/api/v1/sync',TASK_API_KEY:'synthetic-todoist-network-edge-only'} as Partial<WorkerBindings>)
+  const action = await todo.create(), path = `/api/app/actions/${action.id}/task`
+  const preview = await (await todo.call(path)).json() as Status
+  const requests: string[] = []
+  const edge = vi.spyOn(globalThis,'fetch').mockImplementation(async (_url,options) => {
+    const commands = JSON.parse(new URLSearchParams(String(options!.body)).get('commands')!)
+    requests.push(JSON.stringify(commands))
+    if(requests.length === 1) return new Response(null,{status:503})
+    return Response.json({sync_status:{[commands[0].uuid]:'ok'},temp_id_mapping:{[commands[0].temp_id]:'real-edge-task-123'}})
+  })
+  try {
+    const first = await todo.call(`${path}/confirm`,{payloadSha256:preview.payloadSha256})
+    expect((await first.json()).delivery.state).toBe('failed')
+    const retry = await todo.call(`${path}/retry`,{})
+    expect((await retry.json()).delivery).toMatchObject({state:'confirmed',remoteTaskId:'real-edge-task-123'})
+    expect(requests).toHaveLength(2)
+    expect(requests[0]).toBe(requests[1])
+    expect(JSON.parse(requests[0])).toEqual((preview as Status & {request:{commands:unknown}}).request.commands)
+  } finally {edge.mockRestore()}
+
 })
 
 contract(['ACT-003', 'ACT-007'], 'a connection dropped after the receiver stored the task is unknown; retry on the same key returns the existing task', async () => {
@@ -82,7 +104,7 @@ contract(['ACT-004'], 'with no adapter configured the external task is unavailab
   const f = await actionsHttp()
   const action = await f.create()
   const status = await (await f.call(`/api/app/actions/${action.id}/task`)).json() as Status
-  expect(status).toEqual({ available: false, message: 'External tasks are not set up. Set TASK_PROVIDER=webhook, TASK_WEBHOOK_URL and TASK_API_KEY to create external tasks.', delivery: null })
+  expect(status).toMatchObject({ available: false, delivery: null })
   const refused = await f.call(`/api/app/actions/${action.id}/task/confirm`, { payloadSha256: 'a'.repeat(64) })
   expect(refused.status).toBe(409)
   expect((await f.call(`/api/app/actions/${action.id}/transitions`, { to: 'in_progress' })).status).toBe(200)

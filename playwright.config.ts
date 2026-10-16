@@ -21,6 +21,7 @@ export default defineConfig({
   retries: process.env.CI ? 1 : 0,
   use: {
     baseURL,
+    launchOptions: { headless: true, args: ['--use-mock-keychain', '--password-store=basic'] },
     extraHTTPHeaders: { Origin: new URL(baseURL).origin },
     trace: 'retain-on-failure',
   },

@@ -1,9 +1,9 @@
 import { nextOpening } from '../../shared/civilTime'
 import { NotFoundError, ValidationError } from '../../shared/errors'
 export type NotificationMode = 'immediately' | 'off' | 'daily'
-export type NotificationState = { mode: NotificationMode; daily?: {zone:string;opening:string;nextOpening:string}; failureReason: string | null; senderError: string | null; deliveries: Array<{ id: string; status: string; reason: string | null; attempts: number; updatedAt: string; recipient: string; day?:string; cutoffStart?:string; cutoffEnd?:string; replayEnabled?:number }> }
+export type NotificationState = { localMail?: boolean; timerLastStartedAt?: string | null; mode: NotificationMode; daily?: {zone:string;opening:string;nextOpening:string}; failureReason: string | null; senderError: string | null; deliveries: Array<{ id: string; status: string; reason: string | null; attempts: number; updatedAt: string; recipient: string; day?:string; cutoffStart?:string; cutoffEnd?:string; replayEnabled?:number }> }
 export class NotificationRepository {
-  constructor(readonly db: D1Database, readonly senderError: string | null = null) {}
+  constructor(readonly db: D1Database, readonly senderError: string | null = null, readonly localMail = false) {}
   async scope(workspaceId: string, flowId: string, operatorId: string) {
     if (!await this.db.prepare('SELECT f.id FROM flows f JOIN operators o ON o.workspace_id=f.workspace_id WHERE f.id=? AND f.workspace_id=? AND o.id=?').bind(flowId,workspaceId,operatorId).first()) throw new NotFoundError('This flow is not in your workspace.')
   }
@@ -15,7 +15,8 @@ export class NotificationRepository {
     const digests=await this.db.prepare(`SELECT d.id,d.status,d.reason,d.day,d.cutoff_start AS cutoffStart,d.cutoff_end AS cutoffEnd,d.replay_enabled AS replayEnabled,d.attempts,d.updated_at AS updatedAt,o.email AS recipient FROM digest_deliveries d JOIN operators o ON o.id=d.operator_id WHERE d.flow_id=? AND d.operator_id=? ORDER BY d.cutoff_end DESC LIMIT 20`).bind(flowId,operatorId).all<NotificationState['deliveries'][number]>()
     deliveries.results.push(...digests.results)
     deliveries.results.sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt))
-    return { ...(daily?.enabled ? {daily:{zone:daily.zone,opening:daily.opening,nextOpening:daily.nextOpening}} : {}), mode: daily?.enabled ? 'daily' : preference?.mode ?? 'off', failureReason: daily?.enabled ? daily.failureReason : preference?.failureReason ?? null, senderError: this.senderError, deliveries: deliveries.results }
+    const timer = await this.db.prepare('SELECT last_started_at AS lastStartedAt FROM notification_timer WHERE id=1').first<{lastStartedAt:string}>()
+    return { localMail: this.localMail, timerLastStartedAt: timer?.lastStartedAt ?? null, ...(daily?.enabled ? {daily:{zone:daily.zone,opening:daily.opening,nextOpening:daily.nextOpening}} : {}), mode: daily?.enabled ? 'daily' : preference?.mode ?? 'off', failureReason: daily?.enabled ? daily.failureReason : preference?.failureReason ?? null, senderError: this.senderError, deliveries: deliveries.results }
   }
   async set(workspaceId: string, flowId: string, operatorId: string, mode: NotificationMode, now = new Date().toISOString()) {
     await this.scope(workspaceId,flowId,operatorId)

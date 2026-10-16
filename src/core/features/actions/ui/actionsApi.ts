@@ -4,7 +4,7 @@ import type { TaskPayload } from '../task-destination'
 
 export type { ActionDetail, ActionState, ActionSummary, TaskStatus, TaskPayload }
 export type ActionView = ActionDetail & { task: TaskStatus }
-export type TaskPreview = TaskStatus & { payload?: TaskPayload; payloadSha256?: string }
+export type TaskPreview = TaskStatus & { payload?: TaskPayload; payloadSha256?: string; destination?: 'todoist'; request?: unknown }
 export type ActionFieldsInput = { title: string; rationale: string; ownerOperatorId: string; reviewDate: string; metric: { name: string; unit: string; direction: 'increase' | 'decrease'; baselineValue: number; baselineSource: string; baselineObservedAt: string } }
 
 export async function actionRequest<T>(path: string, body?: unknown, method = body === undefined ? 'GET' : 'POST'): Promise<T> {

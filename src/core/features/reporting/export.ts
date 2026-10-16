@@ -27,7 +27,7 @@ export async function exportPart(db: D1Database, secret: string, identity: Expor
   if (Object.entries(identity).some(([key,value]) => cursor[key as keyof ExportCursor] !== value)) throw new ValidationError('This export belongs to a different session or flow.')
   signal.throwIfAborted()
   await checkGeneration(db,cursor)
-  const page = await new ReportingRepository(db).ledger(identity.workspaceId,identity.flowId,cursor.filter,cursor.cutoff,'released',32,{ total: cursor.total, after: cursor.after },signal)
+  const page = await new ReportingRepository(db).ledger(identity.workspaceId,identity.flowId,cursor.filter,cursor.cutoff,'released',32,{ total: cursor.total, after: cursor.after },signal,'export')
   signal.throwIfAborted()
   await checkGeneration(db,cursor)
   const last = page.responses.at(-1)

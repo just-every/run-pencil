@@ -72,6 +72,7 @@ contract(['ACT-001', 'ACT-002', 'ACT-003', 'ACT-005', 'ACT-006', 'ACT-007', 'ACT
 
     // Configure the receiver from the offered page, then prove its test uses
     // create-or-get before sending this real action through the normal preview.
+    await page.getByLabel('Task service').selectOption('webhook')
     await page.getByLabel('Endpoint URL').fill(`http://127.0.0.1:${process.env.PENCIL_E2E_TASK_PORT ?? Number(process.env.PENCIL_E2E_PORT ?? '4173') + 2}/tasks`)
     await page.getByLabel('Bearer key').fill('synthetic-page-task-key')
     await page.getByRole('button', { name: 'Save connection', exact: true }).click()

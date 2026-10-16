@@ -1,0 +1,16 @@
+import type { BackupTable, BackupCell } from '../src/core/features/backup/model';
+export function classify(table: {name: string; columns: string[]}): unknown;
+export function sanitize(table: BackupTable): BackupTable;
+export function rowsNeverTravel(name: string): boolean;
+export function refuseAuthorization(table: BackupTable, rows: BackupCell[][]): void;
+export function refuseDevRows(table: BackupTable, rows: BackupCell[][]): void;
+export function quote(name: string): string;
+export const schemaQuery: string;
+export function rowExpression(table: {name: string; columns: string[]}): string;
+export function assertLedgerShape(rows: unknown[]): {name: string; columns: string[]};
+export function validateLedger(table: BackupTable, migrations: {name: string; sha256: string}[]): unknown;
+export function canonicalSchema(actual: unknown[], expected: string): string;
+export function ledgerDefinition(table: {name: string; columns: string[]}): {table: {name: string; columns: string[]}; shape: unknown[]};
+export const kitLedgerSQL: string;
+export const hashedLedgerSQL: string;
+export function erasureFence(store: {payload: import('../src/core/features/backup/model').BackupArchive['payload']; rows(index: number): BackupCell[][]}, later: {payload: import('../src/core/features/backup/model').BackupArchive['payload']; rows(index: number): BackupCell[][]}): {erasureEpoch: number};

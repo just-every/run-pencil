@@ -20,7 +20,7 @@ export class DistributionDispatcher {
       attempted++
       let outcome: Parameters<MailDeliveries['record']>[2]
       try {
-        const result = await this.sender.send({ deliveryId: message.idempotencyKey, from: this.from, to: [message.to], subject: message.subject, text: message.text, html: message.html, headers: message.headers })
+        const result = await this.sender.send({ deliveryId: message.idempotencyKey, from: this.from, to: [message.to], subject: message.subject, text: message.text, html: message.html, ...('attachments' in message ? { attachments: message.attachments } : {}), headers: message.headers })
         outcome = result.status === 'accepted' || result.status === 'development'
           ? { kind: 'sent', providerId: result.providerMessageId }
           : result.status === 'rate_limited' ? { kind: 'transient', reason: result.code ?? 'Provider rate limited the message.' }

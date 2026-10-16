@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { actionsApi, type TaskPreview, type TaskStatus } from './actionsApi'
 import { TaskConnection } from './TaskConnection'
+import { CopyTask } from './CopyTask'
 
 const stateText: Record<string, string> = { pending: 'Pending', confirmed: 'Confirmed', unknown: 'Unknown — the task system may have it', failed: 'Failed' }
 
@@ -28,8 +29,10 @@ export function ActionTask({ actionId, status, onChanged }: { actionId: string; 
       {delivery && !delivery.stale && (delivery.state === 'failed' || delivery.state === 'unknown') ? <button className="quiet-button focus-ring" type="button" disabled={busy || delivery.inFlight} onClick={() => void run(() => actionsApi.retryTask(actionId))}>Retry with the same key</button> : null}
     </div> : null}
     {preview?.payload ? <section aria-labelledby="task-confirm-title" style={{ marginTop: '1rem' }}>
-      <h3 id="task-confirm-title">This exact JSON will be sent</h3>
-      <pre tabIndex={0} aria-label="Task JSON" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxWidth: '100%' }}>{JSON.stringify(preview.payload, null, 2)}</pre>
+      <h3 id="task-confirm-title">{preview.destination === 'todoist' ? 'These exact fields will be sent to Todoist' : 'This exact JSON will be sent'}</h3>
+      {preview.destination === 'todoist' ? <p>Todoist receives this command list in the form field <code>commands</code>. The task goes to your Inbox. Your token is sent separately as authorization.</p> : null}
+      <pre tabIndex={0} aria-label="Task JSON" style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxWidth: '100%' }}>{JSON.stringify(preview.request ?? preview.payload, null, 2)}</pre>
+      <CopyTask text={JSON.stringify(preview.request ?? preview.payload, null, 2)} />
       <div className="builder-actions"><button className="primary-button focus-ring" type="button" disabled={busy} onClick={() => void run(() => actionsApi.confirmTask(actionId, preview.payloadSha256!))}>{busy ? 'Sending…' : 'Confirm and send'}</button><button className="quiet-button focus-ring" type="button" disabled={busy} onClick={() => setPreview(undefined)}>Cancel</button></div>
     </section> : null}
     {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}

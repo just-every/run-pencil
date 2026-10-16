@@ -2,7 +2,7 @@ import { DigestDispatcher } from '../features/notifications/digest-dispatcher'
 import { AnalysisAttention } from '../features/analysis/attention'
 import { DraftRewrites } from '../features/analysis/rewrites'
 import { eraseResponseAndImportCustody } from '../features/importing/erasure'
-import { readNotificationBrand } from '../features/notifications/brand.server'
+import { readNotificationBrand } from '../features/notifications/brand'
 import type { MailSender } from '../../base/operator-auth/index.mjs'
 import { notificationConfigurationFailure } from '../features/notifications/failure'
 import { NotificationDispatcher } from '../features/notifications/dispatcher'
@@ -62,7 +62,7 @@ export function createPencilServices(platform: PencilPlatform) {
     connections: new IntegrationConnections(platform),
     notifications: {
       digest: new DigestDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,undefined,senderFailure,mailProvider),
-      preferences: new NotificationRepository(platform.databaseBinding, notificationSenderError(from,mailProvider) ?? senderFailure),
+      preferences: new NotificationRepository(platform.databaseBinding, notificationSenderError(from,mailProvider) ?? senderFailure, mailProvider === 'local-development'),
       dispatcher: new NotificationDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,workspaceId => readNotificationBrand(platform.databaseBinding,workspaceId),senderFailure,mailProvider),
     },
     distribution: { segments: new DistributionSegments(platform.databaseBinding), importer: new ContactImport(platform.databaseBinding), contacts: new DistributionContacts(platform.databaseBinding), launches: new InvitationLaunches(platform.databaseBinding, extensions.distributionPolicies), deliveries, dispatcher },

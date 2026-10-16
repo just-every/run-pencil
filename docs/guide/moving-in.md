@@ -5,8 +5,8 @@ Bring Google Forms response history into an editable Pencil draft from a CSV, wi
 ## Before you start
 
 - **Google Forms is CSV-first.** A response CSV can be imported by itself or with an optional definition JSON. With the CSV alone, Pencil makes a flat draft from the columns and cannot rebuild the form's branching. A definition JSON by itself creates a structure-only draft with no response history.
-- **Typeform starts with a form definition JSON.** Add a response CSV if you want to bring the historical answers too.
-- **Pencil does not connect to either provider.** You get the files in your own account and choose them on the import page. Never paste a Google token or Typeform API token into Pencil.
+- **Typeform starts with its questions and paths.** Fetch the definition on the import page using your form link and a temporary personal token, or upload a saved definition JSON. Add a response CSV if you want to bring the historical answers too.
+- **Typeform access lasts for one request.** Pencil uses your token only to read the chosen form from Typeform. It never saves the token in settings or import history. Google Forms uses downloaded files; do not supply a Google token.
 - **Pencil keeps the safe import record, not the files.** It retains file names, sizes and digests, the reviewed plan and imported answers; it does not retain the original file bytes.
 - **The importer has not been checked against a real account export.** The Google Forms importer was written from published Google documentation and checked only with example files; no real Google account export was supplied. The Typeform importer was also checked only with example files from published documentation; no real Typeform account export has been checked.
 - **File admission limits.** One import can be at most 8 MiB of files in total and 100,000 response rows. Larger imports are refused before anything is stored. The usual form limits, such as the number of questions and the length of answers, also apply. Admission does not guarantee that a hosted import will finish; see the execution limit below.
@@ -39,12 +39,21 @@ You can also call the Forms REST API from an Apps Script project in your own acc
 
 **The responses (optional).** In your Typeform account, open the form's results, select the responses you need and export them as CSV. Typeform explains this in [Export your responses](https://help.typeform.com/hc/en-us/articles/360029253572-Export-your-responses) and [Working with your responses](https://help.typeform.com/hc/en-us/articles/360029253732-Working-with-your-responses). Keep the **Start Date** and **Submit Date** columns, because every imported response needs its submission time.
 
-**The form definition.** Typeform's results export does not include the form itself. Get it as JSON from Typeform's [Retrieve form API](https://www.typeform.com/developers/create/reference/retrieve-form/), using your own token in your own browser or command-line tool, and save the response as a file. If you use a command-line tool, give the token through an environment variable or credential store, not in a command that ends up in shell history.
+**The form definition.** Typeform's results export does not include the questions and paths. Pencil can get these for you from the import page, without a terminal or API client:
+
+1. In Pencil, choose **Your flows → Import a form → Typeform**.
+2. Open your form in [Typeform](https://admin.typeform.com/) and copy its browser address or Share link. Paste it into **Typeform form link or ID**. For a custom domain, use the ID from its Typeform edit address: the part after `/form/` or `/to/`.
+3. Open [Typeform → Account → Personal tokens](https://admin.typeform.com/user/tokens). Choose **Generate a new token**, name it **Pencil import**, and select only the permission to read forms, `forms:read`. The import page has copy buttons for the name and permission. Choose **Generate token** and copy the result. See [Typeform's token instructions](https://www.typeform.com/developers/get-started/personal-access-token/) if needed.
+4. Paste the token into **Typeform personal token**, then choose **Test connection and get form**. Pencil clears the token field immediately and makes one read-only request through your installation to `api.typeform.com`. The destination is fixed and redirects are refused. The token is never saved or logged.
+5. **Definition ready: [your form title]** confirms success. If it fails, the page explains whether to check your token, permission, form link or connection. Paste the token again to retry. Delete the token on Typeform's Personal tokens page after the definition loads; Pencil does not need it for review or import.
+6. Choose the optional response CSV, then **Review import**. Check the loaded form title and every reported change before continuing below.
+
+If you already have a JSON definition from Typeform's [Retrieve form API](https://www.typeform.com/developers/create/reference/retrieve-form/), you can choose that file instead. Fetching a definition creates no import history, form or responses; normal review and acknowledgement still come first.
 
 ## Import and review
 
 1. On **Your flows**, choose **Import a form**.
-2. For Google Forms, choose the response CSV and, if you have it, the `forms.get` definition JSON. If you want only an empty structure, choose the definition by itself. For Typeform, choose the definition JSON and, if you want the historical answers, its response CSV.
+2. For Google Forms, choose the response CSV and, if you have it, the `forms.get` definition JSON. If you want only an empty structure, choose the definition by itself. For Typeform, use **Test connection and get form** or choose a saved definition JSON and, if you want the historical answers, its response CSV.
 3. Choose **Review import**. Pencil reads the files and shows a report. Nothing is stored yet; **Cancel** at this point leaves no import job, flow or response.
 
 ### If you supplied only a Google CSV

@@ -240,6 +240,12 @@
       "name": "0038_integration_connections.sql",
       "sha256": "53e1c5e8ce497a05b5371fb53fb1edc1dc37bda9ca62ec0afa5471f1be9ce114",
       "sql": "-- Private installation settings. Ciphertext and metadata never travel in an archive.\nCREATE TABLE integration_connections (\n  kind TEXT PRIMARY KEY CHECK (kind IN ('analysis', 'task')),\n  sealed TEXT NOT NULL,\n  updated_at TEXT NOT NULL\n);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0039_notification_timer.sql",
+      "sha256": "ab793f2ddf2f77eacd659427366e756fdd4597b05abef98bcdcd2fba5b366994",
+      "sql": "CREATE TABLE notification_timer (\n  id INTEGER PRIMARY KEY CHECK (id = 1),\n  last_started_at TEXT NOT NULL\n);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

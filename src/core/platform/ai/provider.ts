@@ -13,7 +13,7 @@ export type AiProvider =
 export type DevAiClient = { client: AiClient; transport: 'dev' | 'models'; origin: string }
 export type DevAiFactory = (environment: WorkerBindings) => DevAiClient
 
-export const aiSetupText = 'AI is off. To analyse responses or rewrite questions, set AI_ENABLED=true and AI_MODEL, then either AI_API_KEY (with AI_BASE_URL for a provider other than OpenAI) or MODELS_SERVICE and MODELS_KEY for a linked Models service.'
+export const aiSetupText = 'Analysis is not connected. Open Connect analysis on this page, choose a provider, save its key and test the connection. Deployment settings remain available as an alternative in the analysis guide.'
 
 
 function rates(environment: WorkerBindings): AiRates | null {

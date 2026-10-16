@@ -296,6 +296,18 @@
       "adapters": [
         "task.destination.v1"
       ]
+    },
+    {
+      "id": "typeform",
+      "required": false,
+      "why": "Fetching a form definition at the owner’s request needs Typeform’s forms.read API. The personal token is used for this request only and is never stored.",
+      "data": [
+        "Typeform form identifier",
+        "owner-entered Typeform personal access token (Bearer authorization only)"
+      ],
+      "adapters": [
+        "typeform.forms.read.v1"
+      ]
     }
   ],
   "env": [

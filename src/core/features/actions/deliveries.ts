@@ -1,7 +1,8 @@
 import { ulid } from 'ulid'
 import { ConflictError, NotFoundError } from '../../shared/errors'
 import type { TaskDestination, TaskDestinationConfiguration, TaskOutcome, TaskPayload } from './task-destination'
-import { webhookTaskDestination } from './webhook'
+import { taskDestination } from './destination'
+import { isTodoist, todoistRequest } from './task-request'
 
 export type DeliveryState = 'pending' | 'confirmed' | 'unknown' | 'failed'
 export type TaskAttempt = { id: string; ordinal: number; startedAt: string; finishedAt: string | null; outcome: Exclude<DeliveryState, 'pending'> | null; outcomeClass: string | null; httpStatus: number | null; remoteTaskId: string | null; operator: string | null }
@@ -18,7 +19,7 @@ async function sha256(text: string) {
 export class TaskDeliveries {
   private readonly destination: TaskDestination | null
   constructor(private readonly db: D1Database, private readonly configuration: TaskDestinationConfiguration, private readonly appOrigin: string) {
-    this.destination = configuration.kind === 'webhook' ? webhookTaskDestination(configuration) : null
+    this.destination = configuration.kind === 'webhook' ? taskDestination(configuration) : null
   }
 
   /** Exactly what would leave: the action's fields and the sign-in-required link to it. Never answers or excerpts (ACT-006). */
@@ -40,7 +41,8 @@ export class TaskDeliveries {
       },
     }
     const json = JSON.stringify(payload)
-    return { payload, payloadSha256: await sha256(json), actionVersion: action.version }
+    const request = this.configuration.kind === 'webhook' && isTodoist(this.configuration.url) ? await todoistRequest(payload) : undefined
+    return { payload, payloadSha256: await sha256(request ? JSON.stringify({ payload, request }) : json), actionVersion: action.version, ...(request ? { request, destination: 'todoist' as const } : {}) }
   }
 
   private requireDestination() {

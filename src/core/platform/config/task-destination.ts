@@ -3,7 +3,7 @@ export type TaskDestinationConfiguration =
   | { kind: 'webhook'; url: string; apiKey: string; allowLoopbackHttp: boolean }
   | { kind: 'unavailable'; message: string }
 
-const setup = 'Set TASK_PROVIDER=webhook, TASK_WEBHOOK_URL and TASK_API_KEY to create external tasks.'
+const setup = 'Choose Todoist or a custom receiver under External task → Connection, save it, then send a test task.'
 export const loopbackHosts = new Set(['127.0.0.1', 'localhost', '[::1]'])
 
 /** WS-003: the adapter is optional. Absent or invalid settings leave everything else working and say what to set. */

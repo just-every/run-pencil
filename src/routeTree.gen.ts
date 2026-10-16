@@ -16,6 +16,7 @@ import { Route as SetupRouteImport } from './routes/setup'
 import { Route as SigninRouteImport } from './routes/signin'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppAudienceRouteImport } from './routes/app.audience'
+import { Route as AppBackupRouteImport } from './routes/app.backup'
 import { Route as AppImportRouteImport } from './routes/app.import'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as DocsIndexRouteImport } from './routes/docs.index'
@@ -67,6 +68,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const AppAudienceRoute = AppAudienceRouteImport.update({
   id: '/audience',
   path: '/audience',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBackupRoute = AppBackupRouteImport.update({
+  id: '/backup',
+  path: '/backup',
   getParentRoute: () => AppRoute,
 } as any)
 const AppImportRoute = AppImportRouteImport.update({
@@ -162,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/setup': typeof SetupRoute
   '/signin': typeof SigninRoute
   '/app/audience': typeof AppAudienceRoute
+  '/app/backup': typeof AppBackupRoute
   '/app/import': typeof AppImportRoute
   '/app/settings': typeof AppSettingsRoute
   '/docs/$': typeof DocsSplatRoute
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/setup': typeof SetupRoute
   '/signin': typeof SigninRoute
   '/app/audience': typeof AppAudienceRoute
+  '/app/backup': typeof AppBackupRoute
   '/app/import': typeof AppImportRoute
   '/app/settings': typeof AppSettingsRoute
   '/docs/$': typeof DocsSplatRoute
@@ -214,6 +222,7 @@ export interface FileRoutesById {
   '/setup': typeof SetupRoute
   '/signin': typeof SigninRoute
   '/app/audience': typeof AppAudienceRoute
+  '/app/backup': typeof AppBackupRoute
   '/app/import': typeof AppImportRoute
   '/app/settings': typeof AppSettingsRoute
   '/docs/$': typeof DocsSplatRoute
@@ -242,6 +251,7 @@ export interface FileRouteTypes {
     | '/setup'
     | '/signin'
     | '/app/audience'
+    | '/app/backup'
     | '/app/import'
     | '/app/settings'
     | '/docs/$'
@@ -267,6 +277,7 @@ export interface FileRouteTypes {
     | '/setup'
     | '/signin'
     | '/app/audience'
+    | '/app/backup'
     | '/app/import'
     | '/app/settings'
     | '/docs/$'
@@ -293,6 +304,7 @@ export interface FileRouteTypes {
     | '/setup'
     | '/signin'
     | '/app/audience'
+    | '/app/backup'
     | '/app/import'
     | '/app/settings'
     | '/docs/$'
@@ -377,6 +389,13 @@ declare module '@tanstack/react-router' {
       path: '/audience'
       fullPath: '/app/audience'
       preLoaderRoute: typeof AppAudienceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/backup': {
+      id: '/app/backup'
+      path: '/backup'
+      fullPath: '/app/backup'
+      preLoaderRoute: typeof AppBackupRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/import': {
@@ -503,6 +522,7 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAudienceRoute: typeof AppAudienceRoute
+  AppBackupRoute: typeof AppBackupRoute
   AppImportRoute: typeof AppImportRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -518,6 +538,7 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAudienceRoute: AppAudienceRoute,
+  AppBackupRoute: AppBackupRoute,
   AppImportRoute: AppImportRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,

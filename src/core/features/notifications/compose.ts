@@ -1,4 +1,4 @@
-import type { NotificationLogo } from './brand.server'
+import type { NotificationLogo } from './brand'
 import { validateLogo } from '../brand'
 import type { MailConfiguration } from '../../platform/mail'
 const logoExtensions: Record<string, string> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' }

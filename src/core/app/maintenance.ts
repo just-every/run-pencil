@@ -27,6 +27,9 @@ export async function maintainPencil(environment: WorkerBindings, scheduledTime:
 }
 
 export async function runScheduledMaintenance(controller: ScheduledController, environment: WorkerBindings) {
+  const timerPlatform = createScheduledPencilPlatform(environment)
+  await timerPlatform.databaseBinding.prepare(`INSERT INTO notification_timer(id,last_started_at) VALUES(1,?)
+    ON CONFLICT(id) DO UPDATE SET last_started_at=excluded.last_started_at`).bind(new Date(controller.scheduledTime).toISOString()).run()
   const result = await maintainPencil(environment, controller.scheduledTime)
   const services = createPencilServices(await configuredIntegrationPlatform(createScheduledPencilPlatform(environment)))
   await services.distribution.dispatcher.run(new Date(controller.scheduledTime).toISOString())

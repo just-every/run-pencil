@@ -1,149 +1,142 @@
 # Backup and restore
 
-A Pencil backup is one `.rer` archive containing your installation's product data as JSON. It includes personal data and answers, but excludes credentials, active sessions, captured mail and private settings; keep your deployment secrets separately.
+A Pencil backup is a `.rer` file containing your installation’s product data. It includes personal data and answers. Keep it private, and keep your deployment secrets separately.
 
-You can make one from a local copy of Pencil and restore it into a new, empty local database. Make one before every upgrade and before you move to a new host. The `rer` commands use local data; Pencil's separate owner recovery command handles deployed D1 databases. See [Back up a deployed database](#back-up-a-deployed-database).
+On a hosted copy, the owner opens **Backup** in the signed-in workspace. It downloads a consistent copy while your forms stay open and checks the saved file. Choose **Test restoration** on that same page to restore the saved file into a new, empty database inside your browser and check identical re-exported contents. No command or Cloudflare dashboard changes are needed for this test. Replacing a hosted deployment still needs your hosting maintainer; the page does not create or attach that replacement.
 
-Hosted recovery requires stopping every route, schedule and other writer, and separately provisioning an empty migration-only D1 target with matching source and migration history. The recovery script does not provision that target, and an ordinary `rer deploy` claims an owner and makes it nonempty. Read the [hosted restore requirements](#to-a-deployed-database) before relying on a hosted move. This page covers what a backup holds, how to make and restore one, and how to check the result.
-
-Backups are made from the command line. The **Export JSON** and **Export CSV** buttons on a results page are different. They download the responses to one flow for analysis and are not a backup.
+The **Export JSON** and **Export CSV** buttons on Results download one flow’s released responses. Those files are not complete backups.
 
 ## What a backup holds
 
-The archive contains these product records, subject to the exclusions and redactions below:
+The archive contains these product records, with the exclusions below:
 
-- Operators, workspace settings, your branding and your logo, byte for byte.
-- Flows, revisions, steps, choices and answer paths, with their stable IDs.
-- Every response and answer, including quarantined ones and their state.
-- Contacts with custom fields and consent state, saved segments, frozen launch audiences and evaluated policies, invitations and the history of every delivery attempt, including failed and unknown ones.
-- The audit log, the counters behind your starts and drop-off figures, notification choices and delivery history, and analysis notifications.
-- Analysis runs and their evidence links, draft rewrite sources and decisions, and AI usage records.
-- Actions with their history, frozen evidence figures, measurements, external task deliveries and every attempt.
-- Operators and linked sign-in identities, so restored operators can sign in again with a fresh emailed link. Every Pencil operator has equal access.
+- Operators, workspace settings, branding and your logo.
+- Flows, revisions, steps, choices and answer paths, with stable IDs.
+- Every response and answer, including quarantined answers and their state.
+- Contacts, custom fields, consent history, saved segments, invitation audiences and delivery history.
+- Audit history, starts and drop-off counters, notification preferences and delivery history.
+- Analysis runs, evidence links, draft rewrite sources and decisions, and AI usage.
+- Actions, measurements, external task deliveries and their attempts.
+- Import results, custody and erasure history.
 
 Some things are left out or changed on purpose:
 
-- **Your secrets are never collected.** Keep your `SESSION_SECRET`, mail provider key, setup token and any `TASK_API_KEY` somewhere safe yourself. After a restore, set them again.
-- **Everyone signs in again.** Sign-in sessions, sign-in and invitation links, step-up confirmations and API credentials are never exported, and a restore refuses an archive that holds one. No cookie or link from before the backup works on the restored installation, even with the same `SESSION_SECRET`, so a sign-out or revocation made after the backup stays in force. People who were invited but had not accepted stay listed as invited; invite them again to send a new link. Respondents part-way through a form start it again.
-- **Personal invitation and opt-out links do not survive.** Their plaintext is removed from the archive, so links you already emailed stop working after a restore. Invitations and reminders that were still waiting are never sent, and stay listed as pending. Pencil cannot issue those people a new link for the same revision. To reach them again, publish the flow again and queue them for the new revision. See [Invitations, reminders and consent](invitations.md#send-invitations).
-- **Local outbox messages are not exported.** Those are synthetic development mail. Your private settings are not exported either.
-- **Original files from an import are not kept.** Only the reviewed result and its record are.
-- **Old responses never email anyone.** Existing responses are marked so that restoring cannot send new-response mail about them.
+- **Keep your secrets separately.** Mail provider keys, session secrets and private integration settings are not included. Reconnect integrations after restoring.
+- **Everyone signs in again.** Sign-in sessions, sign-in links, invitation credentials, API credentials and other active authorization are excluded. A restore cannot revive an old signed-out session. Respondents part-way through a form start again.
+- **Personal invitation and opt-out links do not survive.** Links emailed before restoration stop working. Unsent invitations stay pending and are not sent again; publish a new revision to invite those people again.
+- **Captured development mail and original import files are excluded.** The reviewed import result and its custody remain.
+- **Old responses do not send new notices.** Historical notification eligibility is disabled. Queued analysis does not call a provider automatically after restoration.
 
-Restoring never sends any mail or external task, and never changes a delivery that was sent, failed or unknown back to pending. An external task that was unknown stays unknown until an operator retries it.
+Restoration never sends mail or external tasks. Sent, failed and unknown delivery outcomes remain as recorded.
 
 ## Keep the archive private
 
-An archive holds personal data and answer text. Pencil creates it readable by you only. Keep it in the `exports` folder inside your copy, which Git ignores, or in another private folder, and keep the file as carefully as you would keep the data itself. Create the folder once, readable by you only:
+Browser downloads follow your browser’s download location and file permissions. Move them to a private folder. Command-line archives are created readable only by you. Inside the source checkout use its Git-ignored `exports` directory:
 
 ```sh
 mkdir -m 700 exports
 ```
 
-Each backup goes to a new file. Pencil never replaces a file, so a second backup to the same name is refused. Put the date in the name, such as `install-2026-10-10.rer`.
+Give retained backups different names, such as `pencil-2026-10-16.rer`. Command-line tools refuse existing output files. Your browser may choose a numbered filename when you download again.
 
-When a backup or restore finishes, the command prints a short JSON result that includes the archive's `sha256`, which identifies its content, and the number of rows it holds. Keep the `sha256` with the file. You compare it when you check a restore.
+Use the same version of Pencil to create, check and restore an archive. Save the source version alongside the backup. A different database history is refused; do not edit the archive or its checksum to bypass this.
 
-**Use the same version of Pencil throughout.** An archive records the database migrations of the source that made it, and only that same source can restore it. Any other refuses with `[MIGRATION_MISMATCH]`. Run backups from the source you use, and note its commit beside the archive.
+## Back up a deployed database
 
-## Back up a local copy
+1. Sign in as the installation owner and choose **Backup**, or open `/app/backup` on your copy.
+2. Choose **Download backup**. Your forms can stay open. No Cloudflare dashboard changes or account token are needed.
+3. Under **Check the saved file**, choose the downloaded `.rer` file and press **Check backup**.
+4. Wait for **Backup contents checked**. Pencil shows its record count and checksum. It checks the checksum, version, complete table inventory, privacy rules and linked records.
+5. Choose **Test restoration**. Pencil restores the saved file into a new browser database, checks its constraints and linked records, and compares the re-exported contents with your archive. Wait for **Restoration passed** before relying on this backup. The test database is discarded afterwards; your running workspace is unchanged.
 
-Stop `dev` or `preview` first. From the checkout:
+Browser downloads are limited to 8 MiB, with a conservative workspace-size guard so an oversized export is refused before reading a large result into memory. No truncated file is published. If you see a size-limit message, use [Large-workspace export](#large-workspace-export).
+
+## Large-workspace export
+
+Larger workspaces need the streaming maintainer command, which requires Cloudflare credentials and a paused source. Ask your hosting maintainer to follow [Large-workspace export in the hosting reference](../HOSTING.md#large-workspace-export). This remains a technical operation; Pencil does not currently complete it from the Backup page.
+
+## Back up a local installation
+
+Stop local servers before exporting:
 
 ```sh
 rer dev --stop
 rer preview --stop
-rer export --output exports/install-2026-10-10.rer
+rer export --output exports/pencil-backup.rer
 ```
 
-Pencil finds your local database itself. You do not name it.
-
-## Back up a deployed database
-
-Use the matching source checkout and its maintained owner recovery command. The public `rer export --target remote` and `rer import --target remote` commands still refuse remote transfer. The separate command below accepts the deployment kit's `_rer_deploy_migrations` ledger and Wrangler's `d1_migrations` ledger; it refuses mixed, incomplete or changed history. Source and destination must use the same ledger kind and the exact same migration bytes.
-
-**Released 0.2.0 installations:** this source’s recovery command does not establish compatibility with the old 0019 migration hash. Retain your existing source and database and use only a supported matching-version backup path. Do not edit ledger hashes or archives, or treat restore as a workaround for the [blocked hosted upgrade](hosting.md#upgrading). The current-version recovery proof is separate.
-
-Set `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID` and `CLOUDFLARE_API_TOKEN` in your private shell environment. Use the actual source D1 ID from `.rer/deploy/production.json` (or your chosen environment's receipt), and a token authorized for that account's D1 database. The recovery command reads these values from its environment; none belongs in its arguments, archive or a commit.
-
-Stop every database writer as described below, then:
-
-```sh
-node scripts/deployment-data-cli.mjs export --output exports/deployed.rer --writers-stopped
-```
-
-`--writers-stopped` confirms that you stopped the Worker, schedules and any other process that writes this database. The exporter also checks D1 consistency bookmarks and primary reads, and refuses if the source changes. This creates the same redacted archive described above, including import custody, the erasure checkpoint and delivery history.
-
-The recovery command is verified against a local Cloudflare API stand-in using the installed deployment kit and real SQL. This is not a live-account recovery acceptance result. In the older October 13 hosted run, the previous exporter refused the kit ledger; a raw Wrangler dump restored only after its SQL was manually regrouped. That workaround did not produce a redacted Pencil archive. Raw D1 exports and Time Travel remain provider tools with their own semantics.
-Your running Worker writes to the database as it works: visits to public pages and signed-in pages record rate-limit counters and sessions, and its schedule runs every minute. Pause every writer for the length of the backup. Pencil has no command that pauses a Worker while preserving its database. In the Cloudflare dashboard, turn off its `workers.dev` address, remove its Cron trigger, disable any custom-domain or route access, and stop any other writer to that D1 database. Wait for in-flight work to finish. Your forms, sign-in and `/health` remain unreachable until you restore their routes. Afterwards, restore the routes and Cron trigger or deploy again. Do not use `rer deploy --remove --yes` for this: it deletes the database as well as the Worker.
+These `rer` commands operate on your local installation only. They do not download the hosted database.
 
 ## Restore into a new database
 
-A restore only ever goes into an empty database. It refuses a database that already holds data. It never overwrites or merges, so a restore cannot replace the data in your running installation.
+A restore never overwrites or merges with a running workspace. Keep the original installation and backup until you have checked the replacement.
 
-> [!WARNING]
-> A restore brings back everything as it was when the archive was made. Responses, contacts and custom fields you erased since then come back with their archived consent state, and opt-outs recorded since then are lost. The import command prints a reminder. After restoring an older archive, erase those people and responses again and record those opt-outs again. Erasing in Pencil never reaches copies outside it, such as older archives and response exports. See [Privacy and security](privacy.md#keeping-and-erasing-data).
+A backup made before an erasure can bring erased people and answers back. Make a new backup after erasing data or recording opt-outs. Erasing inside Pencil cannot remove older copies you saved elsewhere. See [Privacy and security](privacy.md#keeping-and-erasing-data).
+
+### Test a hosted or local backup
+
+On the **Backup** page, select the saved file and choose **Test restoration**. The test runs real SQLite in your browser, from files served by your Pencil installation. The selected file stays in your browser during restoration; no archive data is sent elsewhere. It checks integrity and foreign keys and requires an identical checksum after re-export. No mail or external task is sent.
+
+If you have a newer backup of the same installation, select it under **Newer backup for erasure protection** before testing an older archive. A later erasure causes the older archive to be refused. Without a newer file, Pencil cannot know about erasures made since the backup.
+
+### Optional test on your computer
+
+For archives beyond the browser limit, or an independent test, on your computer, open the source version that made the archive. Install its dependencies with `rer install` if needed. Use Node.js 22.20 or later. Save the download as `exports/pencil-backup.rer`, then run from the checkout’s folder:
+
+```sh
+node scripts/deployment-data-restore-test.mjs --input exports/pencil-backup.rer --output exports/restore-test.sqlite
+```
+
+This creates a new local database, restores all records, checks database constraints and exports it again. Success prints `"ok":true`, `"restored":true` and identical `sha256` and `reexportSha256` values. It never sends mail. It refuses an existing output; use a new filename for each test.
+
+This test accepts hosted archives without changing their database history. Its SQLite output is for the test; it does not start a local Pencil server or replace your hosted deployment. The browser’s **Test restoration** performs the same kind of real restoration and comparison in a disposable browser database.
 
 ### Refuse an archive made before an erasure
 
-Every erasure (a response, imported or not, and a recipient) advances an erasure count that travels in every later archive. If you still have a later archive of the same installation, name it with `--journal` when you restore an older one:
+If you have a newer backup from the same installation, add it as the journal when testing an older one:
 
 ```sh
-rer import --input exports/install-2026-10-01.rer --journal exports/install-2026-10-10.rer --yes
+node scripts/deployment-data-restore-test.mjs --input exports/older.rer --journal exports/newer.rer --output exports/restore-test.sqlite
 ```
 
-When anything was erased between the two archives, the restore is refused whole with `Restore refused (erasure_epoch)` and exit code 4, and nothing is written; restore the later archive instead. A `--journal` archive from another installation, or one older than the archive you restore, is refused with `later_journal`. Without `--journal` the older archive restores as described above.
+If erasure occurred between the archives, the restore is refused before creating the output. Use the newer archive. A journal from another installation or an older journal is also refused. Without a later journal, the command cannot know about erasures made after the backup.
 
 ### Locally
 
-In a fresh clone of the matching source, install dependencies, copy your archive into the private `exports` folder, then import **before setup or build**. The committed runtime configuration lets import apply the schema without either step. Setup afterwards preserves the restored owner; use that owner’s email:
+For an archive created by local `rer export`, use a fresh matching-source checkout and restore before setup:
 
 ```sh
 rer install
-rer import --input exports/install-2026-10-10.rer --yes
+rer import --input exports/pencil-backup.rer --yes
 rer setup --owner-email you@example.com --owner-name "Your Name"
+rer dev
 ```
 
-For a previously used destination, stop `dev` and `preview`, export anything you need, and run `rer reset --yes` before importing. Reset removes the existing local data.
+Use the archived owner’s email. Open the private `RER_OPEN` link that dev prints. For a previously used destination, stop dev and preview, export anything you need, and `rer reset --yes` before importing. Reset removes existing local data.
 
-Restore before setup. Give setup the email of the owner you had when you made the archive, then start `rer dev` and open its private `RER_OPEN` owner link. `import` checks the whole archive before it writes anything and restores in one step. `--yes` confirms the restore. It never sends mail.
+Hosted archives use a different database controller and cannot be assumed to work with local `rer import`. Use the restore-test command for those files.
 
 ### To a deployed database
 
-Use an empty D1 target with the same source, deployment kit and migration-ledger kind. It must contain only its fully applied migrations and their initialization rows. Keep its Worker routes, schedules and other writers stopped throughout recovery. The recovery command does not provision this target. A normal `rer deploy` automatically claims an owner, making its database nonempty, so it is not an empty restore target; do not delete owner records to bypass that guard. Provisioning and attaching a migration-only D1 target requires a deployment procedure appropriate to your installation. Keep the previous deployment and database available until you have verified recovery.
+**The Backup page does not currently create a hosted replacement.** A hosting maintainer must provision and attach a compatible empty target through a supported deployment procedure. Keep your original deployment until the replacement is restored and checked. Do not remove it merely because the browser file check passed.
 
-Change `CLOUDFLARE_DATABASE_ID` to the new empty target's actual D1 ID, then:
+The [maintainer hosting reference](../HOSTING.md#hosted-replacement-boundary) explains the current boundary and the commands for a target that has already been provisioned. The browser or local restore test proves the archive can restore; it does not activate a hosted replacement.
 
-```sh
-node scripts/deployment-data-cli.mjs import --input exports/deployed.rer --yes --writers-stopped
-node scripts/deployment-data-cli.mjs export --output exports/deployed-restored.rer --writers-stopped
-```
-
-Both commands must print the same `sha256` as the source export. A second restore refuses before writing any application data. A later archive can fence an old backup against erasure with `--journal exports/later.rer`; that check runs before any target request.
-
-Restore validates the whole archive, stages inert tables in bounded batches, verifies their contents, then publishes atomically under repeated empty-target guards. It dispatches no mail. If it reports `RESTORE_STATE_UNCONFIRMED`, keep writers stopped and inspect the target. For a recognized incomplete stage belonging to that archive, use:
-
-```sh
-node scripts/deployment-data-cli.mjs cleanup --input exports/deployed.rer --yes --writers-stopped
-```
-
-Cleanup removes only a matching inert restore stage. If the result is `RESTORE_VERIFICATION_UNCONFIRMED`, publication already completed: re-export and compare before retrying; cleanup cannot undo publication.
-
-After archive equality is confirmed, reconfigure private secrets and re-enable the Worker. Check it as described in [Hosting on Cloudflare](hosting.md#check-that-it-works): open `/health`, sign in with a fresh emailed link, open a public form, and inspect responses, quarantine and delivery history.
 ## Check the restored data
 
-Before you start `dev` on a restored local copy, export it to a new file and compare:
+Both the browser restoration test and the optional restore-test command compare archive checksums automatically. For a local `rer import`, before starting dev, re-export to a new filename:
 
 ```sh
-rer export --output exports/restored-check-2026-10-10.rer
+rer export --output exports/restored-check.rer
 ```
 
-The `sha256` it prints must be the same as the one the restore printed. Once the restored installation runs, rate-limit counters and other activity from your checks change later exports. That is expected.
+Require the same `sha256` as the original. Starting Pencil creates normal session and rate-limit activity, which changes later backups. After activating a replacement, sign in again, inspect forms, answers, quarantine and delivery history, then check a public form.
 
 ## When to make a backup
 
-- Before any upgrade of Pencil. Apply the new source only after you hold a good archive.
-- Before moving to another host or Cloudflare account.
-- On a regular schedule you choose. Pencil never deletes your data on its own: only sign-in sessions, respondent sessions (after 30 days) and rate-limit counters expire. A backup protects you from your own mistakes, a lost account or a failed upgrade.
+- Before upgrading or moving Pencil.
+- Before removing a deployment.
+- After recording erasures or opt-outs, so your newest backup preserves them.
+- On a regular schedule you choose.
 
-For bringing forms in from another builder, see [Moving in](moving-in.md).
+For bringing forms from another builder, see [Moving in](moving-in.md).

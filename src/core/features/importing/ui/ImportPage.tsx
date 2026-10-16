@@ -6,6 +6,7 @@ import { useImportProgress } from './useImportProgress'
 import { ReviewReport } from './ReviewReport'
 import { GoogleOptions, GoogleQuestions } from './GoogleOptions'
 import { ImportFileHelp } from './ImportFileHelp'
+import { TypeformConnection } from './TypeformConnection'
 const preparation = (job: Job) => job.state === 'preparing' || job.state === 'preparation-interrupted'
 const progressLabel = (job: Job) => job.state === 'preparing' ? 'Ready to verify' : job.state === 'preparation-interrupted' ? 'Preparation needs attention' : job.state === 'cancelled' ? 'Preparation cancelled' : job.state
 export function ImportPage() {
@@ -14,13 +15,14 @@ export function ImportPage() {
   const [definition, setDefinition] = useState(''), [csv, setCsv] = useState(''), [columns, setColumns] = useState<ColumnMapping[]>([])
   const [review, setReview] = useState<ImportReview>(), [acknowledged, setAcknowledged] = useState(false), [dirty, setDirty] = useState(false)
   const [fileVersion, setFileVersion] = useState(0)
+  const [loadedTitle, setLoadedTitle] = useState('')
   const [pendingCustody, setPendingCustody] = useState<string>()
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [jobs, setJobs] = useState<Job[]>([])
   const progress = useImportProgress(job => { setJobs(current => current.some(j => j.id === job.id) ? current.map(j => j.id === job.id ? job : j) : [...current, job]); setReview(current => current?.jobId === job.id ? { ...current, jobState: job.state, alreadyImported: job.state === 'completed' } : current) })
   const refresh = async () => { const next = await importsApi.list(); setJobs(next); setReview(current => current?.jobId ? { ...current, alreadyImported: next.some(job => job.id === current.jobId && job.state === 'completed'), jobState: next.find(job => job.id === current.jobId)?.state } : current) }
   useEffect(() => { void refresh().catch(e => setError(e.message)) }, [])
   const run = async (action: () => Promise<void>) => { setBusy(true); setError(''); try { await action() } catch (e) { setError((e as Error).message) } finally { setBusy(false) } }
-  const reset = () => { setDefinition(''); setCsv(''); setColumns([]); setReview(undefined); setAcknowledged(false); setDirty(false); setError(''); setFileVersion(v => v + 1) }
+  const reset = () => { setDefinition(''); setLoadedTitle(''); setCsv(''); setColumns([]); setReview(undefined); setAcknowledged(false); setDirty(false); setError(''); setFileVersion(v => v + 1) }
   const showPublication = (job: Job, previousId = review?.jobId) => {
     if (previousId && previousId !== job.id) setJobs(current => current.filter(item => item.id !== previousId))
     progress.pause(); progress.show(job)
@@ -45,8 +47,17 @@ export function ImportPage() {
     }
     if (file.size > 8 * 1024 * 1024) throw new Error('File exceeds the 8 MiB upload limit.')
     const value = await file.text()
-    if (kind === 'definition') setDefinition(value); else setCsv(value)
+    if (kind === 'definition') { setDefinition(value); setLoadedTitle('') } else setCsv(value)
     setColumns([]); setReview(undefined); setAcknowledged(false)
+  }
+  const loadTypeform = async (form: string, token: string) => {
+    setBusy(true); setError('')
+    try {
+      if (!await cancelPending()) throw new Error('Inspect the existing import’s progress before replacing its definition.')
+      const result = await importsApi.typeformDefinition(form, token)
+      setDefinition(result.definition); setLoadedTitle(result.title)
+      setColumns([]); setReview(undefined); setAcknowledged(false); setDirty(false)
+    } finally { setBusy(false) }
   }
   const plan = () => run(async () => { if (!await cancelPending()) return; const next = await importsApi.review({ definition, csv, source, ...(source === 'google-forms' ? { google } : {}), ...(columns.length ? { columns } : {}) }); setReview(next); setPendingCustody(next.pendingCustody); setColumns(next.columns); setDirty(false); setAcknowledged(false) })
   const commit = () => run(async () => {
@@ -62,12 +73,13 @@ export function ImportPage() {
     <Link className="quiet-button focus-ring" to="/app">← Your flows</Link>
     <h1 className="display" id="import-heading">Import a form</h1>
     <p>Bring an existing form into Pencil as an editable draft. Typeform needs a definition JSON, with optional answers in CSV. Google Forms starts with a response CSV, with an optional definition JSON.</p>
-    <p className="muted">Pencil reads files you choose; it does not connect to your provider. Never paste an API token into Pencil. Checked with documented examples only; no real account export has been checked. <a href="/docs/moving-in">Read the moving-in guide</a>.</p>
+    <p className="muted">For Typeform, get the definition directly below or upload a saved JSON file. Google Forms uses files you download yourself. Checked with documented examples only; no real account export has been checked. <a href="/docs/moving-in">Read the moving-in guide</a>.</p>
     {error ? <p className="status-note" role="alert" data-tone="error">{error}</p> : null}
     {pendingCustody && !busy ? <p role="status">An interrupted commit may have private import data awaiting completion. Retry the reviewed import, or Cancel to remove that private data.</p> : null}
     <form className="panel import-form" onSubmit={e => { e.preventDefault(); void plan() }}>
       <label className="inspector-field">Source<select className="text-input" value={source} disabled={busy} onChange={e => { const next = e.target.value as ImportSource; void run(async () => { if (await cancelPending()) { reset(); setSource(next); setGoogle({}) } }) }}><option value="typeform">Typeform</option><option value="google-forms">Google Forms</option></select></label>
       <ImportFileHelp source={source} />
+      {source === 'typeform' ? <TypeformConnection key={fileVersion} busy={busy} loadedTitle={loadedTitle} load={loadTypeform} /> : null}
       {source === 'google-forms' ? <GoogleOptions value={google} change={settingsChanged} busy={busy} /> : null}
       <label className="inspector-field">Form definition JSON{source === 'google-forms' ? ' (optional forms.get JSON)' : ''}<input key={`definition-${fileVersion}`} style={{ maxWidth: '100%' }} type="file" accept=".json,application/json" disabled={busy} onChange={e => void run(() => read(e.target, 'definition'))} /></label>
       <label className="inspector-field">Response CSV {source === 'google-forms' ? '(or choose a definition alone)' : '(optional)'}<input key={`csv-${fileVersion}`} style={{ maxWidth: '100%' }} type="file" accept=".csv,text/csv" disabled={busy} onChange={e => void run(() => read(e.target, 'csv'))} /></label>

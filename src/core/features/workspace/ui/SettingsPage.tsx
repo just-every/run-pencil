@@ -1,3 +1,4 @@
+import { Link } from '@tanstack/react-router'
 import { TimeZoneField } from './TimeZoneField'
 import { canonicalTimeZone } from '../../../shared/ianaTimeZone'
 import { BrandSettings } from '../../brand'
@@ -62,6 +63,7 @@ export function SettingsPage({ operatorId }: { operatorId: string }) {
         <label className="inspector-field">Allowed embed hosts<textarea disabled={saving} className="text-area" placeholder="https://www.your-business.example" value={embedOrigins} onChange={(event) => setEmbedOrigins(event.target.value)} /></label><p className="muted settings-help">One exact HTTPS origin per line. An empty list blocks embedding; direct links remain available.</p>
         <button className="primary-button focus-ring settings-save" disabled={saving} type="submit">{saving ? 'Saving…' : 'Save workspace settings'}</button>
       </form>
+      <section className="panel settings-card"><h2 className="display">Backup and restore</h2><p>Download and check a private copy of your forms, answers and workspace history.</p><Link className="secondary-button focus-ring" to="/app/backup">Open backup and restore</Link></section>
       <BrandSettings />
       <OperatorAccess initialOperators={operators} operatorId={operatorId} />
     </div>

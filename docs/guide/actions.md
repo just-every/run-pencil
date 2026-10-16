@@ -54,19 +54,35 @@ When the review date arrives, the action shows **Review due** on the Actions pag
 
 You can send an action to your own task system as a task. This is optional. Without it, everything above works.
 
-### Connect your receiver
+### Connect Todoist without code
 
-A webhook is the address Pencil sends a confirmed action to. Pencil includes a custom webhook receiver connection, rather than built-in Jira, Asana or other vendor integrations. You or your developer run the receiver and connect it to your task tool. The tool's website address or ordinary API key alone does not implement this contract.
+Open an action and find **External task → Connection**. Choose **Todoist · connect with your API token**. You need a Todoist account; no custom server or automation builder is needed.
 
-Open an action and find **External task → Connection**, which is visible even before a connection is configured. Ask your receiver's administrator or developer for its endpoint URL and bearer key. To build a receiver, create an HTTPS route that accepts POST requests, checks a secret bearer key you choose, and implements the request and response contract below. The complete contract is also on the action page, under **Receiver contract and complete request example**, so you can set up the connection without leaving that page.
+1. [Create a Todoist account](https://app.todoist.com/auth/signup) or sign in.
+2. Open [Todoist Settings → Integrations → Developer](https://app.todoist.com/app/settings/integrations/developer). Under **API token**, choose **Copy API token**. Keep this token private: it gives access to your Todoist account.
+3. Paste it in **Todoist API token** on the Pencil page. Choose **Save connection**. No restart or file edit is needed.
+4. Choose **Send test task**. Wait for the confirmation and task ID, then choose **Open test task in Todoist**. Check the task named **Pencil connection test** in your Todoist Inbox. The sample contains fixed example values and a link to Pencil’s Actions page, with no respondent data or content from your action. Repeating the test uses the same command so it cannot add another task. You can delete the sample afterward.
+5. Choose **Create external task**, review the fields, then **Confirm and send**. Pencil shows **Confirmed** and the remote task ID when Todoist confirms creation.
 
-1. Enter the receiver's **Endpoint URL** and **Bearer key**, then choose **Save connection**. Use HTTPS without credentials, a query or a fragment in the URL. HTTP is allowed only on loopback addresses in local development and tests.
-2. Choose **Send test task**. This creates or retrieves a real sample named **Pencil connection test** at the saved connection using fixed example values and a link to your installation's Actions page, with no respondent answers, operator details or content from your action. The page shows the returned task ID or an error. Repeating the test uses the same key and should return the same sample task; delete it in your task tool afterward.
-3. Once the test succeeds, use **Create external task** to review your actual action before sending it.
+The field mapping is fixed:
 
-Only the installation owner can save, reset or test the connection. Saving never sends a task. Saved settings override deployment settings for the whole workspace. The key is never displayed again; enter it each time you save, including when changing the URL. Credentials are encrypted in the installation and excluded from backups. After restoring a backup, reconnect the receiver. **Use deployment settings** removes the saved connection and uses the deployment's configuration instead. It does not delete tasks already created in your tool.
+| Pencil | Todoist |
+|---|---|
+| Action title | Task name |
+| Review date | Due date |
+| Rationale, owner name and email, target metric, baseline and Pencil link | Task description |
 
-Pencil charges no integration fee. Your receiver's hosting and your task tool may have their own costs.
+Tasks go to the token holder’s Inbox. The Pencil owner appears in the description; Pencil does not assign a Todoist collaborator. Moving or completing the task in Todoist does not change the Pencil action. Pencil charges no integration fee; [Todoist plans and limits](https://www.todoist.com/pricing) apply.
+
+Pencil uses [Todoist’s Sync API command UUID](https://developer.todoist.com/api/v1/#tag/Sync/Overview/Command-UUID) to prevent duplicate tasks on a retry. The UUID and temporary resource ID are derived from the action’s stable delivery key; the same command is reused after a timeout or restore. Pencil confirms only when Todoist acknowledges the command and returns its task ID. A missing ID leaves the outcome Unknown, with no invented confirmation. Check Todoist before retrying.
+
+Only the installation owner can save, reset or test a connection. Saving sends nothing. Saved settings override deployment settings for the whole workspace. The token is encrypted, never displayed again and excluded from backups; enter it each time you save. Reconnect after restoring a backup. **Use deployment settings** removes the saved connection and does not delete external tasks.
+
+### Connect a custom receiver
+
+Choose **Custom receiver · advanced** to connect another task tool through an HTTPS receiver run by you or your developer. Ask its administrator for the endpoint URL and bearer key, then save and test from the same page. A task tool’s website or ordinary API key is insufficient. A Zapier Catch Hook alone cannot return the final task ID or implement the required duplicate protection.
+
+The complete contract and a **Copy receiver example** button are under **Advanced: custom receiver contract** on the action page. Use HTTPS without credentials, a query or a fragment; loopback HTTP is accepted only in local development and tests. The receiver must authenticate the bearer key, create or retrieve the task by the stable delivery key, and return its task ID as described below. Hosting and task-tool charges are separate from Pencil.
 
 ### Deployment settings
 
@@ -74,21 +90,21 @@ As an alternative to saving the connection on the action page, set these on your
 
 | Variable | What it is |
 |---|---|
-| `TASK_PROVIDER` | `webhook`, the only adapter included. |
-| `TASK_WEBHOOK_URL` | Your receiver's `https` URL. Plain `http` is accepted only for a loopback receiver in local development and tests. |
-| `TASK_API_KEY` | A secret your receiver checks. |
+| `TASK_PROVIDER` | `webhook`. Use the Todoist Sync address below for Todoist, or your custom receiver URL. |
+| `TASK_WEBHOOK_URL` | Your receiver's `https` URL, or `https://api.todoist.com/api/v1/sync` for Todoist. Plain `http` is accepted only for a loopback receiver in local development and tests. |
+| `TASK_API_KEY` | Your Todoist API token, or a secret your custom receiver checks. |
 
 Without either a saved connection or all three deployment settings, **Create external task** is disabled. The visible **Connection** form lets you configure it there.
 
 ### What leaves, and when
 
-Choosing **Create external task** shows the confirmation screen: the exact JSON that will be sent, and nothing else. It holds the action's title, rationale, owner name and email, metric with its baseline, review date, and a link to the action in Pencil that needs an operator sign-in to open. Raw answers, excerpts and evidence figures are never included. Only after you choose **Confirm and send** does this action content leave, and only those confirmed values. **Send test task** is a separate explicit request that sends fixed sample content.
+Choosing **Create external task** shows the confirmation screen: the exact JSON sent to a custom receiver, or the exact command fields sent to Todoist. **Copy task JSON** copies that preview. Todoist receives the command list as the form field `commands`, with your token sent separately as authorization. It holds the action's title, rationale, owner name and email, metric with its baseline, review date, and a link to the action in Pencil that needs an operator sign-in to open. Raw answers, excerpts and evidence figures are never included. Only after you choose **Confirm and send** does this action content leave, and only those confirmed values. **Send test task** is a separate explicit request that sends fixed sample content.
 
 If the action changes after you confirmed and before the task is delivered, Pencil refuses to send the old confirmation and asks you to review and confirm again.
 
 ### The webhook contract
 
-Pencil sends one `POST` to the saved endpoint URL, or `TASK_WEBHOOK_URL` when using deployment settings:
+For a custom receiver, Pencil sends one `POST` to the saved endpoint URL, or `TASK_WEBHOOK_URL` when using deployment settings:
 
 - `Authorization: Bearer <your bearer key>`. The receiver gets the key only in this header, never in the URL or payload. Saved credentials are encrypted; the plaintext key is never returned to the browser, written to audit entries or logs, or included in an export.
 - `Idempotency-Key: pencil-action-<action ID>`. The same key is in the body as `idempotencyKey`. One action has one key for its whole life.

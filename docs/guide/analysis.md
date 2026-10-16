@@ -27,7 +27,29 @@ Open **Analysis → Provider → Connect analysis**. Choose **OpenAI**, create a
 
 The test sends a fixed connection question and a small JSON schema, with no respondent data. It can incur a small API charge, checks structured Responses API support, and records its usage as `connection-test` in the table below. A failure explains what to check; it never reveals the provider's error body or your key. Set spending limits with the provider; optional token rates in Pencil only calculate displayed costs.
 
-**Other compatible provider** accepts a gateway's API base address, model identifier and API key. It must support the OpenAI Responses API with strict JSON-schema output; a chat-only API or a native Anthropic/Google endpoint is insufficient. **Linked Models service** is a gateway you or your organization operates. Obtain its address, app key and allowed model from its administrator. Pencil includes no Models account or free hosted AI plan.
+### Connect OpenRouter or another compatible provider
+
+Choose **Other compatible provider**. OpenRouter is a self-serve service offering models from several providers through one account; its values are filled in when you choose this option.
+
+1. Open [OpenRouter API keys](https://openrouter.ai/settings/keys), sign in or create an account, and create a key named Pencil. Set a spending limit and copy the key when shown.
+2. Add credit under [OpenRouter credits](https://openrouter.ai/settings/credits). Check [GPT-4.1 Mini access and current pricing](https://openrouter.ai/openai/gpt-4.1-mini).
+3. Use API base address `https://openrouter.ai/api/v1` and model identifier `openai/gpt-4.1-mini`. **Copy API address** and **Copy model** are available on the Pencil page. Paste the OpenRouter key in **Provider API key**.
+4. Choose **Save provider**, then **Test saved provider**. Wait for **Connection passed** before sending responses. If it fails, check credit, key permissions and model access.
+
+OpenRouter documents its [Responses API](https://openrouter.ai/docs/api/reference/responses/overview) and [strict JSON-schema output](https://openrouter.ai/docs/guides/features/structured-outputs); the latter means the answer must follow Pencil’s exact format. Other services must support both. A chat-only API or native Anthropic/Google endpoint is insufficient. Pencil tests your actual saved address and model; it never substitutes a different provider. Provider availability, billing and data policies are separate from Pencil.
+
+### Connect an existing Models service
+
+**Linked Models service** refers to the separate Models application your organization runs to share model access, control spending and issue cost receipts. The Models administrator holds the upstream provider keys. Pencil uses a dedicated **Models app key**, not an upstream provider key. There is no public Models signup or hosted Models account included with Pencil. If you do not have a Models service, choose OpenAI or OpenRouter above.
+
+Enter your organization’s **Models service HTTPS address**. Pencil then shows direct **Providers**, **Routes** and **Apps** links to that service. An administrator can complete these steps there:
+
+1. In **Providers**, add a provider key, verify its model catalogue and record its account data policies.
+2. In **Routes**, add an exact model with Responses and strict JSON-schema support, confirm its prices, and copy the complete model name including provider prefix.
+3. In **Apps**, create a Pencil app, approve that provider and model, set spending and request limits, and allow `analysis`, `draft-rewrite` and `connection-test`. Mint an app key permitting those features and copy it when shown.
+4. Back in Pencil, paste the model name and **Models app key**, choose **Save provider**, then **Test saved provider**. Wait for **Connection passed**. Costs come from the service’s receipts; direct-key token-rate fields are hidden.
+
+If someone else administers Models, ask them for the HTTPS address, allowed model name and dedicated app key with those three features enabled. A successful connection test proves key access and the required structured answer; it does not prove analysis quality.
 
 Saved connections override deployment settings. Credentials are encrypted using this installation's session secret, never returned to the browser, and excluded from exports. Reconnect after restoring or changing `SESSION_SECRET`. **Use deployment settings** removes the saved override. Saving a connection enables analysis, including close-time analysis when its existing policy permits it; check the settings below before connecting.
 
@@ -99,4 +121,4 @@ Analyses travel in your [backups](backup.md). A restored analysis is never resen
 
 `rer dev` answers analysis requests with Base's local double, which cannot produce the structured answer analysis needs. A run there fails with `dev_fake_cannot_answer`; that is expected, not a fault. To make real requests on your computer, save an actual provider from **Connect analysis** on the Analysis page. That explicit connection uses the live provider and can incur charges even in local development. Removing it returns to deployment settings and the ordinary local double. A capped Models dev app can also be connected with its service address, key and allowed model. Set its cap and expiry in your own Models service.
 
-Nothing in this release was run against a live model: analysis was checked against a scripted local provider that answers in the documented format.
+The saved-provider test makes a real, potentially billable call. Local scripted-provider checks do not prove account access or live analysis quality.

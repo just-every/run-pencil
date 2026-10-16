@@ -17,6 +17,7 @@ import { lobbyResponse } from './base/lobby'
 import { staticAssetResponse } from './base/static-assets'
 import { claimedWhen, setupStateResponse } from './base/setup-state'
 import { identity } from './identity'
+import { continueNotifications } from './core/app/request-notifications'
 
 const HASHED_ASSET = /^\/assets\/[^/]+-[A-Za-z0-9_-]{8}\.[A-Za-z0-9]+$/
 // public/: the declared theme (rer-theme.css) and the files it names, served at stable paths by the installer and the confirmation page.
@@ -35,6 +36,13 @@ function assetResponse(path: string, asset: Response): Response {
 const worker = {
   scheduled: runScheduledMaintenance,
   async fetch(request: Request, bindings: WorkerBindings, execution: ExecutionContext): Promise<Response> {
+    const response = await fetchPencil(request, bindings, execution)
+    if (response.status < 500) continueNotifications(request, bindings, execution)
+    return response
+  },
+} satisfies ExportedHandler<WorkerBindings>
+
+async function fetchPencil(request: Request, bindings: WorkerBindings, execution: ExecutionContext): Promise<Response> {
     // Built files first: a hosted deploy runs this Worker before its static assets (run_worker_first).
     const built = await staticAssetResponse(request, bindings)
     if (built) return assetResponse(new URL(request.url).pathname, built)
@@ -104,7 +112,6 @@ const worker = {
     headers.set('Referrer-Policy', path === '/setup' ? 'same-origin' : 'no-referrer')
     headers.set('X-Content-Type-Options', 'nosniff')
     return new Response(request.method === 'HEAD' ? null : response.body, { status: response.status, headers })
-  },
-} satisfies ExportedHandler<WorkerBindings>
+}
 
 export default withDemo(worker, { seed: seedDemo })

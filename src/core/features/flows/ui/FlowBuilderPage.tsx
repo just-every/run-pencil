@@ -19,6 +19,7 @@ import { LoadProblem } from '../../../app/ui/LoadProblem'
 function stepLabel(step: FlowStep) {
   if (step.kind === 'welcome') return 'Welcome'
   if (step.kind === 'completion') return 'Completion'
+  if (step.questionType === 'nps') return 'NPS'
   const label = step.questionType?.replace('_', ' ') ?? 'Question'
   return label[0].toUpperCase() + label.slice(1)
 }
@@ -277,7 +278,7 @@ export function FlowBuilderPage() {
               <button className="secondary-button focus-ring" disabled={saving || dirty || selectedIndex <= 0} onClick={() => move(-1)} aria-label="Move up" title="Move up" type="button"><ArrowUp aria-hidden="true" size={15} /></button>
               <button className="secondary-button focus-ring" disabled={saving || dirty || selectedIndex === draft.steps.length - 1} onClick={() => move(1)} aria-label="Move down" title="Move down" type="button"><ArrowDown aria-hidden="true" size={15} /></button>
               <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={() => reloadAfterMutation(() => api.duplicateDraftStep(flowId, selected.id, draft.flow.draftVersion))} type="button"><Copy aria-hidden="true" size={15} /> Duplicate</button>
-              <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={() => reloadAfterMutation(() => api.deleteDraftStep(flowId, selected.id, draft.flow.draftVersion))} type="button"><Trash2 aria-hidden="true" size={15} /> Delete</button>
+              <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={() => { if (window.confirm(`Delete “${selected.prompt || stepLabel(selected)}”? Any branching rules that lead to this question will also be removed. Published responses stay unchanged.`)) void reloadAfterMutation(() => api.deleteDraftStep(flowId, selected.id, draft.flow.draftVersion)) }} type="button"><Trash2 aria-hidden="true" size={15} /> Delete</button>
             </div>
             <BranchEditor disabled={saving} draft={{ ...draft, choices: choices.map((choice, position) => ({ ...choice, id: choice.id ?? choice.newId!, stepId: selected.id, position })) }} step={{ ...selected, questionType }} rules={rules} onChange={setRules} />
             <div className="builder-save">

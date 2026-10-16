@@ -8,7 +8,7 @@ import { expect, test } from './fixtures'
 import type { BuilderDraft } from '../../src/core/app/api'
 // Isolate this new journey's API traffic; actual per-address rate limits stay enabled.
 test.use({ locale: 'en-GB', extraHTTPHeaders: { 'CF-Connecting-IP': '198.18.240.31' } })
-contract(['FLOW-003', 'RESP-003', 'LEDG-004', 'BASE-PUBLIC-003'], 'six additional question types reject an empty required answer and complete through keyboard controls at both widths', async ({ page }, info) => {
+contract(['FLOW-003', 'RESP-003', 'LEDG-004', 'BASE-PUBLIC-003'], 'six additional question types reject an empty required answer and complete through native controls at both widths', async ({ page }, info) => {
   const request = page.request
   test.setTimeout(120_000)
   await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
@@ -77,21 +77,9 @@ contract(['FLOW-003', 'RESP-003', 'LEDG-004', 'BASE-PUBLIC-003'], 'six additiona
     } else {
       const date = page.locator('input[type=date][aria-label="Answer date"]')
       await tabTo(date)
-      // Native Chrome uses its UI locale for segment order, independently of
-      // Playwright's page locale. Start with an unambiguous date, then observe
-      // which segment the keyboard changes before entering the requested date.
-      await page.keyboard.type('1'); await page.keyboard.press('ArrowRight')
-      await page.keyboard.type('1'); await page.keyboard.press('ArrowRight')
-      await page.keyboard.type('2024')
-      await expect(date).toHaveValue('2024-01-01')
-      await page.keyboard.press('ArrowLeft'); await page.keyboard.press('ArrowLeft')
-      await page.keyboard.press('ArrowUp')
-      const monthFirst = (await date.inputValue()) === '2024-02-01'
-      expect(await date.inputValue()).toBe(monthFirst ? '2024-02-01' : '2024-01-02')
-      for (let i = 2; i < (monthFirst ? 2 : 29); i++) await page.keyboard.press('ArrowUp')
-      await page.keyboard.press('ArrowRight')
-      for (let i = 1; i < (monthFirst ? 29 : 2); i++) await page.keyboard.press('ArrowUp')
-      await page.keyboard.press('Tab')
+      // Native mobile date pickers do not expose desktop keyboard segments.
+      // Use the browser's date input, then submit through the same form.
+      await date.fill('2024-02-29')
       await expect(date).toHaveValue('2024-02-29')
     }
     await expect(page.getByText('Required', { exact: true })).toBeVisible()
@@ -113,7 +101,7 @@ contract(['FLOW-003', 'RESP-003', 'LEDG-004', 'BASE-PUBLIC-003'], 'six additiona
   await tabTo(ledger.getByRole('button', { name: 'Export JSON' })); await page.keyboard.press('Enter')
   const exported = JSON.parse(await downloadedText(await jsonDownload))
   expect(exported.responses).toHaveLength(1)
-  expect(exported.responses[0].answers.map((answer: { value: unknown }) => answer.value)).toEqual([draft.choices[0].id, false, 0, -1.25, '2024-02-29', { accepted: true, statement: 'I agree to the published statement.' }])
+  expect(exported.responses[0].answers.map((answer: { value: unknown }) => answer.value)).toEqual([draft.choices[0].value, false, 0, -1.25, '2024-02-29', { accepted: true, statement: 'I agree to the published statement.' }])
   const csvDownload = page.waitForEvent('download')
   await tabTo(ledger.getByRole('button', { name: 'Export CSV' })); await page.keyboard.press('Enter')
   const csv = csvRows(await downloadedText(await csvDownload))

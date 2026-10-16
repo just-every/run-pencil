@@ -29,7 +29,7 @@ export function siteClient(entry: string): Plugin {
             // The card reaches feature indexes whose head helpers load the deployment's origin lazily, through
             // TanStack Start (bundled only by its own Vite plugin) and the Worker's platform. The card never calls
             // them, so those imports stay external, and the chunk that holds them is never loaded or shipped.
-            external: [/^@tanstack\/react-start(?:\/|$)/, /^cloudflare:/],
+            external: [/^@tanstack\/react-start(?:\/|$)/, /^cloudflare:/, /^virtual:pencil-backup-manifest$/],
           },
         },
       })

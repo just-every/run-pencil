@@ -94,7 +94,7 @@ Nobody starts with an answer picked. A **No**, a **0** or a rating only counts o
 
 For choice types, use **Choice** to add options and **Remove** to take one away. Type each option's label into its own field, which is numbered **Choice 1**, **Choice 2** and so on.
 
-Behind each label sits an **Answer value** that Pencil makes from the label. It is the value used in exports. Rename a label later and the value stays the same, so your exports stay consistent. If you need to change it, open **Advanced** on that choice.
+Behind each label sits an **Answer value** that Pencil makes from the label. CSV and JSON exports use this value from the published revision the respondent answered, with the label alongside it. Multiple-choice and priority answers export a list of these values; priority keeps the respondent’s order. Rename a label later and the value stays the same, so your exports stay consistent. If you need to change it, open **Advanced** on that choice.
 
 ## Preview your flow
 

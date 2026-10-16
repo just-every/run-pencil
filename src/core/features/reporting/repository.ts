@@ -14,7 +14,7 @@ export class ReportingRepository {
   async revisions(flowId: string) {
     return (await this.binding.prepare("SELECT id, number, is_current AS isCurrent FROM flow_revisions WHERE flow_id = ? AND state = 'published' ORDER BY number DESC").bind(flowId).all<{ id: string; number: number; isCurrent: number }>()).results
   }
-  async ledger(workspaceId: string, flowId: string, filter: LedgerFilter, cutoff: string, state: 'released' | 'quarantined' = 'released', limit = 50, continuation?: { total: number; after?: { time: string; id: string } }, signal?: AbortSignal) {
+  async ledger(workspaceId: string, flowId: string, filter: LedgerFilter, cutoff: string, state: 'released' | 'quarantined' = 'released', limit = 50, continuation?: { total: number; after?: { time: string; id: string } }, signal?: AbortSignal, answerFormat: 'stored' | 'export' = 'stored') {
     signal?.throwIfAborted()
     const { where, bindings } = responseScope(workspaceId, flowId, filter, cutoff, state)
     const total = continuation ? { count: continuation.total } : await this.binding.prepare(`SELECT count(*) AS count FROM responses r WHERE ${where}`).bind(...bindings).first<{ count: number }>()
@@ -27,7 +27,7 @@ export class ReportingRepository {
       r.completed_at AS completedAt, r.released_at AS releasedAt,
       32768 + 12 * COALESCE((SELECT SUM(length(CAST(a.value_json AS BLOB))) FROM response_answers a WHERE a.response_id = r.id),0)
       + 12 * COALESCE((SELECT SUM(length(CAST(s.prompt AS BLOB))) FROM flow_steps s WHERE s.revision_id = r.revision_id),0)
-      + 12 * COALESCE((SELECT SUM(length(CAST(c.label AS BLOB))) FROM response_answers a JOIN flow_steps s ON s.revision_id=r.revision_id AND s.stable_id=a.step_id JOIN json_each(a.value_json) j JOIN choice_options c ON c.step_id=s.id AND c.stable_id=j.value WHERE a.response_id=r.id AND s.question_type IN ('single_choice','dropdown','multiple_choice','priority')),0) AS cost
+      + 12 * COALESCE((SELECT SUM(length(CAST(c.label AS BLOB))+length(CAST(c.value AS BLOB))) FROM response_answers a JOIN flow_steps s ON s.revision_id=r.revision_id AND s.stable_id=a.step_id JOIN json_each(a.value_json) j JOIN choice_options c ON c.step_id=s.id AND c.stable_id=j.value WHERE a.response_id=r.id AND s.question_type IN ('single_choice','dropdown','multiple_choice','priority')),0) AS cost
       FROM responses r JOIN flow_revisions revision ON revision.id = r.revision_id AND revision.flow_id = r.flow_id
       WHERE ${where}${after} ORDER BY r.completed_at DESC,r.id DESC LIMIT ? OFFSET ?),
       budget AS (SELECT *, SUM(cost) OVER (ORDER BY completedAt DESC,id DESC) AS bytes, ROW_NUMBER() OVER (ORDER BY completedAt DESC,id DESC) AS ordinal FROM candidates)
@@ -43,18 +43,29 @@ export class ReportingRepository {
       SELECT id,revision_id FROM responses WHERE id IN (${rows.map(()=>'?').join(',')})),
       selected_questions AS (SELECT DISTINCT r.revision_id,a.step_id FROM response_answers a JOIN selected_responses r ON r.id=a.response_id),
       selected_choices AS (SELECT DISTINCT r.revision_id,a.step_id,j.value FROM response_answers a JOIN selected_responses r ON r.id=a.response_id JOIN json_each(a.value_json) j)
-      SELECT c.stable_id AS id, CASE WHEN picked.value IS NOT NULL THEN c.label END AS label, s.stable_id AS stepId,s.revision_id AS revisionId
+      SELECT c.stable_id AS id, CASE WHEN picked.value IS NOT NULL THEN c.label END AS label, CASE WHEN picked.value IS NOT NULL THEN c.value END AS value, s.stable_id AS stepId,s.revision_id AS revisionId
       FROM choice_options c JOIN flow_steps s ON s.id=c.step_id JOIN selected_questions q ON q.revision_id=s.revision_id AND q.step_id=s.stable_id
-      LEFT JOIN selected_choices picked ON picked.revision_id=s.revision_id AND picked.step_id=s.stable_id AND picked.value=c.stable_id`).bind(...rows.map(row=>row.id)).all<{id:string;label:string|null;stepId:string;revisionId:string}>()).results : []
+      LEFT JOIN selected_choices picked ON picked.revision_id=s.revision_id AND picked.step_id=s.stable_id AND picked.value=c.stable_id`).bind(...rows.map(row=>row.id)).all<{id:string;label:string|null;value:string|null;stepId:string;revisionId:string}>()).results : []
     signal?.throwIfAborted()
     const questionRows = rows.length ? (await this.binding.prepare(`SELECT revision_id AS revisionId, stable_id AS stepId, prompt AS label, position, question_type AS questionType FROM flow_steps WHERE kind = 'question' AND revision_id IN (${[...new Set(rows.map(row => row.revisionId))].map(() => '?').join(',')}) ORDER BY position`).bind(...new Set(rows.map(row => row.revisionId))).all<{ revisionId: string; stepId: string; label: string; position: number; questionType: string }>()).results : []
     signal?.throwIfAborted()
     const optionIds = new Map<string,string[]>()
     const optionLabels = new Map<string,string>()
+    const optionValues = new Map<string,string>()
     for (const option of optionRows) {
       const key = `${option.revisionId}\0${option.stepId}`
       const ids = optionIds.get(key) ?? []; ids.push(option.id); optionIds.set(key,ids)
       if (option.label !== null) optionLabels.set(`${key}\0${option.id}`,option.label)
+      if (option.value !== null) optionValues.set(`${key}\0${option.id}`,option.value)
+    }
+    const exportValue = (value: unknown, stepId: string, revisionId: string, questionType: string) => {
+      if (answerFormat !== 'export' || !['single_choice', 'multiple_choice', 'dropdown', 'priority'].includes(questionType)) return value
+      const choiceValue = (id: unknown) => {
+        const publishedValue = optionValues.get(`${revisionId}\0${stepId}\0${String(id)}`)
+        if (publishedValue === undefined) throw new Error('A retained answer is missing its published choice value')
+        return publishedValue
+      }
+      return Array.isArray(value) ? value.map(choiceValue) : choiceValue(value)
     }
     const display = (value: unknown, stepId: string, revisionId: string, questionType: string) => {
       const label = (id: unknown) => {
@@ -71,7 +82,7 @@ export class ReportingRepository {
       }
       return typeof value === 'string' ? value : JSON.stringify(value)
     }
-    return { total: total?.count ?? 0, responses: rows.map((row) => ({ ...row, omittedQuestions: questionRows.filter(question => question.revisionId === row.revisionId && !answers.some(answer => answer.responseId === row.id && answer.stepId === question.stepId)).map(({ stepId, label, position, questionType }) => ({ stepId, label, position, questionType })), ...(participants.some(p => p.responseId === row.id) ? { participant: (() => { const { responseId: _responseId, ...p } = participants.find(p => p.responseId === row.id)!; return p })() } : {}), answers: answers.filter((answer) => answer.responseId === row.id).map(({ stepId, label, position, questionType, settingsJson, required, valueJson }) => { const value: unknown = JSON.parse(valueJson); retainedAnswer(questionType,value,optionIds.get(`${row.revisionId}\0${stepId}`) ?? [],JSON.parse(settingsJson ?? '{}'),Boolean(required)); return ({ stepId, label, position, questionType, value, displayValue: display(value, stepId, row.revisionId, questionType) }) }) })) }
+    return { total: total?.count ?? 0, responses: rows.map((row) => ({ ...row, omittedQuestions: questionRows.filter(question => question.revisionId === row.revisionId && !answers.some(answer => answer.responseId === row.id && answer.stepId === question.stepId)).map(({ stepId, label, position, questionType }) => ({ stepId, label, position, questionType })), ...(participants.some(p => p.responseId === row.id) ? { participant: (() => { const { responseId: _responseId, ...p } = participants.find(p => p.responseId === row.id)!; return p })() } : {}), answers: answers.filter((answer) => answer.responseId === row.id).map(({ stepId, label, position, questionType, settingsJson, required, valueJson }) => { const value: unknown = JSON.parse(valueJson); retainedAnswer(questionType,value,optionIds.get(`${row.revisionId}\0${stepId}`) ?? [],JSON.parse(settingsJson ?? '{}'),Boolean(required)); return ({ stepId, label, position, questionType, value: exportValue(value, stepId, row.revisionId, questionType), displayValue: display(value, stepId, row.revisionId, questionType) }) }) })) }
   }
   async questionReport(revisionId: string) {
     const [steps, choices] = await this.binding.batch([

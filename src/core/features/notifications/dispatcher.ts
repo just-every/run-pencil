@@ -1,4 +1,4 @@
-import { readNotificationBrand, type NotificationBrand } from './brand.server'
+import { readNotificationBrand, type NotificationBrand } from './brand'
 import { safeNotificationReceipt, type NotificationPreparationFailure } from './failure'
 import type { MailSender } from '../../../base/operator-auth/index.mjs'
 import type { MailConfiguration } from '../../platform/mail'

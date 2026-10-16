@@ -73,8 +73,18 @@ A message waits as pending, then becomes sent, failed or unknown. It is cancelle
 Everything that does not need email keeps running: people already signed in, public links, embeds, collecting responses, results and exports. There is no general warning. This is what you see instead:
 
 - **Invitations and reminders** are still tried one by one. Each one the provider refuses is marked failed, with a short code such as `provider_rejected`. Each one where Pencil cannot tell what happened, for example because the provider did not answer, is marked unknown. Once mail works again, an unknown one needs **Queue retry (duplicate risk)**, even if nothing went out.
-- **Sign-in links.** The sign-in page always shows its usual **Check your email** reply, so that it never reveals who is an operator. When the provider fails, the link is cancelled and no email arrives. Pencil records the failure but shows it nowhere in the app. It appears in your Worker's log as `auth.magic_link_failed`, with the provider's outcome code. To watch for it, run `npx --no-install wrangler tail --config "$PENCIL_WRANGLER_CONFIG"` and try to sign in. Pencil has no password. The hosted owner can use [rer signin](hosting.md#sign-in-as-the-first-owner) with the deployment's Cloudflare credentials; other operators need mail restored.
+- **Sign-in links.** The sign-in page always shows its usual **Check your email** reply, so that it never reveals who is an operator. When the provider fails, the link is cancelled and no email arrives. Pencil records the failure but shows it nowhere in the app. It appears in your Worker's log as `auth.magic_link_failed`, with the provider's outcome code. To watch for it, use the Worker log recipe below and try to sign in. Pencil has no password. The hosted owner can use [rer signin](hosting.md#sign-in-as-the-first-owner) with the deployment's Cloudflare credentials; other operators need mail restored.
 - **New-response emails and Daily digests** show each attempt and its result under **Recent notification deliveries** on the results page. With SendGrid or Resend, if `MAIL_FROM` is not a plain `noreply@` or `no-reply@` address, the **Response notifications** panel explains that response notification mail is off; sign-in mail can still work from that verified sender.
+
+### Watch your hosted Worker log
+
+From the checkout that deployed your installation, make the same `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` available in your terminal as for deployment. For the `production` environment, run:
+
+```sh
+npx --no-install wrangler tail pencil-production --format pretty
+```
+
+For a named environment, replace `pencil-production` with its existing Worker name: for example, the `pencil-check` environment uses `pencil-pencil-check`. Confirm the name in Cloudflare's **Workers & Pages** before running the command. This watches logs only; it does not deploy. With the log running, request a sign-in link and look for `auth.magic_link_failed` and its outcome code. Stop watching with Ctrl-C. Keep logs private; they can contain operational details.
 
 ## Emails to you about new responses
 

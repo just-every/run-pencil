@@ -3,6 +3,7 @@ import { failure } from './deployment-data-errors.mjs';
 // Every persisted column is reviewed here. A migration cannot silently add data
 // to an archive: both new tables and new columns fail closed until classified.
 const retained = {
+  notification_timer: 'id last_started_at',
   integration_connections: 'kind sealed updated_at',
   d1_migrations: 'id name applied_at sha256 state',
   _rer_deploy_migrations: 'name sha256 state',
@@ -180,7 +181,7 @@ export function classify(table) {
 // Base messages require a real sender and at least one recipient. Captured mail
 // cannot be represented as valid empty-address messages without fabrication.
 // Preserve these tables in the required schema, but exclude their private rows.
-const excludedCaptureTables = new Set(['local_mail_outbox', 'rer_mail_development_outbox', 'oa_dev_credentials', 'oa_setup_links', 'rer_ai_development_outbox', 'integration_connections']);
+const excludedCaptureTables = new Set(['notification_timer', 'local_mail_outbox', 'rer_mail_development_outbox', 'oa_dev_credentials', 'oa_setup_links', 'rer_ai_development_outbox', 'integration_connections']);
 // Sign-in authorization never travels: sessions (native, dev, review, provider), sign-in and invitation links, step-up
 // challenges, minted API credentials and the provider bindings of those sessions. A restore cannot revive a session that
 // was signed out or revoked after the backup, so everyone signs in again. Operators, roles and the audit history stay.

@@ -1,3 +1,5 @@
 export { NotificationsPanel } from './NotificationsPanel'
 export { useNotifications, notificationApi } from './useNotifications'
-export { composeResponseNotification } from './compose'
+export { composeResponseNotification, buttonTextColor } from './compose'
+export { readNotificationBrand } from './brand'
+export type { NotificationBrand, NotificationLogo } from './brand'

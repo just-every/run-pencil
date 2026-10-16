@@ -88,7 +88,7 @@ The embedded form runs in an isolated frame. The page around it cannot read answ
 
 ## A form on your home page
 
-You can show one open flow at your Pencil address itself, at `/`. In **Settings**, under **Business branding**, choose it as the **Public landing flow**. Only open flows are listed. With **No public landing**, `/` returns a not-found page. If the chosen flow later closes, visitors see the closed page, and if it is archived or missing, `/` is not found, exactly like its own link.
+You can show one open flow at your Pencil address itself, at `/`. In **Settings**, under **Business branding**, choose it as the **Public landing flow**. Only open flows are listed. With **No public landing**, `/` shows the Pencil Lobby: **Finish setup** until the owner has completed first-run setup, then **Sign in**. The Lobby uses the installation’s Pencil name; your saved business branding appears on respondent forms. If the chosen flow later closes, visitors see the closed page, and if it is archived or missing, `/` is not found, exactly like its own link.
 
 The landing page shows a small **Operator sign in** link for you and your team. It shows a "Powered by Pencil" credit only if you switch that on in the source (`showPoweredByCredit` in `src/ext/config.ts`). It is off by default.
 
@@ -100,7 +100,7 @@ In **Settings**, **Business branding** holds:
 - **Accent colour**, as `#rrggbb`. Button text switches to black or white so it stays readable.
 - **Business logo**: a PNG, JPEG or WebP up to 256 KB. SVG is not accepted.
 
-Choose **Save business branding** to store the name, supporting line, accent colour and public landing flow. The logo does not wait for that button: it is saved as soon as you choose the file, and Pencil says **Business logo saved.** **Remove business logo** also acts at once and takes it away everywhere. Your branding appears in previews, direct and embedded forms, the completion and closed pages, the landing page and new-response emails. Pencil serves your logo from your own installation and loads nothing from other sites. Logos are public images by design, so anyone can fetch your logo.
+Choose **Save business branding** to store the name, supporting line, accent colour and public landing flow. The logo does not wait for that button: it is saved as soon as you choose the file, and Pencil says **Business logo saved.** **Remove business logo** also acts at once and takes it away everywhere. Your branding appears in previews, direct and embedded forms, the completion and closed pages, the selected landing form, invitations, reminders and new-response emails. Pencil serves your logo from your own installation and loads nothing from other sites. Logos are public images by design, so anyone can fetch your logo.
 
 ## What respondents see
 

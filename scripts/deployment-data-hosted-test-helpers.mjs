@@ -1,3 +1,4 @@
+import { createBackupManifest } from './deployment-data-browser-manifest.mjs';
 import { DatabaseSync } from 'node:sqlite';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
@@ -45,6 +46,8 @@ export async function application(directory, db) {
   const bindingKey = Symbol.for(output);
   await build({entryPoints:[resolve('src/core/app/worker.ts')], bundle:true, platform:'node', format:'esm', outfile:output, logLevel:'silent', plugins:[{
     name:'vite-raw', setup(build) {
+      build.onResolve({filter:/^virtual:pencil-backup-manifest$/},()=>({path:'backup-manifest',namespace:'backup-manifest'}));
+      build.onLoad({filter:/.*/,namespace:'backup-manifest'},()=>({contents:'export default '+JSON.stringify(createBackupManifest())+';',loader:'js'}));
       build.onResolve({filter:/\?raw$/}, args=>({path:resolve(args.resolveDir,args.path.slice(0,-4)),namespace:'raw'}));
       build.onLoad({filter:/.*/,namespace:'raw'}, args=>({contents:readFileSync(args.path,'utf8'),loader:'text'}));
     },

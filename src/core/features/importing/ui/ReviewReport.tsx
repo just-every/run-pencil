@@ -1,5 +1,6 @@
 import { RowErrors } from './RowErrors'
 import { type ColumnMapping, type ImportReview } from '../model'
+import { reportText, typeLabel } from './report-labels'
 export function ReviewReport({ review, columns, change, busy }: { review: ImportReview; columns: ColumnMapping[]; change: (value: ColumnMapping[]) => void; busy: boolean }) {
   return <section aria-labelledby="mapping-heading">
     <h2 id="mapping-heading">Review the mapping</h2>
@@ -12,13 +13,13 @@ export function ReviewReport({ review, columns, change, busy }: { review: Import
         return <label className="inspector-field" key={column}>{column + 1}. {header || '(empty heading)'}
           <select className="text-input" disabled={review.forbiddenColumns.includes(column)} value={mapping.choice ? `${mapping.target}::${mapping.choice}` : mapping.target} onChange={e => { const [target, choice] = e.target.value.split('::'); change(columns.map(c => c.column === column ? { column, target, ...(choice ? { choice } : {}) } : c)) }}>
             <option value="skip">Skip{review.forbiddenColumns.includes(column) ? ' — private metadata, uploads or quiz data is never imported' : ''}</option><option value="submittedAt">Submission timestamp</option>{review.source !== 'google-forms' ? <option value="startedAt">Start timestamp</option> : null}
-            {review.questions.map(q => <option key={q.id} value={q.id}>{q.prompt} ({q.questionType}){review.source === 'google-forms' ? ` — source ${q.sourceId}` : ''}</option>)}
+            {review.questions.map(q => <option key={q.id} value={q.id}>{q.prompt} ({typeLabel(q.questionType ?? 'question')}){review.source === 'google-forms' ? ` — source ${q.sourceId}` : ''}</option>)}
             {review.source !== 'google-forms' ? review.questions.filter(q => q.questionType === 'multiple_choice').flatMap(q => q.choices.map(c => <option key={`${q.id}:${c.id}`} value={`${q.id}::${c.id}`}>{q.prompt} — {c.label} selected</option>)) : null}
           </select>
         </label>
       })}</fieldset> : null}
     <div role="list" aria-label="Field and logic mapping report">{review.report.map((item, index) => <div role="listitem" className="quiet-panel" style={{ padding: '1rem', marginTop: '.65rem', overflowWrap: 'anywhere' }} key={index}>
-      <strong>{item.label} · {item.sourceType}</strong><p><span className="badge">{item.state}</span> {item.change}</p><p>{item.reason}</p><small className="muted">{item.location}</small>
+      <strong>{reportText(item.label, review)} · {typeLabel(item.sourceType)}</strong><p><span className="badge">{item.state === 'unsupported' ? 'Left out' : item.state === 'changed' ? 'Changed' : 'Imported'}</span> {reportText(item.change, review)}</p><p>{reportText(item.reason, review)}</p><details><summary className="focus-ring">Source details</summary><small className="muted">{item.location}</small></details>
     </div>)}</div>
     <RowErrors key={review.fingerprint} errors={review.rowErrors} />
   </section>

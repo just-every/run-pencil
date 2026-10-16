@@ -22,7 +22,43 @@ After successful automatic owner claim and token retirement, unset SETUP_TOKEN i
 
 `rer signin --environment production` uses the deployment's Cloudflare credentials and private receipt to issue a single-use link for its recorded owner without email. The link expires within 15 minutes and is printed only to the terminal; keep it private and open it promptly. An older deployment without owner-sign-in support is refused with upgrade guidance. Use `/signin` for ordinary operator email sign-in.
 
-Archives contain product data, including personal data, but exclude credentials, active sessions, captured mail and private settings; retain and reconfigure secrets separately. `rer export` and `rer import` use local state; stop dev and preview first. Pencil's portability hook does not opt into remote transfers, so `--target remote` is refused by this checkout. The maintained deployed recovery command is `node scripts/deployment-data-cli.mjs export --output exports/deployed.rer --writers-stopped`. It reads CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_DATABASE_ID and CLOUDFLARE_API_TOKEN from the private environment. Use the D1 ID in the deployment receipt, and pause routes, schedules and all other writers without deleting D1. See [Backup and restore](guide/backup.md) for the matching-source, ledger and empty-target requirements, including separately provisioning and attaching a migration-only restore target rather than an automatically claimed deployment. The recovery command does not provision that target.
+Archives contain product data, including personal data, but exclude credentials, active sessions, captured mail and private settings. The signed-in owner can use `/app/backup` to download and check a bounded archive. Reads happen in one D1 atomic batch, including a size guard before product rows are read; forms and schedules may keep writing. The browser path checks checksum, exact committed schema/history, row shape, privacy rules and foreign-key references. **Test restoration** then lazily loads SQL.js and its WASM from the same origin, creates a new in-memory SQLite database, restores using only the trusted build-time schema and typed values, checks integrity/foreign keys and requires an identical re-exported checksum. Signed 64-bit integers bind through decimal strings cast inside SQLite and are read with BigInt support; text and blobs retain their storage types. Triggers are added after loading rows, as with file recovery, and no notifications or external tasks run. A newer archive can apply the existing erasure fence before any test database is created. The test database is closed and discarded on both success and failure. It does not execute arbitrary archive SQL or activate a restored deployment. The manifest is generated from this checkout’s migrations at build time by `scripts/deployment-data-browser-manifest.mjs`.
+
+The matching-version command below validates all database constraints, creates a new local SQLite database using the archive’s own migration controller, and re-exports it. It refuses an existing output and requires checksum equality. It works for both local and deployment-kit archives, without the `rer import` hosted/local controller mismatch:
+
+```sh
+node scripts/deployment-data-restore-test.mjs --input exports/pencil-backup.rer --output exports/restore-test.sqlite
+```
+
+This is a restore test, not an active hosted replacement and not a local `rer dev` installation. The restored SQLite file intentionally retains the original controller. Do not substitute ledgers to make `rer dev` accept it. An optional `--journal exports/later.rer` refuses a backup predating a later erasure.
+
+## Large-workspace export
+
+Browser export uses a conservative 8 MiB JSON size budget and a row-count guard. The archive is never truncated. Oversized workspaces require the streaming maintainer CLI. Set `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID` (the actual D1 ID in the private deployment receipt), and `CLOUDFLARE_API_TOKEN` in the private environment. Use the source version that matches the live database. Stop routes, schedules and all other writers while preserving D1, wait for in-flight work, then run:
+
+```sh
+node scripts/deployment-data-cli.mjs export --output exports/deployed.rer --writers-stopped
+node scripts/deployment-data-restore-test.mjs --input exports/deployed.rer --output exports/restore-test.sqlite
+```
+
+Unlike the page’s single-transaction export, the streaming CLI uses paginated primary reads and consistency bookmarks; it requires a stable source. The flag confirms the operator stopped writers. This remains a maintainer operation, and the browser path does not silently switch to it.
+
+## Hosted replacement boundary
+
+The current product does not provision or attach a restored hosted target from the Backup page. A normal owner-claimed `rer deploy` is not an empty restore target. Do not delete owner records to bypass the empty-target guard. Keep the original deployment until an installation-specific recovery procedure has provisioned a matching-source migration-only D1 database, restored it, re-exported matching contents and attached it through the supported deployment workflow. The page’s real browser restore test and the optional local restore-test command give concrete archive acceptance checks; they do not activate a hosted replacement.
+
+For an already provisioned, stopped, empty D1 target with the same migration controller, point `CLOUDFLARE_DATABASE_ID` at that target and run:
+
+```sh
+node scripts/deployment-data-cli.mjs import --input exports/deployed.rer --yes --writers-stopped
+node scripts/deployment-data-cli.mjs export --output exports/deployed-restored.rer --writers-stopped
+```
+
+Require identical `sha256` values. Staging is inert and publication is atomic; recovery never sends mail. For `RESTORE_STATE_UNCONFIRMED`, keep the target stopped and inspect it. `cleanup --input exports/deployed.rer --yes --writers-stopped` removes only the archive’s recognized inert stage. For `RESTORE_VERIFICATION_UNCONFIRMED`, publication already occurred; re-export and compare before retrying.
+
+## Deployment ownership recovery
+
+Do not delete or change Worker secrets in the dashboard between deployments. Those changes create a Worker version outside the saved deployment receipt; the next deploy refuses it as `owned-resource-replaced`. Preserve `.rer/deploy/production.json` (or the file for your chosen environment) privately and back it up after each successful deploy. Do not edit the receipt or bypass an ownership refusal. A deployment whose Worker version has already changed outside rer needs the deploy kit's supported ownership recovery.
 
 To remove a deployment and its data, use `rer deploy --remove --yes --environment production` with its receipt and the same account credentials. It deletes only resources recorded as created by rer for that environment and reads back that they are gone. Make and verify a hosted backup first if you need the data. Removal deletes D1; it is not a temporary pause for backup.
 

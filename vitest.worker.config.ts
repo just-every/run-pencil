@@ -2,6 +2,7 @@ import { testDevKey } from './tests/helpers/dev-key.mjs'
 import { fileURLToPath } from 'node:url'
 import { readFile } from 'node:fs/promises'
 import { cloudflareTest, readD1Migrations } from '@cloudflare/vitest-plugin'
+import { backupManifest } from './scripts/deployment-data-browser-manifest.mjs'
 import { defineConfig } from 'vitest/config'
 import { unstable_splitSqlQuery } from 'wrangler'
 
@@ -25,7 +26,7 @@ export default defineConfig({
     __PENCIL_UPGRADE_CHECKS__: JSON.stringify(upgradeChecks),
     __PENCIL_RUN_LOAD__: JSON.stringify(process.env.PENCIL_RUN_LOAD === '1'),
   },
-  plugins: [
+  plugins: [backupManifest(),
     cloudflareTest(({ inject }) => ({
       main: './tests/helpers/mail-worker.ts',
       miniflare: {

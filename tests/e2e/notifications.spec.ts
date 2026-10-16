@@ -36,11 +36,11 @@ contract(['NOTIFY-002','NOTIFY-004','BASE-PUBLIC-003'],'notification preference 
       await page.screenshot({path:info.outputPath(`notifications-${viewport.width}.png`),fullPage:true})
     }
     await page.getByRole('button',{name:'Retry',exact:true}).click();await expect(page.getByText('Retry queued with the original delivery key.')).toBeVisible()
-    expect(db.prepare('SELECT status,idempotency_key FROM notification_deliveries WHERE id=?').get(deliveryId)).toEqual({status:'pending',idempotency_key:deliveryId})
+    await expect.poll(()=>db.prepare('SELECT status,idempotency_key FROM notification_deliveries WHERE id=?').get(deliveryId)).toEqual({status:'sent',idempotency_key:deliveryId})
     db.prepare("UPDATE notification_deliveries SET status='unknown' WHERE id=?").run(deliveryId)
     await page.getByRole('button',{name:'Refresh delivery status'}).click();await expect(page.getByRole('button',{name:'Send again'})).toBeVisible()
     page.once('dialog',dialog=>dialog.dismiss());await page.getByRole('button',{name:'Send again'}).click();expect(db.prepare('SELECT status FROM notification_deliveries WHERE id=?').get(deliveryId)?.status).toBe('unknown')
     page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Send again'}).click();await expect(page.getByText('Retry queued with the original delivery key.')).toBeVisible()
-    expect(db.prepare('SELECT status,idempotency_key FROM notification_deliveries WHERE id=?').get(deliveryId)).toEqual({status:'pending',idempotency_key:deliveryId})
+    await expect.poll(()=>db.prepare('SELECT status,idempotency_key FROM notification_deliveries WHERE id=?').get(deliveryId)).toEqual({status:'sent',idempotency_key:deliveryId})
   }finally{db.close()}
 })

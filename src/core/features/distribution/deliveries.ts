@@ -1,8 +1,9 @@
 import { participantInvitation } from './message'
+import { readNotificationBrand } from '../notifications'
 import { ulid } from 'ulid'
 import { ConflictError, NotFoundError, ValidationError } from '../../shared/errors'
 import { nextSendingInstant, retryInstant } from './schedule'
-type Delivery = { id: string; participantId: string; kind: 'invitation' | 'reminder'; status: string; key: string; attempts: number; retryBase: number; firstAttempt: string | null; availableAt: string; workspaceId: string; email: string | null; token: string | null; optOutToken: string | null; business: string; title: string; timeZone: string; sendingWindowStart: string; sendingWindowEnd: string; eligible: number; reminderDelayHours: number }
+type Delivery = { id: string; participantId: string; kind: 'invitation' | 'reminder'; status: string; key: string; attempts: number; retryBase: number; firstAttempt: string | null; availableAt: string; workspaceId: string; email: string | null; token: string | null; optOutToken: string | null; title: string; timeZone: string; sendingWindowStart: string; sendingWindowEnd: string; eligible: number; reminderDelayHours: number }
 /** Domain receipts only. The maintained sender must call prepare before any provider effect. */
 export class MailDeliveries {
   constructor(private readonly db: D1Database) {}
@@ -11,7 +12,7 @@ export class MailDeliveries {
       (SELECT COALESCE(MAX(ordinal), 0) FROM mail_delivery_attempts WHERE delivery_id = d.id AND event = 'operator-retry') AS retryBase,
       CASE WHEN EXISTS (SELECT 1 FROM mail_delivery_attempts WHERE delivery_id = d.id AND event = 'operator-retry' AND ordinal = d.attempts)
         THEN NULL ELSE d.first_attempt_at END AS firstAttempt, d.available_at AS availableAt, p.workspace_id AS workspaceId, p.email_snapshot AS email,
-      p.token, p.opt_out_token AS optOutToken, w.name AS business, r.title, w.time_zone AS timeZone,
+      p.token, p.opt_out_token AS optOutToken, r.title, w.time_zone AS timeZone,
       w.sending_window_start AS sendingWindowStart, w.sending_window_end AS sendingWindowEnd,
       json_extract(l.policy_json, '$.reminderDelayHours') AS reminderDelayHours,
       (c.id IS NOT NULL AND c.opted_out_at IS NULL AND p.token IS NOT NULL AND f.status IN ('open', 'closed') AND r.admission_closed_at IS NULL
@@ -48,6 +49,15 @@ export class MailDeliveries {
       const next = nextSendingInstant(now, delivery)
       if (next > now) { await this.db.prepare("UPDATE mail_deliveries SET available_at = ?, updated_at = ? WHERE id = ? AND status = 'pending'").bind(next, now, id).run(); return null }
     }
+    let message: ReturnType<typeof participantInvitation> | undefined
+    try {
+      const brand = await readNotificationBrand(this.db, delivery.workspaceId)
+      const link = new URL(`/i/${delivery.token}`, origin).href, optOut = new URL(`/optout/${delivery.optOutToken}`, origin).href
+      message = participantInvitation(brand, delivery.title, link, optOut)
+    } catch {
+      // Claim and record a visible failure below; unreadable branding must not
+      // leave a pending delivery blocking every later recipient in the queue.
+    }
     const attemptId = ulid()
     const results = await this.db.batch([
       this.db.prepare(`UPDATE mail_deliveries SET status = 'sending', attempts = attempts + 1,
@@ -71,8 +81,11 @@ export class MailDeliveries {
         .bind(attemptId, now, id, delivery.attempts + 1, now, id, delivery.attempts + 1),
     ])
     if (!results[0].meta.changes || !results[1].meta.changes) return null
-    const link = new URL(`/i/${delivery.token}`, origin).href, optOut = new URL(`/optout/${delivery.optOutToken}`, origin).href
-    return { deliveryId: id, ordinal: delivery.attempts + 1, idempotencyKey: delivery.key, to: delivery.email!, ...participantInvitation(delivery.business, delivery.title, link, optOut), headers: { 'Auto-Submitted': 'auto-generated' } }
+    if (!message) {
+      await this.record(id, delivery.attempts + 1, { kind: 'permanent', reason: 'Invitation not sent: business branding or invitation links could not be read or validated. Correct the saved settings, then queue a retry.' }, now)
+      return null
+    }
+    return { deliveryId: id, ordinal: delivery.attempts + 1, idempotencyKey: delivery.key, to: delivery.email!, ...message, headers: { 'Auto-Submitted': 'auto-generated' } }
   }
   async record(id: string, ordinal: number, outcome: { kind: 'sent'; providerId: string | null } | { kind: 'transient' | 'permanent' | 'unknown' | 'bounced'; reason: string }, now = new Date().toISOString()) {
     const delivery = await this.read(id)

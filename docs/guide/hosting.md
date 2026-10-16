@@ -81,7 +81,7 @@ Run it from the checkout that deployed this environment, with its private deploy
 
 After success, unset `SETUP_TOKEN` in your terminal or secret environment. Updates preserve the existing owner and deployed secrets, and do not upload the retired token again. Keep `SESSION_SECRET` stable. An initialized installation refuses another owner claim.
 
-Do not delete or change Worker secrets in the dashboard between deployments. Those changes create a Worker version outside the saved deployment receipt; the next deploy refuses it as `owned-resource-replaced`. Preserve `.rer/deploy/production.json` (or the file for your chosen environment) privately and back it up after each successful deploy. Do not edit the receipt or bypass an ownership refusal. A deployment whose Worker version has already changed outside rer needs the deploy kit's supported ownership recovery.
+Keep and privately back up `.rer/deploy/production.json` (or the receipt for your chosen environment) after each successful deploy. Make configuration changes through the deployment commands. If deployment refuses an unexpected resource change, stop and use the [maintainer hosting reference](../HOSTING.md) to recover safely.
 
 ## Check that it works
 
@@ -100,7 +100,7 @@ Enter your email at `/signin` and choose **Send magic link**. The link in the em
 
 Pencil sends sign-in links, invitations and reminders, and new-response notices and Daily digests to operators. Managed hosting through RER supplies the RER mail relay without a separate provider account or API key. The following setup applies to direct Cloudflare hosting, including Free and Assisted installations: SendGrid is the default, or choose Resend by setting `PENCIL_MAIL_PROVIDER=resend` before the first deploy.
 
-- Choose the provider before the first deploy. A fresh installation defaults to SendGrid. Released installations stored `MAIL_PROVIDER=resend` as a plain variable: on their first transition, deploy reads that existing setting and preserves Resend as a secret while inheriting the existing `MAIL_API_KEY`. An explicit conflicting provider is refused before deployment. Once both bindings are secrets, later deployments inherit them; changing your terminal setting does not rotate either one. This preserves provider configuration only; the 0.2.0 database upgrade remains blocked as explained below.
+- Choose the provider before the first deploy. A fresh installation defaults to SendGrid. Released installations stored `MAIL_PROVIDER=resend` as a plain variable: on their first transition, deploy reads that existing setting and preserves Resend as a secret while inheriting the existing `MAIL_API_KEY`. An explicit conflicting provider is refused before deployment. Once both bindings are secrets, later deployments inherit them; changing your terminal setting does not rotate either one. This preserves provider configuration only; older installations can require a separately supported database upgrade.
 - Verify your sender with the provider, and set `MAIL_FROM` to that address. A plain `noreply@` or `no-reply@` address enables new-response notices and Daily digests. With a different verified sender, sign-in still works and each flow's Results page explains why response notification mail is off.
 - The provider receives each recipient's address and the whole message, including the sign-in, invitation or opt-out link. Keep provider keys and these links out of your logs and out of anything public.
 - A missing mail setting stops Pencil from starting and names the variable. There is no half-working mode.
@@ -120,15 +120,13 @@ The Worker has a schedule that runs every minute. It sends invitations still wai
 
 ## Upgrading
 
-For installations already on this version’s migration history, back up first using the deployed recovery command in [Backup and restore](backup.md), and verify its archive in a new empty target before changing the running installation. The public `rer export` and `rer import` commands remain local; `node scripts/deployment-data-cli.mjs` handles deployed D1, including the deployment kit's migration ledger. Keep the previous deployment until you have checked the new one. For compatible migration histories, leave `SETUP_TOKEN` unset, retain the deployment receipt and deploy the new source with `rer deploy --environment production`, which applies the new database migrations in order. `RELEASE.json` lists every migration with its steps.
+Before upgrading, open **Backup** while signed in as the owner, download your archive, check the saved copy, and choose **Test restoration**. Keep the previous source and deployment until the new version is checked. See [Backup and restore](backup.md).
 
-**Released 0.2.0 needs a separately qualified hosted upgrade.** The released `0019_import_custody.sql` hash differs from this source. The recorded rer 0.2.1 attempt refused that history before writing, and the separate name-based Workers D1 proof does not qualify the hosted deployment path. The exact current rer version is pinned in `package.json` and its lockfile; changing a version alone does not establish a safe transition. Retain the existing source and database and obtain backups through a supported path matching that installation's version until a reviewed transition preserves the actual applied history and applies the additive convergence migration. This source's deployed recovery CLI also checks migration hashes and must not be assumed to export the old 0019 history. Do not edit the ledger, migration hashes or receipt, switch migration controllers or assume export/restore qualifies the transition. The [release scope](../FIRST-RELEASE.md) records the earlier result.
-
-Migrations cannot be undone in place. Keep the previous deployment's source and its database until the new one has been checked.
+For a compatible installation, keep the deployment receipt and existing secrets, leave `SETUP_TOKEN` unset, and deploy the new source with `rer deploy --environment production`. This applies its database changes in order. Older installations may need a supported transition first; if migration history is refused, keep the existing deployment and ask your maintainer. Never change recorded migration history to make an upgrade pass. Maintainer details are in the [hosting reference](../HOSTING.md).
 
 ## Remove a deployment
 
-Make and verify a [hosted backup](backup.md#back-up-a-deployed-database) first if you need the data. From the checkout that deployed it, with that environment's receipt and Cloudflare credentials, run:
+If you need the data, open **Backup**, download and check the saved file, and choose **Test restoration** before removal. A file check alone does not prove restoration. See [hosted backup](backup.md#back-up-a-deployed-database). From the checkout that deployed it, with that environment's receipt and Cloudflare credentials, run:
 
 ```sh
 rer deploy --remove --yes --environment production
@@ -136,7 +134,7 @@ rer deploy --remove --yes --environment production
 
 This deletes resources recorded as created by rer for that environment, including Pencil's Worker and D1 database, and reads back that they are gone. It does not remove unrelated account resources. `--yes` confirms deletion, including every answer in the database. Preserve `.rer/deploy/production.json` privately; do not alter it to claim resources.
 
-Removal is permanent, so do not use it to pause writers for backup. To pause while keeping the database, follow [Back up a deployed database](backup.md#back-up-a-deployed-database).
+Removal is permanent. The Backup page keeps your forms open and does not need you to pause or delete the deployment.
 
 ## Costs, limits and what is not proven
 

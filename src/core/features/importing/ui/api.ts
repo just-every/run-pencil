@@ -8,6 +8,7 @@ async function request<T>(path: string, body?: unknown): Promise<T> {
   return result
 }
 export const importsApi = {
+  typeformDefinition: (form: string, token: string) => request<{ definition: string; title: string; formId: string }>('/typeform/definition', { form, token }),
   async review(input: ImportInput): Promise<ImportReview> {
     const response = await fetch('/api/app/imports/review', { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: reviewMediaType }, body: JSON.stringify(input) })
     if (!response.ok) throw new Error((await response.json() as { message?: string }).message ?? 'The import review failed.')

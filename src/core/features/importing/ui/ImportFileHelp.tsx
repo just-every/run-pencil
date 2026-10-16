@@ -36,11 +36,11 @@ export function ImportFileHelp({ source }: { source: ImportSource }) {
         </ol>
       </details>
     </> : <>
-      <p><strong>A Typeform form definition JSON is required.</strong> It describes the questions and paths. Add a response CSV from the same form to include historical answers, or leave it out to import the structure alone.</p>
+      <p><strong>Start by getting your Typeform form below.</strong> Pencil loads its questions and paths directly. You can also upload a definition JSON you already saved. Add a response CSV from the same form to include historical answers, or leave it out to import the structure alone.</p>
       <details>
         <summary className="focus-ring">How to get Typeform files</summary>
         <ol>
-          <li>Get the definition from Typeform’s <a href="https://www.typeform.com/developers/create/reference/retrieve-form/">Retrieve form API</a>: <code>GET https://api.typeform.com/forms/&#123;form_id&#125;</code>. The form ID is in its Typeform URL. Generate a <a href="https://www.typeform.com/developers/get-started/personal-access-token/">personal token</a> under <strong>Account → Personal tokens</strong> and use it as Bearer authorization in your own API client or command-line tool. Save the returned JSON as a <code>.json</code> file; keep the token out of that file. A results export contains answers, so it cannot replace this definition.</li>
+          <li>Use <strong>Get your form from Typeform</strong> below: open the linked Personal tokens page, create a token with permission to read forms, and enter it with your form link. <strong>Test connection and get form</strong> loads the definition here. You do not need to save a file or make an API request yourself. A results CSV contains answers and cannot replace the definition.</li>
           <li>For optional answers, open the form on desktop and choose <strong>Results → Responses</strong>. Select the responses, choose <strong>Export</strong>, then <strong>CSV</strong>. Keep the <strong>Submit Date (UTC)</strong> column; every imported response needs its original submission time. Keep <strong>Start Date (UTC)</strong> too if available. <a href="https://help.typeform.com/hc/en-us/articles/360029253572-Export-your-responses">Typeform’s export instructions</a>.</li>
         </ol>
       </details>

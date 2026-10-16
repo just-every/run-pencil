@@ -13,6 +13,12 @@
 .import-file-help pre { max-width: 100%; padding: 12px; background: var(--paper-deep); white-space: pre-wrap; overflow-wrap: anywhere; }
 .import-file-help code { overflow-wrap: anywhere; }
 .import-file-help a { text-decoration: underline; text-underline-offset: 3px; }
+.typeform-connection { min-width: 0; margin: 0; border: 1px solid var(--line); padding: 18px; border-radius: 12px; line-height: 1.55; }
+.typeform-connection legend { font-weight: 600; }
+.typeform-connection .inspector-field { margin-top: 16px; }
+.typeform-connection li + li { margin-top: 10px; }
+.typeform-connection a { text-decoration: underline; text-underline-offset: 3px; }
+.typeform-connection code { overflow-wrap: anywhere; }
 .import-history { margin-top: 40px; border-top: 1px solid var(--line); padding-top: 28px; }
 .import-history > h2 { margin: 0 0 10px; font-size: 28px; line-height: 1.1; }
 .import-history > p { max-width: 64ch; color: var(--muted); line-height: 1.55; }
