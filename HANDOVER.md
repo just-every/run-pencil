@@ -1,6 +1,6 @@
 # Pencil source handover
 
-Start with rer: install, setup, dev, open the private one-click RER_OPEN link, finish `/setup`, then verify. The portable dispatcher and shared onboarding lifecycle preserve existing owners, data and private settings. Reset and restore require explicit confirmation; restore requires an empty destination.
+Start with the README installation route and `rer dev`, open the private one-click RER_OPEN link, finish `/setup`, then verify. The portable dispatcher and shared onboarding lifecycle preserve existing owners, data and private settings. Reset and restore require explicit confirmation; restore requires an empty destination.
 
 Results, response email, branding, additional questions, embed, the bounded Typeform importer and Google Forms CSV-first move-in with an optional `forms.get` definition are integrated through the shared import kit. Source provenance and applied migration bytes remain checked. First-run completion is persisted per workspace; the additive migration marks established workspaces complete. Fresh owners finish their business name and time zone at `/setup` before entering other app routes.
 
@@ -19,3 +19,5 @@ Audience now has editable contacts and bounded custom fields, reviewed CSV impor
 Migration `0025_audiences.sql` introduced Audience. The published 0.2.0 predecessor contains migrations 0000–0026; 0.3.0 adds 0027–0034 in order, 0.4.0 adds the additive 0035–0036, and 0.5.0 adds the additive 0037. Its only declared released rewrite is `0019_import_custody.sql`, recorded in `migrations/released-rewrites.json`; `0034_import_fence_triggers_d1.sql` recreates those triggers so an existing 0.2.0 database converges to a fresh install's schema.
 
 Hosted 0.2.0 upgrades are blocked by rer 0.2.1’s exact migration-hash checks: the released 0019 hash is refused before 0034 with zero upgrade writes. The Workers D1 name-based proof above does not establish this hosted path. Base must supply a reviewed transition contract preserving actual applied history; do not rewrite ledgers or bypass checks. The deploy adapter separately preserves an existing plain-text mail provider through the published kit’s read-only settings API, preventing a Resend key from acquiring a default SendGrid provider. See docs/HOSTING.md.
+
+Analysis and external-task connections can now be saved and tested on their own pages. Migration 0038 stores authenticated encrypted private configuration, keyed by the installation session secret; archive policy excludes every connection row. Restores require reconnecting. The existing environment route remains supported.

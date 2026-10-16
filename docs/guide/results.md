@@ -59,7 +59,7 @@ Choose **Export JSON** or **Export CSV** to download the responses that match yo
 
 Downloads stream through your browser's service worker, so they need a modern browser on HTTPS or on `localhost`. If a response changes while a download is running, the download stops with a message instead of giving you a mixed file. Refresh and start again.
 
-A response export is a working copy of the answers, not a backup. For a complete backup, see [Backup and restore](backup.md).
+A response export is a working copy of the answers, not a backup. For a product-data backup, excluding credentials, sessions and private settings, see [Backup and restore](backup.md). The rer archive commands use local state. Hosted D1 recovery uses a separate script, requires all writers stopped and a separately provisioned empty migration-only target.
 
 ## Review suspicious submissions
 

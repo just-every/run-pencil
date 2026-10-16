@@ -35,13 +35,15 @@ Pencil is an editable form builder and feedback workspace with branching questio
 
 ## Run it on your computer
 
-Install **Node.js 22 or later**, including npm, from [nodejs.org](https://nodejs.org/en/download), and install Git. Node must be on your `PATH` before installing rer. rer then installs Pencil's pinned runtime and pnpm for its own commands; you do not need a global pnpm install:
+Pencil runs on macOS, Linux or Windows with WSL2. The npm route requires **Node.js 22 or later, including npm, and Git**. Install Node from [nodejs.org](https://nodejs.org/en/download), then check `node --version` and `npm --version`. Node and npm must already be on your `PATH` to install and start rer. The installer command matches the [Run page](https://run-pencil.com/run); rer installs Pencil's pinned runtime and pnpm for its own commands, so you do not need global pnpm:
 
 ```sh
-npm install -g @runeditrun/rer@0.2.24
+npm install -g @runeditrun/rer
 git clone https://github.com/just-every/run-pencil.git pencil && cd pencil
 rer dev
 ```
+
+The global rer installation is the launcher. Inside this checkout, rer uses the exact `@runeditrun/rer` version in `package.json` and its lockfile; `rer --version` can show both versions. A different global launcher version does not change Pencil's pin. Keep that pin when following these instructions.
 
 `rer dev` installs locked dependencies and prepares a local owner on first launch, without a separate setup command. Optional `rer setup --owner-email owner@example.com --owner-name Owner` prepares a local owner with your chosen details; reruns preserve existing owner, data and exact private settings. Dev prints its health-gated application URL and opens signed in: it prints `RER_SIGNED_IN` (who the browser will be) and `RER_OPEN`, a link for this computer that carries this checkout's private dev key in its fragment. Open it and the app signs you in as the local owner and takes you to **`/setup`** to finish your business name and time zone; finished setup enters the app. Open the private `RER_OPEN` link to continue as the owner in one click. Local mail is silently suppressed. Use `rer dev --as operator` or `--as signed-out` to select a different dev persona. The product name and title read **Pencil Dev**, without an injected bar or captured-mail inbox.
 
@@ -58,7 +60,11 @@ npx --no-install playwright install chromium --only-shell
 rer verify
 ```
 
-Verify runs the functional and high-stakes wall for source changes; it is separate from deploying an unchanged checkout. After intended source changes, stage them, inspect `node scripts/edition-authoring/cli.mjs changes`, run `node scripts/edition-authoring/cli.mjs lock`, commit with `sources.lock.json`, then run `npm run source:check`; without `lock` it fails with a stale lock. Reset prints and removes only inventoried local data, settings, owner, outbox and drafts; source, dependencies, exports and deployment receipts survive. Stop dev or preview before exporting, and export first to retain data:
+Verify runs the functional and high-stakes wall for source changes; it is separate from deploying an unchanged checkout. After intended source changes, stage them, inspect `node scripts/edition-authoring/cli.mjs changes`, run `node scripts/edition-authoring/cli.mjs lock`, commit with `sources.lock.json`, then run `npm run source:check`; without `lock` it fails with a stale lock.
+
+Backups contain product data, including personal data, but exclude credentials, sessions and private settings. `rer export` and `rer import` operate on local state only. Hosted backup and restore use `node scripts/deployment-data-cli.mjs`, require all routes, schedules and other writers to be stopped, and restore into a separately provisioned migration-only empty D1 target. The script does not provision it; a normal owner-claimed deployment is not empty. Read [Backup and restore](docs/guide/backup.md) before planning a hosted move.
+
+Reset prints and removes only inventoried local data, settings, owner, outbox and drafts; source, dependencies, exports and deployment receipts survive. Stop dev or preview before exporting, and export first to retain data:
 
 ```sh
 mkdir -m 700 exports
@@ -73,10 +79,12 @@ rer setup --owner-email owner@example.com --owner-name Owner
 Import validates integrity and restores atomically into an empty destination without replaying mail. Archives retain the complete product graph, import custody, delivery history and operator identities; sessions, sign-in links, other credentials, captured mail and private settings are excluded, so everyone signs in again after a restore. These rer commands support local state; the separate maintained deployed D1 command is documented in [Backup and restore](docs/guide/backup.md).
 
 ```sh
-rer deploy --dry-run
+rer deploy --dry-run --environment pencil-check
 rer describe
 rer check --profile first-party
 ```
+
+The example `pencil-check` environment is a local dry run. Environment names must be at most 32 characters, start with a lowercase letter and contain lowercase letters or digits separated by single hyphens. Choose the intended name before deployment and retain it for later operations; see [Hosting on Cloudflare](docs/guide/hosting.md#check-then-deploy).
 
 Managed hosting through RER sends production email through the RER relay; you need no SendGrid or Resend account or API key. Free and Assisted installations keep the ordinary SendGrid or Resend choices.
 

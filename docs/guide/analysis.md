@@ -23,6 +23,16 @@ Answers are treated only as data. An answer that contains instructions ("ignore 
 
 ## Turn analysis on
 
+Open **Analysis → Provider → Connect analysis**. Choose **OpenAI**, create a key using the direct link on that page, and check API billing there. The OpenAI API address and `gpt-4.1-mini` model are filled in. Paste the key, choose **Save provider**, then **Test saved provider**. Only an installation owner can save or test connections. No restart or file edit is needed.
+
+The test sends a fixed connection question and a small JSON schema, with no respondent data. It can incur a small API charge, checks structured Responses API support, and records its usage as `connection-test` in the table below. A failure explains what to check; it never reveals the provider's error body or your key. Set spending limits with the provider; optional token rates in Pencil only calculate displayed costs.
+
+**Other compatible provider** accepts a gateway's API base address, model identifier and API key. It must support the OpenAI Responses API with strict JSON-schema output; a chat-only API or a native Anthropic/Google endpoint is insufficient. **Linked Models service** is a gateway you or your organization operates. Obtain its address, app key and allowed model from its administrator. Pencil includes no Models account or free hosted AI plan.
+
+Saved connections override deployment settings. Credentials are encrypted using this installation's session secret, never returned to the browser, and excluded from exports. Reconnect after restoring or changing `SESSION_SECRET`. **Use deployment settings** removes the saved override. Saving a connection enables analysis, including close-time analysis when its existing policy permits it; check the settings below before connecting.
+
+### Configure through deployment settings instead
+
 Set these on your Worker, as secrets or variables in the Cloudflare dashboard, alongside the others in [Hosting on Cloudflare](hosting.md):
 
 | Variable | What it is |
@@ -87,10 +97,6 @@ Analyses travel in your [backups](backup.md). A restored analysis is never resen
 
 ## Try it locally
 
-`rer dev` answers analysis requests with Base's local double, which cannot produce the structured answer analysis needs. A run there fails with `dev_fake_cannot_answer`; that is expected, not a fault. To try analysis on your computer:
-
-1. Create a Models **dev app** with a low spending cap, a short expiry and a cheap model allow-list.
-2. Set `AI_ENABLED=true` and `AI_MODEL` (a model the dev app allows) in your local settings, `.dev.vars`.
-3. Pipe the dev app's key into `rer dev --models live --models-service https://your-models-service`. Later runs of `rer dev --models live` reuse it; plain `rer dev` keeps using the double.
+`rer dev` answers analysis requests with Base's local double, which cannot produce the structured answer analysis needs. A run there fails with `dev_fake_cannot_answer`; that is expected, not a fault. To make real requests on your computer, save an actual provider from **Connect analysis** on the Analysis page. That explicit connection uses the live provider and can incur charges even in local development. Removing it returns to deployment settings and the ordinary local double. A capped Models dev app can also be connected with its service address, key and allowed model. Set its cap and expiry in your own Models service.
 
 Nothing in this release was run against a live model: analysis was checked against a scripted local provider that answers in the documented format.

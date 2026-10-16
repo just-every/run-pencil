@@ -9,7 +9,7 @@ Deploy acts only on the Cloudflare account you select. No command in Pencil depl
 ## What you need
 
 - **A Cloudflare account on Workers Paid**, and an API token for it that may edit Workers and D1. You give Pencil the account's ID and the token as `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`, through your secret manager or the secret environment of your terminal.
-- **Node.js 22 or later with npm, rer 0.2.24 and the source**, from [Install and run locally](install.md). Node must be available before installing rer. rer installs Pencil's pinned runtime and pnpm for its own commands; local `rer setup` is optional.
+- **Node.js 22 or later with npm, Git, the rer launcher and the source**, from [Install and run locally](install.md). Node and npm must be on `PATH` before the npm installation route. Use `npm install -g @runeditrun/rer`, as on the Run page. The global launcher delegates to the exact checkout version in `package.json` and its lockfile. rer installs Pencil's pinned runtime and pnpm for its own commands; local `rer setup` is optional.
 - **A mail provider**, SendGrid or Resend, with a verified sender address and an API key. See [Set up email](#set-up-email).
 - **Installed dependencies.** Run `rer install` if you have not run Pencil locally yet. Deploy builds and validates the checkout. If you changed the source, follow the [source checks](install.md#changing-the-source); the complete `rer verify` suite is separate from the deployment commands below.
 
@@ -34,15 +34,23 @@ For `--environment staging`, it is `https://pencil-staging.<workers-subdomain>.w
 | `SETUP_TOKEN` | A one-time secret for the first owner. rer generates it when omitted, uses it to claim the hosted owner and removes it after a successful claim. Do not retain it on the Worker. |
 | `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN` | The account to deploy into and its token. The token is a secret. |
 
-External tasks are optional. To send actions to your own task system, also set `TASK_PROVIDER`, `TASK_WEBHOOK_URL` and `TASK_API_KEY` as Worker secrets; [Actions and follow-up](actions.md) explains the webhook your receiver must honour. Without them, everything else works and the action page says what to set.
-
-Analysis is optional. To turn it on, set `AI_ENABLED` to `true` and `AI_MODEL`, then either `AI_API_KEY` (with `AI_BASE_URL` for a provider other than OpenAI) or `MODELS_SERVICE` and `MODELS_KEY` for a linked Models service; the keys are Worker secrets. Optional `AI_INPUT_USD_PER_MILLION_TOKENS` and `AI_OUTPUT_USD_PER_MILLION_TOKENS` let Pencil show a direct key's cost. Without them, nothing is sent and the Analysis page says what to set. [Analysis](analysis.md) explains what leaves and to where.
+Analysis and external tasks are optional. Configure a provider from the in-app **Analysis** provider setup, and connect your task receiver from the action's **External task** setup. [Analysis](analysis.md) explains the data sent to a language-model provider; [Actions and follow-up](actions.md) explains the webhook contract your task receiver must honour. Other Pencil features keep working while either connection is off.
 
 Supply the secrets through your secret manager or the secret environment of your terminal. Never put their literal values in a tracked file, in a command argument or in your shell history. The commands below pass the owner's email, not a provider key or token.
 
 Leave the local-only options off: `PENCIL_LOCAL_DEVELOPMENT`, `SEED_SAMPLE_DATA` and the local mail provider must never be enabled on a deployment. A deployment turns local capture and sample data off.
 
 ## Check, then deploy
+
+An environment name must have at most **32 characters**, start with a lowercase letter, and use only lowercase letters or digits separated by single hyphens. No trailing, leading or repeated hyphens are allowed. For example, `pencil-check` is valid. An invalid name is refused before upload. Choose your deployment's name once and keep it unchanged for deploy, sign-in, backup receipts and removal; do not shorten or rename an existing deployment identifier to fit.
+
+For an ordinary local validation that creates no deployment:
+
+```sh
+SEED_ADMIN_EMAIL="$OWNER_EMAIL" rer deploy --dry-run --environment pencil-check
+```
+
+For your intended production environment, validate that same name before deploying it:
 
 ```sh
 SEED_ADMIN_EMAIL="$OWNER_EMAIL" rer deploy --dry-run --environment production
@@ -114,7 +122,7 @@ The Worker has a schedule that runs every minute. It sends invitations still wai
 
 For installations already on this version’s migration history, back up first using the deployed recovery command in [Backup and restore](backup.md), and verify its archive in a new empty target before changing the running installation. The public `rer export` and `rer import` commands remain local; `node scripts/deployment-data-cli.mjs` handles deployed D1, including the deployment kit's migration ledger. Keep the previous deployment until you have checked the new one. For compatible migration histories, leave `SETUP_TOKEN` unset, retain the deployment receipt and deploy the new source with `rer deploy --environment production`, which applies the new database migrations in order. `RELEASE.json` lists every migration with its steps.
 
-**Released 0.2.0 needs a separately qualified hosted upgrade.** The released `0019_import_custody.sql` hash differs from this source. The recorded rer 0.2.1 attempt refused that history before writing, and the separate name-based Workers D1 proof does not qualify the hosted deployment path. The current rer pin is 0.2.24; that version change alone does not establish a safe transition. Retain the existing source and database and obtain backups through a supported path matching that installation's version until a reviewed transition preserves the actual applied history and applies the additive convergence migration. This source's deployed recovery CLI also checks migration hashes and must not be assumed to export the old 0019 history. Do not edit the ledger, migration hashes or receipt, switch migration controllers or assume export/restore qualifies the transition. The [release scope](../FIRST-RELEASE.md) records the earlier result.
+**Released 0.2.0 needs a separately qualified hosted upgrade.** The released `0019_import_custody.sql` hash differs from this source. The recorded rer 0.2.1 attempt refused that history before writing, and the separate name-based Workers D1 proof does not qualify the hosted deployment path. The exact current rer version is pinned in `package.json` and its lockfile; changing a version alone does not establish a safe transition. Retain the existing source and database and obtain backups through a supported path matching that installation's version until a reviewed transition preserves the actual applied history and applies the additive convergence migration. This source's deployed recovery CLI also checks migration hashes and must not be assumed to export the old 0019 history. Do not edit the ledger, migration hashes or receipt, switch migration controllers or assume export/restore qualifies the transition. The [release scope](../FIRST-RELEASE.md) records the earlier result.
 
 Migrations cannot be undone in place. Keep the previous deployment's source and its database until the new one has been checked.
 

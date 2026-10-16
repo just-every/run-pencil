@@ -1,6 +1,8 @@
 # Run it locally
 
-Start Pencil with npm and Git:
+For the npm route on the Run page, install Node.js 22 or later (including npm)
+and Git first. Check `node --version` and `npm --version`; both must be on
+`PATH` before installing and starting rer. Then:
 
 ```sh
 npm install -g @runeditrun/rer
@@ -8,11 +10,16 @@ git clone https://github.com/just-every/run-pencil.git pencil && cd pencil
 rer dev
 ```
 
-rer installs the pinned Node and pnpm itself. No separate Node or pnpm version
-is required. Local `rer setup` is optional after the zero-setup `rer dev` launch.
+The global rer launcher installs the project's pinned Node and pnpm for its
+commands; no global pnpm install is required. The initial Node/npm prerequisite
+is for the npm route above. Local `rer setup` is optional after the zero-setup
+`rer dev` launch.
 `rer` runs every verb with the checkout's own pinned copy: a vendored
 `scripts/rer.mjs`, or in package mode the exact `@runeditrun/rer` devDependency in
-`node_modules`. The `OPERATIONS.json` argv and the `package.json` aliases are the
+`node_modules`. `rer --version` can show the launcher and checkout versions
+separately. Keep the exact checkout pin in `package.json` and its lockfile; do
+not change it to match the global launcher. The `OPERATIONS.json` argv and
+the `package.json` aliases are the
 machine contract (`node scripts/rer.mjs VERB` vendored, `rer VERB` in package
 mode), and `rer` runs them.
 
@@ -194,12 +201,21 @@ operations and ambiguous or linked state.
 Local export creates a private archive with an integrity receipt and explicit
 exclusions. Import validates the archive and restores into an empty destination.
 After import, run setup to establish the owner and local configuration. Auth,
-outbox, private settings and transient runtime state are excluded. Remote
-transfer is unsupported by the maintained references and fails visibly.
+outbox, private settings and transient runtime state are excluded. These rer
+commands support local state only and refuse remote targets. Hosted
+D1 recovery uses `node scripts/deployment-data-cli.mjs`, requires all routes,
+schedules and other writers stopped, and needs a separately provisioned empty
+migration-only target; the script does not provision it. An owner-claimed
+deployment is not empty. See [Backup and restore](docs/guide/backup.md).
 
 Real deployment uses the owner-account procedure and its private credentials.
-`rer deploy --dry-run` validates and builds locally without a
-provider request. The default environment is `production`; select another with
+`rer deploy --dry-run --environment pencil-check` validates and builds locally
+without a provider request. Environment names have at most 32 characters, start
+with a lowercase letter and contain lowercase letters or digits separated by
+single hyphens. No leading, trailing or repeated hyphens are allowed. Choose
+the intended name before a deployment and keep it for subsequent operations;
+validate that same name before deploying. `pencil-check` is only a dry-run
+example. The default environment is `production`; select another with
 `--environment NAME`. Local validation does not establish provider acceptance,
 hosted health or mail delivery.
 

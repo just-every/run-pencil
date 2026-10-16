@@ -4,8 +4,10 @@ This page takes you from the Pencil source code to a working copy on your own co
 
 ## What you need
 
-- **Node.js 22 or later, including npm, and Git.** Install Node from [nodejs.org](https://nodejs.org/en/download), then check `node --version` and `npm --version` in your terminal. Node must be on your `PATH` before you install rer.
-- **rer, the Run Edit Run command.** Install it once per computer with `npm install -g @runeditrun/rer@0.2.20`. In the source folder it runs the exact version Pencil pins.
+Use macOS, Linux or Windows with WSL2, as on the Run page.
+
+- **Node.js 22 or later, including npm, and Git for the npm installation route below.** Install Node from [nodejs.org](https://nodejs.org/en/download), then check `node --version` and `npm --version` in your terminal. Node and npm must be on your `PATH` before installing and starting rer.
+- **rer, the Run Edit Run command.** Install its global launcher once per computer with `npm install -g @runeditrun/rer`, the same npm command as the [Run page](https://run-pencil.com/run). In the source folder it runs the exact `@runeditrun/rer` version in Pencil's `package.json` and lockfile. `rer --version` can show the global launcher and checkout versions separately; a difference does not change the checkout pin. Do not change that pin to match your global launcher.
 - **The source code.** Get it from https://github.com/just-every/run-pencil and open a terminal in its folder.
 
 With Node available, rer installs Pencil's pinned runtime and pnpm for its own commands. It does not put pnpm on your shell's `PATH`; the commands below use npm or npx when needed. `rer dev` prepares a local owner automatically; choosing your own local owner details with `rer setup` is optional.
@@ -13,7 +15,7 @@ With Node available, rer installs Pencil's pinned runtime and pnpm for its own c
 ## Start Pencil on your computer
 
 ```sh
-npm install -g @runeditrun/rer@0.2.20
+npm install -g @runeditrun/rer
 git clone https://github.com/just-every/run-pencil.git pencil && cd pencil
 rer dev
 ```
@@ -55,7 +57,7 @@ Open the private `RER_OPEN` link from `rer dev` again, or choose **Continue as o
 A newer Pencil can add database migrations. Take these steps in the source folder to move your copy to the newest source with your data:
 
 1. Stop Pencil: `rer dev --stop` (and `rer preview --stop` if you ran preview).
-2. Export your data: `mkdir -m 700 exports` once, then `rer export --output exports/before-upgrade.rer`.
+2. Export your product data: `mkdir -m 700 exports` once, then `rer export --output exports/before-upgrade.rer`. Credentials and private settings are excluded; preserve them separately as described in [Backup and restore](backup.md).
 3. Get the new source: `git pull`. If you checked out a release tag, run `git checkout main` first.
 4. Install its locked dependencies: `rer install`.
 5. Apply the new migrations: `rer setup`. It keeps your owner, data and private settings.

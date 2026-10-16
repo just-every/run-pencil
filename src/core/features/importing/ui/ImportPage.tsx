@@ -5,6 +5,7 @@ import type { ColumnMapping, ImportReview, ImportSource, GoogleSettings } from '
 import { useImportProgress } from './useImportProgress'
 import { ReviewReport } from './ReviewReport'
 import { GoogleOptions, GoogleQuestions } from './GoogleOptions'
+import { ImportFileHelp } from './ImportFileHelp'
 const preparation = (job: Job) => job.state === 'preparing' || job.state === 'preparation-interrupted'
 const progressLabel = (job: Job) => job.state === 'preparing' ? 'Ready to verify' : job.state === 'preparation-interrupted' ? 'Preparation needs attention' : job.state === 'cancelled' ? 'Preparation cancelled' : job.state
 export function ImportPage() {
@@ -60,15 +61,16 @@ export function ImportPage() {
   return <section className="import-page" aria-labelledby="import-heading">
     <Link className="quiet-button focus-ring" to="/app">← Your flows</Link>
     <h1 className="display" id="import-heading">Import a form</h1>
-    <p>Bring a Typeform definition, a Google Forms definition and response CSV, or a Google CSV alone into Pencil as an editable draft.</p>
-    <p className="muted">Documented format · Synthetic tests only · No real account export has been checked. Obtain both files in your own browser or command line. Never paste an API token into Pencil. <a href="https://github.com/just-every/run-pencil/blob/main/docs/moving.md">Read the moving guide</a>.</p>
+    <p>Bring an existing form into Pencil as an editable draft. Typeform needs a definition JSON, with optional answers in CSV. Google Forms starts with a response CSV, with an optional definition JSON.</p>
+    <p className="muted">Pencil reads files you choose; it does not connect to your provider. Never paste an API token into Pencil. Checked with documented examples only; no real account export has been checked. <a href="/docs/moving-in">Read the moving-in guide</a>.</p>
     {error ? <p className="status-note" role="alert" data-tone="error">{error}</p> : null}
     {pendingCustody && !busy ? <p role="status">An interrupted commit may have private import data awaiting completion. Retry the reviewed import, or Cancel to remove that private data.</p> : null}
     <form className="panel import-form" onSubmit={e => { e.preventDefault(); void plan() }}>
       <label className="inspector-field">Source<select className="text-input" value={source} disabled={busy} onChange={e => { const next = e.target.value as ImportSource; void run(async () => { if (await cancelPending()) { reset(); setSource(next); setGoogle({}) } }) }}><option value="typeform">Typeform</option><option value="google-forms">Google Forms</option></select></label>
+      <ImportFileHelp source={source} />
       {source === 'google-forms' ? <GoogleOptions value={google} change={settingsChanged} busy={busy} /> : null}
       <label className="inspector-field">Form definition JSON{source === 'google-forms' ? ' (optional forms.get JSON)' : ''}<input key={`definition-${fileVersion}`} style={{ maxWidth: '100%' }} type="file" accept=".json,application/json" disabled={busy} onChange={e => void run(() => read(e.target, 'definition'))} /></label>
-      <label className="inspector-field">Response CSV (optional)<input key={`csv-${fileVersion}`} style={{ maxWidth: '100%' }} type="file" accept=".csv,text/csv" disabled={busy} onChange={e => void run(() => read(e.target, 'csv'))} /></label>
+      <label className="inspector-field">Response CSV {source === 'google-forms' ? '(or choose a definition alone)' : '(optional)'}<input key={`csv-${fileVersion}`} style={{ maxWidth: '100%' }} type="file" accept=".csv,text/csv" disabled={busy} onChange={e => void run(() => read(e.target, 'csv'))} /></label>
       <div className="builder-actions"><button className="primary-button focus-ring" disabled={busy || (!definition && (source !== 'google-forms' || !csv))} type="submit">{busy ? 'Working…' : review ? 'Refresh mapping report' : 'Review import'}</button><button className="quiet-button focus-ring" disabled={busy} type="button" onClick={() => void cancel()}>Cancel</button></div>
       <p className="muted">Review creates no stored import, flow or response. Cancellation removes private preparation; if verification finishes first, inspect its progress and use Undo import. Original file bytes are never retained; keep your copies privately.</p>
     </form>

@@ -70,6 +70,25 @@ contract(['ACT-001', 'ACT-002', 'ACT-003', 'ACT-005', 'ACT-006', 'ACT-007', 'ACT
     await capture('action-planned')
     expect(receiver.requests).toEqual([])
 
+    // Configure the receiver from the offered page, then prove its test uses
+    // create-or-get before sending this real action through the normal preview.
+    await page.getByLabel('Endpoint URL').fill(`http://127.0.0.1:${process.env.PENCIL_E2E_TASK_PORT ?? Number(process.env.PENCIL_E2E_PORT ?? '4173') + 2}/tasks`)
+    await page.getByLabel('Bearer key').fill('synthetic-page-task-key')
+    await page.getByRole('button', { name: 'Save connection', exact: true }).click()
+    await expect(page.getByText('Connection saved. You can send a test task now.')).toBeVisible()
+    await page.reload()
+    await expect(page.getByLabel('Bearer key')).toHaveValue('')
+    expect(await (await page.request.get('/api/app/connections/task')).text()).not.toContain('synthetic-page-task-key')
+    await page.getByRole('button', { name: 'Send test task', exact: true }).click()
+    await expect(page.getByText(/Returned task ID: browser-task-1/)).toBeVisible()
+    await page.getByRole('button', { name: 'Send test task', exact: true }).click()
+    await expect(page.getByText(/Returned task ID: browser-task-1/)).toBeVisible()
+    expect(receiver.requests).toHaveLength(2)
+    expect(receiver.requests[0].idempotencyKey).toBe(receiver.requests[1].idempotencyKey)
+    expect(receiver.tasks.size).toBe(1)
+    expect(JSON.parse(receiver.requests[0].body).action.title).toBe('Pencil connection test')
+    await capture('connection-tested')
+
     await page.getByRole('button', { name: 'Start work' }).click()
     await expect(page.getByText('In progress · recommendation written by an operator')).toBeVisible()
 
@@ -81,14 +100,14 @@ contract(['ACT-001', 'ACT-002', 'ACT-003', 'ACT-005', 'ACT-006', 'ACT-007', 'ACT
     expect(Object.keys(payload.action).sort()).toEqual(['metric', 'owner', 'rationale', 'reportLink', 'reviewDate', 'title'])
     await axe(page)
     await capture('confirm-task')
-    expect(receiver.requests).toEqual([])
+    expect(receiver.requests).toHaveLength(2)
     await page.getByRole('button', { name: 'Confirm and send' }).click()
     await expect(page.getByText('Remote task ID')).toBeVisible()
-    await expect(page.getByText('browser-task-1', { exact: true })).toBeVisible()
+    await expect(page.getByText('browser-task-2', { exact: true })).toBeVisible()
     await expect(page.getByText(/Delivery: Confirmed/)).toBeVisible()
-    expect(receiver.requests).toHaveLength(1)
-    expect(JSON.parse(receiver.requests[0].body)).toEqual(payload)
-    expect(receiver.requests[0].authorization).toBe('Bearer synthetic-browser-task-key')
+    expect(receiver.requests).toHaveLength(3)
+    expect(JSON.parse(receiver.requests[2].body)).toEqual(payload)
+    expect(receiver.requests[2].authorization).toBe('Bearer synthetic-page-task-key')
     await capture('task-confirmed')
 
     // Measure, see the difference, decide.
@@ -126,6 +145,7 @@ contract(['ACT-001', 'ACT-002', 'ACT-003', 'ACT-005', 'ACT-006', 'ACT-007', 'ACT
     await capture('dashboard')
     const after = await call<{ state: string; verdict: string | null; history: unknown[] }>(`/api/app/actions/${overdue.id}`)
     expect([after.state, after.verdict, after.history.length]).toEqual(['planned', null, 1])
-    expect(receiver.tasks.size).toBe(1)
+    expect(receiver.tasks.size).toBe(2)
+    await page.request.delete('/api/app/connections/task', { data: {} })
   } finally { await receiver.close() }
 })

@@ -27,6 +27,7 @@ function fixture() {
   insert('oa_sessions', { id: 'native-session', token_hash: 'native-hmac-session', operator_id: 'operator', operator_version: 1, kind: 'native', source_token_id: 'native-consumed', created_at: 1790899260000, expires_at: 1790985660000 });
   insert('oa_external_identities', { issuer: 'https://historical.example.test', subject: 'preserved-owner-association', operator_id: 'operator' });
   insert('local_fixture_initializations', { id: 'sample-data', initialized_at: stamp });
+  insert('integration_connections', { kind: 'analysis', sealed: 'synthetic-private-ciphertext', updated_at: stamp });
   insert('flows', { id: 'flow', workspace_id: 'workspace', slug: 'recovery-review', title: 'Synthetic recovery', status: 'closed', draft_version: 3, last_activity_at: stamp, created_at: stamp, updated_at: stamp });
   for (const [id, number, current] of [['old-revision', 1, 0], ['revision', 2, 1]]) {
     insert('flow_revisions', { id, flow_id: 'flow', number, state: 'published', title: `Revision ${number}`, published_at: stamp, created_at: stamp, updated_at: stamp, is_current: current, admission_closed_at: stamp, admission_close_reason: 'manual', policy_snapshot_json: '{"rule":"synthetic"}' });
@@ -55,6 +56,7 @@ test('full current-data roundtrip preserves stable revisions, quarantine, receip
   const f = fixture();
   try {
     const exported = exportData(f.source, f.archive);
+    assert.deepEqual(JSON.parse(readFileSync(f.archive, 'utf8')).payload.tables.find(table => table.name === 'integration_connections').rows, []);
     assert.equal(statSync(f.archive).mode & 0o777, 0o600);
     assert.deepEqual(importData(f.archive, f.restored), exported);
     assert.equal(statSync(f.restored).mode & 0o777, 0o600);

@@ -1,4 +1,5 @@
 import { AnalysisAttentionPanel } from './AnalysisAttentionPanel'
+import { ProviderConnection } from './ProviderConnection'
 import './analysis.css'
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
@@ -8,7 +9,7 @@ import { analysisApi, stateLabels, transportLabel, when, type Policies, type Pro
 export function ProviderNote({ provider }: { provider: ProviderStatus }) {
   if (provider.state === 'on' && provider.transport === 'demo') return <p className="muted" style={{ margin: 0 }}>Analysis is ready to try with this workspace’s feedback. Nothing is sent to an AI provider.</p>
   if (provider.state === 'on') return <p className="muted" style={{ margin: 0 }}>Answers you select are sent to <strong>{provider.origin}</strong> ({transportLabel(provider.transport)}, model {provider.model}). {provider.costReported ? 'Each call reports its cost.' : 'This key reports usage, not cost.'}</p>
-  return <div className="analysis-setup"><p style={{ margin: 0 }}><strong>{provider.state === 'off' ? 'AI is off.' : 'AI is not configured correctly.'}</strong> Nothing is sent and no finding is made until it is set up.</p><p className="muted" style={{ margin: '.4rem 0 0' }}>{provider.setup}</p></div>
+  return <div className="analysis-setup"><p style={{ margin: 0 }}><strong>{provider.state === 'off' ? 'AI is off.' : 'AI is not configured correctly.'}</strong> Connect a provider on the Analysis page before requesting analysis. Nothing is sent until configured.</p></div>
 }
 
 function PolicyForm({ policies, onSaved }: { policies: Policies; onSaved: (policies: Policies) => void }) {
@@ -44,7 +45,7 @@ export function AnalysisPage() {
         </li>)}</ul> : <p className="muted">No analysis yet. Request one for a revision with completed responses.</p>}
       </section>
       <div style={{ display: 'grid', gap: '1.25rem', minWidth: 0 }}>
-        <AnalysisAttentionPanel timeZone={data.timeZone}/><section className="panel analysis-card" aria-labelledby="provider-title"><p className="eyebrow" id="provider-title">Provider</p><ProviderNote provider={data.provider} /></section>
+        <section className="panel analysis-card" aria-labelledby="provider-title"><p className="eyebrow" id="provider-title">Provider</p><ProviderNote provider={data.provider} /><ProviderConnection onChanged={() => { void analysisApi.overview().then(setData).catch(reason => setError(reason.message)) }} /></section><AnalysisAttentionPanel timeZone={data.timeZone}/>
         <section className="panel analysis-card" aria-labelledby="usage-title">
           <p className="eyebrow" id="usage-title">Usage by day and feature ({data.timeZone})</p>
           {data.usage.length ? <div style={{ overflowX: 'auto' }} tabIndex={0} role="region" aria-label="Usage table" className="focus-ring"><table className="analysis-table"><thead><tr><th>Day</th><th>Feature</th><th>Calls</th><th>Tokens in / out</th><th>Cost</th></tr></thead>

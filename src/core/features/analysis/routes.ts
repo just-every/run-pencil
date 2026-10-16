@@ -6,10 +6,12 @@ import type { WorkerEnvironment } from '../../app/environment'
 import type { RequestServices } from '../../app/request-context'
 import { policiesSchema, requestRunSchema } from './model'
 import { providerStatus } from './service'
+import { registerAnalysisConnectionRoutes } from './connection-routes'
 
 const runParam = validateInput('param', z.object({ runId: resourceId }))
 
 export function registerAnalysisRoutes(app: Hono<WorkerEnvironment>, services: RequestServices) {
+  registerAnalysisConnectionRoutes(app)
   app.post('/api/app/flows/:flowId/rewrites', validateInput('param',z.object({flowId:resourceId})),validateInput('json',rewriteSchema),async c=>{
     const {workspaceId,operatorId}=c.get('operatorSession')
     return c.json(await services(c).rewrites.request(workspaceId,operatorId,c.req.param('flowId'),c.req.valid('json')),201)

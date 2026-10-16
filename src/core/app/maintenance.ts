@@ -1,6 +1,7 @@
 import { createPencilServices } from './services'
 import { createScheduledPencilPlatform } from '../platform/runtime'
 import type { WorkerBindings } from './environment'
+import { configuredIntegrationPlatform } from '../platform/config/connections'
 
 const batchSize = 1000
 const maximumBatches = 10
@@ -27,7 +28,7 @@ export async function maintainPencil(environment: WorkerBindings, scheduledTime:
 
 export async function runScheduledMaintenance(controller: ScheduledController, environment: WorkerBindings) {
   const result = await maintainPencil(environment, controller.scheduledTime)
-  const services = createPencilServices(createScheduledPencilPlatform(environment))
+  const services = createPencilServices(await configuredIntegrationPlatform(createScheduledPencilPlatform(environment)))
   await services.distribution.dispatcher.run(new Date(controller.scheduledTime).toISOString())
   await services.notifications.dispatcher.run(new Date(controller.scheduledTime).toISOString())
   await services.notifications.digest.run(new Date(controller.scheduledTime).toISOString())

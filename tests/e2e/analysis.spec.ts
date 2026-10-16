@@ -29,6 +29,29 @@ contract(['ANLY-001', 'ANLY-003', 'ANLY-004', 'ANLY-005', 'ANLY-006', 'ANLY-008'
     await page.getByRole('button', { name: 'Confirm', exact: true }).click()
     await expect(page.getByRole('heading', { name: 'Your flows' })).toBeVisible()
 
+    // A newcomer connects from the page; the same saved provider powers the
+    // structured test and the complete analysis journey below.
+    await page.goto('/app/analysis')
+    await page.getByLabel('Analysis provider').selectOption('compatible')
+    await page.getByLabel('API base address').fill(`http://127.0.0.1:${process.env.PENCIL_E2E_AI_PORT ?? Number(process.env.PENCIL_E2E_PORT ?? '4173') + 3}/v1`)
+    await page.getByLabel('Model identifier').fill('synthetic-page-model')
+    await page.getByLabel('Provider API key').fill('synthetic-browser-ai-key')
+    await page.getByRole('button', { name: 'Save provider', exact: true }).click()
+    await expect(page.getByText('Provider saved. Test the connection before requesting analysis.')).toBeVisible()
+    await page.reload()
+    await expect(page.getByLabel('Model identifier')).toHaveValue('synthetic-page-model')
+    provider.script.push({ status: 401, body: { error: { message: 'synthetic-private-provider-error' } } })
+    await page.getByRole('button', { name: 'Test saved provider', exact: true }).click()
+    await expect(page.getByRole('alert')).toContainText('The provider refused the key.')
+    await expect(page.locator('body')).not.toContainText('synthetic-private-provider-error')
+    provider.script.push(answer({ ready: true }))
+    await page.getByRole('button', { name: 'Test saved provider', exact: true }).click()
+    await expect(page.getByText(/Connection passed: the model returned/)).toBeVisible()
+    await expect(page.getByLabel('Provider API key')).toHaveValue('')
+    expect(JSON.parse(provider.requests[1]).input).toEqual([{ role: 'user', content: 'Connection test. Return ready as true.' }])
+    expect(JSON.parse(provider.requests[1]).model).toBe('synthetic-page-model')
+    await capture('analysis-connection-tested')
+
     // Native responses collected through the public endpoints.
     const call = async <T,>(path: string, data?: unknown): Promise<T> => {
       const response = await page.request.fetch(path, { method: data === undefined ? 'GET' : 'POST', ...(data === undefined ? {} : { data }) })
@@ -107,6 +130,6 @@ contract(['ANLY-001', 'ANLY-003', 'ANLY-004', 'ANLY-005', 'ANLY-006', 'ANLY-008'
     provider.script.push(answer({ outcome: 'findings', reason: '', themes: [{ title: 'Long waits at the lunch counter', summary: 'A slow queue.', responseIds: ids.slice(0, 5), count: 5, quotes: [] }], recommendations: [] }))
     await page.getByRole('button', { name: 'Retry' }).click()
     await expect(page.getByRole('heading', { name: 'What 7 responses say' })).toBeVisible()
-    expect(provider.requests.length).toBe(3)
-  } finally { await provider.close() }
+    expect(provider.requests.length).toBe(5)
+  } finally { await page.request.delete('/api/app/connections/analysis', { data: {} }); await provider.close() }
 })

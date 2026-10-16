@@ -1,12 +1,16 @@
 # Backup and restore
 
-A Pencil backup is one `.rer` archive containing JSON that holds your whole installation. You can make one from a local copy of Pencil and restore it into a new, empty local database. Make one before every upgrade and before you move to a new host. The `rer` commands use local data; Pencil's separate owner recovery command handles deployed D1 databases. See [Back up a deployed database](#back-up-a-deployed-database). This page covers what a backup holds, how to make and restore one, and how to check the result.
+A Pencil backup is one `.rer` archive containing your installation's product data as JSON. It includes personal data and answers, but excludes credentials, active sessions, captured mail and private settings; keep your deployment secrets separately.
+
+You can make one from a local copy of Pencil and restore it into a new, empty local database. Make one before every upgrade and before you move to a new host. The `rer` commands use local data; Pencil's separate owner recovery command handles deployed D1 databases. See [Back up a deployed database](#back-up-a-deployed-database).
+
+Hosted recovery requires stopping every route, schedule and other writer, and separately provisioning an empty migration-only D1 target with matching source and migration history. The recovery script does not provision that target, and an ordinary `rer deploy` claims an owner and makes it nonempty. Read the [hosted restore requirements](#to-a-deployed-database) before relying on a hosted move. This page covers what a backup holds, how to make and restore one, and how to check the result.
 
 Backups are made from the command line. The **Export JSON** and **Export CSV** buttons on a results page are different. They download the responses to one flow for analysis and are not a backup.
 
 ## What a backup holds
 
-The archive contains every record Pencil keeps:
+The archive contains these product records, subject to the exclusions and redactions below:
 
 - Operators, workspace settings, your branding and your logo, byte for byte.
 - Flows, revisions, steps, choices and answer paths, with their stable IDs.
@@ -102,7 +106,7 @@ rer setup --owner-email you@example.com --owner-name "Your Name"
 
 For a previously used destination, stop `dev` and `preview`, export anything you need, and run `rer reset --yes` before importing. Reset removes the existing local data.
 
-Restore before setup. Give setup the email of the owner you had when you made the archive, then sign in again through the local outbox. `import` checks the whole archive before it writes anything and restores in one step. `--yes` confirms the restore. It never sends mail.
+Restore before setup. Give setup the email of the owner you had when you made the archive, then start `rer dev` and open its private `RER_OPEN` owner link. `import` checks the whole archive before it writes anything and restores in one step. `--yes` confirms the restore. It never sends mail.
 
 ### To a deployed database
 

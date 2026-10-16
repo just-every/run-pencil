@@ -6,10 +6,12 @@ import type { RequestServices } from '../../app/request-context'
 import { freezeEvidence } from './evidence'
 import { ValidationError } from '../../shared/errors'
 import { createActionSchema, editActionSchema, measurementSchema, transitionSchema } from './model'
+import { registerTaskConnectionRoutes } from './connection-routes'
 
 const actionParam = validateInput('param', z.object({ actionId: resourceId }))
 
 export function registerActionRoutes(app: Hono<WorkerEnvironment>, services: RequestServices) {
+  registerTaskConnectionRoutes(app)
   const detail = async (context: Parameters<RequestServices>[0], actionId: string) => {
     const { workspaceId } = context.get('operatorSession'), actions = services(context).actions
     return { ...await actions.records.get(workspaceId, actionId), task: await actions.tasks.status(workspaceId, actionId) }

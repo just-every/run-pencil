@@ -1,8 +1,13 @@
 # Whole-install data recovery
 
-Pencil exports the complete migrated installation as typed JSON. The public
-rer commands restore locally with the same committed migrations. Export
-before upgrades, keep the original installation available for recovery, and
+Pencil exports migrated product data as typed JSON, excluding credentials,
+active sessions, captured mail and private settings. The public rer commands
+export and restore local state with the same committed migrations. Hosted D1
+recovery uses the separate command below, with every writer stopped and a
+separately provisioned empty migration-only target; that command does not
+provision one.
+
+Export before upgrades, keep the original installation available for recovery, and
 verify the new database before changing the running application's binding.
 
 ## Archive custody
@@ -58,7 +63,7 @@ Archives containing non-redacted excluded credentials are rejected on import.
 
 ## Recovery commands
 
-Use the public rer contract: create the private ignored exports directory (0700), run `rer export --output exports/installation.rer`, and verify the archive before changing installations. After explicitly confirmed `rer reset --yes`, restore into an empty canonical local database with `rer import --input exports/installation.rer --yes`. Then prepare fresh private settings with the retained owner's email and sign in through the Base outbox. Native credential hashes and owner records remain; plaintext credentials, captured mail and old notification eligibility do not. Public rer remote transfer is refused; the separate maintained owner command below handles deployed D1. Read OPERATIONS.md for effects and reset inventory.
+Use the public rer contract: create the private ignored exports directory (0700), run `rer export --output exports/installation.rer`, and verify the archive before changing installations. After explicitly confirmed `rer reset --yes`, restore into an empty canonical local database with `rer import --input exports/installation.rer --yes`. Then prepare fresh private settings with the retained owner's email, start `rer dev` and sign in through its private `RER_OPEN` owner link. Native credential hashes and owner records remain; plaintext credentials, captured mail and old notification eligibility do not. Public rer remote transfer is refused; the separate maintained owner command below handles deployed D1. Read OPERATIONS.md for effects and reset inventory.
 
 
 ## Deployed D1 recovery
@@ -71,8 +76,12 @@ schedules and other writers before confirming `--writers-stopped`:
 node scripts/deployment-data-cli.mjs export --output exports/deployed.rer --writers-stopped
 ```
 
-Create an empty target with the same kit and migration bytes, stop its writers
-before owner admission, and point `CLOUDFLARE_DATABASE_ID` at that target:
+Separately provision an empty target with the same kit, migration-ledger kind
+and migration bytes. It may contain only fully applied migrations and their
+initialization rows. The recovery script does not provision or attach it. A
+normal `rer deploy` claims an owner and makes its database nonempty; do not
+delete owner records to bypass the guard. Keep all target writers stopped,
+and point `CLOUDFLARE_DATABASE_ID` at that target:
 
 ```sh
 node scripts/deployment-data-cli.mjs import --input exports/deployed.rer --yes --writers-stopped

@@ -5,6 +5,14 @@
 .import-form { display: grid; gap: 18px; margin-top: 24px; padding: 28px; }
 .import-form > * { margin: 0; }
 .import-form .builder-actions { gap: 20px; margin-top: 4px; }
+.import-file-help { min-width: 0; line-height: 1.55; }
+.import-file-help > p:first-child { margin-top: 0; }
+.import-file-help details + details { margin-top: 12px; }
+.import-file-help summary { cursor: pointer; }
+.import-file-help li + li { margin-top: 10px; }
+.import-file-help pre { max-width: 100%; padding: 12px; background: var(--paper-deep); white-space: pre-wrap; overflow-wrap: anywhere; }
+.import-file-help code { overflow-wrap: anywhere; }
+.import-file-help a { text-decoration: underline; text-underline-offset: 3px; }
 .import-history { margin-top: 40px; border-top: 1px solid var(--line); padding-top: 28px; }
 .import-history > h2 { margin: 0 0 10px; font-size: 28px; line-height: 1.1; }
 .import-history > p { max-width: 64ch; color: var(--muted); line-height: 1.55; }

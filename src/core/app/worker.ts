@@ -28,6 +28,7 @@ import type { WorkerBindings, WorkerEnvironment } from './environment'
 import { mountServerExtensions } from './mountExtensions.server'
 import { seedSampleData } from './seed'
 import { createPencilServices, type PencilServices } from './services'
+import { configuredIntegrationPlatform } from '../platform/config/connections'
 
 function unauthenticatedResponse() {
   return Response.json(
@@ -144,7 +145,7 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
 const fixtureInitializations = new WeakMap<D1Database, Promise<void>>()
 export async function initializePencil(platform: PencilPlatform) {
   void mountServerExtensions()
-  const services = createPencilServices(platform)
+  const services = createPencilServices(await configuredIntegrationPlatform(platform))
   if (platform.configuration.seedSampleData) {
     const binding = platform.databaseBinding
     let initialization = fixtureInitializations.get(binding)

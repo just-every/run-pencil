@@ -32,6 +32,7 @@ import { WorkspaceService } from '../features/workspace/service'
 import type { PencilPlatform } from '../platform/runtime'
 import { ActionService, TaskDeliveries } from '../features/actions'
 import { AnalysisService } from '../features/analysis'
+import { IntegrationConnections } from '../platform/config/connections'
 
 export function createPencilServices(platform: PencilPlatform) {
   const { database } = platform
@@ -58,6 +59,7 @@ export function createPencilServices(platform: PencilPlatform) {
   const from = platform.configuration.mail.kind === 'local-development' ? 'no-reply@pencil.test' : platform.configuration.mail.from
   const mailProvider = platform.configuration.mail.kind
   return {
+    connections: new IntegrationConnections(platform),
     notifications: {
       digest: new DigestDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,undefined,senderFailure,mailProvider),
       preferences: new NotificationRepository(platform.databaseBinding, notificationSenderError(from,mailProvider) ?? senderFailure),

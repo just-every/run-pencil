@@ -17,7 +17,7 @@ Pencil is a self-hosted form builder for one business. You build short forms tha
 - **Actions with an owner and a review date.** Turn what results show, or an analysis recommendation you accept, into an action with an owner, a target metric and a review date, record what changed, and mark it effective or ineffective yourself. Optionally send it to your own task system through a webhook, after you confirm exactly what leaves. See [Actions and follow-up](actions.md).
 - **Your own branding.** Your business name, supporting line, accent colour and logo on your public forms.
 - **A way in from another form builder.** Import a Typeform form and its responses, or start with a Google Forms response CSV and an optional form-definition JSON, into an editable draft. See [Moving in](moving-in.md).
-- **Backup and restore.** Export the whole installation and restore it into a new database. See [Backup and restore](backup.md).
+- **Backup and restore.** Export product data, excluding credentials, sessions and private settings, and restore into an empty database. `rer export`/`rer import` are local; hosted D1 recovery uses a separate script, requires all writers stopped and an independently provisioned migration-only target. See [Backup and restore](backup.md).
 
 ## Who it is for
 
@@ -42,7 +42,7 @@ The dashboard line **Ask → Signal → Act** describes the whole loop: build a 
 ## Run it for real
 
 - [Hosting on Cloudflare](hosting.md) covers deploying the Worker and database, choosing a mail provider and signing in as the first owner.
-- [Backup and restore](backup.md) keeps a copy of everything and puts it back.
+- [Backup and restore](backup.md) explains the product-data archive, credential exclusions and separate local and hosted recovery requirements.
 - [Privacy and security](privacy.md) says what Pencil collects, what it does not, and what stays your responsibility.
 
 ## About this release

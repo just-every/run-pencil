@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { actionsApi, type TaskPreview, type TaskStatus } from './actionsApi'
+import { TaskConnection } from './TaskConnection'
 
 const stateText: Record<string, string> = { pending: 'Pending', confirmed: 'Confirmed', unknown: 'Unknown — the task system may have it', failed: 'Failed' }
 
@@ -14,6 +15,7 @@ export function ActionTask({ actionId, status, onChanged }: { actionId: string; 
   const open = async () => { setBusy(true); setError(undefined); try { setPreview(await actionsApi.task(actionId)) } catch (reason) { setError(reason instanceof Error ? reason.message : 'The task could not be prepared.') } finally { setBusy(false) } }
   return <section className="panel" style={{ padding: '1.25rem', minWidth: 0 }} aria-labelledby="task-title">
     <h2 id="task-title">External task</h2>
+    <TaskConnection onSaved={onChanged} />
     {!status.available ? <><p className="muted" id="task-setup">{status.message}</p><button className="secondary-button focus-ring" type="button" disabled aria-describedby="task-setup">Create external task</button></> : null}
     {delivery ? <>
       <p>Delivery: <strong>{stateText[delivery.state]}</strong>{delivery.remoteTaskId ? <> · Remote task ID <code>{delivery.remoteTaskId}</code></> : null}</p>

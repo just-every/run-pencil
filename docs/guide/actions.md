@@ -20,7 +20,7 @@ Fill in:
 
 Do not paste respondent answers or names into the rationale. If you later create an external task, the rationale is sent with it.
 
-Saving an action contacts no one. Nothing leaves your deployment until you confirm an external task, described below.
+Saving an action contacts no one. Action content leaves your deployment only after you confirm an external task, described below. The separate connection test sends fixed sample values when you choose **Send test task**.
 
 ### What the action keeps as evidence
 
@@ -54,9 +54,23 @@ When the review date arrives, the action shows **Review due** on the Actions pag
 
 You can send an action to your own task system as a task. This is optional. Without it, everything above works.
 
-### Turn it on
+### Connect your receiver
 
-Pencil includes one adapter that needs no vendor account: a webhook to a receiver you run. Set these on your deployment, all as Worker secrets so a later deploy keeps them:
+A webhook is the address Pencil sends a confirmed action to. Pencil includes a custom webhook receiver connection, rather than built-in Jira, Asana or other vendor integrations. You or your developer run the receiver and connect it to your task tool. The tool's website address or ordinary API key alone does not implement this contract.
+
+Open an action and find **External task → Connection**, which is visible even before a connection is configured. Ask your receiver's administrator or developer for its endpoint URL and bearer key. To build a receiver, create an HTTPS route that accepts POST requests, checks a secret bearer key you choose, and implements the request and response contract below. The complete contract is also on the action page, under **Receiver contract and complete request example**, so you can set up the connection without leaving that page.
+
+1. Enter the receiver's **Endpoint URL** and **Bearer key**, then choose **Save connection**. Use HTTPS without credentials, a query or a fragment in the URL. HTTP is allowed only on loopback addresses in local development and tests.
+2. Choose **Send test task**. This creates or retrieves a real sample named **Pencil connection test** at the saved connection using fixed example values and a link to your installation's Actions page, with no respondent answers, operator details or content from your action. The page shows the returned task ID or an error. Repeating the test uses the same key and should return the same sample task; delete it in your task tool afterward.
+3. Once the test succeeds, use **Create external task** to review your actual action before sending it.
+
+Only the installation owner can save, reset or test the connection. Saving never sends a task. Saved settings override deployment settings for the whole workspace. The key is never displayed again; enter it each time you save, including when changing the URL. Credentials are encrypted in the installation and excluded from backups. After restoring a backup, reconnect the receiver. **Use deployment settings** removes the saved connection and uses the deployment's configuration instead. It does not delete tasks already created in your tool.
+
+Pencil charges no integration fee. Your receiver's hosting and your task tool may have their own costs.
+
+### Deployment settings
+
+As an alternative to saving the connection on the action page, set these on your deployment, all as Worker secrets so a later deploy keeps them:
 
 | Variable | What it is |
 |---|---|
@@ -64,41 +78,45 @@ Pencil includes one adapter that needs no vendor account: a webhook to a receive
 | `TASK_WEBHOOK_URL` | Your receiver's `https` URL. Plain `http` is accepted only for a loopback receiver in local development and tests. |
 | `TASK_API_KEY` | A secret your receiver checks. |
 
-Until all three are set, **Create external task** is disabled and says what to set.
+Without either a saved connection or all three deployment settings, **Create external task** is disabled. The visible **Connection** form lets you configure it there.
 
 ### What leaves, and when
 
-Choosing **Create external task** shows the confirmation screen: the exact JSON that will be sent, and nothing else. It holds the action's title, rationale, owner name and email, metric with its baseline, review date, and a link to the action in Pencil that needs an operator sign-in to open. Raw answers, excerpts and evidence figures are never included. Only after you choose **Confirm and send** does anything leave, and only those confirmed values.
+Choosing **Create external task** shows the confirmation screen: the exact JSON that will be sent, and nothing else. It holds the action's title, rationale, owner name and email, metric with its baseline, review date, and a link to the action in Pencil that needs an operator sign-in to open. Raw answers, excerpts and evidence figures are never included. Only after you choose **Confirm and send** does this action content leave, and only those confirmed values. **Send test task** is a separate explicit request that sends fixed sample content.
 
 If the action changes after you confirmed and before the task is delivered, Pencil refuses to send the old confirmation and asks you to review and confirm again.
 
 ### The webhook contract
 
-Pencil sends one `POST` to `TASK_WEBHOOK_URL`:
+Pencil sends one `POST` to the saved endpoint URL, or `TASK_WEBHOOK_URL` when using deployment settings:
 
-- `Authorization: Bearer <TASK_API_KEY>`. The key is sent only in this header. It is never written to the database, an audit entry, a log line or an export.
+- `Authorization: Bearer <your bearer key>`. The receiver gets the key only in this header, never in the URL or payload. Saved credentials are encrypted; the plaintext key is never returned to the browser, written to audit entries or logs, or included in an export.
 - `Idempotency-Key: pencil-action-<action ID>`. The same key is in the body as `idempotencyKey`. One action has one key for its whole life.
-- `Content-Type: application/json`, with this body:
+- `Content-Type: application/json` and `Accept: application/json`, with this body (fictional example values):
 
 ```json
 {
-  "idempotencyKey": "pencil-action-01J…",
+  "idempotencyKey": "pencil-action-example-action-id",
   "action": {
     "title": "Shorten the wait at the counter",
     "rationale": "Most visitors said the wait was too long.",
     "owner": { "name": "Sam Rivera", "email": "sam@example.com" },
     "metric": { "name": "Visitors saying the wait was short", "unit": "percent", "direction": "increase", "baseline": { "value": 33, "source": "Revision 1 results", "observedAt": "2026-10-12T09:00:00.000Z" } },
     "reviewDate": "2026-12-01",
-    "reportLink": "https://forms.example.com/app/actions/01J…"
+    "reportLink": "https://forms.example.com/app/actions/example-action-id"
   }
 }
 ```
 
 Your receiver must honour this contract:
 
-- **Create or get by key.** The first request with a key creates one task. Every later request with the same key returns that same task and creates nothing.
-- **Answer `2xx` with `{"taskId": "<your task ID>"}`.** The ID is 1 to 200 visible ASCII characters. Pencil reads nothing else from the answer.
+- **Check the bearer key.** Reject requests that do not present your expected secret.
+- **Create or get by key.** The first request with a key creates one task. Every later request with the same key returns that same task and creates nothing. Store the key-to-task mapping atomically, including for simultaneous requests.
+- **Answer `2xx` with `{"taskId": "<your task ID>"}`.** The ID is 1 to 200 visible ASCII characters with no spaces. For example, return HTTP 201 with `{"taskId":"TASK-123"}` on creation, then HTTP 200 with `{"taskId":"TASK-123"}` for every request repeating the same key. Pencil reads nothing else from the answer.
 - **Do not redirect.** Pencil does not follow redirects; a `3xx` counts as failed.
+- **Reply within 10 seconds with at most 16 KiB.** A timeout, lost connection or invalid response leaves the outcome unknown because the task may already exist. Use the same key to retrieve that task on retry.
+
+Test requests use the same payload shape with fixed sample values and the stable key `pencil-connection-test-<workspace ID>`, separate from real action keys. Repeating a test should return the same sample task ID, exercising create-or-get. Tests do not change an action's delivery history or confirm it for sending.
 
 ### Delivery states
 
@@ -113,4 +131,4 @@ Pencil records every attempt before it is made: when, by whom, the outcome and i
 
 ## Backup and restore
 
-Actions, their history, evidence figures, measurements, task deliveries and every attempt are part of the deployment export and come back exactly as they were. The task key is never in an export. Restoring sends nothing: a delivery that was Unknown is still Unknown after restore, and nothing is sent until an operator chooses retry. See [Backup and restore](backup.md).
+Actions, their history, evidence figures, measurements, task deliveries and every attempt are part of the deployment export and come back exactly as they were. Saved connection credentials are encrypted and excluded from exports; deployment secrets are not exported either. Set up the connection again after restoration. Delivery idempotency keys are retained so a retry can still return the existing task. Restoring sends nothing: a delivery that was Unknown is still Unknown after restore, and nothing is sent until an operator chooses retry. See [Backup and restore](backup.md).

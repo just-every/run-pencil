@@ -101,7 +101,7 @@ Undo does not delete the import's stored safe record, which includes the mapped 
 
 Your data stays yours, and there are two ways to take it out:
 
-- **To another Pencil installation**, back up the whole installation and restore it there. See [Backup and restore](backup.md).
+- **To another Pencil installation**, back up product data and restore into an empty database. Credentials, sessions and private settings are excluded. The rer commands are local; hosted D1 recovery uses a separate script, all writers must be stopped, and you must separately provision an empty migration-only target. See [Backup and restore](backup.md).
 - **For use anywhere else**, download responses from each flow's results page with **Export CSV** or **Export JSON**. See [Export responses](results.md#export-responses).
 
 Pencil cannot export a form in Google Forms, Typeform or another builder's format. Your forms are in the backup archive as Pencil's own records.
