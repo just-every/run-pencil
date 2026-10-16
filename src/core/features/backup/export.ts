@@ -12,6 +12,14 @@ function readCells(json: string): BackupCell[] {
     return { type: 'blob', value: btoa(binary) }
   })
 }
+// A balanced sum stays below hosted D1's expression-depth limit even when
+// the workspace schema contains more tables than that limit.
+function sumTerms(terms: string[]): string {
+  if (!terms.length) return '0'
+  if (terms.length === 1) return terms[0]
+  const middle = Math.floor(terms.length/2)
+  return `(${sumTerms(terms.slice(0,middle))}+${sumTerms(terms.slice(middle))})`
+}
 const ledgerShapeSQL = "SELECT name FROM sqlite_schema WHERE type='table' AND name IN ('d1_migrations','_rer_deploy_migrations') ORDER BY name"
 const shapes: Record<string, string[]> = { d1_migrations: ['id','name','applied_at'], _rer_deploy_migrations: ['name','sha256','state'] }
 
@@ -29,8 +37,12 @@ export async function exportBackup(db: D1Database) {
   // JSON escaping needs at most six bytes per source byte; the fixed allowance
   // covers cell wrappers and numeric representations. The guard fails before
   // any large result can cross the Worker boundary, in the same transaction.
-  const budget = retained.map(table => `SELECT coalesce(sum(${table.columns.map(column => `coalesce(length(CAST(${quote(column)} AS BLOB)),0)*6+64`).join('+')}+16),0) AS bytes,count(*) AS rows FROM ${quote(table.name)}`).join(' UNION ALL ')
-  const guard = `SELECT CASE WHEN sum(bytes)<=${backupBytes - new TextEncoder().encode(manifest.schema).length - 256_000} AND sum(rows)<=${backupRows - 1000} THEN 1 ELSE json('PENCIL_BROWSER_BACKUP_LIMIT') END AS checked FROM (${budget})`
+  // Hosted D1 restricts compound SELECT terms more tightly than local SQLite.
+  // Independent scalar subqueries keep all table budgets in this same guard
+  // without a UNION per table or weakening the transaction's size bound.
+  const bytes = sumTerms(retained.map(table => `(SELECT coalesce(sum(${sumTerms(table.columns.map(column => `coalesce(length(CAST(${quote(column)} AS BLOB)),0)*6+64`))}+16),0) FROM ${quote(table.name)})`))
+  const count = sumTerms(retained.map(table => `(SELECT count(*) FROM ${quote(table.name)})`))
+  const guard = `SELECT CASE WHEN (${bytes})<=${backupBytes - new TextEncoder().encode(manifest.schema).length - 256_000} AND (${count})<=${backupRows - 1000} THEN 1 ELSE json('PENCIL_BROWSER_BACKUP_LIMIT') END AS checked`
   const queries = [guard, schemaQuery,
     `SELECT cid,name,upper(type) AS type,"notnull",dflt_value,pk,hidden FROM pragma_table_xinfo('${ledgerName}') ORDER BY cid`,
     `SELECT ${rowExpression(history)} AS cells FROM ${quote(history.name)}`,

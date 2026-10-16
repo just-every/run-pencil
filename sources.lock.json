@@ -3357,7 +3357,7 @@
       "executable": false
     },
     "src/core/app/environment.ts": {
-      "sha256": "6b2954c143fe86aa1adf08ceb2353799d0db2d9f7f58d5b09fd7ac8f4d45bf38",
+      "sha256": "2249dcc9fea4226b7d1bf10f0ea6550e7937faaef3afa60da2fbb24f57da9a89",
       "executable": false
     },
     "src/core/app/loaders.ts": {
@@ -3737,7 +3737,7 @@
       "executable": false
     },
     "src/core/features/backup/export.ts": {
-      "sha256": "37cabc46c250f6e90a0b7eb13906a2f414b57f08c6ca2b9b4e705a1a4ec27c98",
+      "sha256": "b519bcb3e8ab69e2f9b3dda58ecd265850a19993eee47b764c92317084f7ea37",
       "executable": false
     },
     "src/core/features/backup/manifest.d.ts": {
@@ -5277,7 +5277,7 @@
       "executable": false
     },
     "src/server.dev.ts": {
-      "sha256": "4d5198581a279f86281ac839c2815c409f5b0070f36364e251369e56c19b4876",
+      "sha256": "80ec9960024a084d62fd5bad03947d69e744f322089f1d05376642233084a923",
       "executable": false
     },
     "src/server.ts": {
@@ -6041,7 +6041,7 @@
       "executable": false
     },
     "vite.config.ts": {
-      "sha256": "59915cf14f5b4b579179107e7f7be3d344eebf9d9821af205dffdf87d2066545",
+      "sha256": "07c54fb98e5a54c923fb2482ff8d67c9726783a519e52381032e04d3e3172059",
       "executable": false
     },
     "vite.site.config.ts": {

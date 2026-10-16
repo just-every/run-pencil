@@ -41,6 +41,7 @@ export interface WorkerBindings {
   readonly SETUP_TOKEN?: string
   readonly PENCIL_LOCAL_DEVELOPMENT?: string
   /** Local runtimes only: the checkout's key gate and dev identity switch. `rer deploy` refuses both. */
+  readonly RER_DEV_ORIGIN?: string
   readonly RER_DEV_KEY?: string
   readonly RER_DEV_IDENTITY?: string
   /** Local runtimes only: `rer dev --models live` hands the capped Models dev app here; server.dev.ts builds the dev client. */

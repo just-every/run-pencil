@@ -18,7 +18,7 @@ const devServedByVite = ['/*', '!/@*', '!/src/*', '!/node_modules/*', '!/seed.js
 // (rer build checks its output).
 const local = (name: string): Record<string, string> => process.env[name] ? { [name]: process.env[name]! } : {}
 const origin: Record<string, string> = process.env.RER_DEV_ORIGIN ? { APP_ORIGIN: process.env.RER_DEV_ORIGIN } : {}
-const serve = { main: './src/server.dev.ts', vars: { ...origin, ...local('RER_DEV_KEY'), ...local('RER_DEV_IDENTITY'), ...local('RER_MODELS_SERVICE'), ...local('RER_MODELS_KEY'), ...local('RER_DEMO'), ...local('RER_DEMO_EXPIRES') }, assets: { run_worker_first: devServedByVite } }
+const serve = { main: './src/server.dev.ts', vars: { ...origin, ...local('RER_DEV_ORIGIN'), ...local('RER_DEV_KEY'), ...local('RER_DEV_IDENTITY'), ...local('RER_MODELS_SERVICE'), ...local('RER_MODELS_KEY'), ...local('RER_DEMO'), ...local('RER_DEMO_EXPIRES') }, assets: { run_worker_first: devServedByVite } }
 export default defineConfig(({ command, isPreview }) => ({
   define: { __PENCIL_MANAGED_SOURCE_SHA__: JSON.stringify(process.env.PENCIL_MANAGED_SOURCE_SHA ?? null) },
   plugins: [
