@@ -1,3 +1,4 @@
+import { appHeaders } from './api-headers'
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { operatorEmail } from './auth-identity'
@@ -18,7 +19,7 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'IMPORT-004', 'LEDG-001', 'BASE-PU
   await expect(page.getByRole('heading', { name: 'Your flows' })).toBeVisible()
   let serial = 0
   const call: ScenarioCall = async <T,>(path: string, data?: unknown, method = data === undefined ? 'GET' : 'POST'): Promise<T> => {
-    const response = await page.request.fetch(path, { method, headers: { 'CF-Connecting-IP': `198.18.167.${++serial % 250}` }, ...(data === undefined ? {} : { data }) })
+    const response = await page.request.fetch(path, { method, headers: { ...appHeaders, 'CF-Connecting-IP': `198.18.167.${++serial % 250}` }, ...(data === undefined ? {} : { data }) })
     expect(response.status(), path).toBeGreaterThanOrEqual(200); expect(response.status(), path).toBeLessThan(300)
     return response.status() === 204 ? undefined as T : await response.json() as T
   }

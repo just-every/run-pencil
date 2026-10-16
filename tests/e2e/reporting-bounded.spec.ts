@@ -1,3 +1,4 @@
+import { appHeaders } from './api-headers'
 import { contract } from './contract'
 import { expect, test, openMailLink } from './fixtures'
 import { operatorEmail } from './auth-identity'
@@ -13,7 +14,7 @@ contract(['RSLT-005','LEDG-001','LEDG-004','BASE-PUBLIC-003','BASE-OPS-004'], 'r
   await expect(page.getByRole('heading',{name:'Your flows'})).toBeVisible()
   let serial=0
   const call=async<T,>(path:string,data?:unknown):Promise<T>=> {
-    const response=await page.request.fetch(path,{method:data===undefined?'GET':'POST',headers:{'CF-Connecting-IP':`198.18.173.${++serial % 250}`},...(data===undefined?{}:{data})})
+    const response=await page.request.fetch(path,{method:data===undefined?'GET':'POST',headers:{...appHeaders,'CF-Connecting-IP':`198.18.173.${++serial % 250}`},...(data===undefined?{}:{data})})
     expect(response.status(),path).toBeLessThan(300)
     return response.status()===204 ? undefined as T : await response.json() as T
   }

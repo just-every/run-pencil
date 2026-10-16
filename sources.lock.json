@@ -5353,7 +5353,7 @@
       "executable": false
     },
     "tests/e2e/answer-results.spec.ts": {
-      "sha256": "10b8a7c26884309f315cb65f4b398bee53ac31bd72833956c6fb7072d5ab6b36",
+      "sha256": "5641b09db7cc2ad46552cfc98efa7d7c9c465c52b66522597f7c3d7c7690a214",
       "executable": false
     },
     "tests/e2e/api-headers.ts": {
@@ -5461,7 +5461,7 @@
       "executable": false
     },
     "tests/e2e/imported-results.spec.ts": {
-      "sha256": "d9c71bb8309d938ca075df3dee81122292bea703461db06c196f7c64a429d9f7",
+      "sha256": "2b9de98c7a61e25db72afe116e51809976b8f02b18b8c71bad93db1cda2689a6",
       "executable": false
     },
     "tests/e2e/input-boundary.spec.ts": {
@@ -5481,7 +5481,7 @@
       "executable": false
     },
     "tests/e2e/ledger-filters.spec.ts": {
-      "sha256": "be2a97bf43784564727f1aafdecdd019e93ca4fe2c52d4eec7b1a1cc3924641a",
+      "sha256": "2cf7bcd3e4088c07d24d3dd4201bdd20c1b4c32c987320385daa9cfc453062e3",
       "executable": false
     },
     "tests/e2e/mail-recovery.spec.ts": {
@@ -5525,11 +5525,11 @@
       "executable": false
     },
     "tests/e2e/reporting-bounded.spec.ts": {
-      "sha256": "6b298cf2f5bd713feafb6dd6c4adf09dbfada0dddccee918c2cba38fe1645762",
+      "sha256": "13d1e85c7e84b2858faedb9bc319b0cc2f85ed0adbe381b8d09fd7a0df588d22",
       "executable": false
     },
     "tests/e2e/reporting-counts.spec.ts": {
-      "sha256": "ade3e7f8e1b6b8ff5b501566aa95e8ad0e010cfba74a9b8385c3f31c32ffc92b",
+      "sha256": "3d4f1316d75b6a5ee81a2fb16eba0433ab186fc6eff0a83761ae2fbbfcd0718b",
       "executable": false
     },
     "tests/e2e/request-notifications.spec.ts": {
@@ -5577,7 +5577,7 @@
       "executable": false
     },
     "tests/e2e/text-answer-plurals.spec.ts": {
-      "sha256": "578493dcc049c8595742d5fbec403272fb98c62bebf9b8e59eeab31ac84ac97f",
+      "sha256": "6e5b7855af3ae341a73314ad0ad021ec960d2f8dc0ee55aa8dbf157bf8ca60a2",
       "executable": false
     },
     "tests/e2e/text-privacy-foundation.spec.ts": {
