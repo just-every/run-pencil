@@ -3,12 +3,12 @@ import { contract } from '../src/test/contract'
 import type { BuilderDraft } from '../src/core/app/api'
 import { emittedWorker } from './helpers/emitted-worker.mjs'
 
-contract(['OPER-003', 'NOTIFY-002', 'NOTIFY-004', 'BASE-SECRET-001'], 'Managed mail sends sign-in through Base, queues rate limits and shows rejected mail to its owner', async () => {
+contract(['OPER-003', 'NOTIFY-002', 'NOTIFY-003', 'NOTIFY-004', 'BASE-SECRET-001'], 'Managed mail uses its assigned sender for sign-in, response notifications and digests, queues rate limits and shows rejected mail to its owner', async () => {
   const origin = 'https://forms.example.test', relay = 'https://run.example.test/api/managed-mail/send'
   const bindings = { APP_ORIGIN: origin, SEED_ADMIN_EMAIL: 'owner@example.test',
     SESSION_SECRET: 'synthetic-managed-session-secret-at-least-32-characters',
     SETUP_TOKEN: 'synthetic-managed-setup-token-at-least-32-characters',
-    MAIL_PROVIDER: 'rer', MAIL_FROM: 'noreply@example.test', MAIL_RELAY_URL: relay,
+    MAIL_PROVIDER: 'rer', MAIL_FROM: 'Studio <apps@relay.example.test>', MAIL_RELAY_URL: relay,
     MAIL_API_KEY: 'synthetic-relay-credential', PENCIL_LOCAL_DEVELOPMENT: 'false', SEED_SAMPLE_DATA: 'false' }
   let relayStatus = 202
   const sends: Array<{ url: string; method: string; headers: Headers; body: string }> = []
@@ -22,8 +22,8 @@ contract(['OPER-003', 'NOTIFY-002', 'NOTIFY-004', 'BASE-SECRET-001'], 'Managed m
   const db = await runtime.getD1Database('DB')
   const worker = await runtime.getWorker()
   let cookie = '', serial = 0
-  const request = (path: string, body?: unknown) => runtime.dispatchFetch(origin + path, {
-    redirect: 'manual', method: body === undefined ? 'GET' : 'POST', headers: { Host: new URL(origin).host, Origin: origin, Cookie: cookie,
+  const request = (path: string, body?: unknown, method = body === undefined ? 'GET' : 'POST') => runtime.dispatchFetch(origin + path, {
+    redirect: 'manual', method, headers: { Host: new URL(origin).host, Origin: origin, Cookie: cookie,
       'Content-Type': 'application/json', 'CF-Connecting-IP': `192.0.2.${++serial}` },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),
   })
@@ -66,7 +66,8 @@ contract(['OPER-003', 'NOTIFY-002', 'NOTIFY-004', 'BASE-SECRET-001'], 'Managed m
         sessionToken: session.sessionToken, idempotencyKey: crypto.randomUUID(),
         answers: [{ stepId: current.steps[0].id, value: 'PRIVATE-ANSWER-NEVER-MAILED' }] })
     }
-    const state = () => json<{ deliveries: Array<{ id: string; status: string; attempts: number; availableAt: string; reason: string | null }> }>(`${path}/notifications`)
+    const state = () => json<{ mode: string; senderError: string | null; daily?: { nextOpening: string }; deliveries: Array<{ id: string; status: string; attempts: number; availableAt: string; reason: string | null; day?: string }> }>(`${path}/notifications`)
+    expect(await state()).toMatchObject({ mode: 'immediately', senderError: null })
     const tick = (time: number) => worker.scheduled({ scheduledTime: time })
     await submit()
     sends.length = 0
@@ -111,6 +112,20 @@ contract(['OPER-003', 'NOTIFY-002', 'NOTIFY-004', 'BASE-SECRET-001'], 'Managed m
     expect(redirects.every(value => value === 'manual')).toBe(true)
     expect((await state()).deliveries).toContainEqual(expect.objectContaining({ status: 'failed', attempts: 1,
       reason: expect.stringContaining('rer: provider_redirected') }))
-    console.log('Emitted Worker mail: sign-in POST + exact relay payload; redirect=manual; 302 rejected/provider_redirected (0 followed); 429 pending then sent on due retry; 401 owner-visible rejection; private details excluded.')
+
+    expect((await request(`${path}/notifications`, { mode: 'daily' }, 'PUT')).status).toBe(200)
+    const daily = await state()
+    expect(daily).toMatchObject({ mode: 'daily', senderError: null })
+    await submit()
+    relayStatus = 202
+    const beforeDigest = sends.length
+    await tick(Date.parse(daily.daily!.nextOpening))
+    expect(sends).toHaveLength(beforeDigest + 1)
+    const digest = JSON.parse(sends.at(-1)!.body)
+    expect(digest).toMatchObject({ to: bindings.SEED_ADMIN_EMAIL, subject: expect.stringContaining('daily digest (1)') })
+    expect(Object.keys(digest).sort()).toEqual(['html', 'subject', 'text', 'to'])
+    expect(sends.at(-1)!.body).not.toContain('PRIVATE-ANSWER-NEVER-MAILED')
+    expect((await state()).deliveries).toContainEqual(expect.objectContaining({ status: 'sent', attempts: 1, day: expect.any(String) }))
+    console.log(`Emitted Worker mail: MAIL_PROVIDER=rer; configured sender=${bindings.MAIL_FROM}; senderError=null; immediate sent after 429 due retry; daily digest sent; relay owns From (no from override); sign-in POST + exact relay payload; redirect=manual; 302 rejected/provider_redirected (0 followed); 401 owner-visible rejection; private details excluded.`)
   } finally { await runtime.dispose() }
 }, 30_000)

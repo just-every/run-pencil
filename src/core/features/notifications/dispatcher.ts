@@ -1,6 +1,7 @@
 import { readNotificationBrand, type NotificationBrand } from './brand.server'
 import { safeNotificationReceipt, type NotificationPreparationFailure } from './failure'
 import type { MailSender } from '../../../base/operator-auth/index.mjs'
+import type { MailConfiguration } from '../../platform/mail'
 import { composeResponseNotification, notificationSenderError } from './compose'
 import { materializeNotifications } from './outbox'
 import { claimNotifications, type NotificationDelivery } from './claims'
@@ -9,7 +10,8 @@ const batchSize = 50
 const concurrency = 5
 export class NotificationDispatcher {
   constructor(private readonly db: D1Database, private readonly sender: MailSender, private readonly origin: string, private readonly from: string,
-    private readonly readBrand: (workspaceId: string) => Promise<NotificationBrand> = workspaceId => readNotificationBrand(db, workspaceId), private readonly configurationFailure: string | null = null) {}
+    private readonly readBrand: (workspaceId: string) => Promise<NotificationBrand> = workspaceId => readNotificationBrand(db, workspaceId), private readonly configurationFailure: string | null = null,
+    private readonly mailProvider: MailConfiguration['kind'] = 'sendgrid') {}
   async run(now = new Date().toISOString()) {
     await materializeNotifications(this.db,now)
     const interruptedBefore = new Date(Date.parse(now)-300_000).toISOString()
@@ -20,7 +22,7 @@ export class NotificationDispatcher {
       this.db.prepare(`UPDATE notification_deliveries AS d SET status='unknown',reason='Mail sender was interrupted before confirming the outcome. Automatic resend is disabled.',updated_at=?
         WHERE status='sending' AND last_attempt_at<? AND EXISTS(SELECT 1 FROM responses r WHERE r.id=d.response_id AND (r.notification_eligible=1 OR d.explicit_retry_authorized=1))`).bind(now,interruptedBefore),
     ])
-    const senderError = notificationSenderError(this.from) ?? this.configurationFailure
+    const senderError = notificationSenderError(this.from, this.mailProvider) ?? this.configurationFailure
     if (senderError) {
       // Disabling a sender cannot resolve a transport attempted before this run.
       const unresolved = `EXISTS(SELECT 1 FROM notification_attempts a WHERE a.delivery_id=d.id AND a.event='unknown'

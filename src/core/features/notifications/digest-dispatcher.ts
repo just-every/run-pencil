@@ -1,4 +1,5 @@
 import type { MailSender } from '../../../base/operator-auth/index.mjs'
+import type { MailConfiguration } from '../../platform/mail'
 import { readNotificationBrand, type NotificationBrand } from './brand.server'
 import { composeResponseNotification, notificationSenderError } from './compose'
 import { insideSendingWindow, retryInstant } from '../distribution'
@@ -7,7 +8,7 @@ import { digestEligibility, digestLiveCount } from './digest-eligibility'
 import { safeNotificationReceipt } from './failure'
 type Due={id:string;flowId:string;operatorId:string;workspaceId:string;flowTitle:string;email:string;day:string;zone:string;cutoffEnd:string;key:string;attempts:number;retryCount:number;firstAttempt:string|null;retryAuthorized:number;timeZone:string;sendingWindowStart:string;sendingWindowEnd:string}
 export class DigestDispatcher {
- constructor(private db:D1Database,private sender:MailSender,private origin:string,private from:string,private brand:(workspaceId:string)=>Promise<NotificationBrand>=id=>readNotificationBrand(db,id),private configurationFailure:string|null=null) {}
+ constructor(private db:D1Database,private sender:MailSender,private origin:string,private from:string,private brand:(workspaceId:string)=>Promise<NotificationBrand>=id=>readNotificationBrand(db,id),private configurationFailure:string|null=null,private mailProvider:MailConfiguration['kind']='sendgrid') {}
  async run(now=new Date().toISOString()) {
   await freezeDigests(this.db,now)
   await this.db.batch([
@@ -37,7 +38,7 @@ export class DigestDispatcher {
  private async deliver(row:Due,claim:string,now:string) {
   let outcome:'sent'|'transient'|'permanent'|'unknown'|'empty'='permanent', reason:string|null=null,providerId:string|null=null,receipt:{provider:string|null;code:string|null}={provider:null,code:null}
   try {
-   const senderError=notificationSenderError(this.from)??this.configurationFailure
+   const senderError=notificationSenderError(this.from,this.mailProvider)??this.configurationFailure
    if(senderError)throw new Error(senderError)
    const brand=await this.brand(row.workspaceId)
    const live=await this.db.prepare(`SELECT ${digestLiveCount} AS n FROM digest_deliveries d JOIN digest_preferences p ON p.flow_id=d.flow_id AND p.operator_id=d.operator_id WHERE d.id=? AND d.status='sending' AND d.attempts=? AND ${digestEligibility}`).bind(row.id,row.attempts).first<{n:number}>()

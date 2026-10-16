@@ -861,7 +861,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "6cf8242fd53bd50f8e1e6644e0c273c46e2a76b6f012c691e703122e7cb50ab6",
+      "sha256": "5062595e4c39603acbda2e87aa8d54819a9db06ea6d50ab0c88f5eb21da2d03e",
       "executable": false
     },
     "DEMO.md": {
@@ -897,7 +897,7 @@
       "executable": false
     },
     "docs/FIRST-RELEASE.md": {
-      "sha256": "4ea68da3be0aa4230728d71ed48ffb9e9a5457f4f67573c30c4988c20c9b85f9",
+      "sha256": "7a1af4cc0069fdb990a25b9be355385f5c9d5b2cd54aa86d9002d2e5998436a2",
       "executable": false
     },
     "docs/guide/actions.md": {
@@ -929,7 +929,7 @@
       "executable": false
     },
     "docs/guide/invitations.md": {
-      "sha256": "3abda7cf84a8825a41e00d5c35038b8c9441b3227cc850e8fef1f238a300617f",
+      "sha256": "9c123fd956726e3fdb35fdb713f595202a758541aea489c2f81ea035e1a23bf3",
       "executable": false
     },
     "docs/guide/moving-in.md": {
@@ -949,11 +949,11 @@
       "executable": false
     },
     "docs/guide/results.md": {
-      "sha256": "2ff5a82ea33a468bd08969067222b495f729188d20baf55b2ac6963e42c8b548",
+      "sha256": "af21ed520695d2550e7841731db8b8a0b71833e373df5461f5ca15235db7d882",
       "executable": false
     },
     "docs/HOSTING.md": {
-      "sha256": "396a8360942ea2e041dd59411522a08d3a437dd19bbc36f7470a0c8e9c07db71",
+      "sha256": "463400fa460cd5489fbff0c90ba29cda34afdfe00c187eedcf98c5efb82e172a",
       "executable": false
     },
     "docs/IMMUTABLE-MIGRATIONS.json": {
@@ -969,7 +969,7 @@
       "executable": false
     },
     "docs/production-mail.md": {
-      "sha256": "62cf7a79afff206666fe8956d28dbdba7e51c06ff4c69448d1e4e1cb45146c36",
+      "sha256": "16202f8dc4fc526bb6ccf482497c2dd21a9def50ca9e45ff962375dc909d97f4",
       "executable": false
     },
     "docs/site.json": {
@@ -1225,11 +1225,11 @@
       "executable": false
     },
     "rer-project.json": {
-      "sha256": "0e9a7042e1d596b835c4aa186254c8f3da0642a917c24947995dbb8ea35b8417",
+      "sha256": "c12cd6e1c890978ba4473f20a1720b9c112dcc0fc534a1fbe9b4fe79bc536d25",
       "executable": false
     },
     "rer-setup.json": {
-      "sha256": "2b74ba41a5791073d64de3c48f1cdb8e7a46e117142d7ef31ea7036f43178323",
+      "sha256": "65b0ff151841afb0498ef52248a080e0ff06e683755f7fa79454a91a3d6a55e6",
       "executable": false
     },
     "RUN-LOCALLY.md": {
@@ -1633,7 +1633,7 @@
       "executable": false
     },
     "scripts/operations-config.mjs": {
-      "sha256": "0658a7cc497b83de775af4d1b0c2de7e3a588a6e62002a9c154093664439a10f",
+      "sha256": "4849014af8f388c95bcc26e034f6c63c70440b541b6be9354d46b6edfd97326a",
       "executable": false
     },
     "scripts/pencil-archive-output.d.mts": {
@@ -1733,7 +1733,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "f543e4ad0bfcb763aa5b08ae29b6d743888a8bcd158c27dddf207b366252c7ae",
+      "sha256": "f7034f5d7aa54cd211891f09ce430a93dbd6cd07b21a2adb351095b05f8996aa",
       "executable": false
     },
     "src/base/ai/client.mjs": {
@@ -3365,7 +3365,7 @@
       "executable": false
     },
     "src/core/app/services.ts": {
-      "sha256": "7251a67b5963e5aee06f7ca35a64f10602cc0bd3d38a75ccb267b3662a9929b3",
+      "sha256": "d46490b2314b53ba9e732d81d01ff3f659b1cde5fb56c96fca4a2d48995bb508",
       "executable": false
     },
     "src/core/app/styles/art.css": {
@@ -4501,7 +4501,7 @@
       "executable": false
     },
     "src/core/features/notifications/compose.ts": {
-      "sha256": "c0993a0e9013ac6bd30d60fc7ef3e5f4114383ff1280c52873c4929e88124479",
+      "sha256": "539cebc1af3a29beab2279acd0e83486f1666c2ecc45e4aa9c1e3267e55c325f",
       "executable": false
     },
     "src/core/features/notifications/digest-cohorts.ts": {
@@ -4509,7 +4509,7 @@
       "executable": false
     },
     "src/core/features/notifications/digest-dispatcher.ts": {
-      "sha256": "ffb007a6f569618444c48cd07563a6817fdf65478fd54a2a42745bf92bcc6069",
+      "sha256": "75f845e655261d64940d83b435b4283b40abfeff0bec156bd9f2543360da521c",
       "executable": false
     },
     "src/core/features/notifications/digest-eligibility.ts": {
@@ -4517,7 +4517,7 @@
       "executable": false
     },
     "src/core/features/notifications/dispatcher.ts": {
-      "sha256": "d86f18ec753f6e4ad2f230287cdc9d2d9efddaee3517d463e5d845b1a9bb8d29",
+      "sha256": "04cdb6a985fbfababac987a0ff597851a0f0edd46b695a3a7fd30dc5371fe047",
       "executable": false
     },
     "src/core/features/notifications/failure.ts": {
@@ -5613,7 +5613,7 @@
       "executable": false
     },
     "tests/managed-mail.test.ts": {
-      "sha256": "141e1987872b8792eb359658ebcbdeb7e5aad94649af6b882efff7e92e0ca21d",
+      "sha256": "4d08d1af1b971ec0f7c0916057e3dbb49cbacf08e726d36c11b2dce8eea8cb7f",
       "executable": false
     },
     "tests/native/closure-recovery.mjs": {

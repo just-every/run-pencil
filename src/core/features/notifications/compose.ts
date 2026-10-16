@@ -1,5 +1,6 @@
 import type { NotificationLogo } from './brand.server'
 import { validateLogo } from '../brand'
+import type { MailConfiguration } from '../../platform/mail'
 const logoExtensions: Record<string, string> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' }
 const escape = (value: string) => value.replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]!)
 const header = (value: string) => value.replace(/[\r\n\u0000-\u001f\u007f]/g, ' ').slice(0, 180)
@@ -33,6 +34,9 @@ export function composeResponseNotification(input: { businessName: string; flowT
     headers: { 'Auto-Submitted': 'auto-generated' },
   }
 }
-export function notificationSenderError(from: string) {
+export function notificationSenderError(from: string, provider: MailConfiguration['kind'] = 'sendgrid') {
+  // RER assigns and verifies the sender; the relay sets Auto-Submitted itself.
+  // Runtime configuration and Base mail still validate the configured mailbox.
+  if (provider === 'rer') return null
   return from.length <= 254 && /^(?:noreply|no-reply)@(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/i.test(from) ? null : 'Response notification email is off: the verified sender (MAIL_FROM) must be a plain noreply@ or no-reply@ address. Sign-in email still works. Change the sender in this installation\'s setup to turn notifications on.'
 }

@@ -333,7 +333,7 @@
       "name": "MAIL_FROM",
       "required": true,
       "secret": false,
-      "why": "Verified no-reply sender address used for every outbound message (NOTIFY-004)."
+      "why": "Verified sender used for every outbound message: RER's assigned relay sender on Managed hosting, or a no-reply sender with SendGrid or Resend (NOTIFY-004)."
     },
     {
       "name": "AI_ENABLED",

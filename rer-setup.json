@@ -70,7 +70,7 @@
     {
       "name": "MAIL_FROM",
       "label": "Verified sender email",
-      "help": "A plain noreply@ or no-reply@ address at a domain your email provider has verified. Sign-in email works from any verified sender, but response notifications are sent only from a noreply@ or no-reply@ address; with any other sender Pencil turns them off and says so on each flow's Results page.",
+      "help": "Managed hosting uses the verified sender assigned by RER automatically. For SendGrid or Resend, use a plain noreply@ or no-reply@ address at a domain your provider has verified to enable response notifications and Daily digests. Other verified senders can still send sign-in email.",
       "placeholder": "noreply@mail.example.com",
       "kind": "email",
       "required": true,

@@ -1,6 +1,6 @@
 # Hosting Pencil
 
-Managed hosting through RER sends Pencil mail through the RER relay. No separate mail provider account or API key is needed. Free and Assisted installations retain the ordinary SendGrid or Resend choices.
+Managed hosting through RER sends Pencil mail through the RER relay. RER supplies the verified sender automatically for sign-in, response notifications and Daily digests. No separate mail provider account or API key is needed. Free and Assisted installations retain the ordinary SendGrid or Resend choices.
 
 The instructions below cover direct deployment into your own Cloudflare account, which requires your own mail provider, verified sender and API key.
 
