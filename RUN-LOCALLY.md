@@ -1,18 +1,16 @@
 # Run it locally
 
-For the npm route on the Run page, install Node.js 22 or later (including npm)
-and Git first. Check `node --version` and `npm --version`; both must be on
-`PATH` before installing and starting rer. Then:
+The one line on the Run page needs Node.js 22 or later (including npm) and Git.
+Check `node --version` and `npm --version`; both must be on `PATH`. Then:
 
 ```sh
-npm install -g @runeditrun/rer
-git clone https://github.com/just-every/run-pencil.git pencil && cd pencil
-rer dev
+npx -y @runeditrun/rer dev just-every/run-pencil
 ```
 
-The global rer launcher installs the project's pinned Node and pnpm for its
-commands; no global pnpm install is required. The initial Node/npm prerequisite
-is for the npm route above. Local `rer setup` is optional after the zero-setup
+Set up only: `npx -y @runeditrun/rer setup just-every/run-pencil`. Without Node:
+`curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-pencil`.
+rer installs the project's pinned Node and pnpm for its commands; no global pnpm
+install is required. The Node/npm prerequisite is for the npx line above. Local `rer setup` is optional after the zero-setup
 `rer dev` launch.
 `rer` runs every verb with the checkout's own pinned copy: a vendored
 `scripts/rer.mjs`, or in package mode the exact `@runeditrun/rer` devDependency in

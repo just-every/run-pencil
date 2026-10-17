@@ -4,7 +4,7 @@ Managed hosting through RER sends Pencil mail through the RER relay. RER supplie
 
 The instructions below cover direct deployment into your own Cloudflare account, which requires your own mail provider, verified sender and API key.
 
-Install Node.js 22 or later with npm from [nodejs.org](https://nodejs.org/en/download), then `npm install -g @runeditrun/rer`. Node and npm must already be on `PATH` for this npm installation route; Git is also required. The one-line install on the [Run page](https://run-pencil.com/run) does this for you. The global rer launcher delegates to the exact checkout pin in `package.json` and its lockfile; keep that pin rather than changing it to match the global launcher.
+Get Pencil with the one line on the [Run page](https://run-pencil.com/run), `npx -y @runeditrun/rer dev just-every/run-pencil` (or `npx -y @runeditrun/rer setup just-every/run-pencil` to prepare it without starting). It needs Node.js 22 or later with npm on `PATH`, and Git; without Node, `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-pencil` brings its own. The rer launcher delegates to the exact checkout pin in `package.json` and its lockfile; keep that pin rather than changing it to match the global launcher.
 
 rer installs Pencil's pinned runtime and pnpm for its own commands, without putting pnpm on the shell's `PATH`. Run `rer install` in the checkout. For source changes, install the browser with `npx --no-install playwright install chromium --only-shell` and run `rer verify`; run `npm run verify:release` before release. These checks are separate from deploying an unchanged checkout.
 
