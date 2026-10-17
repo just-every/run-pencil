@@ -1,3 +1,4 @@
+import { CalendarDateInput } from './CalendarDateInput'
 import { useId, useState } from 'react'
 import type { FlowStep, ChoiceOption } from '../../app/api'
 
@@ -27,16 +28,16 @@ export function ExtendedQuestionInput({ step, choices, value, onChange }: Props)
     <input aria-label={step.prompt} aria-required={required} aria-describedby={`${controlId}-statement`} type="checkbox" checked={value === true} onChange={event => onChange(event.target.checked)} />
     <span id={`${controlId}-statement`}>{String(settings.statement ?? '')}</span>
   </label>
-  if (step.questionType === 'number' || step.questionType === 'date') {
-    const date = step.questionType === 'date'
+  if (step.questionType === 'date') return <CalendarDateInput step={step} value={value} onChange={onChange} />
+  if (step.questionType === 'number') {
     // Keep the native editing buffer while a minus sign, fraction or date segment
     // is incomplete. Only complete numeric/calendar values enter answer state.
-    return <input key={`${step.id}-${step.questionType}`} aria-label={step.prompt} aria-required={required} className="text-input" type={step.questionType}
-      min={date ? settings.earliest as string | undefined : settings.min as number | undefined}
-      max={date ? settings.latest as string | undefined : settings.max as number | undefined}
+    return <input key={`${step.id}-${step.questionType}`} aria-label={step.prompt} aria-required={required} className="text-input" type="number"
+      min={settings.min as number | undefined}
+      max={settings.max as number | undefined}
       step={settings.decimalPlaces === undefined ? 'any' : 10 ** -Number(settings.decimalPlaces)}
       defaultValue={typeof value === 'number' || typeof value === 'string' ? value : ''}
-      onInput={event => onChange(event.currentTarget.value === '' ? undefined : date ? event.currentTarget.value : event.currentTarget.valueAsNumber)} />
+      onInput={event => onChange(event.currentTarget.value === '' ? undefined : event.currentTarget.valueAsNumber)} />
   }
   if (step.questionType === 'nps') return <div className="answer-stack">
     <div role="radiogroup" aria-label={step.prompt} aria-required={required} aria-describedby={`${controlId}-low ${controlId}-high`} className="nps-row">

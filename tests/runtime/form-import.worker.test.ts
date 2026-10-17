@@ -37,6 +37,9 @@ contract(['IMPORT-001', 'IMPORT-002', 'IMPORT-003', 'IMPORT-004', 'LEDG-002'], '
   const a = await fixture(), b = await fixture(second)
   const first = await committed(a), next = await committed(b)
   expect(first.review.report).toEqual(next.review.report)
+  const imported = await nativeSnapshot(a.database,first.review.flowId)
+  for (const [prompt,settings] of [['Name',{maxLength:150}],['Experience',{min:0,max:10,lowLabel:'Low',middleLabel:'Neutral',highLabel:'High'}],['Visit date',{displayFormat:'DD/MM/YYYY',separator:'.'}]] as const) expect(JSON.parse(String(imported.structure.find(step=>step.prompt===prompt)?.question_settings_json))).toMatchObject(settings)
+
   expect(await nativeSnapshot(a.database, first.review.flowId)).toEqual(await nativeSnapshot(b.database, next.review.flowId))
   expect(await a.database.prepare('SELECT count(*) AS total FROM responses WHERE flow_id=?').bind(first.review.flowId).first()).toEqual({ total: 27 })
   for (const table of ['respondent_sessions', 'response_outbox', 'revision_metric_counters', 'mail_deliveries', 'local_mail_outbox']) expect(await a.database.prepare(`SELECT COUNT(*) AS total FROM ${table}`).first()).toEqual({ total: 0 })

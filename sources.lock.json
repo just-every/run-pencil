@@ -861,7 +861,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "a8505c07b60466f60df3bfd41ca703720eb267471f3442eb335f39a4038b4bff",
+      "sha256": "181d088bb3ac597d3763cd18c1638f2a31434cb23061492f65d2ea63af4c9348",
       "executable": false
     },
     "DEMO.md": {
@@ -1169,7 +1169,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "644268356f51988788b9fbcb9cca18d5d4787983eed9cbd28b74088343a292b1",
+      "sha256": "83f7b3bc565aeb0aeb58843dd8d581572a2c1a6d7f07665bc77e451c21da8559",
       "executable": false
     },
     "playwright.admission.config.ts": {
@@ -1189,7 +1189,7 @@
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "9ee89709c1b217b2b02d294739d3e87c9eada6c2f78a65b2b47680b49ad46679",
+      "sha256": "f6a97db58f1538fe9e67df2bfed432f9938fba6b19218f2d650c7b6c7f5d72d3",
       "executable": false
     },
     "public/brand/band.svg": {
@@ -4101,7 +4101,7 @@
       "executable": false
     },
     "src/core/features/flows/graph.ts": {
-      "sha256": "b8dd2c32d72b4fa6e7b66ac85667ff742ee9926dbfe0e24cb1deca9fbfdaa6d7",
+      "sha256": "99d47e84f191bf766076c0788d451594125b53e580253b733a5780f4a8f51ebc",
       "executable": false
     },
     "src/core/features/flows/index.ts": {
@@ -4169,19 +4169,27 @@
       "executable": false
     },
     "src/core/features/flows/ui/FlowBuilderPage.tsx": {
-      "sha256": "e72bd665cc84cf023812fdb09e2fd0b1d231bce8d16496d001aaeb03f311e960",
+      "sha256": "2853ae44f108843469d9b00be0ebe499567253e3ef416a7aafa04fb74e7c5246",
       "executable": false
     },
     "src/core/features/flows/ui/FlowSharePanel.tsx": {
       "sha256": "d199187f73e96aa8aebb5b2c3e7d80cfe6da4fea7316e642597c73a2f8e5eb44",
       "executable": false
     },
+    "src/core/features/flows/ui/RatingSettings.tsx": {
+      "sha256": "e9f437bec39570303cc20978b7183536c06c7e2b6c29f702893b8253554bc2b3",
+      "executable": false
+    },
     "src/core/features/flows/ui/StepCanvas.tsx": {
-      "sha256": "10b40bf3c452008c0e6ac571044512eef5b68b864c2b1facfca208ca6091b6e7",
+      "sha256": "bc10baceab329c89cb7e14d7524bae735dbe66269271919bff63c966fa57165f",
+      "executable": false
+    },
+    "src/core/features/flows/ui/TextSettings.tsx": {
+      "sha256": "51d85b6c409b93daa77345d6d27e26a2d3587e9db657ac7e0d782fc41a3d3312",
       "executable": false
     },
     "src/core/features/flows/ui/TypeSettings.tsx": {
-      "sha256": "2e59c34fd7f072e531961fae7057c63cf436ffad1b67d5dd7ad1d0ad2883ff75",
+      "sha256": "ec1237400970ae9c79ff5bc35febb790cd8652bfe14c50635fb78e58b930cefe",
       "executable": false
     },
     "src/core/features/flows/unpublished.ts": {
@@ -4217,7 +4225,7 @@
       "executable": false
     },
     "src/core/features/importing/fields.ts": {
-      "sha256": "a2b70dc0f7b281ed1d88f7c1d4c800056c79d887e6047bf9a6a9515958e4e285",
+      "sha256": "727ea3061c4f1f3493dbe1f8218452cc3d29f979c419935275d692988a17e3be",
       "executable": false
     },
     "src/core/features/importing/google-fields.ts": {
@@ -4733,7 +4741,7 @@
       "executable": false
     },
     "src/core/features/reporting/aggregate.ts": {
-      "sha256": "a25c229bf53c7dae95fa3b5cacc880e181d87220f79e46729e18aa727d624b4f",
+      "sha256": "f9427dcf1be2e1973895b1d63cfb656ac319fa79f551345ace36a9c5a4a2b8d9",
       "executable": false
     },
     "src/core/features/reporting/answerFilter.ts": {
@@ -4761,11 +4769,11 @@
       "executable": false
     },
     "src/core/features/reporting/questionReport.ts": {
-      "sha256": "e0fbb7db36752e7da1d999d23b4e9e7bc9dfa23ff7124cf01f42cf2f35976b35",
+      "sha256": "ba076584eb23759506266130ab1bb5ab3ebbee832f7075dd979faf611e25f768",
       "executable": false
     },
     "src/core/features/reporting/repository.ts": {
-      "sha256": "fbd8f47819b704157f81b7e2160aec2f18749bd1767611ae70d4cfebf309b349",
+      "sha256": "35c84c51a383819403275085c010248631ff71a89f68bfc30a337905fab8b718",
       "executable": false
     },
     "src/core/features/reporting/retainedAnswer.ts": {
@@ -5097,7 +5105,7 @@
       "executable": false
     },
     "src/core/shared/answers.ts": {
-      "sha256": "fb6c29de2341a1d5b871556d6684a6b44d0a3dd649ff8c38a96ae249bbb93990",
+      "sha256": "3d6613ba5a965825be4c706626bbfab1539875012954d9f064ac6d938287c51c",
       "executable": false
     },
     "src/core/shared/branching.ts": {
@@ -5110,6 +5118,10 @@
     },
     "src/core/shared/config.ts": {
       "sha256": "99c18a5fa45eca9a3d297393cc8ed47876a6fb0f651658fac1c6f2f08d0a229f",
+      "executable": false
+    },
+    "src/core/shared/dateFormat.ts": {
+      "sha256": "aad15aaf148b0592256212343f4076baa48cbb77a05b8f8da5611070a16a12b5",
       "executable": false
     },
     "src/core/shared/distributionPolicies.ts": {
@@ -5133,7 +5145,15 @@
       "executable": false
     },
     "src/core/shared/questionTypes.ts": {
-      "sha256": "8bf7f149d8e4b4177887932614efd54d0fe7841874e74dc3c9b0ed2b45fd8fd1",
+      "sha256": "a19067c73169842ca9865bdbc51a208556d0768369807e50c1ce82b13878aed1",
+      "executable": false
+    },
+    "src/core/shared/ratingScale.ts": {
+      "sha256": "a59ff14ab45f7593c9324b4fbef9e92145a76e346e28ce2ebc4e3369c3bc7ef7",
+      "executable": false
+    },
+    "src/core/shared/textValidation.ts": {
+      "sha256": "adb95ad9cdd656704ae7faf11d79f16e617dc0ac485117ea1664a9aca594ebc8",
       "executable": false
     },
     "src/core/shared/timeZone.ts": {
@@ -5152,12 +5172,28 @@
       "sha256": "97ccc820f877a4cf73fca94be621f4544ff7d3eab3bf0e170f4afbeea56102a0",
       "executable": false
     },
+    "src/core/shared/ui/CalendarDateInput.tsx": {
+      "sha256": "ecaf9a6ed00a2543e68592c554130988c6c3b16ab90426216c3c14414c517394",
+      "executable": false
+    },
     "src/core/shared/ui/ExtendedQuestionInput.tsx": {
-      "sha256": "0a6ee2d9d901a20fccceed37e2d6dc1949745d5aa4648808a62f34697894873e",
+      "sha256": "3d2b96b74397b0ef2778a4219972a55b979a30f8b4cdc22c174f4ca5146121b7",
       "executable": false
     },
     "src/core/shared/ui/QuestionInput.tsx": {
-      "sha256": "52d461cdb9337126fad87f39b111e0ea8f0a7f12b5ac50b90e4560f234637bc1",
+      "sha256": "6b7cb5f0bb284eabe539564e2fc0c31e210f16f7c9ac79d2784128ae1bfcc582",
+      "executable": false
+    },
+    "src/core/shared/ui/rating-scale.css": {
+      "sha256": "0a3414387712ffbb87e1a4f6d5988642ac7cf9f7730e61154d59e95fe21711cb",
+      "executable": false
+    },
+    "src/core/shared/ui/RatingInput.tsx": {
+      "sha256": "bf8ea0dfabc36c314eb83e7801fde78f1913d51a245e1a4def18e07d3f267bef",
+      "executable": false
+    },
+    "src/core/shared/ui/TextQuestionInput.tsx": {
+      "sha256": "71bead405d7c5a2a2495df0b259e4f1d86d22d5274bbcb0e847cb44857c237bc",
       "executable": false
     },
     "src/core/shared/ui/UnsavedChanges.tsx": {
@@ -5537,7 +5573,7 @@
       "executable": false
     },
     "tests/e2e/new-question-types.spec.ts": {
-      "sha256": "05217cb7e76ec0d2cadcda82c253566060516e7217c58b03ad418bdca123347b",
+      "sha256": "1cf9fe9bc42a6d3f8984f7e4c009f11659d603b49901ee1fb8023a6ef6ca30f1",
       "executable": false
     },
     "tests/e2e/notifications.spec.ts": {
@@ -5633,7 +5669,7 @@
       "executable": false
     },
     "tests/fixtures/form-import/fixture.ts": {
-      "sha256": "46a28444626eb380c96407d846fea4db805b7f0275af6d2364f78ab498119fba",
+      "sha256": "c0aec3d6e5ec4c5b52608f73320544e03d7f2afd2f9b6e2c0a1a21d348a60ba9",
       "executable": false
     },
     "tests/fixtures/form-import/google-ambiguous.csv": {
@@ -5933,7 +5969,7 @@
       "executable": false
     },
     "tests/runtime/form-import.worker.test.ts": {
-      "sha256": "dce510d25b3c444aefbf7a41ba2343fc4564a739a4b3c847ef1f33dd9e0c4393",
+      "sha256": "71239c08a014a36881f1a23582adfa9e906d3c52f13306dfa5bd498bfab0ee80",
       "executable": false
     },
     "tests/runtime/foundation-fixture.ts": {
@@ -5997,7 +6033,7 @@
       "executable": false
     },
     "tests/runtime/new-question-types.worker.test.ts": {
-      "sha256": "1559ef1f9ef86f33b4e011f2926f0001d506ffd88e520e2058c6eab18a4818d0",
+      "sha256": "76db7787c9cdf917f2231de15e4329df4745d0dfff2c0f03fef5102eb767e521",
       "executable": false
     },
     "tests/runtime/notification-restore.worker.test.ts": {

@@ -1,5 +1,5 @@
 import { summarizeAnswers, booleanAnswer } from './answerSummary'
-export type ReportStep = { revisionId: string; id: string; prompt: string; questionType: string | null; position: number; reached: number; dropped: number }
+export type ReportStep = { revisionId: string; id: string; prompt: string; questionType: string | null; position: number; settingsJson?: string | null; reached: number; dropped: number }
 export type ReportAnswer = { revisionId: string; stepId: string; valueJson: string; source: string }
 export type ReportChoice = { revisionId: string; id: string; label: string; stepId: string }
 

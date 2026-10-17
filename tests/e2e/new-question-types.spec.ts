@@ -58,7 +58,7 @@ contract(['FLOW-003', 'RESP-003', 'LEDG-004', 'BASE-PUBLIC-003'], 'six additiona
   for (const [index, type] of types.entries()) {
     await expect(page.getByRole('heading', { name: `Answer ${type}`, exact: true })).toBeVisible()
     expect(await page.locator('[data-selected=true]').count()).toBe(0)
-    await expect(page.locator('fieldset [aria-required=true]')).toHaveCount(1)
+    await expect(page.locator('fieldset [aria-required=true]')).toHaveCount(type === 'date' ? 3 : 1)
     const next = page.getByRole('button', { name: index === types.length - 1 ? 'Submit response' : 'Continue', exact: true })
     await tabTo(next); await page.keyboard.press('Enter')
     await expect(page.getByRole('alert')).toContainText(`Answer ${type}`)
@@ -75,12 +75,9 @@ contract(['FLOW-003', 'RESP-003', 'LEDG-004', 'BASE-PUBLIC-003'], 'six additiona
     } else if (type === 'number') {
       await tabTo(page.getByRole('spinbutton', { name: 'Answer number' })); await page.keyboard.type('-1.25')
     } else {
-      const date = page.locator('input[type=date][aria-label="Answer date"]')
-      await tabTo(date)
-      // Native mobile date pickers do not expose desktop keyboard segments.
-      // Use the browser's date input, then submit through the same form.
-      await date.fill('2024-02-29')
-      await expect(date).toHaveValue('2024-02-29')
+      await page.getByLabel('Month', { exact:true }).fill('02')
+      await page.getByLabel('Day', { exact:true }).fill('29')
+      await page.getByLabel('Year', { exact:true }).fill('2024')
     }
     await expect(page.getByText('Required', { exact: true })).toBeVisible()
     await expect(page.getByRole('progressbar')).toHaveAttribute('aria-valuenow', String(Math.round((index + 1) / types.length * 100)))

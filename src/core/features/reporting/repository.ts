@@ -1,3 +1,4 @@
+import { displayCalendarDate } from '../../shared/dateFormat'
 import { retainedAnswer } from './retainedAnswer'
 import { aggregateRevision } from './aggregate'
 import { booleanAnswer } from './answerSummary'
@@ -67,7 +68,8 @@ export class ReportingRepository {
       }
       return Array.isArray(value) ? value.map(choiceValue) : choiceValue(value)
     }
-    const display = (value: unknown, stepId: string, revisionId: string, questionType: string) => {
+    const display = (value: unknown, stepId: string, revisionId: string, questionType: string, settings: Record<string, unknown>) => {
+      if (questionType === 'date' && typeof value === 'string') return displayCalendarDate(value, settings)
       const label = (id: unknown) => {
         const label = optionLabels.get(`${revisionId}\0${stepId}\0${String(id)}`)
         if (label === undefined) throw new Error('A retained answer is missing its published choice label')
@@ -82,11 +84,11 @@ export class ReportingRepository {
       }
       return typeof value === 'string' ? value : JSON.stringify(value)
     }
-    return { total: total?.count ?? 0, responses: rows.map((row) => ({ ...row, omittedQuestions: questionRows.filter(question => question.revisionId === row.revisionId && !answers.some(answer => answer.responseId === row.id && answer.stepId === question.stepId)).map(({ stepId, label, position, questionType }) => ({ stepId, label, position, questionType })), ...(participants.some(p => p.responseId === row.id) ? { participant: (() => { const { responseId: _responseId, ...p } = participants.find(p => p.responseId === row.id)!; return p })() } : {}), answers: answers.filter((answer) => answer.responseId === row.id).map(({ stepId, label, position, questionType, settingsJson, required, valueJson }) => { const value: unknown = JSON.parse(valueJson); retainedAnswer(questionType,value,optionIds.get(`${row.revisionId}\0${stepId}`) ?? [],JSON.parse(settingsJson ?? '{}'),Boolean(required)); return ({ stepId, label, position, questionType, value: exportValue(value, stepId, row.revisionId, questionType), displayValue: display(value, stepId, row.revisionId, questionType) }) }) })) }
+    return { total: total?.count ?? 0, responses: rows.map((row) => ({ ...row, omittedQuestions: questionRows.filter(question => question.revisionId === row.revisionId && !answers.some(answer => answer.responseId === row.id && answer.stepId === question.stepId)).map(({ stepId, label, position, questionType }) => ({ stepId, label, position, questionType })), ...(participants.some(p => p.responseId === row.id) ? { participant: (() => { const { responseId: _responseId, ...p } = participants.find(p => p.responseId === row.id)!; return p })() } : {}), answers: answers.filter((answer) => answer.responseId === row.id).map(({ stepId, label, position, questionType, settingsJson, required, valueJson }) => { const value: unknown = JSON.parse(valueJson); retainedAnswer(questionType,value,optionIds.get(`${row.revisionId}\0${stepId}`) ?? [],JSON.parse(settingsJson ?? '{}'),Boolean(required)); return ({ stepId, label, position, questionType, value: exportValue(value, stepId, row.revisionId, questionType), displayValue: display(value, stepId, row.revisionId, questionType, JSON.parse(settingsJson ?? '{}')) }) }) })) }
   }
   async questionReport(revisionId: string) {
     const [steps, choices] = await this.binding.batch([
-      this.binding.prepare(`SELECT s.revision_id AS revisionId, s.stable_id AS id, s.prompt, s.question_type AS questionType, s.position,
+      this.binding.prepare(`SELECT s.revision_id AS revisionId, s.stable_id AS id, s.prompt, s.question_type AS questionType, s.question_settings_json AS settingsJson, s.position,
         COALESCE(m.reached,0) AS reached, COALESCE(m.dropped,0) AS dropped FROM flow_steps s
         LEFT JOIN revision_step_metric_counters m ON m.revision_id = s.revision_id AND m.step_stable_id = s.stable_id
         WHERE s.revision_id = ? ORDER BY s.position`).bind(revisionId),

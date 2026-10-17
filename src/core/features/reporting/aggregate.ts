@@ -1,3 +1,4 @@
+import { ratingScale } from '../../shared/ratingScale'
 import { sqlEmail, sqlTextWithin } from './textValidity'
 import type { AnswerSummary } from './answerSummary'
 import type { ReportStep, ReportChoice } from './questionReport'
@@ -79,7 +80,13 @@ export async function aggregateRevision(db: D1Database, revisionId: string, step
     if (type === 'priority') summary = { positions: options.map(choice => ({ ...choice, average: entries.find(bucket => bucket.value === choice.id)?.average ?? 0 })) }
     const distribution: Array<{ value: unknown; label: string; count: number }> = []
     if (['single_choice','dropdown','multiple_choice','priority'].includes(type ?? '')) for (const choice of options) distribution.push({value: choice.id, label: choice.label, count: (type === 'priority' ? entries.find(bucket => bucket.value === choice.id)?.first : entries.find(bucket => bucket.value === choice.id)?.count) ?? 0})
-    if (type === 'rating' || type === 'nps') for (const bucket of entries.sort((a,b) => Number(a.value)-Number(b.value))) distribution.push({ value: bucket.value, label: String(bucket.value), count: bucket.count })
+    if (type === 'rating' || type === 'nps') {
+      const scale = type === 'rating' ? ratingScale(JSON.parse(step.settingsJson ?? '{}')) : { min:0, max:10, lowLabel:undefined, highLabel:undefined, middleLabel:undefined }
+      for (let value = scale.min; value <= scale.max; value++) {
+        const label = value === scale.min ? scale.lowLabel : value === scale.max ? scale.highLabel : value === (scale.min + scale.max) / 2 ? scale.middleLabel : undefined
+        distribution.push({ value, label: label ? `${value} · ${label}` : String(value), count: entries.find(bucket => bucket.value === value)?.count ?? 0 })
+      }
+    }
     if (type === 'yes_no' || type === 'consent') for (const value of [true,false]) distribution.push({ value, label: type === 'consent' ? value ? 'Accepted' : 'Declined' : value ? 'Yes' : 'No', count: entries.find(bucket => bucket.value === Number(value))?.count ?? 0 })
     return { ...step, importedAnswered: row?.imported ?? 0, summary, choices: options, answered, distribution, distributionLabel: type === 'multiple_choice' ? 'Multiple select; shares may total more than 100%.' : type === 'priority' ? 'First-priority choices.' : 'One answer per response.' }
   })

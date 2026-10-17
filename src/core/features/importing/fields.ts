@@ -28,9 +28,16 @@ export function mapFields(definition: Record<string, any>, scope: string, forbid
       const start = type === 'rating' ? 1 : properties.start_at_one === true ? 1 : 0
       if (!Number.isInteger(properties.steps) || (type === 'opinion_scale' && typeof properties.start_at_one !== 'boolean')) { item.state = 'unsupported'; item.reason = 'A scale needs explicit steps and opinion-scale start_at_one.'; return }
       settings.min = start; settings.max = start + properties.steps - 1
+      const labels = object(properties.labels)
+      for (const [source, target] of [['left','lowLabel'],['center','middleLabel'],['right','highLabel']]) if (labels[source] !== undefined) settings[target] = labels[source]
     }
     if (questionType === 'multiple_choice') { settings.minSelections = validations.min_selection ?? (validations.required ? 1 : 0); settings.maxSelections = validations.max_selection ?? choices.length }
     if (questionType === 'number') { if (validations.min_value !== undefined) settings.min = validations.min_value; if (validations.max_value !== undefined) settings.max = validations.max_value }
+    if (questionType === 'short_text' || questionType === 'long_text') { if (validations.max_length !== undefined) settings.maxLength = validations.max_length; if (validations.min_length !== undefined) settings.minLength = validations.min_length }
+    if (questionType === 'date') {
+      if (properties.structure !== undefined) settings.displayFormat = ({ MMDDYYYY:'MM/DD/YYYY', DDMMYYYY:'DD/MM/YYYY', YYYYMMDD:'YYYY-MM-DD' } as Record<string,string>)[String(properties.structure)] ?? properties.structure
+      if (properties.separator !== undefined) settings.separator = properties.separator
+    }
     if (questionType === 'consent') settings.statement = String(field.title ?? '')
     if (['phone_number', 'website'].includes(type)) { item.state = 'changed'; item.change = 'Short text'; item.reason = 'Phone or URL validation is not imported; the native 200-character limit applies.' }
     else if (type === 'statement') { item.state = 'changed'; item.change = 'Welcome screen'; item.reason = 'Only the first statement can become the welcome screen.' }
@@ -38,10 +45,10 @@ export function mapFields(definition: Record<string, any>, scope: string, forbid
     const step: ImportStep = { id: stableId(scope, sourceId), sourceId, sourceType: type, kind: kind ?? 'question', questionType: questionType ?? null, prompt: String(field.title ?? ''), helperText: properties.description == null ? null : String(properties.description), required: validations.required === true, settings, choices, next: null }
     steps.push(step)
     // Each property not represented by native behavior receives its own review item.
-    const known = new Set(['description', ...(choiceTypes.includes(type) ? ['choices'] : []), ...(['multiple_choice', 'picture_choice'].includes(type) ? ['allow_multiple_selection'] : []), ...(['rating', 'opinion_scale'].includes(type) ? ['steps'] : []), ...(type === 'opinion_scale' ? ['start_at_one'] : [])])
+    const known = new Set(['description', ...(choiceTypes.includes(type) ? ['choices'] : []), ...(['multiple_choice', 'picture_choice'].includes(type) ? ['allow_multiple_selection'] : []), ...(['rating', 'opinion_scale'].includes(type) ? ['steps', 'labels'] : []), ...(type === 'opinion_scale' ? ['start_at_one'] : []), ...(questionType === 'date' ? ['structure', 'separator'] : [])])
     for (const [i, choice] of (Array.isArray(properties.choices) ? properties.choices : []).entries()) for (const key of Object.keys(object(choice))) if (!['id', 'ref', 'label'].includes(key)) report.push({ location: `${location}/properties/choices/${i}/${key}`, label: step.prompt, sourceType: type, state: 'unsupported', change: 'Choice property omitted', reason: `${key} is not reproduced.` })
     for (const [key] of Object.entries(properties)) if (!known.has(key)) report.push({ location: `${location}/properties/${key}`, label: step.prompt, sourceType: type, state: 'unsupported', change: 'Property omitted', reason: `${key} has no imported native behavior.` })
-    for (const key of Object.keys(validations)) if (!['required', ...(questionType === 'multiple_choice' ? ['min_selection', 'max_selection'] : []), ...(questionType === 'number' ? ['min_value', 'max_value'] : [])].includes(key)) report.push({ location: `${location}/validations/${key}`, label: step.prompt, sourceType: type, state: 'unsupported', change: 'Validation omitted', reason: `${key} is not reproduced; native validation applies.` })
+    for (const key of Object.keys(validations)) if (!['required', ...(['short_text','long_text'].includes(questionType ?? '') ? ['max_length','min_length'] : []), ...(questionType === 'multiple_choice' ? ['min_selection', 'max_selection'] : []), ...(questionType === 'number' ? ['min_value', 'max_value'] : [])].includes(key)) report.push({ location: `${location}/validations/${key}`, label: step.prompt, sourceType: type, state: 'unsupported', change: 'Validation omitted', reason: `${key} is not reproduced; native validation applies.` })
     for (const key of Object.keys(field)) if (!['id', 'ref', 'title', 'type', 'properties', 'validations'].includes(key)) report.push({ location: `${location}/${key}`, label: step.prompt, sourceType: type, state: 'unsupported', change: 'Property omitted', reason: `${key} is not reproduced.` })
   }
   for (const [i, screen] of (definition.welcome_screens ?? []).entries()) {

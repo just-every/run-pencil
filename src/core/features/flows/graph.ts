@@ -44,10 +44,6 @@ function validSettings(step: StoredStep, choices: StoredChoice[]) {
   const value = parsed(step.questionSettingsJson)
   if (!value || Array.isArray(value) || typeof value !== 'object') return { valid: false, value: {} as Record<string, unknown> }
   if (!typeSettingsValid(step.questionType, value as Record<string, unknown>)) return { valid: false, value: {} as Record<string, unknown> }
-  if (step.questionType === 'rating') {
-    const { min, max } = value as { min?: unknown; max?: unknown }
-    if (!Number.isInteger(min) || !Number.isInteger(max) || (min as number) >= (max as number) || (max as number) - (min as number) > 10) return { valid: false, value: {} as Record<string, unknown> }
-  }
   if (step.questionType === 'multiple_choice') {
     const { minSelections, maxSelections } = value as { minSelections?: unknown; maxSelections?: unknown }
     if (!Number.isInteger(minSelections) || !Number.isInteger(maxSelections) || (minSelections as number) < 0 || (maxSelections as number) < (minSelections as number) || (maxSelections as number) > choices.length) return { valid: false, value: {} as Record<string, unknown> }

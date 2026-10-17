@@ -1,3 +1,5 @@
+import { textAnswerIssue } from './textValidation'
+import { dateFormat } from './dateFormat'
 import { calendarDate, decimalPlaces, typeSettingsValid } from './questionTypes'
 export type AnswerQuestion = {
   prompt: string
@@ -13,8 +15,8 @@ export function answerIssue(step: AnswerQuestion, choiceIds: string[], value: un
   const settings = step.questionSettings ?? {}
   if (!typeSettingsValid(step.questionType, settings)) return 'This question has invalid settings.'
   switch (step.questionType) {
-    case 'short_text': return typeof value === 'string' && value.length <= 200 ? undefined : 'Enter text within 200 characters.'
-    case 'long_text': return typeof value === 'string' && value.length <= 5000 ? undefined : 'Enter text within 5,000 characters.'
+    case 'short_text':
+    case 'long_text': return textAnswerIssue(step.questionType, settings, value)
     case 'email': return typeof value === 'string' && value.length <= 200 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? undefined : 'Enter a valid email address.'
     case 'dropdown':
     case 'single_choice': return typeof value === 'string' && choiceIds.includes(value) ? undefined : 'Choose one of the available options.'
@@ -26,7 +28,7 @@ export function answerIssue(step: AnswerQuestion, choiceIds: string[], value: un
     case 'yes_no': return typeof value === 'boolean' ? undefined : 'Choose Yes or No.'
     case 'consent': return typeof value === 'boolean' && (!step.required || value) ? undefined : 'Consent is required to continue.'
     case 'number': return typeof value === 'number' && Number.isFinite(value) && (settings.min === undefined || value >= (settings.min as number)) && (settings.max === undefined || value <= (settings.max as number)) && (settings.decimalPlaces === undefined || decimalPlaces(value) <= (settings.decimalPlaces as number)) ? undefined : 'Enter a number within the configured range and precision.'
-    case 'date': return calendarDate(value) && (settings.earliest === undefined || value >= (settings.earliest as string)) && (settings.latest === undefined || value <= (settings.latest as string)) ? undefined : 'Enter a valid calendar date within the configured range.'
+    case 'date': return calendarDate(value) && (settings.earliest === undefined || value >= (settings.earliest as string)) && (settings.latest === undefined || value <= (settings.latest as string)) ? undefined : `Enter a valid date in ${dateFormat(settings).label} format within the configured range.`
     case 'nps': return typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= 10 ? undefined : 'Choose a whole-number score from 0 to 10.'
     case 'rating': {
       const min = typeof settings.min === 'number' ? settings.min : 1
