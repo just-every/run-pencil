@@ -921,11 +921,11 @@
       "executable": false
     },
     "docs/guide/hosting.md": {
-      "sha256": "1d66763059df9fbdfaae3afcafcd588bc28065ce7061b044ae8c477c25dc1ad4",
+      "sha256": "4182c476f38819674c3b4967199389f98551e0b18048540b23ae6833ea93170a",
       "executable": false
     },
     "docs/guide/install.md": {
-      "sha256": "84e215e111afc35f500c150af97c589a4ad5bd15c1ae84aacf4f560cb0f63876",
+      "sha256": "c6af6e6042cf8136be92b264006101b9bf88aef5e4112adfe1cd9f8db3fa8386",
       "executable": false
     },
     "docs/guide/invitations.md": {
@@ -953,7 +953,7 @@
       "executable": false
     },
     "docs/HOSTING.md": {
-      "sha256": "092fe7bca60e7d0c374c5b7edca0b5fd0b9e50ca53c08b89a0f317317bf7ea42",
+      "sha256": "4abe24d38fb3596d54f109283f579e52d245bf39e0b3a50fe153ea6d7dba0cef",
       "executable": false
     },
     "docs/IMMUTABLE-MIGRATIONS.json": {
@@ -1165,7 +1165,7 @@
       "executable": false
     },
     "OPERATIONS.md": {
-      "sha256": "f7782f6302467d7b2845f0d59f5141c0df41d0e25c1d41853444848a9e4f3bc3",
+      "sha256": "dcb004925b16360b0c3f8df0c0637d8b2b1091c16f44b40a6fb7f63a6fbe3505",
       "executable": false
     },
     "package.json": {
@@ -1225,7 +1225,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "da779ecfeefe3fb6ff0e748efe2065226b979e192878466a082b69959bcd0c09",
+      "sha256": "6f60a9cdd4586b9009d25552fdf3b3b846fbc42c3b2399d6badcc32b1e42bf32",
       "executable": false
     },
     "RELEASE.json": {
@@ -1241,7 +1241,7 @@
       "executable": false
     },
     "RUN-LOCALLY.md": {
-      "sha256": "fcf3f5baf54bf90d646ea1bec1f74bb647d10cbf83265c1d92d00ab0ab2f3740",
+      "sha256": "c53d36fe9aec2d3ced9e293652d458a813cdcbb4fe640a0018442f5a7a261eb8",
       "executable": false
     },
     "sample-data/auroraCoffee.ts": {
