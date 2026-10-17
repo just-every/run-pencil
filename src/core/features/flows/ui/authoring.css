@@ -187,3 +187,7 @@
   .draft-preview-actions { gap: 4px 12px; margin-top: 10px; }
   .draft-preview-actions > * { min-height: 36px; font-size: 14px; }
 }
+
+.named-collectors-disclosure { margin: 0 0 24px; }
+.named-collectors-disclosure > summary { display: list-item; min-height: 44px; padding: 12px 4px; font-weight: 500; }
+.named-collectors-disclosure[open] > summary { margin-bottom: 12px; }

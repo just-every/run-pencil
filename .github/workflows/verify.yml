@@ -71,7 +71,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lane: [desktop-1, desktop-2, mobile-1, mobile-2]
+        lane: [desktop-1, desktop-2, desktop-3, desktop-4, mobile-1, mobile-2, mobile-3, mobile-4]
     steps:
       - uses: actions/checkout@v4
         with:

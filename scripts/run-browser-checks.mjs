@@ -5,15 +5,15 @@ import { spawn } from 'node:child_process'
 // Each viewport runs the complete native suite in freshly migrated runtimes.
 // Production auth limits remain unchanged; sessions/rate ledgers never get
 // reset inside a journey. Local sign-in links share one loopback allowance of
-// 30 per 15 minutes, so each viewport's journeys run in two shards, each with
+// 30 per 15 minutes, so each viewport's journeys run in four shards, each with
 // its own runtime and empty ledgers. Browser evidence retains every outcome.
-const shards = 2
+const shards = 4
 const [output, selectedProject, selectedShard] = process.argv.slice(2)
-if ((selectedProject || selectedShard) && (!['desktop', 'mobile'].includes(selectedProject) || !['1', '2'].includes(selectedShard))) {
-  throw new Error('A browser lane requires desktop or mobile and shard 1 or 2.')
+if ((selectedProject || selectedShard) && (!['desktop', 'mobile'].includes(selectedProject) || !['1', '2', '3', '4'].includes(selectedShard))) {
+  throw new Error('A browser lane requires desktop or mobile and shard 1 through 4.')
 }
 const projects = selectedProject ? [selectedProject] : ['desktop', 'mobile']
-const selectedShards = selectedShard ? [Number(selectedShard)] : [1, 2]
+const selectedShards = selectedShard ? [Number(selectedShard)] : [1, 2, 3, 4]
 const directory = await mkdtemp(join(process.env.PENCIL_VERIFICATION_TMPDIR ?? tmpdir(), 'pencil-browser-projects-'))
 const reports = []
 let failed = false

@@ -3,7 +3,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { isAbsolute, join, relative, resolve } from 'node:path'
 import { playwrightPassedTests } from './contract-evidence.mjs'
 
-export const contractLanes = ['unit', 'worker', 'desktop-1', 'desktop-2', 'mobile-1', 'mobile-2']
+export const contractLanes = ['unit', 'worker', 'desktop-1', 'desktop-2', 'desktop-3', 'desktop-4', 'mobile-1', 'mobile-2', 'mobile-3', 'mobile-4']
 
 function identity(root) {
   const { GITHUB_RUN_ID: run, GITHUB_RUN_ATTEMPT: attempt } = process.env

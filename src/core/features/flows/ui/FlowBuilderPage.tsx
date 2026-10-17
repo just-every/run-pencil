@@ -211,7 +211,7 @@ export function FlowBuilderPage() {
         </div>
       </header>
       {notice && (notice.tone !== 'success' || !dirty) ? <p className="status-note" data-tone={notice.tone} role={notice.tone === 'error' ? 'alert' : 'status'}>{notice.message}</p> : null}
-      {sharing ? <><FlowSharePanel key={draft.flow.id} flow={draft.flow} />{['open', 'closed'].includes(draft.flow.status) ? <>{timeZone ? <CollectorsPanel flowId={draft.flow.id} timeZone={timeZone} /> : null}<DistributionPanel flowId={draft.flow.id} /></> : null}</> : null}
+      {sharing ? <><FlowSharePanel key={draft.flow.id} flow={draft.flow} />{['open', 'closed'].includes(draft.flow.status) ? <>{timeZone ? <details className="named-collectors-disclosure"><summary>Manage named collectors</summary><CollectorsPanel flowId={draft.flow.id} timeZone={timeZone} /></details> : null}<DistributionPanel flowId={draft.flow.id} /></> : null}</> : null}
       {dirty ? <p className="status-note" role="status">{stepDirty ? 'Unsaved step changes.' : 'Unsaved answer-path changes.'} Save or discard before switching steps, changing structure, previewing or publishing. <button className="quiet-button" disabled={saving} type="button" onClick={() => void load()}>Discard changes</button></p> : null}
 
       {!timeZone ? <p className="status-note" data-tone={timeZoneError ? 'error' : undefined} role={timeZoneError ? 'alert' : 'status'}>{timeZoneError ?? 'Loading workspace time zone…'}{timeZoneError ? <button className="quiet-button focus-ring" type="button" onClick={() => void loadTimeZone()}>Retry workspace settings</button> : null}</p> : null}
