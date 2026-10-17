@@ -1,0 +1,8 @@
+import { useEffect, useState } from 'react'
+import { collectorRequest, collectorsPath, type Collector } from './client'
+export function CollectorComparison({flowId}:{flowId:string}) {
+  const [rows,setRows]=useState<Collector[]>(),[error,setError]=useState<string>(),[refresh,setRefresh]=useState(0)
+  useEffect(()=>{let active=true;setError(undefined);void collectorRequest<Collector[]>(collectorsPath(flowId)).then(value=>{if(active)setRows(value)}).catch(reason=>{if(active)setError((reason as Error).message)});return()=>{active=false}},[flowId,refresh])
+  const total=rows?.reduce((sum,row)=>sum+row.released,0)??0
+  return <section className="panel results-card" aria-labelledby="collector-comparison-title"><header className="toggle-row"><h2 id="collector-comparison-title" className="display">Compare collectors</h2><button className="quiet-button focus-ring" type="button" onClick={()=>setRefresh(value=>value+1)}>Refresh collectors</button></header><p className="muted">Released responses across all published revisions. {total} released responses in this form. Use the ledger's Collector filter for individual answers and exports.</p>{error?<p role="alert" className="status-note" data-tone="error">{error}</p>:!rows?<p>Loading collector counts…</p>:<div className="device-list">{rows.map(row=><div className="device-row" key={row.id}><span>{row.name}{row.systemSource?' · default source':''}</span><strong>{row.released} / {total}</strong><span className="device-bar"><span style={{width:`${total?row.released/total*100:0}%`}}/></span><span>{row.state}{row.remaining===null?'':` · ${row.remaining} places left`}</span></div>)}</div>}</section>
+}

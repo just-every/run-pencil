@@ -198,9 +198,12 @@ export function registerFlowRoutes(app: Hono<WorkerEnvironment>, services: Reque
     }
   })
 
-  app.get('/api/public/flows/:slug', zValidator('param', z.object({ slug: flowSlug })), async (context) => {
+  app.get('/api/public/flows/:slug', zValidator('param', z.object({ slug: flowSlug })), zValidator('query',z.object({collector:z.string().regex(/^[a-f0-9]{32}$/).optional(),source:z.enum(['direct','embed']).default('direct')})), async (context) => {
     try {
-      return context.json(await services(context).flows.getPublicFlow(context.req.param('slug')))
+      const flow=await services(context).flows.getPublicFlow(context.req.param('slug'))
+      const {source,collector}=context.req.valid('query')
+      await services(context).collectors.requireOpen(flow.flow.id,source,collector)
+      return context.json(flow)
     } catch (error) {
       return failure(context, error)
     }

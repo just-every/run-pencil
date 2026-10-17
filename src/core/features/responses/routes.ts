@@ -1,3 +1,4 @@
+import { collectorKey, CollectorClosedError } from '../collectors'
 import { validateInput as zValidator, resourceId, flowSlug, emptyMutationBody, answerValue } from '../../shared/validation'
 import type { Context, Hono } from 'hono'
 import { z } from 'zod'
@@ -9,6 +10,7 @@ import { requireSameOriginRequest } from '../auth'
 const startSessionSchema = z.object({
   deviceClass: z.enum(['mobile', 'tablet', 'desktop']),
   source: z.enum(['direct', 'embed']).default('direct'),
+  collectorKey: collectorKey.optional(),
   invitationToken: z.string().regex(/^[a-f0-9]{64}$/).optional(),
 })
 
@@ -28,6 +30,7 @@ const submitResponseSchema = sessionCredentials.extend({
 })
 
 function failure(context: Context<WorkerEnvironment>, error: unknown) {
+  if (error instanceof CollectorClosedError) return context.json({ error: error.code, message: error.message, ...(error.flow ? { closedFlow: error.flow } : {}) }, 409)
   if (error instanceof FlowClosedError) return context.json({ error: error.code, message: error.message, closedFlow: error.flow }, 409)
   if (error instanceof PencilError) {
     return context.json({ error: error.code, message: error.message, ...(error instanceof ValidationError && error.details ? { details: error.details } : {}) }, error instanceof RateLimitError ? 429 : error.code === 'NOT_FOUND' ? 404 : 400)

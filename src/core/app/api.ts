@@ -81,7 +81,7 @@ export type Operator = {
   createdAt: string
 }
 
-export type ClosedFlow = { title: string; slug: string }
+export type ClosedFlow = { title: string; slug: string; collectionClosed?: boolean }
 
 export class ApiError extends Error {
   constructor(readonly code: string, message: string, readonly status: number, readonly details?: Array<{ stepId: string; reason: string }>, readonly closedFlow?: ClosedFlow) {
@@ -129,8 +129,8 @@ export const api = {
   archiveFlow: (flowId: string) => request<void>(`/api/app/flows/${encodeURIComponent(flowId)}/archive`, { method: 'POST' }),
   results: (flowId: string, revisionId?: string) => request<FlowResults>(`/api/app/flows/${encodeURIComponent(flowId)}/results${revisionId ? `?revisionId=${encodeURIComponent(revisionId)}` : ''}`),
   publicFlow: (slug: string) => request<PublicFlow>(`/api/public/flows/${encodeURIComponent(slug)}`),
-  startSession: (slug: string, deviceClass: 'mobile' | 'tablet' | 'desktop', source: 'direct' | 'embed', invitationToken?: string) =>
-    request<{ sessionId: string; sessionToken: string; revisionId: string; flowId: string; flow: PublicFlow }>(`/api/public/flows/${encodeURIComponent(slug)}/sessions`, { method: 'POST', body: JSON.stringify({ deviceClass, source, invitationToken }) }),
+  startSession: (slug: string, deviceClass: 'mobile' | 'tablet' | 'desktop', source: 'direct' | 'embed', invitationToken?: string, collectorKey?: string) =>
+    request<{ sessionId: string; sessionToken: string; revisionId: string; flowId: string; flow: PublicFlow }>(`/api/public/flows/${encodeURIComponent(slug)}/sessions`, { method: 'POST', body: JSON.stringify({ deviceClass, source, invitationToken, collectorKey }) }),
   advanceSession: (slug: string, input: { sessionId: string; sessionToken: string; stepId: string }) => request<void>(`/api/public/flows/${encodeURIComponent(slug)}/sessions/advance`, { method: 'POST', body: JSON.stringify(input) }),
   submitResponse: (slug: string, input: { sessionId: string; sessionToken: string; idempotencyKey: string; answers: Array<{ stepId: string; value: unknown }>; honeypot?: string; invitationToken?: string }) =>
     request<{ responseId: string | null; idempotent: boolean; completionStepId: string | null; disposition: 'released' | 'quarantined' | 'dropped' }>(`/api/public/flows/${encodeURIComponent(slug)}/responses`, { method: 'POST', body: JSON.stringify(input) }),
@@ -148,8 +148,8 @@ export const api = {
   removeOperator: (operatorId: string) => request<void>(`/api/app/operators/${encodeURIComponent(operatorId)}`, { method: 'DELETE' }),
 }
 
-export type LedgerFilter = { revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown' | 'imported'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
-export type LedgerResponse = { omittedQuestions: Array<{ stepId: string; label: string; position: number; questionType?: string }>; participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string; answers: Array<{ stepId: string; label: string; position: number; questionType: string; value: unknown; displayValue: string }> }
+export type LedgerFilter = { collectorId?: string; revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown' | 'imported'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
+export type LedgerResponse = { collector: { id: string; name: string; channel: string }; omittedQuestions: Array<{ stepId: string; label: string; position: number; questionType?: string }>; participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string; answers: Array<{ stepId: string; label: string; position: number; questionType: string; value: unknown; displayValue: string }> }
 export type Ledger = { flow: { id: string; title: string; slug: string }; cutoff: string; filter: LedgerFilter; revisions: Array<{ id: string; number: number; isCurrent: number }>; total: number; responses: LedgerResponse[] }
 export type QuestionReport = { revisionId?: string; importedAnswered: number; summary: import('../features/reporting/answerSummary').AnswerSummary; id: string; prompt: string; questionType: string | null; reached: number; dropped: number; answered: number; choices: Array<{ id: string; label: string }>; distribution: Array<{ value: unknown; label: string; count: number }>; distributionLabel: string }
 function query(filter: LedgerFilter) { return new URLSearchParams(Object.entries(filter).filter(([, value]) => value !== undefined).map(([key, value]) => [key, String(value)])).toString() }

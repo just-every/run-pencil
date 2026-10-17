@@ -3,6 +3,10 @@ import { failure } from './deployment-data-errors.mjs';
 // Every persisted column is reviewed here. A migration cannot silently add data
 // to an archive: both new tables and new columns fail closed until classified.
 const retained = {
+  collectors: 'id flow_id name channel public_key system_source deadline_at deadline_time_zone response_limit closed_at created_at updated_at',
+  session_collector: 'session_id collector_id',
+  response_collector: 'response_id collector_id',
+  invitation_launch_collector: 'launch_id collector_id',
   notification_timer: 'id last_started_at',
   integration_connections: 'kind sealed updated_at',
   d1_migrations: 'id name applied_at sha256 state',

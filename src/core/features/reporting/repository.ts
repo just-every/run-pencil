@@ -6,8 +6,8 @@ import { displayContactAnswer } from '../../shared/contactAnswers'
 import { isContactType } from './contactReports'
 import { responseScope } from './scope'
 import { type ReportStep, type ReportChoice } from './questionReport'
-export type LedgerFilter = { revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown' | 'imported'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
-export type LedgerResponse = { omittedQuestions: Array<{ stepId: string; label: string; position: number; questionType?: string }>; participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string; answers: Array<{ stepId: string; label: string; position: number; questionType: string; value: unknown; displayValue: string }> }
+export type LedgerFilter = { collectorId?: string; revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown' | 'imported'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
+export type LedgerResponse = { collector: { id: string; name: string; channel: string }; omittedQuestions: Array<{ stepId: string; label: string; position: number; questionType?: string }>; participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string; answers: Array<{ stepId: string; label: string; position: number; questionType: string; value: unknown; displayValue: string }> }
 
 export class ReportingRepository {
   constructor(private readonly binding: D1Database) {}
@@ -61,6 +61,8 @@ export class ReportingRepository {
       if (option.label !== null) optionLabels.set(`${key}\0${option.id}`,option.label)
       if (option.value !== null) optionValues.set(`${key}\0${option.id}`,option.value)
     }
+    const attribution = rows.length ? (await this.binding.prepare(`SELECT rc.response_id AS responseId,c.id,c.name,c.channel FROM response_collector rc JOIN collectors c ON c.id=rc.collector_id JOIN responses r ON r.id=rc.response_id WHERE c.flow_id=r.flow_id AND rc.response_id IN (${rows.map(()=>'?').join(',')})`).bind(...rows.map(row=>row.id)).all<{responseId:string;id:string;name:string;channel:string}>()).results : []
+    if(rows.some(row=>!attribution.some(item=>item.responseId===row.id)))throw new Error('A retained response is missing collector attribution.')
     const exportValue = (value: unknown, stepId: string, revisionId: string, questionType: string) => {
       if (answerFormat !== 'export' || !['single_choice', 'multiple_choice', 'dropdown', 'priority'].includes(questionType)) return value
       const choiceValue = (id: unknown) => {
@@ -88,7 +90,7 @@ export class ReportingRepository {
       }
       return typeof value === 'string' ? value : JSON.stringify(value)
     }
-    return { total: total?.count ?? 0, responses: rows.map((row) => ({ ...row, omittedQuestions: questionRows.filter(question => question.revisionId === row.revisionId && !answers.some(answer => answer.responseId === row.id && answer.stepId === question.stepId)).map(({ stepId, label, position, questionType }) => ({ stepId, label, position, questionType })), ...(participants.some(p => p.responseId === row.id) ? { participant: (() => { const { responseId: _responseId, ...p } = participants.find(p => p.responseId === row.id)!; return p })() } : {}), answers: answers.filter((answer) => answer.responseId === row.id).map(({ stepId, label, position, questionType, settingsJson, required, valueJson }) => { const value: unknown = JSON.parse(valueJson); retainedAnswer(questionType,value,optionIds.get(`${row.revisionId}\0${stepId}`) ?? [],JSON.parse(settingsJson ?? '{}'),Boolean(required)); return ({ stepId, label, position, questionType, value: exportValue(value, stepId, row.revisionId, questionType), displayValue: display(value, stepId, row.revisionId, questionType, JSON.parse(settingsJson ?? '{}')) }) }) })) }
+    return { total: total?.count ?? 0, responses: rows.map((row) => ({ ...row, collector: (()=>{const {responseId:_id,...collector}=attribution.find(item=>item.responseId===row.id)!;return collector})(), omittedQuestions: questionRows.filter(question => question.revisionId === row.revisionId && !answers.some(answer => answer.responseId === row.id && answer.stepId === question.stepId)).map(({ stepId, label, position, questionType }) => ({ stepId, label, position, questionType })), ...(participants.some(p => p.responseId === row.id) ? { participant: (() => { const { responseId: _responseId, ...p } = participants.find(p => p.responseId === row.id)!; return p })() } : {}), answers: answers.filter((answer) => answer.responseId === row.id).map(({ stepId, label, position, questionType, settingsJson, required, valueJson }) => { const value: unknown = JSON.parse(valueJson); retainedAnswer(questionType,value,optionIds.get(`${row.revisionId}\0${stepId}`) ?? [],JSON.parse(settingsJson ?? '{}'),Boolean(required)); return ({ stepId, label, position, questionType, value: exportValue(value, stepId, row.revisionId, questionType), displayValue: display(value, stepId, row.revisionId, questionType, JSON.parse(settingsJson ?? '{}')) }) }) })) }
   }
   async questionReport(revisionId: string) {
     const [steps, choices] = await this.binding.batch([

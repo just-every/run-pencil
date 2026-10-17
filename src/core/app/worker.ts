@@ -1,3 +1,4 @@
+import { registerCollectorRoutes } from '../features/collectors'
 import { registerBackupRoutes } from '../features/backup/routes'
 import { registerManagementRoutes } from '../features/management/routes'
 import { registerActionRoutes } from '../features/actions'
@@ -127,6 +128,7 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
   registerImportRoutes(app)
   registerResponseRoutes(app, context => context.get('services'))
   registerReportingRoutes(app, context => context.get('services'))
+  registerCollectorRoutes(app, context => context.get('services'))
   registerDistributionRoutes(app, context => context.get('services'))
   registerNotificationRoutes(app, context => context.get('services'))
   registerActionRoutes(app, context => context.get('services'))

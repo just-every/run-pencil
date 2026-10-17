@@ -1,3 +1,5 @@
+import { type CollectorService } from '../collectors'
+import { collectorFlowFailure } from './collectorFailure'
 import { runtimeAnswerValue, storedAnswerValue } from './answerStorage'
 import { revisionBranchSelection, type BranchSelection } from '../../shared/flowPolicies'
 import manifest from '../../../../seed.json'
@@ -19,6 +21,7 @@ export class ResponseService {
   constructor(
     private readonly flowRepository: FlowRepository,
     private readonly repository: ResponseRepository,
+    private readonly collectors: CollectorService,
   ) {}
 
   async ensureSampleResponses(input: {
@@ -95,16 +98,21 @@ export class ResponseService {
     const expired = revision.deadlineAt && Date.parse(revision.deadlineAt) <= Date.now()
     if (expired) await this.flowRepository.closeExpiredRevision(revision.id, new Date().toISOString())
     if (flow.status === 'draft' || revision.admissionClosedAt || expired || await this.targetReached(revision)) throw new FlowClosedError({ title: revision.title, slug: flow.slug })
+    const collector = await this.collectors.requireInvitationOpen(flow.id, token)
+      .catch(error => collectorFlowFailure(error, { title: revision.title, slug: flow.slug }))
     const { steps, choices, rules } = await this.flowRepository.getRevisionGraph(revision.id)
-    return { invitation, flow, revision, steps, choices, rules, publicFlow: { branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules), identity: 'identified' as const, completedStepId: invitation.responseStatus === 'completed' ? invitation.completionStepId : null } }
+    return { invitation, collector, flow, revision, steps, choices, rules, publicFlow: { branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules), identity: 'identified' as const, completedStepId: invitation.responseStatus === 'completed' ? invitation.completionStepId : null } }
   }
 
-  async startPublicSession(input: { slug: string; deviceClass: DeviceClass; source: PublicSource; clientAddress?: string; invitationToken?: string }) {
+  async startPublicSession(input: { slug: string; deviceClass: DeviceClass; source: PublicSource; clientAddress?: string; invitationToken?: string; collectorKey?: string }) {
+    if (input.invitationToken && input.collectorKey !== undefined) throw new ValidationError('An invitation uses its original collector; remove the collection-link override.')
     await this.enforcePublicRequestRateLimit({ clientAddress: input.clientAddress, scope: 'session' })
     const invitationContext = input.invitationToken ? await this.invitationFlow(input.invitationToken) : undefined
     if (invitationContext && invitationContext.flow.slug !== input.slug) throw new NotFoundError('This invitation belongs to another flow.')
     if (invitationContext?.invitation.responseStatus === 'completed') throw new ValidationError('This invitation has already completed its response.')
     const { flow, revision, steps, choices, rules } = invitationContext ?? await this.currentPublicRevision(input.slug)
+    const collector = invitationContext?.collector ?? await this.collectors.requireOpen(flow.id, input.source, input.collectorKey)
+      .catch(error => collectorFlowFailure(error, { title: revision.title, slug: flow.slug }))
     const firstStep = steps[0]
     if (!firstStep) throw new ValidationError('This published flow has no first screen.')
     const now = new Date()
@@ -128,11 +136,13 @@ export class ResponseService {
       deadlineAt: revision.deadlineAt,
       targetCompletedResponses: revision.targetCompletedResponses,
     }
-    const created = await this.repository.createSession(session)
+    const created = await this.repository.createSession({ ...session, collectorId: collector.id })
     if (!created) {
       if (revision.deadlineAt && Date.parse(revision.deadlineAt) <= Date.now()) await this.flowRepository.closeExpiredRevision(revision.id, new Date().toISOString())
       const latest = await this.flowRepository.findFlowWithCurrentPublishedRevision(input.slug)
       if (latest?.flow.status !== 'open' || latest.revision?.admissionClosedAt || (latest.revision?.deadlineAt && Date.parse(latest.revision.deadlineAt) <= Date.now()) || (latest?.revision && await this.targetReached(latest.revision))) throw new FlowClosedError({ title: latest?.revision?.title ?? revision.title, slug: flow.slug })
+      await this.collectors.requireByIdOpen(flow.workspaceId, flow.id, collector.id, session.source)
+        .catch(error => collectorFlowFailure(error, { title: revision.title, slug: flow.slug }))
       throw new ValidationError('This form changed before you began. Please start again using the current version.')
     }
     return { sessionId: session.id, sessionToken: token, revisionId: revision.id, flowId: flow.id, flow: { branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) } }
@@ -190,6 +200,18 @@ export class ResponseService {
       throw new ValidationError('This response session has already been completed.')
     }
 
+    try {
+      const collector = await this.collectors.requireSessionOpen(flow.id, session.id, session.source)
+      if (invitation && input.invitationToken) {
+        const invitedCollector = await this.collectors.requireInvitationOpen(flow.id, input.invitationToken)
+        if (invitedCollector.id !== collector.id) throw new SessionUnavailableError()
+      }
+    } catch (error) {
+      const concurrent = await receipt()
+      if (concurrent) return concurrent
+      collectorFlowFailure(error, { title: revision.title, slug: flow.slug })
+    }
+
     if (input.honeypot?.trim()) {
       await this.repository.recordHoneypotDrop({ workspaceId: flow.workspaceId, revisionId: revision.id, at: new Date().toISOString() })
       return { responseId: null, idempotent: false, disposition: 'dropped' as const, completionStepId: null }
@@ -236,6 +258,8 @@ export class ResponseService {
       if (!latestFlow || !['open', 'closed'].includes(latestFlow.status) || latestRevision?.admissionClosedAt || expired || (latestRevision && await this.targetReached(latestRevision))) throw new FlowClosedError({ title: revision.title, slug: flow.slug })
       const remaining = await this.repository.findSubmissionContext(session.id, tokenHash)
       if (!remaining || remaining.session.expiresAt <= new Date().toISOString()) throw new SessionUnavailableError()
+      await this.collectors.requireSessionOpen(flow.id, session.id, session.source)
+        .catch(error => collectorFlowFailure(error, { title: revision.title, slug: flow.slug }))
       throw new ValidationError('This response session has already completed or cannot accept this submission.')
     }
     return { responseId, idempotent: false, disposition: state, completionStepId }

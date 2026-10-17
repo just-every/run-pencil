@@ -29,7 +29,7 @@ function choicesForStep(choices: ChoiceOption[], stepId: string) {
   return choices.filter((choice) => choice.stepId === stepId).sort((left, right) => left.position - right.position)
 }
 
-export function RespondentFlowPage({ config, slug, embedded = false, landing = false, initialFlow, invitationToken }: { config: PublicSeedConfig; slug: string; embedded?: boolean; landing?: boolean; initialFlow: PublicFlow; invitationToken?: string }) {
+export function RespondentFlowPage({ config, slug, embedded = false, landing = false, initialFlow, invitationToken, collectorKey }: { config: PublicSeedConfig; slug: string; embedded?: boolean; landing?: boolean; initialFlow: PublicFlow; invitationToken?: string; collectorKey?:string }) {
   const [closedFlow, setClosedFlow] = useState<ClosedFlow>()
   const [unconfirmedClosedFlow, setUnconfirmedClosedFlow] = useState<ClosedFlow>()
   const [closedRestart, setClosedRestart] = useState(false)
@@ -59,14 +59,15 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
 
 
   const showFailure = (reason: unknown, fallback: string, recovery?: { finalAttempt?: PendingFinal; restarting?: boolean }) => {
-    if (reason instanceof ApiError && reason.code === 'FLOW_CLOSED' && reason.closedFlow) {
+    if (reason instanceof ApiError && ((reason.code === 'FLOW_CLOSED' && reason.closedFlow) || reason.code==='COLLECTOR_CLOSED')) {
+      const closed=reason.closedFlow ?? {title:flow.flow.title,slug:flow.flow.slug,collectionClosed:true}
       const retainedFinal = pendingFinal ?? recovery?.finalAttempt
       if (retainedFinal || recovery?.restarting) {
         if (retainedFinal) setPendingFinal(retainedFinal)
         setClosedRestart(!retainedFinal)
-        setUnconfirmedClosedFlow(reason.closedFlow)
+        setUnconfirmedClosedFlow(closed)
         setError(reason.message)
-      } else { setClosedFlow(reason.closedFlow); setError(undefined) }
+      } else { setClosedFlow(closed); setError(undefined) }
     } else {
       if (!pendingFinal && reason instanceof ApiError && reason.code === 'SESSION_UNAVAILABLE') setSessionUnavailable(true)
       setError(reason instanceof Error ? reason.message : fallback)
@@ -76,7 +77,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   const ensureSession = async () => {
     if (!sessionStart.current) {
       const context = responseContext.current
-      sessionStart.current = (invitationToken ? api.startSession(slug, deviceClass(), 'direct', invitationToken) : api.startSession(slug, deviceClass(), embedded ? 'embed' : 'direct')).then((session) => {
+      sessionStart.current = (invitationToken ? api.startSession(slug, deviceClass(), 'direct', invitationToken) : api.startSession(slug, deviceClass(), embedded ? 'embed' : 'direct', undefined, collectorKey)).then((session) => {
         if (context === responseContext.current && session.revisionId !== flow.revision.id) {
           restartCandidate.current = session
           setFormChanged(true)
@@ -130,7 +131,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
     const context = responseContext.current
     navigating.current = true; setSubmitting(true)
     try {
-      const session = restartCandidate.current ?? await (invitationToken ? api.startSession(slug, deviceClass(), 'direct', invitationToken) : api.startSession(slug, deviceClass(), embedded ? 'embed' : 'direct'))
+      const session = restartCandidate.current ?? await (invitationToken ? api.startSession(slug, deviceClass(), 'direct', invitationToken) : api.startSession(slug, deviceClass(), embedded ? 'embed' : 'direct', undefined, collectorKey))
       if (context !== responseContext.current) return
       restartCandidate.current = session
       const changed = session.revisionId !== flow.revision.id

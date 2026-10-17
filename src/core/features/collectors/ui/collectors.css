@@ -1,0 +1,6 @@
+.collector-form { display: grid; gap: 1rem; margin-block: 1.25rem; }
+.collector-list { display: grid; gap: 1rem; }
+.collector-card { padding: 1rem; min-width: 0; overflow-wrap: anywhere; }
+.collector-card .inspector-field { margin-block: 1rem; }
+.collector-card .builder-actions { flex-wrap: wrap; }
+@media (min-width: 750px) { .collector-form { grid-template-columns: 1fr 1fr; } .collector-form h3,.collector-form .builder-actions { grid-column: 1/-1; } }

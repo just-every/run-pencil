@@ -13,7 +13,7 @@ export class NotFoundError extends PencilError {
   }
 }
 
-export type ClosedFlow = { title: string; slug: string }
+export type ClosedFlow = { title: string; slug: string; collectionClosed?: boolean }
 export class FlowClosedError extends PencilError {
   constructor(readonly flow: ClosedFlow) {
     super('FLOW_CLOSED', 'This feedback flow is no longer accepting responses.')

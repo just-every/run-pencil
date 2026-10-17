@@ -1,3 +1,4 @@
+import { bindSessionCollectorSql, collectorAdmissionSql, sessionCollectorAdmissionSql, throwCollectorAdmissionFailure } from '../collectors'
 import { analysisErasureStatements } from '../analysis'
 import { and, count, eq, sql } from 'drizzle-orm'
 import { completionMetricStatements } from './completionMetrics'
@@ -58,7 +59,8 @@ export class ResponseRepository {
     return session
   }
 
-  async createSession(input: SessionInsert & { participantId?: string | null; workspaceId: string; flowId: string; deadlineAt: string | null; targetCompletedResponses: number | null }) {
+  async createSession(input: SessionInsert & { collectorId: string; participantId?: string | null; workspaceId: string; flowId: string; deadlineAt: string | null; targetCompletedResponses: number | null }) {
+    const collectorOpen = collectorAdmissionSql('?', 'f.id', input.createdAt, '?')
     const statements: D1PreparedStatement[] = [
       this.binding.prepare(`
         UPDATE flow_revisions
@@ -87,18 +89,22 @@ export class ResponseRepository {
         WHERE EXISTS (
           SELECT 1 FROM flows f
           JOIN flow_revisions r ON r.id = ?
-          WHERE f.id = ? AND f.status IN ('open', 'closed') AND r.flow_id = f.id AND r.state = 'published' AND ((? IS NULL AND r.is_current = 1) OR EXISTS (SELECT 1 FROM invitation_participants p WHERE p.id = ? AND p.revision_id = r.id AND p.token IS NOT NULL AND p.response_status != 'completed'))
+          WHERE f.id = ? AND f.status IN ('open', 'closed') AND r.flow_id = f.id AND r.state = 'published' AND ((? IS NULL AND r.is_current = 1) OR EXISTS (SELECT 1 FROM invitation_participants p WHERE p.id = ? AND p.revision_id = r.id AND p.token IS NOT NULL AND p.response_status != 'completed'
+              AND EXISTS (SELECT 1 FROM invitation_launch_collector lc WHERE lc.launch_id=p.launch_id AND lc.collector_id=?)))
             AND r.admission_closed_at IS NULL
             AND (r.deadline_at IS NULL OR r.deadline_at > ?)
             AND (r.target_completed_responses IS NULL OR (
               SELECT COUNT(*) FROM responses response
               WHERE response.revision_id = r.id AND response.state = 'released'
             ) < r.target_completed_responses)
-        )
+            AND ${collectorOpen.sql}
+        ) RETURNING id
       `).bind(
         input.id, input.revisionId, input.source, input.deviceClass, input.furthestStepId, input.sessionTokenHash,
-        input.expiresAt, input.createdAt, input.updatedAt, input.revisionId, input.flowId, input.participantId ?? null, input.participantId ?? null, input.createdAt,
+        input.expiresAt, input.createdAt, input.updatedAt, input.revisionId, input.flowId, input.participantId ?? null, input.participantId ?? null, input.collectorId, input.createdAt, input.collectorId, input.source, ...collectorOpen.params,
       ),
+      ...bindSessionCollectorSql({ sessionId: input.id, collectorId: input.collectorId, flowId: input.flowId, source: input.source, now: input.createdAt })
+        .map(statement => this.binding.prepare(statement.sql).bind(...statement.params)),
       this.binding.prepare(`
         INSERT OR IGNORE INTO respondent_session_step_events (id, session_id, revision_id, step_stable_id, counted_at, created_at)
         SELECT ?, ?, ?, ?, NULL, ? WHERE EXISTS (SELECT 1 FROM respondent_sessions WHERE id = ?)
@@ -122,8 +128,10 @@ export class ResponseRepository {
     ]
     statements.push(this.binding.prepare(`UPDATE invitation_participants SET response_status = 'started' WHERE id = ? AND response_status = 'not-started'
       AND EXISTS (SELECT 1 FROM respondent_sessions WHERE id = ?)`).bind(input.participantId ?? null, input.id))
-    const results = await this.binding.batch(statements)
-    return changes(results[3]) === 1
+    try {
+      const results = await this.binding.batch<{ id: string }>(statements)
+      return results[3].results.some(row => row.id === input.id)
+    } catch (error) { throwCollectorAdmissionFailure(error) }
   }
 
   async advanceSession(input: { sessionId: string; slug: string; sessionTokenHash: string; stepStableId: string; now: string }) {
@@ -183,6 +191,7 @@ export class ResponseRepository {
   }) {
     const response = input.response
     const released = response.state === 'released'
+    const collectorOpen = sessionCollectorAdmissionSql('s.id', 'f.id', input.completedAt, 's.source')
     const statements: D1PreparedStatement[] = [
       this.binding.prepare(`
         INSERT INTO responses (
@@ -195,17 +204,19 @@ export class ResponseRepository {
         JOIN flows f ON f.id = r.flow_id
         WHERE s.id = ? AND s.revision_id = ? AND s.session_token_hash = ?
           AND s.completed_at IS NULL AND s.expires_at > ?
-          AND ((s.source != 'invitation' AND ? IS NULL) OR (s.source = 'invitation' AND EXISTS (SELECT 1 FROM invitation_participants p WHERE p.id = ? AND p.revision_id = r.id AND p.token IS NOT NULL AND p.response_status != 'completed' AND NOT EXISTS (SELECT 1 FROM responses WHERE participant_id = p.id))))
+          AND ((s.source != 'invitation' AND ? IS NULL) OR (s.source = 'invitation' AND EXISTS (SELECT 1 FROM invitation_participants p WHERE p.id = ? AND p.revision_id = r.id AND p.token IS NOT NULL AND p.response_status != 'completed' AND NOT EXISTS (SELECT 1 FROM responses WHERE participant_id = p.id)
+            AND EXISTS (SELECT 1 FROM session_collector sc JOIN invitation_launch_collector lc ON lc.collector_id=sc.collector_id WHERE sc.session_id=s.id AND lc.launch_id=p.launch_id))))
           AND f.id = ? AND f.status IN ('open', 'closed') AND r.admission_closed_at IS NULL
           AND (r.deadline_at IS NULL OR r.deadline_at > ?)
           AND (? = 'quarantined' OR r.target_completed_responses IS NULL OR (
             SELECT COUNT(*) FROM responses completed
             WHERE completed.revision_id = r.id AND completed.state = 'released'
           ) < r.target_completed_responses)
+          AND ${collectorOpen.sql}
       `).bind(
         response.id, response.workspaceId, response.flowId, response.revisionId, response.sessionId, input.sessionTokenHash, response.idempotencyKey,
         response.state, response.quarantineReason, released ? input.completedAt : null, response.completionMilliseconds, response.completedAt, response.createdAt, response.updatedAt, response.participantId ?? null,
-        response.sessionId, response.revisionId, input.sessionTokenHash, input.completedAt, response.participantId ?? null, response.participantId ?? null, response.flowId, input.completedAt, response.state,
+        response.sessionId, response.revisionId, input.sessionTokenHash, input.completedAt, response.participantId ?? null, response.participantId ?? null, response.flowId, input.completedAt, response.state, ...collectorOpen.params,
       ),
       ...input.answers.map((answer) => this.binding.prepare(`
         INSERT INTO response_answers (id, response_id, step_id, value_json, created_at, updated_at)
@@ -257,9 +268,11 @@ export class ResponseRepository {
       this.binding.prepare('DELETE FROM respondent_session_step_events WHERE session_id = ? AND EXISTS (SELECT 1 FROM responses WHERE id = ?)').bind(response.sessionId, response.id),
       this.binding.prepare('DELETE FROM respondent_sessions WHERE id = ? AND EXISTS (SELECT 1 FROM responses WHERE id = ?)').bind(response.sessionId, response.id),
     )
-    const results = await this.binding.batch(statements)
-    // The guarded insert adds one row or none. Reporting triggers add their own row changes to the count, so any change means created.
-    return changes(results[0]) > 0
+    try {
+      const results = await this.binding.batch(statements)
+      // Trigger writes also contribute to changes; the guarded response insert still creates one row or none.
+      return changes(results[0]) > 0
+    } catch (error) { throwCollectorAdmissionFailure(error) }
   }
 
   async releaseQuarantinedResponse(input: { workspaceId: string; responseId: string; operatorId: string; now: string }) {

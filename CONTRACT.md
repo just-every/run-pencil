@@ -295,7 +295,7 @@ The status table at the end lists every clause with its status and evidence path
 
 **DIST-016 — Recurring surveys.** A form can repeat on a schedule (weekly, monthly, quarterly, or a cron in the WS-001 zone) to a segment or by a fresh public link per occurrence, each occurrence pinned to the then-current revision and reported as its own period in trends (RSLT-007); the distributor is reminded before each occurrence and can skip one. *Acceptance:* a Worker test advances a fake clock through three monthly occurrences and asserts three launches, three periods in the trend report and one skipped occurrence that sent nothing. *Status: missing.*
 
-**DIST-017 — Collectors and source labels.** An operator can create several named collectors per form (web link, embed on a named site, email campaign, SMS, QR, social post, partner), each with its own link, close date and response limit; every response records its collector, and results filter and compare by collector. *Acceptance:* a Worker test collects through two collectors, closes one by limit while the other stays open, and the results comparison shows each collector's counts. *Status: partial — every response records its source as direct, embed, invitation or imported (`src/core/features/responses/service.ts`, `tests/runtime/journey.worker.test.ts`); named collectors with their own limits do not exist.*
+**DIST-017 — Collectors and source labels.** An operator can create several named collectors per form (web link, embed on a named site, email campaign, SMS, QR, social post, partner), each with its own link, close date and response limit; every response records its collector, and results filter and compare by collector. *Acceptance:* a Worker test collects through two collectors, closes one by limit while the other stays open, and the results comparison shows each collector's counts. *Status: done.*
 
 **DIST-018 — Form addresses.** Each form has an editable readable slug on the installation's own domain (for example `/f/customer-survey`), additional custom domains or subdomains can be mapped to the installation through Cloudflare custom hostnames, and old slugs keep redirecting after a rename. Every address serves the form's DIST-020 link preview with its canonical `og:url` and robots setting. *Acceptance:* a Worker test renames a slug, the old one redirects with 301 to the new one, and a form served on a mapped test hostname renders with the same admission checks and the same DIST-020 preview tags, with `og:url` naming the canonical address. *Status: missing.*
 
@@ -339,7 +339,7 @@ The status table at the end lists every clause with its status and evidence path
 
 **RSLT-006 — Crosstabs.** An operator can cross any structured question, hidden field, collector, language, calculated value or score against another, with counts, row and column percentages named under RSLT-003, a chi-square test flagged only when every expected cell count is at least 5, and ANLY-005 suppression for cells below the disclosure threshold. *Acceptance:* a Worker test crosses a 3-choice question with a 2-choice question over a fixed dataset and asserts every cell, percentage, the chi-square statistic and a suppressed small cell. *Status: missing.*
 
-**RSLT-007 — Trends over time.** Results chart any score or answer share by day, week, month or quarter in the WS-001 zone, with the per-period denominator, a minimum-period-size rule, and revision boundaries marked; recurring occurrences (DIST-016) and programs (PROG-003) use the same series. *Acceptance:* a Worker test seeds responses across three months and asserts weekly and monthly NPS, denominators and a revision marker; a period below the minimum shows no value. *Status: missing.*
+**RSLT-007 — Trends over time.** Results chart any score or answer share by day, week, month or quarter in the WS-001 zone, with the per-period denominator, a minimum-period-size rule, and revision boundaries marked; recurring occurrences (DIST-016) and programs (PROG-003) use the same series. *Acceptance:* a Worker test seeds responses across three months and asserts weekly and monthly NPS, denominators and a revision marker; a period below the minimum shows no value. *Status: partial.*
 
 **RSLT-008 — Saved views and dashboards.** An operator can save a named view (filters, compared cohorts, crosstabs, chosen charts) and arrange several into a form or program dashboard; views reopen with the same numbers for the same cutoff and record who saved them. *Acceptance:* a browser journey saves a filtered crosstab view, reloads it as another operator, and sees identical figures. *Status: partial — filters and revision comparisons ship (`src/core/features/reporting/answerFilter.ts`, `tests/runtime/ledger-filters.worker.test.ts`); saved views do not.*
 
@@ -542,8 +542,8 @@ Judged from the code and tests at commit `6f3cb611373b39989912418926d4db4c566ed0
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 113 | 0 | 0 | 113 |
-| Target and push further | 1 | 37 | 87 | 125 |
-| All | 114 | 37 | 87 | 238 |
+| Target and push further | 2 | 37 | 86 | 125 |
+| All | 115 | 37 | 86 | 238 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -639,7 +639,7 @@ Judged from the code and tests at commit `6f3cb611373b39989912418926d4db4c566ed0
 | `DIST-014` | Email-embedded first question | target | missing |  | No code yet. |
 | `DIST-015` | In-product and website surveys | target | missing |  | No code yet. |
 | `DIST-016` | Recurring surveys | target | missing |  | No code yet. |
-| `DIST-017` | Collectors and source labels | target | partial | `src/core/features/responses/service.ts`, `tests/runtime/journey.worker.test.ts` | Named collectors with their own limits do not exist. |
+| `DIST-017` | Collectors and source labels | target | done | `migrations/core/0041_collectors.sql`, `src/core/features/collectors/`, `src/core/features/reporting/scope.ts`, `tests/runtime/collectors-trends.worker.test.ts` | None. Named channel links, zoned deadlines, independent limits and closure, session-pinned attribution, comparisons, ledger filters and exports ship. Two collectors, concurrent final-place admission, independent opaque embeds and retained receipts are proved through native routes and at 1440 and 390. |
 | `DIST-018` | Form addresses | target | missing |  | No code yet. |
 | `DIST-019` | Restricted access | target | missing |  | No code yet. |
 | `DIST-020` | Link previews and search indexing | target | missing |  | The public form route (`src/routes/f.$slug.tsx`) serves no form-specific preview or robots tags; the product site's `og:` tags (`src/core/features/site/head.ts`) are not per form. |
@@ -686,7 +686,7 @@ Judged from the code and tests at commit `6f3cb611373b39989912418926d4db4c566ed0
 | `RSLT-004` | Device split | published | done | `tests/e2e/answer-results.spec.ts`, `tests/e2e/distribution-foundation.spec.ts`, `tests/runtime/journey.worker.test.ts` |  |
 | `RSLT-005` | Results across revisions | published | done | `tests/e2e/answer-results.spec.ts`, `tests/e2e/reporting-bounded.spec.ts`, `tests/e2e/revision-comparison-http.spec.ts` |  |
 | `RSLT-006` | Crosstabs | target | missing |  | No code yet. |
-| `RSLT-007` | Trends over time | target | missing |  | No code yet. |
+| `RSLT-007` | Trends over time | target | partial | `src/core/features/reporting/trends.ts`, `src/core/features/reporting/trendPeriods.ts`, `src/core/features/results/ui/TrendsPanel.tsx`, `tests/runtime/collectors-trends.worker.test.ts` | Zoned day/week/month/quarter score and primitive-answer-share charts, answered denominators, minimum-size gaps, revision markers, collector cohorts and CSV ship. DIST-016 recurring occurrences, PROG-003 program dashboards, and shares of ranked/structured contact answers remain unbuilt. |
 | `RSLT-008` | Saved views and dashboards | target | partial | `src/core/features/reporting/answerFilter.ts`, `tests/runtime/ledger-filters.worker.test.ts` | Saved views do not. |
 | `RSLT-009` | Shared report links | target | missing |  | No code yet. |
 | `RSLT-010` | Report exports | target | missing |  | No code yet. |

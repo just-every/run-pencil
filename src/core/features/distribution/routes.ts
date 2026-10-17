@@ -1,3 +1,4 @@
+import { collectorId, CollectorClosedError } from '../collectors'
 import type { Hono } from 'hono'
 import { z } from 'zod'
 import { contactSchema, contactLimits } from './contact-model'
@@ -26,12 +27,17 @@ export function registerDistributionRoutes(app: Hono<WorkerEnvironment>, service
     return c.body(null, 204)
   })
   app.get('/api/app/flows/:flowId/distribution', validateInput('param', z.object({ flowId: resourceId })), async c => c.json({ sender: { available: true, message: c.get('platform').configuration.mail.kind === 'local-development' ? 'Email is suppressed in this development or demo installation. A sent outcome records a completed local attempt; no email is delivered.' : 'Delivery uses the configured mail provider. Pending invitations are waiting to be sent. Each delivery attempt and outcome is recorded below.' }, launches:await services(c).distribution.launches.history(c.get('operatorSession').workspaceId,c.req.param('flowId')), participants: await services(c).distribution.launches.list(c.get('operatorSession').workspaceId, c.req.param('flowId')) }))
-  app.post('/api/app/flows/:flowId/distribution', validateInput('param', z.object({ flowId: resourceId })), validateInput('json', z.object({ contactIds: z.array(resourceId).min(1).max(contactLimits.participantsPerRevision).optional(),segmentId:resourceId.optional(), commandKey: z.string().min(12).max(200) }).refine(v=>!(v.contactIds&&v.segmentId),'Choose contacts or a segment.')), async c => {
+  app.post('/api/app/flows/:flowId/distribution', validateInput('param', z.object({ flowId: resourceId })), validateInput('json', z.object({ contactIds: z.array(resourceId).min(1).max(contactLimits.participantsPerRevision).optional(),segmentId:resourceId.optional(), collectorId:collectorId.optional(), commandKey: z.string().min(12).max(200) }).refine(v=>!(v.contactIds&&v.segmentId),'Choose contacts or a segment.')), async c => {
     const operator = c.get('operatorSession')
-    const replay=await services(c).distribution.launches.commandComplete(operator.workspaceId,c.req.valid('json').commandKey)
-    const launch = await services(c).distribution.launches.launch({ workspaceId: operator.workspaceId, operatorId: operator.operatorId, flowId: c.req.param('flowId'), ...c.req.valid('json') })
-    if(!replay) await services(c).distribution.dispatcher.run()
-    return c.json(launch, 201)
+    try {
+      const replay=await services(c).distribution.launches.commandComplete(operator.workspaceId,c.req.valid('json').commandKey)
+      const launch = await services(c).distribution.launches.launch({ workspaceId: operator.workspaceId, operatorId: operator.operatorId, flowId: c.req.param('flowId'), ...c.req.valid('json') })
+      if(!replay) await services(c).distribution.dispatcher.run()
+      return c.json(launch, 201)
+    } catch(error) {
+      if(error instanceof CollectorClosedError) return c.json({error:error.code,message:error.message},409)
+      throw error
+    }
   })
   app.post('/api/app/distribution/deliveries/:id/retry', validateInput('param', z.object({ id: resourceId })), validateInput('json', z.object({ duplicateRiskAccepted: z.boolean() })), async c => {
     const operator = c.get('operatorSession')

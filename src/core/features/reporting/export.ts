@@ -23,9 +23,9 @@ export async function startExport(db: D1Database, secret: string, identity: Expo
   return { token, cutoff: scope.cutoff, total: cursor.total, excludedQuarantined: cursor.excludedQuarantined, filename: `pencil-responses-${scope.cutoff.replaceAll(':','-')}.${format}`, format }
 }
 const csv = (value: unknown) => `"${String(value ?? '').replaceAll('"','""')}"`
-export const csvHeader = 'response_id,revision_id,revision_number,source,started_at,completed_at,released_at,participant_json,answers_json,cutoff,excluded_quarantined,omitted_questions_json'
+export const csvHeader = 'response_id,revision_id,revision_number,source,started_at,completed_at,released_at,participant_json,answers_json,cutoff,excluded_quarantined,omitted_questions_json,collector_id,collector_name,collector_channel'
 export function csvRecord(row: LedgerResponse, cursor: Pick<ExportCursor,'cutoff'|'excludedQuarantined'|'contactInventory'>, columns = contactColumns(cursor.contactInventory)) {
-  return '\r\n'+[row.id,row.revisionId,row.revisionNumber,row.source,row.startedAt,row.completedAt,row.releasedAt,row.participant ? JSON.stringify(row.participant) : '',JSON.stringify(row.answers),cursor.cutoff,cursor.excludedQuarantined,JSON.stringify(row.omittedQuestions),...contactRecord(row, columns)].map(csv).join(',')
+  return '\r\n'+[row.id,row.revisionId,row.revisionNumber,row.source,row.startedAt,row.completedAt,row.releasedAt,row.participant ? JSON.stringify(row.participant) : '',JSON.stringify(row.answers),cursor.cutoff,cursor.excludedQuarantined,JSON.stringify(row.omittedQuestions),row.collector.id,row.collector.name,row.collector.channel,...contactRecord(row, columns)].map(csv).join(',')
 }
 export async function exportPart(db: D1Database, secret: string, identity: ExportIdentity, token: string, signal: AbortSignal) {
   const cursor = await openCursor<ExportCursor>(token,secret)

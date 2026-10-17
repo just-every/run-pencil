@@ -1,3 +1,5 @@
+import { FormImports } from '../../src/core/features/importing/service'
+import { simpleJson, simpleCsv } from '../fixtures/form-import/fixture'
 import { freezeDigests } from '../../src/core/features/notifications/digest-cohorts'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { afterEach, beforeAll, expect, vi } from 'vitest'
@@ -41,8 +43,16 @@ contract(['DATA-001','BASE-DATA-001','NOTIFY-002','NOTIFY-004','DIST-010','DATA-
     if (status === 'sending') await env.DB.prepare("INSERT INTO notification_attempts(id,delivery_id,ordinal,event,created_at) VALUES(?,?,2,'started',?)").bind(crypto.randomUUID(), id, now).run()
     await env.DB.prepare("INSERT INTO notification_deliveries(id,response_id,operator_id,status,idempotency_key,attempts,available_at,created_at,updated_at) VALUES(?,?,?,'pending',?,1,?,?,?)").bind(crypto.randomUUID(), submission.response.id, other, `other:${id}`, now, now, now).run()
   }
-  const historical = await f.submit(), quarantined = await f.submit(true), imported = await f.submit()
-  await env.DB.prepare("UPDATE responses SET source='imported',notification_eligible=0 WHERE id=?").bind(imported.response.id).run()
+  const historical = await f.submit(), quarantined = await f.submit(true)
+  const sessionId = crypto.randomUUID()
+  await env.DB.prepare("INSERT INTO oa_sessions(id,token_hash,operator_id,operator_version,kind,created_at,expires_at) VALUES(?,?,?,1,'native',?,?)").bind(sessionId,sessionId,f.operatorId,Date.now(),Date.now()+3600000).run()
+  const importer = new FormImports(env.DB,{id:sessionId,operatorId:f.operatorId,workspaceId:f.scope.workspaceId})
+  const files = {definition:simpleJson,csv:simpleCsv}, review = await importer.review(files)
+  let job = await importer.commit({...files,plannedAt:review.plannedAt,columns:review.columns},review.fingerprint,true)
+  while (job.state === 'preparing' || job.state === 'applying') job = await importer.resume(job.id)
+  expect(job.state).toBe('completed')
+  const imported = {response:(await env.DB.prepare("SELECT id FROM responses WHERE flow_id=? AND source='imported'").bind(review.flowId).first<{id:string}>())!}
+  expect(imported.response).toMatchObject({id:expect.any(String)})
   const daily=await notificationFixture('restored-digest')
   await daily.services.notifications.preferences.set(daily.scope.workspaceId,daily.flow.flowId,daily.operatorId,'daily')
   await daily.submit()

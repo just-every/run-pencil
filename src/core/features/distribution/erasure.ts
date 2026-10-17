@@ -9,6 +9,8 @@ export const contactErasureCascade = [
   { target:'contact_consent_events.*', action:'delete', reason:'Remove contact-linked consent history and source text.' },
   { target:'invitation_candidates.contact_id,email_snapshot,name_snapshot,outcome', action:'anonymise', reason:'Remove staged identity; pending selections become terminal so replay cannot recreate credentials.' },
   { target:'invitation_participants.contact_id,email_snapshot,name_snapshot,token,opt_out_token,completion_step_id', action:'anonymise', reason:'Revoke every invitation and erase identity while retaining delivery and completion facts.' },
+  { target:'response_collector.*', action:'delete', reason:'Response deletion cascades collector attribution; no contact values are stored in the collector configuration.' },
+  { target:'session_collector.*,invitation_launch_collector.*,collectors.*', action:'retained', reason:'Anonymous session attribution and operator campaign configuration contain no contact values.' },
   { target:'responses.*,response_answers.*,response_outbox.*', action:'delete', reason:'Remove identified answers, responses and downstream payloads.' },
   { target:'rer_mail_development_outbox.*,local_mail_outbox.*', action:'delete', reason:'Remove invitation, reminder and response notification copies by delivery key.' },
   { target:'notification_deliveries.*,notification_attempts.*', action:'delete', reason:'Existing response trigger and foreign keys remove response-linked notifications and attempts.' },

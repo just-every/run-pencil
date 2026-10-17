@@ -25,15 +25,19 @@ export const loadPublicConfig = createServerFn({ method: 'GET' }).handler(async 
 })
 
 export const loadPublicFlow = createServerFn({ method: 'GET' })
-  .inputValidator(z.object({ slug: z.string().min(1).max(120) }))
+  .inputValidator(z.object({ slug: z.string().min(1).max(120), collectorKey:z.string().regex(/^[a-f0-9]{32}$/).optional(), source:z.enum(['direct','embed']).default('direct') }))
   .handler(async ({ data }) => {
     const { requestServices } = await import('../platform/request.server')
     const { services } = await requestServices()
+    let flow: Awaited<ReturnType<typeof services.flows.getPublicFlow>> | undefined
     try {
-      return { state: 'open' as const, flow: await services.flows.getPublicFlow(data.slug) }
+      flow=await services.flows.getPublicFlow(data.slug)
+      await services.collectors.requireOpen(flow.flow.id,data.source,data.collectorKey)
+      return { state: 'open' as const, flow, collectorKey:data.collectorKey }
     } catch (error) {
       const { FlowClosedError, PencilError } = await import('../shared/errors')
       if (error instanceof PencilError && error.code === 'NOT_FOUND') throw notFound()
+      if(error instanceof PencilError && error.code==='COLLECTOR_CLOSED' && flow)return {state:'closed' as const,flow:{title:flow.flow.title,slug:flow.flow.slug,collectionClosed:true}}
       if (error instanceof FlowClosedError) {
         return { state: 'closed' as const, flow: error.flow }
       }
@@ -101,6 +105,8 @@ export const loadInvitation = createServerFn({ method: 'GET' })
       const { FlowClosedError, PencilError } = await import('../shared/errors')
       if (error instanceof PencilError && error.code === 'NOT_FOUND') throw notFound()
       if (error instanceof FlowClosedError) return { state: 'closed' as const, flow: error.flow }
+      const {CollectorClosedError}=await import('../features/collectors')
+      if(error instanceof CollectorClosedError && error.flow)return {state:'closed' as const,flow:error.flow}
       throw error
     }
   })

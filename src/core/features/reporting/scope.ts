@@ -7,6 +7,7 @@ export function responseScope(workspaceId: string, flowId: string, filter: Ledge
     bindings.push(cutoff)
     if (state === 'released') { parts.push('r.released_at <= ?'); bindings.push(cutoff) }
     for (const [value, sql] of [[filter.revisionId, 'r.revision_id = ?'], [filter.source, 'r.source = ?'], [filter.from, 'r.completed_at >= ?'], [filter.to, 'r.completed_at <= ?']] as const) if (value) { parts.push(sql); bindings.push(value) }
+    if (filter.collectorId) { parts.push('EXISTS (SELECT 1 FROM response_collector rc JOIN collectors c ON c.id=rc.collector_id WHERE rc.response_id=r.id AND c.flow_id=r.flow_id AND c.id=?)'); bindings.push(filter.collectorId) }
     if (filter.answerStepId && filter.answerValue !== undefined) {
       const answer = structuredAnswerFilter(filter.answerStepId, filter.answerValue)
       parts.push(answer.sql)

@@ -1,3 +1,4 @@
+import { CollectorRepository, CollectorService } from '../../src/core/features/collectors'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -68,7 +69,7 @@ contract(['AUD-002','AUD-004','AUD-005'],'saved segments launch a frozen evaluat
   expect(await env.DB.prepare('SELECT policy_json FROM invitation_launches WHERE id=?').bind(launch.id).first()).toEqual(saved)
   expect((await env.DB.prepare('SELECT * FROM invitation_participants WHERE launch_id=?').bind(launch.id).all()).results).toEqual(before)
   expect((await env.DB.prepare('SELECT * FROM mail_delivery_attempts ORDER BY id').all()).results).toEqual(attempts)
-  const narrowed=new InvitationLaunches(env.DB,{...distributionPolicies,'flow.audience-eligibility.v1':{excludePreviouslyInvitedToFlow:true}})
+  const narrowed=new InvitationLaunches(env.DB,{...distributionPolicies,'flow.audience-eligibility.v1':{excludePreviouslyInvitedToFlow:true}},new CollectorService(new CollectorRepository(env.DB)))
   await f.publish()
   const result=await narrowed.launch({...f.flow,operatorId:f.operatorId,contactIds:[a.id,b.id],commandKey:'narrowed-launch-command'})
   expect(result.counts).toMatchObject({invited:0,policyExcluded:1,optedOut:1})

@@ -1,3 +1,4 @@
+import { CollectorRepository, CollectorService } from '../features/collectors'
 import { DigestDispatcher } from '../features/notifications/digest-dispatcher'
 import { AnalysisAttention } from '../features/analysis/attention'
 import { DraftRewrites } from '../features/analysis/rewrites'
@@ -43,6 +44,7 @@ export function createPencilServices(platform: PencilPlatform) {
   const authRepository = new AuthRepository(database, platform.databaseBatch)
   const audit = new AuditService(new AuditRepository(database))
 
+  const collectors = new CollectorService(new CollectorRepository(platform.databaseBinding))
   const flows = new FlowService(flowRepository, responseRepository, extensions.flowPolicies)
   const brand = new BrandService(new BrandRepository(database), slug => flows.getPublicFlow(slug))
   const deliveries = new MailDeliveries(platform.databaseBinding)
@@ -59,20 +61,21 @@ export function createPencilServices(platform: PencilPlatform) {
   const from = platform.configuration.mail.kind === 'local-development' ? 'no-reply@pencil.test' : platform.configuration.mail.from
   const mailProvider = platform.configuration.mail.kind
   return {
+    collectors,
     connections: new IntegrationConnections(platform),
     notifications: {
       digest: new DigestDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,undefined,senderFailure,mailProvider),
       preferences: new NotificationRepository(platform.databaseBinding, notificationSenderError(from,mailProvider) ?? senderFailure, mailProvider === 'local-development', platform.configuration.isHostedDemo),
       dispatcher: new NotificationDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,workspaceId => readNotificationBrand(platform.databaseBinding,workspaceId),senderFailure,mailProvider),
     },
-    distribution: { segments: new DistributionSegments(platform.databaseBinding), importer: new ContactImport(platform.databaseBinding), contacts: new DistributionContacts(platform.databaseBinding), launches: new InvitationLaunches(platform.databaseBinding, extensions.distributionPolicies), deliveries, dispatcher },
+    distribution: { segments: new DistributionSegments(platform.databaseBinding), importer: new ContactImport(platform.databaseBinding), contacts: new DistributionContacts(platform.databaseBinding), launches: new InvitationLaunches(platform.databaseBinding, extensions.distributionPolicies, collectors), deliveries, dispatcher },
     reporting: new ReportingService(new ReportingRepository(platform.databaseBinding)),
     audit,
     brand,
     auth: new AuthService(authRepository, platform, audit, sender),
     workspace: new WorkspaceService(workspaceRepository, extensions.distributionPolicies['flow.reminder-schedule.v1'].delayHours),
     flows,
-    responses: new ResponseService(flowRepository, responseRepository),
+    responses: new ResponseService(flowRepository, responseRepository, collectors),
     // Actions take no extension configuration: nothing but an operator's request can set a verdict (ACT-005).
     // Analysis reads only released responses and validates every provider answer before anything is shown (ANLY-002, ANLY-012).
     attention: new AnalysisAttention(platform.databaseBinding),
