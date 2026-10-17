@@ -3,6 +3,8 @@ import { failure } from './deployment-data-errors.mjs';
 // Every persisted column is reviewed here. A migration cannot silently add data
 // to an archive: both new tables and new columns fail closed until classified.
 const retained = {
+  // Explicit saves travel as private session history, with no live capability or delivery address.
+  respondent_saves: 'session_id revision_id token_hash command_key delivery_id delivery_email delivery_state current_step_id answers_json participant_id response_id completion_step_id expires_at created_at updated_at',
   // Operator workflow and internal notes are private product history; response erasure cascades all sidecars.
   submission_statuses: 'id flow_id name created_at',
   submission_workflows: 'response_id status_id assignee_id version updated_at',
@@ -164,6 +166,7 @@ const retained = {
 const nul = { type: 'null' };
 const captured = { local_mail_outbox: ['message_json'], rer_mail_development_outbox: ['message'], rer_ai_development_outbox: ['record'] };
 export const exclusions = {
+  respondent_saves: { token_hash: nul, delivery_email: nul },
   digest_deliveries: { replay_enabled: { type: 'integer', value: '0' }, retry_authorized: { type: 'integer', value: '0' } },
   invitation_launches: { resume_enabled: { type: 'integer', value: '0' } },
   invitation_participants: { token: nul, opt_out_token: nul },

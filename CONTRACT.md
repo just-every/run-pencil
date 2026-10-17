@@ -537,13 +537,15 @@ are data, compiled into the owned source and applied by one local runtime.
 
 ## Status
 
-Judged from the code and tests at commit `6f3cb611373b39989912418926d4db4c566ed04e` (17 October 2026).
+Judged from the code and tests at commit `d72c9abd688f3baae23e5f53e3399fdb5f319776` (18 October 2026).
+
+PART-002 additionally includes the implementation and passing Worker, browser and archive journeys in this update; its evidence paths are listed below. Clause prose is maintained separately from this evidence table.
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 113 | 0 | 0 | 113 |
-| Target and push further | 3 | 38 | 84 | 125 |
-| All | 116 | 38 | 84 | 238 |
+| Target and push further | 4 | 38 | 83 | 125 |
+| All | 117 | 38 | 83 | 238 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -666,7 +668,7 @@ Judged from the code and tests at commit `6f3cb611373b39989912418926d4db4c566ed0
 | `RESP-020` | Respondent confirmation email | target | missing |  | The on-screen completion screen ships under RESP-011. |
 | `RESP-021` | Edit after submission | target | missing |  | No code yet. |
 | `PART-001` | Consented partial-response capture | target | missing |  | No code yet. |
-| `PART-002` | Save and resume | target | missing |  | No code yet. |
+| `PART-002` | Save and resume | target | done | `src/core/features/resuming/`, `src/core/features/responses/ui/SaveResponse.tsx`, `src/core/features/responses/ui/ResumeFlowPage.tsx`, `migrations/core/0043_saved_responses.sql`, `tests/runtime/resuming.worker.test.ts`, `tests/e2e/save-resume.spec.ts`, `scripts/distribution-data.check.mjs` | Explicit email-only saves retain the original revision, answer path, collector and invitation on another device until the default 30-day expiry or closure. Delivery addresses stay separate from contacts and answers. Reused completed links show the receipt; erased, expired or unavailable links offer Start again. Private state is scrubbed on completion, expiry and erasure; archive restore removes delivery capabilities. |
 | `RESP-022` | Response-quality flags | target | partial | `src/core/features/responses/service.ts`, `tests/runtime/journey.worker.test.ts` | Only the behaviour named in Evidence ships; the rest of the clause is not built. |
 | `RESP-023` | Identified public links | target | missing |  | `response.identity.v1` accepts only `anonymous-public-link` (`src/core/shared/flowPolicies.ts`). |
 | `LEDG-001` | Ledger | published | done | `tests/e2e/answer-results.spec.ts`, `tests/e2e/distribution-foundation.spec.ts`, `tests/e2e/imported-results.spec.ts` |  |

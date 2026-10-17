@@ -1,3 +1,4 @@
+import { resumeCaptureClaim } from '../../src/core/features/resuming'
 import { notificationCaptureClaim } from './notification-capture'
 import { digestCaptureClaim } from './notification-digest-capture'
 import { createD1DevelopmentOutbox, type DevelopmentMessage, type DevelopmentD1Statement } from '../../src/base/mail/src/development/index.mjs'
@@ -46,7 +47,7 @@ export function baseMailSender(configuration: any, db: D1Database, claim?: Devel
   return { async send(message: DevelopmentMessage) {
     const prepared = applyUnsubscribeHeaders(structuredClone(message))
     await createMailSender({ provider: 'development', mode: 'development' }).send(message)
-    try { await guardedDevelopmentOutbox(db, claim ?? (message.headers?.['X-Pencil-Digest-Claim'] ? digestCaptureClaim : notificationCaptureClaim)).put(prepared) } catch (error) { if (error instanceof MailValidationError) throw error; throw new DevelopmentOutboxError() }
+    try { await guardedDevelopmentOutbox(db, claim ?? (message.deliveryId.startsWith('resume:') ? resumeCaptureClaim : message.headers?.['X-Pencil-Digest-Claim'] ? digestCaptureClaim : notificationCaptureClaim)).put(prepared) } catch (error) { if (error instanceof MailValidationError) throw error; throw new DevelopmentOutboxError() }
     return { provider: 'development', status: 'development', providerMessageId: null } as const
   } }
 }

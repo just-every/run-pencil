@@ -1,3 +1,4 @@
+import { registerResumeRoutes } from '../features/resuming'
 import { registerAuditRoutes } from '../features/audit'
 import { registerSubmissionRoutes } from '../features/submissions/routes'
 import { SubmissionService } from '../features/submissions/service'
@@ -130,6 +131,7 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
   registerFlowRoutes(app, context => context.get('services'))
   registerImportRoutes(app)
   registerResponseRoutes(app, context => context.get('services'))
+  registerResumeRoutes(app, context => context.get('services'))
   registerAuditRoutes(app)
   registerSubmissionRoutes(app, context => new SubmissionService(context.get('platform').databaseBinding))
   registerReportingRoutes(app, context => context.get('services'))

@@ -33,6 +33,11 @@ export type PublicFlow = {
   branchRules: BranchRule[]
 }
 
+export type SavedResponseState =
+  | { state: 'open'; flow: PublicFlow; sessionId: string; sessionToken: string; revisionId: string; answers: Array<{ stepId: string; value: unknown }>; currentStepId: string; invitationToken?: string }
+  | { state: 'completed'; flow: PublicFlow; completionStepId: string }
+  | { state: 'unavailable'; startAgain: string; message: string }
+
 export type DashboardFlow = {
   id: string
   slug: string
@@ -132,6 +137,9 @@ export const api = {
   startSession: (slug: string, deviceClass: 'mobile' | 'tablet' | 'desktop', source: 'direct' | 'embed', invitationToken?: string, collectorKey?: string) =>
     request<{ sessionId: string; sessionToken: string; revisionId: string; flowId: string; flow: PublicFlow }>(`/api/public/flows/${encodeURIComponent(slug)}/sessions`, { method: 'POST', body: JSON.stringify({ deviceClass, source, invitationToken, collectorKey }) }),
   advanceSession: (slug: string, input: { sessionId: string; sessionToken: string; stepId: string }) => request<void>(`/api/public/flows/${encodeURIComponent(slug)}/sessions/advance`, { method: 'POST', body: JSON.stringify(input) }),
+  saveResponse: (slug: string, input: { sessionId: string; sessionToken: string; commandKey: string; email: string; currentStepId: string; answers: Array<{ stepId: string; value: unknown }>; invitationToken?: string }) =>
+    request<{ state: 'saved'; expiresAt: string }>(`/api/public/flows/${encodeURIComponent(slug)}/sessions/save`, { method: 'POST', body: JSON.stringify(input) }),
+  resumeResponse: (slug: string, token: string) => request<SavedResponseState>(`/api/public/flows/${encodeURIComponent(slug)}/resume`, { method: 'POST', body: JSON.stringify({ token }) }),
   submitResponse: (slug: string, input: { sessionId: string; sessionToken: string; idempotencyKey: string; answers: Array<{ stepId: string; value: unknown }>; honeypot?: string; invitationToken?: string }) =>
     request<{ responseId: string | null; idempotent: boolean; completionStepId: string | null; disposition: 'released' | 'quarantined' | 'dropped' }>(`/api/public/flows/${encodeURIComponent(slug)}/responses`, { method: 'POST', body: JSON.stringify(input) }),
   quarantinedResponses: (revisionId: string) => request<Array<{ id: string; quarantineReason: string | null; completedAt: string; answers: Array<{ stepId: string; value: unknown }> }>>(`/api/app/revisions/${encodeURIComponent(revisionId)}/quarantine`),

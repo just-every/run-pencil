@@ -1,3 +1,4 @@
+import { ResumeService, ResumeRepository } from '../features/resuming'
 import { CollectorRepository, CollectorService } from '../features/collectors'
 import { DigestDispatcher } from '../features/notifications/digest-dispatcher'
 import { AnalysisAttention } from '../features/analysis/attention'
@@ -60,7 +61,9 @@ export function createPencilServices(platform: PencilPlatform) {
   const dispatcher = new DistributionDispatcher(platform.databaseBinding, deliveries, sender, platform.configuration.appOrigin, platform.configuration.mail.kind === 'local-development' ? 'no-reply@pencil.test' : platform.configuration.mail.from)
   const from = platform.configuration.mail.kind === 'local-development' ? 'no-reply@pencil.test' : platform.configuration.mail.from
   const mailProvider = platform.configuration.mail.kind
+  const responses = new ResponseService(flowRepository, responseRepository, collectors)
   return {
+    resuming: new ResumeService(new ResumeRepository(platform.databaseBinding), responseRepository, flowRepository, collectors, responses, sender, {origin:platform.configuration.appOrigin,from,secret:platform.configuration.sessionSecret,local:platform.configuration.mail.kind==='local-development'}),
     collectors,
     connections: new IntegrationConnections(platform),
     notifications: {
@@ -75,7 +78,7 @@ export function createPencilServices(platform: PencilPlatform) {
     auth: new AuthService(authRepository, platform, audit, sender),
     workspace: new WorkspaceService(workspaceRepository, extensions.distributionPolicies['flow.reminder-schedule.v1'].delayHours),
     flows,
-    responses: new ResponseService(flowRepository, responseRepository, collectors),
+    responses,
     // Actions take no extension configuration: nothing but an operator's request can set a verdict (ACT-005).
     // Analysis reads only released responses and validates every provider answer before anything is shown (ANLY-002, ANLY-012).
     attention: new AnalysisAttention(platform.databaseBinding),

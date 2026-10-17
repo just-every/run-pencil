@@ -1,3 +1,4 @@
+import { SaveResponse } from './SaveResponse'
 import { BrandIdentity } from '../../brand'
 import { brandStyle } from '../../brand'
 import { useEmbedProtocol } from '../../embedding'
@@ -8,7 +9,7 @@ import { contactQuestionTypes } from '../../../shared/contactAnswers'
 import { visiblePath } from '../../../shared/flowPath'
 import { QuestionInput } from '../../../shared/ui/QuestionInput'
 import { PublicClosedPage } from './PublicClosedPage'
-import { api, ApiError, type ClosedFlow, type ChoiceOption, type PublicFlow } from '../../../app/api'
+import { api, ApiError, type ClosedFlow, type ChoiceOption, type PublicFlow, type SavedResponseState } from '../../../app/api'
 import type { PublicSeedConfig } from '../../../shared/config'
 
 type AnswerValues = Record<string, unknown>
@@ -29,7 +30,7 @@ function choicesForStep(choices: ChoiceOption[], stepId: string) {
   return choices.filter((choice) => choice.stepId === stepId).sort((left, right) => left.position - right.position)
 }
 
-export function RespondentFlowPage({ config, slug, embedded = false, landing = false, initialFlow, invitationToken, collectorKey }: { config: PublicSeedConfig; slug: string; embedded?: boolean; landing?: boolean; initialFlow: PublicFlow; invitationToken?: string; collectorKey?:string }) {
+export function RespondentFlowPage({ config, slug, embedded = false, landing = false, initialFlow, invitationToken, collectorKey, resume }: { config: PublicSeedConfig; slug: string; embedded?: boolean; landing?: boolean; initialFlow: PublicFlow; invitationToken?: string; collectorKey?:string; resume?: Extract<SavedResponseState, { state: 'open' }> }) {
   const [closedFlow, setClosedFlow] = useState<ClosedFlow>()
   const [unconfirmedClosedFlow, setUnconfirmedClosedFlow] = useState<ClosedFlow>()
   const [closedRestart, setClosedRestart] = useState(false)
@@ -41,21 +42,25 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
     responseContext.current += 1
     return () => { responseContext.current += 1 }
   }, [slug, embedded, initialFlow.flow.id])
-  const [index, setIndex] = useState(0)
+  const initialAnswers = Object.fromEntries((resume?.answers ?? []).map(answer => [answer.stepId, answer.value]))
+  const initialPath = visiblePath(initialFlow, initialAnswers)
+  const initialIndex = resume ? Math.max(0, initialPath.findIndex(step => step.id === resume.currentStepId)) : 0
+  const [index, setIndex] = useState(initialIndex)
   const [completedStepId, setCompletedStepId] = useState<string | undefined>(initialFlow.completedStepId ?? undefined)
   useEmbedProtocol(embedded, !!completedStepId, config.embedHostOrigin)
   const [pendingFinal, setPendingFinal] = useState<PendingFinal>()
-  const [answers, setAnswers] = useState<AnswerValues>({})
-  const [skipped, setSkipped] = useState<Set<string>>(new Set())
+  const [answers, setAnswers] = useState<AnswerValues>(initialAnswers)
+  const [skipped, setSkipped] = useState<Set<string>>(new Set(initialPath.slice(0, initialIndex).filter(step => step.kind === 'question' && !step.required && isUnanswered(initialAnswers[step.id])).map(step => step.id)))
   const [error, setError] = useState<string>()
   const [submitting, setSubmitting] = useState(false)
   const [sessionUnavailable, setSessionUnavailable] = useState(false)
   const [formChanged, setFormChanged] = useState(false)
   const navigating = useRef(false)
   const [honeypot, setHoneypot] = useState('')
-  const sessionStart = useRef<Promise<SessionCredentials> | undefined>(undefined)
+  const sessionStart = useRef<Promise<SessionCredentials> | undefined>(resume ? Promise.resolve({ sessionId: resume.sessionId, sessionToken: resume.sessionToken, revisionId: resume.revisionId }) : undefined)
   const restartCandidate = useRef<Awaited<ReturnType<typeof api.startSession>> | undefined>(undefined)
   const idempotencyKey = useRef(crypto.randomUUID())
+  const saveAttempt = useRef<{ fingerprint: string; commandKey: string } | undefined>(undefined)
 
 
   const showFailure = (reason: unknown, fallback: string, recovery?: { finalAttempt?: PendingFinal; restarting?: boolean }) => {
@@ -193,6 +198,19 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
     }
   }
 
+  const saveForLater = async (email: string) => {
+    if (navigating.current) throw new Error('Wait for the current step to finish, then save again.')
+    navigating.current = true; setSubmitting(true)
+    try {
+      const credentials = await ensureSession()
+      if (credentials.revisionId !== flow.revision.id) throw new Error('This form has changed. Choose the current form before saving.')
+      const input = { ...credentials, email, currentStepId: current.id, answers: questionSteps.flatMap(step => filled(answers[step.id]) ? [{ stepId: step.id, value: answers[step.id] }] : []), ...(invitationToken ? { invitationToken } : {}) }
+      const fingerprint = JSON.stringify(input)
+      if (saveAttempt.current?.fingerprint !== fingerprint) saveAttempt.current = { fingerprint, commandKey: crypto.randomUUID() }
+      return await api.saveResponse(slug, { ...input, commandKey: saveAttempt.current.commandKey })
+    } finally { navigating.current = false; setSubmitting(false) }
+  }
+
   if (unconfirmedClosedFlow && (pendingFinal || closedRestart)) return <PublicClosedPage config={config} flow={unconfirmedClosedFlow} landing={landing} embedded={embedded} recovery={{ mode: pendingFinal ? 'submission' : 'session', busy: submitting, error, onRetry: () => void (pendingFinal ? next() : restart()) }} />
 
   const needsAdmission = sessionUnavailable || formChanged
@@ -214,6 +232,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
         {pendingFinal && !submitting ? <p className="status-note">Retry to confirm the answers already submitted.</p> : null}
         {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
         {!isCompletion ? <footer className="respondent-actions">{index > 0 ? <button className="secondary-button focus-ring" disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onClick={() => { setError(undefined); const target = Math.max(0, index - 1); const earlier = new Set(path.slice(0, target).map(step => step.id)); setSkipped(previous => new Set([...previous].filter(id => earlier.has(id)))); setIndex(target) }} type="button"><ArrowLeft aria-hidden="true" size={17} /> Back</button> : null}<button className="primary-button focus-ring" disabled={!hydrated || submitting} onClick={needsAdmission && !pendingFinal ? restart : next} type="button">{submitting ? (needsAdmission ? 'Starting again…' : pendingFinal || nextCandidate?.kind === 'completion' ? 'Submitting…' : 'Continuing…') : primaryLabel} <ArrowRight aria-hidden="true" size={17} /></button></footer> : null}
+        {!isCompletion ? <SaveResponse disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onSave={saveForLater} /> : null}
       </article>
       {landing && config.showPoweredByCredit ? <footer className="respondent-landing-credit">Powered by {config.productName} · <a href="https://runeditrun.com">runeditrun.com</a></footer> : null}
     </main>

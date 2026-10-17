@@ -1,0 +1,5 @@
+export function resumeMessage(title: string, link: string, expiresAt: string) {
+  const subjectTitle = title.replace(/[\r\n\u0000-\u001f\u007f]/g, ' ').slice(0, 150)
+  const escape = (value: string) => value.replace(/[&<>"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[char]!)
+  return { html: `<p>You asked to save your response to ${escape(title)}.</p><p><a href="${escape(link)}">Continue your saved answers</a></p><p>This private link expires on ${escape(expiresAt)}, or when the form closes. Anyone with the link can continue your response. Your email is used only to deliver this link.</p><p>If you did not request this email, you can ignore it.</p>`, subject: `Finish your response: ${subjectTitle}`, text: `You asked to save your response to ${title}.\n\nContinue your saved answers:\n${link}\n\nThis private link expires on ${expiresAt}, or when the form closes. Anyone with the link can continue your response. Your email is used only to deliver this link.\n\nIf you did not request this email, you can ignore it.` }
+}

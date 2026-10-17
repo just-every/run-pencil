@@ -1,10 +1,12 @@
 import { appHeaders } from './api-headers'
 import AxeBuilder from '@axe-core/playwright'
 import { contract } from './contract'
-import { expect } from './fixtures'
+import { expect, test } from './fixtures'
 import { signInEmptyWorkspace } from './authoring-helpers'
 
 contract(['IMPORT-002', 'IMPORT-004', 'BASE-PUBLIC-003'], 'paged imports pause at durable progress and continue through completion and undo on both screens', async ({ page }, info) => {
+  // Completion and undo each retain their existing 90-second assertion bound.
+  test.setTimeout(240_000)
   await page.setViewportSize(info.project.name === 'desktop' ? { width: 1440, height: 900 } : { width: 390, height: 844 })
   await signInEmptyWorkspace(page)
   const definition = JSON.stringify({ title: 'Paged response import', fields: [{ ref: 'answer', title: 'Answer', type: 'short_text' }] })

@@ -260,6 +260,7 @@ export class ResponseRepository {
       `).bind(input.completedAt, input.completedAt, response.flowId, response.revisionId),
     ]
     statements.push(
+      this.binding.prepare(`UPDATE respondent_saves SET completion_step_id=? WHERE response_id=?`).bind(input.completionStepId ?? null,response.id),
       this.binding.prepare(`UPDATE invitation_participants SET response_status = 'completed', completed_at = ?, completion_step_id = ?
         WHERE id = (SELECT participant_id FROM responses WHERE id = ?)`).bind(input.completedAt, input.completionStepId ?? null, response.id),
       this.binding.prepare(`UPDATE mail_deliveries SET status = 'cancelled', reason = 'Response completed.', updated_at = ?
@@ -375,8 +376,9 @@ export class ResponseRepository {
         ON CONFLICT(revision_id, step_stable_id) DO UPDATE SET dropped = dropped + excluded.dropped, updated_at = excluded.updated_at`).bind(now, now, now, limit),
       this.binding.prepare(`DELETE FROM respondent_session_step_events WHERE session_id IN (${selected})`).bind(now, limit),
       this.binding.prepare(`DELETE FROM respondent_sessions WHERE id IN (${selected})`).bind(now, limit),
+      this.binding.prepare(`DELETE FROM respondent_saves WHERE session_id IN (SELECT session_id FROM respondent_saves WHERE expires_at<=? ORDER BY expires_at,session_id LIMIT ?)` ).bind(now,limit),
     ])
-    return changes(results[2])
+    return Math.max(changes(results[2]),changes(results[3]))
   }
 
   async purgeExpiredRateWindows(now: string, limit = 1000) {

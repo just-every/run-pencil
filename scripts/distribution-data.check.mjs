@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { initialize, exportData, importData } from './deployment-data.mjs'
 
-test('archive roundtrip retains invitation graph, consent, delivery attempts and identified quarantined answer bytes', () => {
+test('archive roundtrip retains invitation data and private saved answers while disabling restored delivery capabilities', () => {
   const directory = mkdtempSync(join(process.env.PENCIL_VERIFICATION_TMPDIR ?? tmpdir(), 'pencil-distribution-data-'))
   const source = join(directory, 'source.sqlite'), archive = join(directory, 'data.json'), target = join(directory, 'target.sqlite')
   const db = new DatabaseSync(source)
@@ -28,6 +28,8 @@ test('archive roundtrip retains invitation graph, consent, delivery attempts and
     for (const event of ['started', 'unknown']) insert('mail_delivery_attempts', { id: `attempt-${event}`, delivery_id: 'd', ordinal: 1, event, reason: event === 'unknown' ? 'Synthetic timeout' : null, created_at: stamp })
     insert('contact_consent_events', { id: 'consent', contact_id: 'c', workspace_id: 'w', consent: 'renewed', actor: 'historical-actor', source: 'Explicit synthetic permission', created_at: stamp })
     insert('responses', { id: 'response', workspace_id: 'w', flow_id: 'f', revision_id: 'r', session_id: 'removed-session', session_token_hash: 'synthetic-hash', idempotency_key: 'synthetic-response-key', state: 'quarantined', quarantine_reason: 'minimum-fill-time', completed_at: stamp, created_at: stamp, updated_at: stamp, source: 'invitation', started_at: stamp, participant_id: 'p' })
+    const savedAnswers = JSON.stringify([{stepId:'stable-question',value:'A private saved answer'}])
+    insert('respondent_saves', {session_id:'saved-session',revision_id:'r',token_hash:'synthetic-resume-hash',command_key:'save-command',delivery_id:'resume:saved-session:save-command',delivery_email:'resume-only@example.test',delivery_state:'sending',current_step_id:'stable-question',answers_json:savedAnswers,expires_at:'2026-11-06T00:00:00.000Z',created_at:stamp,updated_at:stamp})
     const value = JSON.stringify('Original\n"quoted", =literal 😀\u0000')
     insert('response_answers', { id: 'answer', response_id: 'response', step_id: 'stable-question', value_json: value, created_at: stamp, updated_at: stamp })
     db.close()
@@ -47,6 +49,9 @@ test('archive roundtrip retains invitation graph, consent, delivery attempts and
       assert.equal(restored.prepare('SELECT count(*) n FROM invitation_candidates').get().n,1)
       assert.equal(restored.prepare('SELECT value_json FROM response_answers').get().value_json, value)
       assert.deepEqual({ ...restored.prepare('SELECT r.state, r.participant_id, p.contact_id, d.status FROM responses r JOIN invitation_participants p ON p.id=r.participant_id JOIN mail_deliveries d ON d.participant_id=p.id').get() }, { state: 'quarantined', participant_id: 'p', contact_id: 'c', status: 'unknown' })
+      assert.deepEqual({...restored.prepare('SELECT token_hash,delivery_email,answers_json FROM respondent_saves').get()},{token_hash:null,delivery_email:null,answers_json:savedAnswers})
+      assert.equal(restored.prepare("SELECT count(*) n FROM audit_entries WHERE kind='response.resume-requested'").get().n,1)
+      assert.equal(restored.prepare('SELECT count(*) n FROM rer_mail_development_outbox').get().n,0)
       assert.deepEqual(restored.prepare('PRAGMA foreign_key_check').all(), [])
     } finally { restored.close() }
   } finally { if (db.isOpen) db.close(); rmSync(directory, { recursive: true, force: true }) }

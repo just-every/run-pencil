@@ -395,3 +395,22 @@ export const auditEntries = sqliteTable(
   },
   (table) => [index('audit_entries_workspace_created').on(table.workspaceId, table.createdAt), index('audit_entries_subject').on(table.subjectType, table.subjectId, table.createdAt)],
 )
+
+// Explicit saved drafts are separate from operator-visible response data.
+export const respondentSaves = sqliteTable('respondent_saves', {
+  sessionId: text('session_id').primaryKey(),
+  revisionId: text('revision_id').notNull().references(() => flowRevisions.id),
+  tokenHash: text('token_hash'),
+  commandKey: text('command_key').notNull(),
+  deliveryId: text('delivery_id').notNull().unique(),
+  deliveryEmail: text('delivery_email'),
+  deliveryState: text('delivery_state', {enum:['sending','sent','failed','completed']}).notNull(),
+  currentStepId: text('current_step_id'),
+  answersJson: text('answers_json'),
+  participantId: text('participant_id'),
+  responseId: text('response_id').references(() => responses.id, {onDelete:'cascade'}),
+  completionStepId: text('completion_step_id'),
+  expiresAt: text('expires_at').notNull(),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+}, table => [uniqueIndex('respondent_saves_token_hash').on(table.tokenHash),index('respondent_saves_expiry').on(table.expiresAt)])
