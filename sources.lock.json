@@ -1781,7 +1781,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "075a4590f207590583f721d19165fa79c97b86b32c2b5cc0319fead1cdc3035b",
+      "sha256": "d7ac86b24432cc2cc299812c3f14059cf1334496ef4319edfa7b409bac3a16f9",
       "executable": false
     },
     "src/base/ai/client.mjs": {

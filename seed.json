@@ -13,7 +13,7 @@
     { "name": "Google Forms", "edition": null },
     { "name": "Jotform", "edition": null }
   ],
-  "description": "A self-hosted feedback-to-action loop for one business: ask a short adaptive flow, surface evidence, and own the next action.",
+  "description": "Collect feedback, understand responses, and turn insights into assigned actions.",
   "scope": "One business, one shared workspace, equal operators with no roles.",
   "capabilities": [
     {
