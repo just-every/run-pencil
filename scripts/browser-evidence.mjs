@@ -26,12 +26,15 @@ export async function runPlaywrightJson(root, { project, shard } = {}) {
       for (const suite of suites ?? []) {
         for (const spec of suite.specs ?? []) for (const test of spec.tests ?? []) {
           if (test.status !== 'unexpected') continue
-          const result = test.results.at(-1)
-          const location = result?.error?.location
-          const trace = result?.error?.stack?.match(/([^\s()]+\/tests\/[^:\s]+):(\d+):(\d+)/)
-          // Print source coordinates only. Assertion values and browser traces
-          // can contain transient credentials and stay in the private report.
-          console.error(`Browser failure: ${spec.title} at ${location?.file ?? trace?.[1] ?? spec.file}:${location?.line ?? trace?.[2] ?? spec.line}:${location?.column ?? trace?.[3] ?? spec.column} (${test.projectName}, ${result?.status})`)
+          for (const [attempt,result] of test.results.entries()) {
+            if (result.status === 'passed') continue
+            const coordinates = [...(result.error?.stack ?? '').matchAll(/([^\s()]+\/tests\/[^:\s]+):(\d+):(\d+)/g)]
+              .map(match => `${match[1]}:${match[2]}:${match[3]}`)
+            const location = result.error?.location
+            if (location) coordinates.unshift(`${location.file}:${location.line}:${location.column}`)
+            // Only authored titles and source coordinates leave the private report.
+            console.error(`Browser failure: ${spec.title} at ${[...new Set(coordinates)].join(', ') || `${spec.file}:${spec.line}:${spec.column}`} (${test.projectName}, attempt ${attempt + 1}, ${result.status})`)
+          }
         }
         failures(suite.suites)
       }

@@ -1257,7 +1257,7 @@
       "executable": false
     },
     "scripts/browser-evidence.mjs": {
-      "sha256": "3d1083936e741fa9bff242e1f702f1dc8632d0d484f1c09369f8fd5c0ea4e86b",
+      "sha256": "ce33dcfca2b50a42972dca35b2b54f7171c1bafc3b229ae7494384f729ac827c",
       "executable": false
     },
     "scripts/build-delivery-artifact.mjs": {
@@ -5569,7 +5569,7 @@
       "executable": false
     },
     "tests/e2e/mail-recovery.spec.ts": {
-      "sha256": "d9e7015c33b850472d6b0729006945da76ecd0a4dd7b1607fe47d748890d7fc8",
+      "sha256": "96db27ec4dcd9da9b3fedaf2b49924bf4109a16bd4074516d01344944f1c114b",
       "executable": false
     },
     "tests/e2e/new-question-types.spec.ts": {

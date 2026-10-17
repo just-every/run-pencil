@@ -1,8 +1,6 @@
 import { developmentInbox } from '../helpers/development-outbox'
 import { devKeyHeaders } from '../helpers/dev-key.mjs'
-import { openStateDatabase } from './state-database'
-import { readdirSync } from 'node:fs'
-import { join } from 'node:path'
+import { openStateDatabase, stateDatabaseFile } from './state-database'
 import { operatorEmail } from './auth-identity'
 import { expect } from './fixtures'
 import { contract } from './contract'
@@ -19,8 +17,8 @@ contract(['DIST-008','DIST-010','BASE-OPS-004'], 'a real sender failure is visib
   const path=`/api/app/flows/${flow.id}`
   for(const step of [{kind:'question',questionType:'short_text',prompt:'Feedback',required:true},{kind:'completion',questionType:null,prompt:'Recorded'}]) await call(`${path}/draft/steps`,{expectedVersion:(await call(`${path}/draft`)).flow.draftVersion,step})
   await call(`${path}/publish`,{expectedVersion:(await call(`${path}/draft`)).flow.draftVersion})
-  const contact=await call('/api/app/distribution/contacts',{name:'Synthetic recovery recipient',email:`recovery-${info.project.name}@example.test`})
-  const directory=process.env.PENCIL_MIGRATION_STATE!,db=openStateDatabase(join(directory,readdirSync(directory).find(name=>name.endsWith('.sqlite'))!))
+  const contact=await call('/api/app/distribution/contacts',{name:'Synthetic recovery recipient',email:`recovery-${flow.id}@example.test`})
+  const directory=process.env.PENCIL_MIGRATION_STATE!,db=openStateDatabase(stateDatabaseFile(directory))
   try {
     db.exec(`CREATE TRIGGER synthetic_mail_failure BEFORE INSERT ON rer_mail_development_outbox BEGIN SELECT RAISE(ABORT,'synthetic-private-provider-error'); END`)
     await call(`${path}/distribution`,{contactIds:[contact.id],commandKey:`recovery-${info.project.name}`})
@@ -28,6 +26,7 @@ contract(['DIST-008','DIST-010','BASE-OPS-004'], 'a real sender failure is visib
     const before=db.prepare('SELECT d.id,d.idempotency_key,d.status FROM mail_deliveries d JOIN invitation_participants p ON p.id=d.participant_id WHERE p.contact_id=?').get(contact.id)!
     expect(before.status).toBe('unknown')
     await page.goto(`/app/flows/${flow.id}/builder`)
+    await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
     await page.getByRole('button',{name:'Share',exact:true}).click()
     await expect(page.getByText(/invitation: unknown/)).toBeVisible()
     await expect(page.getByText(/synthetic-private-provider-error/)).toHaveCount(0)
