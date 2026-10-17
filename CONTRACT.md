@@ -542,8 +542,8 @@ Judged from the code and tests at commit `6f3cb611373b39989912418926d4db4c566ed0
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 113 | 0 | 0 | 113 |
-| Target and push further | 3 | 37 | 85 | 125 |
-| All | 116 | 37 | 85 | 238 |
+| Target and push further | 3 | 38 | 84 | 125 |
+| All | 116 | 38 | 84 | 238 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -674,7 +674,7 @@ Judged from the code and tests at commit `6f3cb611373b39989912418926d4db4c566ed0
 | `LEDG-003` | Filters | published | done | `tests/e2e/distribution-foundation.spec.ts`, `tests/e2e/ledger-filters.spec.ts`, `tests/e2e/reporting-counts.spec.ts` |  |
 | `LEDG-004` | Response export | published | done | `tests/e2e/journey.spec.ts`, `tests/e2e/ledger-filters.spec.ts`, `tests/e2e/new-question-types.spec.ts` |  |
 | `LEDG-005` | Spreadsheet and statistics exports | target | missing |  | No code yet. |
-| `LEDG-006` | Response search | target | missing |  | No code yet. |
+| `LEDG-006` | Response search | target | partial | `src/core/features/reporting/search.ts`, `src/core/features/results/ui/LedgerSearch.tsx`, `tests/runtime/ledger-filters.worker.test.ts`, `tests/e2e/response-search.spec.ts` | Search of retained text/contact answers, published choice labels and identified invitation snapshots combines with all ledger filters, highlights matches and fixes into snapshot exports. Quarantine and erasure remain excluded. Hidden-field values (FIELD-001), Other write-ins (FIELD-010), grant-aware sensitive/identity search (ROLE-002/GOV-004), Unicode case folding and the capacity p95 proof remain unbuilt. |
 | `WORK-001` | Submission inbox | target | done | `src/core/features/submissions/`, `src/core/features/reporting/scope.ts`, `tests/runtime/submissions.worker.test.ts` | Per-form workflow status, active assignee, tags, private paged notes, atomic version-checked bulk edits, ledger/export filters and audited changes. Import undo, erasure and operator removal preserve custody. |
 | `WORK-002` | Approval flows | target | missing |  | No code yet. |
 | `WORK-003` | Multi-person forms | target | missing |  | No code yet. |

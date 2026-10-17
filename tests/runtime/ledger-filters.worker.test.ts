@@ -1,3 +1,4 @@
+import { collectResponseSearchScenario } from '../response-search-scenario'
 import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { httpExport, allTexts } from '../helpers/report-download'
 import { applyD1Migrations, env, SELF, type D1Migration } from 'cloudflare:test'
@@ -82,4 +83,22 @@ contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'FLOW-019', 'IMPORT-003', 'RSLT-00
   expect((await call<Ledger>(`${scenario.path}/ledger?${new URLSearchParams(filter)}`)).total).toBe(3)
   expect((await repository.ledger('unrelated-workspace', scenario.flowId, filter, new Date().toISOString())).total).toBe(0)
   expect((await repository.ledger(workspace.id, 'unrelated-flow', filter, new Date().toISOString())).total).toBe(0)
+}, 60_000)
+
+contract('LEDG-006', 'response search composes with revision and source filters, exports the same released IDs and excludes erasure', async () => {
+  const scenario = await collectResponseSearchScenario(call, 'ledger-search-worker')
+  const ids = (rows: LedgerResponse[]) => rows.map(row => row.id).sort()
+  const ledger = (search: string, extra: Record<string,string> = {}) => call<Ledger>(`${scenario.path}/ledger?${new URLSearchParams({ search, ...extra })}`)
+  expect(ids((await ledger('QUEUE')).responses)).toEqual([scenario.slow, scenario.faster].sort())
+  expect(ids((await ledger('queue', { revisionId: scenario.firstRevision, source: 'direct' })).responses)).toEqual([scenario.slow])
+  expect(ids((await ledger('Cold brew')).responses)).toEqual([scenario.slow])
+  expect(ids((await ledger('jo.cafe@example.test')).responses)).toEqual([scenario.slow])
+  for (const literal of ['%_', "' OR 1=1--", 'unrecorded text']) expect((await ledger(literal)).total).toBe(0)
+  const snapshot = await call<{ filter: { search: string }; responses: LedgerResponse[]; excludedQuarantined: number }>(`${scenario.path}/responses/export?search=queue`)
+  expect(snapshot.filter.search).toBe('queue')
+  expect(ids(snapshot.responses)).toEqual([scenario.slow, scenario.faster].sort())
+  expect(snapshot.excludedQuarantined).toBe(1)
+  await call(`/api/app/responses/${scenario.slow}`, undefined, 'DELETE')
+  expect(ids((await ledger('queue')).responses)).toEqual([scenario.faster])
+  expect((await ledger('Cold brew')).total).toBe(0)
 }, 60_000)
