@@ -841,7 +841,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "85453584248219c7888796257f600b81f50ccc237cc1d2384c3db5b1d33f35c9",
+      "sha256": "a455bc8fdae0b3edcb23216c7029a5436b03eafb1f87710a8c10777afae4ce2c",
       "executable": false
     },
     "BASELINE.md": {
@@ -1841,7 +1841,7 @@
       "executable": false
     },
     "src/base/contract-style.ts": {
-      "sha256": "41afdf1cb60983b340283b13e414102387eb2a4af022d730220050a4384d0753",
+      "sha256": "4325f4eeabac2bef722808576605d7b657858b918729097c3412393fc6e4941f",
       "executable": false
     },
     "src/base/d1-transport/index.d.mts": {
