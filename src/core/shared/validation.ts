@@ -2,7 +2,7 @@ import { contactAnswerObject } from './contactAnswers'
 import { zValidator } from '@hono/zod-validator'
 import type { Context, MiddlewareHandler, ValidationTargets } from 'hono'
 import { z } from 'zod'
-import manifest from '../../../seed.json'
+import manifest from '../../../seed.json' with { type: 'json' }
 
 export const resourceId = z.string().min(1).max(200).refine(value => !/[\u0000-\u001f\u007f]/.test(value))
 export const flowSlug = z.string().min(1).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
