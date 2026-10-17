@@ -1,3 +1,5 @@
+import { selectedChoiceIds, otherChoiceText, isChoiceQuestion } from '../../shared/choiceAnswers'
+import { retainedAnswer } from './retainedAnswer'
 import { scoreOptions } from '../../shared/scoreQuestions'
 import { summarizeAnswers, booleanAnswer } from './answerSummary'
 export type ReportStep = { revisionId: string; id: string; prompt: string; questionType: string | null; position: number; settingsJson?: string | null; reached: number; dropped: number }
@@ -25,9 +27,10 @@ export function composeQuestionReports(steps: ReportStep[], answers: ReportAnswe
     const identity = key(step.revisionId, step.id)
     const values = valuesByQuestion.get(identity) ?? []
     const options = choicesByQuestion.get(identity) ?? []
+    if (isChoiceQuestion(step.questionType)) for (const value of values) retainedAnswer(step.questionType!, value, options.map(choice => choice.id), JSON.parse(step.settingsJson ?? '{}'), false)
     const distribution = ['single_choice', 'multiple_choice', 'dropdown', 'priority'].includes(step.questionType ?? '')
-      ? options.map(choice => ({ value: choice.id as unknown, label: choice.label, count: values.filter(value => Array.isArray(value) ? step.questionType === 'priority' ? value[0] === choice.id : value.includes(choice.id) : value === choice.id).length }))
+      ? options.map(choice => ({ value: choice.id as unknown, label: choice.label, count: values.filter(value => step.questionType === 'priority' ? Array.isArray(value) && value[0] === choice.id : selectedChoiceIds(value).includes(choice.id)).length }))
       : ['csat', 'ces', 'emoji_rating', 'thumbs_rating'].includes(step.questionType ?? '') ? scoreOptions(step.questionType!).map(option => ({ ...option, value: option.value as unknown, count: values.filter(answer => answer === option.value).length })) : ['rating', 'nps'].includes(step.questionType ?? '') ? [...new Set(values.filter((value): value is number => typeof value === 'number'))].sort((a, b) => a - b).map(value => ({ value: value as unknown, label: String(value), count: values.filter(answer => answer === value).length })) : ['yes_no', 'consent'].includes(step.questionType ?? '') ? [true, false].map(value => ({ value: value as unknown, label: step.questionType === 'consent' ? value ? 'Accepted' : 'Declined' : value ? 'Yes' : 'No', count: values.filter(answer => booleanAnswer(answer) === value).length })) : []
-    return { ...step, importedAnswered: importedByQuestion.get(identity) ?? 0, summary: summarizeAnswers(step.questionType, values, options), choices: options, answered: values.length, distribution, distributionLabel: step.questionType === 'multiple_choice' ? 'Multiple select; shares may total more than 100%.' : step.questionType === 'priority' ? 'First-priority choices.' : 'One answer per response.' }
+    return { ...step, importedAnswered: importedByQuestion.get(identity) ?? 0, summary: isChoiceQuestion(step.questionType) && typeof JSON.parse(step.settingsJson ?? '{}').otherChoiceId === 'string' ? { texts: values.map(otherChoiceText).filter((text): text is string => text !== undefined) } : summarizeAnswers(step.questionType, values, options), choices: options, answered: values.length, distribution, distributionLabel: step.questionType === 'multiple_choice' ? 'Multiple select; shares may total more than 100%.' : step.questionType === 'priority' ? 'First-priority choices.' : 'One answer per response.' }
   })
 }

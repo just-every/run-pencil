@@ -48,7 +48,7 @@ export class FormImports {
       const p = prepareImport(input, this.actor.workspaceId, payloadHasher.hash)
       releaseUpload?.()
       if (!p.form.steps.some(step => step.kind === 'question')) throw new ValidationError('Choose at least one ordinary question before importing.')
-      if (p.rowErrors.length) throw new ValidationError('Correct every CSV row error before importing. Nothing was written.')
+      if (p.rowErrors.length) throw new ValidationError('Correct every response row error before importing. Nothing was written.')
       const context = d1RequestContext(importContext(this.database, this.actor, p.namespace))
       const existing = await this.existing(p.namespace, context)
       if (existing && existing.principal_id !== this.actor.operatorId) throw new ValidationError('These exact files already have an import by another operator. Nothing was created. The creating operator can resume or undo it.')

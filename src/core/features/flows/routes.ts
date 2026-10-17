@@ -16,7 +16,7 @@ const stepSchema = z.object({
   required: z.boolean().optional(),
   nextStepId: resourceId.nullable().optional(),
   questionSettings: z.record(z.string(), z.unknown()).nullable().optional(),
-  choices: z.array(z.object({ value: z.string().trim().min(1).max(200), label: z.string().trim().min(1).max(300) })).max(100).optional(),
+  choices: z.array(z.object({ newId: resourceId.optional(), value: z.string().trim().min(1).max(200), label: z.string().trim().min(1).max(300) })).max(100).optional(),
 })
 
 const branchesSchema = z.object({

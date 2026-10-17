@@ -6,7 +6,8 @@ import manifest from '../../../seed.json' with { type: 'json' }
 
 export const resourceId = z.string().min(1).max(200).refine(value => !/[\u0000-\u001f\u007f]/.test(value))
 export const flowSlug = z.string().min(1).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
-export const answerValue = z.union([contactAnswerObject, z.string().max(manifest.limits.responses.openTextCharactersPerAnswer), z.number().finite(), z.boolean(), z.array(resourceId).max(manifest.limits.steps.choiceOptionsPerStep), z.null()])
+export const otherChoiceAnswerObject = z.object({ choiceIds: z.array(resourceId).min(1).max(manifest.limits.steps.choiceOptionsPerStep), other: z.object({ choiceId: resourceId, text: z.string().max(manifest.limits.responses.shortTextCharactersPerAnswer) }).strict() }).strict()
+export const answerValue = z.union([otherChoiceAnswerObject, contactAnswerObject, z.string().max(manifest.limits.responses.openTextCharactersPerAnswer), z.number().finite(), z.boolean(), z.array(resourceId).max(manifest.limits.steps.choiceOptionsPerStep), z.null()])
 
 export function invalidInput(context: Context, target: string) {
   return context.json({ error: 'VALIDATION_ERROR', message: `Invalid request ${target === 'json' ? 'body' : target === 'param' ? 'path parameters' : target}.` }, 400)

@@ -1,3 +1,4 @@
+import { sqlSpecialChoiceText } from './choiceReports'
 import { NotFoundError, ValidationError } from '../../shared/errors'
 import { calendarDate, typeSettingsValid } from '../../shared/questionTypes'
 import { checkGeneration, generation } from './cursor'
@@ -53,7 +54,15 @@ export async function reportTrends(input: TrendInput): Promise<TrendReport> {
   const allowed: readonly string[] = input.metric === 'score' ? scoreTrendTypes : shareTrendTypes
   if (!allowed.includes(type)) throw new ValidationError('This question does not support the selected trend metric.')
   if (input.metric === 'share') validateShare(type,input.shareValue,revisions)
-  const aggregate = await trendAggregation(db,{...input,cutoff,type,periods}).all<TrendAggregate>()
+  const special: string[] = []
+  const specialRevisions = revisions.filter(revision => revision.settings.otherChoiceId !== undefined || revision.settings.noneChoiceId !== undefined)
+  const choices = specialRevisions.length ? (await db.prepare('SELECT c.stable_id AS id,s.stable_id AS stepId,s.revision_id AS revisionId FROM choice_options c JOIN flow_steps s ON s.id=c.step_id WHERE s.revision_id IN (SELECT value FROM json_each(?)) AND s.stable_id=?').bind(JSON.stringify(specialRevisions.map(revision => revision.revisionId)),input.stableStepId).all<{id:string;stepId:string;revisionId:string}>()).results : []
+  for (const revision of specialRevisions) {
+    const valid = sqlSpecialChoiceText([{id:input.stableStepId,questionType:revision.questionType,settingsJson:JSON.stringify(revision.settings)}], choices.filter(choice => choice.revisionId === revision.revisionId))
+    if (valid !== '1') special.push(`WHEN '${revision.revisionId.replaceAll("'", "''")}' THEN ${valid}`)
+  }
+  const otherTextValid = special.length ? `(CASE r.revision_id ${special.join(' ')} ELSE 1 END)` : '1'
+  const aggregate = await trendAggregation(db,{...input,cutoff,type,periods,otherTextValid}).all<TrendAggregate>()
   if (aggregate.results.some(row => row.invalid || row.denominator && (row.value === null || !Number.isFinite(row.value)))) throw new ValidationError('Invalid retained answer. Trends cannot be reported until it is corrected or erased.')
   await checkGeneration(db,scope)
   const byPeriod = new Map(aggregate.results.map(row => [row.period,row]))

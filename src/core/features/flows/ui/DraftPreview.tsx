@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { api, type BuilderDraft } from '../../../app/api'
 import { answerIssue, isUnanswered } from '../../../shared/answers'
 import { visiblePath } from '../../../shared/flowPath'
+import { renderRecallScreen } from '../../../shared/recall'
 import { QuestionInput } from '../../../shared/ui/QuestionInput'
 
 type Trace = Awaited<ReturnType<typeof api.previewDraft>>
@@ -25,6 +26,7 @@ export function DraftPreview({ draft, onClose, onReload, reloadDisabled = false 
   const path = useMemo(() => visiblePath(draft, answers), [draft, answers])
   const step = path[Math.min(index, path.length - 1)]
   const choices = draft.choices.filter((choice) => choice.stepId === step?.id)
+  const rendered = step ? renderRecallScreen(draft, answers, step) : undefined
   const inspect = async () => {
     if (pending.current || stale) return false
     pending.current = true; setChecking(true); setError(undefined); setTrace(undefined)
@@ -55,7 +57,7 @@ export function DraftPreview({ draft, onClose, onReload, reloadDisabled = false 
   return <section className="panel draft-preview" aria-label="Draft preview">
     <header className="toggle-row"><div><p className="eyebrow">Preview</p><p className="muted">Try your questions here. Preview answers are not collected.</p></div><button className="quiet-button" type="button" onClick={onClose}>Close preview</button></header>
     {brandError ? <p role="alert">{brandError}</p> : null}
-    {step ? <div className="preview-surface brand-surface" style={brand ? brandStyle(brand) : undefined}>{brand ? <BrandIdentity config={brand} /> : null}<p className="eyebrow">{step.kind}</p><h2 className="display">{step.prompt}</h2>{step.helperText ? <p>{step.helperText}</p> : null}{step.kind === 'question' && step.required ? <p>Required</p> : null}{step.kind === 'question' ? <fieldset className="plain-fieldset" disabled={checking || stale}><QuestionInput key={step.id} step={step} choices={choices} value={answers[step.id]} onChange={(value) => {
+    {step ? <div className="preview-surface brand-surface" style={brand ? brandStyle(brand) : undefined}>{brand ? <BrandIdentity config={brand} /> : null}<p className="eyebrow">{step.kind}</p><h2 className="display">{rendered?.step.prompt}</h2>{rendered?.step.helperText ? <p>{rendered.step.helperText}</p> : null}{step.kind === 'question' && step.required ? <p>Required</p> : null}{step.kind === 'question' ? <fieldset className="plain-fieldset" disabled={checking || stale}><QuestionInput key={step.id} step={rendered!.step} choices={rendered!.choices} value={answers[step.id]} onChange={(value) => {
       if (pending.current || stale) return
       setTrace(undefined); setError(undefined)
       const next = { ...answers, [step.id]: value }

@@ -1,3 +1,5 @@
+import { withoutRecallKey } from '../../shared/recallSyntax'
+import { choiceSettingsValid, remapChoiceSettings } from '../../shared/choiceAnswers'
 import type { QuestionType } from '../../shared/questionKinds'
 import { typeSettingsValid } from '../../shared/questionTypes'
 import { templateStructure, type FlowTemplateId } from './templates'
@@ -20,7 +22,7 @@ type DraftStepInput = {
   required?: boolean
   nextStepId?: string | null
   questionSettings?: Record<string, unknown> | null
-  choices?: Array<{ value: string; label: string }>
+  choices?: Array<{ newId?: string; value: string; label: string }>
 }
 type BranchInput = {
   id?: string
@@ -143,7 +145,7 @@ export class FlowService {
     const created = await this.repository.createStructure({
       flow: { id: flowId, workspaceId: input.workspaceId, title, slug, status: 'draft', draftVersion: 0, lastActivityAt: now, createdAt: now, updatedAt: now },
       revision: { id: revisionId, flowId, number: 1, state: 'draft', title, publishedAt: null, isCurrent: false, admissionClosedAt: null, admissionCloseReason: null, deadlineAt: null, deadlineTimeZone: null, targetCompletedResponses: null, policySnapshotJson: null, createdAt: now, updatedAt: now },
-      steps: sourceSteps.map((step) => ({ ...step, id: rowIdByOldRowId.get(step.id)!, revisionId, stableId: stableIdByOldStableId.get(step.stableId)!, nextStepStableId: step.nextStepStableId ? stableIdByOldStableId.get(step.nextStepStableId) ?? null : null, createdAt: now, updatedAt: now })),
+      steps: sourceSteps.map((step) => ({ ...step, questionSettingsJson: step.questionSettingsJson ? JSON.stringify(remapChoiceSettings(JSON.parse(step.questionSettingsJson), choiceStableIdByOldStableId)) : null, id: rowIdByOldRowId.get(step.id)!, revisionId, stableId: stableIdByOldStableId.get(step.stableId)!, nextStepStableId: step.nextStepStableId ? stableIdByOldStableId.get(step.nextStepStableId) ?? null : null, createdAt: now, updatedAt: now })),
       choices: sourceChoices.map((choice) => ({ ...choice, id: ulid(), stepId: rowIdByOldRowId.get(choice.stepId)!, stableId: choiceStableIdByOldStableId.get(choice.stableId)!, createdAt: now, updatedAt: now })),
       rules: sourceRules.map((rule) => {
         const expected = JSON.parse(rule.expectedValueJson) as unknown
@@ -247,6 +249,7 @@ export class FlowService {
     if (new Set(persistedChoices.map((choice) => choice.label.toLocaleLowerCase())).size !== persistedChoices.length) throw new ValidationError('Each choice needs a different label.')
     if (new Set(persistedChoices.map((choice) => choice.value)).size !== persistedChoices.length) throw new ValidationError('Each choice needs a different answer value.')
     if (new Set(persistedChoices.map(choice => choice.stableId)).size !== persistedChoices.length) throw new ValidationError('Choices must be distinct.')
+    if (!choiceSettingsValid(selectedQuestionType, input.questionSettings === undefined ? selected.questionSettings ?? {} : input.questionSettings ?? {}, persistedChoices.map(choice => choice.stableId))) throw new ValidationError('Special options must refer to distinct choices on this question.')
     const rules = input.rules?.map(rule => ({ id: rule.id ?? ulid(), revisionId: draft.revision.id, sourceStepStableId: rule.sourceStepId, predicateKind: rule.predicateKind, expectedValueJson: JSON.stringify(rule.expectedValue), destinationStepStableId: rule.destinationStepId, position: rule.position, createdAt: now, updatedAt: now }))
     if (rules) {
       const nextSteps = rawSteps.map(step => step.stableId === input.stepId ? { ...step, questionType: selectedQuestionType, nextStepStableId: input.nextStepId === undefined ? step.nextStepStableId : input.nextStepId } : step)
@@ -285,8 +288,10 @@ export class FlowService {
     if (input.step.kind === 'question' && !input.step.questionType) throw new ValidationError('A question needs a question type.')
     if (input.step.kind !== 'question' && input.step.questionType) throw new ValidationError('Only questions can have a question type.')
     if (!typeSettingsValid(input.step.questionType, input.step.questionSettings ?? {})) throw new ValidationError('This question has invalid type-specific settings.')
-    const choices = (input.step.choices ?? []).map((choice, position) => ({ id: ulid(), stepId, stableId: ulid(), value: choice.value.trim(), label: choice.label.trim(), position, createdAt: now, updatedAt: now }))
+    const choices = (input.step.choices ?? []).map((choice, position) => ({ id: ulid(), stepId, stableId: choice.newId ?? ulid(), value: choice.value.trim(), label: choice.label.trim(), position, createdAt: now, updatedAt: now }))
     if (choices.some((choice) => !choice.value || !choice.label)) throw new ValidationError('Every choice needs a value and label.')
+    if (new Set(choices.map(choice => choice.stableId)).size !== choices.length || choices.some(choice => draft.choices.some(existing => existing.id === choice.stableId))) throw new ValidationError('Choices must have unique stable identifiers.')
+    if (!choiceSettingsValid(input.step.questionType, input.step.questionSettings ?? {}, choices.map(choice => choice.stableId))) throw new ValidationError('Special options must refer to distinct choices on this question.')
     const created = await this.repository.createDraftStep({ operatorId: input.operatorId,
       flowId: input.flowId, revisionId: draft.revision.id, expectedVersion: input.expectedVersion, now, connectPrevious,
       step: {
@@ -306,11 +311,14 @@ export class FlowService {
     if (input.expectedVersion !== draft.flow.draftVersion) return draftConflict(draft.flow.draftVersion)
     const source = draft.steps.find((step) => step.id === input.stepId)
     if (!source) throw new NotFoundError('The requested draft step does not exist.')
+    const sourceChoices = draft.choices.filter(choice => choice.stepId === source.id)
+    const choiceIds = new Map(sourceChoices.map(choice => [choice.id, ulid()]))
     return this.addDraftStep({
+      operatorId: input.operatorId,
       workspaceId: input.workspaceId,
       flowId: input.flowId,
       expectedVersion: input.expectedVersion,
-      step: { ...source, kind: source.kind, questionType: source.questionType, choices: draft.choices.filter((choice) => choice.stepId === source.id).map((choice) => ({ value: choice.value, label: choice.label })) },
+      step: { ...source, kind: source.kind, questionType: source.questionType, questionSettings: source.questionSettings ? withoutRecallKey(remapChoiceSettings(source.questionSettings, choiceIds)) : null, choices: sourceChoices.map(choice => ({ newId: choiceIds.get(choice.id)!, value: choice.value, label: choice.label })) },
     })
   }
 

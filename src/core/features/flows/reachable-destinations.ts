@@ -41,6 +41,9 @@ function answerExists(step: StoredStep, choices: string[], settings: Record<stri
       const literals = indexes.map((index) => positive ? index : -index)
       return (predicate.predicateKind === 'all_of') === matched ? literals.map((literal) => [literal]) : [literals]
     })
+    const none = typeof settings.noneChoiceId === 'string' ? choices.indexOf(settings.noneChoiceId) + 1 : 0
+    if (none && (settings.maxSelections as number) >= 1 && satisfies([settings.noneChoiceId])) return true
+    if (none) clauses.push([-none])
     // Empty selections normalize to unanswered, including when minSelections=0.
     return selectionIsPossible(choices.length, clauses, Math.max(1, settings.minSelections as number), settings.maxSelections as number)
   }

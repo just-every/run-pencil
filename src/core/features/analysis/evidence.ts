@@ -1,3 +1,4 @@
+import { analysisAnswerText, textEvidenceColumns } from './textEvidence'
 import { analysableTypes, outputJsonSchema } from './model'
 
 export type EvidenceQuestion = { id: string; prompt: string; questionType: string }
@@ -14,26 +15,28 @@ export async function releasedResponseIds(db: D1Database, workspaceId: string, r
 export async function analysableQuestions(db: D1Database, revisionId: string): Promise<EvidenceQuestion[]> {
   // Answers name their question by its stable ID (response_answers.step_id = flow_steps.stable_id).
   const { results } = await db.prepare(`SELECT stable_id AS id, prompt, question_type AS questionType FROM flow_steps WHERE revision_id = ? AND kind = 'question'
-    AND question_type IN (${analysableTypes.map(() => '?').join(',')}) ORDER BY position`).bind(revisionId, ...analysableTypes).all<EvidenceQuestion>()
+    AND (question_type IN (${analysableTypes.map(() => '?').join(',')}) OR (question_type IN ('single_choice','multiple_choice','dropdown') AND json_type(question_settings_json,'$.otherChoiceId')='text')) ORDER BY position`).bind(revisionId, ...analysableTypes).all<EvidenceQuestion>()
   return results
 }
 
 /** The run's evidence set as stored, with the selected answers each response retains now. */
 export async function evidenceResponses(db: D1Database, runId: string, questionIds: string[]): Promise<EvidenceResponse[]> {
-  const { results } = await db.prepare(`SELECT e.response_id AS responseId, a.step_id AS questionId, a.value_json AS value FROM analysis_evidence e
+  const { results } = await db.prepare(`SELECT e.response_id AS responseId, a.step_id AS questionId, a.value_json AS value, ${textEvidenceColumns} FROM analysis_evidence e
     LEFT JOIN response_answers a ON a.response_id = e.response_id AND a.step_id IN (SELECT value FROM json_each(?))
-    WHERE e.run_id = ? ORDER BY e.position, a.step_id`).bind(JSON.stringify(questionIds), runId).all<{ responseId: string; questionId: string | null; value: string | null }>()
+    LEFT JOIN responses r ON r.id=e.response_id
+    LEFT JOIN flow_steps s ON s.revision_id=r.revision_id AND s.stable_id=a.step_id
+    WHERE e.run_id = ? ORDER BY e.position, a.step_id`).bind(JSON.stringify(questionIds), runId).all<{ responseId: string; questionId: string | null; value: string | null; questionType: string | null; settingsJson: string | null; choicesJson: string | null }>()
   return group(results)
 }
 
-function group(rows: Array<{ responseId: string; questionId: string | null; value: string | null }>) {
+function group(rows: Array<{ responseId: string; questionId: string | null; value: string | null; questionType: string | null; settingsJson: string | null; choicesJson: string | null }>) {
   const responses = new Map<string, EvidenceResponse>()
   for (const row of rows) {
     const response = responses.get(row.responseId) ?? { id: row.responseId, answers: {} }
     responses.set(row.responseId, response)
     if (!row.questionId || row.value === null) continue
-    const value = JSON.parse(row.value)
-    if (typeof value === 'string' && value.length) response.answers[row.questionId] = value
+    const value = analysisAnswerText(row.questionType, row.settingsJson, row.choicesJson, JSON.parse(row.value))
+    if (value !== undefined) response.answers[row.questionId] = value
   }
   return [...responses.values()]
 }

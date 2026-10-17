@@ -1,3 +1,4 @@
+import { ValidationError } from '../../shared/errors'
 import { sha256 } from '../../../base/import-kit/src/provenance/identity'
 import type { ImportForm, ImportStep, QuestionType, ReportItem } from './model'
 import { forbiddenSource, sourceNames } from './source-privacy'
@@ -24,6 +25,12 @@ export function mapFields(definition: Record<string, any>, scope: string, forbid
     if (!kind && !questionType) { item.state = 'unsupported'; item.reason = 'No native question representation. The field and its answers are omitted.'; const nested = (values: unknown, path: string) => { if (!Array.isArray(values)) return; for (const [i, value] of values.entries()) { const child = object(value); report.push({ location: `${path}/${i}`, label: String(child.title ?? '(untitled)'), sourceType: String(child.type ?? 'unknown'), state: 'unsupported', change: 'Nested field omitted', reason: 'Its parent field has no native representation; groups are not flattened.' }); nested(object(child.properties).fields, `${path}/${i}/properties/fields`) } }; nested(properties.fields, `${location}/properties/fields`); return }
     const choices = choiceTypes.includes(type) && Array.isArray(properties.choices) ? properties.choices.map((c: any, i: number) => ({ id: stableId(scope, `${sourceId}:choice:${c.ref ?? c.id ?? i}`), sourceId: String(c.ref ?? c.id ?? i), label: String(c.label ?? '') })) : []
     const settings: Record<string, unknown> = {}
+    if (properties.allow_other_choice !== undefined && typeof properties.allow_other_choice !== 'boolean') throw new ValidationError('Typeform allow_other_choice must be a Boolean.')
+    if (properties.allow_other_choice === true && ['single_choice', 'multiple_choice', 'dropdown'].includes(questionType ?? '')) {
+      const id = stableId(scope, `${sourceId}:other`)
+      choices.push({ id, sourceId: '__other__', label: 'Other' })
+      settings.otherChoiceId = id
+    }
     if (questionType === 'rating') {
       const start = type === 'rating' ? 1 : properties.start_at_one === true ? 1 : 0
       if (!Number.isInteger(properties.steps) || (type === 'opinion_scale' && typeof properties.start_at_one !== 'boolean')) { item.state = 'unsupported'; item.reason = 'A scale needs explicit steps and opinion-scale start_at_one.'; return }
@@ -45,7 +52,7 @@ export function mapFields(definition: Record<string, any>, scope: string, forbid
     const step: ImportStep = { id: stableId(scope, sourceId), sourceId, sourceType: type, kind: kind ?? 'question', questionType: questionType ?? null, prompt: String(field.title ?? ''), helperText: properties.description == null ? null : String(properties.description), required: validations.required === true, settings, choices, next: null }
     steps.push(step)
     // Each property not represented by native behavior receives its own review item.
-    const known = new Set(['description', ...(choiceTypes.includes(type) ? ['choices'] : []), ...(['multiple_choice', 'picture_choice'].includes(type) ? ['allow_multiple_selection'] : []), ...(['rating', 'opinion_scale'].includes(type) ? ['steps', 'labels'] : []), ...(type === 'opinion_scale' ? ['start_at_one'] : []), ...(questionType === 'date' ? ['structure', 'separator'] : [])])
+    const known = new Set(['description', ...(choiceTypes.includes(type) ? ['choices'] : []), ...(['multiple_choice', 'picture_choice'].includes(type) ? ['allow_multiple_selection'] : []), ...(['rating', 'opinion_scale'].includes(type) ? ['steps', 'labels'] : []), ...(['single_choice', 'multiple_choice', 'dropdown'].includes(questionType ?? '') ? ['allow_other_choice'] : []), ...(type === 'opinion_scale' ? ['start_at_one'] : []), ...(questionType === 'date' ? ['structure', 'separator'] : [])])
     for (const [i, choice] of (Array.isArray(properties.choices) ? properties.choices : []).entries()) for (const key of Object.keys(object(choice))) if (!['id', 'ref', 'label'].includes(key)) report.push({ location: `${location}/properties/choices/${i}/${key}`, label: step.prompt, sourceType: type, state: 'unsupported', change: 'Choice property omitted', reason: `${key} is not reproduced.` })
     for (const [key] of Object.entries(properties)) if (!known.has(key)) report.push({ location: `${location}/properties/${key}`, label: step.prompt, sourceType: type, state: 'unsupported', change: 'Property omitted', reason: `${key} has no imported native behavior.` })
     for (const key of Object.keys(validations)) if (!['required', ...(['short_text','long_text'].includes(questionType ?? '') ? ['max_length','min_length'] : []), ...(questionType === 'multiple_choice' ? ['min_selection', 'max_selection'] : []), ...(questionType === 'number' ? ['min_value', 'max_value'] : [])].includes(key)) report.push({ location: `${location}/validations/${key}`, label: step.prompt, sourceType: type, state: 'unsupported', change: 'Validation omitted', reason: `${key} is not reproduced; native validation applies.` })

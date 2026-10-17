@@ -1,0 +1,11 @@
+/* Sections, labels and indents from the converted Pencil question builder. */
+.choice-settings, .recall-controls { border-top: 1px solid var(--line); margin-top: .8rem; padding-top: .8rem; min-width: 0; }
+.choice-settings > summary, .recall-controls > summary, .choice-settings__limits > summary { min-height: 44px; cursor: pointer; padding: .65rem 0; }
+.choice-settings__check { display: flex; align-items: center; gap: .65rem; min-height: 44px; }
+.choice-settings__check input { accent-color: var(--ink); width: 18px; height: 18px; flex: 0 0 auto; }
+.choice-settings__limits { margin-left: 1.5rem; }
+.recall-controls .inspector-field { margin: .65rem 0; }
+.recall-controls .text-input { min-height: 44px; }
+@media (max-width: 640px) {
+  .builder-inspector .choice-settings, .builder-inspector .recall-controls { margin-top: 8px; padding-top: 0; }
+}

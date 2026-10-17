@@ -1,3 +1,4 @@
+import { analysisAnswerText, textEvidenceColumns } from './textEvidence'
 import { civilOpening, civilParts, nextDay } from '../../shared/civilTime'
 import { NotFoundError } from '../../shared/errors'
 import { defaultPolicies, type Level, type Policies, type PolicySnapshot, type RunState } from './model'
@@ -100,16 +101,17 @@ export class AnalysisRepository {
     const detail = await this.detail(workspaceId, runId)
     const theme = detail.themes.find(item => item.id === themeId)
     if (!theme || theme.withheld) throw new NotFoundError('This theme is not shown for this analysis.')
-    const { results } = await this.db.prepare(`SELECT r.id, r.completed_at AS completedAt, r.source, a.step_id AS questionId, a.value_json AS value FROM responses r
+    const { results } = await this.db.prepare(`SELECT r.id, r.completed_at AS completedAt, r.source, a.step_id AS questionId, a.value_json AS value, ${textEvidenceColumns} FROM responses r
       LEFT JOIN response_answers a ON a.response_id = r.id AND a.step_id IN (SELECT value FROM json_each(?))
+      LEFT JOIN flow_steps s ON s.revision_id=r.revision_id AND s.stable_id=a.step_id
       WHERE r.workspace_id = ? AND r.id IN (SELECT value FROM json_each(?)) ORDER BY r.completed_at, r.id, a.step_id`)
-      .bind(JSON.stringify(detail.questions.map(question => question.id)), workspaceId, JSON.stringify(theme.responseIds)).all<{ id: string; completedAt: string; source: string; questionId: string | null; value: string | null }>()
+      .bind(JSON.stringify(detail.questions.map(question => question.id)), workspaceId, JSON.stringify(theme.responseIds)).all<{ id: string; completedAt: string; source: string; questionId: string | null; value: string | null; questionType:string|null; settingsJson:string|null; choicesJson:string|null }>()
     const responses = new Map<string, { id: string; completedAt: string; source: string; answers: Array<{ questionId: string; prompt: string; text: string }> }>()
     for (const row of results) {
       const response = responses.get(row.id) ?? { id: row.id, completedAt: row.completedAt, source: row.source, answers: [] }
       responses.set(row.id, response)
-      const value = row.value === null ? null : JSON.parse(row.value)
-      if (row.questionId && typeof value === 'string') response.answers.push({ questionId: row.questionId, prompt: detail.questions.find(question => question.id === row.questionId)?.prompt ?? '', text: value })
+      const value = row.value === null ? undefined : analysisAnswerText(row.questionType, row.settingsJson, row.choicesJson, JSON.parse(row.value))
+      if (row.questionId && value !== undefined) response.answers.push({ questionId: row.questionId, prompt: detail.questions.find(question => question.id === row.questionId)?.prompt ?? '', text: value })
     }
     return { timeZone: detail.timeZone, flowId: detail.flowId, theme: { id: theme.id, rank: theme.rank, title: theme.title }, responses: [...responses.values()] }
   }

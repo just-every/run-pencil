@@ -6,8 +6,11 @@ export function textTypeLimit(type: string | null) {
   return type === 'short_text' ? manifest.limits.responses.shortTextCharactersPerAnswer : manifest.limits.responses.openTextCharactersPerAnswer
 }
 
-type Atom = { accepts: (character: string) => boolean; min: number; max: number }
-type Character = { accepts: (character: string) => boolean; literal?: string }
+export const textWhitespaceUnits = [9,10,11,12,13,32,160,5760,8192,8193,8194,8195,8196,8197,8198,8199,8200,8201,8202,8232,8233,8239,8287,12288,65279]
+export type TextUnitRange = [number, number]
+export type TextPatternAtom = { accepts: (character: string) => boolean; min: number; max: number; ranges: TextUnitRange[]; negate: boolean }
+type Atom = TextPatternAtom
+type Character = { accepts: (character: string) => boolean; literal?: string; ranges: TextUnitRange[] }
 
 /** A concatenation-only regex grammar. No dynamic RegExp ever receives a pattern. */
 function parsePattern(pattern: string): Atom[] | undefined {
@@ -19,15 +22,15 @@ function parsePattern(pattern: string): Atom[] | undefined {
   for (let i = source.length - 2; i >= 0 && source[i] === '\\'; i--) slashes++
   if (source.endsWith('$') && slashes % 2 === 0) source = source.slice(0, -1)
   let position = 0
-  const literal = (value: string): Character => ({ literal: value, accepts: character => character === value })
+  const literal = (value: string): Character => ({ literal: value, accepts: character => character === value, ranges: [[value.charCodeAt(0), value.charCodeAt(0)]] })
   const character = (): Character | undefined => {
     const value = source[position++]
     if (value === undefined) return undefined
     if (value !== '\\') return literal(value)
     const escaped = source[position++]
-    if (escaped === 'd') return { accepts: value => value >= '0' && value <= '9' }
-    if (escaped === 'w') return { accepts: value => /[A-Za-z0-9_]/.test(value) }
-    if (escaped === 's') return { accepts: value => /\s/.test(value) }
+    if (escaped === 'd') return { accepts: value => value >= '0' && value <= '9', ranges: [[48,57]] }
+    if (escaped === 'w') return { accepts: value => /[A-Za-z0-9_]/.test(value), ranges: [[48,57],[65,90],[95,95],[97,122]] }
+    if (escaped === 's') return { accepts: value => /\s/.test(value), ranges: textWhitespaceUnits.map(unit => [unit,unit]) }
     if (escaped === 'n') return literal('\n')
     if (escaped === 'r') return literal('\r')
     if (escaped === 't') return literal('\t')
@@ -37,6 +40,7 @@ function parsePattern(pattern: string): Atom[] | undefined {
   const atoms: Atom[] = []
   while (position < source.length) {
     let accepts: Atom['accepts']
+    let ranges: TextUnitRange[] = [], negated = false
     if (source[position] === '[') {
       position++
       const negate = source[position] === '^'
@@ -50,19 +54,21 @@ function parsePattern(pattern: string): Atom[] | undefined {
           const end = character()
           if (start.literal === undefined || end?.literal === undefined || start.literal > end.literal) return undefined
           const low = start.literal, high = end.literal
-          members.push({ accepts: value => value >= low && value <= high })
+          members.push({ accepts: value => value >= low && value <= high, ranges: [[low.charCodeAt(0), high.charCodeAt(0)]] })
         } else members.push(start)
       }
       if (source[position++] !== ']' || !members.length) return undefined
       accepts = value => members.some(member => member.accepts(value)) !== negate
+      ranges = members.flatMap(member => member.ranges); negated = negate
     } else if (source[position] === '.') {
       position++
       accepts = value => value !== '\n' && value !== '\r' && value !== '\u2028' && value !== '\u2029'
+      ranges = [[10,10],[13,13],[8232,8233]]; negated = true
     } else {
       if ('^$]{}()*+?|'.includes(source[position])) return undefined
       const value = character()
       if (!value) return undefined
-      accepts = value.accepts
+      accepts = value.accepts; ranges = value.ranges
     }
     let min = 1, max = 1
     const quantifier = source[position]
@@ -80,10 +86,12 @@ function parsePattern(pattern: string): Atom[] | undefined {
       if (!Number.isSafeInteger(min) || min > textTypeLimit('short_text') || (max !== Infinity && (!Number.isSafeInteger(max) || max > textTypeLimit('short_text'))) || max < min) return undefined
       position = end + 1
     }
-    atoms.push({ accepts, min, max })
+    atoms.push({ accepts, min, max, ranges, negate: negated })
   }
   return atoms
 }
+
+export { parsePattern as parseTextPattern }
 
 /** O(pattern length × answer length), including ambiguous adjacent repetitions.
  * Each atom queries reachable offsets using prefix counts; there is no

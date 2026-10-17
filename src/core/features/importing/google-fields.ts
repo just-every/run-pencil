@@ -62,12 +62,15 @@ export function mapGoogleFields(definition: Record<string, any>, scope: string, 
       const options=q.choiceQuestion.options
       if (selected?.type==='yes_no') {
         const labels=options.map((o:any)=>o.value)
-        if (labels.length!==2 || !labels.includes(selected.yesLabel) || !labels.includes(selected.noLabel)) throw new ValidationError('Yes/No requires exactly the two original options, with explicit Yes and No meanings.')
+        if (options.some((o:any)=>o.isOther===true) || labels.length!==2 || !labels.includes(selected.yesLabel) || !labels.includes(selected.noLabel)) throw new ValidationError('Yes/No requires exactly the two original options, with explicit Yes and No meanings.')
       } else step.choices=options.map((o:any,i:number)=>({id:stableId(scope,`${id}:choice:${i}`),sourceId:String(i),label:typeof o.value==='string'?o.value:''}))
+      const otherIndex=options.findIndex((o:any)=>o.isOther===true)
+      if(otherIndex>=0) step.settings.otherChoiceId=step.choices[otherIndex].id
       if (type==='multiple_choice') { step.settings.minSelections=step.required?1:0; step.settings.maxSelections=step.choices.length }
       for (const [i,option] of options.entries()) {
         if (option.goToAction!==undefined || option.goToSectionId!==undefined) navigation.push({step,section:sections.length-1,option:i,value:option.value,action:option.goToAction,target:option.goToSectionId,location:`${location}/questionItem/question/choiceQuestion/options/${i}`})
-        if (option.isOther || option.image) report(`${location}/questionItem/question/choiceQuestion/options/${i}`,title,'choice option','unsupported','Other input or option image omitted','Only fixed text options are represented; edit the question if an Other answer is needed.')
+        if (option.isOther) report(`${location}/questionItem/question/choiceQuestion/options/${i}/isOther`,title,'choice option','imported','Other write-in','The source Other option keeps its stable choice ID and historical typed text.')
+        if (option.image) report(`${location}/questionItem/question/choiceQuestion/options/${i}/image`,title,'choice option','unsupported','Option image omitted','No source image bytes or URLs are retained.')
       }
       if(q.choiceQuestion.shuffle) report(`${location}/questionItem/question/choiceQuestion/shuffle`,title,qKind,'unsupported','Choice shuffle omitted','Choices retain their documented source order.')
     }

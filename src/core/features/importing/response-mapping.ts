@@ -1,3 +1,4 @@
+import { googleChoiceAnswer, typeformChoiceAnswer } from './choice-values'
 import type { CsvRow } from './csv'
 import { calendarDate } from '../../shared/questionTypes'
 import { answerIssue } from '../../shared/answers'
@@ -29,7 +30,7 @@ export function suggestColumns(headers: string[], form: ImportForm, forbiddenCol
     return { column, target }
   })
 }
-function answer(value: string, step: ImportStep, google?: { dateOrder?: GoogleSettings['dateOrder'] }): unknown {
+export function importedAnswer(value: string, step: ImportStep, google?: { dateOrder?: GoogleSettings['dateOrder'] }): unknown {
   if (['short_text', 'long_text', 'email'].includes(step.questionType!)) return value
   if (google && step.questionType === 'yes_no') { if (value === step.settings.importYesLabel) return true; if (value === step.settings.importNoLabel) return false; throw new Error('Answer must match an explicitly confirmed Yes or No label.') }
   if (['yes_no', 'consent'].includes(step.questionType!)) {
@@ -49,16 +50,23 @@ function answer(value: string, step: ImportStep, google?: { dateOrder?: GoogleSe
     return `${String(order === 'YMD' ? a : c).padStart(4,'0')}-${String(order === 'MDY' ? a : b).padStart(2,'0')}-${String(order === 'DMY' ? a : order === 'YMD' ? c : b).padStart(2,'0')}`
   }
   const find = (label: string) => { const match = step.choices.filter(c => c.label === label || (!google && c.sourceId === label)); if (match.length !== 1) throw new Error('Choice must match exactly one label or reference.'); return match[0].id }
-  if (['single_choice', 'dropdown'].includes(step.questionType!)) return find(value)
+  if (!google && ['single_choice', 'dropdown', 'multiple_choice'].includes(step.questionType!) && value.startsWith('{')) {
+    let raw: unknown
+    try { raw = JSON.parse(value) } catch { throw new Error('Choice response JSON is malformed.') }
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('Use the documented choice or choices object.')
+    return typeformChoiceAnswer(raw, step, (_kind, label) => find(label))
+  }
+  if (['single_choice', 'dropdown'].includes(step.questionType!)) return google ? googleChoiceAnswer([value], step) : find(value)
   if (google && step.questionType === 'multiple_choice') {
     // CSV-created questions have whole-cell observations, including grid rows
     // explicitly reconstructed beside a definition. Only actual choiceQuestion
     // definitions establish which comma-space tokens are checkbox selections.
     if (step.sourceType !== 'choiceQuestion') return [find(value)]
+    if (step.settings.otherChoiceId && value.includes(', ')) throw new Error('Checkbox CSV with Other and comma-space separators is ambiguous: it may be selections or one write-in. Use Google response JSON to preserve each typed value.')
     if (step.choices.some(c => c.label.includes(', ') && value.includes(c.label))) throw new Error('Checkbox cell contains a separator-bearing option label; the export is ambiguous and cannot be decoded.')
     const labels = value.split(', ')
     if (new Set(labels).size !== labels.length) throw new Error('Checkbox cell repeats an option.')
-    return labels.map(label => { const matches = step.choices.filter(c => c.label === label); if (matches.length !== 1) throw new Error('Checkbox cell must match whole known option labels separated by comma-space; ambiguous or unknown labels are refused.'); return matches[0].id })
+    return googleChoiceAnswer(labels, step)
   }
   if (step.questionType === 'priority' || step.questionType === 'multiple_choice') {
     let values: unknown
@@ -110,7 +118,7 @@ export function* mapResponses(rows: Iterable<CsvRow>, headers: string[], form: I
         } else {
           if (assigned.has(step.id) || [...assigned].some(key => key.startsWith(`${step.id}:`))) throw new Error('More than one column maps to this answer.')
           assigned.add(step.id)
-          if (value !== '') answers[step.id] = answer(value, step, google)
+          if (value !== '') answers[step.id] = importedAnswer(value, step, google)
         }
       } catch (error) { errors.push({ row, column: label, message: (error as Error).message }) }
     }

@@ -7,7 +7,8 @@ export function structuredAnswerFilter(stepId: string, value: string) {
     "(s.question_type IN ('multiple_choice', 'priority') AND json_type(a.value_json) = 'array' AND EXISTS (SELECT 1 FROM json_each(a.value_json) WHERE type = 'text' AND value = ?))",
     "(s.question_type IN ('single_choice', 'dropdown', 'short_text', 'long_text') AND json_type(a.value_json) = 'text' AND json_extract(a.value_json, '$') = ?)",
   ]
-  const bindings: Array<string | number> = [stepId, value, value, value]
+  clauses.push("(s.question_type IN ('single_choice', 'dropdown', 'multiple_choice') AND json_type(a.value_json) = 'object' AND (EXISTS (SELECT 1 FROM json_each(a.value_json, '$.choiceIds') WHERE type = 'text' AND value = ?) OR json_extract(a.value_json, '$.other.text') = ?))")
+  const bindings: Array<string | number> = [stepId, value, value, value, value, value]
   if (value === 'true' || value === 'false') {
     clauses.push("(s.question_type IN ('yes_no', 'thumbs_rating') AND json_type(a.value_json) = ?)")
     clauses.push("(s.question_type = 'consent' AND json_type(a.value_json, '$.accepted') = ?)")

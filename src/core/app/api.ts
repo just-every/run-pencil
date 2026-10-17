@@ -107,12 +107,12 @@ export const api = {
   createFlow: (input: { title: string; slug: string }) => request<{ id: string; slug: string; title: string }>('/api/app/flows', { method: 'POST', body: JSON.stringify(input) }),
   duplicateFlow: (flowId: string, input: { title: string; slug: string }) => request<{ id: string; slug: string; title: string }>(`/api/app/flows/${encodeURIComponent(flowId)}/duplicate`, { method: 'POST', body: JSON.stringify(input) }),
   builder: (flowId: string) => request<BuilderDraft>(`/api/app/flows/${encodeURIComponent(flowId)}/draft`),
-  saveDraft: (flowId: string, input: { stepId: string; prompt: string; required: boolean; expectedVersion: number; helperText?: string | null; nextStepId?: string | null; questionSettings?: Record<string, unknown> | null; questionType?: FlowStep['questionType']; choices?: Array<{ id?: string; value: string; label: string }> }) =>
+  saveDraft: (flowId: string, input: { stepId: string; prompt: string; required: boolean; expectedVersion: number; helperText?: string | null; nextStepId?: string | null; questionSettings?: Record<string, unknown> | null; questionType?: FlowStep['questionType']; choices?: Array<{ id?: string; newId?: string; value: string; label: string }> }) =>
     request<{ kind: 'updated'; draftVersion: number; step: FlowStep } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft`, {
       method: 'PUT',
       body: JSON.stringify(input),
     }),
-  addDraftStep: (flowId: string, input: { expectedVersion: number; step: { kind: FlowStep['kind']; questionType: FlowStep['questionType']; prompt: string; helperText?: string | null; required?: boolean; nextStepId?: string | null; questionSettings?: Record<string, unknown> | null; choices?: Array<{ value: string; label: string }> } }) =>
+  addDraftStep: (flowId: string, input: { expectedVersion: number; step: { kind: FlowStep['kind']; questionType: FlowStep['questionType']; prompt: string; helperText?: string | null; required?: boolean; nextStepId?: string | null; questionSettings?: Record<string, unknown> | null; choices?: Array<{ newId?: string; value: string; label: string }> } }) =>
     request<{ kind: 'created'; draftVersion: number; step: FlowStep } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/steps`, { method: 'POST', body: JSON.stringify(input) }),
   duplicateDraftStep: (flowId: string, stepId: string, expectedVersion: number) =>
     request<{ kind: 'created'; draftVersion: number; step: FlowStep } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/steps/${encodeURIComponent(stepId)}/duplicate`, { method: 'POST', body: JSON.stringify({ expectedVersion }) }),

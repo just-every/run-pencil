@@ -1,3 +1,5 @@
+import { recallGraphIssues } from './recall-validation'
+import { choiceSettingsValid } from '../../shared/choiceAnswers'
 import { scoreQuestionTypes, scoreAnswerIssue } from '../../shared/scoreQuestions'
 import { calendarDate, typeSettingsValid } from '../../shared/questionTypes'
 import { matchesBranch } from '../../shared/branching'
@@ -44,9 +46,9 @@ function validSettings(step: StoredStep, choices: StoredChoice[]) {
   if (!step.questionSettingsJson) return { valid: typeSettingsValid(step.questionType, {}), value: {} as Record<string, unknown> }
   const value = parsed(step.questionSettingsJson)
   if (!value || Array.isArray(value) || typeof value !== 'object') return { valid: false, value: {} as Record<string, unknown> }
-  if (!typeSettingsValid(step.questionType, value as Record<string, unknown>)) return { valid: false, value: {} as Record<string, unknown> }
+  if (!typeSettingsValid(step.questionType, value as Record<string, unknown>) || !choiceSettingsValid(step.questionType, value as Record<string, unknown>, choices.map(choice => choice.stableId))) return { valid: false, value: {} as Record<string, unknown> }
   if (step.questionType === 'multiple_choice') {
-    const { minSelections, maxSelections } = value as { minSelections?: unknown; maxSelections?: unknown }
+    const { minSelections = 1, maxSelections = choices.length } = value as { minSelections?: unknown; maxSelections?: unknown }
     if (!Number.isInteger(minSelections) || !Number.isInteger(maxSelections) || (minSelections as number) < 0 || (maxSelections as number) < (minSelections as number) || (maxSelections as number) > choices.length) return { valid: false, value: {} as Record<string, unknown> }
   }
   return { valid: true, value: value as Record<string, unknown> }
@@ -59,7 +61,7 @@ export function questionSettings(step: StoredStep, choices: StoredChoice[]): { v
       ? { minSelections: 1, maxSelections: choices.length }
       : {}
   const settings = validSettings(step, choices)
-  return { valid: settings.valid, value: step.questionSettingsJson ? settings.value : defaultSettings }
+  return { valid: settings.valid, value: { ...defaultSettings, ...settings.value } }
 }
 
 function branchRuleIsValid(rule: StoredBranchRule, source: StoredStep, choiceIds: string[]) {
@@ -81,7 +83,7 @@ function branchRuleIsValid(rule: StoredBranchRule, source: StoredStep, choiceIds
 }
 
 export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice[], rules: StoredBranchRule[], selection: BranchSelection = 'first-matching-rule'): GraphIssue[] {
-  const issues: GraphIssue[] = []
+  const issues: GraphIssue[] = recallGraphIssues(steps, choices)
   const byStableId = new Map(steps.map((step) => [step.stableId, step]))
   const choicesByStep = new Map<string, StoredChoice[]>()
   for (const choice of choices) {

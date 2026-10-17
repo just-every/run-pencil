@@ -6,6 +6,10 @@ import { TypeSettings } from './TypeSettings'
 import { stepRules, type AuthoringDraft, type EditableChoice, type EditableRule } from '../authoring'
 import { StepCanvas } from './StepCanvas'
 import { ChoiceEditor } from './ChoiceEditor'
+import { ChoiceSettings } from './ChoiceSettings'
+import { RecallControls } from './RecallControls'
+import { recallKey } from '../../../shared/recallSyntax'
+import { isChoiceQuestion } from '../../../shared/choiceAnswers'
 import { DistributionPanel } from '../../distribution'
 import { ArrowDown, ArrowLeft, ArrowUp, Copy, Eye, Plus, Save, Send, Trash2 } from 'lucide-react'
 import { Link, useParams, useRouter } from '@tanstack/react-router'
@@ -93,7 +97,15 @@ export function FlowBuilderPage() {
   const dirty = stepDirty || branchDirty
   useProtectUnsavedChanges(dirty || !!deadline || !!target)
   const updateSetting = (name: string, value: string) => { const settings = settingsText ? JSON.parse(settingsText) : {}; if (value === '') delete settings[name]; else settings[name] = Number(value); setSettingsText(Object.keys(settings).length ? JSON.stringify(settings, null, 2) : '') }
-  const settings = settingsText ? JSON.parse(settingsText) as Record<string, string | number> : {}
+  const settings = settingsText ? JSON.parse(settingsText) as Record<string, unknown> : {}
+  const changeSettings = (next: Record<string, unknown>) => setSettingsText(Object.keys(next).length ? JSON.stringify(next, null, 2) : '')
+  const changeSetting = (key: string, value: unknown) => { const next = { ...settings }; if (value === undefined) delete next[key]; else next[key] = value; changeSettings(next) }
+  const changeChoices = (update: (current: EditableChoice[]) => EditableChoice[]) => {
+    const next = update(choices), ids = next.map(choice => choice.id ?? choice.newId), nextSettings = { ...settings }
+    for (const key of ['otherChoiceId', 'noneChoiceId']) if (nextSettings[key] && !ids.includes(String(nextSettings[key]))) { delete nextSettings[key]; if (key === 'otherChoiceId') delete nextSettings.otherText }
+    setChoices(next); changeSettings(nextSettings)
+  }
+  const recallSources = (draft?.steps ?? []).filter(step => step.kind === 'question' && step.position < (selected?.position ?? 0)).flatMap(step => { const key = recallKey(step.questionSettings); return key ? [{ key, prompt: step.prompt }] : [] })
 
   const reloadAfterMutation = async (work: () => Promise<{ kind: string; step?: { id: string } }>) => {
     if (!draft) return
@@ -257,19 +269,22 @@ export function FlowBuilderPage() {
             <p className="eyebrow">Content</p>
             <label className="inspector-field">Prompt<textarea aria-label="Prompt" disabled={saving} className="text-area" onChange={(event) => setPrompt(event.target.value)} value={prompt} /></label>
             {selected.kind === 'question' ? <DraftRewritePanel key={`${flowId}:${selected.id}`} flowId={flowId} stepId={selected.id} version={draft.flow.draftVersion} source={selected.prompt} disabled={saving || dirty} onAccepted={load} onBusy={setSaving} /> : null}
-            <details><summary className="focus-ring">Extra wording</summary><label className="inspector-field">Why ask this?<textarea aria-label="Why ask this?" disabled={saving} className="text-area" onChange={(event) => setHelperText(event.target.value)} value={helperText} /></label></details>
+            <details className="extra-wording"><summary className="focus-ring">Extra wording and answer recall</summary><label className="inspector-field">Why ask this?<textarea aria-label="Why ask this?" disabled={saving} className="text-area" onChange={(event) => setHelperText(event.target.value)} value={helperText} /></label>
+              <RecallControls key={selected.id} step={selected} sources={recallSources} settings={settings} disabled={saving} onName={key => changeSetting('recallKey', key || undefined)} onInsert={token => setPrompt(current => `${current}${current && !/\s$/.test(current) ? ' ' : ''}${token}`)} />
+            </details>
             {selected.kind === 'question' ? <label className="inspector-field">Question type<select aria-label="Question type" disabled={saving} className="text-input" onChange={(event) => {
               const nextType = event.target.value as FlowStep['questionType']
               setQuestionType(nextType)
               setCanvasAnswer(undefined)
-              setSettingsText('')
+              changeSettings(recallKey(settings) ? { recallKey: recallKey(settings) } : {})
               if (!['single_choice', 'multiple_choice', 'priority', 'dropdown'].includes(nextType ?? '')) setChoices([])
               if (nextType !== questionType) { setCanvasAnswer(undefined); setRules([]) }
             }} value={questionType ?? ''}>{questionTypes.map(type => <option value={type} key={type}>{questionTypeLabels[type]}</option>)}</select></label> : null}
-            {selected.kind === 'question' && ['single_choice', 'multiple_choice', 'priority', 'dropdown'].includes(questionType ?? '') ? <ChoiceEditor disabled={saving} choices={choices} onChange={setChoices} /> : null}
+            {selected.kind === 'question' && ['single_choice', 'multiple_choice', 'priority', 'dropdown'].includes(questionType ?? '') ? <ChoiceEditor disabled={saving} choices={choices} onChange={changeChoices} recallSources={recallSources} /> : null}
+            {selected.kind === 'question' && isChoiceQuestion(questionType) ? <ChoiceSettings multiple={questionType === 'multiple_choice'} choices={choices} settings={settings} disabled={saving} onChange={(next, options) => { changeSettings(next); setChoices(options); setCanvasAnswer(undefined) }} /> : null}
             <TypeSettings type={questionType} settings={settings} disabled={saving} onChange={(key, value) => { const next: Record<string, unknown> = { ...settings }; if (value === undefined) delete next[key]; else next[key] = value; setSettingsText(Object.keys(next).length ? JSON.stringify(next, null, 2) : '') }} />
-            {selected.kind === 'question' && questionType === 'rating' ? <RatingSettings settings={settings} disabled={saving} onChangeSettings={next => setSettingsText(JSON.stringify(next, null, 2))} /> : null}
-            {selected.kind === 'question' && questionType === 'multiple_choice' ? <div className="ledger-filters">{[['minSelections', 'Minimum selections', 1], ['maxSelections', 'Maximum selections', choices.length]].map(([key, label, fallback]) => <label className="inspector-field" key={key}>{label}<input disabled={saving} className="text-input" type="number" min={0} max={choices.length} value={settings[String(key)] ?? fallback} onChange={(event) => updateSetting(String(key), event.target.value)} /></label>)}</div> : null}
+            {selected.kind === 'question' && questionType === 'rating' ? <RatingSettings settings={settings} disabled={saving} onChangeSettings={next => changeSettings({ ...next, ...(recallKey(settings) ? { recallKey: recallKey(settings) } : {}) })} /> : null}
+            {selected.kind === 'question' && questionType === 'multiple_choice' ? <div className="ledger-filters">{[['minSelections', 'Minimum selections', 1], ['maxSelections', 'Maximum selections', choices.length]].map(([key, label, fallback]) => <label className="inspector-field" key={key}>{label}<input disabled={saving} className="text-input" type="number" min={0} max={choices.length} value={String(settings[String(key)] ?? fallback)} onChange={(event) => updateSetting(String(key), event.target.value)} /></label>)}</div> : null}
             {selected.kind !== 'completion' ? <label className="inspector-field">Default next screen<select className="text-input" disabled={saving} onChange={(event) => setNextStepId(event.target.value || null)} value={nextStepId ?? ''}><option value="">Choose a screen</option>{draft.steps.filter((step) => step.id !== selected.id && step.kind !== 'welcome').map((step) => <option key={step.id} value={step.id}>{stepLabel(step)} · {step.prompt}</option>)}</select></label> : null}
             {selected.kind === 'question' ? <div className="toggle-row">
               <label htmlFor="step-required">Required response</label>

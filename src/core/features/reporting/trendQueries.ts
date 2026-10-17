@@ -1,3 +1,4 @@
+import { sqlChoiceSelection, sqlChoiceAnswerValid } from './choiceValidity'
 import { ValidationError } from '../../shared/errors'
 import { sqlEmail, sqlTextWithin } from './textValidity'
 import { responseScope } from './scope'
@@ -18,25 +19,24 @@ function answerValid(type: string): string {
   if (type === 'number') return `${numeric} AND ${value} >= COALESCE(json_extract(${settings},'$.min'),-1.7976931348623157e308) AND ${value} <= COALESCE(json_extract(${settings},'$.max'),1.7976931348623157e308) AND (json_extract(${settings},'$.decimalPlaces') IS NULL OR round(${value},json_extract(${settings},'$.decimalPlaces'))=${value})`
   if (type === 'yes_no' || type === 'thumbs_rating') return `${kind} IN ('true','false')`
   if (type === 'consent') return `${kind}='object' AND json_type(a.value_json,'$.accepted') IN ('true','false') AND json_extract(a.value_json,'$.statement')=json_extract(${settings},'$.statement') AND (s.required=0 OR json_extract(a.value_json,'$.accepted')=1)`
-  if (type === 'single_choice' || type === 'dropdown') return `${kind}='text' AND EXISTS (SELECT 1 FROM choice_options c WHERE c.step_id=s.id AND c.stable_id=${value})`
-  if (type === 'multiple_choice') return `${kind}='array' AND json_array_length(a.value_json) BETWEEN COALESCE(json_extract(${settings},'$.minSelections'),1) AND COALESCE(json_extract(${settings},'$.maxSelections'),(SELECT COUNT(*) FROM choice_options c WHERE c.step_id=s.id)) AND json_array_length(a.value_json)=(SELECT COUNT(DISTINCT value) FROM json_each(a.value_json)) AND NOT EXISTS (SELECT 1 FROM json_each(a.value_json) j WHERE j.type!='text' OR NOT EXISTS (SELECT 1 FROM choice_options c WHERE c.step_id=s.id AND c.stable_id=j.value))`
+  if (['single_choice','dropdown','multiple_choice'].includes(type)) return sqlChoiceAnswerValid()
   if (type === 'short_text' || type === 'long_text' || type === 'email') return `${kind}='text' AND ${sqlTextWithin(value,type === 'long_text' ? 5000 : 200)}${type === 'email' ? ` AND ${sqlEmail(value)}` : ''}`
   if (type === 'url') return `CASE s.question_type ${contactValidity('a.value_json')} ELSE 0 END`
   if (type === 'date') return `${kind}='text' AND length(${value})=10 AND ${value} GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' AND substr(${value},1,4)!='0000' AND date(${value},'+0 days')=${value} AND ${value}>=COALESCE(json_extract(${settings},'$.earliest'),'0001-01-01') AND ${value}<=COALESCE(json_extract(${settings},'$.latest'),'9999-12-31')`
   throw new ValidationError('This question does not support a trend metric.')
 }
 
-export function trendAggregation(db: D1Database, input: { workspaceId: string; flowId: string; filter: LedgerFilter; cutoff: string; stableStepId: string; type: string; metric: 'score' | 'share'; shareValue?: string | number | boolean; periods: TrendPeriod[] }) {
+export function trendAggregation(db: D1Database, input: { workspaceId: string; flowId: string; filter: LedgerFilter; cutoff: string; stableStepId: string; type: string; metric: 'score' | 'share'; shareValue?: string | number | boolean; periods: TrendPeriod[]; otherTextValid?: string }) {
   const scope = responseScope(input.workspaceId,input.flowId,input.filter,input.cutoff)
   const binding = input.shareValue === undefined ? null : input.shareValue
-  const match = input.type === 'multiple_choice' ? `EXISTS (SELECT 1 FROM json_each(a.value_json) j WHERE j.type='text' AND j.value=json_extract(?,'$'))`
+  const match = ['single_choice','dropdown','multiple_choice'].includes(input.type) ? `EXISTS (SELECT 1 FROM json_each(${sqlChoiceSelection()}) j WHERE j.type='text' AND j.value=json_extract(?,'$'))`
     : input.type === 'consent' ? `json_extract(a.value_json,'$.accepted')=json_extract(?,'$')` : input.type === 'email' ? `lower(${value})=lower(json_extract(?,'$'))` : `${value}=json_extract(?,'$')`
   const numeric = ['ces','rating','number','emoji_rating'].includes(input.type)
   const numerator = input.metric === 'share' ? 'SUM(matched)' : input.type === 'nps' ? 'SUM(answer>=9)-SUM(answer<=6)' : input.type === 'csat' ? 'SUM(answer>=4)' : input.type === 'thumbs_rating' ? 'SUM(answer=1)' : 'NULL'
   const mean = input.type === 'number' ? 'CASE WHEN MAX(scale)=0 THEN 0 ELSE SUM(1.0*answer/scale)/COUNT(*)*MAX(scale) END' : 'AVG(answer)'
   const metric = input.metric === 'score' && numeric ? mean : `(${numerator})*100.0/COUNT(*)`
   return db.prepare(`WITH periods AS (SELECT CAST(key AS INTEGER) AS period,json_extract(value,'$.startAt') AS startAt,json_extract(value,'$.endAt') AS endAt FROM json_each(?)),
-    evidence AS MATERIALIZED (SELECT p.period,${value} AS answer,CASE WHEN (${answerValid(input.type)}) THEN 0 ELSE 1 END AS invalid,${match} AS matched
+    evidence AS MATERIALIZED (SELECT p.period,${value} AS answer,CASE WHEN (${answerValid(input.type)}) AND (${input.otherTextValid ?? '1'}) THEN 0 ELSE 1 END AS invalid,${match} AS matched
       FROM periods p JOIN responses r ON r.completed_at>=p.startAt AND r.completed_at<p.endAt
       JOIN flow_revisions v ON v.id=r.revision_id AND v.flow_id=r.flow_id AND v.state='published' AND v.published_at<=?
       JOIN flow_steps s ON s.revision_id=v.id AND s.stable_id=? AND s.kind='question'

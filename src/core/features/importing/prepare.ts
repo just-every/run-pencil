@@ -17,15 +17,19 @@ import { nativeValueStrings } from './effect-values'
 import { forbiddenSource, forbiddenSources } from './source-privacy'
 import { googleSource } from './google-source'
 import { googleTime } from './google-time'
+import { mapJsonResponses } from './response-json'
 import { googleIdentity } from './google-fields'
 import { canonicalHash } from '../../../base/import-kit/src/provenance/canonical-hash'
 export function prepareImport(input: ImportInput, workspaceId: string, hashPayload = canonicalHash) {
-  const definitionBytes = Buffer.byteLength(input.definition), csvBytes = Buffer.byteLength(input.csv)
-  if (definitionBytes + csvBytes > 8 * 1024 * 1024) throw new ValidationError('Import files exceed the 8 MiB combined upload limit. Nothing was written.')
+  const definitionBytes = Buffer.byteLength(input.definition), csvBytes = Buffer.byteLength(input.csv), responseBytes = Buffer.byteLength(input.responses ?? '')
+  const jsonResponses = Boolean(input.responses?.trim())
+  if (input.csv.trim() && jsonResponses) throw new ValidationError('Choose either response CSV or response JSON, not both.')
+  if (jsonResponses && !input.definition.trim()) throw new ValidationError('Response JSON requires its form definition.')
+  if (definitionBytes + csvBytes + responseBytes > 8 * 1024 * 1024) throw new ValidationError('Import files exceed the 8 MiB combined upload limit. Nothing was written.')
   const google = input.source === 'google-forms'
   if (input.source && !['typeform', 'google-forms'].includes(input.source)) throw new ValidationError('Unknown import source.')
   if (!google && input.google) throw new ValidationError('Google settings require the Google Forms source.')
-  if (google && !input.definition.trim() && !input.csv.trim()) throw new ValidationError('Provide a Google definition or response CSV.')
+  if (google && !input.definition.trim() && !input.csv.trim() && !jsonResponses) throw new ValidationError('Provide a Google definition or response CSV.')
   if (google && input.columns?.some(column => column.choice)) throw new ValidationError('Google response exports use one column per question. Separate choice columns are not supported.')
   let definition: Record<string, any>
   try { definition = object(JSON.parse(input.definition || (google ? '{}' : ''))) } catch { throw new ValidationError('Form JSON is not valid.') }
@@ -33,7 +37,7 @@ export function prepareImport(input: ImportInput, workspaceId: string, hashPaylo
   if (!google) for (const key of ['welcome_screens', 'thankyou_screens', 'logic']) if (definition[key] !== undefined && !Array.isArray(definition[key])) throw new ValidationError(`${key} must be an array.`)
   if (definition.hidden !== undefined && (!Array.isArray(definition.hidden) || definition.hidden.some((name: unknown) => typeof name !== 'string'))) throw new ValidationError('Hidden source names must be an array of strings.')
   const plannedAt = input.plannedAt ?? new Date().toISOString()
-  const formHash = sha256(input.definition), csvHash = sha256(input.csv), digest = sha256(`${formHash}:${csvHash}`)
+  const formHash = sha256(input.definition), csvHash = sha256(input.csv), responseHash = jsonResponses ? sha256(input.responses!) : csvHash, digest = sha256(`${formHash}:${csvHash}${jsonResponses ? ':' + responseHash : ''}`)
   const namespace = `${google ? 'google-forms' : 'documented-form'}:${digest}`, flowId = stableId(workspaceId, google ? namespace : digest)
   const googleParsed = google ? googleSource(input, definition, namespace) : undefined
   const forbidden = googleParsed?.forbidden ?? forbiddenSources(definition), form = googleParsed?.form ?? mapFields(definition, namespace, forbidden)
@@ -50,9 +54,6 @@ export function prepareImport(input: ImportInput, workspaceId: string, hashPaylo
     if (step.questionType === 'multiple_choice' && (!Number.isInteger(step.settings.minSelections) || !Number.isInteger(step.settings.maxSelections) || Number(step.settings.minSelections) < 0 || Number(step.settings.maxSelections) < Number(step.settings.minSelections) || Number(step.settings.maxSelections) > step.choices.length)) throw new ValidationError('Selection bounds are invalid.')
   }
   if (!google && !form.steps.some(s => s.kind === 'question')) throw new ValidationError('No supported questions remain to import.')
-  // The normalized form now owns every retained field. Do not keep the parsed
-  // upload, including discarded source fields, live while consuming the CSV.
-  definition = {}
   const csv = csvRows(input.csv), firstRow = csv.next().value, headers: string[] = firstRow?.cells ?? [], errors = rowErrorStore()
   errors.push(...(firstRow?.errors ?? []))
   function* admittedRows() { for (const row of csv) { if (row.row - 1 > limits.responses.perRevision) throw new ValidationError('CSV exceeds the configured responses-per-revision limit. Nothing was written.'); yield row } }
@@ -76,12 +77,17 @@ export function prepareImport(input: ImportInput, workspaceId: string, hashPaylo
     form.report.push({ location: `/csv/columns/${c.column}`, label: prohibited && (!google || forbiddenSource(headers[c.column], forbidden)) ? 'Private source column' : headers[c.column], sourceType: 'CSV column', state: c.target === 'skip' ? 'unsupported' : 'imported', change: c.target === 'skip' ? 'Never imported' : c.target, reason: google ? `${googleParsed!.counts[c.column]} nonblank cells ${c.target === 'skip' ? 'skipped' : 'mapped'}. ${prohibited ? googleParsed!.hardReasons.get(c.column) ?? 'Private metadata is never imported.' : googleIdentity(headers[c.column]) && c.target !== 'skip' ? 'Explicitly retained as ordinary email answer data only; never contacts, invitations, sessions or notifications.' : c.target === 'skip' ? googleParsed!.skipReasons.get(c.column) ?? 'Skipped by the reviewed mapping.' : 'Blank cells stay unanswered; native limits apply.'}` : prohibited ? 'Hidden and network/IP source identities are discarded before storage and cannot be mapped.' : c.target === 'skip' ? 'Skipped by the reviewed column mapping.' : 'Column mapping reviewed by the operator; blank cells remain unanswered.' })
   }
   const responses = responseStore()
-  const time = googleParsed ? googleTime(input.csv, columns, input.google ?? {}, googleParsed.review) : undefined
-  if (googleParsed) form.report.push({ location: '/google/interpretation', label: 'Google response interpretation', sourceType: 'operator settings', state: 'changed', change: `${googleParsed.review.dateOrder ?? 'Date order required'} · ${googleParsed.review.timeZone ?? 'Sheet time zone required'}`, reason: 'Sheet timestamps use this explicit zone and reviewed date order. Ambiguous and nonexistent local times are refused. Checkbox answers require unambiguous whole option labels.' })
+  const time = googleParsed && !jsonResponses ? googleTime(input.csv, columns, input.google ?? {}, googleParsed.review) : undefined
+  if (googleParsed && !jsonResponses) form.report.push({ location: '/google/interpretation', label: 'Google response interpretation', sourceType: 'operator settings', state: 'changed', change: `${googleParsed.review.dateOrder ?? 'Date order required'} · ${googleParsed.review.timeZone ?? 'Sheet time zone required'}`, reason: 'Sheet timestamps use this explicit zone and reviewed date order. Ambiguous and nonexistent local times are refused. Checkbox answers require unambiguous whole option labels.' })
+  if (jsonResponses) for (const response of mapJsonResponses(input.responses!, google, definition, form, forbidden, errors)) responses.add(response)
+  // Only normalized answers survive parsing; source metadata and credentials
+  // are absent from all retained records and native effects.
+  definition = {}
   for (const response of mapResponses(admittedRows(), headers, form, columns, errors, forbiddenColumns, time ? { time, dateOrder: googleParsed!.review.dateOrder } : undefined)) responses.add(response)
+  if (jsonResponses) form.report.push({ location: '/responses/json', label: 'Response JSON', sourceType: google ? 'Google Forms API' : 'Typeform Responses API', state: 'imported', change: 'Historical answers and Other write-ins', reason: 'Only completed timestamped responses and supported question answers are retained. Provider identities, credentials, hidden values, network metadata and grading are discarded; original JSON is not retained.' })
   form.report.push({ location: '/custody', label: 'Original files', sourceType: 'artifact', state: 'unsupported', change: 'Original bytes not retained', reason: 'Only source hashes, safe mapping records and imported answers are retained. Keep your original files privately; hidden and network/IP values are discarded.' })
-  form.report.push({ location: '/responses/identity', label: 'Response identity', sourceType: 'CSV rows', state: 'changed', change: 'Anonymous imported responses', reason: 'File digest and row position recognize exact repeat files. Different exports are not deduplicated across files; no contacts, sessions or effects are created.' })
-  const source: SourceBundle = { records: [], artifacts: [{ name: 'form.json', sha256: formHash, size: definitionBytes, original: { status: 'unavailable', reason: 'not-supplied' } }, ...(csvBytes ? [{ name: 'responses.csv', sha256: csvHash, size: csvBytes, original: { status: 'unavailable' as const, reason: 'not-supplied' as const } }] : [])], diagnostics: [] }
+  form.report.push({ location: '/responses/identity', label: 'Response identity', sourceType: jsonResponses ? 'JSON rows' : 'CSV rows', state: 'changed', change: 'Anonymous imported responses', reason: 'File digest and row position recognize exact repeat files. Different exports are not deduplicated across files; no contacts, sessions or effects are created.' })
+  const source: SourceBundle = { records: [], artifacts: [{ name: 'form.json', sha256: formHash, size: definitionBytes, original: { status: 'unavailable', reason: 'not-supplied' } }, ...((csvBytes || jsonResponses) ? [{ name: jsonResponses ? 'responses.json' : 'responses.csv', sha256: responseHash, size: jsonResponses ? responseBytes : csvBytes, original: { status: 'unavailable' as const, reason: 'not-supplied' as const } }] : [])], diagnostics: [] }
   const encodeValue = nativeValueStrings(), consentSteps = new Set(form.steps.filter(step => step.questionType === 'consent').map(step => step.id))
   const formTarget = formEffect(form, flowId, workspaceId, digest, plannedAt)
   const effectFor = (r: Pick<SourceRecord, 'kind' | 'payload'>): TargetEffect[] => r.kind === 'form' ? [formTarget] : r.kind === 'response' ? [responseEffect(r.payload as unknown as ParsedResponse, flowId, workspaceId, encodeValue, consentSteps)] : []
@@ -91,6 +97,6 @@ export function prepareImport(input: ImportInput, workspaceId: string, hashPaylo
   const formRecord: SourceRecord = { namespace, kind: 'form', sourceId: 'form', payload, payloadHash: sha256(canonicalJson(payload)), artifactHash: formHash, location: { artifact: 'form.json', pointer: '/' } }
   // Invalid rows retain locations and diagnostics, never unreviewed or skipped values.
   const { rejected, rowErrors } = errors.finish()
-  source.records = sourceRecords(formRecord,responses,rejected,csvHash,hashPayload)
-  return { ...(googleParsed ? { sourceName: 'google-forms' as const, google: googleParsed.review } : {}), plannedAt, form, flowId, namespace, digest, source, effects, headers, columns, forbiddenColumns, rowErrors, responseCount: responses.length, mapping: { version: mappingVersion, map: (r: SourceRecord) => ({ effects: effectFor(r), unmapped: r.kind === 'form' ? form.report.filter(i => i.state !== 'imported').map(i => ({ field: i.location, reason: i.reason })) : [], ...(r.kind === 'rejected-row' ? { rejection: 'CSV row is invalid; inspect every listed row error.' } : {}) }) } }
+  source.records = sourceRecords(formRecord,responses,rejected,responseHash,hashPayload,jsonResponses ? 'responses.json' : 'responses.csv')
+  return { ...(googleParsed ? { sourceName: 'google-forms' as const, google: googleParsed.review } : {}), plannedAt, form, flowId, namespace, digest, source, effects, headers, columns, forbiddenColumns, rowErrors, responseCount: responses.length, mapping: { version: mappingVersion, map: (r: SourceRecord) => ({ effects: effectFor(r), unmapped: r.kind === 'form' ? form.report.filter(i => i.state !== 'imported').map(i => ({ field: i.location, reason: i.reason })) : [], ...(r.kind === 'rejected-row' ? { rejection: 'Response row is invalid; inspect every listed row error.' } : {}) }) } }
 }

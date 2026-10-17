@@ -1,3 +1,4 @@
+import { choiceAnswerIssue, isChoiceQuestion } from './choiceAnswers'
 import type { QuestionType } from './questionKinds'
 import { contactQuestionTypes, contactAnswerIssue } from './contactAnswers'
 import { scoreQuestionTypes, scoreAnswerIssue } from './scoreQuestions'
@@ -18,6 +19,7 @@ export function isUnanswered(value: unknown) {
   return value === undefined || value === null || (typeof value === 'string' && !value.trim()) || (Array.isArray(value) && value.length === 0)
 }
 export function answerIssue(step: AnswerQuestion, choiceIds: string[], value: unknown): string | undefined {
+  if (isChoiceQuestion(step.questionType) && value && typeof value === 'object' && !Array.isArray(value)) return choiceAnswerIssue(step.questionType, step.questionSettings ?? {}, choiceIds, value)
   if (isUnanswered(value)) return step.required ? `An answer is required for “${step.prompt}”.` : undefined
   const settings = step.questionSettings ?? {}
   if (!typeSettingsValid(step.questionType, settings)) return 'This question has invalid settings.'
@@ -28,12 +30,8 @@ export function answerIssue(step: AnswerQuestion, choiceIds: string[], value: un
     case 'long_text': return textAnswerIssue(step.questionType, settings, value)
     case 'email': return typeof value === 'string' && value.length <= 200 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? undefined : 'Enter a valid email address.'
     case 'dropdown':
-    case 'single_choice': return typeof value === 'string' && choiceIds.includes(value) ? undefined : 'Choose one of the available options.'
-    case 'multiple_choice': {
-      const min = typeof settings.minSelections === 'number' ? settings.minSelections : 1
-      const max = typeof settings.maxSelections === 'number' ? settings.maxSelections : choiceIds.length
-      return Array.isArray(value) && value.every((id) => typeof id === 'string' && choiceIds.includes(id)) && new Set(value).size === value.length && value.length >= min && value.length <= max ? undefined : `Choose between ${min} and ${max} distinct options.`
-    }
+    case 'single_choice':
+    case 'multiple_choice': return choiceAnswerIssue(step.questionType, settings, choiceIds, value)
     case 'yes_no': return typeof value === 'boolean' ? undefined : 'Choose Yes or No.'
     case 'consent': return typeof value === 'boolean' && (!step.required || value) ? undefined : 'Consent is required to continue.'
     case 'number': return typeof value === 'number' && Number.isFinite(value) && (settings.min === undefined || value >= (settings.min as number)) && (settings.max === undefined || value <= (settings.max as number)) && (settings.decimalPlaces === undefined || decimalPlaces(value) <= (settings.decimalPlaces as number)) ? undefined : 'Enter a number within the configured range and precision.'

@@ -1,7 +1,9 @@
+import { isOtherChoiceAnswer } from './choiceAnswers'
 import { calendarDate } from './questionTypes'
 export type BranchPredicate = 'equals' | 'greater_than' | 'greater_than_or_equal' | 'less_than' | 'less_than_or_equal' | 'any_of' | 'all_of'
 
 export function matchesBranch(rule: { predicateKind: BranchPredicate; expectedValue: unknown }, answer: unknown): boolean {
+  if (isOtherChoiceAnswer(answer)) answer = answer.choiceIds.length === 1 && typeof rule.expectedValue === 'string' ? answer.choiceIds[0] : answer.choiceIds
   const expected = rule.expectedValue
   const priorityRank = () => {
     if (!Array.isArray(answer) || !expected || Array.isArray(expected) || typeof expected !== 'object') return undefined

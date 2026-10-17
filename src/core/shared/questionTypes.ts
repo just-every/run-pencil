@@ -1,3 +1,5 @@
+import { isRecallKey, withoutRecallKey } from './recallSyntax'
+import { choiceSettingsValid } from './choiceAnswers'
 import { scoreQuestionTypes } from './scoreQuestions'
 import { textSettingsValid } from './textValidation'
 import { ratingSettingsValid } from './ratingScale'
@@ -16,6 +18,9 @@ export function decimalPlaces(value: number) {
 }
 export function typeSettingsValid(type: string | null, settings: Record<string, unknown>) {
   if (!settings || typeof settings !== 'object' || Array.isArray(settings)) return false
+  if (settings.recallKey !== undefined && (!type || !isRecallKey(settings.recallKey))) return false
+  settings = withoutRecallKey(settings)
+  if (!choiceSettingsValid(type, settings)) return false
   const text = (value: unknown) => typeof value === 'string' && value.trim().length > 0 && value.length <= 1000
   if (type === 'short_text' || type === 'long_text') return textSettingsValid(type, settings)
   if ((scoreQuestionTypes as readonly string[]).includes(type ?? '')) return Object.keys(settings).length === 0

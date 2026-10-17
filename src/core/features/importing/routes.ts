@@ -13,7 +13,7 @@ export function registerImportRoutes(app: Hono<WorkerEnvironment>) {
   const service = (context: any) => new FormImports(context.get('platform').databaseBinding, context.get('operatorSession'))
   // This value is owned by one decoded HTTP request. Release its consumed
   // uploads only after normalization; reusable service inputs stay untouched.
-  const releaseUpload = (input: ImportInput) => () => { input.definition = ''; input.csv = '' }
+  const releaseUpload = (input: ImportInput) => () => { input.definition = ''; input.csv = ''; input.responses = '' }
   app.post('/api/app/imports/typeform/definition', validateImportInput(typeformRequest), async c => {
     c.header('Cache-Control', 'no-store')
     return c.json(await retrieveTypeformDefinition(c.req.valid('json')))

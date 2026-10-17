@@ -1,8 +1,9 @@
 import { Plus } from 'lucide-react'
 import { ulid } from 'ulid'
 import { choiceValue, type EditableChoice } from '../authoring'
+import { RecallInsert, type RecallSource } from './RecallControls'
 
-export function ChoiceEditor({ choices, onChange, disabled }: { choices: EditableChoice[]; onChange: (update: (current: EditableChoice[]) => EditableChoice[]) => void; disabled: boolean }) {
+export function ChoiceEditor({ choices, onChange, disabled, recallSources = [] }: { choices: EditableChoice[]; onChange: (update: (current: EditableChoice[]) => EditableChoice[]) => void; disabled: boolean; recallSources?: RecallSource[] }) {
   const rename = (index: number, label: string) => onChange(current => {
     const choice = current[index]
     const taken = current.filter((_, position) => position !== index).map(item => item.value)
@@ -14,7 +15,7 @@ export function ChoiceEditor({ choices, onChange, disabled }: { choices: Editabl
     {choices.map((choice, index) => <div className="choice-editor-row" key={choice.id ?? choice.newId}>
       <label className="inspector-field">Choice {index + 1}<input disabled={disabled} aria-label={`Choice ${index + 1} label`} className="text-input" onChange={event => rename(index, event.target.value)} placeholder="Choice label" value={choice.label} /></label>
       <button disabled={disabled} className="quiet-button focus-ring" onClick={() => onChange(current => current.filter((_, position) => position !== index))} type="button">Remove</button>
-      <details><summary className="focus-ring">Advanced</summary><label className="inspector-field">Answer value<input disabled={disabled} aria-label={`Choice ${index + 1} value`} className="text-input" onChange={event => onChange(current => current.map((entry, position) => position === index ? { ...entry, value: event.target.value } : entry))} value={choice.value} /></label><p className="muted">Used in exports. Keep it unchanged when renaming a saved choice.</p></details>
+      <details><summary className="focus-ring">Advanced</summary><label className="inspector-field">Answer value<input disabled={disabled} aria-label={`Choice ${index + 1} value`} className="text-input" onChange={event => onChange(current => current.map((entry, position) => position === index ? { ...entry, value: event.target.value } : entry))} value={choice.value} /></label><p className="muted">Used in exports. Keep it unchanged when renaming a saved choice.</p><RecallInsert sources={recallSources} label={`Insert earlier answer into choice ${index + 1}`} disabled={disabled} onInsert={token => rename(index, `${choice.label} ${token}`)} /></details>
     </div>)}
   </div>
 }
