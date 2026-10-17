@@ -4,6 +4,7 @@ import { useEmbedProtocol } from '../../embedding'
 import { ArrowLeft, ArrowRight, Check, LockKeyhole } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { answerIssue, isUnanswered } from '../../../shared/answers'
+import { contactQuestionTypes } from '../../../shared/contactAnswers'
 import { visiblePath } from '../../../shared/flowPath'
 import { QuestionInput } from '../../../shared/ui/QuestionInput'
 import { PublicClosedPage } from './PublicClosedPage'
@@ -89,6 +90,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
 
   const changeAnswer = (stepId: string, value: unknown) => {
     if (pendingFinal || sessionUnavailable || formChanged) return
+    setError(undefined)
     const reachableSkipped = new Set(visiblePath(flow, { ...answers, [stepId]: value }).map(step => step.id))
     setSkipped(current => new Set([...current].filter(id => id !== stepId && reachableSkipped.has(id))))
     setAnswers((current) => {
@@ -151,7 +153,10 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
     if (isCompletion) return
     if (!pendingFinal && current.kind === 'question') {
       const issue = answerIssue(current, currentChoices.map((choice) => choice.id), answers[current.id])
-      if (issue) { setError(issue); return }
+      if (issue) {
+        if (!(contactQuestionTypes as readonly string[]).includes(current.questionType ?? '') || isUnanswered(answers[current.id])) setError(issue)
+        return
+      }
     }
     if (!pendingFinal && !nextCandidate) {
       setError('This flow has no completion path from this screen.')

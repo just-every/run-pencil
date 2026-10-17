@@ -1,3 +1,4 @@
+import { questionTypes, questionTypeLabels } from '../../../shared/questionKinds'
 import { RatingSettings } from './RatingSettings'
 import { DraftRewritePanel } from '../../analysis/ui'
 import { TypeSettings } from './TypeSettings'
@@ -20,9 +21,7 @@ import { LoadProblem } from '../../../app/ui/LoadProblem'
 function stepLabel(step: FlowStep) {
   if (step.kind === 'welcome') return 'Welcome'
   if (step.kind === 'completion') return 'Completion'
-  if (step.questionType === 'nps') return 'NPS'
-  const label = step.questionType?.replace('_', ' ') ?? 'Question'
-  return label[0].toUpperCase() + label.slice(1)
+  return step.questionType ? questionTypeLabels[step.questionType] : 'Question'
 }
 
 export function FlowBuilderPage() {
@@ -258,14 +257,14 @@ export function FlowBuilderPage() {
             <label className="inspector-field">Prompt<textarea aria-label="Prompt" disabled={saving} className="text-area" onChange={(event) => setPrompt(event.target.value)} value={prompt} /></label>
             {selected.kind === 'question' ? <DraftRewritePanel key={`${flowId}:${selected.id}`} flowId={flowId} stepId={selected.id} version={draft.flow.draftVersion} source={selected.prompt} disabled={saving || dirty} onAccepted={load} onBusy={setSaving} /> : null}
             <details><summary className="focus-ring">Extra wording</summary><label className="inspector-field">Why ask this?<textarea aria-label="Why ask this?" disabled={saving} className="text-area" onChange={(event) => setHelperText(event.target.value)} value={helperText} /></label></details>
-            {selected.kind === 'question' ? <label className="inspector-field">Question type<select disabled={saving} className="text-input" onChange={(event) => {
+            {selected.kind === 'question' ? <label className="inspector-field">Question type<select aria-label="Question type" disabled={saving} className="text-input" onChange={(event) => {
               const nextType = event.target.value as FlowStep['questionType']
               setQuestionType(nextType)
               setCanvasAnswer(undefined)
               setSettingsText('')
               if (!['single_choice', 'multiple_choice', 'priority', 'dropdown'].includes(nextType ?? '')) setChoices([])
               if (nextType !== questionType) { setCanvasAnswer(undefined); setRules([]) }
-            }} value={questionType ?? ''}><option value="short_text">Short text</option><option value="long_text">Long text</option><option value="email">Email</option><option value="single_choice">Single choice</option><option value="multiple_choice">Multiple choice</option><option value="rating">Rating</option><option value="priority">Priority</option><option value="dropdown">Dropdown</option><option value="yes_no">Yes / No</option><option value="nps">NPS</option><option value="number">Number</option><option value="date">Date</option><option value="consent">Consent</option></select></label> : null}
+            }} value={questionType ?? ''}>{questionTypes.map(type => <option value={type} key={type}>{questionTypeLabels[type]}</option>)}</select></label> : null}
             {selected.kind === 'question' && ['single_choice', 'multiple_choice', 'priority', 'dropdown'].includes(questionType ?? '') ? <ChoiceEditor disabled={saving} choices={choices} onChange={setChoices} /> : null}
             <TypeSettings type={questionType} settings={settings} disabled={saving} onChange={(key, value) => { const next: Record<string, unknown> = { ...settings }; if (value === undefined) delete next[key]; else next[key] = value; setSettingsText(Object.keys(next).length ? JSON.stringify(next, null, 2) : '') }} />
             {selected.kind === 'question' && questionType === 'rating' ? <RatingSettings settings={settings} disabled={saving} onChangeSettings={next => setSettingsText(JSON.stringify(next, null, 2))} /> : null}

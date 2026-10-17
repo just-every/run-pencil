@@ -1,3 +1,4 @@
+import { contactAnswerObject } from './contactAnswers'
 import { zValidator } from '@hono/zod-validator'
 import type { Context, MiddlewareHandler, ValidationTargets } from 'hono'
 import { z } from 'zod'
@@ -5,7 +6,7 @@ import manifest from '../../../seed.json'
 
 export const resourceId = z.string().min(1).max(200).refine(value => !/[\u0000-\u001f\u007f]/.test(value))
 export const flowSlug = z.string().min(1).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
-export const answerValue = z.union([z.string().max(manifest.limits.responses.openTextCharactersPerAnswer), z.number().finite(), z.boolean(), z.array(resourceId).max(manifest.limits.steps.choiceOptionsPerStep), z.null()])
+export const answerValue = z.union([contactAnswerObject, z.string().max(manifest.limits.responses.openTextCharactersPerAnswer), z.number().finite(), z.boolean(), z.array(resourceId).max(manifest.limits.steps.choiceOptionsPerStep), z.null()])
 
 export function invalidInput(context: Context, target: string) {
   return context.json({ error: 'VALIDATION_ERROR', message: `Invalid request ${target === 'json' ? 'body' : target === 'param' ? 'path parameters' : target}.` }, 400)

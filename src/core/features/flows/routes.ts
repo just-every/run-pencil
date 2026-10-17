@@ -1,3 +1,4 @@
+import { questionTypes } from '../../shared/questionKinds'
 import { validateInput as zValidator, resourceId, flowSlug, emptyMutationBody, answerValue } from '../../shared/validation'
 import type { Context, Hono } from 'hono'
 import { z } from 'zod'
@@ -6,7 +7,7 @@ import type { RequestServices } from '../../app/request-context'
 import { FlowClosedError, PencilError, RateLimitError } from '../../shared/errors'
 import { requireSameOriginRequest } from '../auth'
 
-const questionType = z.enum(['short_text', 'long_text', 'email', 'single_choice', 'multiple_choice', 'rating', 'priority', 'dropdown', 'yes_no', 'nps', 'number', 'date', 'consent'])
+const questionType = z.enum(questionTypes)
 const stepSchema = z.object({
   kind: z.enum(['welcome', 'question', 'completion']),
   questionType: questionType.nullable(),

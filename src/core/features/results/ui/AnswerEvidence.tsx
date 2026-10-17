@@ -10,6 +10,8 @@ export function AnswerEvidence({ question, flowId }: { question: QuestionReport;
     <p className="muted">{answerCount(question.answered)}</p>
     {question.importedAnswered ? <p className="muted">{answerCount(question.importedAnswered)} imported</p> : null}
     {summary.average !== undefined ? <p>Average rating <strong>{number(summary.average)}</strong></p> : null}
+    {summary.csat ? <><p>CSAT <strong>{number(summary.csat.percentage)}%</strong></p><p>{summary.csat.satisfied} satisfied answers (4–5) / {summary.csat.answered} answers</p></> : null}
+    {summary.ces ? <><p>Mean customer effort <strong>{number(summary.ces.mean)}</strong></p><p>{summary.ces.total} total score / {summary.ces.answered} answers · scale 1–7</p></> : null}
     {summary.score !== undefined ? <><p>NPS <strong>{number(summary.score)}</strong></p><p>Promoters {summary.promoters} · Passives {summary.passives} · Detractors {summary.detractors}</p></> : null}
     {summary.median !== undefined ? <p>Minimum <strong>{summary.minimum}</strong> · Median <strong>{summary.median}</strong> · Maximum <strong>{summary.maximum}</strong></p> : null}
     {summary.earliest ? <p>Earliest <strong>{summary.earliest}</strong> · Latest <strong>{summary.latest}</strong></p> : null}

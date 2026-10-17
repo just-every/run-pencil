@@ -1,3 +1,7 @@
+import { contactQuestionTypes } from '../contactAnswers'
+import { scoreQuestionTypes } from '../scoreQuestions'
+import { ContactQuestionInput } from './ContactQuestionInput'
+import { ScoreQuestionInput } from './ScoreQuestionInput'
 import { TextQuestionInput } from './TextQuestionInput'
 import { RatingInput } from './RatingInput'
 import { moveAnswerFocus } from './answerKeyboard'
@@ -7,6 +11,8 @@ import type { FlowStep, ChoiceOption } from '../../app/api'
 
 export function QuestionInput({ step, choices, value, onChange }: { step: FlowStep; choices: ChoiceOption[]; value: unknown; onChange: (value: unknown) => void }) {
   const required = step.required
+  if ((contactQuestionTypes as readonly string[]).includes(step.questionType ?? '')) return <ContactQuestionInput step={step} value={value} onChange={onChange} />
+  if ((scoreQuestionTypes as readonly string[]).includes(step.questionType ?? '')) return <ScoreQuestionInput step={step} value={value} onChange={onChange} />
   if (['dropdown', 'yes_no', 'nps', 'number', 'date', 'consent'].includes(step.questionType ?? '')) return <ExtendedQuestionInput step={step} choices={choices} value={value} onChange={onChange} />
   if (step.questionType === 'rating') return <RatingInput step={step} value={value} onChange={onChange} />
   if (step.questionType === 'single_choice') {

@@ -1,3 +1,4 @@
+import type { QuestionType } from '../../shared/questionKinds'
 import { typeSettingsValid } from '../../shared/questionTypes'
 import { templateStructure, type FlowTemplateId } from './templates'
 import { structureContent } from './unpublished'
@@ -9,7 +10,7 @@ import type { ResponseRepository } from '../responses'
 import { resolveNextStep, validateRevisionGraph, type BranchPredicateKind } from './graph'
 import type { FlowRepository, StoredBranchRule, StoredChoice, StoredStep } from './repository'
 
-type QuestionType = 'short_text' | 'long_text' | 'email' | 'single_choice' | 'multiple_choice' | 'rating' | 'priority' | 'dropdown' | 'yes_no' | 'nps' | 'number' | 'date' | 'consent'
+
 type StepKind = 'welcome' | 'question' | 'completion'
 type DraftStepInput = {
   kind: StepKind

@@ -1,3 +1,4 @@
+import { questionTypes } from '../../shared/questionKinds'
 import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
 export const workspaces = sqliteTable('workspaces', {
@@ -142,7 +143,7 @@ export const flowSteps = sqliteTable(
     position: integer('position').notNull(),
     stableId: text('stable_id').notNull(),
     kind: text('kind', { enum: ['welcome', 'question', 'completion'] }).notNull(),
-    questionType: text('question_type', { enum: ['short_text', 'long_text', 'email', 'single_choice', 'multiple_choice', 'rating', 'priority', 'dropdown', 'yes_no', 'nps', 'number', 'date', 'consent'] }),
+    questionType: text('question_type', { enum: questionTypes }),
     prompt: text('prompt').notNull(),
     helperText: text('helper_text'),
     required: integer('required', { mode: 'boolean' }).notNull(),

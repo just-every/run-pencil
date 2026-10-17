@@ -231,9 +231,9 @@ The status table at the end lists every clause with its status and evidence path
 
 **FIELD-002 — Matrix, Likert and scale grids.** A matrix question asks several rows on one shared scale (single- or multi-select per row, or a 5- or 7-point Likert), each row with a stable ID; results show a per-row distribution with RSLT-003 denominators, and any LOGIC-006 condition can test any row. *Acceptance:* a Worker test publishes a 4×5 matrix, collects responses, and asserts per-row counts and an export column per row keyed by stable row ID. *Status: missing.*
 
-**FIELD-003 — CSAT, CES and visual rating questions.** CSAT (1–5 satisfaction), CES (1–7 effort) and emoji or thumbs ratings are typed questions with fixed semantics, so programs (PROG-001) compute standard scores: CSAT as the share of 4–5 answers, CES as the mean, both with stated denominators. *Acceptance:* a Worker test collects each type and asserts the computed CSAT percentage and CES mean against hand-computed values. *Status: missing.*
+**FIELD-003 — CSAT, CES and visual rating questions.** CSAT (1–5 satisfaction), CES (1–7 effort) and emoji or thumbs ratings are typed questions with fixed semantics, so programs (PROG-001) compute standard scores: CSAT as the share of 4–5 answers, CES as the mean, both with stated denominators. *Acceptance:* a Worker test collects each type and asserts the computed CSAT percentage and CES mean against hand-computed values. *Status: partial.*
 
-**FIELD-004 — US contact fields.** Phone (stored E.164, displayed in US format, extension allowed), postal address (street, unit, city, two-letter state, five- or nine-digit ZIP, with non-US country as an option), full name split into parts, URL and currency amount in USD are typed questions with validation and formatted export columns. No third-party autocomplete script is loaded on the respondent page (BASE-PUBLIC-001). *Acceptance:* a browser journey enters valid and invalid US phone, ZIP and state values and sees field-specific errors; the export carries normalized columns. *Status: missing.*
+**FIELD-004 — US contact fields.** Phone (stored E.164, displayed in US format, extension allowed), postal address (street, unit, city, two-letter state, five- or nine-digit ZIP, with non-US country as an option), full name split into parts, URL and currency amount in USD are typed questions with validation and formatted export columns. No third-party autocomplete script is loaded on the respondent page (BASE-PUBLIC-001). *Acceptance:* a browser journey enters valid and invalid US phone, ZIP and state values and sees field-specific errors; the export carries normalized columns. *Status: done.*
 
 **FIELD-005 — Media in questions and choices.** Steps may carry an image with required alt text or a video from an approved host (YouTube or Vimeo via a privacy-enhanced embed only after the respondent clicks to play), and choices may be images with labels. *Acceptance:* a browser journey builds an image-choice question, publish is refused while alt text is empty, and the respondent page makes no third-party request until play is pressed. *Status: missing.*
 
@@ -542,8 +542,8 @@ Judged from the code and tests at commit `6f3cb611373b39989912418926d4db4c566ed0
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 113 | 0 | 0 | 113 |
-| Target and push further | 0 | 36 | 89 | 125 |
-| All | 113 | 36 | 89 | 238 |
+| Target and push further | 1 | 37 | 87 | 125 |
+| All | 114 | 37 | 87 | 238 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -592,8 +592,8 @@ Judged from the code and tests at commit `6f3cb611373b39989912418926d4db4c566ed0
 | `FLOW-021` | Deleting a question keeps its answers | published | done | `tests/runtime/journey.worker.test.ts` |  |
 | `FIELD-001` | Hidden fields and URL parameters | target | missing |  | No code yet. |
 | `FIELD-002` | Matrix, Likert and scale grids | target | missing |  | No code yet. |
-| `FIELD-003` | CSAT, CES and visual rating questions | target | missing |  | No code yet. |
-| `FIELD-004` | US contact fields | target | missing |  | No code yet. |
+| `FIELD-003` | CSAT, CES and visual rating questions | target | partial | `src/core/shared/scoreQuestions.ts`, `src/core/shared/ui/ScoreQuestionInput.tsx`, `src/core/features/reporting/aggregate.ts`, `tests/runtime/new-question-types.worker.test.ts`, `tests/runtime/contact-scores-scenario.ts` | Typed CSAT, CES, emoji and thumbs questions, fixed score semantics, distributions, stated denominators and exports ship. PROG-001 program setup remains unbuilt. |
+| `FIELD-004` | US contact fields | target | done | `src/core/shared/contactAnswers.ts`, `src/core/shared/ui/ContactQuestionInput.tsx`, `src/core/features/reporting/contactExport.ts`, `migrations/core/0040_scores_contact_fields.sql`, `tests/runtime/contact-scores-scenario.ts` | None. US and international phone/address entry, separate extensions and name parts, URL validation, exact USD cents, field errors and normalized/formatted exports are proved at 1440 and 390 without third-party requests. |
 | `FIELD-005` | Media in questions and choices | target | missing |  | No code yet. |
 | `FIELD-006` | Randomized order | target | missing |  | No code yet. |
 | `FIELD-007` | Scheduling handoff | target | missing |  | No code yet. |

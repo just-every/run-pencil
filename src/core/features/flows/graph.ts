@@ -1,3 +1,4 @@
+import { scoreQuestionTypes, scoreAnswerIssue } from '../../shared/scoreQuestions'
 import { calendarDate, typeSettingsValid } from '../../shared/questionTypes'
 import { matchesBranch } from '../../shared/branching'
 import type { BranchSelection } from '../../shared/flowPolicies'
@@ -64,8 +65,9 @@ export function questionSettings(step: StoredStep, choices: StoredChoice[]): { v
 function branchRuleIsValid(rule: StoredBranchRule, source: StoredStep, choiceIds: string[]) {
   const expected = parsed(rule.expectedValueJson)
   if (['single_choice', 'dropdown'].includes(source.questionType ?? '')) return rule.predicateKind === 'equals' && typeof expected === 'string' && choiceIds.includes(expected)
-  if (['yes_no', 'consent'].includes(source.questionType ?? '')) return rule.predicateKind === 'equals' && typeof expected === 'boolean'
+  if (['yes_no', 'consent', 'thumbs_rating'].includes(source.questionType ?? '')) return rule.predicateKind === 'equals' && typeof expected === 'boolean'
   if (['nps', 'number', 'date'].includes(source.questionType ?? '')) return ['equals', 'greater_than', 'greater_than_or_equal', 'less_than', 'less_than_or_equal'].includes(rule.predicateKind) && (source.questionType === 'date' ? calendarDate(expected) : typeof expected === 'number' && Number.isFinite(expected) && (source.questionType !== 'nps' || Number.isInteger(expected) && expected >= 0 && expected <= 10))
+  if ((scoreQuestionTypes as readonly string[]).includes(source.questionType ?? '')) return ['equals', 'greater_than', 'greater_than_or_equal', 'less_than', 'less_than_or_equal'].includes(rule.predicateKind) && !scoreAnswerIssue(source.questionType!, expected)
   if (source.questionType === 'multiple_choice') return ['any_of', 'all_of'].includes(rule.predicateKind) && Array.isArray(expected) && expected.length > 0 && new Set(expected).size === expected.length && expected.every((value) => typeof value === 'string' && choiceIds.includes(value))
   if (source.questionType === 'rating') return ['equals', 'greater_than', 'greater_than_or_equal', 'less_than', 'less_than_or_equal'].includes(rule.predicateKind) && typeof expected === 'number'
   if (source.questionType === 'priority') {

@@ -2,6 +2,8 @@ import { displayCalendarDate } from '../../shared/dateFormat'
 import { retainedAnswer } from './retainedAnswer'
 import { aggregateRevision } from './aggregate'
 import { booleanAnswer } from './answerSummary'
+import { displayContactAnswer } from '../../shared/contactAnswers'
+import { isContactType } from './contactReports'
 import { responseScope } from './scope'
 import { type ReportStep, type ReportChoice } from './questionReport'
 export type LedgerFilter = { revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown' | 'imported'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
@@ -69,6 +71,7 @@ export class ReportingRepository {
       return Array.isArray(value) ? value.map(choiceValue) : choiceValue(value)
     }
     const display = (value: unknown, stepId: string, revisionId: string, questionType: string, settings: Record<string, unknown>) => {
+      if (isContactType(questionType)) return displayContactAnswer(questionType, value)
       if (questionType === 'date' && typeof value === 'string') return displayCalendarDate(value, settings)
       const label = (id: unknown) => {
         const label = optionLabels.get(`${revisionId}\0${stepId}\0${String(id)}`)
@@ -77,6 +80,7 @@ export class ReportingRepository {
       }
       if (['single_choice', 'multiple_choice', 'dropdown', 'priority'].includes(questionType)) return Array.isArray(value) ? value.map((id, index) => `${questionType === 'priority' ? `${index + 1}. ` : ''}${label(id)}`).join('\n') : label(value)
       if (questionType === 'yes_no') return booleanAnswer(value) ? 'Yes' : 'No'
+      if (questionType === 'thumbs_rating') return booleanAnswer(value) ? 'Thumbs up' : 'Thumbs down'
       if (questionType === 'consent') {
         const accepted = booleanAnswer(value)
         if (!value || typeof value !== 'object' || !('statement' in value) || typeof value.statement !== 'string') throw new Error('Stored consent statement is missing')

@@ -3,7 +3,7 @@ import type { Context, Hono } from 'hono'
 import { z } from 'zod'
 import type { WorkerEnvironment } from '../../app/environment'
 import type { RequestServices } from '../../app/request-context'
-import { FlowClosedError, PencilError, RateLimitError } from '../../shared/errors'
+import { FlowClosedError, PencilError, RateLimitError, ValidationError } from '../../shared/errors'
 import { requireSameOriginRequest } from '../auth'
 
 const startSessionSchema = z.object({
@@ -30,7 +30,7 @@ const submitResponseSchema = sessionCredentials.extend({
 function failure(context: Context<WorkerEnvironment>, error: unknown) {
   if (error instanceof FlowClosedError) return context.json({ error: error.code, message: error.message, closedFlow: error.flow }, 409)
   if (error instanceof PencilError) {
-    return context.json({ error: error.code, message: error.message }, error instanceof RateLimitError ? 429 : error.code === 'NOT_FOUND' ? 404 : 400)
+    return context.json({ error: error.code, message: error.message, ...(error instanceof ValidationError && error.details ? { details: error.details } : {}) }, error instanceof RateLimitError ? 429 : error.code === 'NOT_FOUND' ? 404 : 400)
   }
   throw error
 }

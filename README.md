@@ -64,7 +64,7 @@ Verify runs the functional and high-stakes wall for source changes; it is separa
 
 Backups contain product data, including personal data, but exclude credentials, sessions and private settings. On a hosted copy, the signed-in owner opens **Backup** (`/app/backup`) to download a consistent archive and check the saved file without pausing forms. Choose **Test restoration** on that page to restore the saved file into a new browser database and verify identical re-exported contents; no command or Cloudflare dashboard change is needed. An optional command tests restoration on your computer. Browser exports have an 8 MiB file limit and a conservative workspace size limit; larger exports use the maintainer command. `rer export` and `rer import` operate on local state only. Replacing a hosted deployment still needs a hosting maintainer; a successful file check is not a completed hosted restore. Read [Backup and restore](docs/guide/backup.md) before removing or moving a deployment.
 
-Reset prints and removes only inventoried local data, settings, owner, outbox and drafts; source, dependencies, exports and deployment receipts survive. Stop dev or preview before exporting, and export first to retain data:
+Reset prints and removes only inventoried local data, settings, owner and drafts; source, dependencies, exports and deployment receipts survive. Stop dev or preview before exporting, and export first to retain data:
 
 ```sh
 mkdir -m 700 exports

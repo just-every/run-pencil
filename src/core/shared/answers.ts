@@ -1,19 +1,28 @@
+import type { QuestionType } from './questionKinds'
+import { contactQuestionTypes, contactAnswerIssue } from './contactAnswers'
+import { scoreQuestionTypes, scoreAnswerIssue } from './scoreQuestions'
 import { textAnswerIssue } from './textValidation'
 import { dateFormat } from './dateFormat'
 import { calendarDate, decimalPlaces, typeSettingsValid } from './questionTypes'
 export type AnswerQuestion = {
   prompt: string
-  questionType: 'short_text' | 'long_text' | 'email' | 'single_choice' | 'multiple_choice' | 'rating' | 'priority' | 'dropdown' | 'yes_no' | 'nps' | 'number' | 'date' | 'consent' | null
+  questionType: QuestionType | null
   required: boolean
   questionSettings: Record<string, unknown> | null
 }
 export function isUnanswered(value: unknown) {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    const parts = Object.entries(value).filter(([key]) => key !== 'country')
+    if (parts.every(([, part]) => typeof part === 'string' && !part.trim())) return true
+  }
   return value === undefined || value === null || (typeof value === 'string' && !value.trim()) || (Array.isArray(value) && value.length === 0)
 }
 export function answerIssue(step: AnswerQuestion, choiceIds: string[], value: unknown): string | undefined {
   if (isUnanswered(value)) return step.required ? `An answer is required for “${step.prompt}”.` : undefined
   const settings = step.questionSettings ?? {}
   if (!typeSettingsValid(step.questionType, settings)) return 'This question has invalid settings.'
+  if ((contactQuestionTypes as readonly string[]).includes(step.questionType ?? '')) return contactAnswerIssue(step.questionType!, value)
+  if ((scoreQuestionTypes as readonly string[]).includes(step.questionType ?? '')) return scoreAnswerIssue(step.questionType!, value)
   switch (step.questionType) {
     case 'short_text':
     case 'long_text': return textAnswerIssue(step.questionType, settings, value)

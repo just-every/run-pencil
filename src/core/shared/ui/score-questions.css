@@ -1,0 +1,7 @@
+.score-end-labels { display: flex; justify-content: space-between; gap: 20px; font-size: 14px; color: var(--muted); }
+.score-end-labels > span { max-width: 45%; }
+.score-end-labels > span:last-child { text-align: end; }
+.score-options { display: grid; gap: 3px; width: 100%; min-width: 0; }
+.score-option { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px; min-width: 0; min-height: 48px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: inherit; padding: 10px 3px; font: inherit; cursor: pointer; }
+.score-option[data-selected='true'] { border: 2px solid currentColor; padding: 9px 2px; background: var(--panel); }
+.score-face { font-size: 26px; line-height: 1.2; }

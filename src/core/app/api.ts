@@ -1,8 +1,9 @@
+import type { QuestionType } from '../shared/questionKinds'
 export type FlowStep = {
   id: string
   position: number
   kind: 'welcome' | 'question' | 'completion'
-  questionType: 'short_text' | 'long_text' | 'email' | 'single_choice' | 'multiple_choice' | 'rating' | 'priority' | 'dropdown' | 'yes_no' | 'nps' | 'number' | 'date' | 'consent' | null
+  questionType: QuestionType | null
   prompt: string
   helperText: string | null
   required: boolean

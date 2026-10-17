@@ -1,15 +1,40 @@
 import { finiteMidpoint } from './finiteMidpoint'
+import { retainedContactAnswer, isContactType } from './contactReports'
 
-export type SummaryType = 'short_text' | 'long_text' | 'email' | 'single_choice' | 'multiple_choice' | 'dropdown' | 'rating' | 'nps' | 'number' | 'date' | 'yes_no' | 'consent' | 'priority'
+export type SummaryType = 'short_text' | 'long_text' | 'email' | 'single_choice' | 'multiple_choice' | 'dropdown' | 'rating' | 'nps' | 'csat' | 'ces' | 'emoji_rating' | 'thumbs_rating' | 'phone' | 'postal_address' | 'full_name' | 'url' | 'currency' | 'number' | 'date' | 'yes_no' | 'consent' | 'priority'
 export type AnswerSummary = {
   average?: number; minimum?: number; median?: number; maximum?: number
   earliest?: string; latest?: string; score?: number
   promoters?: number; passives?: number; detractors?: number
+  csat?: { satisfied: number; answered: number; percentage: number }
+  ces?: { total: number; answered: number; mean: number }
   positions?: Array<{ id: string; label: string; average: number }>
   texts?: string[]
 }
 /** Values are validated at collection; invalid retained data fails visibly. */
 export function summarizeAnswers(type: string | null, values: unknown[], choices: Array<{ id: string; label: string }>): AnswerSummary {
+  if (isContactType(type)) {
+    for (const value of values) retainedContactAnswer(type, value)
+    return {}
+  }
+  if (type === 'thumbs_rating') {
+    if (!values.every(value => typeof value === 'boolean')) throw new Error('Invalid stored thumbs answer')
+    return {}
+  }
+  if (type === 'csat' || type === 'ces' || type === 'emoji_rating') {
+    const max = type === 'ces' ? 7 : 5
+    if (!values.every((value): value is number => typeof value === 'number' && Number.isInteger(value) && value >= 1 && value <= max)) throw new Error('Invalid stored score answer')
+    if (!values.length) return {}
+    if (type === 'csat') {
+      const satisfied = values.filter(value => value >= 4).length
+      return { csat: { satisfied, answered: values.length, percentage: satisfied / values.length * 100 } }
+    }
+    if (type === 'ces') {
+      const total = values.reduce((sum, value) => sum + value, 0)
+      return { ces: { total, answered: values.length, mean: total / values.length } }
+    }
+    return {}
+  }
   if (type === 'short_text' || type === 'long_text' || type === 'email') {
     if (!values.every(value => typeof value === 'string')) throw new Error('Invalid stored text answer')
     return { texts: values }

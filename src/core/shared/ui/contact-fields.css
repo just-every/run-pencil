@@ -1,0 +1,10 @@
+.contact-fields, .contact-field { min-width: 0; }
+.contact-field { display: flex; flex-direction: column; gap: .4rem; }
+.contact-fields .text-input { box-sizing: border-box; width: 100%; min-width: 0; }
+.contact-fields-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.contact-field-hint, .contact-field-error { margin: 0; font-size: .875rem; overflow-wrap: anywhere; }
+.contact-field-error { color: var(--danger); }
+.contact-fields [aria-invalid='true'] { border-color: var(--danger); }
+@media (max-width: 480px) {
+  .contact-fields-grid { grid-template-columns: minmax(0, 1fr); }
+}

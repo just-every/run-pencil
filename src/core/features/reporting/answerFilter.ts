@@ -9,14 +9,14 @@ export function structuredAnswerFilter(stepId: string, value: string) {
   ]
   const bindings: Array<string | number> = [stepId, value, value, value]
   if (value === 'true' || value === 'false') {
-    clauses.push("(s.question_type = 'yes_no' AND json_type(a.value_json) = ?)")
+    clauses.push("(s.question_type IN ('yes_no', 'thumbs_rating') AND json_type(a.value_json) = ?)")
     clauses.push("(s.question_type = 'consent' AND json_type(a.value_json, '$.accepted') = ?)")
     bindings.push(value, value)
   }
   // A full finite decimal is required: empty, hex, Infinity and numeric prefixes
   // must never turn into a numeric match through CAST or Number coercion.
   if (value === value.trim() && /^-?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?$/.test(value) && Number.isFinite(Number(value))) {
-    clauses.push("(s.question_type IN ('rating', 'nps', 'number') AND json_type(a.value_json) IN ('integer', 'real') AND json_extract(a.value_json, '$') = ?)")
+    clauses.push("(s.question_type IN ('rating', 'nps', 'number', 'csat', 'ces', 'emoji_rating') AND json_type(a.value_json) IN ('integer', 'real') AND json_extract(a.value_json, '$') = ?)")
     bindings.push(Number(value))
   }
   if (calendarDate(value)) {

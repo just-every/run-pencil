@@ -1,3 +1,4 @@
+import { scoreQuestionTypes, scoreOptions } from '../../shared/scoreQuestions'
 import { numericCandidates, dateCandidates } from './ordered-answer-domain'
 import { answerIssue } from '../../shared/answers'
 import { matchesBranch } from '../../shared/branching'
@@ -16,6 +17,7 @@ function answerExists(step: StoredStep, choices: string[], settings: Record<stri
   if (['single_choice', 'dropdown'].includes(step.questionType ?? '')) return choices.some(satisfies)
   if (step.questionType === 'yes_no') return [true, false].some(satisfies)
   if (step.questionType === 'consent') return (step.required ? [true] : [true, false]).some(satisfies)
+  if ((scoreQuestionTypes as readonly string[]).includes(step.questionType ?? '')) return scoreOptions(step.questionType!).some(option => satisfies(option.value))
   if (step.questionType === 'nps') return Array.from({ length: 11 }, (_, i) => i).some(satisfies)
   if (step.questionType === 'number' || step.questionType === 'date') {
     const valid = (value: unknown) => !answerIssue({ ...step, questionSettings: settings }, choices, value)

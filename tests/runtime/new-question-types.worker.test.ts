@@ -1,3 +1,4 @@
+import { contactScoresScenario } from './contact-scores-scenario'
 import { fixtureExport } from '../helpers/report-download'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
@@ -7,7 +8,7 @@ declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 const types = ['dropdown', 'yes_no', 'nps', 'number', 'date', 'consent'] as const
 const settings = (type: typeof types[number]) => type === 'consent' ? { statement: 'I agree to the published statement.' } : type === 'number' ? { min: -2, max: 2, decimalPlaces: 2 } : type === 'date' ? { earliest: '2024-02-01', latest: '2024-03-01' } : type === 'nps' ? { lowLabel: 'Low', highLabel: 'High' } : {}
-contract(['FLOW-003', 'FLOW-005', 'FLOW-019', 'RESP-003', 'LEDG-004', 'FIELD-013', 'FIELD-015', 'FIELD-016'], 'publishes, previews, submits, duplicates and losslessly exports each new type', async () => {
+contract(['FLOW-003', 'FLOW-005', 'FLOW-019', 'RESP-003', 'LEDG-004', 'FIELD-013', 'FIELD-015', 'FIELD-016', 'FIELD-003', 'FIELD-004'], 'publishes, previews, submits, duplicates and losslessly exports each new type', async () => {
   for (const type of types) {
     const f = await foundationFixture(`new-type-${type.replaceAll('_', '-')}`)
     await f.add({ kind: 'question', questionType: type, prompt: type, required: true, questionSettings: settings(type), ...(type === 'dropdown' ? { choices: [{ value: 'a', label: 'Alpha' }, { value: 'b', label: 'Beta' }] } : {}) })
@@ -83,5 +84,7 @@ contract(['FLOW-003', 'FLOW-005', 'FLOW-019', 'RESP-003', 'LEDG-004', 'FIELD-013
   expect(exported.responses[0].answers.map(answer=>answer.value)).toEqual(values)
   const questions = await f.services.reporting.questions(f.scope.workspaceId,f.flow.flowId,ledger.responses[0].revisionId)
   expect(questions.find(question=>question.id===draft.steps[2].id)?.distribution).toEqual(Array.from({length:7},(_,value)=>({value,label:value===0?'0 · Not at all':value===3?'3 · Neutral':value===6?'6 · Completely':String(value),count:value===0?1:0})))
+
+  await contactScoresScenario()
 
 }, 60_000)
