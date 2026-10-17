@@ -53,3 +53,7 @@
  .operator-nav a { min-height: 44px; display: inline-flex; align-items: center; }
  .operator-signout { margin-left: auto; min-height: 44px; }
 }
+@media (max-width: 620px) {
+ .operator-nav { column-gap: 4px; justify-content: space-between; }
+ .operator-nav a { min-width: 44px; }
+}

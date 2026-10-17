@@ -5,7 +5,12 @@ import { sitePreview } from '@runeditrun/rer/internal/cli/site-preview.mjs'
 
 const port = Number(process.argv[2])
 if (!Number.isInteger(port) || port < 1) throw new Error('Pass the run site port as the only argument.')
-execFileSync('pnpm', ['exec', 'rer', 'build', '--site', '--non-interactive'], { stdio: 'inherit' })
+try {
+  execFileSync('pnpm', ['exec', 'rer', 'build', '--site', '--non-interactive'], { stdio: 'inherit' })
+} catch (error) {
+  console.error(`Pencil browser setup: site build exited ${Number.isInteger(error.status) ? error.status : 1}`)
+  throw error
+}
 const site = await sitePreview('dist/site', { ports: [port] })
 console.log(`Run site at ${site.url}`)
 for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => void site.close().then(() => process.exit(0)))

@@ -1,5 +1,7 @@
 /** Native mutation stamps fence every value observed before private staging.
  * Erasure removes the target stamp; the monotonic counter prevents ABA reuse. */
+// This export reproduces migrations 0019/0034. Later feature fences live in
+// their additive migration; submission sidecars are fenced by 0042.
 const selectors: Record<string, (ref: string) => string> = {
   flows: r => `SELECT ${r}.id AS target_id`,
   responses: r => `SELECT ${r}.id AS target_id`,
@@ -9,10 +11,6 @@ const selectors: Record<string, (ref: string) => string> = {
   choice_options: r => `SELECT v.flow_id AS target_id FROM flow_steps s JOIN flow_revisions v ON v.id=s.revision_id WHERE s.id=${r}.step_id`,
   form_import_revisions: r => `SELECT ${r}.flow_id AS target_id`,
   notification_preferences: r => `SELECT ${r}.flow_id AS target_id`,
-  submission_statuses: r => `SELECT ${r}.flow_id AS target_id`,
-  submission_workflows: r => `SELECT ${r}.response_id AS target_id`,
-  submission_tags: r => `SELECT ${r}.response_id AS target_id`,
-  submission_notes: r => `SELECT ${r}.response_id AS target_id`,
   response_answers: r => `SELECT ${r}.response_id AS target_id`,
   response_outbox: r => `SELECT ${r}.response_id AS target_id`,
   notification_deliveries: r => `SELECT ${r}.response_id AS target_id`,

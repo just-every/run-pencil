@@ -1181,7 +1181,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "db31e2e45e1a0c70b720d802d65f8c316e42a9443425c99fa08c0f963616b61e",
+      "sha256": "37b13201c72008d6e89af1d156134bfcff0d4443d57181990c78c4f8a24f2d14",
       "executable": false
     },
     "playwright.admission.config.ts": {
@@ -1201,7 +1201,7 @@
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "8b4448b4eadf9bc7c4f748316100b487add52c0614cda80186fb61f14bbd0473",
+      "sha256": "078aaa38e4c9cdc1203e87ac637ef9e5d83e99b736c91e7bbd95eb2a88ace4b6",
       "executable": false
     },
     "public/brand/band.svg": {
@@ -1269,7 +1269,7 @@
       "executable": false
     },
     "scripts/browser-evidence.mjs": {
-      "sha256": "ce33dcfca2b50a42972dca35b2b54f7171c1bafc3b229ae7494384f729ac827c",
+      "sha256": "4271f343f6dd71289ee220aed595b92382283a19d2d8a3b975a70e1871d33de1",
       "executable": false
     },
     "scripts/build-delivery-artifact.mjs": {
@@ -1713,11 +1713,11 @@
       "executable": false
     },
     "scripts/run-e2e-server.mjs": {
-      "sha256": "eb82a5e631ed7d9a252fd7b59c26c6b11c4f2ef1c5670b1b28e7a4c0948fdba7",
+      "sha256": "ac6ab7dad2ff49d6fb1d80d4503215510c6154fca0881ed84cd2fe958458b1bb",
       "executable": false
     },
     "scripts/run-site-server.mjs": {
-      "sha256": "4517b606a57382ae71aefe1c44d7321a5922851e5fe1533c2cd48649553b2447",
+      "sha256": "f1275bf83605b8c0222f81c3887bc678e5abb63ac7c5e53bdb31f0fafefe8fdf",
       "executable": false
     },
     "scripts/schema/json-schema.mjs": {
@@ -4365,7 +4365,7 @@
       "executable": false
     },
     "src/core/features/importing/native-staging-schema.ts": {
-      "sha256": "d1e86fc83799e6fec4ef62e0bf65d661e13e378eb80d53e4d8eac538181e87b0",
+      "sha256": "80e859f49a850b9ce369e595d1f5eeebb42362b0ef260a91908f7165f2bd5ba3",
       "executable": false
     },
     "src/core/features/importing/NATIVE-STAGING.md": {
@@ -5025,7 +5025,7 @@
       "executable": false
     },
     "src/core/features/shell/ui/shell.css": {
-      "sha256": "f65afb2731e50913081158623334cb421dbc37e95333b9bfd694a00062ae1b04",
+      "sha256": "337bd0a4fe0b929a3dc9f5f57f9e1b98a732f533a8db383a4ef72065a14e1fd9",
       "executable": false
     },
     "src/core/features/site/brand/apple-touch-icon.png": {

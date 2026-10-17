@@ -63,10 +63,12 @@ let management
 let exitCode
 try {
   const built = await run('pnpm', ['exec', 'vite', 'build', '--config', 'tests/helpers/vite-mail.config.ts'], common)
+  if (built !== 0) console.error(`Pencil browser setup: app build exited ${built}`)
   if (receivedSignal) exitCode = 0
   else if (built !== 0) exitCode = built
   else {
     const migrated = await run('pnpm', ['exec', 'wrangler', 'd1', 'migrations', 'apply', 'pencil-local', '--local', '--persist-to', state, '--config', config], common)
+    if (migrated !== 0) console.error(`Pencil browser setup: app migrations exited ${migrated}`)
     if (receivedSignal) exitCode = 0
     else if (migrated !== 0) exitCode = migrated
     else {

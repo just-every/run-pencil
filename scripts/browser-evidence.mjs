@@ -22,6 +22,12 @@ export async function runPlaywrightJson(root, { project, shard } = {}) {
       child.on('close', (code) => resolveResult({ code, stderr }))
     })
     const report = JSON.parse(await readFile(output, 'utf8'))
+    if (result.code !== 0 && !report.suites?.length) {
+      // Report startup stages and exit codes, never captured request data or credentials.
+      const stages = [...new Set(result.stderr.match(/Pencil browser setup: (?:site build|app build|app migrations) exited \d+/g) ?? [])]
+      for (const stage of stages) console.error(stage)
+      console.error(`Browser setup failed before test cases (${report.errors?.length ?? 0} runner errors, exit ${result.code}).`)
+    }
     const failures = suites => {
       for (const suite of suites ?? []) {
         for (const spec of suite.specs ?? []) for (const test of spec.tests ?? []) {
