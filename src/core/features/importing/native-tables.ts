@@ -7,6 +7,10 @@ export const tables = {
   choice_options: { columns: ['id', 'step_id', 'stable_id', 'value', 'label', 'position', 'created_at', 'updated_at'], scope: 'step_id IN (SELECT s.id FROM flow_steps s JOIN flow_revisions r ON r.id = s.revision_id WHERE r.flow_id = ?)' },
   flow_branch_rules: { columns: ['id', 'revision_id', 'source_step_stable_id', 'predicate_kind', 'expected_value_json', 'destination_step_stable_id', 'position', 'created_at', 'updated_at'], scope: 'revision_id IN (SELECT id FROM flow_revisions WHERE flow_id = ?)' },
   form_import_revisions: { columns: ['revision_id', 'flow_id', 'source_digest', 'mapping_version'], scope: 'flow_id = ?' },
+  submission_statuses: { columns: ['id', 'flow_id', 'name', 'created_at'], scope: 'flow_id = ?' },
+  submission_workflows: { columns: ['response_id', 'status_id', 'assignee_id', 'version', 'updated_at'], scope: 'response_id = ?' },
+  submission_tags: { columns: ['response_id', 'tag'], scope: 'response_id = ?' },
+  submission_notes: { columns: ['id', 'response_id', 'text', 'author_id', 'created_at'], scope: 'response_id = ?' },
   responses: { columns: ['id', 'workspace_id', 'flow_id', 'revision_id', 'source', 'started_at', 'session_id', 'participant_id', 'session_token_hash', 'idempotency_key', 'state', 'quarantine_reason', 'released_at', 'released_by_operator_id', 'completion_milliseconds', 'completed_at', 'created_at', 'updated_at', 'notification_eligible'], scope: 'id = ?' },
   response_answers: { columns: ['id', 'response_id', 'step_id', 'value_json', 'created_at', 'updated_at'], scope: 'response_id = ?' },
   notification_preferences: { columns: ['flow_id', 'operator_id', 'mode', 'failure_reason', 'updated_at'], scope: 'flow_id = ?' },
@@ -15,4 +19,8 @@ export const tables = {
   notification_attempts: { columns: ['id', 'delivery_id', 'ordinal', 'event', 'provider', 'provider_code', 'created_at'], scope: 'delivery_id IN (SELECT id FROM notification_deliveries WHERE response_id = ?)' },
 } as const
 export type TableName = keyof typeof tables
-export function tableNames(kind: string): TableName[] { if (kind === 'form') return ['flows', 'flow_revisions', 'flow_steps', 'choice_options', 'flow_branch_rules', 'form_import_revisions', 'notification_preferences']; if (kind === 'response') return ['responses', 'response_answers', 'response_outbox', 'notification_deliveries', 'notification_attempts']; throw new Error('Unknown import target.') }
+export function tableNames(kind: string): TableName[] { if (kind === 'form') return ['flows', 'flow_revisions', 'flow_steps', 'choice_options', 'flow_branch_rules', 'form_import_revisions', 'notification_preferences', 'submission_statuses']; if (kind === 'response') return ['responses', 'response_answers', 'response_outbox', 'notification_deliveries', 'notification_attempts', 'submission_workflows', 'submission_tags', 'submission_notes']; throw new Error('Unknown import target.') }
+
+/** Newly inventoried empty sidecars were absent from older retained plan bytes.
+ * Omit their empty images on reads so native hashes retain that exact meaning. */
+export const optionalNativeTables = new Set<TableName>(['submission_statuses', 'submission_workflows', 'submission_tags', 'submission_notes'])

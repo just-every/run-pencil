@@ -52,6 +52,7 @@ export function ResultsPage() {
     <section className="results" aria-labelledby="results-title">
       <header className="results-heading">
         <div className="results-heading__nav"><Link className="quiet-button focus-ring" to="/app"><ArrowLeft aria-hidden="true" size={16} /> All flows</Link><Link className="secondary-button focus-ring" to="/app/flows/$flowId/builder" params={{ flowId }}><PencilLine aria-hidden="true" size={15} /> Builder</Link></div>
+        <Link className="secondary-button focus-ring" to="/app/flows/$flowId/inbox" params={{ flowId }}>Submission inbox</Link>
         <h1 id="results-title" className="display">{results?.flow.title ?? 'Results'}</h1>
         <div className="results-heading__tools">
           <label className="inspector-field">Published revision<select aria-label="Published revision" className="text-input" value={selectedRevision ?? ''} onChange={(event) => setSelectedRevision(event.target.value || undefined)}><option value="">Current published revision</option>{revisions.map((revision) => <option key={revision.id} value={revision.id}>Revision {revision.number}{revision.isCurrent ? ' · current' : ''}</option>)}</select></label>

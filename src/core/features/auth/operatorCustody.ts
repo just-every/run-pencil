@@ -1,3 +1,4 @@
+import { ulid } from 'ulid'
 import { eq, sql } from 'drizzle-orm'
 import type { D1BatchStatement } from '../../platform/db/batch'
 import type { PencilDatabase } from '../../platform/db/repository'
@@ -10,6 +11,7 @@ export async function operatorCustodyStatements(
   target: { id: string; email: string },
   guard: string,
   guardParameters: readonly unknown[],
+  actorId: string | null = null,
 ): Promise<D1BatchStatement[]> {
   // Old inbox ULIDs are matched by credential hash. Current writers use link
   // IDs, so a concurrent delivery cannot be missed by these preliminary reads.
@@ -45,6 +47,13 @@ export async function operatorCustodyStatements(
       WHERE ${guard} AND (actor_operator_id = ? OR (subject_type = 'operator' AND subject_id = ?)
         OR (subject_type = 'operator_session' AND subject_id IN (SELECT s.id FROM oa_sessions s JOIN operator_auth_links l ON l.auth_id=s.operator_id WHERE l.operator_id = ?)))`,
       parameters: [target.id, target.id, target.id, target.id, target.id, target.id, target.id, ...guardParameters, target.id, target.id, target.id] },
+    { sql: `INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at)
+        SELECT ? || '/' || r.id,r.workspace_id,'submission.assignment_changed',
+        (SELECT id FROM operators WHERE id=? AND id<>? AND workspace_id=r.workspace_id),
+        'response',r.id,'{"fields":1}',strftime('%Y-%m-%dT%H:%M:%fZ','now') FROM submission_workflows w JOIN responses r ON r.id=w.response_id
+        WHERE w.assignee_id=? AND ${guard}`, parameters: [ulid(), actorId, target.id, target.id, ...guardParameters] },
+    { sql: `UPDATE submission_workflows SET assignee_id=NULL,version=version+1,updated_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE assignee_id=? AND ${guard}`, parameters: [target.id, ...guardParameters] },
+    { sql: `UPDATE submission_notes SET author_id=NULL WHERE author_id=? AND ${guard}`, parameters: [target.id, ...guardParameters] },
     { sql: `UPDATE responses SET released_by_operator_id = NULL WHERE released_by_operator_id = ? AND ${guard}`, parameters: [target.id, ...guardParameters] },
     ...[
       `UPDATE oa_sessions SET source_token_id=NULL WHERE operator_id != ? AND source_token_id IN (SELECT id FROM oa_tokens WHERE issuer_id = ?)`,

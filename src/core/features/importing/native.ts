@@ -3,14 +3,17 @@ import { importPlanCodec } from './plan-codec'
 import { nativeRowChunks } from './native-chunks'
 import manifest from '../../../../seed.json'
 import type { D1Database, D1TargetAdapter, TargetRow, Json, D1Sql } from '../../../base/import-kit/src/d1/index'
-import { tableNames, tables, type NativeRow, type NativeValue } from './native-tables'
+import { tableNames, tables, optionalNativeTables, type NativeRow, type NativeValue } from './native-tables'
 type ImportTargetRow = TargetRow & { committedAt?: string }
 const query = (sql: string, ...params: any[]): D1Sql => ({ sql, params })
 async function read(db: D1Database, destination: string, kind: string, id: string): Promise<TargetRow | undefined> {
   const metadata = await db.prepare('SELECT * FROM form_import_targets WHERE target_id = ? AND workspace_id = ? AND kind = ?').bind(id, destination, kind).first<{ flow_id: string; revision: string; committed_at: string }>()
   if (!metadata) return undefined
   const snapshot: NativeValue = { flowId: metadata.flow_id, tables: {} }
-  for (const name of tableNames(kind)) snapshot.tables[name] = (await db.prepare(`SELECT ${tables[name].columns.join(',')} FROM ${name} WHERE ${tables[name].scope} ORDER BY ${tables[name].columns[0]}`).bind(id).all<NativeRow>()).results
+  for (const name of tableNames(kind)) {
+    const rows = (await db.prepare(`SELECT ${tables[name].columns.join(',')} FROM ${name} WHERE ${tables[name].scope} ORDER BY ${name === 'submission_tags' ? 'response_id,tag' : tables[name].columns[0]}`).bind(id).all<NativeRow>()).results
+    if (rows.length || !optionalNativeTables.has(name)) snapshot.tables[name] = rows
+  }
   return { destination, targetKind: kind, targetId: id, revision: metadata.revision, value: snapshot as unknown as Json, committedAt: metadata.committed_at } as ImportTargetRow
 }
 function nativePredicates(row: TargetRow | null, destination: string, kind: string, id: string): D1Sql[] {
@@ -68,11 +71,12 @@ export const importTargets: D1TargetAdapter = {
     // Set reads: one query per native table, independent of response count.
     const metadata = (await db.prepare('SELECT target_id,kind,revision,flow_id,committed_at FROM form_import_targets WHERE workspace_id = ? ORDER BY target_id').bind(destination).all<{ target_id: string; kind: string; revision: string; flow_id: string; committed_at: string }>()).results
     const all: Record<string, NativeRow[]> = {}
-    for (const name of Object.keys(tables) as (keyof typeof tables)[]) all[name] = (await db.prepare(`SELECT ${tables[name].columns.join(',')} FROM ${name} ORDER BY ${tables[name].columns[0]}`).all<NativeRow>()).results
+    for (const name of Object.keys(tables) as (keyof typeof tables)[]) all[name] = (await db.prepare(`SELECT ${tables[name].columns.join(',')} FROM ${name} ORDER BY ${name === 'submission_tags' ? 'response_id,tag' : tables[name].columns[0]}`).all<NativeRow>()).results
     return metadata.map(m => {
       const revisions = new Set(all.flow_revisions.filter(r => r.flow_id === m.flow_id).map(r => r.id)), steps = new Set(all.flow_steps.filter(r => revisions.has(r.revision_id)).map(r => r.id))
       const selected: NativeValue = { flowId: m.flow_id, tables: {} }
-      for (const name of tableNames(m.kind)) selected.tables[name] = all[name].filter(r => name === 'flows' ? r.id === m.target_id : name === 'responses' ? r.id === m.target_id : ['response_answers', 'response_outbox', 'notification_deliveries'].includes(name) ? r.response_id === m.target_id : name === 'notification_attempts' ? all.notification_deliveries.some(d => d.id === r.delivery_id && d.response_id === m.target_id) : name === 'flow_revisions' || name === 'form_import_revisions' || name === 'notification_preferences' ? r.flow_id === m.flow_id : name === 'choice_options' ? steps.has(r.step_id) : revisions.has(r.revision_id))
+      for (const name of tableNames(m.kind)) selected.tables[name] = all[name].filter(r => name === 'flows' ? r.id === m.target_id : name === 'responses' ? r.id === m.target_id : ['response_answers', 'response_outbox', 'notification_deliveries', 'submission_workflows', 'submission_tags', 'submission_notes'].includes(name) ? r.response_id === m.target_id : name === 'notification_attempts' ? all.notification_deliveries.some(d => d.id === r.delivery_id && d.response_id === m.target_id) : name === 'flow_revisions' || name === 'form_import_revisions' || name === 'notification_preferences' || name === 'submission_statuses' ? r.flow_id === m.flow_id : name === 'choice_options' ? steps.has(r.step_id) : revisions.has(r.revision_id))
+      for (const name of tableNames(m.kind)) if (optionalNativeTables.has(name) && !selected.tables[name].length) delete selected.tables[name]
       return { destination, targetKind: m.kind, targetId: m.target_id, revision: m.revision, value: selected as unknown as Json, committedAt: m.committed_at } as ImportTargetRow
     })
   },

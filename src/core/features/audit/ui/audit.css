@@ -1,0 +1,131 @@
+/* Adapted from the selected 12ui p1-audit-log conversion, scoped to the existing app shell. */
+.audit-viewer .wrap{max-width:1374px;margin:auto}
+.audit-viewer button,.audit-viewer select,.audit-viewer input{font:inherit;color:inherit}
+.audit-viewer button{cursor:pointer}
+.audit-viewer button:focus-visible,.audit-viewer a:focus-visible,.audit-viewer input:focus-visible,.audit-viewer select:focus-visible{outline:2px solid #e3ad22;outline-offset:3px}
+.audit-viewer h1{font-family:'Playfair Display',Georgia,serif;font-weight:700;font-size:50px;letter-spacing:-1.3px;line-height:1.22;margin:0 0 4px 3px}
+.audit-viewer .intro{color:#596378;font-size:15.5px;line-height:23px;max-width:690px;margin:0 0 25px 3px}
+.audit-viewer .filters{display:grid;grid-template-columns:208px 206px 203px 189px 184px 1fr;gap:20px;align-items:end;margin-bottom:27px}
+.audit-viewer .field label{display:block;color:#525c70;font-size:13px;margin:0 0 1px 3px}
+.audit-viewer .input-wrap{position:relative}
+.audit-viewer .field select,.audit-viewer .field input{width:100%;height:44px;border:1px solid #c7cad2;border-radius:13px;background:rgba(255,255,255,.65);padding:0 16px;appearance:none;outline-offset:2px}
+.audit-viewer .field select{padding-right:36px}
+.audit-viewer .field input{color:#667086;padding-right:36px}
+.audit-viewer .input-wrap svg{position:absolute;right:15px;top:15px;width:14px;height:14px;pointer-events:none}
+.audit-viewer .actions{display:flex;gap:12px;justify-content:flex-end;padding-bottom:4px}
+.audit-viewer .pill{border-radius:24px;padding:10px 20px;border:1px solid #b8bbc3;background:transparent;display:inline-flex;align-items:center;justify-content:center;gap:10px;white-space:normal}
+.audit-viewer .pill svg{width:14px;height:14px}
+.audit-viewer .apply{background:#272c33;color:white;border-color:#272c33;min-width:117px;box-shadow:inset 0 0 8px #151a20}
+.audit-viewer .export{min-width:136px}
+.audit-viewer .panel{border:1px solid #d9dce2;border-radius:11px;background:rgba(253,254,255,.82);overflow:hidden}
+.audit-viewer table{width:100%;border-collapse:collapse;table-layout:fixed}
+.audit-viewer col:nth-child(1){width:17.2%}
+.audit-viewer col:nth-child(2){width:16.6%}
+.audit-viewer col:nth-child(3){width:16.5%}
+.audit-viewer col:nth-child(4){width:16.5%}
+.audit-viewer col:nth-child(5){width:29.7%}
+.audit-viewer col:nth-child(6){width:3.5%}
+.audit-viewer th{text-align:left;font-size:10.5px;letter-spacing:1.3px;font-weight:600;color:#566077;height:47px;border-bottom:1px solid #e5e7ec}
+.audit-viewer th:first-child,.audit-viewer td:first-child{padding-left:21px}
+.audit-viewer td{height:52px;border-bottom:1px solid #e8eaf0;color:#4d576d;padding:7px 7px 7px 0;font-size:13px}
+.audit-viewer td:first-child{font-size:14px}
+.audit-viewer .actor{display:flex;gap:21px;align-items:center;color:#101627}
+.audit-viewer .avatar{width:31px;height:31px;border-radius:50%;background:linear-gradient(135deg,#e9e9ed,#e2e2e4);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px}
+.audit-viewer .workflow-badge{display:inline-block;border-radius:20px;padding:5px 15px;line-height:16px;color:#111725;background:linear-gradient(#e9edf2,#e1e5eb)}
+.audit-viewer .yellow{background:linear-gradient(#fff1d0,#ffebbb)}
+.audit-viewer .gray{background:linear-gradient(#ebebee,#e2e2e5)}
+.audit-viewer .blue{background:linear-gradient(#ebecff,#dfe3ff)}
+.audit-viewer .green{background:linear-gradient(#e3f3e9,#d1efde);color:#103a30}
+.audit-viewer .purple{background:linear-gradient(#f2eaff,#e9ddff);color:#201142}
+.audit-viewer .row-action{border:0;background:transparent;display:flex;padding:10px;color:#424c62}
+.audit-viewer .row-action svg{width:13px;height:13px}
+.audit-viewer .footer{min-height:81px;display:flex;align-items:center;justify-content:space-between;padding:17px 12px 17px 19px;color:#566075}
+.audit-viewer .pagination{display:flex;gap:15px;align-items:center;color:#182031}
+.audit-viewer .pagination .pill{padding:10px 18px;gap:9px}
+.audit-viewer .pagination button:disabled{opacity:.4;cursor:default}
+.audit-viewer .pagination .next{min-width:92px}
+.audit-viewer svg{fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+@media(min-width:1024px) and (max-width:1450px){.audit-viewer .wrap{margin:0 5.3%}
+.audit-viewer .filters{grid-template-columns:repeat(5,minmax(0,1fr))}
+.audit-viewer .actions{grid-column:1/-1;justify-content:flex-end}
+.audit-viewer .actor{gap:10px}
+}
+@media(min-width:600px) and (max-width:1023px){.audit-viewer .wrap{margin:0 28px}
+.audit-viewer h1{font-size:43px}
+.audit-viewer .filters{grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.audit-viewer .actions{justify-content:flex-start}
+.audit-viewer .actor{gap:8px;flex-wrap:wrap}
+.audit-viewer td{font-size:12px}
+.audit-viewer td:first-child{font-size:12px}
+.audit-viewer th:first-child,.audit-viewer td:first-child{padding-left:12px}
+.audit-viewer .workflow-badge{padding:5px 8px}
+.audit-viewer .footer{gap:15px;flex-wrap:wrap}
+}
+@media(max-width:599px){.audit-viewer .wrap{margin:0 18px}
+.audit-viewer h1{font-size:39px;margin-left:0}
+.audit-viewer .intro{font-size:14px;line-height:21px;margin:8px 0 22px}
+.audit-viewer .filters{display:flex;flex-direction:column;align-items:stretch;gap:13px}
+.audit-viewer .actions{justify-content:flex-start;padding-top:5px}
+.audit-viewer .panel{overflow:visible}
+.audit-viewer table,.audit-viewer tbody,.audit-viewer tr,.audit-viewer td{display:block;width:100%}
+.audit-viewer colgroup,.audit-viewer thead{display:none}
+.audit-viewer tr{padding:15px;border-bottom:1px solid #dce0e7}
+.audit-viewer td,.audit-viewer td:first-child{height:auto;padding:6px 0;border:0;font-size:13px;display:grid;grid-template-columns:95px minmax(0,1fr);align-items:center;gap:8px}
+.audit-viewer td:before{content:attr(data-label);font-size:10px;letter-spacing:.7px;color:#596277;font-weight:600}
+.audit-viewer .actor{gap:10px}
+.audit-viewer .workflow-badge{justify-self:start}
+.audit-viewer .row-action{justify-self:end}
+.audit-viewer td:last-child{display:flex;justify-content:flex-end}
+.audit-viewer .footer{padding:17px 14px;gap:18px;flex-direction:column;align-items:flex-start}
+.audit-viewer .pagination{gap:9px;font-size:12px;flex-wrap:wrap}
+.audit-viewer .pagination .pill{padding:9px 12px}
+.audit-viewer .pagination .next{min-width:72px}
+}
+
+.audit-viewer :where([data-12ui-cell-label]){box-sizing:unset;overflow-wrap:inherit;line-break:inherit}
+@media (max-width:599px){.audit-viewer td>[data-12ui-cell-label="before"]{font-size:10px;letter-spacing:.7px;color:#596277;font-weight:600}
+}
+@media (max-width:599px){.audit-viewer td:before{content:none}
+}
+@media not all and (max-width:599px){.audit-viewer [data-12ui-cell-label="before"]{display:none!important}
+}
+
+.audit-viewer .filters { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+.audit-viewer .actions { grid-column: 1 / -1; }
+
+.audit-viewer .export-actions { margin: 24px 0; flex-wrap: wrap; }
+
+.audit-viewer .choice-search form { padding-block: 16px; }
+
+.audit-viewer :is(td, .workflow-badge) { overflow-wrap: anywhere; }
+
+.audit-viewer col:nth-child(5) { width: 33.2%; }
+
+.audit-viewer .empty { padding: 24px; }
+
+.audit-viewer .audit-coverage { margin-top: 24px; font-size: 14px; }
+
+.audit-viewer .footer { flex-wrap: wrap; gap: 16px; }
+
+.audit-viewer .pagination { flex-wrap: wrap; }
+
+.audit-viewer :is(a, button) { min-height: 44px; }
+
+@media(max-width:899px) { .audit-viewer .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+ }
+
+@media(max-width:599px) {
+ .audit-viewer .filters { display: flex; flex-direction: column; align-items: stretch; }
+
+ .audit-viewer td:last-child { display: grid; justify-content: initial; }
+
+ .audit-viewer td:before { content: attr(data-label); }
+
+ .audit-viewer .actions { flex-wrap: wrap; }
+
+}
+
+@media(max-width:599px) { .audit-viewer thead { display: table-header-group; position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } }
+
+.audit-viewer .primary-button { color: white; }

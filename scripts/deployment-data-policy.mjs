@@ -3,6 +3,12 @@ import { failure } from './deployment-data-errors.mjs';
 // Every persisted column is reviewed here. A migration cannot silently add data
 // to an archive: both new tables and new columns fail closed until classified.
 const retained = {
+  // Operator workflow and internal notes are private product history; response erasure cascades all sidecars.
+  submission_statuses: 'id flow_id name created_at',
+  submission_workflows: 'response_id status_id assignee_id version updated_at',
+  submission_tags: 'response_id tag',
+  submission_notes: 'id response_id text author_id created_at',
+  submission_write_assertions: 'ok',
   collectors: 'id flow_id name channel public_key system_source deadline_at deadline_time_zone response_limit closed_at created_at updated_at',
   session_collector: 'session_id collector_id',
   response_collector: 'response_id collector_id',

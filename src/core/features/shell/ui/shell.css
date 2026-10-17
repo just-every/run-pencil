@@ -44,3 +44,12 @@
 /* Titles of pages without their own heading block (import, opt-out). */
 :where(.operator-content) h1.display { margin: 10px 0 24px; font-size: clamp(40px, 5vw, 64px); line-height: 1.02; }
 :where(.operator-content) h2.display { font-size: 28px; line-height: 1.1; }
+
+/* The workspace history link wraps naturally alongside the existing destinations. */
+.operator-nav { flex-wrap: wrap; gap: 8px 28px; }
+@media (max-width: 760px) {
+ .operator-header { padding-block: 12px; }
+ .operator-nav { order: 2; flex-basis: 100%; margin-left: 0; gap: 6px 22px; }
+ .operator-nav a { min-height: 44px; display: inline-flex; align-items: center; }
+ .operator-signout { margin-left: auto; min-height: 44px; }
+}

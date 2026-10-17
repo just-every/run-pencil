@@ -39,6 +39,7 @@ export function OperatorShellPage({ config, editorEnabled }: { config: PublicSee
         <Link activeOptions={{ exact: true }} to="/app/audience">Audience</Link>
         <Link aria-current={actionsCurrent ? 'page' : undefined} to="/app/actions">Actions</Link>
         <Link aria-current={analysisCurrent ? 'page' : undefined} to="/app/analysis">Analysis</Link>
+        <Link activeOptions={{ exact: true }} to="/app/audit">Audit log</Link>
         <Link activeOptions={{ exact: true }} to="/app/settings">Settings</Link>
       </nav>
       <button className="secondary-button operator-signout focus-ring" disabled={signingOut} onClick={() => void signOut()} type="button">{signingOut ? 'Signing out…' : 'Sign out'}</button>

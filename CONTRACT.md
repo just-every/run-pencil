@@ -325,7 +325,7 @@ The status table at the end lists every clause with its status and evidence path
 
 **LEDG-006 — Response search.** The ledger has a free-text search box that matches open-text answers, Other write-ins (FIELD-010), choice labels, hidden-field values (FIELD-001) and, for operators whose ROLE-002 grant shows identity, an identified respondent's name and email. Search combines with every LEDG-003 filter, highlights the matching answer, keeps the same response IDs and fixes into an export (LEDG-004) like any filter. GOV-004 sensitive answers match only for operators allowed to see them, quarantined responses only in the RESP-018 review list, and responses erased under DATA-002 never. It answers within one second p95 at the response capacity in `seed.json → limits`. *Acceptance:* a Worker test seeds responses and finds one by a phrase in its open-text answer, one by a hidden-field value and one by an Other write-in; combined with a revision filter only the matching revision's response returns; a sensitive answer's text is not matched for an operator without the grant; an export started from the search holds exactly the found response IDs. A browser journey types a phrase into the ledger search and sees the highlighted answer. *Status: missing.*
 
-**WORK-001 — Submission inbox.** Each form has an inbox where submissions carry a status (new, in review, approved, rejected, done or custom), an assignee, tags and internal notes that respondents never see; operators filter and bulk-update them and every change is audited. *Acceptance:* a browser journey assigns, tags, notes and moves a submission to done; the ledger filter by status returns it and the audit log names each change. *Status: missing.*
+**WORK-001 — Submission inbox.** Each form has an inbox where submissions carry a status (new, in review, approved, rejected, done or custom), an assignee, tags and internal notes that respondents never see; operators filter and bulk-update them and every change is audited. *Acceptance:* a browser journey assigns, tags, notes and moves a submission to done; the ledger filter by status returns it and the audit log names each change. *Status: done — per-form inbox, version-checked atomic bulk status/assignment/tags, private notes, custom statuses and audited changes (`src/core/features/submissions/`, `tests/runtime/submissions.worker.test.ts`).*
 
 **WORK-002 — Approval flows.** A form may route each submission through one or more approval steps (sequential, parallel or chosen by answers, for example amounts over $5,000 to a second approver). Approvers are operators, or named external approvers who act through a single-use signed link scoped to that submission that shows only the fields the operator allowed. Approve, reject and request-changes are recorded with actor, time and comment, and can notify the respondent (RESP-020) and trigger integrations. *Acceptance:* a Worker test routes a $6,000 request through two approvers, one by external link, asserts the decisions and audit, and proves the link cannot be reused or opened for another submission. *Status: missing.*
 
@@ -373,7 +373,7 @@ The status table at the end lists every clause with its status and evidence path
 
 **GOV-004 — Sensitive fields.** A question can be marked sensitive (for example SSN, taxpayer ID, date of birth, bank details, health answers): its values are encrypted at rest with an installation key separate from database backups, masked in the ledger, exports and integrations unless the operator has the identity grant and reveals them, and every reveal is audited. Sensitive values never enter AI requests, alerts or confirmation emails. *Acceptance:* a Worker test reads the raw D1 row and finds ciphertext only; an Analyst sees a mask; an Admin reveal writes an audit entry; an analysis run's provider request contains no sensitive value. *Status: missing.*
 
-**GOV-005 — Audit log viewer.** Admins can search and export the audit log (sign-ins, role changes, publishes, exports, reveals, deletions, connection changes, approvals) by actor, form and time, with entries that cannot be edited or deleted except by the erasure tombstoning BASE-DATA-003 allows. *Acceptance:* a browser journey performs an export and a role change and finds both in the audit viewer and its CSV export. *Status: partial — audit entries are recorded (`src/core/features/audit/service.ts`, `tests/runtime/foundation.worker.test.ts`); there is no viewer or export.*
+**GOV-005 — Audit log viewer.** Admins can search and export the audit log (sign-ins, role changes, publishes, exports, reveals, deletions, connection changes, approvals) by actor, form and time, with entries that cannot be edited or deleted except by the erasure tombstoning BASE-DATA-003 allows. *Acceptance:* a browser journey performs an export and a role change and finds both in the audit viewer and its CSV export. *Status: partial — bounded actor/form/activity/time viewer and snapshot CSV export are implemented (`src/core/features/audit/`, `tests/runtime/audit-viewer.worker.test.ts`). ROLE-001 roles and missing publish/export/reveal/connection event families remain unbuilt; current equal operators share access.*
 
 **GOV-006 — Respondent privacy requests.** An Admin can find every response, partial, contact, upload, signature and payment reference linked to an email address or phone number, export them as a portable file for a CCPA/CPRA access request, and delete them under DATA-002 with one confirmed command that also requests deletion in connected integrations that support it and lists those that do not. *Acceptance:* a Worker test seeds data across three forms for one email, exports the bundle, deletes it, and asserts DATA-002 effects plus a deletion call to a connected Google Sheet fixture. *Status: partial — response and contact erasure ships (`tests/e2e/answer-results.spec.ts`, `tests/runtime/analysis-safety.worker.test.ts` under DATA-002); cross-form lookup, access export and integration deletion do not.*
 
@@ -542,8 +542,8 @@ Judged from the code and tests at commit `6f3cb611373b39989912418926d4db4c566ed0
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 113 | 0 | 0 | 113 |
-| Target and push further | 2 | 37 | 86 | 125 |
-| All | 115 | 37 | 86 | 238 |
+| Target and push further | 3 | 37 | 85 | 125 |
+| All | 116 | 37 | 85 | 238 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -675,7 +675,7 @@ Judged from the code and tests at commit `6f3cb611373b39989912418926d4db4c566ed0
 | `LEDG-004` | Response export | published | done | `tests/e2e/journey.spec.ts`, `tests/e2e/ledger-filters.spec.ts`, `tests/e2e/new-question-types.spec.ts` |  |
 | `LEDG-005` | Spreadsheet and statistics exports | target | missing |  | No code yet. |
 | `LEDG-006` | Response search | target | missing |  | No code yet. |
-| `WORK-001` | Submission inbox | target | missing |  | No code yet. |
+| `WORK-001` | Submission inbox | target | done | `src/core/features/submissions/`, `src/core/features/reporting/scope.ts`, `tests/runtime/submissions.worker.test.ts` | Per-form workflow status, active assignee, tags, private paged notes, atomic version-checked bulk edits, ledger/export filters and audited changes. Import undo, erasure and operator removal preserve custody. |
 | `WORK-002` | Approval flows | target | missing |  | No code yet. |
 | `WORK-003` | Multi-person forms | target | missing |  | No code yet. |
 | `WORK-004` | Workflow reminders and escalation | target | missing |  | No code yet. |
@@ -730,7 +730,7 @@ Judged from the code and tests at commit `6f3cb611373b39989912418926d4db4c566ed0
 | `GOV-002` | Data location | target | missing |  | No code yet. |
 | `GOV-003` | Retention schedules | target | missing |  | No code yet. |
 | `GOV-004` | Sensitive fields | target | missing |  | No code yet. |
-| `GOV-005` | Audit log viewer | target | partial | `src/core/features/audit/service.ts`, `tests/runtime/foundation.worker.test.ts` | There is no viewer or export. |
+| `GOV-005` | Audit log viewer | target | partial | `src/core/features/audit/`, `tests/runtime/audit-viewer.worker.test.ts` | Viewer and sealed snapshot CSV support actor/form/activity/time filters and safe details. Roles and publish/export/reveal/connection event coverage remain missing; current equal operators share access. |
 | `GOV-006` | Respondent privacy requests | target | partial | `tests/e2e/answer-results.spec.ts`, `tests/runtime/analysis-safety.worker.test.ts` | Cross-form lookup, access export and integration deletion do not. |
 | `GOV-007` | Marketing and messaging consent | target | partial | `tests/runtime/new-question-types.worker.test.ts` | Purpose binding, form-level opt-in and gating do not. |
 | `IMPORT-001` | Reviewed definition | published | done | `tests/e2e/form-import.spec.ts`, `tests/e2e/google-forms-import.spec.ts`, `tests/runtime/form-import.worker.test.ts` |  |

@@ -1,0 +1,228 @@
+/* Adapted from the selected 12ui p0-submission-inbox conversion, scoped to the existing app shell. */
+.submission-inbox button,.submission-inbox select,.submission-inbox textarea{font:inherit;color:inherit}
+.submission-inbox button,.submission-inbox a,.submission-inbox select,.submission-inbox input{cursor:pointer}
+.submission-inbox button:focus-visible,.submission-inbox a:focus-visible,.submission-inbox select:focus-visible,.submission-inbox textarea:focus-visible{outline:2px solid #bc8b28;outline-offset:3px}
+.submission-inbox button{border:1px solid #b9babc;border-radius:24px;background:transparent;padding:9px 17px}
+.submission-inbox a{color:inherit;text-decoration:none}
+.submission-inbox h1{font:700 52px/1.15 Georgia,serif;letter-spacing:-1.4px;margin:10px 0 16px}
+.submission-inbox .toolbar{display:flex;justify-content:space-between;gap:24px;align-items:flex-start;margin-bottom:20px}
+.submission-inbox .filters{display:flex;gap:15px;padding-top:3px}
+.submission-inbox .filter{position:relative;width:210px}
+.submission-inbox .filter:last-child{width:199px}
+.submission-inbox .filter label{position:absolute;left:13px;top:-7px;padding:0 4px;background:#faf9f6;color:#6b7077;font-size:12px}
+.submission-inbox .filter select{width:100%;height:48px;border:1px solid #c4c5c7;border-radius:16px;padding:0 15px;background:#ffffffb8;font-size:13px}
+.submission-inbox .bulk{display:flex;align-items:center;gap:10px;margin-top:-8px;font-size:13px}
+.submission-inbox .bulk .count{margin-right:7px}
+.submission-inbox .bulk button{padding:9px 17px}
+.submission-inbox .chevron{display:inline-block;width:6px;height:6px;border-right:1px solid;border-bottom:1px solid;transform:rotate(45deg);margin:0 2px 3px 8px}
+.submission-inbox .bulk .apply{background:#282c2e;color:white;border-color:#282c2e;padding:10px 18px}
+.submission-inbox .layout{display:grid;grid-template-columns:minmax(0,831fr) minmax(0,529fr);gap:16px}
+.submission-inbox .panel{border:1px solid #dcdddf;border-radius:12px;background:#ffffffa8}
+.submission-inbox .inbox{padding:0 20px;overflow:hidden}
+.submission-inbox .table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px}
+.submission-inbox .table col:nth-child(1){width:43px}
+.submission-inbox .table col:nth-child(2){width:120px}
+.submission-inbox .table col:nth-child(3){width:218px}
+.submission-inbox .table col:nth-child(4){width:108px}
+.submission-inbox .table col:nth-child(5){width:150px}
+.submission-inbox .table col:nth-child(6){width:129px}
+.submission-inbox .table col:nth-child(7){width:21px}
+.submission-inbox .table th{text-align:left;font-size:10px;letter-spacing:1.35px;font-weight:600;color:#69717c;height:47px}
+.submission-inbox .table td{height:72px;border-bottom:1px solid #e9e9eb;vertical-align:middle;padding:10px 0}
+.submission-inbox .table th:first-child,.submission-inbox .table td:first-child{padding-left:2px}
+.submission-inbox .table thead{border-bottom:1px solid #e1e2e5}
+.submission-inbox .table tr.selected{background:#f7f6f2}
+.submission-inbox .table tr.selected td:first-child{box-shadow:-8px 0 #f7f6f2;border-radius:12px 0 0 12px}
+.submission-inbox .table tr.selected td:last-child{box-shadow:9px 0 #f7f6f2;border-radius:0 12px 12px 0}
+.submission-inbox .table .preview{padding-right:27px;line-height:22px}
+.submission-inbox .date{color:#5c6470}
+.submission-inbox .person{display:flex;align-items:center;gap:11px}
+.submission-inbox .avatar{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(130deg,#dedede,#e8e8e7);flex-shrink:0;font-size:12px}
+.submission-inbox .workflow-badge{display:inline-block;border-radius:20px;padding:4px 14px;line-height:17px;font-size:12px;background:#efede6}
+.submission-inbox .review{background:#fff0cd}
+.submission-inbox .approved{background:#d9efdf;color:#294d40}
+.submission-inbox .done{background:#dbe0e3}
+.submission-inbox .rejected{background:#ffe1dd;color:#512624}
+.submission-inbox .custom{background:#eee7fa;color:#282443}
+.submission-inbox .tag{display:inline-block;border-radius:18px;background:#f0f1f2;padding:4px 10px;line-height:16px}
+.submission-inbox .tag.small{padding:2px 8px;box-shadow:inset -3px -2px 3px #dadddf}
+.submission-inbox .rowlink{font-size:24px;font-weight:400;color:#626a73;display:inline-block;line-height:30px}
+.submission-inbox .table input{appearance:none;width:16px;height:16px;margin:0;border:1px solid #a7aaad;border-radius:4px;background:white;vertical-align:middle}
+.submission-inbox .table input:checked{background:#282d30;border-color:#282d30}
+.submission-inbox .table input:checked:after{content:'✓';color:white;display:block;text-align:center;font-size:12px;line-height:14px}
+.submission-inbox .foot{font-size:12px;color:#626a75;padding:28px 0}
+.submission-inbox .detail{padding:14px 20px 21px}
+.submission-inbox .detail-top{display:flex;align-items:center;gap:11px}
+.submission-inbox .detail h2{font:700 26px/1.3 Georgia,serif;letter-spacing:-.5px;margin:0}
+.submission-inbox .detail-top .workflow-badge{margin-left:auto;padding:5px 15px}
+.submission-inbox .more{width:27px;height:27px;padding:0;font-size:18px;line-height:22px;border-color:#d4d6d8}
+.submission-inbox .meta{color:#606975;margin:3px 0 23px}
+.submission-inbox .dot{margin:0 9px;color:#9299a3}
+.submission-inbox h3{font:700 18px/1.3 Georgia,serif;margin:0 0 11px}
+.submission-inbox .question{font-weight:600;margin:0 0 5px;line-height:20px}
+.submission-inbox .answer{margin:0 0 14px;line-height:21px;font-size:15px}
+.submission-inbox .answers{border-bottom:1px solid #e2e4e7;padding-bottom:2px}
+.submission-inbox .tags{display:flex;align-items:center;gap:9px;padding:20px 0 19px;border-bottom:1px solid #e2e4e7}
+.submission-inbox .tags h3{margin:0 9px 0 0}
+.submission-inbox .tags .tag{background:transparent;border:1px solid #c5c7ca;padding:3px 10px;font-size:12px}
+.submission-inbox .note-title{display:flex;align-items:center;justify-content:space-between;margin-top:19px;margin-bottom:8px}
+.submission-inbox .note-title h3{margin:0}
+.submission-inbox .privacy{font-size:10px;color:#69717d;display:flex;align-items:center;gap:6px}
+.submission-inbox .privacy svg{width:12px;height:13px}
+.submission-inbox .note-entry{position:relative;border:1px solid #cfd2d7;border-radius:9px;height:78px;background:#ffffff70}
+.submission-inbox .note-entry textarea{resize:none;width:100%;height:43px;border:0;background:transparent;padding:11px;font-size:13px;outline-offset:-3px}
+.submission-inbox .note-entry textarea::placeholder{color:#7a828e}
+.submission-inbox .note-entry button{position:absolute;right:9px;bottom:7px;border:0;background:#efede9;padding:6px 13px;font-size:12px}
+.submission-inbox .history{margin-top:25px}
+.submission-inbox .history h3{margin-bottom:13px}
+.submission-inbox .note{display:flex;gap:14px}
+.submission-inbox .note .avatar{width:32px;height:32px}
+.submission-inbox .note-body{flex:1;min-width:0;padding:3px 0 13px;border-bottom:1px solid #e6e7e9}
+.submission-inbox .note-head{display:flex;justify-content:space-between;gap:10px;font-size:12px}
+.submission-inbox .note-head time{font-size:11px;color:#747d88}
+.submission-inbox .note p{font-size:12px;color:#59616c;line-height:19px;margin:6px 0 0}
+.submission-inbox .note+.note{margin-top:13px}
+.submission-inbox .note:last-child .note-body{border:0;padding-bottom:0}
+.submission-inbox .mobile-label{display:none}
+@media(min-width:1024px) and (max-width:1450px){.submission-inbox .table col:nth-child(1){width:5%}
+.submission-inbox .table col:nth-child(2){width:16%}
+.submission-inbox .table col:nth-child(3){width:27%}
+.submission-inbox .table col:nth-child(4){width:14%}
+.submission-inbox .table col:nth-child(5){width:20%}
+.submission-inbox .table col:nth-child(6){width:15%}
+.submission-inbox .table col:nth-child(7){width:3%}
+.submission-inbox .filter{width:170px}
+.submission-inbox .filter:last-child{width:160px}
+.submission-inbox .bulk{gap:6px}
+.submission-inbox .bulk button{padding-left:11px;padding-right:11px}
+.submission-inbox .table .preview{padding-right:12px}
+}
+@media(min-width:600px) and (max-width:1023px){.submission-inbox .layout{grid-template-columns:1fr}
+.submission-inbox .detail{grid-row:1}
+.submission-inbox .toolbar{flex-direction:column;gap:22px}
+.submission-inbox .filters{width:100%}
+.submission-inbox .filter,.submission-inbox .filter:last-child{width:auto;flex:1}
+.submission-inbox .bulk{flex-wrap:wrap;margin:0}
+.submission-inbox h1{font-size:44px}
+.submission-inbox .table col:nth-child(1){width:5%}
+.submission-inbox .table col:nth-child(2){width:16%}
+.submission-inbox .table col:nth-child(3){width:27%}
+.submission-inbox .table col:nth-child(4){width:14%}
+.submission-inbox .table col:nth-child(5){width:19%}
+.submission-inbox .table col:nth-child(6){width:16%}
+.submission-inbox .table col:nth-child(7){width:3%}
+.submission-inbox .table .preview{padding-right:10px}
+.submission-inbox .person{gap:6px}
+}
+@media(max-width:599px){.submission-inbox h1{font-size:36px;letter-spacing:-.8px}
+.submission-inbox .toolbar{display:flex;flex-direction:column;gap:20px}
+.submission-inbox .filters{width:100%;flex-direction:column;gap:17px}
+.submission-inbox .filter,.submission-inbox .filter:last-child{width:100%}
+.submission-inbox .bulk{margin:0;flex-wrap:wrap;gap:8px}
+.submission-inbox .bulk .count{width:100%}
+.submission-inbox .layout{display:flex;flex-direction:column}
+.submission-inbox .inbox{padding:0 13px}
+.submission-inbox .table,.submission-inbox .table tbody,.submission-inbox .table tr,.submission-inbox .table td{display:block;width:100%}
+.submission-inbox .table colgroup,.submission-inbox .table thead{display:none}
+.submission-inbox .table tr{position:relative;padding:15px 7px 14px 29px;border-bottom:1px solid #e1e3e5}
+.submission-inbox .table td{height:auto;border:0;padding:4px 0}
+.submission-inbox .table td:first-child{position:absolute;left:3px;top:14px;width:20px}
+.submission-inbox .table tr.selected td:first-child,.submission-inbox .table tr.selected td:last-child{box-shadow:none}
+.submission-inbox .table .preview{padding-right:0;font-size:13px}
+.submission-inbox .mobile-label{display:inline;font-size:12px;color:#747b83;margin-right:8px}
+.submission-inbox .person{display:inline-flex}
+.submission-inbox .table td:last-child{position:absolute;right:3px;top:8px;width:20px}
+.submission-inbox .table td.date{padding-right:20px}
+.submission-inbox .foot{padding:20px 0}
+.submission-inbox .detail{padding:17px 16px}
+.submission-inbox .detail h2{font-size:24px}
+.submission-inbox .detail-top{gap:7px}
+.submission-inbox .detail-top .workflow-badge{padding:4px 9px}
+.submission-inbox .meta{font-size:12px}
+.submission-inbox .privacy{font-size:12px}
+.submission-inbox .note-title{align-items:flex-start;gap:12px}
+.submission-inbox .note-head{flex-wrap:wrap;gap:4px}
+.submission-inbox .note-head time{font-size:12px}
+.submission-inbox .answer{font-size:14px}
+.submission-inbox .note p{font-size:12px}
+.submission-inbox .tags{flex-wrap:wrap}
+}
+
+.submission-inbox .filters { margin: 24px 0; flex-wrap: wrap; align-items: end; }
+
+.submission-inbox .filters > label { flex: 1 1 180px; max-width: 270px; }
+
+.submission-inbox .bulk { margin: 12px 0; flex-wrap: wrap; align-items: end; gap: 12px; }
+
+.submission-inbox .bulk > label { flex: 1 1 150px; max-width: 210px; }
+
+.submission-inbox .bulk .count { width: 100%; margin: 0; }
+
+.submission-inbox .custom-status { margin: 20px 0; }
+
+.submission-inbox .custom-status > form { margin-top: 16px; }
+
+.submission-inbox .layout { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); }
+
+.submission-inbox .table .preview, .submission-inbox .table td { overflow-wrap: anywhere; }
+
+.submission-inbox .rowlink { min-width: 44px; min-height: 44px; font-size: 20px; border: 0; }
+
+.submission-inbox .tag { margin: 2px; overflow-wrap: anywhere; }
+
+.submission-inbox .workflow-badge { display: inline-block; border-radius: 20px; padding: 4px 12px; font-size: 12px; background: #efede6; }
+
+.submission-inbox .workflow-badge[data-status='in-review'] { background: #fff0cd; }
+
+.submission-inbox .workflow-badge[data-status='approved'] { background: #d9efdf; }
+
+.submission-inbox .workflow-badge[data-status='rejected'] { background: #ffe1dd; }
+
+.submission-inbox .workflow-badge[data-status='done'] { background: #dbe0e3; }
+
+.submission-inbox .detail h2 { font-size: 28px; }
+
+.submission-inbox .detail h3 { font-size: 22px; }
+
+.submission-inbox .detail :is(p, .note-head) { overflow-wrap: anywhere; }
+
+.submission-inbox .note-entry { height: auto; padding: 8px; display: grid; gap: 8px; justify-items: end; }
+
+.submission-inbox .note-entry textarea { height: auto; min-height: 80px; font-size: 16px; }
+
+.submission-inbox .note-entry button { position: static; min-height: 44px; padding: 0 16px; }
+
+.submission-inbox .note p, .submission-inbox .answer { white-space: pre-wrap; }
+
+.submission-inbox .foot { padding: 20px 0; }
+
+.submission-inbox .foot button { min-height: 44px; }
+
+.submission-inbox .note-head, .submission-inbox .detail-top { flex-wrap: wrap; }
+
+@media(max-width:899px) { .submission-inbox .layout { display: flex; flex-direction: column; }
+ }
+
+@media(max-width:599px) {
+ .submission-inbox .filters > label, .submission-inbox .bulk > label { max-width: none; width: 100%; flex-basis: auto; }
+
+ .submission-inbox .table tr { padding-right: 45px; }
+
+ .submission-inbox .table td:last-child { position: absolute; right: 0; top: 8px; width: 44px; }
+
+ .submission-inbox .table td:first-child { width: 24px; }
+
+ .submission-inbox .detail { padding: 20px 16px; }
+
+}
+
+.submission-inbox .table .date { padding-right: 12px; }
+.submission-inbox .rowlink { text-decoration: none; }
+.submission-inbox .selection-hit { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; }
+.submission-inbox .table col:first-child { width: 44px; }
+.submission-inbox .table col:last-child { width: 44px; }
+@media(max-width:599px) { .submission-inbox .table td:first-child { left: -5px; top: 8px; } }
+
+@media(max-width:599px) { .submission-inbox thead { display: table-header-group; position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } }
+
+.submission-inbox .primary-button { color: white; background: var(--ink); border-color: var(--ink); }

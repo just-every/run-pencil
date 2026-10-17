@@ -148,7 +148,7 @@ export class AuthRepository {
     const guardParameters = [target.id, input.workspaceId, input.actorOperatorId, input.workspaceId]
     const now = new Date().toISOString()
     const results = await this.batch.execute([
-      ...await operatorCustodyStatements(this.database, target, guard, guardParameters),
+      ...await operatorCustodyStatements(this.database, target, guard, guardParameters, input.actorOperatorId),
       { sql: `INSERT INTO audit_entries (id, workspace_id, kind, actor_operator_id, subject_type, subject_id, details_json, created_at)
         SELECT ?, ?, 'operator.removed', CASE WHEN ? <> ? AND EXISTS (
           SELECT 1 FROM operators WHERE id = ? AND workspace_id = ?) THEN ? ELSE NULL END,

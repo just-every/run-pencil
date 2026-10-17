@@ -1,2 +1,5 @@
 export { AuditRepository } from './repository'
 export { AuditService, type AuditRecord } from './service'
+export { AuditReader } from './reader'
+export { registerAuditRoutes } from './routes'
+export type { AuditFilters, AuditQuery, AuditScope, AuditRow, AuditPage, AuditOptions } from './model'

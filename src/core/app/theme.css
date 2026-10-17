@@ -26,6 +26,9 @@
 @import '../features/importing/ui/import.css';
 @import '../features/responses/ui/respondent.css';
 
+@import '../features/submissions/ui/inbox.css';
+@import '../features/audit/ui/audit.css';
+
 @theme {
   --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
   --font-display: "DM Serif Display", Georgia, serif;
