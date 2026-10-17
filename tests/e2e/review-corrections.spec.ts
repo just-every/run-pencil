@@ -179,8 +179,8 @@ contract(['FLOW-004', 'FLOW-005', 'FLOW-014', 'RESP-003', 'DIST-001', 'HOME-001'
   await check('nps')
   // An explicit generic rating edit preserves numeric-button and star proof.
   await editor.getByLabel('Question type').selectOption('rating')
-  await editor.getByLabel('Lowest rating').fill('0')
-  await editor.getByLabel('Highest rating').fill('10')
+  await editor.getByLabel('Start at', { exact: true }).selectOption('0')
+  await editor.getByLabel('Number of steps', { exact: true }).selectOption('11')
   for (let score = 0; score <= 10; score++) expect.soft(await canvas.getByRole('radio', { name: `${score} out of 10`, exact: true }).innerText()).toBe(String(score))
   await expect(canvas.getByRole('radio', { checked: false })).toHaveCount(11)
   await canvas.getByRole('radio', { name: '8 out of 10', exact: true }).focus()

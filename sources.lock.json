@@ -5621,7 +5621,7 @@
       "executable": false
     },
     "tests/e2e/review-corrections.spec.ts": {
-      "sha256": "1a7b1e9c0dec6a18f3ded172d3fa0b7ea7adc773ba63918c7701470c1d628112",
+      "sha256": "512c76622559e133cb11068840586757d8e249234398769b5155610028dd7236",
       "executable": false
     },
     "tests/e2e/revision-comparison-http.spec.ts": {
