@@ -1,0 +1,5 @@
+export { crossTab } from './service'
+export { dimensionOptions } from './options'
+export { registerCrosstabRoutes } from './routes'
+export { crosstabInputSchema, crosstabFilterSchema, dimensionSchema, dimensionKey } from './model'
+export type { CrossTabInput, CrossTabReport, CrossTabOptions, Dimension, DimensionOption, Bucket, Margin, CrossTabCell, ChiSquare } from './model'

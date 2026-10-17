@@ -51,7 +51,7 @@ export function ResultsPage() {
   return (
     <section className="results" aria-labelledby="results-title">
       <header className="results-heading">
-        <div className="results-heading__nav"><Link className="quiet-button focus-ring" to="/app"><ArrowLeft aria-hidden="true" size={16} /> All flows</Link><Link className="secondary-button focus-ring" to="/app/flows/$flowId/builder" params={{ flowId }}><PencilLine aria-hidden="true" size={15} /> Builder</Link></div>
+        <div className="results-heading__nav"><Link className="quiet-button focus-ring" to="/app"><ArrowLeft aria-hidden="true" size={16} /> All flows</Link><Link className="secondary-button focus-ring" to="/app/flows/$flowId/builder" params={{ flowId }}><PencilLine aria-hidden="true" size={15} /> Builder</Link><Link className="secondary-button focus-ring" style={{ minHeight: 44 }} to="/app/flows/$flowId/reports" params={{ flowId }} search={{ viewId: undefined }}>Crosstabs</Link><Link className="secondary-button focus-ring" style={{ minHeight: 44 }} to="/app/flows/$flowId/dashboard" params={{ flowId }}>Form dashboard</Link></div>
         <Link className="secondary-button focus-ring" to="/app/flows/$flowId/inbox" params={{ flowId }}>Submission inbox</Link>
         <h1 id="results-title" className="display">{results?.flow.title ?? 'Results'}</h1>
         <div className="results-heading__tools">

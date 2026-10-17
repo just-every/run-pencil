@@ -1,4 +1,5 @@
 export { AnalysisService, providerStatus } from './service'
 export { registerAnalysisRoutes } from './routes'
 export { analysisErasureStatements } from './erasure'
+export { defaultPolicies } from './model'
 export type { RunDetail, RunSummary, ThemeView } from './repository'

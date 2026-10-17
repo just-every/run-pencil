@@ -337,11 +337,11 @@ The status table at the end lists every clause with its status and evidence path
 
 ### Target: reports buyers share
 
-**RSLT-006 — Crosstabs.** An operator can cross any structured question, hidden field, collector, language, calculated value or score against another, with counts, row and column percentages named under RSLT-003, a chi-square test flagged only when every expected cell count is at least 5, and ANLY-005 suppression for cells below the disclosure threshold. *Acceptance:* a Worker test crosses a 3-choice question with a 2-choice question over a fixed dataset and asserts every cell, percentage, the chi-square statistic and a suppressed small cell. *Status: missing.*
+**RSLT-006 — Crosstabs.** An operator can cross any structured question, hidden field, collector, language, calculated value or score against another, with counts, row and column percentages named under RSLT-003, a chi-square test flagged only when every expected cell count is at least 5, and ANLY-005 suppression for cells below the disclosure threshold. *Acceptance:* a Worker test crosses a 3-choice question with a 2-choice question over a fixed dataset and asserts every cell, percentage, the chi-square statistic and a suppressed small cell. *Status: partial — categorical question/score and collector crosstabs, paired respondent percentages, eligible chi-square and disclosure suppression ship (`src/core/features/reporting/crosstabs/`, `tests/runtime/crosstabs.worker.test.ts`); general numeric/date/priority, hidden-field, language and calculated-value dimensions remain.*
 
 **RSLT-007 — Trends over time.** Results chart any score or answer share by day, week, month or quarter in the WS-001 zone, with the per-period denominator, a minimum-period-size rule, and revision boundaries marked; recurring occurrences (DIST-016) and programs (PROG-003) use the same series. *Acceptance:* a Worker test seeds responses across three months and asserts weekly and monthly NPS, denominators and a revision marker; a period below the minimum shows no value. *Status: partial.*
 
-**RSLT-008 — Saved views and dashboards.** An operator can save a named view (filters, compared cohorts, crosstabs, chosen charts) and arrange several into a form or program dashboard; views reopen with the same numbers for the same cutoff and record who saved them. *Acceptance:* a browser journey saves a filtered crosstab view, reloads it as another operator, and sees identical figures. *Status: partial — filters and revision comparisons ship (`src/core/features/reporting/answerFilter.ts`, `tests/runtime/ledger-filters.worker.test.ts`); saved views do not.*
+**RSLT-008 — Saved views and dashboards.** An operator can save a named view (filters, compared cohorts, crosstabs, chosen charts) and arrange several into a form or program dashboard; views reopen with the same numbers for the same cutoff and record who saved them. *Acceptance:* a browser journey saves a filtered crosstab view, reloads it as another operator, and sees identical figures. *Status: partial — named filtered crosstab snapshots retain cutoff and creator, reopen for equal operators and arrange into form dashboards (`src/core/features/reportViews/`, `tests/runtime/report-views.worker.test.ts`); compared cohorts, chosen charts and program dashboards remain.*
 
 **RSLT-009 — Shared report links.** A saved view can be shared as a read-only link with optional password and expiry, revocable at any time; it shows aggregates only, applies ANLY-005 suppression, never shows respondent identity, excerpts below the threshold, uploads or payment details, and sets no cookies beyond its own session. *Acceptance:* a browser journey opens a shared link without an operator session, sees the aggregates, finds no response ID or identity in the page, and gets 404 after revocation. *Status: missing.*
 
@@ -542,8 +542,8 @@ Judged from the code and tests at commit `6f3cb611373b39989912418926d4db4c566ed0
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 113 | 0 | 0 | 113 |
-| Target and push further | 3 | 39 | 83 | 125 |
-| All | 116 | 39 | 83 | 238 |
+| Target and push further | 3 | 40 | 82 | 125 |
+| All | 116 | 40 | 82 | 238 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -685,9 +685,9 @@ Judged from the code and tests at commit `6f3cb611373b39989912418926d4db4c566ed0
 | `RSLT-003` | Stated denominators | published | done | `tests/e2e/answer-results.spec.ts`, `tests/e2e/distribution-foundation.spec.ts`, `tests/e2e/imported-results.spec.ts` |  |
 | `RSLT-004` | Device split | published | done | `tests/e2e/answer-results.spec.ts`, `tests/e2e/distribution-foundation.spec.ts`, `tests/runtime/journey.worker.test.ts` |  |
 | `RSLT-005` | Results across revisions | published | done | `tests/e2e/answer-results.spec.ts`, `tests/e2e/reporting-bounded.spec.ts`, `tests/e2e/revision-comparison-http.spec.ts` |  |
-| `RSLT-006` | Crosstabs | target | missing |  | No code yet. |
+| `RSLT-006` | Crosstabs | target | partial | `src/core/features/reporting/crosstabs/`, `src/core/features/reportViews/ui/`, `tests/runtime/crosstabs.worker.test.ts` | General numeric/date/priority, hidden-field, language and calculated-value dimensions remain. |
 | `RSLT-007` | Trends over time | target | partial | `src/core/features/reporting/trends.ts`, `src/core/features/reporting/trendPeriods.ts`, `src/core/features/results/ui/TrendsPanel.tsx`, `tests/runtime/collectors-trends.worker.test.ts` | Zoned day/week/month/quarter score and primitive-answer-share charts, answered denominators, minimum-size gaps, revision markers, collector cohorts and CSV ship. DIST-016 recurring occurrences, PROG-003 program dashboards, and shares of ranked/structured contact answers remain unbuilt. |
-| `RSLT-008` | Saved views and dashboards | target | partial | `src/core/features/reporting/answerFilter.ts`, `tests/runtime/ledger-filters.worker.test.ts` | Saved views do not. |
+| `RSLT-008` | Saved views and dashboards | target | partial | `src/core/features/reportViews/`, `tests/runtime/report-views.worker.test.ts` | Compared cohorts, chosen charts and program dashboards remain. Erasure or stricter disclosure settings remove saved snapshots. |
 | `RSLT-009` | Shared report links | target | missing |  | No code yet. |
 | `RSLT-010` | Report exports | target | missing |  | No code yet. |
 | `RSLT-011` | Scheduled report email | target | missing |  | No code yet. |

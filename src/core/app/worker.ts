@@ -1,4 +1,6 @@
 import { registerAuditRoutes } from '../features/audit'
+import { registerCrosstabRoutes } from '../features/reporting/crosstabs'
+import { registerReportViewRoutes } from '../features/reportViews'
 import { registerSubmissionRoutes } from '../features/submissions/routes'
 import { SubmissionService } from '../features/submissions/service'
 import { registerCollectorRoutes } from '../features/collectors'
@@ -131,6 +133,8 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
   registerImportRoutes(app)
   registerResponseRoutes(app, context => context.get('services'))
   registerAuditRoutes(app)
+  registerCrosstabRoutes(app)
+  registerReportViewRoutes(app)
   registerSubmissionRoutes(app, context => new SubmissionService(context.get('platform').databaseBinding))
   registerReportingRoutes(app, context => context.get('services'))
   registerCollectorRoutes(app, context => context.get('services'))

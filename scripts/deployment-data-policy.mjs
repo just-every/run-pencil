@@ -3,6 +3,10 @@ import { failure } from './deployment-data-errors.mjs';
 // Every persisted column is reviewed here. A migration cannot silently add data
 // to an archive: both new tables and new columns fail closed until classified.
 const retained = {
+  // Named filtered categorical snapshots are private product data. Form response
+  // erasure invalidates every view, including its filter literals; creators anonymize.
+  report_dashboards: 'flow_id version erasure_generation mutation_id',
+  report_views: 'id flow_id name definition_json cutoff snapshot_json creator_operator_id created_at position',
   // Operator workflow and internal notes are private product history; response erasure cascades all sidecars.
   submission_statuses: 'id flow_id name created_at',
   submission_workflows: 'response_id status_id assignee_id version updated_at',
