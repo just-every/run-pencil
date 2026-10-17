@@ -841,7 +841,7 @@
       "executable": false
     },
     "base-copies.json": {
-      "sha256": "d2037837428a9b42f536d216122c6097669c70106b806ac51f7e6e09694df746",
+      "sha256": "85453584248219c7888796257f600b81f50ccc237cc1d2384c3db5b1d33f35c9",
       "executable": false
     },
     "BASELINE.md": {
@@ -1169,7 +1169,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "62cac5c89c67311bf25365eba55486d09d980193a113bd3298e73c0bf1948cf0",
+      "sha256": "644268356f51988788b9fbcb9cca18d5d4787983eed9cbd28b74088343a292b1",
       "executable": false
     },
     "playwright.admission.config.ts": {
@@ -1189,7 +1189,7 @@
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "10f01ba46fbde98c86c48c35786053dd06f17d2b9256bfd32663780265eab61b",
+      "sha256": "9ee89709c1b217b2b02d294739d3e87c9eada6c2f78a65b2b47680b49ad46679",
       "executable": false
     },
     "public/brand/band.svg": {
@@ -1822,6 +1822,18 @@
     },
     "src/base/ai/README.md": {
       "sha256": "6ebf7160bc2952aaa1620def0bc3f9059cc86bbcaa6db15ddcb38f81bd95a251",
+      "executable": false
+    },
+    "src/base/contract-filter.ts": {
+      "sha256": "eec5be7da15653b69dd343fb3cf9f7a2e695eb215c5ee118f3508090e9c29232",
+      "executable": false
+    },
+    "src/base/contract-page.ts": {
+      "sha256": "8fff886df5869401818c0a3422a9a9cb73f3f1c4cb100d46f2a315176102b64f",
+      "executable": false
+    },
+    "src/base/contract-style.ts": {
+      "sha256": "41afdf1cb60983b340283b13e414102387eb2a4af022d730220050a4384d0753",
       "executable": false
     },
     "src/base/d1-transport/index.d.mts": {
@@ -3349,7 +3361,15 @@
       "executable": false
     },
     "src/base/run-site.ts": {
-      "sha256": "15297c94383257734dbf67e3bde8ee8e3fdd976097481e473d27190870eca92f",
+      "sha256": "608a6b61630ee1cddfa4bd797f2b6c1880ab699b89c82e37bba18f4690b5ca01",
+      "executable": false
+    },
+    "src/base/seed-contract.d.mts": {
+      "sha256": "2add6b0252ab6cb78051c7c5c2754daaebada6d7bea411df85eb8b0cb8a0ce09",
+      "executable": false
+    },
+    "src/base/seed-contract.mjs": {
+      "sha256": "fe40fa189caf33b7531b6d02e31616275f324d5727b9b0db7ddf35998712dd7c",
       "executable": false
     },
     "src/base/setup-state.ts": {
@@ -4021,7 +4041,7 @@
       "executable": false
     },
     "src/core/features/docs/DocsSidebar.tsx": {
-      "sha256": "6d75d6d22a28c944e2664d70c2f28abacdf1789b8004b386dad5a1a0248bf555",
+      "sha256": "8df4a8a89981bed18719162f5a576e5fe023c2b6803310a34eb40a435a001ddb",
       "executable": false
     },
     "src/core/features/docs/DocsToc.tsx": {
@@ -4893,7 +4913,7 @@
       "executable": false
     },
     "src/core/features/site/links.ts": {
-      "sha256": "4b1fb7ae45e6c1f99603be25e31a4bdd47ba408054191cdc6978d9e117a46ace",
+      "sha256": "eea759fae16e32031d2c825614289c860ba83746d9ff282cc1deb39b24e9c65a",
       "executable": false
     },
     "src/core/features/site/Lockup.tsx": {
@@ -4921,7 +4941,7 @@
       "executable": false
     },
     "src/core/features/site/SiteFooter.tsx": {
-      "sha256": "c195e2508678baeccb16021ddf48b2d9bad2a378b751ce08a40b71bc47183c3a",
+      "sha256": "37077fc251606e92a56ef52894f8f94e7d5ca9ed3d5a30fc4511611750790223",
       "executable": false
     },
     "src/core/features/site/SiteHeader.tsx": {
@@ -5321,7 +5341,7 @@
       "executable": false
     },
     "src/site/pages.tsx": {
-      "sha256": "43329e363bdfab0669c600457e719887938ba4a7925f6e73833de86d9a41804c",
+      "sha256": "b784112eb75b9dbe0d0862028de35a37a33e02837d27b3bf512ab341078e2414",
       "executable": false
     },
     "src/site/render.tsx": {
