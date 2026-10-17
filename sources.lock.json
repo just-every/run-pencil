@@ -809,7 +809,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "04315810fe6a693de6eebd1c79b9ea357d2976ba644a20c9298bb120bdd1263d",
+      "sha256": "376d8d38970c60b665ed2c9af29375988cf1a21eed18bfdc7f51d4eb9fdc2041",
       "executable": false
     },
     ".gitignore": {
@@ -1257,7 +1257,7 @@
       "executable": false
     },
     "scripts/browser-evidence.mjs": {
-      "sha256": "5f6c2aed97ee94a336ecad7fbe15faefb2753307c287b1902faea8721dd69734",
+      "sha256": "3d1083936e741fa9bff242e1f702f1dc8632d0d484f1c09369f8fd5c0ea4e86b",
       "executable": false
     },
     "scripts/build-delivery-artifact.mjs": {
@@ -5625,7 +5625,7 @@
       "executable": false
     },
     "tests/e2e/revision-comparison-http.spec.ts": {
-      "sha256": "8e5165c11e37ffd8a5485406600d210cb34d7b5827d406ac0ec54da8cf94a4e1",
+      "sha256": "f1adb6c5ccb27cc36b6a8b78d40fe14da928de930681d1ae2b76169c8a7a4d24",
       "executable": false
     },
     "tests/e2e/script-embed.spec.ts": {
@@ -6017,7 +6017,7 @@
       "executable": false
     },
     "tests/runtime/journey.worker.test.ts": {
-      "sha256": "22f0e83dcbd128fc837c28d653b4cbf75ba09e20d32cbd50e0e035e62ecbbb82",
+      "sha256": "8f40c7ea6508d73454cd2329f3a276c28703429f372f41b060ce9bd963ff78e9",
       "executable": false
     },
     "tests/runtime/ledger-filters.worker.test.ts": {

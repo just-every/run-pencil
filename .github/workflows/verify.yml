@@ -58,6 +58,7 @@ jobs:
         run: pnpm verify:migrations
       - run: node scripts/run-contract-lane.mjs "${{ matrix.lane }}" "$RUNNER_TEMP/contract-evidence"
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: contract-${{ matrix.lane }}
           path: ${{ runner.temp }}/contract-evidence/*.json
@@ -84,6 +85,7 @@ jobs:
       # Each shard still owns fresh migrated runtimes and the original rate limits.
       - run: node scripts/run-contract-lane.mjs "${{ matrix.lane }}" "$RUNNER_TEMP/contract-evidence"
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: contract-${{ matrix.lane }}
           path: ${{ runner.temp }}/contract-evidence/*.json

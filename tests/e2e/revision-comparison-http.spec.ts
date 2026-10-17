@@ -51,7 +51,9 @@ contract('RSLT-005', 'native revision comparison keeps absent questions, contain
   const later = comparison.questions.find(question => question.id === added.id)!
   expect(later).toMatchObject({ answered: 1, eligibleResponses: 2 })
   expect(later.versions).toHaveLength(1)
-  expect(later.versions[0]).toMatchObject({ revisionId: answered.revisionId, answered: 1, eligibleResponses: 2, distribution: [{ value: 5, label: '5', count: 1 }] })
+  expect(later.versions[0]).toMatchObject({ revisionId: answered.revisionId, answered: 1, eligibleResponses: 2, distribution: [
+    { value: 1, label: '1', count: 0 }, { value: 2, label: '2', count: 0 }, { value: 3, label: '3', count: 0 }, { value: 4, label: '4', count: 0 }, { value: 5, label: '5', count: 1 },
+  ] })
   expect(comparison.questions.filter(question => question.versions[0].prompt === original.prompt)).toHaveLength(2)
   expect(JSON.stringify(comparison)).not.toMatch(/sessionToken|responseId|deviceClass/)
   await ok(`${path}/archive`, {})

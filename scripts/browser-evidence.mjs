@@ -31,7 +31,7 @@ export async function runPlaywrightJson(root, { project, shard } = {}) {
           const trace = result?.error?.stack?.match(/([^\s()]+\/tests\/[^:\s]+):(\d+):(\d+)/)
           // Print source coordinates only. Assertion values and browser traces
           // can contain transient credentials and stay in the private report.
-          console.error(`Browser failure: ${location?.file ?? trace?.[1] ?? spec.file}:${location?.line ?? trace?.[2] ?? spec.line}:${location?.column ?? trace?.[3] ?? spec.column} (${test.projectName}, ${result?.status})`)
+          console.error(`Browser failure: ${spec.title} at ${location?.file ?? trace?.[1] ?? spec.file}:${location?.line ?? trace?.[2] ?? spec.line}:${location?.column ?? trace?.[3] ?? spec.column} (${test.projectName}, ${result?.status})`)
         }
         failures(suite.suites)
       }
