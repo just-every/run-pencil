@@ -1,5 +1,4 @@
-import { contractUrl } from '../site/links';
-import { useSiteVariant } from '../site/variant';
+import { links, useSiteVariant } from '../site';
 import { DocsNavList } from './DocsNavList';
 import type { DocsSection } from './types';
 
@@ -8,6 +7,6 @@ export function DocsSidebar({ sections, current }: { sections: DocsSection[]; cu
   const site = useSiteVariant() === 'site';
   return <nav className="docs-sidebar" aria-label="Documentation">
     <DocsNavList sections={sections} current={current} idPrefix="docs-sidebar" />
-    {site ? <div className="docs-nav-group"><ul><li><a href={contractUrl}>Contract</a></li></ul></div> : null}
+    {site ? <div className="docs-nav-group"><ul><li><a href={links.contractUrl}>Contract</a></li></ul></div> : null}
   </nav>;
 }

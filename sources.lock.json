@@ -4041,7 +4041,7 @@
       "executable": false
     },
     "src/core/features/docs/DocsSidebar.tsx": {
-      "sha256": "8df4a8a89981bed18719162f5a576e5fe023c2b6803310a34eb40a435a001ddb",
+      "sha256": "1ad180713386dba6586bd3df89cabdcbfd6d58ecb8d8d7072509f2dc25a39ac8",
       "executable": false
     },
     "src/core/features/docs/DocsToc.tsx": {
