@@ -9,8 +9,11 @@ beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 contract('FLOW-006', 'rejects all publication problems by stable ID without creating a revision and keeps the draft editable', async () => {
   const f = await foundationFixture('foundation-invalid-publication')
   await f.add({ kind: 'question', questionType: 'single_choice', prompt: 'Missing choices' })
-  await f.add({ kind: 'question', questionType: 'rating', prompt: 'Bad rating', questionSettings: { min: 5, max: 1 } })
+  await expect(f.add({ kind: 'question', questionType: 'rating', prompt: 'Bad rating', questionSettings: { min: 5, max: 1 } })).rejects.toThrow('settings')
+  await f.add({ kind: 'question', questionType: 'rating', prompt: 'Missing default path', questionSettings: { min: 1, max: 5 } })
   await f.add({ kind: 'completion', questionType: null, prompt: 'Done' })
+  const editable = await f.draft()
+  await f.services.flows.updateBuilderDraft({ ...f.flow, stepId: editable.steps[1].id, expectedVersion: editable.flow.draftVersion, prompt: editable.steps[1].prompt, required: false, nextStepId: null })
   const before = await f.draft()
   const rows = async () => (await env.DB.prepare('SELECT * FROM flow_revisions WHERE flow_id = ? ORDER BY id').bind(f.flow.flowId).all()).results
   const revisions = await rows()

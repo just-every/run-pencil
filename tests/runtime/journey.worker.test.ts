@@ -413,7 +413,7 @@ contract(['FLOW-021','RSLT-005'], 'compares only matching stable questions and e
   const addedQuestion = report.questions.find(question => question.id === added.id)!
   expect(addedQuestion).toMatchObject({ answered: 1, eligibleResponses: 1 })
   expect(addedQuestion.versions).toHaveLength(1)
-  expect(addedQuestion.versions[0]).toMatchObject({ revisionId: newer.revisionId, prompt: f.route.prompt, answered: 1, distribution: [{ value: 4, label: '4', count: 1 }] })
+  expect(addedQuestion.versions[0]).toMatchObject({ revisionId: newer.revisionId, prompt: f.route.prompt, answered: 1, distribution: Array.from({ length: 5 }, (_, index) => ({ value: index + 1, label: String(index + 1), count: index === 3 ? 1 : 0 })) })
   expect(report.questions.filter(question => question.versions[0].prompt === f.route.prompt)).toHaveLength(2)
   for (const secret of [oldText, newText, receipt.responseId, quarantine.responseId, old.sessionToken, newer.sessionToken]) expect(JSON.stringify(report)).not.toContain(secret)
   await ok(`/api/app/responses/${quarantine.responseId}/release`, {})
@@ -424,7 +424,7 @@ contract(['FLOW-021','RSLT-005'], 'compares only matching stable questions and e
   await ok(`/api/app/responses/${receipt.responseId}`, undefined, 'DELETE')
   const afterErasure = await compare()
   expect(afterErasure.questions.find(question => question.id === f.route.id)!.versions[0]).toMatchObject({ answered: 1 })
-  expect(afterErasure.questions.find(question => question.id === added.id)!.versions[0]).toMatchObject({ answered: 0, eligibleResponses: 1, distribution: [] })
+  expect(afterErasure.questions.find(question => question.id === added.id)!.versions[0]).toMatchObject({ answered: 0, eligibleResponses: 1, distribution: Array.from({ length: 5 }, (_, index) => ({ value: index + 1, label: String(index + 1), count: 0 })) })
   expect(afterErasure.questions.find(question => question.id === added.id)!.versions).toHaveLength(1)
   expect((await SELF.fetch(`http://localhost${f.path}/questions/compare`, { headers: { Host: 'localhost' } })).status).toBe(401)
   const services = createPencilServices(createPencilPlatform('http://localhost', env))

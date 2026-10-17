@@ -1,4 +1,4 @@
-import manifest from '../../../seed.json'
+import manifest from '../../../seed.json' with { type: 'json' }
 
 export const TEXT_PATTERN_LIMIT = 256
 export const TEXT_MESSAGE_LIMIT = 1000
