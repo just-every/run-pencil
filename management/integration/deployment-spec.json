@@ -300,6 +300,12 @@
       "name": "0048_condition_trees.sql",
       "sha256": "6b9036b2b2065bd79a2f158bdc79b3b7f75ecaa0c049fe3d6b012d0d21d258e6",
       "sql": "-- LOGIC-006: published rules retain a bounded tree independently of legacy predicates.\nALTER TABLE flow_branch_rules ADD COLUMN condition_json TEXT CHECK(condition_json IS NULL OR json_valid(condition_json));\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0049_hidden_fields.sql",
+      "sha256": "655a69703c46c156f9d1d0ae171556749fe3c5383f554de7e895a325f22810f4",
+      "sql": "ALTER TABLE flow_revisions ADD COLUMN form_settings_json TEXT NOT NULL DEFAULT '{}';\nALTER TABLE responses ADD COLUMN response_context_json TEXT NOT NULL DEFAULT '{}';\nALTER TABLE respondent_saves ADD COLUMN response_context_json TEXT;\nCREATE TRIGGER respondent_save_context_completed AFTER INSERT ON responses BEGIN\n  UPDATE respondent_saves SET response_context_json=NULL WHERE session_id=NEW.session_id;\nEND;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

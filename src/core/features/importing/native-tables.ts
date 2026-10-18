@@ -2,7 +2,7 @@ export type NativeRow = Record<string, string | number | null>
 export type NativeValue = { flowId: string; tables: Record<string, NativeRow[]> }
 export const tables = {
   flows: { columns: ['id', 'workspace_id', 'slug', 'title', 'status', 'draft_version', 'last_activity_at', 'created_at', 'updated_at'], scope: 'id = ?' },
-  flow_revisions: { columns: ['id', 'flow_id', 'number', 'state', 'title', 'published_at', 'is_current', 'admission_closed_at', 'admission_close_reason', 'deadline_at', 'deadline_time_zone', 'target_completed_responses', 'policy_snapshot_json', 'created_at', 'updated_at'], scope: 'flow_id = ?' },
+  flow_revisions: { columns: ['id', 'flow_id', 'number', 'state', 'title', 'published_at', 'is_current', 'admission_closed_at', 'admission_close_reason', 'deadline_at', 'deadline_time_zone', 'target_completed_responses', 'policy_snapshot_json', 'form_settings_json', 'created_at', 'updated_at'], scope: 'flow_id = ?' },
   flow_steps: { columns: ['id', 'revision_id', 'position', 'stable_id', 'kind', 'question_type', 'prompt', 'helper_text', 'required', 'next_step_stable_id', 'question_settings_json', 'created_at', 'updated_at'], scope: 'revision_id IN (SELECT id FROM flow_revisions WHERE flow_id = ?)' },
   choice_options: { columns: ['id', 'step_id', 'stable_id', 'value', 'label', 'position', 'created_at', 'updated_at'], scope: 'step_id IN (SELECT s.id FROM flow_steps s JOIN flow_revisions r ON r.id = s.revision_id WHERE r.flow_id = ?)' },
   flow_branch_rules: { columns: ['id', 'revision_id', 'source_step_stable_id', 'predicate_kind', 'expected_value_json', 'condition_json', 'destination_step_stable_id', 'position', 'created_at', 'updated_at'], scope: 'revision_id IN (SELECT id FROM flow_revisions WHERE flow_id = ?)' },
@@ -11,7 +11,7 @@ export const tables = {
   submission_workflows: { columns: ['response_id', 'status_id', 'assignee_id', 'version', 'updated_at'], scope: 'response_id = ?' },
   submission_tags: { columns: ['response_id', 'tag'], scope: 'response_id = ?' },
   submission_notes: { columns: ['id', 'response_id', 'text', 'author_id', 'created_at'], scope: 'response_id = ?' },
-  responses: { columns: ['id', 'workspace_id', 'flow_id', 'revision_id', 'source', 'started_at', 'session_id', 'participant_id', 'session_token_hash', 'idempotency_key', 'state', 'quarantine_reason', 'released_at', 'released_by_operator_id', 'completion_milliseconds', 'completed_at', 'created_at', 'updated_at', 'notification_eligible'], scope: 'id = ?' },
+  responses: { columns: ['id', 'workspace_id', 'flow_id', 'revision_id', 'source', 'started_at', 'session_id', 'participant_id', 'session_token_hash', 'idempotency_key', 'state', 'quarantine_reason', 'released_at', 'released_by_operator_id', 'completion_milliseconds', 'completed_at', 'created_at', 'updated_at', 'notification_eligible', 'response_context_json'], scope: 'id = ?' },
   response_answers: { columns: ['id', 'response_id', 'step_id', 'value_json', 'created_at', 'updated_at'], scope: 'response_id = ?' },
   notification_preferences: { columns: ['flow_id', 'operator_id', 'mode', 'failure_reason', 'updated_at'], scope: 'flow_id = ?' },
   response_outbox: { columns: ['id', 'workspace_id', 'response_id', 'kind', 'idempotency_key', 'payload_json', 'status', 'available_at', 'dispatched_at', 'failure_reason', 'created_at', 'updated_at', 'notification_eligible'], scope: 'response_id = ?' },
@@ -28,6 +28,5 @@ export const optionalNativeTables = new Set<TableName>(['submission_statuses', '
 /** Old retained plans predate the nullable condition column. Preserve their
  * canonical images until an actual tree changes that row. */
 export function nativeSnapshotRows(name: TableName, rows: NativeRow[]) {
-  if (name !== 'flow_branch_rules') return rows
-  return rows.map(row => { const next = {...row}; if (next.condition_json === null) delete next.condition_json; return next })
+  return rows.map(row => { const next = {...row}; if (name === 'flow_branch_rules' && next.condition_json === null) delete next.condition_json; if (name === 'flow_revisions' && next.form_settings_json === '{}') delete next.form_settings_json; if (name === 'responses' && next.response_context_json === '{}') delete next.response_context_json; return next })
 }

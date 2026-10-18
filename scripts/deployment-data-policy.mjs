@@ -13,7 +13,7 @@ const retained = {
   traffic_tracking: 'id started_at',
   team_templates: 'id workspace_id name structure_json created_by created_at retired_at',
   // Explicit saves travel as private session history, with no live capability or delivery address.
-  respondent_saves: 'session_id revision_id token_hash command_key delivery_id delivery_email delivery_state current_step_id answers_json participant_id response_id completion_step_id expires_at created_at updated_at',
+  respondent_saves: 'response_context_json session_id revision_id token_hash command_key delivery_id delivery_email delivery_state current_step_id answers_json participant_id response_id completion_step_id expires_at created_at updated_at',
   // Operator workflow and internal notes are private product history; response erasure cascades all sidecars.
   submission_statuses: 'id flow_id name created_at',
   submission_workflows: 'response_id status_id assignee_id version updated_at',
@@ -65,7 +65,7 @@ const retained = {
   distribution_segments: 'id workspace_id name rules_json created_at updated_at',
   invitation_candidates: 'id launch_id contact_id email_snapshot name_snapshot outcome',
   flow_branch_rules: 'id revision_id source_step_stable_id predicate_kind expected_value_json condition_json destination_step_stable_id position created_at updated_at',
-  flow_revisions: 'id flow_id number state title published_at created_at updated_at is_current admission_closed_at admission_close_reason deadline_at deadline_time_zone target_completed_responses policy_snapshot_json invitation_reserved_count',
+  flow_revisions: 'form_settings_json id flow_id number state title published_at created_at updated_at is_current admission_closed_at admission_close_reason deadline_at deadline_time_zone target_completed_responses policy_snapshot_json invitation_reserved_count',
   flow_steps: 'id revision_id position kind question_type prompt helper_text required created_at updated_at stable_id next_step_stable_id question_settings_json',
   flows: 'id workspace_id slug title status draft_version last_activity_at created_at updated_at',
   invitation_launches: 'id workspace_id revision_id command_key policy_json actor_operator_id created_at',
@@ -111,7 +111,7 @@ const retained = {
   reporting_changes: 'workspace_id flow_id eligible_at generation',
   response_answers: 'id response_id step_id value_json created_at updated_at',
   response_outbox: 'id workspace_id response_id kind idempotency_key payload_json status available_at dispatched_at failure_reason created_at updated_at',
-  responses: 'id workspace_id flow_id revision_id session_id session_token_hash idempotency_key state quarantine_reason released_at released_by_operator_id completion_milliseconds completed_at created_at updated_at source started_at participant_id',
+  responses: 'response_context_json id workspace_id flow_id revision_id session_id session_token_hash idempotency_key state quarantine_reason released_at released_by_operator_id completion_milliseconds completed_at created_at updated_at source started_at participant_id',
   revision_metric_counters: 'id revision_id starts completions total_completion_milliseconds mobile_starts tablet_starts desktop_starts created_at updated_at',
   revision_step_metric_counters: 'id revision_id step_stable_id reached dropped created_at updated_at',
   workspaces: 'id name time_zone created_at updated_at sending_window_start sending_window_end setup_operator_initialized_at embed_allowed_origins_json brand_configured brand_supporting_line brand_accent brand_logo_base64 brand_logo_mime brand_logo_version public_flow_slug first_run_completed_at reminder_delay_hours',

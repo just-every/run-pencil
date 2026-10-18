@@ -20,6 +20,10 @@ export function evaluateCondition(condition: Condition, answers: Record<string, 
   if (condition.operator === 'is_blank') matched = blank
   else if (condition.operator === 'is_answered') matched = !blank
   else if (!blank) {
+    if (typeof value === 'string' && typeof condition.value === 'string' && ['equals','not_equals'].includes(condition.operator)) {
+      const equal = value.trim().normalize('NFC').toLowerCase() === condition.value.trim().normalize('NFC').toLowerCase()
+      return {condition,value,matched:condition.operator === 'equals' ? equal : !equal}
+    }
     const selected = isOtherAnswer(value) ? value.choiceIds : Array.isArray(value) ? value : [value]
     if (condition.operator === 'not_equals') matched = !matchesBranch({ predicateKind: 'equals', expectedValue: condition.value }, value)
     else if (condition.operator === 'none_of') matched = Array.isArray(condition.value) && !condition.value.some(item => selected.includes(item))

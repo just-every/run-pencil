@@ -1,3 +1,4 @@
+import { hiddenOperands, type FormSettings } from '../../shared/hiddenFields'
 import { validateScreens } from './screen-validation'
 import { visibilityCondition } from '../../shared/screenLayout'
 import { evaluateCondition, conditionTests } from '../../shared/conditions'
@@ -95,8 +96,9 @@ function branchRuleIsValid(rule: StoredBranchRule, source: StoredStep, choiceIds
   return false
 }
 
-export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice[], rules: StoredBranchRule[], selection: BranchSelection = 'first-matching-rule'): GraphIssue[] {
-  const issues: GraphIssue[] = validateScreens({steps:publicSteps(steps),choices:publicChoices(steps,choices),branchRules:publicRules(rules)})
+export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice[], rules: StoredBranchRule[], selection: BranchSelection = 'first-matching-rule', settings?: FormSettings): GraphIssue[] {
+  const operands = hiddenOperands(settings?.hiddenFields ?? [])
+  const issues: GraphIssue[] = validateScreens({formSettings:settings,steps:publicSteps(steps),choices:publicChoices(steps,choices),branchRules:publicRules(rules)})
   const capacityIssue = structureLimitIssue(steps)
   if (capacityIssue) issues.push({ stepId: 'flow', reason: capacityIssue })
   const byStableId = new Map(steps.map((step) => [step.stableId, step]))
@@ -150,8 +152,9 @@ export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice
       else {
         let valid = true
         for (const [index, test] of conditionTests(condition).entries()) {
-          const operand = publicGraph.steps.find(step => step.id === test.stepId)
-          if (!operand || operand.kind !== 'question' || operand.position > source.position || !earlier.has(test.stepId) || !conditionValueValid(test, operand, publicGraph.choices)) {
+          const hidden = operands.find(step=>step.id===test.stepId)
+          const operand = hidden ?? publicGraph.steps.find(step => step.id === test.stepId)
+          if (!operand || operand.kind !== 'question' || operand.position > source.position || !hidden && !earlier.has(test.stepId) || !conditionValueValid(test, operand, publicGraph.choices)) {
             issues.push({ stepId: source.stableId, reason: `Branch ${rule.id}, condition ${index + 1}: missing or later question, incompatible operator, or invalid stable choice.` })
             valid = false
           }
@@ -170,9 +173,9 @@ export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice
   if (!first) return issues
   if (first.kind === 'completion') issues.push({ stepId: first.stableId, reason: 'The first screen must be a welcome screen or question.' })
   if (validRules.some(rule => rule.conditionJson) || steps.some(step => visibilityCondition(publicSteps([step])[0]))) {
-    const proof = validateConditionPaths(steps, choices, validRules, selection)
+    const proof = validateConditionPaths(steps, choices, validRules, selection, operands)
     issues.push(...proof.issues)
-    issues.push(...validateAnswerRecall({ steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(validRules), branchSelection: selection }, proof.edges))
+    issues.push(...validateAnswerRecall({ formSettings:settings, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(validRules), branchSelection: selection }, proof.edges))
     return issues
   }
   const edges = new Map<string, string[]>()
@@ -182,7 +185,7 @@ export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice
     const destinations = settings.valid ? reachableDestinations(step, stepChoices.map((choice) => choice.stableId), settings.value, validRules.filter((rule) => rule.sourceStepStableId === step.stableId), selection) : []
     edges.set(step.stableId, destinations)
   }
-  issues.push(...validateAnswerRecall({ steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(validRules), branchSelection: selection }, edges))
+  issues.push(...validateAnswerRecall({ formSettings:settings, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(validRules), branchSelection: selection }, edges))
   const visiting = new Set<string>()
   const visited = new Map<string, boolean>()
   const walk = (stepId: string): boolean => {

@@ -1,3 +1,4 @@
+import { hiddenSettingsIssue, type FormSettings } from '../../shared/hiddenFields'
 import { conditionShape } from '../../shared/conditionValidation'
 import type { Condition } from '../../shared/conditions'
 import { formLimits } from '../../shared/formLimits'
@@ -147,7 +148,11 @@ export function registerFlowRoutes(app: Hono<WorkerEnvironment>, services: Reque
     }
   })
 
-  app.put('/api/app/flows/:flowId/draft/screen', zValidator('param',z.object({flowId:resourceId})), zValidator('json',z.object({stepId:resourceId,expectedVersion:z.number().int().nonnegative(),layout:z.object({kind:z.enum(['page','group']),title:z.string().trim().min(1).max(200),description:z.string().max(1000).optional(),questionIds:z.array(resourceId).min(1).max(formLimits.questions.perRevision)}).nullable()})), async context => {
+  app.put('/api/app/flows/:flowId/draft/settings', zValidator('param',z.object({flowId:resourceId})), zValidator('json',z.object({expectedVersion:z.number().int().nonnegative(),settings:z.custom<FormSettings>(value=>!hiddenSettingsIssue(value))})), async context => {
+    try { requireSameOriginRequest(context.req.raw); return context.json(await services(context).flows.updateFormSettings({...context.req.valid('json'),flowId:context.req.param('flowId'),...context.get('operatorSession')})) } catch(error) {return failure(context,error)}
+  })
+
+  app.put('/api/app/flows/:flowId/draft/screen' , zValidator('param',z.object({flowId:resourceId})), zValidator('json',z.object({stepId:resourceId,expectedVersion:z.number().int().nonnegative(),layout:z.object({kind:z.enum(['page','group']),title:z.string().trim().min(1).max(200),description:z.string().max(1000).optional(),questionIds:z.array(resourceId).min(1).max(formLimits.questions.perRevision)}).nullable()})), async context => {
     try { requireSameOriginRequest(context.req.raw); return context.json(await services(context).flows.updateScreen({...context.req.valid('json'),flowId:context.req.param('flowId'),...context.get('operatorSession')})) } catch(error) {return failure(context,error)}
   })
 
@@ -169,7 +174,7 @@ export function registerFlowRoutes(app: Hono<WorkerEnvironment>, services: Reque
     }
   })
 
-  app.post('/api/app/flows/:flowId/draft/preview', zValidator('param', z.object({ flowId: resourceId })), zValidator('json', z.object({ answers: z.record(resourceId, answerValue).refine(answers => Object.keys(answers).length <= formLimits.questions.perRevision) })), async (context) => {
+  app.post('/api/app/flows/:flowId/draft/preview', zValidator('param', z.object({ flowId: resourceId })), zValidator('json', z.object({ hidden:z.record(z.string().max(64),z.union([z.string().max(1000),z.number(),z.boolean()])).refine(value=>Object.keys(value).length<=100).optional(), answers: z.record(resourceId, answerValue).refine(answers => Object.keys(answers).length <= formLimits.questions.perRevision) })), async (context) => {
     try {
       requireSameOriginRequest(context.req.raw)
       return context.json(await services(context).flows.previewDraft({ workspaceId: context.get('operatorSession').workspaceId, flowId: context.req.param('flowId'), ...context.req.valid('json') }))

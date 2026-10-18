@@ -8,6 +8,7 @@ export function RecallHelp({ flow, currentStepId, onInsert, disabled }: { flow: 
     {earlier.length ? <ul aria-label="Earlier questions available for answer recall">
       {earlier.map(step => <li key={step.id} style={{ overflowWrap: 'anywhere' }}><button type="button" disabled={disabled} className="quiet-button focus-ring" onClick={() => onInsert(`{{${step.id}}}`)}>Insert answer: {step.prompt}</button></li>)}
     </ul> : <p className="muted">No earlier questions lead to this screen. Add a question before using answer recall here.</p>}
-    <p className="muted">Use the complete reference, including both pairs of braces. Recalled answers appear as text. Hidden fields and calculated values are not available.</p>
+    {flow.formSettings?.hiddenFields.length ? <ul aria-label="Hidden fields available for recall">{flow.formSettings.hiddenFields.map(field=><li key={field.id}><button className="quiet-button" type="button" disabled={disabled} onClick={()=>onInsert(`{{hidden:${field.id}}}`)}>Insert hidden field: {field.name}</button></li>)}</ul> : null}
+    <p className="muted">Use the complete reference, including both pairs of braces. Recalled answers appear as text. Declared hidden fields are available from the link; absent values stay blank.</p>
   </details>
 }

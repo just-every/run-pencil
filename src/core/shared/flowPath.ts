@@ -1,16 +1,17 @@
+import { hiddenAnswers } from './hiddenFields'
 import { visibilityCondition } from './screenLayout'
 import { evaluateCondition } from './conditions'
 import type { BranchRule, FlowStep, PublicFlow } from '../app/api'
 import { matchesBranch } from './branching'
 type AnswerValues = Record<string, unknown>
 
-export function visiblePath(flow: Pick<PublicFlow, 'steps' | 'branchRules' | 'branchSelection'>, answers: AnswerValues) {
+export function visiblePath(flow: Pick<PublicFlow, 'steps' | 'branchRules' | 'branchSelection' | 'hiddenContext'>, answers: AnswerValues) {
   const steps = flow.steps.filter((step) => step.kind === 'welcome' || step.kind === 'question' || step.kind === 'completion').sort((left, right) => left.position - right.position)
   const byId = new Map(steps.map((step) => [step.id, step]))
   const rulesBySource = new Map<string, BranchRule[]>()
   for (const rule of flow.branchRules.slice().sort((left, right) => left.position - right.position)) rulesBySource.set(rule.sourceStepId, [...(rulesBySource.get(rule.sourceStepId) ?? []), rule])
 
-  const activeAnswers: Record<string, unknown> = {}
+  const activeAnswers: Record<string, unknown> = hiddenAnswers(flow.hiddenContext ?? {hidden:{}})
   const path: FlowStep[] = []
   const visited = new Set<string>()
   let current: FlowStep | undefined = steps[0]

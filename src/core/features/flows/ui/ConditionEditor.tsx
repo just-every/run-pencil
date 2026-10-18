@@ -1,3 +1,4 @@
+import { hiddenOperands } from '../../../shared/hiddenFields'
 import type { BuilderDraft, FlowStep } from '../../../app/api'
 import { operatorsFor } from '../../../shared/conditionValidation'
 import { conditionTests, type Condition, type ConditionOperator } from '../../../shared/conditions'
@@ -14,18 +15,20 @@ export function firstCondition(step: FlowStep, draft: BuilderDraft): Condition {
   const value = ['is_blank','is_answered'].includes(operator) ? undefined
     : ['yes_no','consent','thumbs_rating'].includes(step.questionType ?? '') ? true
     : step.questionType === 'date' ? '2026-01-01'
+    : ['short_text','long_text','email'].includes(step.questionType ?? '') ? ''
     : step.questionType === 'priority' || step.questionType === 'multiple_choice' ? choices.map(choice => choice.id)
     : ['single_choice','dropdown'].includes(step.questionType ?? '') ? choices[0]?.id ?? '' : 1
   return { kind: 'test', stepId: step.id, operator, ...(value !== undefined ? { value } : {}) }
 }
 export function conditionSummary(condition: Condition, draft: BuilderDraft): string {
   if (condition.kind === 'group') return `(${condition.conditions.map(child => conditionSummary(child, draft)).join(condition.join === 'and' ? ' and ' : ' or ')})`
-  const step = draft.steps.find(step => step.id === condition.stepId)
+  const step = [...draft.steps,...hiddenOperands(draft.formSettings?.hiddenFields ?? [])].find(step => step.id === condition.stepId)
   const display = (value: unknown): string => Array.isArray(value) ? value.map(display).join(', ') : typeof value === 'string' ? draft.choices.find(choice => choice.id === value)?.label ?? value : value && typeof value === 'object' && 'choiceId' in value ? `${display(value.choiceId)} at rank ${'rank' in value ? value.rank : ''}` : String(value)
   return `${step?.prompt ?? 'Missing question'} ${operatorLabels[condition.operator]}${['is_blank','is_answered'].includes(condition.operator) ? '' : ` ${display(condition.value)}`}`
 }
 
 export function ConditionEditor({ condition, draft, operands, onChange }: { condition: Condition; draft: BuilderDraft; operands: FlowStep[]; onChange: (condition: Condition) => void }) {
+  operands = [...operands,...hiddenOperands(draft.formSettings?.hiddenFields ?? [])]
   const total = conditionTests(condition).length
   const node = (current: Condition, change: (next: Condition) => void, depth = 0): React.ReactNode => {
     if (current.kind === 'group') return <fieldset className="quiet-panel condition-group"><legend>Condition group</legend>
@@ -52,7 +55,7 @@ export function ConditionEditor({ condition, draft, operands, onChange }: { cond
         : ['single_choice','dropdown'].includes(step?.questionType ?? '') ? <label className="inspector-field">Answer<select aria-label="Answer" className="text-input" value={String(current.value ?? '')} onChange={event => change({ ...current, value: event.target.value })}><option value="">Choose an answer</option>{choices.map(choice => <option key={choice.id} value={choice.id}>{choice.label}</option>)}</select></label>
         : ['yes_no','consent','thumbs_rating'].includes(step?.questionType ?? '') ? <label className="inspector-field">Answer<select aria-label="Answer" className="text-input" value={String(current.value)} onChange={event => change({ ...current, value: event.target.value === 'true' })}><option value="true">Yes</option><option value="false">No</option></select></label>
         : step?.questionType === 'priority' ? <><label className="inspector-field">Ranked choice<select aria-label="Ranked choice" className="text-input" value={String((current.value as { choiceId?: string })?.choiceId ?? '')} onChange={event => change({ ...current, value: { ...(current.value as { choiceId: string; rank: number }), choiceId: event.target.value } })}>{choices.map(choice => <option key={choice.id} value={choice.id}>{choice.label}</option>)}</select></label><label className="inspector-field">Rank<input aria-label="Rank" className="text-input" type="number" value={Number((current.value as { rank?: number })?.rank ?? 1)} onChange={event => change({ ...current, value: { ...(current.value as { choiceId: string; rank: number }), rank: event.target.valueAsNumber } })}/></label></>
-        : <label className="inspector-field">Value<input aria-label="Value" className="text-input" type={step?.questionType === 'date' ? 'date' : 'number'} step="any" value={typeof current.value === 'number' || typeof current.value === 'string' ? current.value : ''} onChange={event => change({ ...current, value: step?.questionType === 'date' ? event.target.value : event.target.value === '' ? null : event.target.valueAsNumber })}/></label> : null}
+        : <label className="inspector-field">Value<input aria-label="Value" className="text-input" type={step?.questionType === 'date' ? 'date' : ['short_text','long_text','email','url','phone'].includes(step?.questionType ?? '') ? 'text' : 'number'} step="any" value={typeof current.value === 'number' || typeof current.value === 'string' ? current.value : ''} onChange={event => change({ ...current, value: ['date','short_text','long_text','email','url','phone'].includes(step?.questionType ?? '') ? event.target.value : event.target.value === '' ? null : event.target.valueAsNumber })}/></label> : null}
     </div>
   }
   return <div>{node(condition, onChange)}<p className="muted">{conditionSummary(condition, draft)}</p></div>

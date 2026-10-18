@@ -1,3 +1,4 @@
+import { formSettings, normalizeHidden, hiddenAnswers } from '../../shared/hiddenFields'
 import type { MailSender } from '../../../base/operator-auth/index.mjs'
 import manifest from '../../../../seed.json'
 import type { FlowRepository } from '../flows'
@@ -9,7 +10,7 @@ import { hashResumeValue, resumeBearer, resumedSessionToken } from './credential
 import { resumeMessage } from './message'
 import { ResumeRepository } from './repository'
 
-type SaveInput = { slug: string; sessionId: string; sessionToken: string; commandKey: string; email: string; currentStepId: string; answers: Array<{ stepId: string; value: unknown }>; invitationToken?: string; clientAddress?: string }
+type SaveInput = { slug: string; sessionId: string; sessionToken: string; commandKey: string; email: string; currentStepId: string; answers: Array<{ stepId: string; value: unknown }>; invitationToken?: string; hidden?:Record<string,unknown>; clientAddress?: string }
 
 export class ResumeService {
   constructor(private readonly repository: ResumeRepository, private readonly responses: ResponseRepository,
@@ -37,10 +38,11 @@ export class ResumeService {
       participantId=invitation.id
     } else if (input.invitationToken) throw new ValidationError('This response does not use an invitation.')
     const graph = await this.flows.getRevisionGraph(context.revision.id)
-    const answers = validateSavedAnswers(graph,context.revision.policySnapshotJson,input.currentStepId,input.answers)
+    const hiddenContext = normalizeHidden(formSettings(context.revision.formSettingsJson),input.hidden ?? {})
+    const answers = validateSavedAnswers(graph,context.revision.policySnapshotJson,input.currentStepId,input.answers,hiddenAnswers(hiddenContext))
     const previous = await this.repository.bySession(input.sessionId)
     if (previous?.command_key===input.commandKey) {
-      if (previous.answers_json!==JSON.stringify(answers) || previous.current_step_id!==input.currentStepId || previous.participant_id!==participantId || previous.delivery_email && previous.delivery_email!==input.email) throw new ValidationError('Use a new save command after changing saved answers or the delivery address.')
+      if (previous.response_context_json!==JSON.stringify(hiddenContext) || previous.answers_json!==JSON.stringify(answers) || previous.current_step_id!==input.currentStepId || previous.participant_id!==participantId || previous.delivery_email && previous.delivery_email!==input.email) throw new ValidationError('Use a new save command after changing saved answers or the delivery address.')
       if (previous.delivery_state==='sent') return { state:'saved' as const,expiresAt:previous.expires_at }
       if (previous.delivery_state==='sending' && Date.now()-Date.parse(previous.updated_at)<5*60_000) throw new PencilError('SAVE_IN_PROGRESS','This save is still sending. Please wait before trying again.')
     }
@@ -48,7 +50,7 @@ export class ResumeService {
     const expiresAt = previous?.command_key===input.commandKey ? previous.expires_at : new Date(Date.parse(now)+manifest.limits.respondentSessions.retentionDays*86400000).toISOString()
     const token = await resumeBearer(this.mail.secret,input.sessionId,input.commandKey)
     const deliveryId=`resume:${input.sessionId}:${input.commandKey}`
-    if (!await this.repository.save({sessionId:input.sessionId,sessionHash,revisionId:context.revision.id,tokenHash:await hashResumeValue(token),commandKey:input.commandKey,deliveryId,email:input.email,stepId:input.currentStepId,answers:JSON.stringify(answers),participantId,expiresAt,now})) throw new SessionUnavailableError()
+    if (!await this.repository.save({sessionId:input.sessionId,sessionHash,revisionId:context.revision.id,tokenHash:await hashResumeValue(token),commandKey:input.commandKey,deliveryId,email:input.email,stepId:input.currentStepId,answers:JSON.stringify(answers),responseContext:JSON.stringify(hiddenContext),participantId,expiresAt,now})) throw new SessionUnavailableError()
     const link = new URL(`/f/${encodeURIComponent(input.slug)}`,this.mail.origin)
     link.searchParams.set('resume',token)
     let sent=false
@@ -86,6 +88,6 @@ export class ResumeService {
     const invitation=row.participant_id ? await this.repository.invitationToken(row.participant_id) : undefined
     if (row.participant_id && !invitation) return unavailable()
     if (!row.answers_json || !row.current_step_id) return unavailable()
-    return {state:'open' as const,flow:resumedPublicFlow(flow,revision,graph,!!row.participant_id),sessionId:row.session_id,sessionToken,revisionId:revision.id,answers:JSON.parse(row.answers_json) as Array<{stepId:string;value:unknown}>,currentStepId:row.current_step_id,...(invitation?{invitationToken:invitation.token}:{})}
+    return {state:'open' as const,flow:{...resumedPublicFlow(flow,revision,graph,!!row.participant_id),hiddenContext:JSON.parse(row.response_context_json ?? '{}')},sessionId:row.session_id,sessionToken,revisionId:revision.id,answers:JSON.parse(row.answers_json) as Array<{stepId:string;value:unknown}>,currentStepId:row.current_step_id,...(invitation?{invitationToken:invitation.token}:{})}
   }
 }

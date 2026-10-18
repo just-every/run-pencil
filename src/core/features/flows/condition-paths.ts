@@ -1,3 +1,4 @@
+import type { FlowStep } from '../../app/api'
 import { visibilityCondition } from '../../shared/screenLayout'
 import { publicSteps } from './serialization'
 import type { Condition } from '../../shared/conditions'
@@ -15,7 +16,7 @@ function ruleCondition(rule: StoredBranchRule): Condition {
  * answers. Never memoize by step alone: two arrivals can carry contradictory
  * answer constraints and different sets of skipped questions.
  */
-export function validateConditionPaths(steps: StoredStep[], choices: StoredChoice[], rules: StoredBranchRule[], selection: BranchSelection = 'first-matching-rule'): { issues: GraphIssue[]; edges: Map<string, string[]> } {
+export function validateConditionPaths(steps: StoredStep[], choices: StoredChoice[], rules: StoredBranchRule[], selection: BranchSelection = 'first-matching-rule', operands: FlowStep[] = []): { issues: GraphIssue[]; edges: Map<string, string[]> } {
   const issues: GraphIssue[] = [], edges = new Map(steps.map(step => [step.stableId, [] as string[]]))
   const byId = new Map(steps.map(step => [step.stableId, step]))
   const questions = new Map<string, ConditionQuestion>()
@@ -24,6 +25,7 @@ export function validateConditionPaths(steps: StoredStep[], choices: StoredChoic
     const settings = step.questionSettingsJson ? JSON.parse(step.questionSettingsJson) as Record<string, unknown> : step.questionType === 'rating' ? { min: 1, max: 5 } : step.questionType === 'multiple_choice' ? { minSelections: 1, maxSelections: ids.length } : {}
     questions.set(step.stableId, { step, choices: ids, settings: {...(step.questionType==='rating'?{min:1,max:5}:{}),...settings} })
   }
+  for (const operand of operands) questions.set(operand.id,{step:{stableId:operand.id,required:false,questionType:operand.questionType,prompt:operand.prompt},choices:[],settings:{}})
   const ordered = new Map(steps.map(step => {
     const own = rules.filter(rule => rule.sourceStepStableId === step.stableId).sort((a, b) => a.position - b.position)
     return [step.stableId, (selection === 'last-matching-rule' ? own.reverse() : own).map(rule => ({ rule, condition: ruleCondition(rule) }))] as const
@@ -74,7 +76,7 @@ export function validateConditionPaths(steps: StoredStep[], choices: StoredChoic
   const first = steps.slice().sort((a, b) => a.position - b.position)[0]
   if (!first) return { issues, edges }
   try {
-    walk(first.stableId, new Set(), [])
+    walk(first.stableId, new Set(operands.map(operand=>operand.id)), [])
     for (const step of steps) if (!reached.has(step.stableId)) addIssue(step.stableId, 'Every published step must be reachable from the first screen.')
   } catch (error) {
     if (!(error instanceof ConditionProofError)) throw error

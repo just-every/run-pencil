@@ -1,3 +1,4 @@
+import { formSettings, normalizeHidden, hiddenAnswers, type ResponseContext } from '../../shared/hiddenFields'
 import { issueLoadTime, verifyLoadTime } from '../traffic'
 import { type CollectorService } from '../collectors'
 import { collectorFlowFailure } from './collectorFailure'
@@ -105,7 +106,7 @@ export class ResponseService {
     const collector = await this.collectors.requireInvitationOpen(flow.id, token)
       .catch(error => collectorFlowFailure(error, { title: revision.title, slug: flow.slug }))
     const { steps, choices, rules } = await this.flowRepository.getRevisionGraph(revision.id)
-    return { invitation, collector, flow, revision, steps, choices, rules, publicFlow: { branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules), identity: 'identified' as const, completedStepId: invitation.responseStatus === 'completed' ? invitation.completionStepId : null } }
+    return { invitation, collector, flow, revision, steps, choices, rules, publicFlow: { formSettings: formSettings(revision.formSettingsJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules), identity: 'identified' as const, completedStepId: invitation.responseStatus === 'completed' ? invitation.completionStepId : null } }
   }
 
   async startPublicSession(input: { slug: string; deviceClass: DeviceClass; source: PublicSource; clientAddress?: string; invitationToken?: string; collectorKey?: string }) {
@@ -149,7 +150,7 @@ export class ResponseService {
         .catch(error => collectorFlowFailure(error, { title: revision.title, slug: flow.slug }))
       throw new ValidationError('This form changed before you began. Please start again using the current version.')
     }
-    return { sessionId: session.id, sessionToken: token, loadTime: await issueLoadTime(this.loadTimeSecret, revision.id), revisionId: revision.id, flowId: flow.id, flow: { branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) } }
+    return { sessionId: session.id, sessionToken: token, loadTime: await issueLoadTime(this.loadTimeSecret, revision.id), revisionId: revision.id, flowId: flow.id, flow: { formSettings: formSettings(revision.formSettingsJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) } }
   }
 
   async advancePublicSession(input: { slug: string; sessionId: string; sessionToken: string; stepId: string }) {
@@ -162,11 +163,11 @@ export class ResponseService {
     }
   }
 
-  async submitPublicResponse(input: { slug: string; sessionId: string; sessionToken: string; idempotencyKey: string; answers: AnswerInput[]; honeypot?: string; loadTime?: string; clientAddress?: string; invitationToken?: string }) {
+  async submitPublicResponse(input: { slug: string; sessionId: string; sessionToken: string; idempotencyKey: string; answers: AnswerInput[]; hidden?:Record<string,unknown>; honeypot?: string; loadTime?: string; clientAddress?: string; invitationToken?: string }) {
     await this.enforcePublicRequestRateLimit({ clientAddress: input.clientAddress, scope: 'submission' })
     if (!input.sessionToken) throw new SessionUnavailableError()
     const tokenHash = await this.hash(input.sessionToken)
-    const replay = async (response: { id: string; revisionId: string; state: 'released' | 'quarantined' }) => {
+    const replay = async (response: { id: string; revisionId: string; state: 'released' | 'quarantined'; contextJson?:string }) => {
       const [{ steps, rules }, answers, revision] = await Promise.all([
         this.flowRepository.getRevisionGraph(response.revisionId),
         this.repository.getRetainedResponseAnswers(response.id),
@@ -175,7 +176,7 @@ export class ResponseService {
       if (!answers || !revision) throw new NotFoundError('This completed response is no longer available.')
       // A retry is the original committed path, regardless of newer submitted
       // values. The immutable graph and retained answers also cover old rows.
-      const completionStepId = this.retainedCompletion(steps, rules, Object.fromEntries(answers.map((answer) => [answer.stepId, runtimeAnswerValue(steps.find(step => step.stableId === answer.stepId), JSON.parse(answer.valueJson))])), revisionBranchSelection(revision.policySnapshotJson))
+      const completionStepId = this.retainedCompletion(steps, rules, {...hiddenAnswers(JSON.parse(response.contextJson ?? '{}') as ResponseContext),...Object.fromEntries(answers.map((answer) => [answer.stepId, runtimeAnswerValue(steps.find(step => step.stableId === answer.stepId), JSON.parse(answer.valueJson))]))}, revisionBranchSelection(revision.policySnapshotJson))
       return { responseId: response.id, idempotent: true, disposition: response.state, completionStepId }
     }
     const receipt = async () => {
@@ -219,7 +220,9 @@ export class ResponseService {
     const loadedAt = await verifyLoadTime(this.loadTimeSecret, revision.id, input.loadTime ?? '')
 
     const { steps, choices, rules } = await this.flowRepository.getRevisionGraph(revision.id)
-    const { accepted: acceptedAnswers, completionStepId, reachedStepIds } = this.validatePathAnswers(steps, choices, rules, input.answers, revisionBranchSelection(revision.policySnapshotJson))
+    const settings = formSettings(revision.formSettingsJson)
+    const hiddenContext = normalizeHidden(settings,input.hidden ?? {})
+    const { accepted: acceptedAnswers, completionStepId, reachedStepIds } = this.validatePathAnswers(steps, choices, rules, input.answers, revisionBranchSelection(revision.policySnapshotJson),hiddenAnswers(hiddenContext))
     const now = new Date().toISOString()
     const responseId = ulid()
     const elapsed = Math.max(0, Date.now() - loadedAt)
@@ -228,6 +231,7 @@ export class ResponseService {
     const created = await this.repository.createCompletedResponse({
       response: {
         id: responseId,
+        contextJson: JSON.stringify(hiddenContext),
         participantId: invitation ? invitation.id : null,
         workspaceId: flow.workspaceId,
         flowId: flow.id,
@@ -318,7 +322,7 @@ export class ResponseService {
     throw new ValidationError('The retained completion could not be read. This response has not been resubmitted.')
   }
 
-  private validatePathAnswers(steps: StoredStep[], choices: StoredChoice[], rules: StoredBranchRule[], answers: AnswerInput[], selection: BranchSelection) {
+  private validatePathAnswers(steps: StoredStep[], choices: StoredChoice[], rules: StoredBranchRule[], answers: AnswerInput[], selection: BranchSelection, context:Record<string,unknown> = {}) {
     const submitted = new Map<string, unknown>()
     for (const answer of answers) {
       if (submitted.has(answer.stepId)) throw new ValidationError('Each question can be answered once per submission.')
@@ -335,7 +339,7 @@ export class ResponseService {
     let current: StoredStep | undefined = first
     while (current && !visited.has(current.stableId)) {
       visited.add(current.stableId)
-      const visible: boolean = !visibilityCondition(publicSteps([current])[0]) || evaluateCondition(visibilityCondition(publicSteps([current])[0])!, Object.fromEntries(accepted.map(answer => [answer.stepId,answer.value]))).matched
+      const visible: boolean = !visibilityCondition(publicSteps([current])[0]) || evaluateCondition(visibilityCondition(publicSteps([current])[0])!, {...context,...Object.fromEntries(accepted.map(answer => [answer.stepId,answer.value]))}).matched
       if(visible) reached.add(current.stableId)
       if (current.kind === 'question' && visible) {
         const value = normalizeOptional(submitted.get(current.stableId))
@@ -347,7 +351,7 @@ export class ResponseService {
         }
       }
       if (current.kind === 'completion') break
-      const answerRecord = Object.fromEntries(accepted.map((answer) => [answer.stepId, answer.value]))
+      const answerRecord = {...context,...Object.fromEntries(accepted.map((answer) => [answer.stepId, answer.value]))}
       const next: {nextStepId:string|null} = resolveNextStep({ selection, step: current, rules: rules.filter((rule) => rule.sourceStepStableId === current!.stableId), answers: answerRecord })
       current = next.nextStepId ? byStableId.get(next.nextStepId) : undefined
     }

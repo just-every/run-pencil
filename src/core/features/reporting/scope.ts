@@ -1,3 +1,4 @@
+import { ValidationError } from '../../shared/errors'
 import { responseCodeFilter } from '../coding'
 import { responseSearch } from './search'
 import { workflowScope } from '../submissions'
@@ -17,7 +18,7 @@ export function responseScope(workspaceId: string, flowId: string, filter: Ledge
     for (const [value, sql] of [[filter.revisionId, 'r.revision_id = ?'], [filter.source, 'r.source = ?'], [filter.from, 'r.completed_at >= ?'], [filter.to, 'r.completed_at <= ?']] as const) if (value) { parts.push(sql); bindings.push(value) }
     if (filter.collectorId) { parts.push('EXISTS (SELECT 1 FROM response_collector rc JOIN collectors c ON c.id=rc.collector_id WHERE rc.response_id=r.id AND c.flow_id=r.flow_id AND c.id=?)'); bindings.push(filter.collectorId) }
     if (filter.answerStepId && filter.answerValue !== undefined) {
-      const answer = structuredAnswerFilter(filter.answerStepId, filter.answerValue)
+      const answer = filter.answerStepId.startsWith('hidden:') ? hiddenFieldFilter(filter.answerStepId.slice(7), filter.answerValue) : structuredAnswerFilter(filter.answerStepId, filter.answerValue)
       parts.push(answer.sql)
       bindings.push(...answer.bindings)
     }
@@ -33,4 +34,17 @@ export function responseScope(workspaceId: string, flowId: string, filter: Ledge
     parts.push(...workflow.parts); bindings.push(...workflow.bindings)
     const where = parts.join(' AND ')
     return { where, bindings }
+}
+
+function hiddenFieldFilter(id: string, encoded: string) {
+  let value: unknown
+  try { value = JSON.parse(encoded) } catch { throw new ValidationError('Choose a valid hidden-field value.') }
+  if (!['string', 'number', 'boolean'].includes(typeof value) || typeof value === 'number' && !Number.isFinite(value)) throw new ValidationError('Choose a text, numeric or boolean hidden-field value.')
+  return {
+    sql: `EXISTS (SELECT 1 FROM json_each(r.response_context_json, '$.hidden') hidden
+      JOIN flow_revisions hidden_revision ON hidden_revision.id=r.revision_id AND hidden_revision.flow_id=r.flow_id
+      JOIN json_each(hidden_revision.form_settings_json, '$.hiddenFields') declared ON json_extract(declared.value, '$.id')=hidden.key
+      WHERE hidden.key=? AND (hidden.type=json_type(?) OR hidden.type IN ('integer','real') AND json_type(?) IN ('integer','real')) AND hidden.value=json_extract(?, '$'))`,
+    bindings: [id, encoded, encoded, encoded],
+  }
 }

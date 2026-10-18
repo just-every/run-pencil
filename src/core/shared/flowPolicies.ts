@@ -1,7 +1,7 @@
 export type BranchSelection = 'first-matching-rule' | 'last-matching-rule'
 export type FlowPolicies = {
   'flow.branch-selection.v1': BranchSelection
-  'response.identity.v1': 'anonymous-public-link'
+  'response.identity.v1': 'anonymous-public-link' | 'identified-public-link'
   'flow.response-admission.v1': 'independent-direct-completions'
 }
 export const defaultFlowPolicies: FlowPolicies = Object.freeze({
@@ -10,7 +10,7 @@ export const defaultFlowPolicies: FlowPolicies = Object.freeze({
   'flow.response-admission.v1': 'independent-direct-completions',
 })
 export function evaluateFlowPolicies(value: FlowPolicies): FlowPolicies {
-  if (!['first-matching-rule', 'last-matching-rule'].includes(value['flow.branch-selection.v1']) || value['response.identity.v1'] !== 'anonymous-public-link' || value['flow.response-admission.v1'] !== 'independent-direct-completions') throw new Error('Unsupported flow policy configuration; publication cannot proceed.')
+  if (!['first-matching-rule', 'last-matching-rule'].includes(value['flow.branch-selection.v1']) || !['anonymous-public-link','identified-public-link'].includes(value['response.identity.v1']) || value['flow.response-admission.v1'] !== 'independent-direct-completions') throw new Error('Unsupported flow policy configuration; publication cannot proceed.')
   return Object.freeze({ ...value })
 }
 export function revisionBranchSelection(snapshot: string | null): BranchSelection {

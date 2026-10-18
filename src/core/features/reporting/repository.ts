@@ -1,3 +1,4 @@
+import { formSettings, hiddenValue, type HiddenField, type ResponseContext } from '../../shared/hiddenFields'
 import { choiceIdsSql, isOtherAnswer } from '../../shared/otherChoices'
 import { displayCalendarDate } from '../../shared/dateFormat'
 import { retainedAnswer } from './retainedAnswer'
@@ -9,7 +10,20 @@ import type { WorkflowFilter } from '../submissions'
 import { responseScope, type ResponseSelection } from './scope'
 import { type ReportStep, type ReportChoice } from './questionReport'
 export type LedgerFilter = WorkflowFilter & { codeId?: string; search?: string; collectorId?: string; revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown' | 'imported'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
-export type LedgerResponse = { collector: { id: string; name: string; channel: string }; omittedQuestions: Array<{ stepId: string; label: string; position: number; questionType?: string }>; participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string | null; state: 'released' | 'quarantined'; quarantineReason: string | null; answers: Array<{ stepId: string; label: string; position: number; questionType: string; value: unknown; displayValue: string }> }
+export type LedgerHiddenField = Pick<HiddenField, 'id' | 'name' | 'type'> & { value: string | number | boolean }
+export type LedgerResponse = { hiddenFields: LedgerHiddenField[]; identityMode: 'anonymous' | 'identified'; discardedParameters: number; collector: { id: string; name: string; channel: string }; omittedQuestions: Array<{ stepId: string; label: string; position: number; questionType?: string }>; participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string | null; state: 'released' | 'quarantined'; quarantineReason: string | null; answers: Array<{ stepId: string; label: string; position: number; questionType: string; value: unknown; displayValue: string }> }
+
+function retainedContext(contextJson: string, settingsJson: string, participantId: string | null) {
+  const context = JSON.parse(contextJson) as Partial<ResponseContext>
+  const hidden = context.hidden ?? {}
+  const hiddenFields: LedgerHiddenField[] = formSettings(settingsJson).hiddenFields.flatMap(field => {
+    if (!Object.hasOwn(hidden, field.id)) return []
+    const value = hidden[field.id]
+    if (hiddenValue(field, value) !== value) throw new Error('A retained hidden field does not match its published type.')
+    return [{ id: field.id, name: field.name, type: field.type, value }]
+  })
+  return { hiddenFields, identityMode: context.identityMode ?? (participantId ? 'identified' as const : 'anonymous' as const), discardedParameters: context.discarded ?? 0 }
+}
 
 export class ReportingRepository {
   constructor(private readonly binding: D1Database) {}
@@ -17,7 +31,7 @@ export class ReportingRepository {
     return this.binding.prepare('SELECT id, title, slug FROM flows WHERE id = ? AND workspace_id = ?').bind(flowId, workspaceId).first<{ id: string; title: string; slug: string }>()
   }
   async revisions(flowId: string) {
-    return (await this.binding.prepare("SELECT id, number, is_current AS isCurrent FROM flow_revisions WHERE flow_id = ? AND state = 'published' ORDER BY number DESC").bind(flowId).all<{ id: string; number: number; isCurrent: number }>()).results
+    return (await this.binding.prepare("SELECT id, number, is_current AS isCurrent, form_settings_json AS settingsJson FROM flow_revisions WHERE flow_id = ? AND state = 'published' ORDER BY number DESC").bind(flowId).all<{ id: string; number: number; isCurrent: number; settingsJson: string }>()).results.map(({ settingsJson, ...revision }) => ({ ...revision, hiddenFields: formSettings(settingsJson).hiddenFields.map(({ id, name, type }) => ({ id, name, type })) }))
   }
   async ledger(workspaceId: string, flowId: string, filter: LedgerFilter, cutoff: string, state: ResponseSelection = 'released', limit = 50, continuation?: { total: number; after?: { time: string; id: string } }, signal?: AbortSignal, answerFormat: 'stored' | 'export' = 'stored') {
     signal?.throwIfAborted()
@@ -30,13 +44,15 @@ export class ReportingRepository {
     const rows = (await this.binding.prepare(`WITH candidates AS (
       SELECT r.id, r.revision_id AS revisionId, revision.number AS revisionNumber, r.source, r.started_at AS startedAt,
       r.completed_at AS completedAt, r.released_at AS releasedAt, r.state, r.quarantine_reason AS quarantineReason,
-      32768 + 12 * COALESCE((SELECT SUM(length(CAST(a.value_json AS BLOB))) FROM response_answers a WHERE a.response_id = r.id),0)
+      r.response_context_json AS contextJson, revision.form_settings_json AS settingsJson, r.participant_id AS participantId,
+      32768 + 12 * (length(CAST(r.response_context_json AS BLOB)) + length(CAST(revision.form_settings_json AS BLOB)))
+      + 12 * COALESCE((SELECT SUM(length(CAST(a.value_json AS BLOB))) FROM response_answers a WHERE a.response_id = r.id),0)
       + 12 * COALESCE((SELECT SUM(length(CAST(s.prompt AS BLOB))) FROM flow_steps s WHERE s.revision_id = r.revision_id),0)
       + 12 * COALESCE((SELECT SUM(length(CAST(c.label AS BLOB))+length(CAST(c.value AS BLOB))) FROM response_answers a JOIN flow_steps s ON s.revision_id=r.revision_id AND s.stable_id=a.step_id JOIN json_each(${choiceIdsSql('a.value_json')}) j JOIN choice_options c ON c.step_id=s.id AND c.stable_id=j.value WHERE a.response_id=r.id AND s.question_type IN ('single_choice','dropdown','multiple_choice','priority')),0) AS cost
       FROM responses r JOIN flow_revisions revision ON revision.id = r.revision_id AND revision.flow_id = r.flow_id
       WHERE ${where}${after} ORDER BY r.completed_at DESC,r.id DESC LIMIT ? OFFSET ?),
       budget AS (SELECT *, SUM(cost) OVER (ORDER BY completedAt DESC,id DESC) AS bytes, ROW_NUMBER() OVER (ORDER BY completedAt DESC,id DESC) AS ordinal FROM candidates)
-      SELECT id,revisionId,revisionNumber,source,startedAt,completedAt,releasedAt,state,quarantineReason FROM budget WHERE bytes <= 1048576 OR ordinal = 1 ORDER BY completedAt DESC,id DESC`).bind(...pageBindings,limit,continuation ? 0 : filter.offset ?? 0).all<Omit<LedgerResponse, 'answers'>>()).results
+      SELECT id,revisionId,revisionNumber,source,startedAt,completedAt,releasedAt,state,quarantineReason,contextJson,settingsJson,participantId FROM budget WHERE bytes <= 1048576 OR ordinal = 1 ORDER BY completedAt DESC,id DESC`).bind(...pageBindings,limit,continuation ? 0 : filter.offset ?? 0).all<Omit<LedgerResponse, 'answers'> & { contextJson: string; settingsJson: string; participantId: string | null }>()).results
     signal?.throwIfAborted()
     const participants = rows.length ? (await this.binding.prepare(`SELECT r.id AS responseId, p.id, p.name_snapshot AS name, p.email_snapshot AS email FROM responses r JOIN invitation_participants p ON p.id = r.participant_id WHERE p.workspace_id = r.workspace_id AND r.id IN (${rows.map(() => '?').join(',')})`).bind(...rows.map(row => row.id)).all<{ responseId: string; id: string; name: string | null; email: string | null }>()).results : []
     signal?.throwIfAborted()
@@ -94,7 +110,7 @@ export class ReportingRepository {
       }
       return typeof value === 'string' ? value : JSON.stringify(value)
     }
-    return { total: total?.count ?? 0, responses: rows.map((row) => ({ ...row, collector: (()=>{const {responseId:_id,...collector}=attribution.find(item=>item.responseId===row.id)!;return collector})(), omittedQuestions: questionRows.filter(question => question.revisionId === row.revisionId && !answers.some(answer => answer.responseId === row.id && answer.stepId === question.stepId)).map(({ stepId, label, position, questionType }) => ({ stepId, label, position, questionType })), ...(participants.some(p => p.responseId === row.id) ? { participant: (() => { const { responseId: _responseId, ...p } = participants.find(p => p.responseId === row.id)!; return p })() } : {}), answers: answers.filter((answer) => answer.responseId === row.id).map(({ stepId, label, position, questionType, settingsJson, required, valueJson }) => { const value: unknown = JSON.parse(valueJson); retainedAnswer(questionType,value,optionIds.get(`${row.revisionId}\0${stepId}`) ?? [],JSON.parse(settingsJson ?? '{}'),Boolean(required)); return ({ stepId, label, position, questionType, value: exportValue(value, stepId, row.revisionId, questionType), displayValue: display(value, stepId, row.revisionId, questionType, JSON.parse(settingsJson ?? '{}')) }) }) })) }
+    return { total: total?.count ?? 0, responses: rows.map(({ contextJson, settingsJson, participantId, ...row }) => ({ ...row, ...retainedContext(contextJson, settingsJson, participantId), collector: (()=>{const {responseId:_id,...collector}=attribution.find(item=>item.responseId===row.id)!;return collector})(), omittedQuestions: questionRows.filter(question => question.revisionId === row.revisionId && !answers.some(answer => answer.responseId === row.id && answer.stepId === question.stepId)).map(({ stepId, label, position, questionType }) => ({ stepId, label, position, questionType })), ...(participants.some(p => p.responseId === row.id) ? { participant: (() => { const { responseId: _responseId, ...p } = participants.find(p => p.responseId === row.id)!; return p })() } : {}), answers: answers.filter((answer) => answer.responseId === row.id).map(({ stepId, label, position, questionType, settingsJson, required, valueJson }) => { const value: unknown = JSON.parse(valueJson); retainedAnswer(questionType,value,optionIds.get(`${row.revisionId}\0${stepId}`) ?? [],JSON.parse(settingsJson ?? '{}'),Boolean(required)); return ({ stepId, label, position, questionType, value: exportValue(value, stepId, row.revisionId, questionType), displayValue: display(value, stepId, row.revisionId, questionType, JSON.parse(settingsJson ?? '{}')) }) }) })) }
   }
   async questionReport(revisionId: string) {
     const [steps, choices] = await this.binding.batch([

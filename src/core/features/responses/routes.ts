@@ -21,6 +21,7 @@ const sessionCredentials = z.object({
 })
 
 const submitResponseSchema = sessionCredentials.extend({
+  hidden:z.record(z.string().max(64),z.union([z.string().max(1000),z.number(),z.boolean()])).refine(value=>Object.keys(value).length<=100).optional(),
   // Missing credentials reach the named session refusal; present credentials
   // retain their original format bounds and never bypass service admission.
   sessionToken: z.string().min(32).max(200).optional(),

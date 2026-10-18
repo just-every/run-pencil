@@ -20,7 +20,7 @@ export const draft: BuilderDraft = {
   ], choices: [], branchRules: [],
 }
 export const results: FlowResults = { flow, revision: { ...draft.revision, publishedAt: '2026-10-02T00:00:00.000Z' }, starts: 2, completedResponses: 1, liveCompletedResponses: 1, importedResponses: 0, completionRate: .5, averageCompletionMilliseconds: 3000, deviceStarts: { mobile: 1, tablet: 0, desktop: 1 } }
-export const ledger: Ledger = { flow, cutoff: '2026-10-02T00:00:00.000Z', filter: {}, revisions: [{ id: 'revision', number: 1, isCurrent: 1 }], total: 0, responses: [] }
+export const ledger: Ledger = { flow, cutoff: '2026-10-02T00:00:00.000Z', filter: {}, revisions: [{ hiddenFields: [], id: 'revision', number: 1, isCurrent: 1 }], total: 0, responses: [] }
 
 /** Client unit harness only: no runtime session, cookie or external browser. */
 export function renderOperator(page: ReactNode, path: string, shell = false) {

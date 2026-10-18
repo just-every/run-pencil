@@ -45,6 +45,14 @@ export class FlowRepository {
     return result.at(-1)!.results.length > 0
   }
 
+  async updateFormSettings(input: DraftVersion & { json: string }) {
+    const result = await this.auditedDraft(input, [
+      this.binding.prepare('UPDATE flow_revisions SET form_settings_json=?,updated_at=? WHERE id=? AND state=\'draft\' AND EXISTS(SELECT 1 FROM flows WHERE id=? AND draft_version=?) RETURNING id').bind(input.json,input.now,input.revisionId,input.flowId,input.expectedVersion),
+      this.binding.prepare('UPDATE flows SET draft_version=draft_version+1,updated_at=?,last_activity_at=? WHERE id=? AND draft_version=? RETURNING id').bind(input.now,input.now,input.flowId,input.expectedVersion),
+    ])
+    return result[0].results.length === 1 && result[1].results.length === 1
+  }
+
   async ensureFlow(flow: typeof flows.$inferInsert) {
     await this.database.insert(flows).values(flow).onConflictDoNothing()
   }
@@ -325,9 +333,9 @@ export class FlowRepository {
     const guarded = 'EXISTS (SELECT 1 FROM flows WHERE id = ? AND draft_version = ?)'
     const statements: D1PreparedStatement[] = [
       this.binding.prepare(`
-        INSERT INTO flow_revisions (id, flow_id, number, state, title, published_at, is_current, admission_closed_at, admission_close_reason, deadline_at, deadline_time_zone, target_completed_responses, policy_snapshot_json, created_at, updated_at)
-        SELECT ?, ?, ?, 'draft', ?, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, ?, ? WHERE ${guarded} RETURNING id
-      `).bind(input.newDraft.id, input.newDraft.flowId, input.newDraft.number, input.newDraft.title, input.newDraft.createdAt, input.newDraft.updatedAt, input.flowId, input.expectedVersion),
+        INSERT INTO flow_revisions (id, flow_id, number, state, title, published_at, is_current, admission_closed_at, admission_close_reason, deadline_at, deadline_time_zone, target_completed_responses, policy_snapshot_json, form_settings_json, created_at, updated_at)
+        SELECT ?, ?, ?, 'draft', ?, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, ?, ?, ? WHERE ${guarded} RETURNING id
+      `).bind(input.newDraft.id, input.newDraft.flowId, input.newDraft.number, input.newDraft.title, input.newDraft.formSettingsJson ?? '{}', input.newDraft.createdAt, input.newDraft.updatedAt, input.flowId, input.expectedVersion),
       ...input.newSteps.map((step) => this.binding.prepare(`
         INSERT INTO flow_steps (id, revision_id, position, stable_id, kind, question_type, prompt, helper_text, required, next_step_stable_id, question_settings_json, created_at, updated_at)
         SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?

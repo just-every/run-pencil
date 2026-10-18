@@ -512,6 +512,7 @@
     ]
   },
   "limits": {
+    "hiddenFields": { "perRevision": 20, "textCharacters": 1000 },
     "status": "estimated",
     "mustBeReplacedByLoadTest": true,
     "flows": {

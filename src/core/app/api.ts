@@ -26,6 +26,8 @@ export type BranchRule = {
 }
 
 export type PublicFlow = {
+  formSettings?: import('../shared/hiddenFields').FormSettings
+  hiddenContext?: import('../shared/hiddenFields').ResponseContext
   branchSelection?: import('../shared/flowPolicies').BranchSelection
   identity?: 'anonymous' | 'identified'
   completedStepId?: string | null
@@ -132,11 +134,12 @@ export const api = {
     request<{ kind: 'created'; draftVersion: number; step: FlowStep } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/steps/${encodeURIComponent(stepId)}/duplicate`, { method: 'POST', body: JSON.stringify({ expectedVersion }) }),
   deleteDraftStep: (flowId: string, stepId: string, expectedVersion: number) =>
     request<{ kind: 'deleted'; draftVersion: number } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/steps/${encodeURIComponent(stepId)}`, { method: 'DELETE', body: JSON.stringify({ expectedVersion }) }),
+  saveFormSettings: (flowId:string,settings:import('../shared/hiddenFields').FormSettings,expectedVersion:number) => request<{kind:'updated'|'conflict'}>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/settings`,{method:'PUT',body:JSON.stringify({settings,expectedVersion})}),
   saveScreen: (flowId:string,input:{stepId:string;expectedVersion:number;layout:import('../shared/screenLayout').ScreenLayout|null}) => request<{kind:'updated'|'conflict';latestVersion?:number}>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/screen`,{method:'PUT',body:JSON.stringify(input)}),
   reorderDraftSteps: (flowId: string, input: { expectedVersion: number; orderedStepIds: string[] }) =>
     request<{ kind: 'reordered'; draftVersion: number } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/order`, { method: 'PUT', body: JSON.stringify(input) }),
-  previewDraft: (flowId: string, answers: Record<string, unknown>) =>
-    request<{ preview: true; draftVersion: number; screens: Array<{ stepId: string; evaluations: Array<{ ruleId: string; matched: boolean; destinationStepId: string; trace?: ConditionTrace }>; selectedRuleId: string | null; nextStepId: string | null }>; complete: boolean; reason?: string }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/preview`, { method: 'POST', body: JSON.stringify({ answers }) }),
+  previewDraft: (flowId: string, answers: Record<string, unknown>, hidden?:Record<string,unknown>) =>
+    request<{ preview: true; draftVersion: number; screens: Array<{ stepId: string; evaluations: Array<{ ruleId: string; matched: boolean; destinationStepId: string; trace?: ConditionTrace }>; selectedRuleId: string | null; nextStepId: string | null }>; complete: boolean; reason?: string }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/preview`, { method: 'POST', body: JSON.stringify({ answers, hidden }) }),
   publishDraft: (flowId: string, input: { expectedVersion: number; deadlineAt?: string | null; targetCompletedResponses?: number | null }) =>
     request<{ kind: 'published'; revision: { id: string; number: number }; draftVersion: number } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/publish`, { method: 'POST', body: JSON.stringify(input) }),
   closeFlow: (flowId: string) => request<void>(`/api/app/flows/${encodeURIComponent(flowId)}/close`, { method: 'POST' }),
@@ -147,10 +150,10 @@ export const api = {
   startSession: (slug: string, deviceClass: 'mobile' | 'tablet' | 'desktop', source: 'direct' | 'embed', invitationToken?: string, collectorKey?: string) =>
     request<{ sessionId: string; sessionToken: string; revisionId: string; flowId: string; flow: PublicFlow }>(`/api/public/flows/${encodeURIComponent(slug)}/sessions`, { method: 'POST', body: JSON.stringify({ deviceClass, source, invitationToken, collectorKey }) }),
   advanceSession: (slug: string, input: { sessionId: string; sessionToken: string; stepId: string }) => request<void>(`/api/public/flows/${encodeURIComponent(slug)}/sessions/advance`, { method: 'POST', body: JSON.stringify(input) }),
-  saveResponse: (slug: string, input: { sessionId: string; sessionToken: string; commandKey: string; email: string; currentStepId: string; answers: Array<{ stepId: string; value: unknown }>; invitationToken?: string }) =>
+  saveResponse: (slug: string, input: { sessionId: string; sessionToken: string; commandKey: string; email: string; currentStepId: string; answers: Array<{ stepId: string; value: unknown }>; invitationToken?: string; hidden?:Record<string,unknown> }) =>
     request<{ state: 'saved'; expiresAt: string }>(`/api/public/flows/${encodeURIComponent(slug)}/sessions/save`, { method: 'POST', body: JSON.stringify(input) }),
   resumeResponse: (slug: string, token: string) => request<SavedResponseState>(`/api/public/flows/${encodeURIComponent(slug)}/resume`, { method: 'POST', body: JSON.stringify({ token }) }),
-  submitResponse: (slug: string, input: { sessionId: string; sessionToken: string; loadTime: string; idempotencyKey: string; answers: Array<{ stepId: string; value: unknown }>; honeypot?: string; invitationToken?: string }) =>
+  submitResponse: (slug: string, input: { sessionId: string; sessionToken: string; loadTime: string; idempotencyKey: string; answers: Array<{ stepId: string; value: unknown }>; honeypot?: string; invitationToken?: string; hidden?:Record<string,unknown> }) =>
     request<{ responseId: string; idempotent: boolean; completionStepId: string; disposition: 'released' | 'quarantined' }>(`/api/public/flows/${encodeURIComponent(slug)}/responses`, { method: 'POST', body: JSON.stringify(input) }),
   quarantinedResponses: (revisionId: string) => request<Array<{ id: string; quarantineReason: string | null; completedAt: string; answers: Array<{ stepId: string; value: unknown }> }>>(`/api/app/revisions/${encodeURIComponent(revisionId)}/quarantine`),
   releaseQuarantinedResponse: (responseId: string) => request<void>(`/api/app/responses/${encodeURIComponent(responseId)}/release`, { method: 'POST' }),
@@ -167,8 +170,8 @@ export const api = {
 }
 
 export type LedgerFilter = { codeId?: string; workflowStatus?: string; workflowAssignee?: string; workflowTag?: string; search?: string; collectorId?: string; revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown' | 'imported'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
-export type LedgerResponse = { collector: { id: string; name: string; channel: string }; omittedQuestions: Array<{ stepId: string; label: string; position: number; questionType?: string }>; participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string | null; state: 'released' | 'quarantined'; quarantineReason: string | null; answers: Array<{ stepId: string; label: string; position: number; questionType: string; value: unknown; displayValue: string }> }
-export type Ledger = { flow: { id: string; title: string; slug: string }; cutoff: string; filter: LedgerFilter; revisions: Array<{ id: string; number: number; isCurrent: number }>; total: number; responses: LedgerResponse[] }
+export type LedgerResponse = { hiddenFields:Array<{id:string;name:string;type:import('../shared/hiddenFields').HiddenField['type'];value:string|number|boolean}>;identityMode:'anonymous'|'identified';discardedParameters:number; collector: { id: string; name: string; channel: string }; omittedQuestions: Array<{ stepId: string; label: string; position: number; questionType?: string }>; participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string | null; state: 'released' | 'quarantined'; quarantineReason: string | null; answers: Array<{ stepId: string; label: string; position: number; questionType: string; value: unknown; displayValue: string }> }
+export type Ledger = { flow: { id: string; title: string; slug: string }; cutoff: string; filter: LedgerFilter; revisions: Array<{ hiddenFields:Array<Pick<import('../shared/hiddenFields').HiddenField,'id'|'name'|'type'>>; id: string; number: number; isCurrent: number }>; total: number; responses: LedgerResponse[] }
 export type QuestionReport = { revisionId?: string; importedAnswered: number; summary: import('../features/reporting/answerSummary').AnswerSummary; id: string; prompt: string; questionType: string | null; reached: number; dropped: number; answered: number; choices: Array<{ id: string; label: string }>; distribution: Array<{ value: unknown; label: string; count: number }>; distributionLabel: string }
 function query(filter: LedgerFilter) { return new URLSearchParams(Object.entries(filter).filter(([, value]) => value !== undefined).map(([key, value]) => [key, String(value)])).toString() }
 export type RevisionComparison = { revisionCount?: number; offset?: number; nextOffset?: number; flow: { id: string; title: string; slug: string }; revisions: Array<{ id: string; number: number; isCurrent: number }>; questions: Array<{ id: string; answered: number; eligibleResponses: number; versions: Array<QuestionReport & { revisionId: string; eligibleResponses: number }> }> }

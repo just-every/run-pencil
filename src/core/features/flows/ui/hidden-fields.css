@@ -1,0 +1,7 @@
+.hidden-fields-settings { padding: 1rem; margin-block: 1rem; }
+.hidden-fields-settings[open] > summary { margin-bottom: 1rem; }
+.hidden-fields-settings > fieldset > p { max-width: 75ch; }
+.hidden-field-row { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto; gap: .75rem; padding: 1rem; margin-block: 1rem; align-items: end; }
+.hidden-field-row > label { margin: 0; }
+.hidden-fields-settings > fieldset > button { margin: .25rem .5rem .25rem 0; }
+@media (max-width: 700px) { .hidden-field-row { grid-template-columns: minmax(0, 1fr); } }

@@ -26,7 +26,7 @@ function nativePredicates(row: TargetRow | null, destination: string, kind: stri
   for (const name of names) {
     const spec = tables[name], rows = value.tables[name] ?? []
     predicates.push(query(`(SELECT COUNT(*) FROM ${name} WHERE ${spec.scope}) = ?`, id, rows.length))
-    for (const chunk of nativeRowChunks(rows)) predicates.push(retainedSql(['NOT EXISTS (SELECT 1 FROM json_each(', `) expected WHERE NOT EXISTS (SELECT 1 FROM ${name} native WHERE ${spec.columns.map(column => `native.${column} IS json_extract(expected.value,'$.${column}')`).join(' AND ')}))`], [chunk], [0]))
+    for (const chunk of nativeRowChunks(rows)) predicates.push(retainedSql(['NOT EXISTS (SELECT 1 FROM json_each(', `) expected WHERE NOT EXISTS (SELECT 1 FROM ${name} native WHERE ${spec.columns.map(column => `native.${column} IS ${['form_settings_json','response_context_json'].includes(column) ? `coalesce(json_extract(expected.value,'$.${column}'),'{}')` : `json_extract(expected.value,'$.${column}')`}`).join(' AND ')}))`], [chunk], [0]))
   }
   return predicates
 }
@@ -59,7 +59,7 @@ export const importTargets: D1TargetAdapter = {
     for (const name of tableNames(row.targetKind)) {
       const columns = tables[name].columns
       const rows = value.tables[name] ?? []
-      for (const chunk of nativeRowChunks(rows)) statements.push(retainedSql([`INSERT INTO ${name} (${columns.join(',')}) SELECT ${columns.map(c => `json_extract(value,'$.${c}')`).join(',')} FROM json_each(`, ...name === 'flows' ? [') WHERE (SELECT count(*) FROM flows WHERE workspace_id = ', ') < ', ''] : [')']], [chunk, ...name === 'flows' ? [row.destination, manifest.limits.flows.total] : []], [0]))
+      for (const chunk of nativeRowChunks(rows)) statements.push(retainedSql([`INSERT INTO ${name} (${columns.join(',')}) SELECT ${columns.map(c => ['form_settings_json','response_context_json'].includes(c) ? `coalesce(json_extract(value,'$.${c}'),'{}')` : `json_extract(value,'$.${c}')`).join(',')} FROM json_each(`, ...name === 'flows' ? [') WHERE (SELECT count(*) FROM flows WHERE workspace_id = ', ') < ', ''] : [')']], [chunk, ...name === 'flows' ? [row.destination, manifest.limits.flows.total] : []], [0]))
     }
     statements.push(query('INSERT INTO form_import_targets(target_id,workspace_id,kind,revision,flow_id) VALUES(?,?,?,?,?)', row.targetId, row.destination, row.targetKind, row.revision, value.flowId))
     return statements

@@ -1,3 +1,4 @@
+import { formSettings } from '../../shared/hiddenFields'
 import { publicChoices, publicRules, publicSteps, questionSettings, resolveNextStep, type StoredBranchRule, type StoredChoice, type StoredStep } from '../flows'
 import { visibilityCondition } from '../../shared/screenLayout'
 import { evaluateCondition } from '../../shared/conditions'
@@ -11,7 +12,7 @@ type Graph = { steps: StoredStep[]; choices: StoredChoice[]; rules: StoredBranch
 /** Explicit save accepts a valid prefix and optional answers still on its
  * selected path. Hidden branches and required gaps before the current screen
  * cannot be persisted as a response to another question. */
-export function validateSavedAnswers(graph: Graph, policy: string | null, currentStepId: string, answers: Answer[]) {
+export function validateSavedAnswers(graph: Graph, policy: string | null, currentStepId: string, answers: Answer[], context:Record<string,unknown>={}) {
   const submitted = new Map<string, unknown>()
   for (const answer of answers) {
     if (submitted.has(answer.stepId)) throw new ValidationError('Each saved question can be answered once.')
@@ -23,7 +24,7 @@ export function validateSavedAnswers(graph: Graph, policy: string | null, curren
   while (step && !traversed.has(step.stableId)) {
     traversed.add(step.stableId)
     const condition = visibilityCondition(publicSteps([step])[0])
-    const visible = !condition || evaluateCondition(condition,Object.fromEntries(accepted.map(answer => [answer.stepId,answer.value]))).matched
+    const visible = !condition || evaluateCondition(condition,{...context,...Object.fromEntries(accepted.map(answer => [answer.stepId,answer.value]))}).matched
     if(visible)visited.add(step.stableId)
     if (visible && step.stableId === currentStepId) foundCurrent = true
     if (visible && step.kind === 'question') {
@@ -38,7 +39,7 @@ export function validateSavedAnswers(graph: Graph, policy: string | null, curren
       }
     }
     if (step.kind === 'completion') break
-    const next = resolveNextStep({ selection: revisionBranchSelection(policy), step, rules: graph.rules.filter(rule => rule.sourceStepStableId === step!.stableId), answers: Object.fromEntries(accepted.map(answer => [answer.stepId, answer.value])) })
+    const next = resolveNextStep({ selection: revisionBranchSelection(policy), step, rules: graph.rules.filter(rule => rule.sourceStepStableId === step!.stableId), answers: {...context,...Object.fromEntries(accepted.map(answer => [answer.stepId, answer.value]))} })
     step = next.nextStepId ? byId.get(next.nextStepId) : undefined
   }
   if (!foundCurrent || byId.get(currentStepId)?.kind === 'completion') throw new ValidationError('Choose a screen on your unfinished response before saving.')
@@ -46,6 +47,6 @@ export function validateSavedAnswers(graph: Graph, policy: string | null, curren
   return accepted
 }
 
-export function resumedPublicFlow(flow: { id: string; slug: string }, revision: { id: string; number: number; title: string; publishedAt: string | null; deadlineAt: string | null; targetCompletedResponses: number | null; policySnapshotJson: string | null }, graph: Graph, identified: boolean, completionStepId?: string) {
-  return { branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(graph.steps), choices: publicChoices(graph.steps, graph.choices), branchRules: publicRules(graph.rules), ...(identified ? { identity: 'identified' as const } : {}), ...(completionStepId ? { completedStepId: completionStepId } : {}) }
+export function resumedPublicFlow(flow: { id: string; slug: string }, revision: { id: string; number: number; title: string; publishedAt: string | null; deadlineAt: string | null; targetCompletedResponses: number | null; policySnapshotJson: string | null; formSettingsJson?:string }, graph: Graph, identified: boolean, completionStepId?: string) {
+  return { formSettings:formSettings(revision.formSettingsJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(graph.steps), choices: publicChoices(graph.steps, graph.choices), branchRules: publicRules(graph.rules), ...(identified ? { identity: 'identified' as const } : {}), ...(completionStepId ? { completedStepId: completionStepId } : {}) }
 }

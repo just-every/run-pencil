@@ -208,9 +208,9 @@ export class ResponseRepository {
       this.binding.prepare(`
         INSERT INTO responses (
           id, workspace_id, flow_id, revision_id, session_id, session_token_hash, idempotency_key, state, quarantine_reason,
-          released_at, released_by_operator_id, completion_milliseconds, completed_at, created_at, updated_at, source, started_at, participant_id, notification_eligible
+          released_at, released_by_operator_id, completion_milliseconds, completed_at, created_at, updated_at, source, started_at, participant_id, notification_eligible, response_context_json
         )
-        SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, s.source, s.created_at, ?, 1
+        SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, s.source, s.created_at, ?, 1, ?
         FROM respondent_sessions s
         JOIN flow_revisions r ON r.id = s.revision_id
         JOIN flows f ON f.id = r.flow_id
@@ -227,7 +227,7 @@ export class ResponseRepository {
           AND ${collectorOpen.sql}
       `).bind(
         response.id, response.workspaceId, response.flowId, response.revisionId, response.sessionId, input.sessionTokenHash, response.idempotencyKey,
-        response.state, response.quarantineReason, released ? input.completedAt : null, response.completionMilliseconds, response.completedAt, response.createdAt, response.updatedAt, response.participantId ?? null,
+        response.state, response.quarantineReason, released ? input.completedAt : null, response.completionMilliseconds, response.completedAt, response.createdAt, response.updatedAt, response.participantId ?? null, response.contextJson ?? '{}',
         response.sessionId, response.revisionId, input.sessionTokenHash, input.completedAt, response.participantId ?? null, response.participantId ?? null, response.flowId, input.completedAt, response.state, ...collectorOpen.params,
       ),
       ...input.answers.map((answer) => this.binding.prepare(`

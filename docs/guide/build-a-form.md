@@ -112,3 +112,11 @@ The preview uses the same rules as the live form, so what you see is what people
 - An archived flow cannot be published or reopened, and Pencil refuses to save, add or duplicate its steps. Deleting or moving a step is not refused yet, and either one changes the draft that **Duplicate flow** copies, so leave an archived flow's steps as they are. To work on it again, duplicate it and edit the copy.
 
 Next: [Answer paths](branching.md), or go straight to [Publish and share](publish-and-share.md).
+
+## Hidden fields from a link
+
+Open **Hidden fields and identity** in the builder. Add a parameter name, its type and purpose, then choose **Save hidden fields**. For example, declare `utm_campaign` as campaign text and use `/f/your-form?utm_campaign=spring`. Only declared, valid values are retained; missing fields stay blank. Parameters are unverified input from whoever holds the link.
+
+Use **Add condition rule** to choose a hidden field for an answer path, or **Insert an earlier answer** to insert a declared hidden field into a prompt or completion. Preview offers separate test link values. Results show the retained values with each response, offer hidden-field filtering and search, and include them in CSV and JSON exports.
+
+A field containing a name, email or other identity must have the identifying purpose and the form must use **Identified** public links. Before answering, people see the supplied identity and can choose **This isn’t me** to clear it. An unexpanded mail merge tag is discarded. Anonymous forms discard click IDs until conversion delivery is available. Script-embed forwarding and fixed hidden attributes are not available yet; direct links accept query parameters. Publishing snapshots these settings; editing the draft leaves the live version unchanged.

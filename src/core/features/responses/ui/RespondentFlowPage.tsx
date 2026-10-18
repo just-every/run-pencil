@@ -1,4 +1,5 @@
 import { contactQuestionTypes } from '../../../shared/contactAnswers'
+import { normalizeHidden } from '../../../shared/hiddenFields'
 import { responseScreens } from '../../../shared/screenLayout'
 import { ScreenQuestions } from '../../../shared/ui/ScreenQuestions'
 import { useViewCounter } from './useViewCounter'
@@ -38,7 +39,11 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   const [closedFlow, setClosedFlow] = useState<ClosedFlow>()
   const [unconfirmedClosedFlow, setUnconfirmedClosedFlow] = useState<ClosedFlow>()
   const [closedRestart, setClosedRestart] = useState(false)
-  const [flow, setFlow] = useState<PublicFlow>(initialFlow)
+  const [baseFlow, setFlow] = useState<PublicFlow>(initialFlow)
+  const [hidden, setHidden] = useState<Record<string,unknown>>(() => Object.fromEntries((initialFlow.formSettings?.hiddenFields ?? []).flatMap(field => initialFlow.hiddenContext?.hidden[field.id] === undefined ? [] : [[field.name,initialFlow.hiddenContext.hidden[field.id]]])))
+  useEffect(() => { if (!resume) setHidden(Object.fromEntries([...new URLSearchParams(window.location.search)].filter(([name])=>!['collector','resume','source','challenge'].includes(name)))) }, [])
+  const hiddenContext = normalizeHidden(baseFlow.formSettings ?? {hiddenFields:[],identityMode:'anonymous'},hidden)
+  const flow = {...baseFlow,hiddenContext}
   const view = useViewCounter({slug,revisionId:flow.revision.id,source:embedded?'embed':'direct',collectorKey,invitationToken},!resume&&!initialFlow.completedStepId, resume?.loadTime)
   const [hydrated, setHydrated] = useState(false)
   useEffect(() => { setHydrated(true) }, [])
@@ -48,7 +53,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
     return () => { responseContext.current += 1 }
   }, [slug, embedded, initialFlow.flow.id])
   const initialAnswers = Object.fromEntries((resume?.answers ?? []).map(answer => [answer.stepId, answer.value]))
-  const initialPath = visiblePath(initialFlow, initialAnswers)
+  const initialPath = visiblePath({...initialFlow,hiddenContext}, initialAnswers)
   const initialIndex = resume ? Math.max(0, responseScreens(initialFlow.steps,initialPath).findIndex(screen => screen.id === resume.currentStepId || screen.steps.some(step=>step.id===resume.currentStepId))) : 0
   const [index, setIndex] = useState(initialIndex)
   const [completedStepId, setCompletedStepId] = useState<string | undefined>(initialFlow.completedStepId ?? undefined)
@@ -195,7 +200,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
       if (credentials.revisionId !== flow.revision.id) return
       if (nextCandidate!.kind === 'completion') {
         const submittedAnswers = questionSteps.flatMap((step) => filled(answers[step.id]) ? [{ stepId: step.id, value: answers[step.id] }] : [])
-        const attempt = { input: { ...credentials, idempotencyKey: idempotencyKey.current, answers: submittedAnswers, honeypot, loadTime: await view.token(), ...(invitationToken ? { invitationToken } : {}) } }
+        const attempt = { input: { ...credentials, idempotencyKey: idempotencyKey.current, answers: submittedAnswers, hidden, honeypot, loadTime: await view.token(), ...(invitationToken ? { invitationToken } : {}) } }
         attemptedFinal = attempt
         setPendingFinal(attempt)
         await confirmFinal(attempt)
@@ -221,7 +226,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
     try {
       const credentials = await ensureSession()
       if (credentials.revisionId !== flow.revision.id) throw new Error('This form has changed. Choose the current form before saving.')
-      const input = { ...credentials, email, currentStepId: current.id, answers: questionSteps.flatMap(step => filled(answers[step.id]) ? [{ stepId: step.id, value: answers[step.id] }] : []), ...(invitationToken ? { invitationToken } : {}) }
+      const input = { ...credentials, hidden, email, currentStepId: current.id, answers: questionSteps.flatMap(step => filled(answers[step.id]) ? [{ stepId: step.id, value: answers[step.id] }] : []), ...(invitationToken ? { invitationToken } : {}) }
       const fingerprint = JSON.stringify(input)
       if (saveAttempt.current?.fingerprint !== fingerprint) saveAttempt.current = { fingerprint, commandKey: crypto.randomUUID() }
       return await api.saveResponse(slug, { ...input, commandKey: saveAttempt.current.commandKey })
@@ -241,7 +246,8 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
         {!isCompletion ? <><div className="respondent-top"><span>{isWelcome ? 'Before you begin' : screen?.layout ? `${screen.layout.kind === 'page' ? 'Page' : 'Group'} ${screens.filter(entry=>entry.steps[0]?.kind==='question').findIndex(entry=>entry.id===screen.id)+1} of ${screens.filter(entry=>entry.steps[0]?.kind==='question').length} · ${screen.steps.length} question${screen.steps.length===1?'':'s'}` : `Question ${questionPosition + 1} of ${questionSteps.length}`}</span><span>{isWelcome ? `${questionSteps.length} question${questionSteps.length === 1 ? '' : 's'} ahead` : `${Math.max(0, progressTotal - progressDone)} remaining`}</span></div><div aria-label="Response progress" aria-valuemax={100} aria-valuemin={0} aria-valuenow={Math.round(progress)} className="progress-track" role="progressbar"><span style={{ width: `${progress}%` }} />{!isWelcome && current.kind === 'question' ? <span className="progress-track__here" style={{ left: `${progressPosition / Math.max(1, progressTotal) * 100}%`, width: `${(screen ? units(screen) : 1)*100 / Math.max(1, progressTotal)}%` }} /> : null}</div></> : null}
         <h1 className="display" id="respondent-title">{screen?.layout && !isCompletion ? screen.layout.title : displayedStep.prompt}</h1>
         {screen?.layout && !isCompletion ? screen.layout.description ? <p className="respondent-helper">{screen.layout.description}</p> : null : current.helperText ? <p className="respondent-helper">{displayedStep.helperText}</p> : null}
-        {isWelcome || (!path.some((step) => step.kind === 'welcome') && current.kind === 'question' && questionPosition === 0) ? <aside className="privacy-card"><LockKeyhole aria-hidden="true" size={22} strokeWidth={1.6} /><span><strong>Before you share</strong><br />{config.publicFlowPurpose} Your response is {initialFlow.identity === 'identified' ? 'identified through your invitation' : 'anonymous'}. At {config.publicFlowBusinessName}, operators can see the answers you submit. Identifying details you choose to type, such as an email address, identify you to those operators. Your answers are received and stored by this feedback service.{config.answersMayReachAi ? <> <span data-disclosure="ai-analysis">If {config.publicFlowBusinessName} analyses feedback, your written answers may be sent to the AI service it chose. Separate contact, invitation and session identity is excluded. Names, emails or other identifying details you type in selected text answers are sent with those answers.</span></> : null}</span></aside> : null}
+        {isWelcome || (!path.some((step) => step.kind === 'welcome') && current.kind === 'question' && questionPosition === 0) ? <aside className="privacy-card"><LockKeyhole aria-hidden="true" size={22} strokeWidth={1.6} /><span><strong>Before you share</strong><br />{config.publicFlowPurpose} Your response is {initialFlow.identity === 'identified' ? 'identified through your invitation' : hiddenContext.identityMode === 'identified' ? 'identified; values supplied by this link are unverified, and forwarding the link forwards those values' : 'anonymous'}. At {config.publicFlowBusinessName}, operators can see the answers you submit. Identifying details you choose to type, such as an email address, identify you to those operators. Your answers are received and stored by this feedback service.{config.answersMayReachAi ? <> <span data-disclosure="ai-analysis">If {config.publicFlowBusinessName} analyses feedback, your written answers may be sent to the AI service it chose. Separate contact, invitation and session identity is excluded. Names, emails or other identifying details you type in selected text answers are sent with those answers.</span></> : null}</span></aside> : null}
+        {!isCompletion && hiddenContext.identityMode === 'identified' && Object.entries(hiddenContext.hidden).some(([id])=>flow.formSettings?.hiddenFields.some(field=>field.id===id&&field.category==='identifying')) ? <aside className="privacy-card"><span>Answering as {flow.formSettings?.hiddenFields.filter(field=>field.category==='identifying'&&hiddenContext.hidden[field.id]!==undefined).map(field=>String(hiddenContext.hidden[field.id])).join(', ')}. These link-supplied values are unverified. <button type="button" className="quiet-button" disabled={submitting||!!pendingFinal} onClick={()=>setHidden(previous=>Object.fromEntries(Object.entries(previous).filter(([name])=>!flow.formSettings?.hiddenFields.some(field=>field.name===name&&field.category==='identifying'))))}>This isn’t me</button></span></aside> : null}
         {!screen?.layout && current.kind === 'question' && current.required ? <p className="respondent-required">Required</p> : null}
         {current.kind === 'question' && screen?.layout ? <ScreenQuestions steps={screen.steps} choices={flow.choices} answers={answers} errors={fieldErrors} disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} recall={(text,id)=>interpolateAnswerRecall(text,flow,answers,id)} onChange={changeAnswer}/> : current.kind === 'question' ? <fieldset className="plain-fieldset" disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} aria-labelledby="respondent-title"><QuestionInput key={`${flow.revision.id}-${current.id}`} choices={currentChoices} onChange={(value) => changeAnswer(current.id, value)} step={displayedStep} value={answers[current.id]} /></fieldset> : null}
         {isCompletion ? <p className="privacy-card"><Check aria-hidden="true" color="var(--green)" size={22} /><span>Thank you. {invitationToken ? 'This invitation link' : 'This public link'} cannot edit a completed response.</span></p> : null}

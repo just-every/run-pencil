@@ -9,6 +9,7 @@ export function operatorsFor(type: string | null): ConditionOperator[] {
   if (type === 'multiple_choice') return ['any_of', 'all_of', 'none_of', 'exactly', ...common]
   if (['yes_no', 'consent', 'thumbs_rating'].includes(type ?? '')) return ['equals', 'not_equals', ...common]
   if (['number', 'rating', 'nps', 'csat', 'ces', 'emoji_rating', 'date', 'priority'].includes(type ?? '')) return ['equals', 'not_equals', 'greater_than', 'greater_than_or_equal', 'less_than', 'less_than_or_equal', ...common]
+  if (['short_text','long_text','email','url','phone'].includes(type ?? '')) return ['equals','not_equals',...common]
   return common
 }
 
@@ -34,5 +35,6 @@ export function conditionValueValid(test: Extract<Condition, { kind: 'test' }>, 
   if (['yes_no','consent','thumbs_rating'].includes(step.questionType ?? '')) return typeof value === 'boolean'
   if (step.questionType === 'date') return calendarDate(value)
   if (step.questionType === 'priority') return ['equals','not_equals'].includes(test.operator) ? set() && (value as string[]).length === ids.length : !!value && typeof value === 'object' && 'choiceId' in value && ids.includes(String(value.choiceId)) && 'rank' in value && Number.isInteger(value.rank) && Number(value.rank) >= 1 && Number(value.rank) <= ids.length
+  if (['short_text','long_text','email','url','phone'].includes(step.questionType ?? '')) return typeof value === 'string' && value.trim().length > 0 && value.length <= 1000
   return typeof value === 'number' && Number.isFinite(value)
 }

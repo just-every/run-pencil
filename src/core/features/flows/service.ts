@@ -1,3 +1,4 @@
+import { formSettings, hiddenSettingsIssue, hiddenPublicationIssues, normalizeHidden, hiddenAnswers, type FormSettings } from '../../shared/hiddenFields'
 import { screenChanges } from './screen-authoring'
 import type { ScreenLayout } from '../../shared/screenLayout'
 import { visibilityCondition } from '../../shared/screenLayout'
@@ -148,12 +149,15 @@ export class FlowService {
     const now = new Date().toISOString()
     const flowId = ulid()
     const revisionId = ulid()
-    const stableIdByOldStableId = new Map(sourceSteps.map((step) => [step.stableId, ulid()]))
+    const copiedSettings = formSettings(sourceRevision.formSettingsJson)
+    const fieldIds = new Map(copiedSettings.hiddenFields.map(field => [field.id,ulid()]))
+    const stableIdByOldStableId = new Map([...sourceSteps.map((step) => [step.stableId, ulid()] as [string,string]), ...[...fieldIds].map(([old,id]) => [`hidden:${old}`,`hidden:${id}`] as [string,string])])
+    copiedSettings.hiddenFields = copiedSettings.hiddenFields.map(field => ({...field,id:fieldIds.get(field.id)!}))
     const rowIdByOldRowId = new Map(sourceSteps.map((step) => [step.id, ulid()]))
     const choiceStableIdByOldStableId = new Map(sourceChoices.map((choice) => [choice.stableId, ulid()]))
     const created = await this.repository.createStructure({
       flow: { id: flowId, workspaceId: input.workspaceId, title, slug, status: 'draft', draftVersion: 0, lastActivityAt: now, createdAt: now, updatedAt: now },
-      revision: { id: revisionId, flowId, number: 1, state: 'draft', title, publishedAt: null, isCurrent: false, admissionClosedAt: null, admissionCloseReason: null, deadlineAt: null, deadlineTimeZone: null, targetCompletedResponses: null, policySnapshotJson: null, createdAt: now, updatedAt: now },
+      revision: { formSettingsJson: JSON.stringify(copiedSettings), id: revisionId, flowId, number: 1, state: 'draft', title, publishedAt: null, isCurrent: false, admissionClosedAt: null, admissionCloseReason: null, deadlineAt: null, deadlineTimeZone: null, targetCompletedResponses: null, policySnapshotJson: null, createdAt: now, updatedAt: now },
       steps: sourceSteps.map((step) => ({ ...step, id: rowIdByOldRowId.get(step.id)!, revisionId, stableId: stableIdByOldStableId.get(step.stableId)!, prompt: remapAnswerRecall(step.prompt, stableIdByOldStableId), helperText: step.helperText === null ? null : remapAnswerRecall(step.helperText, stableIdByOldStableId), questionSettingsJson: remapLayoutSettings(remapChoiceSettings(step.questionSettingsJson, choiceStableIdByOldStableId), stableIdByOldStableId, choiceStableIdByOldStableId), nextStepStableId: step.nextStepStableId ? stableIdByOldStableId.get(step.nextStepStableId) ?? null : null, createdAt: now, updatedAt: now })),
       choices: sourceChoices.map((choice) => ({ ...choice, id: ulid(), stepId: rowIdByOldRowId.get(choice.stepId)!, stableId: choiceStableIdByOldStableId.get(choice.stableId)!, label: remapAnswerRecall(choice.label, stableIdByOldStableId), createdAt: now, updatedAt: now })),
       rules: sourceRules.map((rule) => {
@@ -180,7 +184,7 @@ export class FlowService {
   }
 
   private builderDraft({ flow, revision, steps, choices, rules }: Awaited<ReturnType<FlowService['requireDraftSnapshot']>>) {
-    return { branchSelection: evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'], flow, revision: this.publicRevision(revision), steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) }
+    return { formSettings: formSettings(revision.formSettingsJson), branchSelection: evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'], flow, revision: this.publicRevision(revision), steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) }
   }
 
   private async hasUnpublishedChanges(workspaceId: string, flowId: string) {
@@ -192,12 +196,22 @@ export class FlowService {
       this.repository.getBranchRules(published.id),
     ])
     const choices = await this.repository.getChoices(steps.map(step => step.id))
-    return structureContent(draft.steps, draft.choices, draft.rules) !== structureContent(steps, choices, rules)
+    return draft.revision.formSettingsJson !== published.formSettingsJson || structureContent(draft.steps, draft.choices, draft.rules) !== structureContent(steps, choices, rules)
   }
 
   async getBuilderDraft(workspaceId: string, flowId: string) {
     const draft = this.builderDraft(await this.requireDraftSnapshot(workspaceId, flowId))
     return { ...draft, flow: { ...draft.flow, hasUnpublishedChanges: await this.hasUnpublishedChanges(workspaceId, flowId) } }
+  }
+
+  async updateFormSettings(input: {operatorId?:string;workspaceId:string;flowId:string;expectedVersion:number;settings:FormSettings}) {
+    const {flow,revision} = await this.requireDraftSnapshot(input.workspaceId,input.flowId)
+    if (flow.draftVersion !== input.expectedVersion) return draftConflict(flow.draftVersion)
+    if (flow.status === 'archived') throw new ValidationError('Duplicate an archived flow before editing.')
+    const issue = hiddenSettingsIssue(input.settings)
+    if (issue) throw new ValidationError(issue)
+    if (!await this.repository.updateFormSettings({...input,revisionId:revision.id,json:JSON.stringify(input.settings),now:new Date().toISOString()})) return draftConflict((await this.requireWorkspaceFlow(input.workspaceId,input.flowId)).draftVersion)
+    return {kind:'updated' as const,draftVersion:input.expectedVersion+1}
   }
 
   async getFlowResults(workspaceId: string, flowId: string, revisionId?: string) {
@@ -262,7 +276,7 @@ export class FlowService {
     if (rules) {
       const nextSteps = rawSteps.map(step => step.stableId === input.stepId ? { ...step, questionType: selectedQuestionType, nextStepStableId: input.nextStepId === undefined ? step.nextStepStableId : input.nextStepId } : step)
       const nextChoices = [...rawChoices.filter(choice => choice.stepId !== selectedRawStep.id), ...persistedChoices.map(choice => ({ ...choice, stepId: selectedRawStep.id }))]
-      const issues = validateRevisionGraph(nextSteps, nextChoices, rules, evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1']).filter(issue => issue.reason.toLowerCase().includes('branch') || issue.reason.toLowerCase().includes('predicate'))
+      const issues = validateRevisionGraph(nextSteps, nextChoices, rules, evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'],formSettings(snapshot.revision.formSettingsJson)).filter(issue => issue.reason.toLowerCase().includes('branch') || issue.reason.toLowerCase().includes('predicate'))
       if (issues.length) throw new ValidationError('Answer paths are invalid.', issues)
     }
     const updated = await this.repository.updateDraftStep({ operatorId: input.operatorId,
@@ -366,7 +380,7 @@ export class FlowService {
     const rules = input.rules.map((rule) => ({ id: rule.id ?? ulid(), revisionId: draft.revision.id, sourceStepStableId: rule.sourceStepId, predicateKind: rule.predicateKind, expectedValueJson: JSON.stringify(rule.expectedValue), conditionJson: rule.condition ? JSON.stringify(rule.condition) : null, destinationStepStableId: rule.destinationStepId, position: rule.position, createdAt: now, updatedAt: now }))
     if (draft.flow.status === 'archived') throw new ValidationError('An archived flow cannot be published or reopened. Duplicate it to create a separate draft.')
     const { steps: rawSteps, choices: rawChoices } = snapshot
-    const graphIssues = validateRevisionGraph(rawSteps, rawChoices, rules, evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'])
+    const graphIssues = validateRevisionGraph(rawSteps, rawChoices, rules, evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'],formSettings(snapshot.revision.formSettingsJson))
       .filter((issue) => issue.reason.toLowerCase().includes('branch') || issue.reason.toLowerCase().includes('predicate'))
     if (graphIssues.length > 0) throw new ValidationError('Branch rules are invalid.', graphIssues)
     const replaced = await this.repository.replaceDraftBranchRules({ operatorId: input.operatorId, flowId: input.flowId, revisionId: draft.revision.id, expectedVersion: input.expectedVersion, now, rules })
@@ -374,7 +388,7 @@ export class FlowService {
     return { kind: 'updated' as const, draftVersion: input.expectedVersion + 1 }
   }
 
-  async previewDraft(input: { operatorId?: string; workspaceId: string; flowId: string; answers: Record<string, unknown> }) {
+  async previewDraft(input: { operatorId?: string; workspaceId: string; flowId: string; answers: Record<string, unknown>; hidden?:Record<string,unknown> }) {
     const { flow, revision, steps, choices, rules } = await this.repository.getWorkspaceDraftSnapshot(input.workspaceId, input.flowId)
     if (!flow || !revision) throw new NotFoundError('The requested flow has no editable draft.')
     const receipt = { preview: true as const, draftVersion: flow.draftVersion }
@@ -383,7 +397,7 @@ export class FlowService {
     if (!first) return { ...receipt, screens: [], complete: false, reason: 'The draft has no first screen.' }
     const screens: Array<{ stepId: string; evaluations: ReturnType<typeof resolveNextStep>['evaluations']; selectedRuleId: string | null; nextStepId: string | null }> = []
     const seen = new Set<string>()
-    const accepted: Record<string, unknown> = {}
+    const accepted: Record<string, unknown> = hiddenAnswers(normalizeHidden(formSettings(revision.formSettingsJson),input.hidden ?? {}))
     let current: StoredStep | undefined = first
     while (current && !seen.has(current.stableId) && screens.length <= steps.length) {
       const step: StoredStep = current
@@ -406,14 +420,15 @@ export class FlowService {
     if (input.expectedVersion !== draft.flow.draftVersion) return draftConflict(draft.flow.draftVersion)
     if (draft.flow.status === 'archived') throw new ValidationError('An archived flow cannot be published or reopened. Duplicate it to create a separate draft.')
     const { steps: rawSteps, choices: rawChoices, rules: rawRules } = snapshot
-    const issues = validateRevisionGraph(rawSteps, rawChoices, rawRules, evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'])
+    const issues = validateRevisionGraph(rawSteps, rawChoices, rawRules, evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'], formSettings(snapshot.revision.formSettingsJson))
+    issues.push(...hiddenPublicationIssues(formSettings(snapshot.revision.formSettingsJson)))
     if (issues.length > 0) throw new ValidationError('This draft cannot be published until every listed issue is resolved.', issues)
     if (input.targetCompletedResponses !== undefined && input.targetCompletedResponses !== null && (!Number.isInteger(input.targetCompletedResponses) || input.targetCompletedResponses <= 0)) throw new ValidationError('A completion target must be a positive whole number.')
     if (input.deadlineAt && Number.isNaN(Date.parse(input.deadlineAt))) throw new ValidationError('A revision deadline must be an ISO timestamp.')
     const now = new Date().toISOString()
     const nextDraftId = ulid()
     const newStepIdByOldId = new Map(rawSteps.map((step) => [step.id, ulid()]))
-    const newDraft = { id: nextDraftId, flowId: input.flowId, number: draft.revision.number + 1, state: 'draft' as const, title: draft.flow.title, publishedAt: null, isCurrent: false, admissionClosedAt: null, admissionCloseReason: null, deadlineAt: null, deadlineTimeZone: null, targetCompletedResponses: null, policySnapshotJson: null, createdAt: now, updatedAt: now }
+    const newDraft = { formSettingsJson: snapshot.revision.formSettingsJson, id: nextDraftId, flowId: input.flowId, number: draft.revision.number + 1, state: 'draft' as const, title: draft.flow.title, publishedAt: null, isCurrent: false, admissionClosedAt: null, admissionCloseReason: null, deadlineAt: null, deadlineTimeZone: null, targetCompletedResponses: null, policySnapshotJson: null, createdAt: now, updatedAt: now }
     const timeZone = await this.repository.getWorkspaceTimeZone(input.workspaceId)
     const published = await this.repository.publishDraft({ operatorId: input.operatorId,
       flowId: input.flowId, revisionId: draft.revision.id, expectedVersion: input.expectedVersion, now, currentRevisionId: draft.revision.id,
@@ -421,7 +436,7 @@ export class FlowService {
       newSteps: rawSteps.map((step) => ({ ...step, id: newStepIdByOldId.get(step.id)!, revisionId: nextDraftId, createdAt: now, updatedAt: now })),
       newChoices: rawChoices.map((choice) => ({ ...choice, id: ulid(), stepId: newStepIdByOldId.get(choice.stepId)!, createdAt: now, updatedAt: now })),
       newRules: rawRules.map((rule) => ({ ...rule, id: ulid(), revisionId: nextDraftId, createdAt: now, updatedAt: now })),
-      policySnapshotJson: JSON.stringify(evaluateFlowPolicies(this.policyConfiguration)), deadlineAt: input.deadlineAt ?? null, deadlineTimeZone: input.deadlineAt ? timeZone ?? 'UTC' : null, targetCompletedResponses: input.targetCompletedResponses ?? null,
+      policySnapshotJson: JSON.stringify(evaluateFlowPolicies({...this.policyConfiguration,'response.identity.v1':draft.formSettings.identityMode==='identified'?'identified-public-link':'anonymous-public-link'})), deadlineAt: input.deadlineAt ?? null, deadlineTimeZone: input.deadlineAt ? timeZone ?? 'UTC' : null, targetCompletedResponses: input.targetCompletedResponses ?? null,
     })
     if (!published) return draftConflict((await this.requireWorkspaceFlow(input.workspaceId, input.flowId)).draftVersion)
     return { kind: 'published' as const, revision: { id: draft.revision.id, number: draft.revision.number }, draftVersion: input.expectedVersion + 1 }
@@ -459,7 +474,7 @@ export class FlowService {
     if (expired) await this.repository.closeExpiredRevision(revision.id, new Date().toISOString())
     if (flow.status === 'closed' || revision.admissionClosedAt || expired || (revision.targetCompletedResponses !== null && resolved.completedResponses >= revision.targetCompletedResponses)) throw new FlowClosedError({ title: revision.title, slug: flow.slug })
     const { steps, choices, rules } = resolved
-    return { branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: flow.title }, revision: this.publicRevision(revision), steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) }
+    return { formSettings: formSettings(revision.formSettingsJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: flow.title }, revision: this.publicRevision(revision), steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) }
   }
 
   private async requireWorkspaceFlow(workspaceId: string, flowId: string) {

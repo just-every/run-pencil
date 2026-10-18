@@ -6,7 +6,7 @@ import { visiblePath } from './flowPath'
 import { isOtherAnswer, selectedChoiceIds } from './otherChoices'
 import { scoreOptions, scoreQuestionTypes } from './scoreQuestions'
 
-export type FlowGraph = Pick<PublicFlow, 'steps' | 'choices' | 'branchRules' | 'branchSelection'>
+export type FlowGraph = Pick<PublicFlow, 'steps' | 'choices' | 'branchRules' | 'branchSelection' | 'formSettings' | 'hiddenContext'>
 export type RecallEdges = ReadonlyMap<string, readonly string[]>
 export type RecallIssue = { stepId: string; reason: string }
 type Answers = Record<string, unknown>
@@ -60,6 +60,7 @@ export function interpolateAnswerRecall(text: string, flow: FlowGraph, answers: 
   const earlier = new Map(path.slice(0, Math.max(0, currentIndex)).filter(step => step.kind === 'question').map(step => [step.id, step]))
   return text.replace(/\{\{([^{}]*)\}\}/g, (_token, reference: string) => {
     const id = reference.trim(), step = earlier.get(id)
+    if (id.startsWith('hidden:') && flow.formSettings?.hiddenFields.some(field=>`hidden:${field.id}`===id)) return String(flow.hiddenContext?.hidden[id.slice(7)] ?? '')
     return step && Object.hasOwn(valid, id) ? formattedAnswer(step, choicesByStep.get(id)!, valid[id], label => interpolateAnswerRecall(label, flow, answers, step.id)) : ''
   })
 }
@@ -103,9 +104,10 @@ export function validateAnswerRecall(flow: FlowGraph, edges: RecallEdges = struc
     const earlier = new Set(earlierRecallQuestions(flow, destination.id, edges).map(step => step.id))
     const texts = [destination.prompt, destination.helperText ?? '', ...flow.choices.filter(choice => choice.stepId === destination.id).map(choice => choice.label)]
     for (const reference of new Set(texts.flatMap(references))) {
+      if (flow.formSettings?.hiddenFields.some(field=>`hidden:${field.id}`===reference)) continue
       const source = byId.get(reference)
       let reason: string | undefined
-      if (!source) reason = `Recall reference “${reference}” does not name an existing question. Hidden fields and calculated values are not supported.`
+      if (!source) reason = `Recall reference “${reference}” does not name an existing question or declared hidden field.`
       else if (source.kind !== 'question') reason = `Recall reference “${reference}” names a screen that has no answer.`
       else if (source.id === destination.id) reason = `Recall reference “${reference}” must name an earlier question, not the current question.`
       else if (!fromStart.has(source.id) || !fromStart.has(destination.id)) reason = `Recall reference “${reference}” is unreachable from the first screen.`

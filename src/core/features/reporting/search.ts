@@ -1,5 +1,5 @@
 import { choiceIdsSql } from '../../shared/otherChoices'
-/** Search answer values, published choice labels and retained invitation identity.
+/** Search answers, choice labels, invitation identity and declared hidden values.
  * The enclosing response scope owns workspace, state and cutoff restrictions.
  * instr treats %, _ and SQL punctuation as literal text.
  */
@@ -24,7 +24,13 @@ export function responseSearch(search: string) {
       SELECT 1 FROM invitation_participants person
       WHERE person.id=r.participant_id AND person.workspace_id=r.workspace_id
         AND (${contains('person.name_snapshot')} OR ${contains('person.email_snapshot')})
+    ) OR EXISTS (
+      SELECT 1 FROM json_each(r.response_context_json, '$.hidden') hidden
+      JOIN flow_revisions hidden_revision ON hidden_revision.id=r.revision_id AND hidden_revision.flow_id=r.flow_id
+      JOIN json_each(hidden_revision.form_settings_json, '$.hiddenFields') declared ON json_extract(declared.value, '$.id')=hidden.key
+      WHERE hidden.type IN ('text','integer','real','true','false')
+        AND ${contains("CASE hidden.type WHEN 'true' THEN 'true' WHEN 'false' THEN 'false' ELSE CAST(hidden.value AS TEXT) END")}
     ))`,
-    bindings: Array(4).fill(search) as string[],
+    bindings: Array(5).fill(search) as string[],
   }
 }

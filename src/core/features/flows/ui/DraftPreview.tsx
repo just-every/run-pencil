@@ -1,3 +1,4 @@
+import { normalizeHidden } from '../../../shared/hiddenFields'
 import { responseScreens } from '../../../shared/screenLayout'
 import { ScreenQuestions } from '../../../shared/ui/ScreenQuestions'
 import { ConditionTrace } from './ConditionTrace'
@@ -14,6 +15,8 @@ import { QuestionInput } from '../../../shared/ui/QuestionInput'
 
 type Trace = Awaited<ReturnType<typeof api.previewDraft>>
 export function DraftPreview({ draft, onClose, onReload, reloadDisabled = false }: { draft: BuilderDraft; onClose: () => void; onReload: () => void; reloadDisabled?: boolean }) {
+  const [hidden,setHidden]=useState<Record<string,string>>({})
+  draft = {...draft,hiddenContext:normalizeHidden(draft.formSettings ?? {hiddenFields:[],identityMode:'anonymous'},hidden)}
   const [brand, setBrand] = useState<PublicSeedConfig>()
   const [brandError, setBrandError] = useState<string>()
   useEffect(() => { void brandApi.get().then(value => setBrand(publicBrandConfig(value, { productName: 'Pencil', organizationName: '', showPoweredByCredit: false }))).catch(e => setBrandError((e as Error).message)) }, [])
@@ -38,7 +41,7 @@ export function DraftPreview({ draft, onClose, onReload, reloadDisabled = false 
     if (pending.current || stale) return false
     pending.current = true; setChecking(true); setError(undefined); setTrace(undefined)
     try {
-      const result = await api.previewDraft(draft.flow.id, answers)
+      const result = await api.previewDraft(draft.flow.id, answers,hidden)
       if (!mounted.current) return false
       if (result.draftVersion !== draft.flow.draftVersion) {
         setStale(true); setError('Another operator changed this draft. Reload it before continuing the preview.')
@@ -64,6 +67,7 @@ export function DraftPreview({ draft, onClose, onReload, reloadDisabled = false 
   }
   return <section className="panel draft-preview" aria-label="Draft preview">
     <header className="toggle-row"><div><p className="eyebrow">Preview</p><p className="muted">Try your questions here. Preview answers are not collected.</p></div><button className="quiet-button" type="button" onClick={onClose}>Close preview</button></header>
+    {draft.formSettings?.hiddenFields.length ? <fieldset className="quiet-panel"><legend>Preview link values</legend>{draft.formSettings.hiddenFields.map(field=><label className="inspector-field" key={field.id}>{field.name}<input aria-label={`Preview ${field.name}`} className="text-input" value={hidden[field.name] ?? ''} onChange={event=>{setHidden({...hidden,[field.name]:event.target.value});setIndex(0);setAnswers({});setTrace(undefined)}}/></label>)}</fieldset> : null}
     {brandError ? <p role="alert">{brandError}</p> : null}
     {step ? <div className="preview-surface brand-surface" style={brand ? brandStyle(brand) : undefined}>{brand ? <BrandIdentity config={brand} /> : null}<p className="eyebrow">{step.kind}</p><h2 className="display">{screen.layout?.title ?? recall(step.prompt)}</h2>{screen.layout?.description ? <p>{screen.layout.description}</p> : !screen.layout && step.helperText ? <p>{recall(step.helperText)}</p> : null}{!screen.layout && step.kind === 'question' && step.required ? <p>Required</p> : null}{step.kind === 'question' && screen.layout ? <ScreenQuestions steps={screen.steps} choices={draft.choices} answers={answers} errors={fieldErrors} disabled={checking||stale} recall={(text,id)=>interpolateAnswerRecall(text,draft,answers,id)} onChange={(id,value)=>{const next={...answers,[id]:value};const reachable=new Set(visiblePath(draft,next).map(step=>step.id));setAnswers(Object.fromEntries(Object.entries(next).filter(([key])=>reachable.has(key))));setFieldErrors({});setTrace(undefined)}}/> : step.kind === 'question' ? <fieldset className="plain-fieldset" disabled={checking || stale}><QuestionInput key={step.id} step={displayedStep!} choices={choices} value={answers[step.id]} onChange={(value) => {
       if (pending.current || stale) return
