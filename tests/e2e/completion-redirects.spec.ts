@@ -59,6 +59,10 @@ contract('LOGIC-005','authors an approved redirect, previews without leaving and
   await page.route('https://sales.example.test/**',async route=>{destination=route.request().url();await route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="en"><title>Sales destination</title><h1>Schedule your consultation</h1></html>'})})
   for(const plan of ['basic','enterprise']) {
     await page.goto(`/f/${slug}?plan=${plan}&secret=not-declared`)
+    await expect(page.locator('[data-disclosure=completion-redirect]')).toContainText('https://sales.example.test')
+    await expect(page.locator('[data-disclosure=completion-redirect]')).toContainText('team, campaign, quote')
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
+    await page.screenshot({path:`test-results/${info.project.name}-completion-disclosure-${plan}.png`,fullPage:true})
     await page.getByRole('radio',{name:/Very satisfied/}).click()
     await page.getByRole('button',{name:'Continue',exact:true}).click()
     await page.getByRole('spinbutton',{name:'Team size',exact:true}).fill('60')

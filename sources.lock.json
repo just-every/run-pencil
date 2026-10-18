@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "63229ed054ba510f765bc3d2b080cd43779c4cdb22fbf603593604231c409421",
+      "sha256": "25a383c00c1c0cad6cb715ed5d54191dfbf71b81a6c040dc346275b4f0071913",
       "executable": false
     },
     "CLAUDE.md": {
@@ -1813,7 +1813,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "136b6caa11e22d631ea92bfd6bc3eeef243ca4f6d836f28874ef78b715d651cb",
+      "sha256": "e099cc5a8102070dd5896ea6ae943f43560971c995b429033cdf00b49cfddb52",
       "executable": false
     },
     "src/base/ai/client.mjs": {
@@ -4529,7 +4529,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/FlowBuilderPage.tsx": {
-      "sha256": "73a40577f9f5159c71b37e7e3b52621bb788c573661aadc8b0e101e0f85fa8f6",
+      "sha256": "ae3176eb5e3ae1e20dd3f8c8824fd2d5f7c5e288e8cdfbd225de5b48b242a4f8",
       "executable": false
     },
     "src/core/features/flows/ui/FlowSharePanel.tsx": {
@@ -5264,6 +5264,10 @@
       "sha256": "a5f173af88059b26bfaec0186587c7ca0de5e281d638f53902cb9238ddba4727",
       "executable": false
     },
+    "src/core/features/responses/ui/CompletionDisclosure.tsx": {
+      "sha256": "d20d4d716552876d13fcd06fe57fb083d47ff1210961d90cbbe71a4b6f070d52",
+      "executable": false
+    },
     "src/core/features/responses/ui/PublicClosedPage.tsx": {
       "sha256": "4e09af676f419c011de31c5e1f8d9b8966838cf738cfab7b738e6243f9150c78",
       "executable": false
@@ -5277,7 +5281,7 @@
       "executable": false
     },
     "src/core/features/responses/ui/RespondentFlowPage.tsx": {
-      "sha256": "0ad424b5ec7f9c8ba162cd01b2cb728841a948b269b4a1b8efc9c32e8394d2b1",
+      "sha256": "ede1562742ba2dcf8a5c8fae409e6b117300b08fe38be12a3497efa05f972116",
       "executable": false
     },
     "src/core/features/responses/ui/ResumeFlowPage.tsx": {
@@ -6189,7 +6193,7 @@
       "executable": false
     },
     "tests/e2e/completion-redirects.spec.ts": {
-      "sha256": "c8f674984e9ad23304fcea7ac7961e609a582e188a37d6ab9b50d3529a13b9f3",
+      "sha256": "db6fb9e7761cddb0b826f0747399d27c84cafcbdb0b73efc92330979f985956c",
       "executable": false
     },
     "tests/e2e/conditions.spec.ts": {

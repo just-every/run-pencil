@@ -265,6 +265,13 @@
   ],
   "externals": [
     {
+      "id": "completion-destination",
+      "required": false,
+      "why": "An operator-approved destination is a separate business page; the browser navigates there after a committed response, using only the explicitly mapped URL parameters.",
+      "data": ["explicitly mapped on-path answers", "explicitly mapped declared hidden fields", "explicitly mapped calculated values"],
+      "adapters": []
+    },
+    {
       "id": "mail",
       "required": true,
       "why": "Cloudflare has no owned primitive that delivers transactional email to external recipients, and BASE-ACCESS-001 magic-link sign-in is delivered by mail, so no deployment can run without it.",
