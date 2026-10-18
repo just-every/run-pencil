@@ -1,5 +1,5 @@
 import { choiceIdsSql } from '../../shared/otherChoices'
-/** Search answers, choice labels, invitation identity and declared hidden values.
+/** Search answers, choice labels, invitation identity, hidden values and calculated text.
  * The enclosing response scope owns workspace, state and cutoff restrictions.
  * instr treats %, _ and SQL punctuation as literal text.
  */
@@ -30,7 +30,13 @@ export function responseSearch(search: string) {
       JOIN json_each(hidden_revision.form_settings_json, '$.hiddenFields') declared ON json_extract(declared.value, '$.id')=hidden.key
       WHERE hidden.type IN ('text','integer','real','true','false')
         AND ${contains("CASE hidden.type WHEN 'true' THEN 'true' WHEN 'false' THEN 'false' ELSE CAST(hidden.value AS TEXT) END")}
+    ) OR EXISTS (
+      SELECT 1 FROM json_each(r.response_context_json, '$.calculations') calculated
+      JOIN flow_revisions calculated_revision ON calculated_revision.id=r.revision_id AND calculated_revision.flow_id=r.flow_id
+      JOIN json_each(calculated_revision.form_settings_json, '$.calculations') declared ON json_extract(declared.value, '$.id')=calculated.key
+      WHERE calculated.type='text' AND json_extract(declared.value, '$.type')='text'
+        AND ${contains('calculated.value')}
     ))`,
-    bindings: Array(5).fill(search) as string[],
+    bindings: Array(6).fill(search) as string[],
   }
 }

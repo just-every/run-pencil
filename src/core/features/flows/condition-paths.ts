@@ -1,3 +1,4 @@
+import type { Calculation } from '../../shared/calculations'
 import type { FlowStep } from '../../app/api'
 import { visibilityCondition } from '../../shared/screenLayout'
 import { publicSteps } from './serialization'
@@ -16,7 +17,7 @@ function ruleCondition(rule: StoredBranchRule): Condition {
  * answers. Never memoize by step alone: two arrivals can carry contradictory
  * answer constraints and different sets of skipped questions.
  */
-export function validateConditionPaths(steps: StoredStep[], choices: StoredChoice[], rules: StoredBranchRule[], selection: BranchSelection = 'first-matching-rule', operands: FlowStep[] = []): { issues: GraphIssue[]; edges: Map<string, string[]> } {
+export function validateConditionPaths(steps: StoredStep[], choices: StoredChoice[], rules: StoredBranchRule[], selection: BranchSelection = 'first-matching-rule', operands: FlowStep[] = [], calculations:Calculation[] = []): { issues: GraphIssue[]; edges: Map<string, string[]> } {
   const issues: GraphIssue[] = [], edges = new Map(steps.map(step => [step.stableId, [] as string[]]))
   const byId = new Map(steps.map(step => [step.stableId, step]))
   const questions = new Map<string, ConditionQuestion>()
@@ -46,7 +47,7 @@ export function validateConditionPaths(steps: StoredStep[], choices: StoredChoic
     const nextTrail = new Set(trail).add(stepId)
     const visibility = visibilityCondition(publicSteps([step])[0])
     const evaluateExit = (visible:boolean, nextRequirements:ConditionRequirement[]) => {
-      if (!conditionRequirementsPossible(questions,nextRequirements,path,budget)) return
+      if (!conditionRequirementsPossible(questions,nextRequirements,path,budget,calculations)) return
       if (visible) reached.add(stepId)
       const available = new Set(path)
       if (visible) available.add(stepId)
@@ -55,7 +56,7 @@ export function validateConditionPaths(steps: StoredStep[], choices: StoredChoic
       const follow = (destination: string | null, extra: ConditionRequirement[]) => {
         if (!destination) return
         const next = [...nextRequirements, ...extra]
-        if (!conditionRequirementsPossible(questions, next, available, budget)) return
+        if (!conditionRequirementsPossible(questions, next, available, budget, calculations)) return
         hasPath = true
         const destinations = edges.get(stepId)!
         if (!destinations.includes(destination)) destinations.push(destination)

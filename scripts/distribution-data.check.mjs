@@ -16,8 +16,8 @@ test('archive roundtrip retains invitation data and private saved answers while 
     initialize(db)
     insert('workspaces', { id: 'w', name: 'Synthetic archive', time_zone: 'UTC', created_at: stamp, updated_at: stamp })
     insert('flows', { id: 'f', workspace_id: 'w', title: 'Archive flow', slug: 'archive-flow', status: 'open', draft_version: 1, last_activity_at: stamp, created_at: stamp, updated_at: stamp })
-    const formSettings=JSON.stringify({identityMode:'anonymous',hiddenFields:[{id:'campaign',name:'utm_campaign',type:'text',category:'campaign'}]})
-    const responseContext=JSON.stringify({hidden:{campaign:'spring'},discarded:1,identityMode:'anonymous'})
+    const formSettings=JSON.stringify({identityMode:'anonymous',calculations:[{id:'label',name:'Campaign label',type:'text',expression:{kind:'hidden',fieldId:'campaign'}}],hiddenFields:[{id:'campaign',name:'utm_campaign',type:'text',category:'campaign'}]})
+    const responseContext=JSON.stringify({hidden:{campaign:'spring'},calculations:{label:'spring'},discarded:1,identityMode:'anonymous'})
     insert('flow_revisions', { form_settings_json:formSettings, id: 'r', flow_id: 'f', number: 1, state: 'published', title: 'Archive flow', is_current: 1, created_at: stamp, updated_at: stamp })
     const prompt = 'Exact\u0000 text 😀'
     insert('flow_steps', { id: 'question-row', revision_id: 'r', position: 0, kind: 'question', question_type: 'long_text', prompt, required: 1, stable_id: 'stable-question', created_at: stamp, updated_at: stamp })

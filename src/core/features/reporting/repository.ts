@@ -1,3 +1,4 @@
+import type { Calculation, CalculationValue } from '../../shared/calculations'
 import { formSettings, hiddenValue, type HiddenField, type ResponseContext } from '../../shared/hiddenFields'
 import { choiceIdsSql, isOtherAnswer } from '../../shared/otherChoices'
 import { displayCalendarDate } from '../../shared/dateFormat'
@@ -11,18 +12,27 @@ import { responseScope, type ResponseSelection } from './scope'
 import { type ReportStep, type ReportChoice } from './questionReport'
 export type LedgerFilter = WorkflowFilter & { codeId?: string; search?: string; collectorId?: string; revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown' | 'imported'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
 export type LedgerHiddenField = Pick<HiddenField, 'id' | 'name' | 'type'> & { value: string | number | boolean }
-export type LedgerResponse = { hiddenFields: LedgerHiddenField[]; identityMode: 'anonymous' | 'identified'; discardedParameters: number; collector: { id: string; name: string; channel: string }; omittedQuestions: Array<{ stepId: string; label: string; position: number; questionType?: string }>; participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string | null; state: 'released' | 'quarantined'; quarantineReason: string | null; answers: Array<{ stepId: string; label: string; position: number; questionType: string; value: unknown; displayValue: string }> }
+export type LedgerCalculation = Pick<Calculation, 'id' | 'name' | 'type'> & { value: CalculationValue }
+export type LedgerResponse = { calculations: LedgerCalculation[]; hiddenFields: LedgerHiddenField[]; identityMode: 'anonymous' | 'identified'; discardedParameters: number; collector: { id: string; name: string; channel: string }; omittedQuestions: Array<{ stepId: string; label: string; position: number; questionType?: string }>; participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string | null; state: 'released' | 'quarantined'; quarantineReason: string | null; answers: Array<{ stepId: string; label: string; position: number; questionType: string; value: unknown; displayValue: string }> }
 
 function retainedContext(contextJson: string, settingsJson: string, participantId: string | null) {
   const context = JSON.parse(contextJson) as Partial<ResponseContext>
+  const settings = formSettings(settingsJson)
   const hidden = context.hidden ?? {}
-  const hiddenFields: LedgerHiddenField[] = formSettings(settingsJson).hiddenFields.flatMap(field => {
+  const hiddenFields: LedgerHiddenField[] = settings.hiddenFields.flatMap(field => {
     if (!Object.hasOwn(hidden, field.id)) return []
     const value = hidden[field.id]
     if (hiddenValue(field, value) !== value) throw new Error('A retained hidden field does not match its published type.')
     return [{ id: field.id, name: field.name, type: field.type, value }]
   })
-  return { hiddenFields, identityMode: context.identityMode ?? (participantId ? 'identified' as const : 'anonymous' as const), discardedParameters: context.discarded ?? 0 }
+  const retained = context.calculations ?? {}
+  const calculations: LedgerCalculation[] = (settings.calculations ?? []).flatMap(calculation => {
+    if (!Object.hasOwn(retained, calculation.id)) return []
+    const value = retained[calculation.id]
+    if (value !== null && (calculation.type === 'number' ? typeof value !== 'number' || !Number.isFinite(value) : typeof value !== 'string')) throw new Error('A retained calculation does not match its published type.')
+    return [{ id: calculation.id, name: calculation.name, type: calculation.type, value }]
+  })
+  return { hiddenFields, calculations, identityMode: context.identityMode ?? (participantId ? 'identified' as const : 'anonymous' as const), discardedParameters: context.discarded ?? 0 }
 }
 
 export class ReportingRepository {
@@ -31,7 +41,10 @@ export class ReportingRepository {
     return this.binding.prepare('SELECT id, title, slug FROM flows WHERE id = ? AND workspace_id = ?').bind(flowId, workspaceId).first<{ id: string; title: string; slug: string }>()
   }
   async revisions(flowId: string) {
-    return (await this.binding.prepare("SELECT id, number, is_current AS isCurrent, form_settings_json AS settingsJson FROM flow_revisions WHERE flow_id = ? AND state = 'published' ORDER BY number DESC").bind(flowId).all<{ id: string; number: number; isCurrent: number; settingsJson: string }>()).results.map(({ settingsJson, ...revision }) => ({ ...revision, hiddenFields: formSettings(settingsJson).hiddenFields.map(({ id, name, type }) => ({ id, name, type })) }))
+    return (await this.binding.prepare("SELECT id, number, is_current AS isCurrent, form_settings_json AS settingsJson FROM flow_revisions WHERE flow_id = ? AND state = 'published' ORDER BY number DESC").bind(flowId).all<{ id: string; number: number; isCurrent: number; settingsJson: string }>()).results.map(({ settingsJson, ...revision }) => {
+      const settings = formSettings(settingsJson)
+      return { ...revision, hiddenFields: settings.hiddenFields.map(({ id, name, type }) => ({ id, name, type })), calculations: (settings.calculations ?? []).map(({ id, name, type }) => ({ id, name, type })) }
+    })
   }
   async ledger(workspaceId: string, flowId: string, filter: LedgerFilter, cutoff: string, state: ResponseSelection = 'released', limit = 50, continuation?: { total: number; after?: { time: string; id: string } }, signal?: AbortSignal, answerFormat: 'stored' | 'export' = 'stored') {
     signal?.throwIfAborted()

@@ -1,3 +1,4 @@
+import { calculationOperands } from '../../../shared/calculationInputs'
 import { hiddenOperands } from '../../../shared/hiddenFields'
 import type { BuilderDraft, FlowStep } from '../../../app/api'
 import { operatorsFor } from '../../../shared/conditionValidation'
@@ -22,13 +23,13 @@ export function firstCondition(step: FlowStep, draft: BuilderDraft): Condition {
 }
 export function conditionSummary(condition: Condition, draft: BuilderDraft): string {
   if (condition.kind === 'group') return `(${condition.conditions.map(child => conditionSummary(child, draft)).join(condition.join === 'and' ? ' and ' : ' or ')})`
-  const step = [...draft.steps,...hiddenOperands(draft.formSettings?.hiddenFields ?? [])].find(step => step.id === condition.stepId)
+  const step = [...draft.steps,...hiddenOperands(draft.formSettings?.hiddenFields ?? []),...calculationOperands(draft.formSettings?.calculations ?? [])].find(step => step.id === condition.stepId)
   const display = (value: unknown): string => Array.isArray(value) ? value.map(display).join(', ') : typeof value === 'string' ? draft.choices.find(choice => choice.id === value)?.label ?? value : value && typeof value === 'object' && 'choiceId' in value ? `${display(value.choiceId)} at rank ${'rank' in value ? value.rank : ''}` : String(value)
   return `${step?.prompt ?? 'Missing question'} ${operatorLabels[condition.operator]}${['is_blank','is_answered'].includes(condition.operator) ? '' : ` ${display(condition.value)}`}`
 }
 
 export function ConditionEditor({ condition, draft, operands, onChange }: { condition: Condition; draft: BuilderDraft; operands: FlowStep[]; onChange: (condition: Condition) => void }) {
-  operands = [...operands,...hiddenOperands(draft.formSettings?.hiddenFields ?? [])]
+  operands = [...operands,...hiddenOperands(draft.formSettings?.hiddenFields ?? []),...calculationOperands(draft.formSettings?.calculations ?? [])]
   const total = conditionTests(condition).length
   const node = (current: Condition, change: (next: Condition) => void, depth = 0): React.ReactNode => {
     if (current.kind === 'group') return <fieldset className="quiet-panel condition-group"><legend>Condition group</legend>

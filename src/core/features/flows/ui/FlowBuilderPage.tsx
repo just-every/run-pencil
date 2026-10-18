@@ -1,3 +1,4 @@
+import { CalculationSettings } from './CalculationSettings'
 import { HiddenFieldsSettings } from './HiddenFieldsSettings'
 import { ScreenSettings } from './ScreenSettings'
 import { SaveTeamTemplate } from './SaveTeamTemplate'
@@ -34,6 +35,7 @@ export function FlowBuilderPage() {
   const router = useRouter()
   const { flowId } = useParams({ from: '/app/flows/$flowId/builder' })
   const [draft, setDraft] = useState<AuthoringDraft>()
+  const [calculationDirty,setCalculationDirty]=useState(false)
   const [settingsDirty,setSettingsDirty]=useState(false)
   const [draftRead, setDraftRead] = useState(0)
   const [selectedId, setSelectedId] = useState<string>()
@@ -98,7 +100,7 @@ export function FlowBuilderPage() {
 
   const stepDirty = !!selected && (prompt !== selected.prompt || helperText !== (selected.helperText ?? '') || required !== selected.required || nextStepId !== selected.nextStepId || questionType !== selected.questionType || settingsText !== (selected.questionSettings ? JSON.stringify(selected.questionSettings, null, 2) : '') || JSON.stringify(choices) !== JSON.stringify((draft?.choices ?? []).filter((choice) => choice.stepId === selected.id).map((choice) => ({ id: choice.id, value: choice.value, label: choice.label }))))
   const branchDirty = !!selected && JSON.stringify(rules.map((rule, position) => ({ ...rule, position }))) !== JSON.stringify(stepRules(draft!, selected.id))
-  const dirty = stepDirty || branchDirty || settingsDirty
+  const dirty = stepDirty || branchDirty || settingsDirty || calculationDirty
   useProtectUnsavedChanges(dirty || !!deadline || !!target)
   const updateSetting = (name: string, value: string) => { const settings = settingsText ? JSON.parse(settingsText) : {}; if (value === '') delete settings[name]; else settings[name] = Number(value); setSettingsText(Object.keys(settings).length ? JSON.stringify(settings, null, 2) : '') }
   const settings = settingsText ? JSON.parse(settingsText) as Record<string, string | number> : {}
@@ -220,14 +222,15 @@ export function FlowBuilderPage() {
       </header>
       {notice && (notice.tone !== 'success' || !dirty) ? <p className="status-note" data-tone={notice.tone} role={notice.tone === 'error' ? 'alert' : 'status'}>{notice.message}</p> : null}
       {sharing ? <><FlowSharePanel key={draft.flow.id} flow={draft.flow} />{['open', 'closed'].includes(draft.flow.status) ? <>{timeZone ? <details className="named-collectors-disclosure"><summary>Manage named collectors</summary><CollectorsPanel flowId={draft.flow.id} timeZone={timeZone} /></details> : null}<DistributionPanel flowId={draft.flow.id} /></> : null}</> : null}
-      {dirty ? <p className="status-note" role="status">{settingsDirty ? 'Unsaved hidden-field changes.' : stepDirty ? 'Unsaved step changes.' : 'Unsaved answer-path changes.'} Save or discard before switching steps, changing structure, previewing or publishing. <button className="quiet-button" disabled={saving} type="button" onClick={() => void load()}>Discard changes</button></p> : null}
+      {dirty ? <p className="status-note" role="status">{calculationDirty ? 'Unsaved calculation changes.' : settingsDirty ? 'Unsaved hidden-field changes.' : stepDirty ? 'Unsaved step changes.' : 'Unsaved answer-path changes.'} Save or discard before switching steps, changing structure, previewing or publishing. <button className="quiet-button" disabled={saving} type="button" onClick={() => void load()}>Discard changes</button></p> : null}
 
       {!timeZone ? <p className="status-note" data-tone={timeZoneError ? 'error' : undefined} role={timeZoneError ? 'alert' : 'status'}>{timeZoneError ?? 'Loading workspace time zone…'}{timeZoneError ? <button className="quiet-button focus-ring" type="button" onClick={() => void loadTimeZone()}>Retry workspace settings</button> : null}</p> : null}
       {previewing ? <DraftPreview key={draft.flow.draftVersion} draft={draft} onClose={() => setPreviewing(false)} reloadDisabled={saving} onReload={() => {
         if (saving || (dirty && !window.confirm('Discard unsaved builder changes and reload the latest draft?'))) return
         setPreviewing(false); void load()
       }} /> : null}
-      <HiddenFieldsSettings key={draftRead} settings={draft.formSettings ?? {hiddenFields:[],identityMode:'anonymous'}} onDirtyChange={setSettingsDirty} disabled={saving||stepDirty||branchDirty||draft.flow.status==='archived'} onSave={async settings=>{setSaving(true);try {const result=await api.saveFormSettings(flowId,settings,draft.flow.draftVersion);if(result.kind==='conflict')throw new Error('Another operator saved first. Reload the draft before saving hidden fields.');await load();setNotice({tone:'success',message:'Saved.'})}finally{setSaving(false)}}} />
+      <HiddenFieldsSettings key={draftRead} settings={draft.formSettings ?? {hiddenFields:[],identityMode:'anonymous'}} onDirtyChange={setSettingsDirty} disabled={saving||stepDirty||branchDirty||calculationDirty||draft.flow.status==='archived'} onSave={async settings=>{setSaving(true);try {const result=await api.saveFormSettings(flowId,settings,draft.flow.draftVersion);if(result.kind==='conflict')throw new Error('Another operator saved first. Reload the draft before saving hidden fields.');await load();setNotice({tone:'success',message:'Saved.'})}finally{setSaving(false)}}} />
+      <CalculationSettings key={`calculations-${draftRead}`} draft={draft} calculations={draft.formSettings?.calculations ?? []} onDirtyChange={setCalculationDirty} disabled={saving||stepDirty||branchDirty||settingsDirty||draft.flow.status==='archived'} onSave={async calculations=>{setSaving(true);try {const result=await api.saveFormSettings(flowId,{...draft.formSettings!,calculations},draft.flow.draftVersion);if(result.kind==='conflict')throw new Error('Another operator saved first. Reload before saving calculations.');await load();setNotice({tone:'success',message:'Saved.'})}finally{setSaving(false)}}}/>
       <div className="builder-grid" hidden={sharing}>
         <aside className="builder-rail" aria-label="Flow steps">
           <p className="eyebrow">Steps</p>

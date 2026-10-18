@@ -2,9 +2,9 @@ import type { HiddenField } from '../../../shared/hiddenFields'
 
 type Field = Pick<HiddenField, 'id' | 'name' | 'type'>
 
-export function HiddenFieldFilter({ field, value, onChange }: { field: Field; value?: string; onChange: (value: string | undefined) => void }) {
+export function HiddenFieldFilter({ field, value, label = 'Hidden value equals', onChange }: { field: Field; value?: string; label?: string; onChange: (value: string | undefined) => void }) {
   const displayed = value === undefined ? '' : String(JSON.parse(value))
-  return <label className="inspector-field">Hidden value equals
+  return <label className="inspector-field">{label}
     {field.type === 'boolean' ? <select className="text-input" value={displayed} onChange={event => onChange(event.target.value || undefined)}>
       <option value="">Any value</option><option value="true">True</option><option value="false">False</option>
     </select> : <input className="text-input" type={field.type === 'number' ? 'number' : field.type === 'date' ? 'date' : field.type === 'email' ? 'email' : 'text'} step={field.type === 'number' ? 'any' : undefined} value={displayed} onChange={event => {

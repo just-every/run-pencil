@@ -1,3 +1,4 @@
+import { remapCalculations } from '../../shared/calculationRemap'
 import { formSettings, type FormSettings } from '../../shared/hiddenFields'
 import { remapLayoutSettings } from '../../shared/screenLayout'
 import { remapCondition } from '../../shared/conditions'
@@ -15,15 +16,16 @@ type Content = Pick<FlowStructure, 'steps' | 'choices' | 'rules'> & {formSetting
 function copyContent(source: Content, revisionId: string, now: string): Content {
   const steps = source.steps ?? [], choices = source.choices ?? [], rules = source.rules ?? []
   const settings = source.formSettings ?? {hiddenFields:[],identityMode:'anonymous' as const}
+  const variables = new Map((settings.calculations ?? []).map(value=>[value.id,ulid()]))
   const fields = new Map(settings.hiddenFields.map(field=>[field.id,ulid()]))
-  const ids = new Map([...steps.map(s => [s.stableId, ulid()] as [string,string]),...[...fields].map(([old,id])=>[`hidden:${old}`,`hidden:${id}`] as [string,string])])
+  const ids = new Map([...steps.map(s => [s.stableId, ulid()] as [string,string]),...[...fields].map(([old,id])=>[`hidden:${old}`,`hidden:${id}`] as [string,string]),...[...variables].map(([old,id])=>[`variable:${old}`,`variable:${id}`] as [string,string])])
   const rows = new Map(steps.map(s => [s.id, ulid()]))
   const choiceIds = new Map(choices.map(c => [c.stableId, ulid()]))
   const expected = (value: unknown): unknown => typeof value === 'string' ? choiceIds.get(value) ?? value
     : Array.isArray(value) ? value.map(expected)
     : value && typeof value === 'object' && 'choiceId' in value ? { ...value, choiceId: choiceIds.get(String(value.choiceId)) ?? value.choiceId } : value
   return {
-    formSettings:{...settings,hiddenFields:settings.hiddenFields.map(field=>({...field,id:fields.get(field.id)!}))},
+    formSettings:{...settings,calculations:remapCalculations(settings.calculations ?? [],ids,fields,variables,choiceIds),hiddenFields:settings.hiddenFields.map(field=>({...field,id:fields.get(field.id)!}))},
     steps: steps.map(s => ({ id: rows.get(s.id)!, stableId: ids.get(s.stableId)!, revisionId, position: s.position, kind: s.kind, questionType: s.questionType,
       prompt: remapAnswerRecall(s.prompt, ids), helperText: s.helperText ? remapAnswerRecall(s.helperText, ids) : null, required: s.required,
       nextStepStableId: s.nextStepStableId ? ids.get(s.nextStepStableId)! : null, questionSettingsJson: remapLayoutSettings(remapChoiceSettings(s.questionSettingsJson ?? null, choiceIds), ids, choiceIds), createdAt: now, updatedAt: now })),

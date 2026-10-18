@@ -1,3 +1,4 @@
+import { formAnswerContext } from '../../shared/calculationContext'
 import { formSettings } from '../../shared/hiddenFields'
 import { publicChoices, publicRules, publicSteps, questionSettings, resolveNextStep, type StoredBranchRule, type StoredChoice, type StoredStep } from '../flows'
 import { visibilityCondition } from '../../shared/screenLayout'
@@ -12,19 +13,20 @@ type Graph = { steps: StoredStep[]; choices: StoredChoice[]; rules: StoredBranch
 /** Explicit save accepts a valid prefix and optional answers still on its
  * selected path. Hidden branches and required gaps before the current screen
  * cannot be persisted as a response to another question. */
-export function validateSavedAnswers(graph: Graph, policy: string | null, currentStepId: string, answers: Answer[], context:Record<string,unknown>={}) {
+export function validateSavedAnswers(graph: Graph, policy: string | null, currentStepId: string, answers: Answer[], context:Record<string,unknown>={},settings?:import('../../shared/hiddenFields').FormSettings) {
   const submitted = new Map<string, unknown>()
   for (const answer of answers) {
     if (submitted.has(answer.stepId)) throw new ValidationError('Each saved question can be answered once.')
     submitted.set(answer.stepId, answer.value)
   }
   const byId = new Map(graph.steps.map(step => [step.stableId, step]))
+  const values=()=>formAnswerContext(settings,Object.fromEntries(accepted.map(answer=>[answer.stepId,answer.value])),{hidden:Object.fromEntries(Object.entries(context).filter(([id])=>id.startsWith('hidden:')).map(([id,value])=>[id.slice(7),value])) as import('../../shared/hiddenFields').ResponseContext['hidden']})
   const accepted: Answer[] = [], visited = new Set<string>(), traversed = new Set<string>()
   let step: StoredStep | undefined = graph.steps[0], foundCurrent = false
   while (step && !traversed.has(step.stableId)) {
     traversed.add(step.stableId)
     const condition = visibilityCondition(publicSteps([step])[0])
-    const visible = !condition || evaluateCondition(condition,{...context,...Object.fromEntries(accepted.map(answer => [answer.stepId,answer.value]))}).matched
+    const visible = !condition || evaluateCondition(condition,values()).matched
     if(visible)visited.add(step.stableId)
     if (visible && step.stableId === currentStepId) foundCurrent = true
     if (visible && step.kind === 'question') {
@@ -39,7 +41,7 @@ export function validateSavedAnswers(graph: Graph, policy: string | null, curren
       }
     }
     if (step.kind === 'completion') break
-    const next = resolveNextStep({ selection: revisionBranchSelection(policy), step, rules: graph.rules.filter(rule => rule.sourceStepStableId === step!.stableId), answers: {...context,...Object.fromEntries(accepted.map(answer => [answer.stepId, answer.value]))} })
+    const next = resolveNextStep({ selection: revisionBranchSelection(policy), step, rules: graph.rules.filter(rule => rule.sourceStepStableId === step!.stableId), answers: values() })
     step = next.nextStepId ? byId.get(next.nextStepId) : undefined
   }
   if (!foundCurrent || byId.get(currentStepId)?.kind === 'completion') throw new ValidationError('Choose a screen on your unfinished response before saving.')

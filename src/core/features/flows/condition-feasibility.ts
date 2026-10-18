@@ -1,3 +1,5 @@
+import { proveCalculatedConditions } from './calculation-proof'
+import type { Calculation } from '../../shared/calculations'
 import { answerIssue } from '../../shared/answers'
 import { evaluateCondition, type Condition } from '../../shared/conditions'
 import { scoreOptions, scoreQuestionTypes } from '../../shared/scoreQuestions'
@@ -119,8 +121,8 @@ function localAnswerExists(question: ConditionQuestion, requirements: LeafRequir
  * exact answer-domain solver. Requirements retain the questions available when
  * their rule ran: a skipped answer cannot become present later in the path.
  */
-export function conditionRequirementsPossible(questions: ReadonlyMap<string, ConditionQuestion>, requirements: ConditionRequirement[], visited: ReadonlySet<string>, budget: ConditionProofBudget = { remaining: 100_000 }): boolean {
-  const states = [{ pending: requirements.slice(), leaves: new Map<string, LeafRequirement[]>() }]
+export function conditionRequirementsPossible(questions: ReadonlyMap<string, ConditionQuestion>, requirements: ConditionRequirement[], visited: ReadonlySet<string>, budget: ConditionProofBudget = { remaining: 100_000 }, calculations:Calculation[] = []): boolean {
+  const states = [{ pending: requirements.slice(), leaves: new Map<string, LeafRequirement[]>(), derived:[] as Array<LeafRequirement & {available:ReadonlySet<string>}> }]
   while (states.length) {
     const state = states.pop()!
     let possible = true
@@ -131,10 +133,11 @@ export function conditionRequirementsPossible(questions: ReadonlyMap<string, Con
         const children = condition.conditions.map(child => ({ condition: child, matched, available }))
         if ((condition.join === 'and') === matched) state.pending.push(...children)
         else {
-          for (const child of children) states.push({ pending: [...state.pending, child], leaves: new Map(state.leaves) })
+          for (const child of children) states.push({ pending: [...state.pending, child], leaves: new Map(state.leaves),derived:state.derived.slice() })
           possible = false
         }
-      } else if (!available.has(condition.stepId)) possible = evaluateCondition(condition, {}).matched === matched
+      } else if (condition.stepId.startsWith('variable:')) state.derived.push({condition,matched,available})
+      else if (!available.has(condition.stepId)) possible = evaluateCondition(condition, {}).matched === matched
       else {
         const question = questions.get(condition.stepId)
         if (!question) throw new ConditionProofError('A condition references a missing question.')
@@ -151,7 +154,7 @@ export function conditionRequirementsPossible(questions: ReadonlyMap<string, Con
     if (possible && [...visited].every(id => {
       const question = questions.get(id)
       return !question || localAnswerExists(question, state.leaves.get(id) ?? [])
-    })) return true
+    }) && proveCalculatedConditions(calculations,questions,state.derived,state.leaves,visited,budget)) return true
   }
   return false
 }

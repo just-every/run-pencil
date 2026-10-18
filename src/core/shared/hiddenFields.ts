@@ -1,21 +1,24 @@
+import { calculationsShape } from './calculationValidation'
+import type { Calculation } from './calculations'
 import manifest from '../../../seed.json' with { type: 'json' }
 import { calendarDate } from './questionTypes'
 import type { FlowStep } from '../app/api'
 
 export type HiddenField = { id: string; name: string; type: 'text' | 'number' | 'email' | 'date' | 'boolean'; category: 'plain' | 'campaign' | 'identifying' | 'click_id' }
-export type FormSettings = { hiddenFields: HiddenField[]; identityMode: 'anonymous' | 'identified' }
-export type ResponseContext = { hidden: Record<string, string | number | boolean>; discarded: number; identityMode: 'anonymous' | 'identified' }
+export type FormSettings = { calculations?: Calculation[]; hiddenFields: HiddenField[]; identityMode: 'anonymous' | 'identified' }
+export type ResponseContext = { calculations?: Record<string,number|string|null>; hidden: Record<string, string | number | boolean>; discarded: number; identityMode: 'anonymous' | 'identified' }
 const reserved = new Set(['collector','resume','source','challenge','__proto__','constructor','prototype'])
 export const hiddenFieldLimits = manifest.limits.hiddenFields
 
 export function formSettings(json?: string | null): FormSettings {
   const value = JSON.parse(json ?? '{}') as Partial<FormSettings>
-  return { hiddenFields: value.hiddenFields ?? [], identityMode: value.identityMode ?? 'anonymous' }
+  return { calculations:value.calculations ?? [], hiddenFields: value.hiddenFields ?? [], identityMode: value.identityMode ?? 'anonymous' }
 }
 export function hiddenSettingsIssue(value: unknown): string | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return 'Choose valid hidden-field settings.'
-  if (Object.keys(value).some(key=>!['hiddenFields','identityMode'].includes(key))) return 'Unknown form setting.'
+  if (Object.keys(value).some(key=>!['hiddenFields','identityMode','calculations'].includes(key))) return 'Unknown form setting.'
   const settings = value as FormSettings
+  if (settings.calculations !== undefined && !calculationsShape(settings.calculations)) return 'Calculations need valid typed expressions within the configured limits.'
   if (!['anonymous','identified'].includes(settings.identityMode) || !Array.isArray(settings.hiddenFields) || settings.hiddenFields.length > hiddenFieldLimits.perRevision) return 'Choose an identity mode and at most 20 hidden fields.'
   for (const field of settings.hiddenFields) {
     if (!field || typeof field !== 'object' || typeof field.id !== 'string' || !/^[A-Za-z0-9_-]{1,100}$/.test(field.id) || typeof field.name !== 'string' || !/^[a-z][a-z0-9_]{0,63}$/.test(field.name) || reserved.has(field.name)) return 'Each hidden field needs a stable ID and a distinct lowercase parameter name (letters, numbers and underscores). Collection and resume parameter names are reserved.'

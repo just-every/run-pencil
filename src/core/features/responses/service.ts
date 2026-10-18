@@ -1,3 +1,5 @@
+import { formAnswerContext, variableAnswers } from '../../shared/calculationContext'
+import { evaluateCalculations } from '../../shared/calculations'
 import { formSettings, normalizeHidden, hiddenAnswers, type ResponseContext } from '../../shared/hiddenFields'
 import { issueLoadTime, verifyLoadTime } from '../traffic'
 import { type CollectorService } from '../collectors'
@@ -176,7 +178,7 @@ export class ResponseService {
       if (!answers || !revision) throw new NotFoundError('This completed response is no longer available.')
       // A retry is the original committed path, regardless of newer submitted
       // values. The immutable graph and retained answers also cover old rows.
-      const completionStepId = this.retainedCompletion(steps, rules, {...hiddenAnswers(JSON.parse(response.contextJson ?? '{}') as ResponseContext),...Object.fromEntries(answers.map((answer) => [answer.stepId, runtimeAnswerValue(steps.find(step => step.stableId === answer.stepId), JSON.parse(answer.valueJson))]))}, revisionBranchSelection(revision.policySnapshotJson))
+      const completionStepId = this.retainedCompletion(steps, rules, {...hiddenAnswers(JSON.parse(response.contextJson ?? '{}') as ResponseContext),...variableAnswers((JSON.parse(response.contextJson ?? '{}') as ResponseContext).calculations),...Object.fromEntries(answers.map((answer) => [answer.stepId, runtimeAnswerValue(steps.find(step => step.stableId === answer.stepId), JSON.parse(answer.valueJson))]))}, revisionBranchSelection(revision.policySnapshotJson))
       return { responseId: response.id, idempotent: true, disposition: response.state, completionStepId }
     }
     const receipt = async () => {
@@ -222,7 +224,8 @@ export class ResponseService {
     const { steps, choices, rules } = await this.flowRepository.getRevisionGraph(revision.id)
     const settings = formSettings(revision.formSettingsJson)
     const hiddenContext = normalizeHidden(settings,input.hidden ?? {})
-    const { accepted: acceptedAnswers, completionStepId, reachedStepIds } = this.validatePathAnswers(steps, choices, rules, input.answers, revisionBranchSelection(revision.policySnapshotJson),hiddenAnswers(hiddenContext))
+    const { accepted: acceptedAnswers, completionStepId, reachedStepIds } = this.validatePathAnswers(steps, choices, rules, input.answers, revisionBranchSelection(revision.policySnapshotJson),hiddenAnswers(hiddenContext),settings)
+    if(settings.calculations?.length) hiddenContext.calculations=evaluateCalculations(settings.calculations ?? [],Object.fromEntries(acceptedAnswers.map(answer=>[answer.stepId,answer.value])),hiddenContext.hidden)
     const now = new Date().toISOString()
     const responseId = ulid()
     const elapsed = Math.max(0, Date.now() - loadedAt)
@@ -322,7 +325,7 @@ export class ResponseService {
     throw new ValidationError('The retained completion could not be read. This response has not been resubmitted.')
   }
 
-  private validatePathAnswers(steps: StoredStep[], choices: StoredChoice[], rules: StoredBranchRule[], answers: AnswerInput[], selection: BranchSelection, context:Record<string,unknown> = {}) {
+  private validatePathAnswers(steps: StoredStep[], choices: StoredChoice[], rules: StoredBranchRule[], answers: AnswerInput[], selection: BranchSelection, context:Record<string,unknown> = {}, settings?:import('../../shared/hiddenFields').FormSettings) {
     const submitted = new Map<string, unknown>()
     for (const answer of answers) {
       if (submitted.has(answer.stepId)) throw new ValidationError('Each question can be answered once per submission.')
@@ -334,12 +337,13 @@ export class ResponseService {
     const first = steps[0]
     if (!first) throw new ValidationError('This published flow has no first screen.')
     const accepted: AnswerInput[] = []
+    const values=()=>formAnswerContext(settings,Object.fromEntries(accepted.map(answer=>[answer.stepId,answer.value])),{hidden:Object.fromEntries(Object.entries(context).filter(([id])=>id.startsWith('hidden:')).map(([id,value])=>[id.slice(7),value])) as ResponseContext['hidden']})
     const reached = new Set<string>()
     const visited = new Set<string>()
     let current: StoredStep | undefined = first
     while (current && !visited.has(current.stableId)) {
       visited.add(current.stableId)
-      const visible: boolean = !visibilityCondition(publicSteps([current])[0]) || evaluateCondition(visibilityCondition(publicSteps([current])[0])!, {...context,...Object.fromEntries(accepted.map(answer => [answer.stepId,answer.value]))}).matched
+      const visible: boolean = !visibilityCondition(publicSteps([current])[0]) || evaluateCondition(visibilityCondition(publicSteps([current])[0])!, values()).matched
       if(visible) reached.add(current.stableId)
       if (current.kind === 'question' && visible) {
         const value = normalizeOptional(submitted.get(current.stableId))
@@ -351,7 +355,7 @@ export class ResponseService {
         }
       }
       if (current.kind === 'completion') break
-      const answerRecord = {...context,...Object.fromEntries(accepted.map((answer) => [answer.stepId, answer.value]))}
+      const answerRecord = values()
       const next: {nextStepId:string|null} = resolveNextStep({ selection, step: current, rules: rules.filter((rule) => rule.sourceStepStableId === current!.stableId), answers: answerRecord })
       current = next.nextStepId ? byStableId.get(next.nextStepId) : undefined
     }

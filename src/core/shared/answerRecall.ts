@@ -1,3 +1,5 @@
+import { calculationInputs } from './calculationInputs'
+import { evaluateCalculations } from './calculations'
 import type { ChoiceOption, FlowStep, PublicFlow } from '../app/api'
 import { answerIssue, isUnanswered } from './answers'
 import { contactQuestionTypes, displayContactAnswer } from './contactAnswers'
@@ -60,6 +62,10 @@ export function interpolateAnswerRecall(text: string, flow: FlowGraph, answers: 
   const earlier = new Map(path.slice(0, Math.max(0, currentIndex)).filter(step => step.kind === 'question').map(step => [step.id, step]))
   return text.replace(/\{\{([^{}]*)\}\}/g, (_token, reference: string) => {
     const id = reference.trim(), step = earlier.get(id)
+    if (id.startsWith('variable:') && flow.formSettings?.calculations?.some(value=>`variable:${value.id}`===id)) {
+      const accepted=Object.fromEntries([...earlier.keys()].filter(id=>Object.hasOwn(valid,id)).map(id=>[id,valid[id]]))
+      return String(evaluateCalculations(flow.formSettings.calculations,accepted,flow.hiddenContext?.hidden ?? {})[id.slice(9)] ?? '')
+    }
     if (id.startsWith('hidden:') && flow.formSettings?.hiddenFields.some(field=>`hidden:${field.id}`===id)) return String(flow.hiddenContext?.hidden[id.slice(7)] ?? '')
     return step && Object.hasOwn(valid, id) ? formattedAnswer(step, choicesByStep.get(id)!, valid[id], label => interpolateAnswerRecall(label, flow, answers, step.id)) : ''
   })
@@ -104,6 +110,11 @@ export function validateAnswerRecall(flow: FlowGraph, edges: RecallEdges = struc
     const earlier = new Set(earlierRecallQuestions(flow, destination.id, edges).map(step => step.id))
     const texts = [destination.prompt, destination.helperText ?? '', ...flow.choices.filter(choice => choice.stepId === destination.id).map(choice => choice.label)]
     for (const reference of new Set(texts.flatMap(references))) {
+      if (reference.startsWith('variable:') && flow.formSettings?.calculations?.some(value=>`variable:${value.id}`===reference)) {
+        const inputs=calculationInputs(flow.formSettings.calculations,reference.slice(9))
+        if ([...inputs.answers].some(id=>!earlier.has(id))) issues.push({stepId:destination.id,reason:`Calculation recall “${reference}” depends on a missing, current or later question.`})
+        continue
+      }
       if (flow.formSettings?.hiddenFields.some(field=>`hidden:${field.id}`===reference)) continue
       const source = byId.get(reference)
       let reason: string | undefined

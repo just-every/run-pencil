@@ -1,3 +1,5 @@
+import { formAnswerContext } from '../../shared/calculationContext'
+import { remapCalculations } from '../../shared/calculationRemap'
 import { formSettings, hiddenSettingsIssue, hiddenPublicationIssues, normalizeHidden, hiddenAnswers, type FormSettings } from '../../shared/hiddenFields'
 import { screenChanges } from './screen-authoring'
 import type { ScreenLayout } from '../../shared/screenLayout'
@@ -150,11 +152,13 @@ export class FlowService {
     const flowId = ulid()
     const revisionId = ulid()
     const copiedSettings = formSettings(sourceRevision.formSettingsJson)
+    const variableIds = new Map((copiedSettings.calculations ?? []).map(value=>[value.id,ulid()]))
     const fieldIds = new Map(copiedSettings.hiddenFields.map(field => [field.id,ulid()]))
-    const stableIdByOldStableId = new Map([...sourceSteps.map((step) => [step.stableId, ulid()] as [string,string]), ...[...fieldIds].map(([old,id]) => [`hidden:${old}`,`hidden:${id}`] as [string,string])])
+    const stableIdByOldStableId = new Map([...sourceSteps.map((step) => [step.stableId, ulid()] as [string,string]), ...[...fieldIds].map(([old,id]) => [`hidden:${old}`,`hidden:${id}`] as [string,string]), ...[...variableIds].map(([old,id])=>[`variable:${old}`,`variable:${id}`] as [string,string])])
     copiedSettings.hiddenFields = copiedSettings.hiddenFields.map(field => ({...field,id:fieldIds.get(field.id)!}))
     const rowIdByOldRowId = new Map(sourceSteps.map((step) => [step.id, ulid()]))
     const choiceStableIdByOldStableId = new Map(sourceChoices.map((choice) => [choice.stableId, ulid()]))
+    copiedSettings.calculations=remapCalculations(copiedSettings.calculations ?? [],stableIdByOldStableId,fieldIds,variableIds,choiceStableIdByOldStableId)
     const created = await this.repository.createStructure({
       flow: { id: flowId, workspaceId: input.workspaceId, title, slug, status: 'draft', draftVersion: 0, lastActivityAt: now, createdAt: now, updatedAt: now },
       revision: { formSettingsJson: JSON.stringify(copiedSettings), id: revisionId, flowId, number: 1, state: 'draft', title, publishedAt: null, isCurrent: false, admissionClosedAt: null, admissionCloseReason: null, deadlineAt: null, deadlineTimeZone: null, targetCompletedResponses: null, policySnapshotJson: null, createdAt: now, updatedAt: now },
@@ -397,16 +401,18 @@ export class FlowService {
     if (!first) return { ...receipt, screens: [], complete: false, reason: 'The draft has no first screen.' }
     const screens: Array<{ stepId: string; evaluations: ReturnType<typeof resolveNextStep>['evaluations']; selectedRuleId: string | null; nextStepId: string | null }> = []
     const seen = new Set<string>()
-    const accepted: Record<string, unknown> = hiddenAnswers(normalizeHidden(formSettings(revision.formSettingsJson),input.hidden ?? {}))
+    const settings=formSettings(revision.formSettingsJson), hidden=normalizeHidden(settings,input.hidden ?? {})
+    const accepted: Record<string, unknown> = {}
+    const values=()=>formAnswerContext(settings,accepted,hidden)
     let current: StoredStep | undefined = first
     while (current && !seen.has(current.stableId) && screens.length <= steps.length) {
       const step: StoredStep = current
       seen.add(step.stableId)
       const condition = visibilityCondition(publicSteps([step])[0])
-      const visible = !condition || evaluateCondition(condition,accepted).matched
+      const visible = !condition || evaluateCondition(condition,values()).matched
       const answer = input.answers[step.stableId]
       if (visible && step.kind === 'question' && !isUnanswered(answer) && !answerIssue(publicSteps([step])[0], choices.filter(choice => choice.stepId === step.id).map(choice => choice.stableId), answer)) accepted[step.stableId] = answer
-      const selection = resolveNextStep({ selection: evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'], step, rules: rules.filter((rule) => rule.sourceStepStableId === step.stableId), answers: accepted })
+      const selection = resolveNextStep({ selection: evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'], step, rules: rules.filter((rule) => rule.sourceStepStableId === step.stableId), answers: values() })
       screens.push({ stepId: step.stableId, evaluations: selection.evaluations, selectedRuleId: selection.selectedRuleId, nextStepId: selection.nextStepId })
       if (step.kind === 'completion') return { ...receipt, screens, complete: true }
       current = selection.nextStepId ? byStableId.get(selection.nextStepId) : undefined

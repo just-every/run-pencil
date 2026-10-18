@@ -18,7 +18,8 @@ export function responseScope(workspaceId: string, flowId: string, filter: Ledge
     for (const [value, sql] of [[filter.revisionId, 'r.revision_id = ?'], [filter.source, 'r.source = ?'], [filter.from, 'r.completed_at >= ?'], [filter.to, 'r.completed_at <= ?']] as const) if (value) { parts.push(sql); bindings.push(value) }
     if (filter.collectorId) { parts.push('EXISTS (SELECT 1 FROM response_collector rc JOIN collectors c ON c.id=rc.collector_id WHERE rc.response_id=r.id AND c.flow_id=r.flow_id AND c.id=?)'); bindings.push(filter.collectorId) }
     if (filter.answerStepId && filter.answerValue !== undefined) {
-      const answer = filter.answerStepId.startsWith('hidden:') ? hiddenFieldFilter(filter.answerStepId.slice(7), filter.answerValue) : structuredAnswerFilter(filter.answerStepId, filter.answerValue)
+      const contextKind = filter.answerStepId.startsWith('hidden:') ? 'hidden' : filter.answerStepId.startsWith('variable:') ? 'variable' : undefined
+      const answer = contextKind ? contextValueFilter(contextKind, filter.answerStepId.slice(contextKind.length + 1), filter.answerValue) : structuredAnswerFilter(filter.answerStepId, filter.answerValue)
       parts.push(answer.sql)
       bindings.push(...answer.bindings)
     }
@@ -36,15 +37,18 @@ export function responseScope(workspaceId: string, flowId: string, filter: Ledge
     return { where, bindings }
 }
 
-function hiddenFieldFilter(id: string, encoded: string) {
+function contextValueFilter(kind: 'hidden' | 'variable', id: string, encoded: string) {
+  const label = kind === 'hidden' ? 'hidden-field' : 'calculated'
   let value: unknown
-  try { value = JSON.parse(encoded) } catch { throw new ValidationError('Choose a valid hidden-field value.') }
-  if (!['string', 'number', 'boolean'].includes(typeof value) || typeof value === 'number' && !Number.isFinite(value)) throw new ValidationError('Choose a text, numeric or boolean hidden-field value.')
+  try { value = JSON.parse(encoded) } catch { throw new ValidationError(`Choose a valid ${label} value.`) }
+  const valid = kind === 'hidden' ? ['string', 'number', 'boolean'].includes(typeof value) : value === null || ['string', 'number'].includes(typeof value)
+  if (!valid || typeof value === 'number' && !Number.isFinite(value)) throw new ValidationError(`Choose a valid ${label} value.`)
+  const values = kind === 'hidden' ? 'hidden' : 'calculations', definitions = kind === 'hidden' ? 'hiddenFields' : 'calculations'
   return {
-    sql: `EXISTS (SELECT 1 FROM json_each(r.response_context_json, '$.hidden') hidden
-      JOIN flow_revisions hidden_revision ON hidden_revision.id=r.revision_id AND hidden_revision.flow_id=r.flow_id
-      JOIN json_each(hidden_revision.form_settings_json, '$.hiddenFields') declared ON json_extract(declared.value, '$.id')=hidden.key
-      WHERE hidden.key=? AND (hidden.type=json_type(?) OR hidden.type IN ('integer','real') AND json_type(?) IN ('integer','real')) AND hidden.value=json_extract(?, '$'))`,
+    sql: `EXISTS (SELECT 1 FROM json_each(r.response_context_json, '$.${values}') stored
+      JOIN flow_revisions stored_revision ON stored_revision.id=r.revision_id AND stored_revision.flow_id=r.flow_id
+      JOIN json_each(stored_revision.form_settings_json, '$.${definitions}') declared ON json_extract(declared.value, '$.id')=stored.key
+      WHERE stored.key=? AND (stored.type=json_type(?) OR stored.type IN ('integer','real') AND json_type(?) IN ('integer','real')) AND stored.value IS json_extract(?, '$'))`,
     bindings: [id, encoded, encoded, encoded],
   }
 }

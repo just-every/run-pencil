@@ -39,7 +39,7 @@ export class ResumeService {
     } else if (input.invitationToken) throw new ValidationError('This response does not use an invitation.')
     const graph = await this.flows.getRevisionGraph(context.revision.id)
     const hiddenContext = normalizeHidden(formSettings(context.revision.formSettingsJson),input.hidden ?? {})
-    const answers = validateSavedAnswers(graph,context.revision.policySnapshotJson,input.currentStepId,input.answers,hiddenAnswers(hiddenContext))
+    const answers = validateSavedAnswers(graph,context.revision.policySnapshotJson,input.currentStepId,input.answers,hiddenAnswers(hiddenContext),formSettings(context.revision.formSettingsJson))
     const previous = await this.repository.bySession(input.sessionId)
     if (previous?.command_key===input.commandKey) {
       if (previous.response_context_json!==JSON.stringify(hiddenContext) || previous.answers_json!==JSON.stringify(answers) || previous.current_step_id!==input.currentStepId || previous.participant_id!==participantId || previous.delivery_email && previous.delivery_email!==input.email) throw new ValidationError('Use a new save command after changing saved answers or the delivery address.')

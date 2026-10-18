@@ -512,6 +512,7 @@
     ]
   },
   "limits": {
+    "calculations": { "perRevision": 50, "expressionDepth": 12, "expressionNodes": 128, "textCharacters": 10000, "decimalPlaces": 15 },
     "hiddenFields": { "perRevision": 20, "textCharacters": 1000 },
     "status": "estimated",
     "mustBeReplacedByLoadTest": true,

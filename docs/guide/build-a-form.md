@@ -96,6 +96,18 @@ For choice types, use **Choice** to add options and **Remove** to take one away.
 
 Behind each label sits an **Answer value** that Pencil makes from the label. CSV and JSON exports use this value from the published revision the respondent answered, with the label alongside it. Multiple-choice and priority answers export a list of these values; priority keeps the respondent’s order. Rename a label later and the value stays the same, so your exports stay consistent. If you need to change it, open **Advanced** on that choice.
 
+## Calculations
+
+Open **Calculations** in the builder and choose **Add numeric calculation** for a total or **Add text calculation** for a text value. Give it a name, then build its **Expression** from literal values, question answers, hidden fields or other calculated variables. Choose **Add**, **Subtract**, **Multiply**, **Divide**, **Round** or **Date difference** for numbers, or **Conditional** to choose between two values using answer conditions. For example, multiply a quantity answer by a literal price, or return different text for different choices. Choose **Save calculations** when finished.
+
+Missing inputs produce a blank calculated value. Pencil refuses invalid types, missing or deleted references and cycles between variables. Division must have a denominator whose bounds prove it cannot reach zero; unknown or unbounded denominators are refused too. These checks apply before publication, including both arms of a conditional.
+
+Try the values in **Preview draft**. Use a calculation in an answer-path condition, or insert it into a prompt or completion with **Insert an earlier answer**. Recalled values use the answers available at that point, so an unavailable input stays blank. Results show the response's calculated values, and CSV and JSON exports include them. Publishing snapshots the calculation definitions with the revision; later draft edits do not change the calculations for earlier responses.
+
+Calculated answer paths require Pencil to prove the possible routes. Numeric question inputs to that proof need explicit **Minimum** and **Maximum** values that are safe whole numbers, **Decimal places** set to `0`, and no more than 1,000 possible values. The proof also supports rating scales, boolean answers, single-choice and dropdown answers, and text equality, inequality and blank/answered checks. Unsupported input domains, including unbounded hidden numbers, text masks or patterns and possible Other answers, refuse publication when needed for a calculated path. These restrictions apply to calculated answer paths; general calculated values can use unbounded inputs, subject to the division check above.
+
+Calculated values are not yet available to alerts or payments.
+
 ## Preview your flow
 
 Choose **Preview draft** to try the draft as a respondent. You answer with test data, and Pencil shows the route it would take. A preview never creates a response, sends nothing and does not change any counts.

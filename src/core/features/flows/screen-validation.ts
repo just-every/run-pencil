@@ -1,3 +1,4 @@
+import { calculationOperands, calculationInputs } from '../../shared/calculationInputs'
 import { hiddenOperands } from '../../shared/hiddenFields'
 import { screenLayout, visibilityCondition } from '../../shared/screenLayout'
 import { conditionShape, conditionValueValid } from '../../shared/conditionValidation'
@@ -32,9 +33,9 @@ export function validateScreens(flow: FlowGraph) {
     if (!conditionShape(condition)) { add(step.id,'This visibility condition exceeds the configured condition limits.'); continue }
     const earlier = new Set(earlierRecallQuestions(flow,step.id).filter(operand => operand.position < step.position).map(operand => operand.id))
     for (const [index,test] of conditionTests(condition).entries()) {
-      const hidden = hiddenOperands(flow.formSettings?.hiddenFields ?? []).find(candidate=>candidate.id===test.stepId)
+      const hidden = [...hiddenOperands(flow.formSettings?.hiddenFields ?? []),...calculationOperands(flow.formSettings?.calculations ?? [])].find(candidate=>candidate.id===test.stepId)
       const operand = hidden ?? flow.steps.find(candidate => candidate.id === test.stepId)
-      if (!operand || !hidden && !earlier.has(test.stepId) || !conditionValueValid(test,operand,flow.choices)) add(step.id,`Visibility condition ${index+1}: missing or later question, incompatible operator, or invalid stable choice.`)
+      if (!operand || !hidden && !earlier.has(test.stepId) || test.stepId.startsWith('variable:') && [...calculationInputs(flow.formSettings?.calculations ?? [],test.stepId.slice(9)).answers].some(id=>!earlier.has(id)) || !conditionValueValid(test,operand,flow.choices)) add(step.id,`Visibility condition ${index+1}: missing or later question, incompatible operator, or invalid stable choice.`)
     }
   }
   return issues
