@@ -1,3 +1,4 @@
+import { visibilityCondition } from './screenLayout'
 import { evaluateCondition } from './conditions'
 import type { BranchRule, FlowStep, PublicFlow } from '../app/api'
 import { matchesBranch } from './branching'
@@ -15,9 +16,11 @@ export function visiblePath(flow: Pick<PublicFlow, 'steps' | 'branchRules' | 'br
   let current: FlowStep | undefined = steps[0]
   while (current && !visited.has(current.id)) {
     const step: FlowStep = current
-    path.push(step)
     visited.add(step.id)
-    if (step.kind === 'question' && Object.hasOwn(answers, step.id)) activeAnswers[step.id] = answers[step.id]
+    const showWhen = visibilityCondition(step)
+    const visible = !showWhen || evaluateCondition(showWhen, activeAnswers).matched
+    if (visible) path.push(step)
+    if (visible && step.kind === 'question' && Object.hasOwn(answers, step.id)) activeAnswers[step.id] = answers[step.id]
     if (step.kind === 'completion') break
     const rules: BranchRule[] = rulesBySource.get(step.id) ?? []
     const selected: BranchRule | undefined = (flow.branchSelection === 'last-matching-rule' ? rules.slice().reverse() : rules).find((rule) => rule.condition ? evaluateCondition(rule.condition, activeAnswers).matched : matchesBranch(rule, answers[step.id]))

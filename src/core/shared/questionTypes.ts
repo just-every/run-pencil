@@ -1,3 +1,4 @@
+import { layoutSettingsValid } from './screenLayout'
 import { choiceSettingsValid } from './otherChoices'
 import { scoreQuestionTypes } from './scoreQuestions'
 import { textSettingsValid } from './textValidation'
@@ -17,6 +18,9 @@ export function decimalPlaces(value: number) {
 }
 export function typeSettingsValid(type: string | null, settings: Record<string, unknown>) {
   if (!settings || typeof settings !== 'object' || Array.isArray(settings)) return false
+  if (!layoutSettingsValid(settings)) return false
+  const {screen: _screen, showWhen: _showWhen, ...answerSettings} = settings
+  settings = answerSettings
   const text = (value: unknown) => typeof value === 'string' && value.trim().length > 0 && value.length <= 1000
   if (type === 'short_text' || type === 'long_text') return textSettingsValid(type, settings)
   if (['single_choice', 'multiple_choice', 'dropdown'].includes(type ?? '')) return choiceSettingsValid(type!, settings)

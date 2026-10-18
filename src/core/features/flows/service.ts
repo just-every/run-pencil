@@ -1,3 +1,8 @@
+import { screenChanges } from './screen-authoring'
+import type { ScreenLayout } from '../../shared/screenLayout'
+import { visibilityCondition } from '../../shared/screenLayout'
+import { evaluateCondition } from '../../shared/conditions'
+import { remapLayoutSettings } from '../../shared/screenLayout'
 import { answerIssue, isUnanswered } from '../../shared/answers'
 import { remapCondition, type Condition } from '../../shared/conditions'
 import { choiceLimit, structureLimitIssue } from '../../shared/formLimits'
@@ -149,7 +154,7 @@ export class FlowService {
     const created = await this.repository.createStructure({
       flow: { id: flowId, workspaceId: input.workspaceId, title, slug, status: 'draft', draftVersion: 0, lastActivityAt: now, createdAt: now, updatedAt: now },
       revision: { id: revisionId, flowId, number: 1, state: 'draft', title, publishedAt: null, isCurrent: false, admissionClosedAt: null, admissionCloseReason: null, deadlineAt: null, deadlineTimeZone: null, targetCompletedResponses: null, policySnapshotJson: null, createdAt: now, updatedAt: now },
-      steps: sourceSteps.map((step) => ({ ...step, id: rowIdByOldRowId.get(step.id)!, revisionId, stableId: stableIdByOldStableId.get(step.stableId)!, prompt: remapAnswerRecall(step.prompt, stableIdByOldStableId), helperText: step.helperText === null ? null : remapAnswerRecall(step.helperText, stableIdByOldStableId), questionSettingsJson: remapChoiceSettings(step.questionSettingsJson, choiceStableIdByOldStableId), nextStepStableId: step.nextStepStableId ? stableIdByOldStableId.get(step.nextStepStableId) ?? null : null, createdAt: now, updatedAt: now })),
+      steps: sourceSteps.map((step) => ({ ...step, id: rowIdByOldRowId.get(step.id)!, revisionId, stableId: stableIdByOldStableId.get(step.stableId)!, prompt: remapAnswerRecall(step.prompt, stableIdByOldStableId), helperText: step.helperText === null ? null : remapAnswerRecall(step.helperText, stableIdByOldStableId), questionSettingsJson: remapLayoutSettings(remapChoiceSettings(step.questionSettingsJson, choiceStableIdByOldStableId), stableIdByOldStableId, choiceStableIdByOldStableId), nextStepStableId: step.nextStepStableId ? stableIdByOldStableId.get(step.nextStepStableId) ?? null : null, createdAt: now, updatedAt: now })),
       choices: sourceChoices.map((choice) => ({ ...choice, id: ulid(), stepId: rowIdByOldRowId.get(choice.stepId)!, stableId: choiceStableIdByOldStableId.get(choice.stableId)!, label: remapAnswerRecall(choice.label, stableIdByOldStableId), createdAt: now, updatedAt: now })),
       rules: sourceRules.map((rule) => {
         const expected = JSON.parse(rule.expectedValueJson) as unknown
@@ -272,6 +277,15 @@ export class FlowService {
     return { kind: 'updated' as const, draftVersion: input.expectedVersion + 1, step: publicSteps([updated])[0] }
   }
 
+  async updateScreen(input:{operatorId?:string;workspaceId:string;flowId:string;stepId:string;expectedVersion:number;layout:ScreenLayout|null}) {
+    const snapshot=await this.requireDraftSnapshot(input.workspaceId,input.flowId)
+    if(snapshot.flow.draftVersion!==input.expectedVersion) return draftConflict(snapshot.flow.draftVersion)
+    if(snapshot.flow.status==='archived') throw new ValidationError('Duplicate an archived flow before editing.')
+    const changes=screenChanges(this.builderDraft(snapshot),input.stepId,input.layout)
+    const saved=await this.repository.updateScreen({...input,revisionId:snapshot.revision.id,now:new Date().toISOString(),changes})
+    return saved?{kind:'updated' as const,draftVersion:input.expectedVersion+1}:draftConflict((await this.requireWorkspaceFlow(input.workspaceId,input.flowId)).draftVersion)
+  }
+
   async addDraftStep(input: { operatorId?: string; workspaceId: string; flowId: string; expectedVersion: number; step: DraftStepInput }) {
     const draft = await this.getBuilderDraft(input.workspaceId, input.flowId)
     if (input.expectedVersion !== draft.flow.draftVersion) return draftConflict(draft.flow.draftVersion)
@@ -372,10 +386,12 @@ export class FlowService {
     const accepted: Record<string, unknown> = {}
     let current: StoredStep | undefined = first
     while (current && !seen.has(current.stableId) && screens.length <= steps.length) {
-      const step = current
+      const step: StoredStep = current
       seen.add(step.stableId)
+      const condition = visibilityCondition(publicSteps([step])[0])
+      const visible = !condition || evaluateCondition(condition,accepted).matched
       const answer = input.answers[step.stableId]
-      if (step.kind === 'question' && !isUnanswered(answer) && !answerIssue(publicSteps([step])[0], choices.filter(choice => choice.stepId === step.id).map(choice => choice.stableId), answer)) accepted[step.stableId] = answer
+      if (visible && step.kind === 'question' && !isUnanswered(answer) && !answerIssue(publicSteps([step])[0], choices.filter(choice => choice.stepId === step.id).map(choice => choice.stableId), answer)) accepted[step.stableId] = answer
       const selection = resolveNextStep({ selection: evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'], step, rules: rules.filter((rule) => rule.sourceStepStableId === step.stableId), answers: accepted })
       screens.push({ stepId: step.stableId, evaluations: selection.evaluations, selectedRuleId: selection.selectedRuleId, nextStepId: selection.nextStepId })
       if (step.kind === 'completion') return { ...receipt, screens, complete: true }
