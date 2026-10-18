@@ -993,7 +993,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "0ec27358ef6c2f2d98c67c285c23e327c8c6c15a262368554ac425d9eac98d63",
+      "sha256": "13641b5dc32381fc7c58c975921da4949e7c09725cd6ecac856467ab03f5cc90",
       "executable": false
     },
     "migrations/core/0000_seeded_flowly_data_spine.sql": {
