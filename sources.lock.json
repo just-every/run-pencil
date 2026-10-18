@@ -921,7 +921,7 @@
       "executable": false
     },
     "docs/guide/build-a-form.md": {
-      "sha256": "d86779bb9a8af4cc42770c5426f21039f4495bc5e2b73608a965187cf9a3e39b",
+      "sha256": "4b04e3e9c412c255ef464f137671be34510eba2866f8e6101a9ff3e19c4dfc8f",
       "executable": false
     },
     "docs/guide/hosting.md": {
@@ -4429,7 +4429,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/calculations.css": {
-      "sha256": "651f540816e235fc5a5b43735817b11b95e3bb0ae3cb7903bb1db99c60ca7f8e",
+      "sha256": "7d6d26fde067e98eb52cc1d75687502e0312f1ba60e88984227f5264e0e1a553",
       "executable": false
     },
     "src/core/features/flows/ui/CalculationSettings.tsx": {
@@ -4457,7 +4457,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/FlowBuilderPage.tsx": {
-      "sha256": "fe8026eb49c2f89e0831a331d282a51de0bd71d18ca0c1562846d8c1f7295a24",
+      "sha256": "df86cacb1f764438b84b863792a63c2f2faeba5ecd20ea3e3c9ff4f96b7d8d98",
       "executable": false
     },
     "src/core/features/flows/ui/FlowSharePanel.tsx": {
@@ -4465,7 +4465,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/hidden-fields.css": {
-      "sha256": "7ebaf12ec2a855c5539d3b2911a8dea68973071cc0c46656869820b2b8005e0d",
+      "sha256": "14bf8499c6c56ec68493068721b9e62994034016edaa9a46d349be3787ef3663",
       "executable": false
     },
     "src/core/features/flows/ui/HiddenFieldsSettings.tsx": {
@@ -5117,7 +5117,7 @@
       "executable": false
     },
     "src/core/features/reporting/repository.ts": {
-      "sha256": "2941fae03b4cf52ff8a0c2562f21323c076880a7bd8908fcba549f15c7000aa8",
+      "sha256": "bcf25460ed2f9668122990bd7b996678d570c59c40e137c0f60528bd44f3bfbd",
       "executable": false
     },
     "src/core/features/reporting/retainedAnswer.ts": {
@@ -6093,7 +6093,7 @@
       "executable": false
     },
     "tests/e2e/calculations.spec.ts": {
-      "sha256": "6244fc65bd14544a031665c8ddf8b620f87c0423f7be1d7acb93059394fcfdd7",
+      "sha256": "1397795c2d331b8f842f325d7ca5cd5c687841bc1d394b47d2bde401729196ed",
       "executable": false
     },
     "tests/e2e/client-secrets.spec.ts": {
@@ -6157,7 +6157,7 @@
       "executable": false
     },
     "tests/e2e/hidden-fields.spec.ts": {
-      "sha256": "7cc96f4e8486155143c483eb73f78e4397e5d1e8915125dedffdd78af339c255",
+      "sha256": "c123499039d281d1d4cd176ddcdc309691bac699672fb4a8a38eb8daccd62eac",
       "executable": false
     },
     "tests/e2e/import-acknowledgement.spec.ts": {
@@ -6213,7 +6213,7 @@
       "executable": false
     },
     "tests/e2e/ledger-filters.spec.ts": {
-      "sha256": "2cf7bcd3e4088c07d24d3dd4201bdd20c1b4c32c987320385daa9cfc453062e3",
+      "sha256": "2049abf73ab4c823f0f895362c1c6e16656d4fe2e638ffde37e5caf72b1dce4e",
       "executable": false
     },
     "tests/e2e/long-choices.spec.ts": {

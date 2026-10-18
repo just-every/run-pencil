@@ -1,5 +1,6 @@
-.calculation-settings { min-width: 0; padding: 1rem; margin-block: 1rem; }
-.calculation-settings[open] > summary { margin-bottom: 1rem; }
+.calculation-settings { min-width: 0; padding: 0; margin-block: 0; border: 0; background: transparent; }
+.calculation-settings > summary { min-height: 44px; padding: 10px 0; line-height: 24px; box-sizing: border-box; }
+.calculation-settings[open] > summary { margin-bottom: .75rem; }
 .calculation-settings-fields { min-width: 0; border: 0; padding: 0; }
 .calculation-settings-fields > p { max-width: 75ch; }
 .calculation-card { min-width: 0; padding: 1rem; margin-block: 1rem; }
@@ -19,3 +20,8 @@
   .calculation-expression, .calculation-condition { padding: .5rem; }
   .calculation-actions { display: flex; flex-direction: column; align-items: stretch; }
 }
+
+.revision-value-settings { display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr); gap: 8px; }
+.revision-value-settings > details > summary { font-size: 14px; }
+.revision-value-settings:has(> details[open]) { display: block; }
+.revision-value-settings > details.quiet-panel { margin-block: 0; }

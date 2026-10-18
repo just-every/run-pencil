@@ -43,7 +43,7 @@ contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'FLOW-019', 'IMPORT-003', 'BASE-PU
     const choice = scenario.current.choices.find(choice => choice.stepId === scenario.stepId('dropdown'))!
     const cases = [['yes_no', 'true', 'Yes'], ['yes_no', 'false', 'No'], ['consent', 'true', 'Accepted'], ['consent', 'false', 'Declined'], ['number', '11.0', null], ['nps', '0', null], ['rating', '5', null], ['date', '2024-02-29', null], ['dropdown', choice.id, 'Coffee']] as const
     for (const [type, value, label] of cases) {
-      await ledger.getByLabel('Structured question').selectOption(scenario.stepId(type))
+      await ledger.getByRole('combobox',{name:'Question, hidden field or calculation',exact:true}).selectOption(scenario.stepId(type))
       const input = ledger.getByLabel('Answer contains / equals')
       const loaded = page.waitForResponse(response => {
         const url = new URL(response.url())
@@ -83,7 +83,7 @@ contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'FLOW-019', 'IMPORT-003', 'BASE-PU
       }
       const article = ledger.locator('.ledger-list article')
       const date = await page.evaluate(({ value, timeZone }) => new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short', timeZone }).format(new Date(value)), { value: downloaded!.completedAt, timeZone: workspace.timeZone })
-      await expect(article.locator(':scope > p').first()).toHaveText(`${date} · ${source === 'direct' ? 'Direct link' : 'Imported'}`)
+      await expect(article.locator(':scope > p').first()).toHaveText(`${date} · ${downloaded!.identityMode === 'identified' ? 'Identified' : 'Anonymous'} · ${source === 'direct' ? 'Direct link' : 'Imported'}`)
       await expect(article.getByText(`Revision ${downloaded!.revisionNumber}`, { exact: true })).toHaveCount(0)
       const answers = article.getByRole('button', { name: 'View answers', exact: true })
       await answers.click()

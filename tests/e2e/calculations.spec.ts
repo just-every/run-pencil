@@ -36,6 +36,7 @@ contract(['LOGIC-003', 'LOGIC-006'], 'builds a conditional total, previews calcu
 
   await page.goto(`/app/flows/${flow.id}/builder`)
   await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
+  await page.getByText('Publication options', { exact: true }).click()
   await page.getByText('Calculations', { exact: true }).click()
   await page.getByRole('button', { name: 'Add numeric calculation', exact: true }).click()
   await page.getByLabel('Calculation name 1', { exact: true }).fill('total')
