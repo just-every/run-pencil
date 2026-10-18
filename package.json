@@ -1,7 +1,7 @@
 {
   "name": "pencil",
   "private": true,
-  "version": "0.5.0",
+  "version": "0.5.1",
   "license": "MIT",
   "description": "Pencil self-hosted adaptive form builder and feedback workspace.",
   "type": "module",

@@ -849,7 +849,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "0162618dbd55d71e72cae6be462afa1aaac36465dc5b1cb6d167feb8d4c5d72a",
+      "sha256": "5aee0d0ca82a120c43647d05ac189007c1672c8373708a1b4144315f56ccda53",
       "executable": false
     },
     "CLAUDE.md": {
@@ -1161,7 +1161,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "8d994a2c04e32652630a6d742ecec88a67cd53e1e172823a7531574f43b6ed45",
+      "sha256": "3a62d5badc4b2ad872c76940a70f5ffc49ea124ceaeba908cca2ce3c5d151bff",
       "executable": false
     },
     "playwright.admission.config.ts": {
@@ -1221,7 +1221,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "1ea06efafc40c804f9784ac1e89f9c27ed63534cc3b7dd93e91e955aa80caa5c",
+      "sha256": "1445d0c8befdc68e115327046e4a27cb74e62bedc01d3a3397f430a3d72a8459",
       "executable": false
     },
     "rer-project.json": {
@@ -1733,7 +1733,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "f7034f5d7aa54cd211891f09ce430a93dbd6cd07b21a2adb351095b05f8996aa",
+      "sha256": "ae86d7993ccf9a9d3109f626ec187403c06818f8d29bf778a0566a20b6aa4a7f",
       "executable": false
     },
     "src/base/ai/client.mjs": {

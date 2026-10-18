@@ -1,5 +1,9 @@
 # Release notes
 
+## 0.5.1 - 2026-10-18
+
+Description only; no product change. The catalogue description is now "Collect feedback, understand responses, and turn insights into assigned actions.", the same sentence as main. The application, contract, migrations and configuration are identical to 0.5.0, so upgrading from 0.5.0 needs no migration, configuration or data step.
+
 ## 0.5.0 - 2026-10-16
 
 **Upgrading a local install.** Stop dev (`rer dev --stop`), create the ignored exports folder (`mkdir -p exports`), export (`rer export --output exports/before-upgrade.rer`), pull, then run `rer install`, `rer setup` and `rer dev`. Upgrading from 0.4.0 applies the additive migration `0037_import_progress.sql`, which adds the refreshed Base import kit's preparation checkpoints, stream sources and erasure progress; backups keep them. Hosted deployments apply it through `rer deploy`.
