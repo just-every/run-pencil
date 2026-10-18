@@ -1,3 +1,4 @@
+import { remapLayoutSettings } from '../../shared/screenLayout'
 import { remapCondition } from '../../shared/conditions'
 import { ulid } from 'ulid'
 import { NotFoundError, ValidationError } from '../../shared/errors'
@@ -21,7 +22,7 @@ function copyContent(source: Content, revisionId: string, now: string): Content 
   return {
     steps: steps.map(s => ({ id: rows.get(s.id)!, stableId: ids.get(s.stableId)!, revisionId, position: s.position, kind: s.kind, questionType: s.questionType,
       prompt: remapAnswerRecall(s.prompt, ids), helperText: s.helperText ? remapAnswerRecall(s.helperText, ids) : null, required: s.required,
-      nextStepStableId: s.nextStepStableId ? ids.get(s.nextStepStableId)! : null, questionSettingsJson: remapChoiceSettings(s.questionSettingsJson ?? null, choiceIds), createdAt: now, updatedAt: now })),
+      nextStepStableId: s.nextStepStableId ? ids.get(s.nextStepStableId)! : null, questionSettingsJson: remapLayoutSettings(remapChoiceSettings(s.questionSettingsJson ?? null, choiceIds), ids, choiceIds), createdAt: now, updatedAt: now })),
     choices: choices.map(c => ({ id: ulid(), stableId: choiceIds.get(c.stableId)!, stepId: rows.get(c.stepId)!, value: c.value, label: remapAnswerRecall(c.label, ids), position: c.position, createdAt: now, updatedAt: now })),
     rules: rules.map(r => ({ id: ulid(), revisionId, sourceStepStableId: ids.get(r.sourceStepStableId)!, destinationStepStableId: ids.get(r.destinationStepStableId)!, predicateKind: r.predicateKind,
       expectedValueJson: JSON.stringify(expected(JSON.parse(r.expectedValueJson))), conditionJson: r.conditionJson ? JSON.stringify(remapCondition(JSON.parse(r.conditionJson), ids, choiceIds)) : null, position: r.position, createdAt: now, updatedAt: now })),

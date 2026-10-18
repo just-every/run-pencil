@@ -243,7 +243,7 @@ The status table at the end lists every clause with its status and evidence path
 
 **FIELD-007 — Scheduling handoff.** A scheduling step hands the respondent to the business's booking page in the sibling Dial, Calendly or Google Calendar appointment schedules, passing name and email only when the respondent typed them and the disclosure names the destination; the booked time returned by the provider's webhook is stored with the response. Pencil does not run availability or calendars itself. *Acceptance:* a Worker test with a Dial/Calendly receiver fixture completes a booking handoff and stores the confirmed time on the response; an anonymous flow passes nothing. *Status: missing.*
 
-**FIELD-008 — Classic page layout.** Besides one question at a time (RESP-001), a flow may use pages that show several questions together with conditional show/hide inside the page (written as LOGIC-006 conditions on earlier answers, including answers on the same page), the layout Jotform and Google Forms buyers use. Branching, required-on-path (FLOW-020), progress (RESP-002) and validation apply per page. On activation RESP-001 is amended to name both layouts. *Acceptance:* a browser journey builds a three-page classic form with in-page conditional questions, and a hidden required question never blocks submission. *Status: missing.*
+**FIELD-008 — Classic page layout.** Besides one question at a time (RESP-001), a flow may use pages that show several questions together with conditional show/hide inside the page (written as LOGIC-006 conditions on earlier answers, including answers on the same page), the layout Jotform and Google Forms buyers use. Branching, required-on-path (FLOW-020), progress (RESP-002) and validation apply per page. On activation RESP-001 is amended to name both layouts. *Acceptance:* a browser journey builds a three-page classic form with in-page conditional questions, and a hidden required question never blocks submission. *Status: done — Classic pages preserve each question ID and show several controls together. Bounded shared AND/OR conditions on earlier answers, including same-page answers, determine visibility; Next validates every visible question, Back edits discard newly hidden values, outgoing page rules run even when the final question is hidden, and progress counts visible questions. Preview, pinned revisions, server admission, copies and private save/resume use the same structure. Evidence: `src/core/shared/screenLayout.ts`, `src/core/features/flows/screen-validation.ts`, `tests/runtime/pages.worker.test.ts`, `tests/e2e/pages.spec.ts`. Browser journeys build and collect three pages at 1440 and 390.*
 
 **FIELD-009 — Video and audio answers.** A question may accept a recorded video or audio answer (up to an operator-set length) captured in the browser with explicit camera or microphone permission, stored like an upload (FILE-001), transcribed by `ai.provider.v1` when configured, and analysed through its transcript with the clip available to authorized operators. *Acceptance:* a browser journey with a fake media device records a 10-second answer, the operator plays it back through a signed URL, and the transcript appears in the ledger and analysis evidence. *Status: missing.*
 
@@ -543,13 +543,15 @@ RESP-016 and RSLT-012 include the sd-pencil-t5 implementation and native/browser
 
 FIELD-003 and RSLT-013 include the later 18 October round's in-repository evidence. RESP-015 to RESP-017 now use RSLT-013's retained-exclusion rule; RESP-016 is done with filtered, cutoff-bound explicit inclusion of automated exclusions in CSV and JSON, without releasing them.
 
+FIELD-008 includes the sd-pencil-t7 classic-page implementation and native/browser journeys.
+
 These totals are computed from the current Status rows; done targets remain distinct from published release-wall clauses.
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 114 | 0 | 0 | 114 |
-| Target and push further | 6 | 38 | 80 | 124 |
-| All | 120 | 38 | 80 | 238 |
+| Target and push further | 7 | 38 | 79 | 124 |
+| All | 121 | 38 | 79 | 238 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -603,7 +605,7 @@ These totals are computed from the current Status rows; done targets remain dist
 | `FIELD-005` | Media in questions and choices | target | missing |  | No code yet. |
 | `FIELD-006` | Randomized order | target | missing |  | No code yet. |
 | `FIELD-007` | Scheduling handoff | target | missing |  | No code yet. |
-| `FIELD-008` | Classic page layout | target | missing |  | No code yet. |
+| `FIELD-008` | Classic page layout | target | done | `src/core/shared/screenLayout.ts`, `src/core/features/flows/screen-validation.ts`, `tests/runtime/pages.worker.test.ts`, `tests/e2e/pages.spec.ts` | None for classic pages with the shared condition model. Three-page builder, preview, visible required validation, Back edits and completed collection are proved at 1440 and 390; native rules also prove pinned revisions, copies and saved page state. |
 | `FIELD-009` | Video and audio answers | target | missing |  | No code yet. |
 | `FIELD-010` | "Other (please specify)" and "None of the above" | target | partial | `src/core/shared/otherChoices.ts`, `src/core/shared/ui/ChoiceQuestionInput.tsx`, `src/core/features/importing/choice-response.ts`, `tests/runtime/other-choices.worker.test.ts`, `tests/e2e/other-choices.spec.ts` | Stable Other IDs and required validated write-ins, exclusive None (including selection-minimum exemption), builder controls, branching, distributions/open text, search/filters, analysis evidence, lossless JSON and a separate stable-step CSV text column ship. Typeform/Google definition and reviewed CSV imports retain unambiguous write-ins. Source response API retrieval, SurveyMonkey/Jotform imports, translation and randomized-order anchoring await their target features; ambiguous Google checkbox cells require explicit reviewed columns. |
 | `FIELD-011` | Statement screens anywhere in the flow | target | partial | `src/core/features/importing/fields.ts`, `tests/e2e/journey.spec.ts`, `tests/runtime/form-import.worker.test.ts` | A no-answer screen ships only as the optional first welcome screen, and the Typeform importer maps only a leading Statement while later Statements are reported unsupported. |

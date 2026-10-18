@@ -4,6 +4,8 @@ import { collectorFlowFailure } from './collectorFailure'
 import { runtimeAnswerValue, storedAnswerValue } from './answerStorage'
 import { revisionBranchSelection, type BranchSelection } from '../../shared/flowPolicies'
 import manifest from '../../../../seed.json'
+import { visibilityCondition } from '../../shared/screenLayout'
+import { evaluateCondition } from '../../shared/conditions'
 import { answerIssue, isUnanswered } from '../../shared/answers'
 import { ulid } from 'ulid'
 import { publicSteps, publicChoices, publicRules, questionSettings, resolveNextStep, type FlowRepository, type StoredBranchRule, type StoredChoice, type StoredStep } from '../flows'
@@ -309,7 +311,7 @@ export class ResponseService {
     while (current && !visited.has(current.stableId)) {
       visited.add(current.stableId)
       if (current.kind === 'completion') return current.stableId
-      const step = current
+      const step: StoredStep = current
       const next = resolveNextStep({ selection, step, rules: rules.filter((rule) => rule.sourceStepStableId === step.stableId), answers })
       current = next.nextStepId ? byStableId.get(next.nextStepId) : undefined
     }
@@ -328,11 +330,14 @@ export class ResponseService {
     const first = steps[0]
     if (!first) throw new ValidationError('This published flow has no first screen.')
     const accepted: AnswerInput[] = []
+    const reached = new Set<string>()
     const visited = new Set<string>()
     let current: StoredStep | undefined = first
     while (current && !visited.has(current.stableId)) {
       visited.add(current.stableId)
-      if (current.kind === 'question') {
+      const visible: boolean = !visibilityCondition(publicSteps([current])[0]) || evaluateCondition(visibilityCondition(publicSteps([current])[0])!, Object.fromEntries(accepted.map(answer => [answer.stepId,answer.value]))).matched
+      if(visible) reached.add(current.stableId)
+      if (current.kind === 'question' && visible) {
         const value = normalizeOptional(submitted.get(current.stableId))
         if (value === undefined) {
           if (current.required) throw new ValidationError(`A response is required for “${current.prompt}”.`)
@@ -343,13 +348,13 @@ export class ResponseService {
       }
       if (current.kind === 'completion') break
       const answerRecord = Object.fromEntries(accepted.map((answer) => [answer.stepId, answer.value]))
-      const next = resolveNextStep({ selection, step: current, rules: rules.filter((rule) => rule.sourceStepStableId === current!.stableId), answers: answerRecord })
+      const next: {nextStepId:string|null} = resolveNextStep({ selection, step: current, rules: rules.filter((rule) => rule.sourceStepStableId === current!.stableId), answers: answerRecord })
       current = next.nextStepId ? byStableId.get(next.nextStepId) : undefined
     }
     if (!current || current.kind !== 'completion') throw new ValidationError('The selected respondent path does not reach a completion screen.')
     const unknown = [...submitted.keys()].filter((stepId) => !byStableId.has(stepId))
     if (unknown.length > 0) throw new ValidationError('A submitted answer does not belong to this published flow.')
-    return { accepted, completionStepId: current.stableId, reachedStepIds: [...visited] }
+    return { accepted, completionStepId: current.stableId, reachedStepIds: [...reached] }
   }
 
   private validateQuestionValue(step: StoredStep, choices: StoredChoice[], value: unknown) {

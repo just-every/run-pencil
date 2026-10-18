@@ -1,3 +1,5 @@
+import { visibilityCondition } from '../../shared/screenLayout'
+import { publicSteps } from './serialization'
 import type { Condition } from '../../shared/conditions'
 import type { BranchSelection } from '../../shared/flowPolicies'
 import type { GraphIssue } from './graph'
@@ -20,7 +22,7 @@ export function validateConditionPaths(steps: StoredStep[], choices: StoredChoic
   for (const step of steps.filter(step => step.kind === 'question')) {
     const ids = choices.filter(choice => choice.stepId === step.id).map(choice => choice.stableId)
     const settings = step.questionSettingsJson ? JSON.parse(step.questionSettingsJson) as Record<string, unknown> : step.questionType === 'rating' ? { min: 1, max: 5 } : step.questionType === 'multiple_choice' ? { minSelections: 1, maxSelections: ids.length } : {}
-    questions.set(step.stableId, { step, choices: ids, settings })
+    questions.set(step.stableId, { step, choices: ids, settings: {...(step.questionType==='rating'?{min:1,max:5}:{}),...settings} })
   }
   const ordered = new Map(steps.map(step => {
     const own = rules.filter(rule => rule.sourceStepStableId === step.stableId).sort((a, b) => a.position - b.position)
@@ -30,33 +32,44 @@ export function validateConditionPaths(steps: StoredStep[], choices: StoredChoic
   const addIssue = (stepId: string, reason: string) => {
     if (!issues.some(issue => issue.stepId === stepId && issue.reason === reason)) issues.push({ stepId, reason })
   }
-  const walk = (stepId: string, path: ReadonlySet<string>, requirements: ConditionRequirement[]) => {
+  const walk = (stepId: string, path: ReadonlySet<string>, requirements: ConditionRequirement[], trail: ReadonlySet<string> = new Set()) => {
     spendConditionProof(budget)
-    reached.add(stepId)
-    if (path.has(stepId)) {
+    if (trail.has(stepId)) {
       addIssue(stepId, 'Every possible respondent path must terminate without a cycle.')
       return
     }
     const step = byId.get(stepId)
-    if (!step || step.kind === 'completion') return
-    const available = new Set(path).add(stepId)
-    const previous: ConditionRequirement[] = []
-    let hasPath = false
-    const follow = (destination: string | null, extra: ConditionRequirement[]) => {
-      if (!destination) return
-      const next = [...requirements, ...extra]
-      if (!conditionRequirementsPossible(questions, next, available, budget)) return
-      hasPath = true
-      const destinations = edges.get(stepId)!
-      if (!destinations.includes(destination)) destinations.push(destination)
-      walk(destination, available, next)
+    if (!step) return
+    if (step.kind === 'completion') { reached.add(stepId); return }
+    const nextTrail = new Set(trail).add(stepId)
+    const visibility = visibilityCondition(publicSteps([step])[0])
+    const evaluateExit = (visible:boolean, nextRequirements:ConditionRequirement[]) => {
+      if (!conditionRequirementsPossible(questions,nextRequirements,path,budget)) return
+      if (visible) reached.add(stepId)
+      const available = new Set(path)
+      if (visible) available.add(stepId)
+      const previous: ConditionRequirement[] = []
+      let hasPath = false
+      const follow = (destination: string | null, extra: ConditionRequirement[]) => {
+        if (!destination) return
+        const next = [...nextRequirements, ...extra]
+        if (!conditionRequirementsPossible(questions, next, available, budget)) return
+        hasPath = true
+        const destinations = edges.get(stepId)!
+        if (!destinations.includes(destination)) destinations.push(destination)
+        walk(destination, available, next, nextTrail)
+      }
+      for (const { rule, condition } of ordered.get(stepId) ?? []) {
+        follow(rule.destinationStepStableId, [...previous, { condition, matched: true, available }])
+        previous.push({ condition, matched: false, available })
+      }
+      follow(step.nextStepStableId, previous)
+      if (!hasPath) addIssue(stepId, 'Every possible respondent path must reach a completion screen.')
     }
-    for (const { rule, condition } of ordered.get(stepId) ?? []) {
-      follow(rule.destinationStepStableId, [...previous, { condition, matched: true, available }])
-      previous.push({ condition, matched: false, available })
-    }
-    follow(step.nextStepStableId, previous)
-    if (!hasPath) addIssue(stepId, 'Every possible respondent path must reach a completion screen.')
+    if (visibility) {
+      evaluateExit(false,[...requirements,{condition:visibility,matched:false,available:path}])
+      evaluateExit(true,[...requirements,{condition:visibility,matched:true,available:path}])
+    } else evaluateExit(true,requirements)
   }
   const first = steps.slice().sort((a, b) => a.position - b.position)[0]
   if (!first) return { issues, edges }

@@ -132,6 +132,7 @@ export const api = {
     request<{ kind: 'created'; draftVersion: number; step: FlowStep } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/steps/${encodeURIComponent(stepId)}/duplicate`, { method: 'POST', body: JSON.stringify({ expectedVersion }) }),
   deleteDraftStep: (flowId: string, stepId: string, expectedVersion: number) =>
     request<{ kind: 'deleted'; draftVersion: number } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/steps/${encodeURIComponent(stepId)}`, { method: 'DELETE', body: JSON.stringify({ expectedVersion }) }),
+  saveScreen: (flowId:string,input:{stepId:string;expectedVersion:number;layout:import('../shared/screenLayout').ScreenLayout|null}) => request<{kind:'updated'|'conflict';latestVersion?:number}>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/screen`,{method:'PUT',body:JSON.stringify(input)}),
   reorderDraftSteps: (flowId: string, input: { expectedVersion: number; orderedStepIds: string[] }) =>
     request<{ kind: 'reordered'; draftVersion: number } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/order`, { method: 'PUT', body: JSON.stringify(input) }),
   previewDraft: (flowId: string, answers: Record<string, unknown>) =>

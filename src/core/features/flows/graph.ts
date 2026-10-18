@@ -1,3 +1,5 @@
+import { validateScreens } from './screen-validation'
+import { visibilityCondition } from '../../shared/screenLayout'
 import { evaluateCondition, conditionTests } from '../../shared/conditions'
 import { conditionShape, conditionValueValid } from '../../shared/conditionValidation'
 import { earlierRecallQuestions } from '../../shared/answerRecall'
@@ -72,7 +74,7 @@ export function questionSettings(step: StoredStep, choices: StoredChoice[]): { v
       ? { minSelections: 1, maxSelections: choices.length }
       : {}
   const settings = validSettings(step, choices)
-  return { valid: settings.valid, value: step.questionSettingsJson ? settings.value : defaultSettings }
+  return { valid: settings.valid, value: { ...defaultSettings, ...settings.value } }
 }
 
 function branchRuleIsValid(rule: StoredBranchRule, source: StoredStep, choiceIds: string[]) {
@@ -94,7 +96,7 @@ function branchRuleIsValid(rule: StoredBranchRule, source: StoredStep, choiceIds
 }
 
 export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice[], rules: StoredBranchRule[], selection: BranchSelection = 'first-matching-rule'): GraphIssue[] {
-  const issues: GraphIssue[] = []
+  const issues: GraphIssue[] = validateScreens({steps:publicSteps(steps),choices:publicChoices(steps,choices),branchRules:publicRules(rules)})
   const capacityIssue = structureLimitIssue(steps)
   if (capacityIssue) issues.push({ stepId: 'flow', reason: capacityIssue })
   const byStableId = new Map(steps.map((step) => [step.stableId, step]))
@@ -167,7 +169,7 @@ export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice
   const first = steps.slice().sort((left, right) => left.position - right.position)[0]
   if (!first) return issues
   if (first.kind === 'completion') issues.push({ stepId: first.stableId, reason: 'The first screen must be a welcome screen or question.' })
-  if (validRules.some(rule => rule.conditionJson)) {
+  if (validRules.some(rule => rule.conditionJson) || steps.some(step => visibilityCondition(publicSteps([step])[0]))) {
     const proof = validateConditionPaths(steps, choices, validRules, selection)
     issues.push(...proof.issues)
     issues.push(...validateAnswerRecall({ steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(validRules), branchSelection: selection }, proof.edges))

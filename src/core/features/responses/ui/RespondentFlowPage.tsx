@@ -1,3 +1,6 @@
+import { contactQuestionTypes } from '../../../shared/contactAnswers'
+import { responseScreens } from '../../../shared/screenLayout'
+import { ScreenQuestions } from '../../../shared/ui/ScreenQuestions'
 import { useViewCounter } from './useViewCounter'
 import { interpolateAnswerRecall } from '../../../shared/answerRecall'
 import { SaveResponse } from './SaveResponse'
@@ -7,7 +10,6 @@ import { useEmbedProtocol } from '../../embedding'
 import { ArrowLeft, ArrowRight, Check, LockKeyhole } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { answerIssue, isUnanswered } from '../../../shared/answers'
-import { contactQuestionTypes } from '../../../shared/contactAnswers'
 import { visiblePath } from '../../../shared/flowPath'
 import { QuestionInput } from '../../../shared/ui/QuestionInput'
 import { PublicClosedPage } from './PublicClosedPage'
@@ -47,14 +49,15 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   }, [slug, embedded, initialFlow.flow.id])
   const initialAnswers = Object.fromEntries((resume?.answers ?? []).map(answer => [answer.stepId, answer.value]))
   const initialPath = visiblePath(initialFlow, initialAnswers)
-  const initialIndex = resume ? Math.max(0, initialPath.findIndex(step => step.id === resume.currentStepId)) : 0
+  const initialIndex = resume ? Math.max(0, responseScreens(initialFlow.steps,initialPath).findIndex(screen => screen.id === resume.currentStepId || screen.steps.some(step=>step.id===resume.currentStepId))) : 0
   const [index, setIndex] = useState(initialIndex)
   const [completedStepId, setCompletedStepId] = useState<string | undefined>(initialFlow.completedStepId ?? undefined)
   useEmbedProtocol(embedded, !!completedStepId, config.embedHostOrigin)
   const [pendingFinal, setPendingFinal] = useState<PendingFinal>()
   const [answers, setAnswers] = useState<AnswerValues>(initialAnswers)
-  const [skipped, setSkipped] = useState<Set<string>>(new Set(initialPath.slice(0, initialIndex).filter(step => step.kind === 'question' && !step.required && isUnanswered(initialAnswers[step.id])).map(step => step.id)))
+  const [skipped, setSkipped] = useState<Set<string>>(new Set(initialPath.slice(0,resume?initialPath.findIndex(step=>step.id===resume.currentStepId):0).filter(step => step.kind === 'question' && !step.required && isUnanswered(initialAnswers[step.id])).map(step => step.id)))
   const [error, setError] = useState<string>()
+  const [fieldErrors,setFieldErrors] = useState<Record<string,string>>({})
   const [submitting, setSubmitting] = useState(false)
   const [sessionUnavailable, setSessionUnavailable] = useState(false)
   const [formChanged, setFormChanged] = useState(false)
@@ -100,6 +103,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   const changeAnswer = (stepId: string, value: unknown) => {
     if (pendingFinal || sessionUnavailable || formChanged) return
     setError(undefined)
+    setFieldErrors({})
     const reachableSkipped = new Set(visiblePath(flow, { ...answers, [stepId]: value }).map(step => step.id))
     setSkipped(current => new Set([...current].filter(id => id !== stepId && reachableSkipped.has(id))))
     setAnswers((current) => {
@@ -111,8 +115,10 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   }
 
   const path = useMemo(() => flow ? visiblePath(flow, answers) : [], [flow, answers])
+  const screens = responseScreens(flow.steps,path)
+  const screen = screens[Math.min(index,Math.max(0,screens.length-1))]
   if (closedFlow) return <PublicClosedPage config={config} flow={closedFlow} landing={landing} embedded={embedded} />
-  const current = completedStepId ? flow.steps.find((step) => step.id === completedStepId && step.kind === 'completion') : path[Math.min(index, Math.max(0, path.length - 1))]
+  const current = completedStepId ? flow.steps.find((step) => step.id === completedStepId && step.kind === 'completion') : screen?.steps[0]
   if (!current) return <main className="pencil-canvas respondent-shell"><p className="status-note" data-tone="error">This published flow has no visible steps.</p></main>
   const questionSteps = path.filter((step) => step.kind === 'question')
   const questionPosition = questionSteps.findIndex((step) => step.id === current.id)
@@ -121,7 +127,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   const currentChoices = choicesForStep(flow.choices, current.id).map(choice => ({ ...choice, label: recall(choice.label) }))
   const isCompletion = current.kind === 'completion'
   const isWelcome = current.kind === 'welcome'
-  const nextCandidate = path[index + 1]
+  const nextCandidate = screens[index + 1]?.steps[0]
   const answeredQuestions = questionSteps.filter(step => (!step.required && skipped.has(step.id) && isUnanswered(answers[step.id])) || (!isUnanswered(answers[step.id]) && !answerIssue(step, choicesForStep(flow.choices, step.id).map(choice => choice.id), answers[step.id]))).length
   const progress = isCompletion ? 100 : answeredQuestions / Math.max(1, questionSteps.length) * 100
   const configuredTheme = brandStyle(config)
@@ -163,11 +169,12 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
     setError(undefined)
     if (isCompletion) return
     if (!pendingFinal && current.kind === 'question') {
-      const issue = answerIssue(displayedStep, currentChoices.map((choice) => choice.id), answers[current.id])
-      if (issue) {
-        if (!(contactQuestionTypes as readonly string[]).includes(current.questionType ?? '') || isUnanswered(answers[current.id])) setError(issue)
-        return
-      }
+      const issues = Object.fromEntries((screen?.steps ?? [current]).filter(step=>step.kind==='question').flatMap(step=>{
+        const issue=answerIssue({...step,prompt:interpolateAnswerRecall(step.prompt,flow,answers,step.id)},choicesForStep(flow.choices,step.id).map(choice=>choice.id),answers[step.id])
+        return issue?[[step.id,issue]]:[]
+      }))
+      setFieldErrors(issues)
+      if(Object.keys(issues).length) {if(!screen?.layout && (!(contactQuestionTypes as readonly string[]).includes(current.questionType??'') || isUnanswered(answers[current.id])))setError(Object.values(issues)[0]);return}
     }
     if (!pendingFinal && !nextCandidate) {
       setError('This flow has no completion path from this screen.')
@@ -190,8 +197,8 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
         return
       }
       await api.advanceSession(slug, { ...credentials, stepId: nextCandidate!.id })
-      if (current.kind === 'question' && !current.required && isUnanswered(answers[current.id])) setSkipped(previous => new Set([...previous, current.id]))
-      setIndex((currentIndex) => Math.min(currentIndex + 1, path.length - 1))
+      setSkipped(previous=>new Set([...previous,...(screen?.steps??[current]).filter(step=>step.kind==='question'&&!step.required&&isUnanswered(answers[step.id])).map(step=>step.id)]))
+      setIndex((currentIndex) => Math.min(currentIndex + 1, screens.length - 1))
     } catch (reason) {
       // A refused first attempt did not commit. A refused retry (for example
       // a rate limit before receipt lookup) cannot resolve the original outcome.
@@ -226,17 +233,17 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
       {landing ? <header className="respondent-landing-header"><span className="eyebrow">{config.publicFlowBusinessName}</span><a className="secondary-button focus-ring" href="/signin">Operator sign in</a></header> : null}
       <article className="respondent-card respondent-note-sheet" aria-labelledby="respondent-title">
         <BrandIdentity config={config} />
-        {!isCompletion ? <><div className="respondent-top"><span>{isWelcome ? 'Before you begin' : `Question ${questionPosition + 1} of ${questionSteps.length}`}</span><span>{isWelcome ? `${questionSteps.length} question${questionSteps.length === 1 ? '' : 's'} ahead` : `${Math.max(0, questionSteps.length - answeredQuestions)} remaining`}</span></div><div aria-label="Response progress" aria-valuemax={100} aria-valuemin={0} aria-valuenow={Math.round(progress)} className="progress-track" role="progressbar"><span style={{ width: `${progress}%` }} />{!isWelcome && current.kind === 'question' ? <span className="progress-track__here" style={{ left: `${questionPosition / Math.max(1, questionSteps.length) * 100}%`, width: `${100 / Math.max(1, questionSteps.length)}%` }} /> : null}</div></> : null}
-        <h1 className="display" id="respondent-title">{displayedStep.prompt}</h1>
-        {current.helperText ? <p className="respondent-helper">{displayedStep.helperText}</p> : null}
+        {!isCompletion ? <><div className="respondent-top"><span>{isWelcome ? 'Before you begin' : screen?.layout ? `${screen.layout.kind === 'page' ? 'Page' : 'Group'} ${screens.filter(entry=>entry.steps[0]?.kind==='question').findIndex(entry=>entry.id===screen.id)+1} of ${screens.filter(entry=>entry.steps[0]?.kind==='question').length} · ${screen.steps.length} questions` : `Question ${questionPosition + 1} of ${questionSteps.length}`}</span><span>{isWelcome ? `${questionSteps.length} question${questionSteps.length === 1 ? '' : 's'} ahead` : `${Math.max(0, questionSteps.length - answeredQuestions)} remaining`}</span></div><div aria-label="Response progress" aria-valuemax={100} aria-valuemin={0} aria-valuenow={Math.round(progress)} className="progress-track" role="progressbar"><span style={{ width: `${progress}%` }} />{!isWelcome && current.kind === 'question' ? <span className="progress-track__here" style={{ left: `${questionPosition / Math.max(1, questionSteps.length) * 100}%`, width: `${(screen?.steps.filter(step=>step.kind==='question').length??1)*100 / Math.max(1, questionSteps.length)}%` }} /> : null}</div></> : null}
+        <h1 className="display" id="respondent-title">{screen?.layout && !isCompletion ? screen.layout.title : displayedStep.prompt}</h1>
+        {screen?.layout && !isCompletion ? screen.layout.description ? <p className="respondent-helper">{screen.layout.description}</p> : null : current.helperText ? <p className="respondent-helper">{displayedStep.helperText}</p> : null}
         {isWelcome || (!path.some((step) => step.kind === 'welcome') && current.kind === 'question' && questionPosition === 0) ? <aside className="privacy-card"><LockKeyhole aria-hidden="true" size={22} strokeWidth={1.6} /><span><strong>Before you share</strong><br />{config.publicFlowPurpose} Your response is {initialFlow.identity === 'identified' ? 'identified through your invitation' : 'anonymous'}. At {config.publicFlowBusinessName}, operators can see the answers you submit. Identifying details you choose to type, such as an email address, identify you to those operators. Your answers are received and stored by this feedback service.{config.answersMayReachAi ? <> <span data-disclosure="ai-analysis">If {config.publicFlowBusinessName} analyses feedback, your written answers may be sent to the AI service it chose. Separate contact, invitation and session identity is excluded. Names, emails or other identifying details you type in selected text answers are sent with those answers.</span></> : null}</span></aside> : null}
-        {current.kind === 'question' && current.required ? <p className="respondent-required">Required</p> : null}
-        {current.kind === 'question' ? <fieldset className="plain-fieldset" disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} aria-labelledby="respondent-title"><QuestionInput key={`${flow.revision.id}-${current.id}`} choices={currentChoices} onChange={(value) => changeAnswer(current.id, value)} step={displayedStep} value={answers[current.id]} /></fieldset> : null}
+        {!screen?.layout && current.kind === 'question' && current.required ? <p className="respondent-required">Required</p> : null}
+        {current.kind === 'question' && screen?.layout ? <ScreenQuestions steps={screen.steps} choices={flow.choices} answers={answers} errors={fieldErrors} disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} recall={(text,id)=>interpolateAnswerRecall(text,flow,answers,id)} onChange={changeAnswer}/> : current.kind === 'question' ? <fieldset className="plain-fieldset" disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} aria-labelledby="respondent-title"><QuestionInput key={`${flow.revision.id}-${current.id}`} choices={currentChoices} onChange={(value) => changeAnswer(current.id, value)} step={displayedStep} value={answers[current.id]} /></fieldset> : null}
         {isCompletion ? <p className="privacy-card"><Check aria-hidden="true" color="var(--green)" size={22} /><span>Thank you. {invitationToken ? 'This invitation link' : 'This public link'} cannot edit a completed response.</span></p> : null}
         <label className="respondent-honeypot" aria-hidden="true">Company website<input autoComplete="off" name="company-website" onChange={(event) => setHoneypot(event.target.value)} tabIndex={-1} value={honeypot} /></label>
         {pendingFinal && !submitting ? <p className="status-note">Retry to confirm the answers already submitted.</p> : null}
         {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
-        {!isCompletion ? <footer className="respondent-actions">{index > 0 ? <button className="secondary-button focus-ring" disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onClick={() => { setError(undefined); const target = Math.max(0, index - 1); const earlier = new Set(path.slice(0, target).map(step => step.id)); setSkipped(previous => new Set([...previous].filter(id => earlier.has(id)))); setIndex(target) }} type="button"><ArrowLeft aria-hidden="true" size={17} /> Back</button> : null}<button className="primary-button focus-ring" disabled={!hydrated || submitting} onClick={needsAdmission && !pendingFinal ? restart : next} type="button">{submitting ? (needsAdmission ? 'Starting again…' : pendingFinal || nextCandidate?.kind === 'completion' ? 'Submitting…' : 'Continuing…') : primaryLabel} <ArrowRight aria-hidden="true" size={17} /></button></footer> : null}
+        {!isCompletion ? <footer className="respondent-actions">{index > 0 ? <button className="secondary-button focus-ring" disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onClick={() => { setError(undefined); const target = Math.max(0, index - 1); const earlier = new Set(screens.slice(0,target).flatMap(screen=>screen.steps.map(step=>step.id))); setSkipped(previous => new Set([...previous].filter(id => earlier.has(id)))); setIndex(target) }} type="button"><ArrowLeft aria-hidden="true" size={17} /> Back</button> : null}<button className="primary-button focus-ring" disabled={!hydrated || submitting} onClick={needsAdmission && !pendingFinal ? restart : next} type="button">{submitting ? (needsAdmission ? 'Starting again…' : pendingFinal || nextCandidate?.kind === 'completion' ? 'Submitting…' : 'Continuing…') : primaryLabel} <ArrowRight aria-hidden="true" size={17} /></button></footer> : null}
         {!isCompletion ? <SaveResponse disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onSave={saveForLater} /> : null}
       </article>
       {landing && config.showPoweredByCredit ? <footer className="respondent-landing-credit">Powered by {config.productName} · <a href="https://runeditrun.com">runeditrun.com</a></footer> : null}
