@@ -1,3 +1,4 @@
+import { useAnswerAccessibility } from './AnswerFieldset'
 import { useId, useState } from 'react'
 import type { FlowStep } from '../../app/api'
 import { contactFieldIssues } from '../contactAnswers'
@@ -22,6 +23,7 @@ function initialParts(type: string, value: unknown): Record<string, string> {
 }
 
 export function ContactQuestionInput({ step, value, onChange }: Props) {
+  const accessibility = useAnswerAccessibility()
   const id = useId(), type = String(step.questionType)
   const [parts, setParts] = useState(() => initialParts(type, value))
   const [scalar, setScalar] = useState(() => typeof value === 'string' ? value : type === 'currency' && value && typeof value === 'object' && 'minorUnits' in value ? currencyDecimal(value as CurrencyAnswer) : '')
@@ -44,8 +46,7 @@ export function ContactQuestionInput({ step, value, onChange }: Props) {
           const number = phoneNumber(parts.number ?? '')
           if (number) setParts(current => ({ ...current, number: displayPhone({ number }) }))
         }
-      }} aria-required={required && (step.required || value !== undefined)} aria-invalid={Boolean(issues[key])}
-      aria-describedby={[hint ? `${id}-${key}-hint` : '', issues[key] ? `${id}-${key}-error` : ''].filter(Boolean).join(' ') || undefined} />
+      }} aria-required={required && (step.required || value !== undefined)} {...accessibility([hint ? `${id}-${key}-hint` : '', issues[key] ? `${id}-${key}-error` : ''].filter(Boolean).join(' ') || undefined,Boolean(issues[key]))} />
     {hint ? <p className="muted contact-field-hint" id={`${id}-${key}-hint`}>{hint}</p> : null}
     {issues[key] ? <p className="contact-field-error" id={`${id}-${key}-error`} role="alert">{issues[key]}</p> : null}
   </div>
@@ -56,7 +57,7 @@ export function ContactQuestionInput({ step, value, onChange }: Props) {
       <label htmlFor={`${id}-scalar`}>{type === 'url' ? 'Website URL' : 'Amount in USD'}</label>
       <input id={`${id}-scalar`} className="text-input" type="text" inputMode={type === 'url' ? 'url' : 'decimal'} autoComplete={type === 'url' ? 'url' : 'off'} maxLength={type === 'url' ? 2048 : 40}
         value={scalar} onChange={event => { setScalar(event.target.value); onChange(event.target.value.trim() ? event.target.value : undefined) }}
-        aria-required={step.required} aria-invalid={Boolean(issues[errorKey])} aria-describedby={`${id}-hint${issues[errorKey] ? ` ${id}-error` : ''}`} />
+        aria-required={step.required} {...accessibility(`${id}-hint${issues[errorKey] ? ` ${id}-error` : ''}`,Boolean(issues[errorKey]))} />
       <p className="muted contact-field-hint" id={`${id}-hint`}>{type === 'url' ? 'Include http:// or https://.' : 'US dollars, with up to two decimal places.'}</p>
       {issues[errorKey] ? <p className="contact-field-error" id={`${id}-error`} role="alert">{issues[errorKey]}</p> : null}
     </div>
@@ -74,7 +75,7 @@ export function ContactQuestionInput({ step, value, onChange }: Props) {
     </div> : null}
     {type === 'postal_address' ? <>
       <div className="contact-field"><label htmlFor={`${id}-country`}>Country</label>
-        <select id={`${id}-country`} className="text-input" autoComplete="country" value={country} onChange={event => change('country', event.target.value)} aria-required={step.required || value !== undefined} aria-invalid={Boolean(issues.country)} aria-describedby={issues.country ? `${id}-country-error` : undefined}>
+        <select id={`${id}-country`} className="text-input" autoComplete="country" value={country} onChange={event => change('country', event.target.value)} aria-required={step.required || value !== undefined} {...accessibility(issues.country ? `${id}-country-error` : undefined,Boolean(issues.country))}>
           {countries.map(item => <option value={item.code} key={item.code}>{item.name}</option>)}
         </select>
         {issues.country ? <p className="contact-field-error" id={`${id}-country-error`} role="alert">{issues.country}</p> : null}

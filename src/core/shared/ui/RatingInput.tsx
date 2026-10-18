@@ -1,3 +1,4 @@
+import { useAnswerAccessibility } from './AnswerFieldset'
 import type { CSSProperties } from 'react'
 import { Star } from 'lucide-react'
 import type { FlowStep } from '../../app/api'
@@ -8,6 +9,7 @@ import './rating-scale.css'
 type Props = { step: FlowStep; value: unknown; onChange: (value: unknown) => void }
 
 export function RatingInput({ step, value, onChange }: Props) {
+  const accessibility = useAnswerAccessibility()
   const settings = step.questionSettings ?? {}
   if (!ratingSettingsValid(settings)) return <p role="status">Choose a scale starting at 0 or 1, with 2 to 11 steps and labels up to 100 characters.</p>
   const { min, max, steps, lowLabel, middleLabel, highLabel } = ratingScale(settings)
@@ -23,7 +25,7 @@ export function RatingInput({ step, value, onChange }: Props) {
       <span className="rating-scale__middle">{middleLabel}</span>
       <span className="rating-scale__high">{highLabel}</span>
     </div> : null}
-    <div role="radiogroup" aria-required={step.required} className="rating-row rating-scale__options" aria-label={`${step.prompt} rating`}>
+    <div {...accessibility()} role="radiogroup" aria-required={step.required} className="rating-row rating-scale__options" aria-label={`${step.prompt} rating`}>
       {Array.from({ length: steps }, (_, offset) => min + offset).map(rating => {
         // With an even count the middle label belongs to the two adjacent steps.
         const labels = [rating === min ? lowLabel : '', Math.abs(rating - middle) <= 0.5 ? middleLabel : '', rating === max ? highLabel : ''].filter(Boolean)
