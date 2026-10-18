@@ -1,3 +1,4 @@
+import { useRespondentFocus } from '../../../shared/ui/useRespondentFocus'
 import { useEffect, useState } from 'react'
 import { api, ApiError, type ClosedFlow, type SavedResponseState } from '../../../app/api'
 import type { PublicSeedConfig } from '../../../shared/config'
@@ -20,11 +21,12 @@ export function ResumeFlowPage({ config, slug, token }: { config: PublicSeedConf
     })
     return () => { active = false }
   }, [slug, token, attempt])
+  useRespondentFocus(saved?.state ?? error,Boolean(saved?.state === 'unavailable' || error),'resume-title')
   if (closed) return <PublicClosedPage config={config} flow={closed} />
   if (saved?.state === 'open') return <RespondentFlowPage key={saved.sessionId} config={config} slug={slug} initialFlow={saved.flow} invitationToken={saved.invitationToken} resume={saved} />
   if (saved?.state === 'completed') return <RespondentFlowPage config={config} slug={slug} initialFlow={{ ...saved.flow, completedStepId: saved.completionStepId }} />
   return <main className="pencil-canvas respondent-shell brand-surface" style={brandStyle(config)}><article className="respondent-card respondent-note-sheet"><BrandIdentity config={config} />
-    <h1 className="display">{saved?.state === 'unavailable' ? 'This resume link is no longer available.' : 'Your saved response'}</h1>
+    <h1 className="display" id="resume-title" tabIndex={-1}>{saved?.state === 'unavailable' ? 'This resume link is no longer available.' : 'Your saved response'}</h1>
     {saved?.state === 'unavailable' ? <><p>{saved.message}</p><a className="primary-button focus-ring" href={saved.startAgain}>Start again</a></> : error ? <><p className="status-note" data-tone="error" role="alert">{error}</p><button className="primary-button focus-ring" type="button" onClick={() => setAttempt(value => value + 1)}>Try again</button></> : <p role="status">Loading your saved answers…</p>}
   </article></main>
 }

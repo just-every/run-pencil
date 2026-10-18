@@ -1,3 +1,4 @@
+import { useAnswerAccessibility } from './AnswerFieldset'
 import { useId } from 'react'
 import type { ChoiceOption, FlowStep } from '../../app/api'
 import { textAnswerIssue, textTypeLimit } from '../textValidation'
@@ -5,6 +6,7 @@ import { textAnswerIssue, textTypeLimit } from '../textValidation'
 type Props = { step: FlowStep; choices: ChoiceOption[]; value: unknown; onChange: (value: unknown) => void }
 
 export function TextQuestionInput({ step, value, onChange }: Props) {
+  const accessibility = useAnswerAccessibility()
   const id = useId()
   const settings = step.questionSettings ?? {}
   const text = typeof value === 'string' ? value : ''
@@ -15,8 +17,7 @@ export function TextQuestionInput({ step, value, onChange }: Props) {
   const props = {
     'aria-label': step.prompt,
     'aria-required': step.required,
-    'aria-invalid': Boolean(issue),
-    'aria-describedby': describedBy,
+    ...accessibility(describedBy,Boolean(issue)),
     // Keep the field editable beyond an operator maximum so attempted values
     // receive the same explicit error as API submissions, without truncation.
     maxLength: textTypeLimit(step.questionType),

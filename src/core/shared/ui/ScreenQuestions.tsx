@@ -1,3 +1,4 @@
+import { AnswerFieldset } from './AnswerFieldset'
 import type { ChoiceOption, FlowStep } from '../../app/api'
 import { QuestionInput } from './QuestionInput'
 
@@ -9,10 +10,9 @@ export function ScreenQuestions({steps,choices,answers,errors,disabled,recall,on
       <h2 className="display" id={`question-${step.id}`}>{displayed.prompt}</h2>
       {displayed.helperText?<p className="respondent-helper">{displayed.helperText}</p>:null}
       {step.required?<p className="respondent-required">Required</p>:null}
-      <fieldset className="plain-fieldset" disabled={disabled} aria-labelledby={`question-${step.id}`} aria-describedby={errors[step.id]?`issue-${step.id}`:undefined}>
+      <AnswerFieldset id={step.id} disabled={disabled} labelledBy={`question-${step.id}`} error={errors[step.id]}>
         <QuestionInput step={displayed} choices={options} value={answers[step.id]} onChange={value=>onChange(step.id,value)}/>
-      </fieldset>
-      {errors[step.id]?<p id={`issue-${step.id}`} className="status-note" data-tone="error" role="alert">{errors[step.id]}</p>:null}
+      </AnswerFieldset>
     </section>
   })}</div>
 }

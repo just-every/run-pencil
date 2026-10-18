@@ -1,3 +1,4 @@
+import { useAnswerAccessibility } from './AnswerFieldset'
 import { ChoiceQuestionInput } from './ChoiceQuestionInput'
 import { contactQuestionTypes } from '../contactAnswers'
 import { scoreQuestionTypes } from '../scoreQuestions'
@@ -9,6 +10,7 @@ import { ExtendedQuestionInput } from './ExtendedQuestionInput'
 import type { FlowStep, ChoiceOption } from '../../app/api'
 
 export function QuestionInput({ step, choices, value, onChange }: { step: FlowStep; choices: ChoiceOption[]; value: unknown; onChange: (value: unknown) => void }) {
+  const accessibility = useAnswerAccessibility()
   const required = step.required
   if ((contactQuestionTypes as readonly string[]).includes(step.questionType ?? '')) return <ContactQuestionInput step={step} value={value} onChange={onChange} />
   if ((scoreQuestionTypes as readonly string[]).includes(step.questionType ?? '')) return <ScoreQuestionInput step={step} value={value} onChange={onChange} />
@@ -17,7 +19,7 @@ export function QuestionInput({ step, choices, value, onChange }: { step: FlowSt
   if (['single_choice', 'multiple_choice', 'dropdown'].includes(step.questionType ?? '')) return <ChoiceQuestionInput step={step} choices={choices} value={value} onChange={onChange} />
   if (step.questionType === 'priority') {
     const ordered = Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
-    return <div className="answer-stack" aria-label={step.prompt} role="group">
+    return <div {...accessibility()} className="answer-stack" aria-label={step.prompt} role="group">
       {choices.map((choice) => {
         const rank = ordered.indexOf(choice.id)
         return <button role="checkbox" aria-required={required} aria-checked={rank >= 0} className="choice-button focus-ring" data-selected={rank >= 0} key={choice.id} onClick={() => onChange(rank >= 0 ? ordered.filter((item) => item !== choice.id) : [...ordered, choice.id])} type="button"><span className="choice-indicator">{rank >= 0 ? rank + 1 : null}</span>{choice.label}</button>
@@ -26,5 +28,5 @@ export function QuestionInput({ step, choices, value, onChange }: { step: FlowSt
     </div>
   }
   if (step.questionType === 'short_text' || step.questionType === 'long_text') return <TextQuestionInput step={step} choices={choices} value={value} onChange={onChange} />
-  return <input aria-label={step.prompt} aria-required={required} className="text-input" onChange={event => onChange(event.target.value)} placeholder="Write your response…" type="email" value={typeof value === 'string' ? value : ''} />
+  return <input {...accessibility()} aria-label={step.prompt} aria-required={required} className="text-input" onChange={event => onChange(event.target.value)} placeholder="Write your response…" type="email" value={typeof value === 'string' ? value : ''} />
 }

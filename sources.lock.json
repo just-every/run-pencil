@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "9b1e77adcd3e6d5cc2bba3098491c1cd28c297b76aa34b8ff45b1e1013e9640f",
+      "sha256": "d6fe673ddba02222819496ac534468fae1852bcbb6de90677770b82326df7669",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "63229ed054ba510f765bc3d2b080cd43779c4cdb22fbf603593604231c409421",
+      "sha256": "30f8ff867988ba2bbd7237234e0e61168f2e589f32b42707b1060f509a4827a7",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "ad5f96ea4f89d3ddec3b0484f79af0eeac9d8fd32e3c4867dc6c89b04c63983b",
+      "sha256": "0c2580bb3df000a156476e103d1b49af861c924ea9731e2c40c038f9f07a59bd",
       "executable": false
     },
     "DEMO.md": {
@@ -1813,7 +1813,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "136b6caa11e22d631ea92bfd6bc3eeef243ca4f6d836f28874ef78b715d651cb",
+      "sha256": "ef32bbe05defd834deff3711919a079f90379c93de91ef5904c3539bad119e56",
       "executable": false
     },
     "src/base/ai/client.mjs": {
@@ -4525,7 +4525,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/DraftPreview.tsx": {
-      "sha256": "73d34fd66adff6dbc5b1a9c0025d4b1ff2a910044568b6f4a4f4afb343d0b83a",
+      "sha256": "64fe89d42d917e3304c8f04f740431e6050e62a12a2e0743b1492e1e644c65cc",
       "executable": false
     },
     "src/core/features/flows/ui/FlowBuilderPage.tsx": {
@@ -5265,7 +5265,7 @@
       "executable": false
     },
     "src/core/features/responses/ui/PublicClosedPage.tsx": {
-      "sha256": "4e09af676f419c011de31c5e1f8d9b8966838cf738cfab7b738e6243f9150c78",
+      "sha256": "870b5f4c860f87009d0dde885f9c3ca5f961b3a3a840d3b94045a758b26f4edc",
       "executable": false
     },
     "src/core/features/responses/ui/PublicDocument.tsx": {
@@ -5277,11 +5277,11 @@
       "executable": false
     },
     "src/core/features/responses/ui/RespondentFlowPage.tsx": {
-      "sha256": "0ad424b5ec7f9c8ba162cd01b2cb728841a948b269b4a1b8efc9c32e8394d2b1",
+      "sha256": "f6cf49a6c19901791d4e433139335b7729c2b69dd30009ccdc511dcc3c138cdb",
       "executable": false
     },
     "src/core/features/responses/ui/ResumeFlowPage.tsx": {
-      "sha256": "af7ff73bb28b2098739613df1395ccac8d33103c5302e6724cb17d6bb7a9702f",
+      "sha256": "1d2adf7c5fdf7ec480dbdcbf7494b28e9b2b328ad26984574bd19d19c2ee55de",
       "executable": false
     },
     "src/core/features/responses/ui/SaveResponse.tsx": {
@@ -5840,16 +5840,20 @@
       "sha256": "a2ac9271ea355b8ec39bb98544a2f5ffad7cea4f152cf410f08e3add90a9464d",
       "executable": false
     },
+    "src/core/shared/ui/AnswerFieldset.tsx": {
+      "sha256": "652ea4984a4c5c18b4dc8854e0a52c7b4989c6d5bd82a3846735258756e61e9a",
+      "executable": false
+    },
     "src/core/shared/ui/answerKeyboard.ts": {
       "sha256": "97ccc820f877a4cf73fca94be621f4544ff7d3eab3bf0e170f4afbeea56102a0",
       "executable": false
     },
     "src/core/shared/ui/CalendarDateInput.tsx": {
-      "sha256": "ecaf9a6ed00a2543e68592c554130988c6c3b16ab90426216c3c14414c517394",
+      "sha256": "29272a8bb9048ca070efa8020a4cce8e68a95e2c38e2c74c49029b855a622267",
       "executable": false
     },
     "src/core/shared/ui/ChoiceQuestionInput.tsx": {
-      "sha256": "a9f2b65c2c76d1674cb5488c57fe7ca29a1efa405077165a68c4a154f289715c",
+      "sha256": "56fad30690f6f8d88c55a7e246fec4dfa29f70c43aa051f1aefd76aa5f42260d",
       "executable": false
     },
     "src/core/shared/ui/contact-fields.css": {
@@ -5857,15 +5861,15 @@
       "executable": false
     },
     "src/core/shared/ui/ContactQuestionInput.tsx": {
-      "sha256": "2c1bc2b3d72225b839ac53b3839fe64f0d259a7500b637d168bfad3c5cc77034",
+      "sha256": "d82f3145ed25a22a8a2ea8c761bbdb637df7fb24175e264b2a80a427c0bbe063",
       "executable": false
     },
     "src/core/shared/ui/ExtendedQuestionInput.tsx": {
-      "sha256": "8dea00d4515774c2e568f2ef7930413c2f1500d8b06981e6a2754ed575efde12",
+      "sha256": "6457d55d860665328130a21ff741c4688711d9b8912ad9e21097caeda6f21ec7",
       "executable": false
     },
     "src/core/shared/ui/QuestionInput.tsx": {
-      "sha256": "207a3f384a8aa8630bcef32af964b7a783338b55a70acd766c93ae4174643bcd",
+      "sha256": "3c6cc8e2234847773c131bad4188b7238d0fcfcb987da1c893187ec86391f333",
       "executable": false
     },
     "src/core/shared/ui/rating-scale.css": {
@@ -5873,7 +5877,7 @@
       "executable": false
     },
     "src/core/shared/ui/RatingInput.tsx": {
-      "sha256": "bf8ea0dfabc36c314eb83e7801fde78f1913d51a245e1a4def18e07d3f267bef",
+      "sha256": "3032d2d8ae021973ee1a05cc9b62bca69a415d69575ba924c5510770540cb6a6",
       "executable": false
     },
     "src/core/shared/ui/score-questions.css": {
@@ -5881,19 +5885,23 @@
       "executable": false
     },
     "src/core/shared/ui/ScoreQuestionInput.tsx": {
-      "sha256": "3a029da6343e69624ac01bf60ccd619f464b28332b78c1f7bfbb6ad6cf998264",
+      "sha256": "405502666ac1fba366924f8189cedfd2bd17f254f22130fca0ac3be2eb1153bd",
       "executable": false
     },
     "src/core/shared/ui/ScreenQuestions.tsx": {
-      "sha256": "f8d7efc0c737bcdb2b02df822e55f2e7250233abe263492a324ea7849fd142cc",
+      "sha256": "d69e7fea4139039be41f75643ecbe3e75212a77a20d928f115e1abcd3f25820d",
       "executable": false
     },
     "src/core/shared/ui/TextQuestionInput.tsx": {
-      "sha256": "71bead405d7c5a2a2495df0b259e4f1d86d22d5274bbcb0e847cb44857c237bc",
+      "sha256": "8566f9bfd6646adfcbf1fa55d44cb1773acba47fad8be43dd2dd2bd6c3611a7c",
       "executable": false
     },
     "src/core/shared/ui/UnsavedChanges.tsx": {
       "sha256": "46b40f3a1c9c4799f8087d83c7e4b58296dcc975c74a0fe62e85ee89e6894262",
+      "executable": false
+    },
+    "src/core/shared/ui/useRespondentFocus.ts": {
+      "sha256": "f77ae1f08ab6cd63b52f42492393ea8439491932d9fa1c2685f4fa00ab82c712",
       "executable": false
     },
     "src/core/shared/validation.ts": {
@@ -6362,6 +6370,10 @@
     },
     "tests/e2e/request-notifications.spec.ts": {
       "sha256": "1744445e1da49338b3fb10f3126ef50666745a3e0a047e7e9da852298459bb08",
+      "executable": false
+    },
+    "tests/e2e/respondent-accessibility.spec.ts": {
+      "sha256": "81775c829f62a7c5bf38fd6e8d126806ce7213998d042d1a5e73acb0dd93b686",
       "executable": false
     },
     "tests/e2e/response-search.spec.ts": {

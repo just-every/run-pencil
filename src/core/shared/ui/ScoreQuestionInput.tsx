@@ -1,3 +1,4 @@
+import { useAnswerAccessibility } from './AnswerFieldset'
 import { ThumbsDown, ThumbsUp } from 'lucide-react'
 import type { FlowStep } from '../../app/api'
 import { scoreOptions } from '../scoreQuestions'
@@ -7,12 +8,13 @@ import './score-questions.css'
 const faces = ['😞', '🙁', '😐', '🙂', '😃']
 
 export function ScoreQuestionInput({ step, value, onChange }: { step: FlowStep; value: unknown; onChange: (value: unknown) => void }) {
+  const accessibility = useAnswerAccessibility()
   const options = scoreOptions(step.questionType ?? '')
   const thumbs = step.questionType === 'thumbs_rating'
   const selected = options.some(option => option.value === value)
   return <div className="answer-stack">
     {!thumbs ? <div className="score-end-labels" aria-hidden="true"><span>{options[0].label}</span><span>{options.at(-1)!.label}</span></div> : null}
-    <div className="score-options" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }} role="radiogroup" aria-label={step.prompt} aria-required={step.required}>
+    <div className="score-options" style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }} role="radiogroup" {...accessibility()} aria-label={step.prompt} aria-required={step.required}>
       {options.map((option, index) => <button
         key={String(option.value)} type="button" role="radio"
         aria-label={typeof option.value === 'number' ? `${option.value}, ${option.label}` : option.label}
