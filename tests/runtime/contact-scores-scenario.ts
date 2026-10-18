@@ -84,6 +84,7 @@ export async function contactScoresScenario() {
   }
   const json = JSON.parse(await download('json')) as { responses: LedgerResponse[] }
   expect(json.responses.map(row => row.id).sort()).toEqual(ledger.responses.map(row => row.id).sort())
+  expect(json.responses.map(row => row.answers.slice(0, 4).map(answer => answer.value)).sort()).toEqual([...rows].sort())
   const csv = await download('csv')
   for (const column of ['phone.number', 'phone.extension', 'address.state', 'address.postalCode', 'name.given', 'name.family', 'currency.minorUnits']) expect(csv).toContain(column)
   for (const value of ['+12025550142', '0123', '97205-1234', '125050', '$1,250.50']) expect(csv).toContain(value)
