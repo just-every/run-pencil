@@ -1,3 +1,4 @@
+import { remapAnswerRecall } from '../../shared/answerRecall'
 import { remapChoiceSettings } from '../../shared/otherChoices'
 import type { QuestionType } from '../../shared/questionKinds'
 import { typeSettingsValid } from '../../shared/questionTypes'
@@ -144,8 +145,8 @@ export class FlowService {
     const created = await this.repository.createStructure({
       flow: { id: flowId, workspaceId: input.workspaceId, title, slug, status: 'draft', draftVersion: 0, lastActivityAt: now, createdAt: now, updatedAt: now },
       revision: { id: revisionId, flowId, number: 1, state: 'draft', title, publishedAt: null, isCurrent: false, admissionClosedAt: null, admissionCloseReason: null, deadlineAt: null, deadlineTimeZone: null, targetCompletedResponses: null, policySnapshotJson: null, createdAt: now, updatedAt: now },
-      steps: sourceSteps.map((step) => ({ ...step, id: rowIdByOldRowId.get(step.id)!, revisionId, stableId: stableIdByOldStableId.get(step.stableId)!, questionSettingsJson: remapChoiceSettings(step.questionSettingsJson, choiceStableIdByOldStableId), nextStepStableId: step.nextStepStableId ? stableIdByOldStableId.get(step.nextStepStableId) ?? null : null, createdAt: now, updatedAt: now })),
-      choices: sourceChoices.map((choice) => ({ ...choice, id: ulid(), stepId: rowIdByOldRowId.get(choice.stepId)!, stableId: choiceStableIdByOldStableId.get(choice.stableId)!, createdAt: now, updatedAt: now })),
+      steps: sourceSteps.map((step) => ({ ...step, id: rowIdByOldRowId.get(step.id)!, revisionId, stableId: stableIdByOldStableId.get(step.stableId)!, prompt: remapAnswerRecall(step.prompt, stableIdByOldStableId), helperText: step.helperText === null ? null : remapAnswerRecall(step.helperText, stableIdByOldStableId), questionSettingsJson: remapChoiceSettings(step.questionSettingsJson, choiceStableIdByOldStableId), nextStepStableId: step.nextStepStableId ? stableIdByOldStableId.get(step.nextStepStableId) ?? null : null, createdAt: now, updatedAt: now })),
+      choices: sourceChoices.map((choice) => ({ ...choice, id: ulid(), stepId: rowIdByOldRowId.get(choice.stepId)!, stableId: choiceStableIdByOldStableId.get(choice.stableId)!, label: remapAnswerRecall(choice.label, stableIdByOldStableId), createdAt: now, updatedAt: now })),
       rules: sourceRules.map((rule) => {
         const expected = JSON.parse(rule.expectedValueJson) as unknown
         const remappedExpected = typeof expected === 'string' ? choiceStableIdByOldStableId.get(expected) ?? expected

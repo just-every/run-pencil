@@ -1,3 +1,4 @@
+import { interpolateAnswerRecall } from '../../../shared/answerRecall'
 import { SaveResponse } from './SaveResponse'
 import { BrandIdentity } from '../../brand'
 import { brandStyle } from '../../brand'
@@ -113,7 +114,9 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   if (!current) return <main className="pencil-canvas respondent-shell"><p className="status-note" data-tone="error">This published flow has no visible steps.</p></main>
   const questionSteps = path.filter((step) => step.kind === 'question')
   const questionPosition = questionSteps.findIndex((step) => step.id === current.id)
-  const currentChoices = choicesForStep(flow.choices, current.id)
+  const recall = (text: string) => interpolateAnswerRecall(text, flow, answers, current.id)
+  const displayedStep = { ...current, prompt: recall(current.prompt), helperText: current.helperText ? recall(current.helperText) : current.helperText }
+  const currentChoices = choicesForStep(flow.choices, current.id).map(choice => ({ ...choice, label: recall(choice.label) }))
   const isCompletion = current.kind === 'completion'
   const isWelcome = current.kind === 'welcome'
   const nextCandidate = path[index + 1]
@@ -158,7 +161,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
     setError(undefined)
     if (isCompletion) return
     if (!pendingFinal && current.kind === 'question') {
-      const issue = answerIssue(current, currentChoices.map((choice) => choice.id), answers[current.id])
+      const issue = answerIssue(displayedStep, currentChoices.map((choice) => choice.id), answers[current.id])
       if (issue) {
         if (!(contactQuestionTypes as readonly string[]).includes(current.questionType ?? '') || isUnanswered(answers[current.id])) setError(issue)
         return
@@ -222,11 +225,11 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
       <article className="respondent-card respondent-note-sheet" aria-labelledby="respondent-title">
         <BrandIdentity config={config} />
         {!isCompletion ? <><div className="respondent-top"><span>{isWelcome ? 'Before you begin' : `Question ${questionPosition + 1} of ${questionSteps.length}`}</span><span>{isWelcome ? `${questionSteps.length} question${questionSteps.length === 1 ? '' : 's'} ahead` : `${Math.max(0, questionSteps.length - answeredQuestions)} remaining`}</span></div><div aria-label="Response progress" aria-valuemax={100} aria-valuemin={0} aria-valuenow={Math.round(progress)} className="progress-track" role="progressbar"><span style={{ width: `${progress}%` }} />{!isWelcome && current.kind === 'question' ? <span className="progress-track__here" style={{ left: `${questionPosition / Math.max(1, questionSteps.length) * 100}%`, width: `${100 / Math.max(1, questionSteps.length)}%` }} /> : null}</div></> : null}
-        <h1 className="display" id="respondent-title">{current.prompt}</h1>
-        {current.helperText ? <p className="respondent-helper">{current.helperText}</p> : null}
+        <h1 className="display" id="respondent-title">{displayedStep.prompt}</h1>
+        {current.helperText ? <p className="respondent-helper">{displayedStep.helperText}</p> : null}
         {isWelcome || (!path.some((step) => step.kind === 'welcome') && current.kind === 'question' && questionPosition === 0) ? <aside className="privacy-card"><LockKeyhole aria-hidden="true" size={22} strokeWidth={1.6} /><span><strong>Before you share</strong><br />{config.publicFlowPurpose} Your response is {initialFlow.identity === 'identified' ? 'identified through your invitation' : 'anonymous'}. At {config.publicFlowBusinessName}, operators can see the answers you submit. Identifying details you choose to type, such as an email address, identify you to those operators. Your answers are received and stored by this feedback service.{config.answersMayReachAi ? <> <span data-disclosure="ai-analysis">If {config.publicFlowBusinessName} analyses feedback, your written answers may be sent to the AI service it chose. Separate contact, invitation and session identity is excluded. Names, emails or other identifying details you type in selected text answers are sent with those answers.</span></> : null}</span></aside> : null}
         {current.kind === 'question' && current.required ? <p className="respondent-required">Required</p> : null}
-        {current.kind === 'question' ? <fieldset className="plain-fieldset" disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} aria-labelledby="respondent-title"><QuestionInput key={`${flow.revision.id}-${current.id}`} choices={currentChoices} onChange={(value) => changeAnswer(current.id, value)} step={current} value={answers[current.id]} /></fieldset> : null}
+        {current.kind === 'question' ? <fieldset className="plain-fieldset" disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} aria-labelledby="respondent-title"><QuestionInput key={`${flow.revision.id}-${current.id}`} choices={currentChoices} onChange={(value) => changeAnswer(current.id, value)} step={displayedStep} value={answers[current.id]} /></fieldset> : null}
         {isCompletion ? <p className="privacy-card"><Check aria-hidden="true" color="var(--green)" size={22} /><span>Thank you. {invitationToken ? 'This invitation link' : 'This public link'} cannot edit a completed response.</span></p> : null}
         <label className="respondent-honeypot" aria-hidden="true">Company website<input autoComplete="off" name="company-website" onChange={(event) => setHoneypot(event.target.value)} tabIndex={-1} value={honeypot} /></label>
         {pendingFinal && !submitting ? <p className="status-note">Retry to confirm the answers already submitted.</p> : null}

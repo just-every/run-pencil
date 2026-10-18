@@ -1,3 +1,4 @@
+import { interpolateAnswerRecall } from '../../../shared/answerRecall'
 import { BrandIdentity } from '../../brand'
 import { brandApi } from '../../brand'
 import { publicBrandConfig, brandStyle } from '../../brand'
@@ -24,7 +25,9 @@ export function DraftPreview({ draft, onClose, onReload, reloadDisabled = false 
   useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
   const path = useMemo(() => visiblePath(draft, answers), [draft, answers])
   const step = path[Math.min(index, path.length - 1)]
-  const choices = draft.choices.filter((choice) => choice.stepId === step?.id)
+  const recall = (text: string) => step ? interpolateAnswerRecall(text, draft, answers, step.id) : text
+  const displayedStep = step ? { ...step, prompt: recall(step.prompt) } : undefined
+  const choices = draft.choices.filter((choice) => choice.stepId === step?.id).map(choice => ({ ...choice, label: recall(choice.label) }))
   const inspect = async () => {
     if (pending.current || stale) return false
     pending.current = true; setChecking(true); setError(undefined); setTrace(undefined)
@@ -46,7 +49,7 @@ export function DraftPreview({ draft, onClose, onReload, reloadDisabled = false 
     setError(undefined)
     if (!step) return
     if (step.kind === 'question') {
-      const issue = answerIssue(step, choices.map((choice) => choice.id), answers[step.id])
+      const issue = answerIssue(displayedStep!, choices.map((choice) => choice.id), answers[step.id])
       if (issue) { setError(issue); return }
     }
     if (!path[index + 1]) { setError('Connect a default path or matching rule before continuing.'); await inspect(); return }
@@ -55,7 +58,7 @@ export function DraftPreview({ draft, onClose, onReload, reloadDisabled = false 
   return <section className="panel draft-preview" aria-label="Draft preview">
     <header className="toggle-row"><div><p className="eyebrow">Preview</p><p className="muted">Try your questions here. Preview answers are not collected.</p></div><button className="quiet-button" type="button" onClick={onClose}>Close preview</button></header>
     {brandError ? <p role="alert">{brandError}</p> : null}
-    {step ? <div className="preview-surface brand-surface" style={brand ? brandStyle(brand) : undefined}>{brand ? <BrandIdentity config={brand} /> : null}<p className="eyebrow">{step.kind}</p><h2 className="display">{step.prompt}</h2>{step.helperText ? <p>{step.helperText}</p> : null}{step.kind === 'question' && step.required ? <p>Required</p> : null}{step.kind === 'question' ? <fieldset className="plain-fieldset" disabled={checking || stale}><QuestionInput key={step.id} step={step} choices={choices} value={answers[step.id]} onChange={(value) => {
+    {step ? <div className="preview-surface brand-surface" style={brand ? brandStyle(brand) : undefined}>{brand ? <BrandIdentity config={brand} /> : null}<p className="eyebrow">{step.kind}</p><h2 className="display">{recall(step.prompt)}</h2>{step.helperText ? <p>{recall(step.helperText)}</p> : null}{step.kind === 'question' && step.required ? <p>Required</p> : null}{step.kind === 'question' ? <fieldset className="plain-fieldset" disabled={checking || stale}><QuestionInput key={step.id} step={displayedStep!} choices={choices} value={answers[step.id]} onChange={(value) => {
       if (pending.current || stale) return
       setTrace(undefined); setError(undefined)
       const next = { ...answers, [step.id]: value }

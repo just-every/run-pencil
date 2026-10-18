@@ -544,8 +544,8 @@ PART-002 additionally includes the implementation and passing Worker, browser an
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 113 | 0 | 0 | 113 |
-| Target and push further | 4 | 39 | 82 | 125 |
-| All | 117 | 39 | 82 | 238 |
+| Target and push further | 4 | 40 | 81 | 125 |
+| All | 117 | 40 | 81 | 238 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -608,7 +608,7 @@ PART-002 additionally includes the implementation and passing Worker, browser an
 | `FIELD-014` | Long choice lists and long forms | target | partial | `src/core/shared/validation.ts`, `src/core/features/importing/prepare.ts` | There is no type-to-filter, bulk paste or built-in list, and the limits are below these floors. |
 | `FIELD-015` | Date entry and display format | target | partial | `src/core/shared/dateFormat.ts`, `src/core/shared/ui/CalendarDateInput.tsx`, `src/core/features/reporting/repository.ts`, `tests/runtime/new-question-types.worker.test.ts`, `tests/runtime/form-import.worker.test.ts` | Published format/separator, labelled calendar entry, formatted ledger, ISO exports and Typeform format import ship. MM/DD and DD/MM browser journeys at 1440 and 390, including ISO CSV values, are recorded in `work/sd-cp-pencil/shots/FIELD-015/`; recall, response review, confirmation/PDF display, language defaults and Jotform mapping remain unbuilt. |
 | `FIELD-016` | Opinion scales with labels | target | partial | `src/core/shared/ratingScale.ts`, `src/core/shared/ui/RatingInput.tsx`, `tests/runtime/new-question-types.worker.test.ts`, `tests/runtime/form-import.worker.test.ts` | Start 0/1, 2–11 steps, three labels, accessible numeric controls, full revision-specific distributions and Typeform/Google scale labels ship. Browser journey at 1440 and 390, including zero-score routing and retained results, is recorded in `work/sd-cp-pencil/shots/FIELD-016/`; translation, SurveyMonkey/Jotform mappings and compound LOGIC-006 conditions remain unbuilt. |
-| `LOGIC-001` | Answer recall | target | missing |  | No code yet. |
+| `LOGIC-001` | Answer recall | target | partial | `src/core/shared/answerRecall.ts`, `src/core/features/flows/ui/RecallHelp.tsx`, `tests/runtime/answer-recall.worker.test.ts`, `tests/e2e/answer-recall.spec.ts` | Stable question references render earlier valid on-path answers in prompts, supporting text, choice labels and completion screens in preview and published forms. Back edits update recalled values; skipped/invalid answers stay blank; respondent tokens and HTML remain inert. Publish refuses missing/future/off-path references and duplication remaps IDs. Hidden-field, calculated-value and email recall await FIELD-001, LOGIC-003 and answer-bearing email features. |
 | `LOGIC-002` | Known-data prefill | target | missing |  | No code yet. |
 | `LOGIC-003` | Variables and calculations | target | missing |  | No code yet. |
 | `LOGIC-004` | Quizzes and outcomes | target | missing |  | No code yet. |

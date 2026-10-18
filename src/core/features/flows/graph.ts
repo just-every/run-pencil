@@ -1,3 +1,5 @@
+import { validateAnswerRecall } from '../../shared/answerRecall'
+import { publicSteps, publicChoices, publicRules } from './serialization'
 import { scoreQuestionTypes, scoreAnswerIssue } from '../../shared/scoreQuestions'
 import { calendarDate, typeSettingsValid } from '../../shared/questionTypes'
 import { matchesBranch } from '../../shared/branching'
@@ -142,6 +144,7 @@ export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice
     const destinations = settings.valid ? reachableDestinations(step, stepChoices.map((choice) => choice.stableId), settings.value, validRules.filter((rule) => rule.sourceStepStableId === step.stableId), selection) : []
     edges.set(step.stableId, destinations)
   }
+  issues.push(...validateAnswerRecall({ steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(validRules), branchSelection: selection }, edges))
   const visiting = new Set<string>()
   const visited = new Map<string, boolean>()
   const walk = (stepId: string): boolean => {
