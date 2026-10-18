@@ -1,3 +1,7 @@
+import { evaluateCondition, conditionTests } from '../../shared/conditions'
+import { conditionShape, conditionValueValid } from '../../shared/conditionValidation'
+import { earlierRecallQuestions } from '../../shared/answerRecall'
+import { validateConditionPaths } from './condition-paths'
 import { choiceLimit, structureLimitIssue } from '../../shared/formLimits'
 import { validateAnswerRecall } from '../../shared/answerRecall'
 import { publicSteps, publicChoices, publicRules } from './serialization'
@@ -23,7 +27,8 @@ function sameStringSet(actual: string[], expected: string[]) {
   return actual.length === expected.length && new Set(actual).size === expected.length && actual.every((item) => expected.includes(item))
 }
 
-export function branchMatches(rule: StoredBranchRule, answer: unknown) {
+export function branchMatches(rule: StoredBranchRule, answer: unknown, answers: Record<string, unknown> = {}) {
+  if (rule.conditionJson) return evaluateCondition(JSON.parse(rule.conditionJson), answers).matched
   return matchesBranch({ predicateKind: rule.predicateKind, expectedValue: parsed(rule.expectedValueJson) }, answer)
 }
 
@@ -33,7 +38,10 @@ export function resolveNextStep(input: {
   answers: Record<string, unknown>
   selection?: import('../../shared/flowPolicies').BranchSelection
 }) {
-  const evaluations = input.rules.map((rule) => ({ ruleId: rule.id, matched: branchMatches(rule, input.answers[input.step.stableId]), destinationStepId: rule.destinationStepStableId }))
+  const evaluations = input.rules.map((rule) => {
+    const trace = rule.conditionJson ? evaluateCondition(JSON.parse(rule.conditionJson), input.answers) : undefined
+    return { ruleId: rule.id, matched: trace ? trace.matched : branchMatches(rule, input.answers[input.step.stableId]), destinationStepId: rule.destinationStepStableId, ...(trace ? { trace } : {}) }
+  })
   const selected = (input.selection === 'last-matching-rule' ? evaluations.slice().reverse() : evaluations).find((evaluation) => evaluation.matched)
   return {
     evaluations,
@@ -132,6 +140,25 @@ export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice
       issues.push({ stepId: rule.sourceStepStableId, reason: 'A branch must point to an existing question or completion screen.' })
       continue
     }
+    if (rule.conditionJson) {
+      const condition = parsed(rule.conditionJson)
+      const publicGraph = { steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) }
+      const earlier = new Set([source.stableId, ...earlierRecallQuestions(publicGraph, source.stableId).map(step => step.id)])
+      if (!conditionShape(condition)) issues.push({ stepId: source.stableId, reason: `Branch ${rule.id} has an invalid condition tree or exceeds its configured limits.` })
+      else {
+        let valid = true
+        for (const [index, test] of conditionTests(condition).entries()) {
+          const operand = publicGraph.steps.find(step => step.id === test.stepId)
+          if (!operand || operand.kind !== 'question' || operand.position > source.position || !earlier.has(test.stepId) || !conditionValueValid(test, operand, publicGraph.choices)) {
+            issues.push({ stepId: source.stableId, reason: `Branch ${rule.id}, condition ${index + 1}: missing or later question, incompatible operator, or invalid stable choice.` })
+            valid = false
+          }
+        }
+        if (destination.position <= source.position) { valid = false; issues.push({ stepId: source.stableId, reason: `Branch ${rule.id}: condition destinations must lie after the source question.` }) }
+        if (valid) validRules.push(rule)
+      }
+      continue
+    }
     const sourceChoiceIds = (choicesByStep.get(source.id) ?? []).map((choice) => choice.stableId)
     if (!branchRuleIsValid(rule, source, sourceChoiceIds)) issues.push({ stepId: source.stableId, reason: 'This branch predicate does not match the source question type or stable choices.' })
     else validRules.push(rule)
@@ -140,6 +167,12 @@ export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice
   const first = steps.slice().sort((left, right) => left.position - right.position)[0]
   if (!first) return issues
   if (first.kind === 'completion') issues.push({ stepId: first.stableId, reason: 'The first screen must be a welcome screen or question.' })
+  if (validRules.some(rule => rule.conditionJson)) {
+    const proof = validateConditionPaths(steps, choices, validRules, selection)
+    issues.push(...proof.issues)
+    issues.push(...validateAnswerRecall({ steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(validRules), branchSelection: selection }, proof.edges))
+    return issues
+  }
   const edges = new Map<string, string[]>()
   for (const step of steps) {
     const stepChoices = choicesByStep.get(step.id) ?? []

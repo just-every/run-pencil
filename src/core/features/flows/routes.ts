@@ -1,3 +1,5 @@
+import { conditionShape } from '../../shared/conditionValidation'
+import type { Condition } from '../../shared/conditions'
 import { formLimits } from '../../shared/formLimits'
 import { questionTypes } from '../../shared/questionKinds'
 import { validateInput as zValidator, resourceId, flowSlug, emptyMutationBody, answerValue } from '../../shared/validation'
@@ -27,6 +29,7 @@ const branchesSchema = z.object({
     sourceStepId: resourceId,
     predicateKind: z.enum(['equals', 'greater_than', 'greater_than_or_equal', 'less_than', 'less_than_or_equal', 'any_of', 'all_of']),
     expectedValue: z.unknown(),
+    condition: z.custom<Condition>(conditionShape).nullable().optional(),
     destinationStepId: resourceId,
     position: z.number().int().nonnegative(),
   })).max(100),

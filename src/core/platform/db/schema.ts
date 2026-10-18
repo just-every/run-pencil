@@ -189,6 +189,7 @@ export const flowBranchRules = sqliteTable(
     sourceStepStableId: text('source_step_stable_id').notNull(),
     predicateKind: text('predicate_kind', { enum: ['equals', 'greater_than', 'greater_than_or_equal', 'less_than', 'less_than_or_equal', 'any_of', 'all_of'] }).notNull(),
     expectedValueJson: text('expected_value_json').notNull(),
+    conditionJson: text('condition_json'),
     destinationStepStableId: text('destination_step_stable_id').notNull(),
     position: integer('position').notNull(),
     createdAt: text('created_at').notNull(),

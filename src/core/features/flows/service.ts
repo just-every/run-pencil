@@ -1,3 +1,5 @@
+import { answerIssue, isUnanswered } from '../../shared/answers'
+import { remapCondition, type Condition } from '../../shared/conditions'
 import { choiceLimit, structureLimitIssue } from '../../shared/formLimits'
 import { remapAnswerRecall } from '../../shared/answerRecall'
 import { remapChoiceSettings } from '../../shared/otherChoices'
@@ -30,6 +32,7 @@ type BranchInput = {
   sourceStepId: string
   predicateKind: BranchPredicateKind
   expectedValue: unknown
+  condition?: Condition | null
   destinationStepId: string
   position: number
 }
@@ -153,7 +156,7 @@ export class FlowService {
         const remappedExpected = typeof expected === 'string' ? choiceStableIdByOldStableId.get(expected) ?? expected
           : Array.isArray(expected) ? expected.map((value) => typeof value === 'string' ? choiceStableIdByOldStableId.get(value) ?? value : value)
           : expected && typeof expected === 'object' && 'choiceId' in expected ? { ...expected, choiceId: choiceStableIdByOldStableId.get(String(expected.choiceId)) ?? expected.choiceId } : expected
-        return { ...rule, id: ulid(), revisionId, sourceStepStableId: stableIdByOldStableId.get(rule.sourceStepStableId)!, destinationStepStableId: stableIdByOldStableId.get(rule.destinationStepStableId)!, expectedValueJson: JSON.stringify(remappedExpected), createdAt: now, updatedAt: now }
+        return { ...rule, id: ulid(), revisionId, sourceStepStableId: stableIdByOldStableId.get(rule.sourceStepStableId)!, destinationStepStableId: stableIdByOldStableId.get(rule.destinationStepStableId)!, expectedValueJson: JSON.stringify(remappedExpected), conditionJson: rule.conditionJson ? JSON.stringify(remapCondition(JSON.parse(rule.conditionJson), stableIdByOldStableId, choiceStableIdByOldStableId)) : null, createdAt: now, updatedAt: now }
       }),
     })
     if (!created) throw new ValidationError('That flow link is already in use.')
@@ -250,11 +253,11 @@ export class FlowService {
     if (new Set(persistedChoices.map((choice) => choice.label.toLocaleLowerCase())).size !== persistedChoices.length) throw new ValidationError('Each choice needs a different label.')
     if (new Set(persistedChoices.map((choice) => choice.value)).size !== persistedChoices.length) throw new ValidationError('Each choice needs a different answer value.')
     if (new Set(persistedChoices.map(choice => choice.stableId)).size !== persistedChoices.length) throw new ValidationError('Choices must be distinct.')
-    const rules = input.rules?.map(rule => ({ id: rule.id ?? ulid(), revisionId: draft.revision.id, sourceStepStableId: rule.sourceStepId, predicateKind: rule.predicateKind, expectedValueJson: JSON.stringify(rule.expectedValue), destinationStepStableId: rule.destinationStepId, position: rule.position, createdAt: now, updatedAt: now }))
+    const rules = input.rules?.map(rule => ({ id: rule.id ?? ulid(), revisionId: draft.revision.id, sourceStepStableId: rule.sourceStepId, predicateKind: rule.predicateKind, expectedValueJson: JSON.stringify(rule.expectedValue), conditionJson: rule.condition ? JSON.stringify(rule.condition) : null, destinationStepStableId: rule.destinationStepId, position: rule.position, createdAt: now, updatedAt: now }))
     if (rules) {
       const nextSteps = rawSteps.map(step => step.stableId === input.stepId ? { ...step, questionType: selectedQuestionType, nextStepStableId: input.nextStepId === undefined ? step.nextStepStableId : input.nextStepId } : step)
       const nextChoices = [...rawChoices.filter(choice => choice.stepId !== selectedRawStep.id), ...persistedChoices.map(choice => ({ ...choice, stepId: selectedRawStep.id }))]
-      const issues = validateRevisionGraph(nextSteps, nextChoices, rules, evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1']).filter(issue => issue.reason.includes('branch') || issue.reason.includes('predicate'))
+      const issues = validateRevisionGraph(nextSteps, nextChoices, rules, evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1']).filter(issue => issue.reason.toLowerCase().includes('branch') || issue.reason.toLowerCase().includes('predicate'))
       if (issues.length) throw new ValidationError('Answer paths are invalid.', issues)
     }
     const updated = await this.repository.updateDraftStep({ operatorId: input.operatorId,
@@ -346,11 +349,11 @@ export class FlowService {
     const draft = this.builderDraft(snapshot)
     if (input.expectedVersion !== draft.flow.draftVersion) return draftConflict(draft.flow.draftVersion)
     const now = new Date().toISOString()
-    const rules = input.rules.map((rule) => ({ id: rule.id ?? ulid(), revisionId: draft.revision.id, sourceStepStableId: rule.sourceStepId, predicateKind: rule.predicateKind, expectedValueJson: JSON.stringify(rule.expectedValue), destinationStepStableId: rule.destinationStepId, position: rule.position, createdAt: now, updatedAt: now }))
+    const rules = input.rules.map((rule) => ({ id: rule.id ?? ulid(), revisionId: draft.revision.id, sourceStepStableId: rule.sourceStepId, predicateKind: rule.predicateKind, expectedValueJson: JSON.stringify(rule.expectedValue), conditionJson: rule.condition ? JSON.stringify(rule.condition) : null, destinationStepStableId: rule.destinationStepId, position: rule.position, createdAt: now, updatedAt: now }))
     if (draft.flow.status === 'archived') throw new ValidationError('An archived flow cannot be published or reopened. Duplicate it to create a separate draft.')
     const { steps: rawSteps, choices: rawChoices } = snapshot
     const graphIssues = validateRevisionGraph(rawSteps, rawChoices, rules, evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'])
-      .filter((issue) => issue.reason.includes('branch') || issue.reason.includes('predicate'))
+      .filter((issue) => issue.reason.toLowerCase().includes('branch') || issue.reason.toLowerCase().includes('predicate'))
     if (graphIssues.length > 0) throw new ValidationError('Branch rules are invalid.', graphIssues)
     const replaced = await this.repository.replaceDraftBranchRules({ operatorId: input.operatorId, flowId: input.flowId, revisionId: draft.revision.id, expectedVersion: input.expectedVersion, now, rules })
     if (!replaced) return draftConflict((await this.requireWorkspaceFlow(input.workspaceId, input.flowId)).draftVersion)
@@ -358,7 +361,7 @@ export class FlowService {
   }
 
   async previewDraft(input: { operatorId?: string; workspaceId: string; flowId: string; answers: Record<string, unknown> }) {
-    const { flow, revision, steps, rules } = await this.repository.getWorkspaceDraftSnapshot(input.workspaceId, input.flowId)
+    const { flow, revision, steps, choices, rules } = await this.repository.getWorkspaceDraftSnapshot(input.workspaceId, input.flowId)
     if (!flow || !revision) throw new NotFoundError('The requested flow has no editable draft.')
     const receipt = { preview: true as const, draftVersion: flow.draftVersion }
     const byStableId = new Map(steps.map((step) => [step.stableId, step]))
@@ -366,11 +369,14 @@ export class FlowService {
     if (!first) return { ...receipt, screens: [], complete: false, reason: 'The draft has no first screen.' }
     const screens: Array<{ stepId: string; evaluations: ReturnType<typeof resolveNextStep>['evaluations']; selectedRuleId: string | null; nextStepId: string | null }> = []
     const seen = new Set<string>()
+    const accepted: Record<string, unknown> = {}
     let current: StoredStep | undefined = first
     while (current && !seen.has(current.stableId) && screens.length <= steps.length) {
       const step = current
       seen.add(step.stableId)
-      const selection = resolveNextStep({ selection: evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'], step, rules: rules.filter((rule) => rule.sourceStepStableId === step.stableId), answers: input.answers })
+      const answer = input.answers[step.stableId]
+      if (step.kind === 'question' && !isUnanswered(answer) && !answerIssue(publicSteps([step])[0], choices.filter(choice => choice.stepId === step.id).map(choice => choice.stableId), answer)) accepted[step.stableId] = answer
+      const selection = resolveNextStep({ selection: evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'], step, rules: rules.filter((rule) => rule.sourceStepStableId === step.stableId), answers: accepted })
       screens.push({ stepId: step.stableId, evaluations: selection.evaluations, selectedRuleId: selection.selectedRuleId, nextStepId: selection.nextStepId })
       if (step.kind === 'completion') return { ...receipt, screens, complete: true }
       current = selection.nextStepId ? byStableId.get(selection.nextStepId) : undefined

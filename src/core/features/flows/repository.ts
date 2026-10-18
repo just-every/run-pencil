@@ -8,7 +8,7 @@ type DraftVersion = { operatorId?: string; flowId: string; revisionId: string; e
 
 export type StoredStep = typeof flowSteps.$inferSelect
 export type StoredChoice = typeof choiceOptions.$inferSelect
-export type StoredBranchRule = typeof flowBranchRules.$inferSelect
+export type StoredBranchRule = Omit<typeof flowBranchRules.$inferSelect, 'conditionJson'> & { conditionJson?: string | null }
 
 function changedRows(result: D1Result<unknown>) {
   return result.results.length
@@ -215,8 +215,8 @@ export class FlowRepository {
       `).bind(choice.id, choice.stableId, choice.value, choice.label, choice.position, choice.createdAt, choice.updatedAt, input.revisionId, input.stepStableId, input.flowId, input.expectedVersion)),
       ...(input.rules ? [
         this.binding.prepare(`DELETE FROM flow_branch_rules WHERE revision_id = ? AND ${choiceGuard}`).bind(input.revisionId, input.flowId, input.expectedVersion),
-        ...input.rules.map(rule => this.binding.prepare(`INSERT INTO flow_branch_rules (id, revision_id, source_step_stable_id, predicate_kind, expected_value_json, destination_step_stable_id, position, created_at, updated_at)
-          SELECT ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE ${choiceGuard}`).bind(rule.id, rule.revisionId, rule.sourceStepStableId, rule.predicateKind, rule.expectedValueJson, rule.destinationStepStableId, rule.position, rule.createdAt, rule.updatedAt, input.flowId, input.expectedVersion)),
+        ...input.rules.map(rule => this.binding.prepare(`INSERT INTO flow_branch_rules (id, revision_id, source_step_stable_id, predicate_kind, expected_value_json, condition_json, destination_step_stable_id, position, created_at, updated_at)
+          SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE ${choiceGuard}`).bind(rule.id, rule.revisionId, rule.sourceStepStableId, rule.predicateKind, rule.expectedValueJson, rule.conditionJson ?? null, rule.destinationStepStableId, rule.position, rule.createdAt, rule.updatedAt, input.flowId, input.expectedVersion)),
       ] : []),
       this.binding.prepare(`
         UPDATE flows SET draft_version = ?, last_activity_at = ?, updated_at = ?
@@ -293,10 +293,10 @@ export class FlowRepository {
       this.binding.prepare(`DELETE FROM flow_branch_rules WHERE revision_id = ? AND EXISTS (SELECT 1 FROM flows WHERE id = ? AND draft_version = ?)`)
         .bind(input.revisionId, input.flowId, input.expectedVersion),
       ...input.rules.map((rule) => this.binding.prepare(`
-        INSERT INTO flow_branch_rules (id, revision_id, source_step_stable_id, predicate_kind, expected_value_json, destination_step_stable_id, position, created_at, updated_at)
-        SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?
+        INSERT INTO flow_branch_rules (id, revision_id, source_step_stable_id, predicate_kind, expected_value_json, condition_json, destination_step_stable_id, position, created_at, updated_at)
+        SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         WHERE EXISTS (SELECT 1 FROM flows WHERE id = ? AND draft_version = ?)
-      `).bind(rule.id, rule.revisionId, rule.sourceStepStableId, rule.predicateKind, rule.expectedValueJson, rule.destinationStepStableId, rule.position, rule.createdAt, rule.updatedAt, input.flowId, input.expectedVersion)),
+      `).bind(rule.id, rule.revisionId, rule.sourceStepStableId, rule.predicateKind, rule.expectedValueJson, rule.conditionJson ?? null, rule.destinationStepStableId, rule.position, rule.createdAt, rule.updatedAt, input.flowId, input.expectedVersion)),
       this.binding.prepare(`UPDATE flows SET draft_version = ?, last_activity_at = ?, updated_at = ? WHERE id = ? AND draft_version = ? RETURNING id`).bind(input.expectedVersion + 1, input.now, input.now, input.flowId, input.expectedVersion),
     ]
     const results = await this.auditedDraft(input, statements)
@@ -331,10 +331,10 @@ export class FlowRepository {
         WHERE EXISTS (SELECT 1 FROM flow_steps WHERE id = ?) AND ${guarded}
       `).bind(choice.id, choice.stepId, choice.stableId, choice.value, choice.label, choice.position, choice.createdAt, choice.updatedAt, choice.stepId, input.flowId, input.expectedVersion)),
       ...input.newRules.map((rule) => this.binding.prepare(`
-        INSERT INTO flow_branch_rules (id, revision_id, source_step_stable_id, predicate_kind, expected_value_json, destination_step_stable_id, position, created_at, updated_at)
-        SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?
+        INSERT INTO flow_branch_rules (id, revision_id, source_step_stable_id, predicate_kind, expected_value_json, condition_json, destination_step_stable_id, position, created_at, updated_at)
+        SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
         WHERE EXISTS (SELECT 1 FROM flow_revisions WHERE id = ?) AND ${guarded}
-      `).bind(rule.id, rule.revisionId, rule.sourceStepStableId, rule.predicateKind, rule.expectedValueJson, rule.destinationStepStableId, rule.position, rule.createdAt, rule.updatedAt, input.newDraft.id, input.flowId, input.expectedVersion)),
+      `).bind(rule.id, rule.revisionId, rule.sourceStepStableId, rule.predicateKind, rule.expectedValueJson, rule.conditionJson ?? null, rule.destinationStepStableId, rule.position, rule.createdAt, rule.updatedAt, input.newDraft.id, input.flowId, input.expectedVersion)),
       this.binding.prepare(`UPDATE flow_revisions SET is_current = 0, updated_at = ? WHERE flow_id = ? AND state = 'published' AND is_current = 1 AND ${guarded}`).bind(input.now, input.flowId, input.flowId, input.expectedVersion),
       this.binding.prepare(`
         UPDATE flow_revisions

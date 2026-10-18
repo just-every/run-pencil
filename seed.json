@@ -572,6 +572,10 @@
       "nameCharacters": 100,
       "supportingLineCharacters": 240
     },
+    "logic": {
+      "conditionsPerRule": 20,
+      "groupDepth": 3
+    },
     "questions": {
       "dropdownChoices": 1000,
       "npsMinimum": 0,

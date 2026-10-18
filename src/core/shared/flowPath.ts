@@ -1,3 +1,4 @@
+import { evaluateCondition } from './conditions'
 import type { BranchRule, FlowStep, PublicFlow } from '../app/api'
 import { matchesBranch } from './branching'
 type AnswerValues = Record<string, unknown>
@@ -8,6 +9,7 @@ export function visiblePath(flow: Pick<PublicFlow, 'steps' | 'branchRules' | 'br
   const rulesBySource = new Map<string, BranchRule[]>()
   for (const rule of flow.branchRules.slice().sort((left, right) => left.position - right.position)) rulesBySource.set(rule.sourceStepId, [...(rulesBySource.get(rule.sourceStepId) ?? []), rule])
 
+  const activeAnswers: Record<string, unknown> = {}
   const path: FlowStep[] = []
   const visited = new Set<string>()
   let current: FlowStep | undefined = steps[0]
@@ -15,9 +17,10 @@ export function visiblePath(flow: Pick<PublicFlow, 'steps' | 'branchRules' | 'br
     const step: FlowStep = current
     path.push(step)
     visited.add(step.id)
+    if (step.kind === 'question' && Object.hasOwn(answers, step.id)) activeAnswers[step.id] = answers[step.id]
     if (step.kind === 'completion') break
     const rules: BranchRule[] = rulesBySource.get(step.id) ?? []
-    const selected: BranchRule | undefined = (flow.branchSelection === 'last-matching-rule' ? rules.slice().reverse() : rules).find((rule) => matchesBranch(rule, answers[step.id]))
+    const selected: BranchRule | undefined = (flow.branchSelection === 'last-matching-rule' ? rules.slice().reverse() : rules).find((rule) => rule.condition ? evaluateCondition(rule.condition, activeAnswers).matched : matchesBranch(rule, answers[step.id]))
     current = selected ? byId.get(selected.destinationStepId) : step.nextStepId ? byId.get(step.nextStepId) : undefined
   }
   return path

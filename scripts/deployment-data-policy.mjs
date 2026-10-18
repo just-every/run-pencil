@@ -64,7 +64,7 @@ const retained = {
   distribution_contacts: 'id workspace_id email name opted_out_at created_at updated_at fields_json',
   distribution_segments: 'id workspace_id name rules_json created_at updated_at',
   invitation_candidates: 'id launch_id contact_id email_snapshot name_snapshot outcome',
-  flow_branch_rules: 'id revision_id source_step_stable_id predicate_kind expected_value_json destination_step_stable_id position created_at updated_at',
+  flow_branch_rules: 'id revision_id source_step_stable_id predicate_kind expected_value_json condition_json destination_step_stable_id position created_at updated_at',
   flow_revisions: 'id flow_id number state title published_at created_at updated_at is_current admission_closed_at admission_close_reason deadline_at deadline_time_zone target_completed_responses policy_snapshot_json invitation_reserved_count',
   flow_steps: 'id revision_id position kind question_type prompt helper_text required created_at updated_at stable_id next_step_stable_id question_settings_json',
   flows: 'id workspace_id slug title status draft_version last_activity_at created_at updated_at',

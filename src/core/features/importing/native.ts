@@ -3,7 +3,7 @@ import { importPlanCodec } from './plan-codec'
 import { nativeRowChunks } from './native-chunks'
 import manifest from '../../../../seed.json'
 import type { D1Database, D1TargetAdapter, TargetRow, Json, D1Sql } from '../../../base/import-kit/src/d1/index'
-import { tableNames, tables, optionalNativeTables, type NativeRow, type NativeValue } from './native-tables'
+import { tableNames, tables, optionalNativeTables, nativeSnapshotRows, type NativeRow, type NativeValue } from './native-tables'
 type ImportTargetRow = TargetRow & { committedAt?: string }
 const query = (sql: string, ...params: any[]): D1Sql => ({ sql, params })
 async function read(db: D1Database, destination: string, kind: string, id: string): Promise<TargetRow | undefined> {
@@ -11,8 +11,8 @@ async function read(db: D1Database, destination: string, kind: string, id: strin
   if (!metadata) return undefined
   const snapshot: NativeValue = { flowId: metadata.flow_id, tables: {} }
   for (const name of tableNames(kind)) {
-    const rows = (await db.prepare(`SELECT ${tables[name].columns.join(',')} FROM ${name} WHERE ${tables[name].scope} ORDER BY ${name === 'submission_tags' ? 'response_id,tag' : tables[name].columns[0]}`).bind(id).all<NativeRow>()).results
-    if (rows.length || !optionalNativeTables.has(name)) snapshot.tables[name] = rows
+    const rows = nativeSnapshotRows(name, (await db.prepare(`SELECT ${tables[name].columns.join(',')} FROM ${name} WHERE ${tables[name].scope} ORDER BY ${name === 'submission_tags' ? 'response_id,tag' : tables[name].columns[0]}`).bind(id).all<NativeRow>()).results)
+    if (rows.length || !optionalNativeTables.has(name)) snapshot.tables[name] = nativeSnapshotRows(name, rows)
   }
   return { destination, targetKind: kind, targetId: id, revision: metadata.revision, value: snapshot as unknown as Json, committedAt: metadata.committed_at } as ImportTargetRow
 }
@@ -71,7 +71,7 @@ export const importTargets: D1TargetAdapter = {
     // Set reads: one query per native table, independent of response count.
     const metadata = (await db.prepare('SELECT target_id,kind,revision,flow_id,committed_at FROM form_import_targets WHERE workspace_id = ? ORDER BY target_id').bind(destination).all<{ target_id: string; kind: string; revision: string; flow_id: string; committed_at: string }>()).results
     const all: Record<string, NativeRow[]> = {}
-    for (const name of Object.keys(tables) as (keyof typeof tables)[]) all[name] = (await db.prepare(`SELECT ${tables[name].columns.join(',')} FROM ${name} ORDER BY ${name === 'submission_tags' ? 'response_id,tag' : tables[name].columns[0]}`).all<NativeRow>()).results
+    for (const name of Object.keys(tables) as (keyof typeof tables)[]) all[name] = nativeSnapshotRows(name, (await db.prepare(`SELECT ${tables[name].columns.join(',')} FROM ${name} ORDER BY ${name === 'submission_tags' ? 'response_id,tag' : tables[name].columns[0]}`).all<NativeRow>()).results)
     return metadata.map(m => {
       const revisions = new Set(all.flow_revisions.filter(r => r.flow_id === m.flow_id).map(r => r.id)), steps = new Set(all.flow_steps.filter(r => revisions.has(r.revision_id)).map(r => r.id))
       const selected: NativeValue = { flowId: m.flow_id, tables: {} }

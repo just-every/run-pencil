@@ -11,8 +11,8 @@ export async function createFlowStructure(binding: D1Database, input: FlowStruct
       SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM flow_revisions WHERE id = ?)`).bind(s.id, r.id, s.position, s.stableId, s.kind, s.questionType ?? null, s.prompt, s.helperText ?? null, s.required ? 1 : 0, s.nextStepStableId ?? null, s.questionSettingsJson ?? null, s.createdAt, s.updatedAt, r.id)),
     ...(input.choices ?? []).map((c) => binding.prepare(`INSERT INTO choice_options (id, step_id, stable_id, value, label, position, created_at, updated_at)
       SELECT ?, ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM flow_steps WHERE id = ?)`).bind(c.id, c.stepId, c.stableId, c.value, c.label, c.position, c.createdAt, c.updatedAt, c.stepId)),
-    ...(input.rules ?? []).map((rule) => binding.prepare(`INSERT INTO flow_branch_rules (id, revision_id, source_step_stable_id, predicate_kind, expected_value_json, destination_step_stable_id, position, created_at, updated_at)
-      SELECT ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM flow_revisions WHERE id = ?)`).bind(rule.id, r.id, rule.sourceStepStableId, rule.predicateKind, rule.expectedValueJson, rule.destinationStepStableId, rule.position, rule.createdAt, rule.updatedAt, r.id)),
+    ...(input.rules ?? []).map((rule) => binding.prepare(`INSERT INTO flow_branch_rules (id, revision_id, source_step_stable_id, predicate_kind, expected_value_json, condition_json, destination_step_stable_id, position, created_at, updated_at)
+      SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM flow_revisions WHERE id = ?)`).bind(rule.id, r.id, rule.sourceStepStableId, rule.predicateKind, rule.expectedValueJson, rule.conditionJson ?? null, rule.destinationStepStableId, rule.position, rule.createdAt, rule.updatedAt, r.id)),
   ]
   const result = await binding.batch<{id:string}>(statements)
   return result[0].results.some(row => row.id === f.id)

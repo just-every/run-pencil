@@ -5,7 +5,7 @@ export const tables = {
   flow_revisions: { columns: ['id', 'flow_id', 'number', 'state', 'title', 'published_at', 'is_current', 'admission_closed_at', 'admission_close_reason', 'deadline_at', 'deadline_time_zone', 'target_completed_responses', 'policy_snapshot_json', 'created_at', 'updated_at'], scope: 'flow_id = ?' },
   flow_steps: { columns: ['id', 'revision_id', 'position', 'stable_id', 'kind', 'question_type', 'prompt', 'helper_text', 'required', 'next_step_stable_id', 'question_settings_json', 'created_at', 'updated_at'], scope: 'revision_id IN (SELECT id FROM flow_revisions WHERE flow_id = ?)' },
   choice_options: { columns: ['id', 'step_id', 'stable_id', 'value', 'label', 'position', 'created_at', 'updated_at'], scope: 'step_id IN (SELECT s.id FROM flow_steps s JOIN flow_revisions r ON r.id = s.revision_id WHERE r.flow_id = ?)' },
-  flow_branch_rules: { columns: ['id', 'revision_id', 'source_step_stable_id', 'predicate_kind', 'expected_value_json', 'destination_step_stable_id', 'position', 'created_at', 'updated_at'], scope: 'revision_id IN (SELECT id FROM flow_revisions WHERE flow_id = ?)' },
+  flow_branch_rules: { columns: ['id', 'revision_id', 'source_step_stable_id', 'predicate_kind', 'expected_value_json', 'condition_json', 'destination_step_stable_id', 'position', 'created_at', 'updated_at'], scope: 'revision_id IN (SELECT id FROM flow_revisions WHERE flow_id = ?)' },
   form_import_revisions: { columns: ['revision_id', 'flow_id', 'source_digest', 'mapping_version'], scope: 'flow_id = ?' },
   submission_statuses: { columns: ['id', 'flow_id', 'name', 'created_at'], scope: 'flow_id = ?' },
   submission_workflows: { columns: ['response_id', 'status_id', 'assignee_id', 'version', 'updated_at'], scope: 'response_id = ?' },
@@ -24,3 +24,10 @@ export function tableNames(kind: string): TableName[] { if (kind === 'form') ret
 /** Newly inventoried empty sidecars were absent from older retained plan bytes.
  * Omit their empty images on reads so native hashes retain that exact meaning. */
 export const optionalNativeTables = new Set<TableName>(['submission_statuses', 'submission_workflows', 'submission_tags', 'submission_notes'])
+
+/** Old retained plans predate the nullable condition column. Preserve their
+ * canonical images until an actual tree changes that row. */
+export function nativeSnapshotRows(name: TableName, rows: NativeRow[]) {
+  if (name !== 'flow_branch_rules') return rows
+  return rows.map(row => { const next = {...row}; if (next.condition_json === null) delete next.condition_json; return next })
+}

@@ -1,3 +1,4 @@
+import type { Condition, ConditionTrace } from '../shared/conditions'
 import type { QuestionType } from '../shared/questionKinds'
 export type TeamTemplate = {id:string;name:string;createdAt:string;createdBy:string|null}
 export type FlowStep = {
@@ -19,6 +20,7 @@ export type BranchRule = {
   sourceStepId: string
   predicateKind: 'equals' | 'greater_than' | 'greater_than_or_equal' | 'less_than' | 'less_than_or_equal' | 'any_of' | 'all_of'
   expectedValue: unknown
+  condition?: Condition | null
   destinationStepId: string
   position: number
 }
@@ -133,7 +135,7 @@ export const api = {
   reorderDraftSteps: (flowId: string, input: { expectedVersion: number; orderedStepIds: string[] }) =>
     request<{ kind: 'reordered'; draftVersion: number } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/order`, { method: 'PUT', body: JSON.stringify(input) }),
   previewDraft: (flowId: string, answers: Record<string, unknown>) =>
-    request<{ preview: true; draftVersion: number; screens: Array<{ stepId: string; evaluations: Array<{ ruleId: string; matched: boolean; destinationStepId: string }>; selectedRuleId: string | null; nextStepId: string | null }>; complete: boolean; reason?: string }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/preview`, { method: 'POST', body: JSON.stringify({ answers }) }),
+    request<{ preview: true; draftVersion: number; screens: Array<{ stepId: string; evaluations: Array<{ ruleId: string; matched: boolean; destinationStepId: string; trace?: ConditionTrace }>; selectedRuleId: string | null; nextStepId: string | null }>; complete: boolean; reason?: string }>(`/api/app/flows/${encodeURIComponent(flowId)}/draft/preview`, { method: 'POST', body: JSON.stringify({ answers }) }),
   publishDraft: (flowId: string, input: { expectedVersion: number; deadlineAt?: string | null; targetCompletedResponses?: number | null }) =>
     request<{ kind: 'published'; revision: { id: string; number: number }; draftVersion: number } | { kind: 'conflict'; latestVersion: number }>(`/api/app/flows/${encodeURIComponent(flowId)}/publish`, { method: 'POST', body: JSON.stringify(input) }),
   closeFlow: (flowId: string) => request<void>(`/api/app/flows/${encodeURIComponent(flowId)}/close`, { method: 'POST' }),

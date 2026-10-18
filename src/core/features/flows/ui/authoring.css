@@ -195,3 +195,7 @@
 
 .team-template-save { padding: 16px; margin: 12px 0; display: grid; gap: 12px; }
 .team-template-save > button { justify-self: start; }
+
+.condition-group { margin: 12px 0; padding: 12px; min-width: 0; }
+.condition-item { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.condition-group .condition-group { padding: 8px; }

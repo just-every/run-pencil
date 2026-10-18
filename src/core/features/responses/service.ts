@@ -6,7 +6,7 @@ import { revisionBranchSelection, type BranchSelection } from '../../shared/flow
 import manifest from '../../../../seed.json'
 import { answerIssue, isUnanswered } from '../../shared/answers'
 import { ulid } from 'ulid'
-import { publicSteps, publicChoices, publicRules, questionSettings, resolveNextStep, type FlowRepository, type StoredChoice, type StoredStep } from '../flows'
+import { publicSteps, publicChoices, publicRules, questionSettings, resolveNextStep, type FlowRepository, type StoredBranchRule, type StoredChoice, type StoredStep } from '../flows'
 import { FlowClosedError, NotFoundError, RateLimitError, SessionUnavailableError, ValidationError } from '../../shared/errors'
 import type { ResponseRepository } from './repository'
 
@@ -300,7 +300,7 @@ export class ResponseService {
     return { flow, revision, steps: resolved.steps, choices: resolved.choices, rules: resolved.rules }
   }
 
-  private retainedCompletion(steps: StoredStep[], rules: Awaited<ReturnType<FlowRepository['getBranchRules']>>, answers: Record<string, unknown>, selection: BranchSelection) {
+  private retainedCompletion(steps: StoredStep[], rules: StoredBranchRule[], answers: Record<string, unknown>, selection: BranchSelection) {
     // This evidence already passed the admission rules in force at commitment.
     // Trace its pinned graph; never reject or rewrite it under newer validation.
     const byStableId = new Map(steps.map((step) => [step.stableId, step]))
@@ -316,7 +316,7 @@ export class ResponseService {
     throw new ValidationError('The retained completion could not be read. This response has not been resubmitted.')
   }
 
-  private validatePathAnswers(steps: StoredStep[], choices: StoredChoice[], rules: Awaited<ReturnType<FlowRepository['getBranchRules']>>, answers: AnswerInput[], selection: BranchSelection) {
+  private validatePathAnswers(steps: StoredStep[], choices: StoredChoice[], rules: StoredBranchRule[], answers: AnswerInput[], selection: BranchSelection) {
     const submitted = new Map<string, unknown>()
     for (const answer of answers) {
       if (submitted.has(answer.stepId)) throw new ValidationError('Each question can be answered once per submission.')
