@@ -4,7 +4,6 @@ import {codingQuery,codingRequest,type Code,type CodedAnswer,type Suggestion,typ
 import {CodeMetrics} from './CodeMetrics'
 import {CodingAnswers} from './CodingAnswers'
 import {CodingSuggestions} from './CodingSuggestions'
-import './coding.css'
 export function CodingPanel({flowId,filter,onCodeFilter,onChanged,timeZone}:{flowId:string;filter:LedgerFilter;onCodeFilter:(codeId?:string)=>void;onChanged:()=>void;timeZone:string}) {
   const [codes,setCodes]=useState<Code[]>([]),[catalogNext,setCatalogNext]=useState<string|null>(null),[label,setLabel]=useState('')
   const [answers,setAnswers]=useState<{answers:CodedAnswer[];nextAfter:string|null}>(),[suggestions,setSuggestions]=useState<{suggestions:Suggestion[];nextAfter:string|null}>()

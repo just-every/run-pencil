@@ -3561,7 +3561,7 @@
       "executable": false
     },
     "src/core/app/theme.css": {
-      "sha256": "11a6e682e3a1f14da456549228ca6bf357816efaa400b864bc82c15c42ab0397",
+      "sha256": "75c0681af97ca94d479b067987b1934f0e8edb9240d994038153bd27beefd069",
       "executable": false
     },
     "src/core/app/ui/AppNote.tsx": {
@@ -4025,7 +4025,7 @@
       "executable": false
     },
     "src/core/features/coding/ui/CodingPanel.tsx": {
-      "sha256": "3024e7406c151a6d0b02ee8897f756b28f6154073a80a448c0bc54d6ba4d56e0",
+      "sha256": "874eff292cd9be8295f3021d1e6db429e3e1ad606fe6ac3bf7d77b2a590085ca",
       "executable": false
     },
     "src/core/features/coding/ui/CodingSuggestions.tsx": {

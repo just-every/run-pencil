@@ -22,6 +22,7 @@
 @import '../features/dashboard/ui/dashboard.css';
 @import '../features/flows/ui/authoring.css';
 @import '../features/results/ui/results.css';
+@import '../features/coding/ui/coding.css';
 @import '../features/workspace/ui/settings.css';
 @import '../features/importing/ui/import.css';
 @import '../features/responses/ui/respondent.css';
