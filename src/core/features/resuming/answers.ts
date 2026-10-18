@@ -1,4 +1,6 @@
 import { publicChoices, publicRules, publicSteps, questionSettings, resolveNextStep, type StoredBranchRule, type StoredChoice, type StoredStep } from '../flows'
+import { visibilityCondition } from '../../shared/screenLayout'
+import { evaluateCondition } from '../../shared/conditions'
 import { answerIssue, isUnanswered } from '../../shared/answers'
 import { revisionBranchSelection } from '../../shared/flowPolicies'
 import { ValidationError } from '../../shared/errors'
@@ -16,12 +18,15 @@ export function validateSavedAnswers(graph: Graph, policy: string | null, curren
     submitted.set(answer.stepId, answer.value)
   }
   const byId = new Map(graph.steps.map(step => [step.stableId, step]))
-  const accepted: Answer[] = [], visited = new Set<string>()
+  const accepted: Answer[] = [], visited = new Set<string>(), traversed = new Set<string>()
   let step: StoredStep | undefined = graph.steps[0], foundCurrent = false
-  while (step && !visited.has(step.stableId)) {
-    visited.add(step.stableId)
-    if (step.stableId === currentStepId) foundCurrent = true
-    if (step.kind === 'question') {
+  while (step && !traversed.has(step.stableId)) {
+    traversed.add(step.stableId)
+    const condition = visibilityCondition(publicSteps([step])[0])
+    const visible = !condition || evaluateCondition(condition,Object.fromEntries(accepted.map(answer => [answer.stepId,answer.value]))).matched
+    if(visible)visited.add(step.stableId)
+    if (visible && step.stableId === currentStepId) foundCurrent = true
+    if (visible && step.kind === 'question') {
       const value = submitted.get(step.stableId)
       if (isUnanswered(value)) {
         if (!foundCurrent && step.required) throw new ValidationError('Answer the required questions before this screen before saving.')

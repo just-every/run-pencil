@@ -37,6 +37,14 @@ export class FlowRepository {
 
   async createStructure(input: FlowStructure) { return createFlowStructure(this.binding, input) }
 
+  async updateScreen(input: DraftVersion & {changes:Array<{id:string;settings:Record<string,unknown>|null;nextStepId:string|null}>}) {
+    const result = await this.auditedDraft(input,[
+      ...input.changes.map(change => this.binding.prepare(`UPDATE flow_steps SET question_settings_json=?,next_step_stable_id=?,updated_at=? WHERE revision_id=? AND stable_id=? AND EXISTS(SELECT 1 FROM flows WHERE id=? AND draft_version=?)`).bind(change.settings?JSON.stringify(change.settings):null,change.nextStepId,input.now,input.revisionId,change.id,input.flowId,input.expectedVersion)),
+      this.binding.prepare('UPDATE flows SET draft_version=draft_version+1,updated_at=?,last_activity_at=? WHERE id=? AND draft_version=? RETURNING id').bind(input.now,input.now,input.flowId,input.expectedVersion),
+    ])
+    return result.at(-1)!.results.length > 0
+  }
+
   async ensureFlow(flow: typeof flows.$inferInsert) {
     await this.database.insert(flows).values(flow).onConflictDoNothing()
   }

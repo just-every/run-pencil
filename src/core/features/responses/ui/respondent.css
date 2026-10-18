@@ -81,3 +81,7 @@
 .respondent-save-panel h2 { font-size: 1.25rem; line-height: 1.3; }
 .respondent-save-panel .builder-actions { margin-top: 1rem; flex-wrap: wrap; }
 .respondent-save-panel button { min-height: 44px; }
+
+.screen-questions { display:grid; gap:2rem; margin:1.5rem 0; }
+.screen-question { min-width:0; padding-top:1.5rem; border-top:1px solid var(--line, #ddd8cd); }
+.screen-question h2 { font-size:clamp(1.4rem, 3vw, 1.9rem); margin:0 0 1rem; }

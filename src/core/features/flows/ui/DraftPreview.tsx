@@ -1,3 +1,5 @@
+import { responseScreens } from '../../../shared/screenLayout'
+import { ScreenQuestions } from '../../../shared/ui/ScreenQuestions'
 import { ConditionTrace } from './ConditionTrace'
 import { interpolateAnswerRecall } from '../../../shared/answerRecall'
 import { BrandIdentity } from '../../brand'
@@ -25,7 +27,10 @@ export function DraftPreview({ draft, onClose, onReload, reloadDisabled = false 
   const mounted = useRef(true)
   useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
   const path = useMemo(() => visiblePath(draft, answers), [draft, answers])
-  const step = path[Math.min(index, path.length - 1)]
+  const screens = responseScreens(draft.steps,path)
+  const screen = screens[Math.min(index,screens.length-1)]
+  const step = screen?.steps[0]
+  const [fieldErrors,setFieldErrors]=useState<Record<string,string>>({})
   const recall = (text: string) => step ? interpolateAnswerRecall(text, draft, answers, step.id) : text
   const displayedStep = step ? { ...step, prompt: recall(step.prompt) } : undefined
   const choices = draft.choices.filter((choice) => choice.stepId === step?.id).map(choice => ({ ...choice, label: recall(choice.label) }))
@@ -50,16 +55,17 @@ export function DraftPreview({ draft, onClose, onReload, reloadDisabled = false 
     setError(undefined)
     if (!step) return
     if (step.kind === 'question') {
-      const issue = answerIssue(displayedStep!, choices.map((choice) => choice.id), answers[step.id])
-      if (issue) { setError(issue); return }
+      const issues=Object.fromEntries(screen.steps.flatMap(question=>{const issue=answerIssue(question,draft.choices.filter(choice=>choice.stepId===question.id).map(choice=>choice.id),answers[question.id]);return issue?[[question.id,issue]]:[]}))
+      setFieldErrors(issues)
+      if(Object.keys(issues).length){if(!screen.layout)setError(Object.values(issues)[0]);return}
     }
-    if (!path[index + 1]) { setError('Connect a default path or matching rule before continuing.'); await inspect(); return }
+    if (!screens[index + 1]) { setError('Connect a default path or matching rule before continuing.'); await inspect(); return }
     if (await inspect()) setIndex((current) => current + 1)
   }
   return <section className="panel draft-preview" aria-label="Draft preview">
     <header className="toggle-row"><div><p className="eyebrow">Preview</p><p className="muted">Try your questions here. Preview answers are not collected.</p></div><button className="quiet-button" type="button" onClick={onClose}>Close preview</button></header>
     {brandError ? <p role="alert">{brandError}</p> : null}
-    {step ? <div className="preview-surface brand-surface" style={brand ? brandStyle(brand) : undefined}>{brand ? <BrandIdentity config={brand} /> : null}<p className="eyebrow">{step.kind}</p><h2 className="display">{recall(step.prompt)}</h2>{step.helperText ? <p>{recall(step.helperText)}</p> : null}{step.kind === 'question' && step.required ? <p>Required</p> : null}{step.kind === 'question' ? <fieldset className="plain-fieldset" disabled={checking || stale}><QuestionInput key={step.id} step={displayedStep!} choices={choices} value={answers[step.id]} onChange={(value) => {
+    {step ? <div className="preview-surface brand-surface" style={brand ? brandStyle(brand) : undefined}>{brand ? <BrandIdentity config={brand} /> : null}<p className="eyebrow">{step.kind}</p><h2 className="display">{screen.layout?.title ?? recall(step.prompt)}</h2>{screen.layout?.description ? <p>{screen.layout.description}</p> : !screen.layout && step.helperText ? <p>{recall(step.helperText)}</p> : null}{!screen.layout && step.kind === 'question' && step.required ? <p>Required</p> : null}{step.kind === 'question' && screen.layout ? <ScreenQuestions steps={screen.steps} choices={draft.choices} answers={answers} errors={fieldErrors} disabled={checking||stale} recall={(text,id)=>interpolateAnswerRecall(text,draft,answers,id)} onChange={(id,value)=>{const next={...answers,[id]:value};const reachable=new Set(visiblePath(draft,next).map(step=>step.id));setAnswers(Object.fromEntries(Object.entries(next).filter(([key])=>reachable.has(key))));setFieldErrors({});setTrace(undefined)}}/> : step.kind === 'question' ? <fieldset className="plain-fieldset" disabled={checking || stale}><QuestionInput key={step.id} step={displayedStep!} choices={choices} value={answers[step.id]} onChange={(value) => {
       if (pending.current || stale) return
       setTrace(undefined); setError(undefined)
       const next = { ...answers, [step.id]: value }

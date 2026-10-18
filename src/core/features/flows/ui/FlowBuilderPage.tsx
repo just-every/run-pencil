@@ -1,3 +1,4 @@
+import { ScreenSettings } from './ScreenSettings'
 import { SaveTeamTemplate } from './SaveTeamTemplate'
 import { RecallHelp } from './RecallHelp'
 import { SpecialChoicesEditor } from './SpecialChoicesEditor'
@@ -259,6 +260,7 @@ export function FlowBuilderPage() {
 
         <aside className="builder-inspector" aria-label="Step settings">
           {selected ? <>
+            {selected.kind === 'question' ? <ScreenSettings key={`${draftRead}-${selected.id}`} draft={draft} selected={{...selected,questionSettings:settings}} disabled={saving} saveDisabled={dirty} onSave={layout=>void reloadAfterMutation(()=>api.saveScreen(flowId,{stepId:selected.id,expectedVersion:draft.flow.draftVersion,layout}))} onVisibility={condition=>{const next:Record<string,unknown>={...settings};if(condition)next.showWhen=condition;else delete next.showWhen;setSettingsText(JSON.stringify(next,null,2))}}/> : null}
             <p className="eyebrow">Content</p>
             <label className="inspector-field">Prompt<textarea aria-label="Prompt" disabled={saving} className="text-area" onChange={(event) => setPrompt(event.target.value)} value={prompt} /></label>
             {selected.kind === 'question' ? <DraftRewritePanel key={`${flowId}:${selected.id}`} flowId={flowId} stepId={selected.id} version={draft.flow.draftVersion} source={selected.prompt} disabled={saving || dirty} onAccepted={load} onBusy={setSaving} /> : null}
