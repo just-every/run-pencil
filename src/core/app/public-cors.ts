@@ -10,7 +10,7 @@ export const opaqueEmbedCors: MiddlewareHandler<WorkerEnvironment> = async (cont
   context.header('Vary', 'Origin')
   if (context.req.method === 'OPTIONS') {
     context.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-    context.header('Access-Control-Allow-Headers', 'Content-Type, CF-Connecting-IP')
+    context.header('Access-Control-Allow-Headers', 'Content-Type, CF-Connecting-IP, X-Pencil-Access')
     return context.body(null, 204)
   }
   await next()

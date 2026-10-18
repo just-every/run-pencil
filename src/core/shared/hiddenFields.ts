@@ -6,19 +6,20 @@ import { calendarDate } from './questionTypes'
 import type { FlowStep } from '../app/api'
 
 export type HiddenField = { id: string; name: string; type: 'text' | 'number' | 'email' | 'date' | 'boolean'; category: 'plain' | 'campaign' | 'identifying' | 'click_id' }
-export type FormSettings = { redirectOrigins?: string[]; calculations?: Calculation[]; hiddenFields: HiddenField[]; identityMode: 'anonymous' | 'identified' }
-export type ResponseContext = { calculations?: Record<string,number|string|null>; hidden: Record<string, string | number | boolean>; discarded: number; identityMode: 'anonymous' | 'identified' }
+export type FormSettings = { access?: {id:string;mode:'password'|'email'|'signed'}; redirectOrigins?: string[]; calculations?: Calculation[]; hiddenFields: HiddenField[]; identityMode: 'anonymous' | 'identified' }
+export type ResponseContext = { verifiedEmail?:string; verifiedSubject?:string; calculations?: Record<string,number|string|null>; hidden: Record<string, string | number | boolean>; discarded: number; identityMode: 'anonymous' | 'identified' }
 const reserved = new Set(['collector','resume','source','challenge','kiosk','__proto__','constructor','prototype'])
 export const hiddenFieldLimits = manifest.limits.hiddenFields
 
 export function formSettings(json?: string | null): FormSettings {
   const value = JSON.parse(json ?? '{}') as Partial<FormSettings>
-  return { ...(value.redirectOrigins ? {redirectOrigins:value.redirectOrigins} : {}), calculations:value.calculations ?? [], hiddenFields: value.hiddenFields ?? [], identityMode: value.identityMode ?? 'anonymous' }
+  return { ...(value.access ? {access:value.access} : {}), ...(value.redirectOrigins ? {redirectOrigins:value.redirectOrigins} : {}), calculations:value.calculations ?? [], hiddenFields: value.hiddenFields ?? [], identityMode: value.identityMode ?? 'anonymous' }
 }
 export function hiddenSettingsIssue(value: unknown): string | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return 'Choose valid hidden-field settings.'
-  if (Object.keys(value).some(key=>!['hiddenFields','identityMode','calculations','redirectOrigins'].includes(key))) return 'Unknown form setting.'
+  if (Object.keys(value).some(key=>!['hiddenFields','identityMode','calculations','redirectOrigins','access'].includes(key))) return 'Unknown form setting.'
   const settings = value as FormSettings
+  if(settings.access !== undefined && (!settings.access || Object.keys(settings.access).sort().join(',')!=='id,mode' || !/^[A-Za-z0-9_-]{1,256}$/.test(settings.access.id) || !['password','email','signed'].includes(settings.access.mode)))return 'Choose a valid access requirement.'
   if (settings.redirectOrigins !== undefined && (!Array.isArray(settings.redirectOrigins) || settings.redirectOrigins.length > 20 || settings.redirectOrigins.some(origin => typeof origin !== 'string' || !approvedOrigin(origin)) || new Set(settings.redirectOrigins).size !== settings.redirectOrigins.length)) return 'Approve at most 20 distinct HTTPS origins, without paths or credentials.'
   if (settings.calculations !== undefined && !calculationsShape(settings.calculations)) return 'Calculations need valid typed expressions within the configured limits.'
   if (!['anonymous','identified'].includes(settings.identityMode) || !Array.isArray(settings.hiddenFields) || settings.hiddenFields.length > hiddenFieldLimits.perRevision) return 'Choose an identity mode and at most 20 hidden fields.'

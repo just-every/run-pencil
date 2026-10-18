@@ -120,3 +120,17 @@ Next: [Invitations, reminders and consent](invitations.md), or read what comes b
 In **Share this flow**, download the public link as an SVG or PNG QR code. **Manage named collectors** gives each campaign or counter its own labelled QR downloads; responses retain that collector in the ledger and exports. Default direct and embed collectors also have scannable public links; opening one outside an iframe keeps its declared source label, while actual embeds still require an allowed host.
 
 Open **Kiosk** for a public link or named collector, choose how long idle answers may remain, then open its kiosk link on the shared device. Submission clears the form before the next person begins. An idle timeout or leaving the tab clears unsent answers. Kiosks do not offer Save and finish later. Keep this tab visible while collecting.
+
+## Restricted forms
+
+Open **Publication options → Form access** in the builder. Choose a password, verified email, or a signed link from your own app. Save, then publish: each revision keeps its own access rule. The server withholds the question graph and refuses new sessions until the check succeeds. Password access can remain anonymous; email and app access disclose the verified identity before answers and retain it in the ledger and CSV/JSON.
+
+For email access, list exact allowed domains or individual addresses. A six-digit code expires after ten minutes and permits at most five attempts. Codes are single-use; the verified email may complete the form once across its revisions. An expired code or failed delivery can be requested again. Local development suppresses email, so email verification requires a configured production sender to receive the code. There is no development inbox.
+
+For app access, save your app's raw 32-byte Ed25519 public key in base64url. Keep its private key in your app. Sign the exact base64url JSON payload below with Ed25519; append a dot and the signature in base64url. `expiresAt` is epoch milliseconds, at most 24 hours ahead. Use the published revision ID returned in the restricted form's access descriptor (`GET /api/public/flows/<slug>`). The app opens `/f/<slug>#access=<payload>.<signature>`; Pencil removes the token from the address bar, verifies it on the server, and opens the form only after the respondent confirms. A token for another revision or a past expiry is refused.
+
+```json
+{"revisionId":"PUBLISHED_REVISION_ID","expiresAt":1792440000000,"subject":"your-app-account-id"}
+```
+
+Access grants stay in browser memory for up to one hour and never enter anonymous view counters. Kiosks require each next respondent to verify again. Private saves retain the already verified identity on their original session. Backups exclude passwords and live access grants, codes and session authorizations. After restoration, publish a replacement password before password-protected forms can admit new respondents; email allowlists and app public keys remain configured. Duplicated forms require their own access configuration before collection.

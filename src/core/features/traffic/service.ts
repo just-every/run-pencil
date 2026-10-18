@@ -8,9 +8,9 @@ import type { FlowService } from '../flows'
 export type TrafficRow={source:string;day:string;views:number;starts:number;submissions:number;label:string}
 export class TrafficService {
   constructor(private readonly db:D1Database,private readonly flows:FlowService,private readonly responses:ResponseService,private readonly collectors:CollectorService,private readonly loadTimeSecret:string){}
-  async view(input:{slug:string;revisionId:string;source:'direct'|'embed';collectorKey?:string;invitationToken?:string}) {
-    const invitation=input.invitationToken?await this.responses.invitationFlow(input.invitationToken):undefined
-    const publicFlow=invitation?.publicFlow??await this.flows.getPublicFlow(input.slug)
+  async view(input:{slug:string;revisionId:string;source:'direct'|'embed';collectorKey?:string;invitationToken?:string;accessToken?:string}) {
+    const invitation=input.invitationToken?await this.responses.invitationFlow(input.invitationToken,input.accessToken):undefined
+    const publicFlow=invitation?.publicFlow??await this.flows.getPublicFlow(input.slug,input.accessToken)
     if(publicFlow.flow.slug!==input.slug || publicFlow.revision.id!==input.revisionId || invitation?.invitation.responseStatus==='completed')throw new ValidationError('This published form is no longer available for a new view.')
     if(input.invitationToken&&input.collectorKey)throw new ValidationError('An invitation uses its original collector.')
     const collector=invitation?.collector??await this.collectors.requireOpen(publicFlow.flow.id,input.source,input.collectorKey)

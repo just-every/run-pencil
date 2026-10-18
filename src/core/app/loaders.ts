@@ -35,6 +35,8 @@ export const loadPublicFlow = createServerFn({ method: 'GET' })
       await services.collectors.requireOpen(flow.flow.id,data.source,data.collectorKey)
       return { state: 'open' as const, flow, collectorKey:data.collectorKey }
     } catch (error) {
+      const {AccessRequiredError}=await import('../features/restricted-access/service')
+      if(error instanceof AccessRequiredError)return {state:'restricted' as const,restriction:error.requirement,collectorKey:data.collectorKey}
       const { FlowClosedError, PencilError } = await import('../shared/errors')
       if (error instanceof PencilError && error.code === 'NOT_FOUND') throw notFound()
       if(error instanceof PencilError && error.code==='COLLECTOR_CLOSED' && flow)return {state:'closed' as const,flow:{title:flow.flow.title,slug:flow.flow.slug,collectionClosed:true}}
@@ -102,6 +104,8 @@ export const loadInvitation = createServerFn({ method: 'GET' })
       const context = await services.responses.invitationFlow(data.token)
       return { state: 'open' as const, flow: context.publicFlow }
     } catch (error) {
+      const {AccessRequiredError}=await import('../features/restricted-access/service')
+      if(error instanceof AccessRequiredError)return {state:'restricted' as const,restriction:error.requirement}
       const { FlowClosedError, PencilError } = await import('../shared/errors')
       if (error instanceof PencilError && error.code === 'NOT_FOUND') throw notFound()
       if (error instanceof FlowClosedError) return { state: 'closed' as const, flow: error.flow }

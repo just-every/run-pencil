@@ -1,3 +1,4 @@
+import type { RestrictedAccess } from '../restricted-access'
 import { formAnswerContext } from '../../shared/calculationContext'
 import { remapCalculations } from '../../shared/calculationRemap'
 import { formSettings, hiddenSettingsIssue, hiddenPublicationIssues, normalizeHidden, hiddenAnswers, type FormSettings } from '../../shared/hiddenFields'
@@ -54,6 +55,7 @@ export class FlowService {
     private readonly repository: FlowRepository,
     private readonly responseRepository: ResponseRepository,
     private readonly policyConfiguration: FlowPolicies = defaultFlowPolicies,
+    private readonly access?:RestrictedAccess,
   ) {}
 
   async ensureSampleFlow(input: {
@@ -442,7 +444,7 @@ export class FlowService {
       newSteps: rawSteps.map((step) => ({ ...step, id: newStepIdByOldId.get(step.id)!, revisionId: nextDraftId, createdAt: now, updatedAt: now })),
       newChoices: rawChoices.map((choice) => ({ ...choice, id: ulid(), stepId: newStepIdByOldId.get(choice.stepId)!, createdAt: now, updatedAt: now })),
       newRules: rawRules.map((rule) => ({ ...rule, id: ulid(), revisionId: nextDraftId, createdAt: now, updatedAt: now })),
-      policySnapshotJson: JSON.stringify(evaluateFlowPolicies({...this.policyConfiguration,'response.identity.v1':draft.formSettings.identityMode==='identified'?'identified-public-link':'anonymous-public-link'})), deadlineAt: input.deadlineAt ?? null, deadlineTimeZone: input.deadlineAt ? timeZone ?? 'UTC' : null, targetCompletedResponses: input.targetCompletedResponses ?? null,
+      policySnapshotJson: JSON.stringify(evaluateFlowPolicies({...this.policyConfiguration,'response.identity.v1':(draft.formSettings.identityMode==='identified'||draft.formSettings.access?.mode==='email'||draft.formSettings.access?.mode==='signed')?'identified-public-link':'anonymous-public-link'})), deadlineAt: input.deadlineAt ?? null, deadlineTimeZone: input.deadlineAt ? timeZone ?? 'UTC' : null, targetCompletedResponses: input.targetCompletedResponses ?? null,
     })
     if (!published) return draftConflict((await this.requireWorkspaceFlow(input.workspaceId, input.flowId)).draftVersion)
     return { kind: 'published' as const, revision: { id: draft.revision.id, number: draft.revision.number }, draftVersion: input.expectedVersion + 1 }
@@ -470,7 +472,7 @@ export class FlowService {
     await this.repository.archiveFlow(flowId, new Date().toISOString(), operatorId)
   }
 
-  async getPublicFlow(slug: string) {
+  async getPublicFlow(slug: string, accessToken?:string) {
     const resolved = await this.repository.getCurrentPublicSnapshot(slug)
     const flow = resolved?.flow
     if (!flow || flow.status === 'draft' || flow.status === 'archived') throw new NotFoundError('This flow is not available for responses.')
@@ -479,6 +481,10 @@ export class FlowService {
     const expired = revision.deadlineAt && Date.parse(revision.deadlineAt) <= Date.now()
     if (expired) await this.repository.closeExpiredRevision(revision.id, new Date().toISOString())
     if (flow.status === 'closed' || revision.admissionClosedAt || expired || (revision.targetCompletedResponses !== null && resolved.completedResponses >= revision.targetCompletedResponses)) throw new FlowClosedError({ title: revision.title, slug: flow.slug })
+    if(formSettings(revision.formSettingsJson).access){
+      if(!this.access)throw new ValidationError('Access verification is unavailable.')
+      await this.access.require(formSettings(revision.formSettingsJson),revision.id,revision.title,flow.slug,accessToken)
+    }
     const { steps, choices, rules } = resolved
     return { formSettings: formSettings(revision.formSettingsJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: flow.title }, revision: this.publicRevision(revision), steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) }
   }

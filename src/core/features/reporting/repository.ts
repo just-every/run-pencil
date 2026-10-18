@@ -13,7 +13,7 @@ import { type ReportStep, type ReportChoice } from './questionReport'
 export type LedgerFilter = WorkflowFilter & { codeId?: string; search?: string; collectorId?: string; revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown' | 'imported'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
 export type LedgerHiddenField = Pick<HiddenField, 'id' | 'name' | 'type'> & { value: string | number | boolean }
 export type LedgerCalculation = Pick<Calculation, 'id' | 'name' | 'type'> & { value: CalculationValue }
-export type LedgerResponse = { calculations: LedgerCalculation[]; hiddenFields: LedgerHiddenField[]; identityMode: 'anonymous' | 'identified'; discardedParameters: number; collector: { id: string; name: string; channel: string }; omittedQuestions: Array<{ stepId: string; label: string; position: number; questionType?: string }>; participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string | null; state: 'released' | 'quarantined'; quarantineReason: string | null; answers: Array<{ stepId: string; label: string; position: number; questionType: string; value: unknown; displayValue: string }> }
+export type LedgerResponse = { verifiedEmail?:string;verifiedSubject?:string; calculations: LedgerCalculation[]; hiddenFields: LedgerHiddenField[]; identityMode: 'anonymous' | 'identified'; discardedParameters: number; collector: { id: string; name: string; channel: string }; omittedQuestions: Array<{ stepId: string; label: string; position: number; questionType?: string }>; participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string | null; state: 'released' | 'quarantined'; quarantineReason: string | null; answers: Array<{ stepId: string; label: string; position: number; questionType: string; value: unknown; displayValue: string }> }
 
 function retainedContext(contextJson: string, settingsJson: string, participantId: string | null) {
   const context = JSON.parse(contextJson) as Partial<ResponseContext>
@@ -32,7 +32,7 @@ function retainedContext(contextJson: string, settingsJson: string, participantI
     if (value !== null && (calculation.type === 'number' ? typeof value !== 'number' || !Number.isFinite(value) : typeof value !== 'string')) throw new Error('A retained calculation does not match its published type.')
     return [{ id: calculation.id, name: calculation.name, type: calculation.type, value }]
   })
-  return { hiddenFields, calculations, identityMode: participantId ? 'identified' as const : context.identityMode ?? 'anonymous' as const, discardedParameters: context.discarded ?? 0 }
+  return { ...(context.verifiedEmail?{verifiedEmail:context.verifiedEmail}:{}), ...(context.verifiedSubject?{verifiedSubject:context.verifiedSubject}:{}), hiddenFields, calculations, identityMode: participantId ? 'identified' as const : context.identityMode ?? 'anonymous' as const, discardedParameters: context.discarded ?? 0 }
 }
 
 export class ReportingRepository {

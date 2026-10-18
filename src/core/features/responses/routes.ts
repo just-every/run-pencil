@@ -9,6 +9,7 @@ import { FlowClosedError, PencilError, RateLimitError, ValidationError } from '.
 import { requireSameOriginRequest } from '../auth'
 
 const startSessionSchema = z.object({
+  accessToken:z.string().max(8192).optional(),
   deviceClass: z.enum(['mobile', 'tablet', 'desktop']),
   source: z.enum(['direct', 'embed']).default('direct'),
   collectorKey: collectorKey.optional(),
@@ -42,7 +43,7 @@ function failure(context: Context<WorkerEnvironment>, error: unknown) {
 }
 
 export function registerResponseRoutes(app: Hono<WorkerEnvironment>, services: RequestServices) {
-  app.post('/api/public/flows/:slug/views',zValidator('param',z.object({slug:flowSlug})),zValidator('json',z.object({revisionId:resourceId,source:z.enum(['direct','embed']),collectorKey:collectorKey.optional(),invitationToken:z.string().regex(/^[a-f0-9]{64}$/).optional()}).strict()),async context=>{
+  app.post('/api/public/flows/:slug/views',zValidator('param',z.object({slug:flowSlug})),zValidator('json',z.object({revisionId:resourceId,source:z.enum(['direct','embed']),accessToken:z.string().max(8192).optional(),collectorKey:collectorKey.optional(),invitationToken:z.string().regex(/^[a-f0-9]{64}$/).optional()}).strict()),async context=>{
     try {
       if(/prefetch/i.test(context.req.header('Sec-Purpose')??context.req.header('Purpose')??''))return context.body(null,204)
       return context.json(await services(context).traffic.view({slug:context.req.param('slug'),...context.req.valid('json')}))

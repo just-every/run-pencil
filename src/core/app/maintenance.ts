@@ -11,6 +11,7 @@ export async function maintainPencil(environment: WorkerBindings, scheduledTime:
   // Maintenance never initializes fixtures or bootstrap operators and never sends mail.
   const platform = createScheduledPencilPlatform(environment)
   const services = createPencilServices(platform)
+  await platform.databaseBinding.prepare('DELETE FROM access_challenges WHERE expires_at<=?').bind(now).run()
   const totals = { expiredRespondentSessions: 0, expiredOperatorSessions: 0, expiredRateWindows: 0, moreWorkMayRemain: false }
   for (let batch = 0; batch < maximumBatches; batch++) {
     const respondents = await services.responses.expireSessions(now, batchSize)

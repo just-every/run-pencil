@@ -1,3 +1,4 @@
+import type { RestrictedAccess } from '../restricted-access'
 import { completionRedirect } from '../../shared/completionRedirect'
 import { formAnswerContext, variableAnswers } from '../../shared/calculationContext'
 import { evaluateCalculations } from '../../shared/calculations'
@@ -30,6 +31,7 @@ export class ResponseService {
     private readonly repository: ResponseRepository,
     private readonly collectors: CollectorService,
     private readonly loadTimeSecret: string,
+    private readonly access:RestrictedAccess,
   ) {}
 
   async ensureSampleResponses(input: {
@@ -83,6 +85,8 @@ export class ResponseService {
     }
   }
 
+  async sessionAccessIdentity(sessionId:string,settings:import('../../shared/hiddenFields').FormSettings){return this.access.sessionIdentity(sessionId,settings)}
+
   async expireSessions(now: string, limit: number) { return this.repository.foldExpiredSessions(now, limit) }
 
   async expireRateWindows(now: string, limit: number) { return this.repository.purgeExpiredRateWindows(now, limit) }
@@ -97,7 +101,7 @@ export class ResponseService {
     if (!admitted) throw new RateLimitError()
   }
 
-  async invitationFlow(token: string) {
+  async invitationFlow(token: string, accessToken?:string) {
     const invitation = await this.repository.findInvitation(token)
     if (!invitation) throw new NotFoundError('This invitation is no longer available.')
     const revision = await this.flowRepository.findRevisionById(invitation.revisionId)
@@ -108,19 +112,21 @@ export class ResponseService {
     if (flow.status === 'draft' || revision.admissionClosedAt || expired || await this.targetReached(revision)) throw new FlowClosedError({ title: revision.title, slug: flow.slug })
     const collector = await this.collectors.requireInvitationOpen(flow.id, token)
       .catch(error => collectorFlowFailure(error, { title: revision.title, slug: flow.slug }))
+    await this.access.require(formSettings(revision.formSettingsJson),revision.id,revision.title,flow.slug,accessToken)
     const { steps, choices, rules } = await this.flowRepository.getRevisionGraph(revision.id)
     return { invitation, collector, flow, revision, steps, choices, rules, publicFlow: { formSettings: formSettings(revision.formSettingsJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules), identity: 'identified' as const, completedStepId: invitation.responseStatus === 'completed' ? invitation.completionStepId : null } }
   }
 
-  async startPublicSession(input: { slug: string; deviceClass: DeviceClass; source: PublicSource; clientAddress?: string; invitationToken?: string; collectorKey?: string }) {
+  async startPublicSession(input: { slug: string; deviceClass: DeviceClass; source: PublicSource; clientAddress?: string; invitationToken?: string; collectorKey?: string; accessToken?:string }) {
     if (input.invitationToken && input.collectorKey !== undefined) throw new ValidationError('An invitation uses its original collector; remove the collection-link override.')
     await this.enforcePublicRequestRateLimit({ clientAddress: input.clientAddress, scope: 'session' })
-    const invitationContext = input.invitationToken ? await this.invitationFlow(input.invitationToken) : undefined
+    const invitationContext = input.invitationToken ? await this.invitationFlow(input.invitationToken,input.accessToken) : undefined
     if (invitationContext && invitationContext.flow.slug !== input.slug) throw new NotFoundError('This invitation belongs to another flow.')
     if (invitationContext?.invitation.responseStatus === 'completed') throw new ValidationError('This invitation has already completed its response.')
     const { flow, revision, steps, choices, rules } = invitationContext ?? await this.currentPublicRevision(input.slug)
     const collector = invitationContext?.collector ?? await this.collectors.requireOpen(flow.id, input.source, input.collectorKey)
       .catch(error => collectorFlowFailure(error, { title: revision.title, slug: flow.slug }))
+    const grant=await this.access.require(formSettings(revision.formSettingsJson),revision.id,revision.title,flow.slug,input.accessToken)
     const firstStep = steps[0]
     if (!firstStep) throw new ValidationError('This published flow has no first screen.')
     const now = new Date()
@@ -153,6 +159,7 @@ export class ResponseService {
         .catch(error => collectorFlowFailure(error, { title: revision.title, slug: flow.slug }))
       throw new ValidationError('This form changed before you began. Please start again using the current version.')
     }
+    await this.access.bindSession(session.id,grant)
     return { sessionId: session.id, sessionToken: token, loadTime: await issueLoadTime(this.loadTimeSecret, revision.id), revisionId: revision.id, flowId: flow.id, flow: { formSettings: formSettings(revision.formSettingsJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) } }
   }
 
@@ -227,6 +234,9 @@ export class ResponseService {
     const { steps, choices, rules } = await this.flowRepository.getRevisionGraph(revision.id)
     const settings = formSettings(revision.formSettingsJson)
     const hiddenContext = normalizeHidden(settings,input.hidden ?? {})
+    const accessIdentity=await this.access.sessionIdentity(session.id,settings)
+    if(accessIdentity?.email){hiddenContext.verifiedEmail=accessIdentity.email;hiddenContext.identityMode='identified'}
+    if(accessIdentity?.subject){hiddenContext.verifiedSubject=accessIdentity.subject;hiddenContext.identityMode='identified'}
     if(invitation) hiddenContext.identityMode='identified'
     const { accepted: acceptedAnswers, completionStepId, reachedStepIds } = this.validatePathAnswers(steps, choices, rules, input.answers, revisionBranchSelection(revision.policySnapshotJson),hiddenAnswers(hiddenContext),settings)
     if(settings.calculations?.length) hiddenContext.calculations=evaluateCalculations(settings.calculations ?? [],Object.fromEntries(acceptedAnswers.map(answer=>[answer.stepId,answer.value])),hiddenContext.hidden)
