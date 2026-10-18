@@ -1,11 +1,12 @@
+import { choiceIdsSql } from '../../shared/otherChoices'
 import { calendarDate } from '../../shared/questionTypes'
 
 /** Compare against the stored JSON type, without SQLite's text/number coercion. */
 export function structuredAnswerFilter(stepId: string, value: string) {
   const clauses = [
     "(s.question_type = 'email' AND json_type(a.value_json) = 'text' AND lower(json_extract(a.value_json, '$')) = lower(?))",
-    "(s.question_type IN ('multiple_choice', 'priority') AND json_type(a.value_json) = 'array' AND EXISTS (SELECT 1 FROM json_each(a.value_json) WHERE type = 'text' AND value = ?))",
-    "(s.question_type IN ('single_choice', 'dropdown', 'short_text', 'long_text') AND json_type(a.value_json) = 'text' AND json_extract(a.value_json, '$') = ?)",
+    `(s.question_type IN ('multiple_choice','priority','single_choice','dropdown') AND EXISTS (SELECT 1 FROM json_each(${choiceIdsSql('a.value_json')}) WHERE type='text' AND value=?))`,
+    "(s.question_type IN ('short_text', 'long_text') AND json_type(a.value_json) = 'text' AND json_extract(a.value_json, '$') = ?)",
   ]
   const bindings: Array<string | number> = [stepId, value, value, value]
   if (value === 'true' || value === 'false') {

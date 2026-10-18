@@ -18,6 +18,7 @@ import { forbiddenSource, forbiddenSources } from './source-privacy'
 import { googleSource } from './google-source'
 import { googleTime } from './google-time'
 import { googleIdentity } from './google-fields'
+import { otherChoiceId } from './choice-response'
 import { canonicalHash } from '../../../base/import-kit/src/provenance/canonical-hash'
 export function prepareImport(input: ImportInput, workspaceId: string, hashPayload = canonicalHash) {
   const definitionBytes = Buffer.byteLength(input.definition), csvBytes = Buffer.byteLength(input.csv)
@@ -26,7 +27,6 @@ export function prepareImport(input: ImportInput, workspaceId: string, hashPaylo
   if (input.source && !['typeform', 'google-forms'].includes(input.source)) throw new ValidationError('Unknown import source.')
   if (!google && input.google) throw new ValidationError('Google settings require the Google Forms source.')
   if (google && !input.definition.trim() && !input.csv.trim()) throw new ValidationError('Provide a Google definition or response CSV.')
-  if (google && input.columns?.some(column => column.choice)) throw new ValidationError('Google response exports use one column per question. Separate choice columns are not supported.')
   let definition: Record<string, any>
   try { definition = object(JSON.parse(input.definition || (google ? '{}' : ''))) } catch { throw new ValidationError('Form JSON is not valid.') }
   if (!google && (!Array.isArray(definition.fields) || typeof definition.title !== 'string' || !definition.title.trim())) throw new ValidationError('Form JSON needs a title and fields array.')
@@ -64,8 +64,11 @@ export function prepareImport(input: ImportInput, workspaceId: string, hashPaylo
     for (const c of columns) {
       if (c.target === 'skip' || forbiddenColumns.includes(c.column)) continue
       if (c.target === 'startedAt' || c.target === 'submittedAt' && !/^timestamp$/i.test(headers[c.column].trim())) throw new ValidationError('Google response exports supply only the original Timestamp submission column; choose that column explicitly.')
-      if (assigned.has(c.target)) throw new ValidationError('More than one column maps to this answer or timestamp. Review each column explicitly.')
-      assigned.add(c.target)
+      const question = form.steps.find(s => s.kind === 'question' && s.id === c.target)
+      if (c.choice && (!question || c.choice !== otherChoiceId(question))) throw new ValidationError('Google separate columns can map only to a defined Other write-in; fixed selections use one question column.')
+      const key = c.choice ? `${c.target}:${c.choice}` : c.target
+      if (assigned.has(key)) throw new ValidationError('More than one column maps to this answer or timestamp. Review each column explicitly.')
+      assigned.add(key)
       if (!['startedAt', 'submittedAt'].includes(c.target) && !form.steps.some(s => s.kind === 'question' && s.id === c.target)) throw new ValidationError('Unknown or unsupported mapped question.')
     }
   }

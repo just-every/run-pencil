@@ -1,3 +1,4 @@
+import { isOtherAnswer } from '../../shared/otherChoices'
 import { NotFoundError, ValidationError } from '../../shared/errors'
 import { checkGeneration, generation, openCursor, sealCursor, type EvidenceScope } from './cursor'
 import { responseScope } from './scope'
@@ -13,8 +14,8 @@ export async function textPage(db: D1Database, secret: string, identity: { works
   if (!cursor || cursor.kind !== (input.countOnly ? 'text-count' : 'text')) throw new ValidationError('Invalid answer cursor. Start again.')
   if (Object.entries(identity).some(([key,value]) => cursor[key as keyof TextCursor] !== value) || cursor.revisionId !== input.revisionId || cursor.questionId !== input.questionId || cursor.searchHash !== searchHash) throw new ValidationError('This answer cursor belongs to a different report.')
   const countCursor = !input.cursor ? await sealCursor({ ...cursor, kind:'text-count', matched:0 },secret) : undefined
-  const step = await db.prepare(`SELECT s.question_type AS type FROM flow_steps s JOIN flow_revisions v ON v.id = s.revision_id JOIN flows f ON f.id = v.flow_id WHERE f.id = ? AND f.workspace_id = ? AND v.id = ? AND v.state = 'published' AND s.stable_id = ?`).bind(identity.flowId,identity.workspaceId,input.revisionId,input.questionId).first<{type:string}>()
-  if (!step || !['short_text','long_text','email'].includes(step.type)) throw new NotFoundError('This published text question is unavailable.')
+  const step = await db.prepare(`SELECT s.question_type AS type, json_extract(s.question_settings_json,'$.otherChoiceId') AS otherChoiceId FROM flow_steps s JOIN flow_revisions v ON v.id = s.revision_id JOIN flows f ON f.id = v.flow_id WHERE f.id = ? AND f.workspace_id = ? AND v.id = ? AND v.state = 'published' AND s.stable_id = ?`).bind(identity.flowId,identity.workspaceId,input.revisionId,input.questionId).first<{type:string;otherChoiceId:string|null}>()
+  if (!step || (!['short_text','long_text','email'].includes(step.type) && !step.otherChoiceId)) throw new NotFoundError('This published text question is unavailable.')
   await checkGeneration(db,cursor)
   const texts: string[] = []
   const needle = input.search.toLocaleLowerCase()
@@ -29,10 +30,11 @@ export async function textPage(db: D1Database, secret: string, identity: { works
     const rows = (await db.prepare(`SELECT r.id, r.completed_at AS time, CASE WHEN length(CAST(a.value_json AS BLOB)) <= 30002 THEN a.value_json ELSE 'null' END AS value FROM responses r JOIN response_answers a ON a.response_id = r.id AND a.step_id = ? WHERE ${where}${after} ORDER BY r.completed_at DESC,r.id DESC LIMIT 32`).bind(input.questionId,...bindings).all<{id:string;time:string;value:string}>()).results
     let processed = 0
     for (const row of rows) {
-      const text: unknown = JSON.parse(row.value)
-      if (!retainedTextValid(step.type,text)) throw new Error('Invalid retained text answer.')
+      const value: unknown = JSON.parse(row.value)
+      const text: unknown = step.otherChoiceId ? isOtherAnswer(value) ? value.otherText : '' : value
+      if (!retainedTextValid(step.otherChoiceId ? 'short_text' : step.type,text) && text !== '') throw new Error('Invalid retained text answer.')
       cursor.after = { time: row.time, id: row.id }; processed++
-      if (text.toLocaleLowerCase().includes(needle)) {
+      if (typeof text === 'string' && text.length && text.toLocaleLowerCase().includes(needle)) {
         if (input.countOnly) cursor.matched = (cursor.matched ?? 0)+1
         else texts.push(text)
       }

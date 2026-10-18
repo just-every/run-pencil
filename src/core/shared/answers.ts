@@ -1,3 +1,4 @@
+import { otherChoiceIssue } from './otherChoices'
 import type { QuestionType } from './questionKinds'
 import { contactQuestionTypes, contactAnswerIssue } from './contactAnswers'
 import { scoreQuestionTypes, scoreAnswerIssue } from './scoreQuestions'
@@ -28,11 +29,9 @@ export function answerIssue(step: AnswerQuestion, choiceIds: string[], value: un
     case 'long_text': return textAnswerIssue(step.questionType, settings, value)
     case 'email': return typeof value === 'string' && value.length <= 200 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? undefined : 'Enter a valid email address.'
     case 'dropdown':
-    case 'single_choice': return typeof value === 'string' && choiceIds.includes(value) ? undefined : 'Choose one of the available options.'
+    case 'single_choice': return otherChoiceIssue(step.questionType, settings, choiceIds, value)
     case 'multiple_choice': {
-      const min = typeof settings.minSelections === 'number' ? settings.minSelections : 1
-      const max = typeof settings.maxSelections === 'number' ? settings.maxSelections : choiceIds.length
-      return Array.isArray(value) && value.every((id) => typeof id === 'string' && choiceIds.includes(id)) && new Set(value).size === value.length && value.length >= min && value.length <= max ? undefined : `Choose between ${min} and ${max} distinct options.`
+      return otherChoiceIssue(step.questionType, settings, choiceIds, value)
     }
     case 'yes_no': return typeof value === 'boolean' ? undefined : 'Choose Yes or No.'
     case 'consent': return typeof value === 'boolean' && (!step.required || value) ? undefined : 'Consent is required to continue.'

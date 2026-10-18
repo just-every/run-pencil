@@ -544,8 +544,8 @@ PART-002 additionally includes the implementation and passing Worker, browser an
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 113 | 0 | 0 | 113 |
-| Target and push further | 4 | 38 | 83 | 125 |
-| All | 117 | 38 | 83 | 238 |
+| Target and push further | 4 | 39 | 82 | 125 |
+| All | 117 | 39 | 82 | 238 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -601,7 +601,7 @@ PART-002 additionally includes the implementation and passing Worker, browser an
 | `FIELD-007` | Scheduling handoff | target | missing |  | No code yet. |
 | `FIELD-008` | Classic page layout | target | missing |  | No code yet. |
 | `FIELD-009` | Video and audio answers | target | missing |  | No code yet. |
-| `FIELD-010` | "Other (please specify)" and "None of the above" | target | missing |  | Choice answers are stable choice IDs only (FLOW-019); the Google Forms importer reports an Other option as unsupported in the review (`src/core/features/importing/google-fields.ts`) and the Typeform importer reports `allow_other_choice` as an omitted property (`src/core/features/importing/fields.ts`). |
+| `FIELD-010` | "Other (please specify)" and "None of the above" | target | partial | `src/core/shared/otherChoices.ts`, `src/core/shared/ui/ChoiceQuestionInput.tsx`, `src/core/features/importing/choice-response.ts`, `tests/runtime/other-choices.worker.test.ts`, `tests/e2e/other-choices.spec.ts` | Stable Other IDs and required validated write-ins, exclusive None (including selection-minimum exemption), builder controls, branching, distributions/open text, search/filters, analysis evidence, lossless JSON and a separate stable-step CSV text column ship. Typeform/Google definition and reviewed CSV imports retain unambiguous write-ins. Source response API retrieval, SurveyMonkey/Jotform imports, translation, manual coding and randomized-order anchoring await their target features; ambiguous Google checkbox cells require explicit reviewed columns. |
 | `FIELD-011` | Statement screens anywhere in the flow | target | partial | `src/core/features/importing/fields.ts`, `tests/e2e/journey.spec.ts`, `tests/runtime/form-import.worker.test.ts` | A no-answer screen ships only as the optional first welcome screen, and the Typeform importer maps only a leading Statement while later Statements are reported unsupported. |
 | `FIELD-012` | Question groups | target | missing |  | No code yet. |
 | `FIELD-013` | Text answer validation | target | partial | `src/core/shared/textValidation.ts`, `src/core/features/flows/ui/TextSettings.tsx`, `tests/runtime/new-question-types.worker.test.ts`, `tests/runtime/form-import.worker.test.ts` | Per-question length, masks, a bounded linear-time pattern subset, custom errors, counter and Typeform lengths ship. Browser journey at 1440 and 390 is recorded in `work/sd-cp-pencil/shots/FIELD-013/`; translated errors and SurveyMonkey/Jotform import mappings remain unbuilt. |
@@ -676,7 +676,7 @@ PART-002 additionally includes the implementation and passing Worker, browser an
 | `LEDG-003` | Filters | published | done | `tests/e2e/distribution-foundation.spec.ts`, `tests/e2e/ledger-filters.spec.ts`, `tests/e2e/reporting-counts.spec.ts` |  |
 | `LEDG-004` | Response export | published | done | `tests/e2e/journey.spec.ts`, `tests/e2e/ledger-filters.spec.ts`, `tests/e2e/new-question-types.spec.ts` |  |
 | `LEDG-005` | Spreadsheet and statistics exports | target | missing |  | No code yet. |
-| `LEDG-006` | Response search | target | partial | `src/core/features/reporting/search.ts`, `src/core/features/results/ui/LedgerSearch.tsx`, `tests/runtime/ledger-filters.worker.test.ts`, `tests/e2e/response-search.spec.ts` | Search of retained text/contact answers, published choice labels and identified invitation snapshots combines with all ledger filters, highlights matches and fixes into snapshot exports. Quarantine and erasure remain excluded. Hidden-field values (FIELD-001), Other write-ins (FIELD-010), grant-aware sensitive/identity search (ROLE-002/GOV-004), Unicode case folding and the capacity p95 proof remain unbuilt. |
+| `LEDG-006` | Response search | target | partial | `src/core/features/reporting/search.ts`, `src/core/features/results/ui/LedgerSearch.tsx`, `tests/runtime/ledger-filters.worker.test.ts`, `tests/e2e/response-search.spec.ts` | Search of retained text/contact answers, published choice labels and identified invitation snapshots combines with all ledger filters, highlights matches and fixes into snapshot exports. Quarantine and erasure remain excluded. Hidden-field values (FIELD-001), grant-aware sensitive/identity search (ROLE-002/GOV-004), Unicode case folding and the capacity p95 proof remain unbuilt. |
 | `WORK-001` | Submission inbox | target | done | `src/core/features/submissions/`, `src/core/features/reporting/scope.ts`, `tests/runtime/submissions.worker.test.ts` | Per-form workflow status, active assignee, tags, private paged notes, atomic version-checked bulk edits, ledger/export filters and audited changes. Import undo, erasure and operator removal preserve custody. |
 | `WORK-002` | Approval flows | target | missing |  | No code yet. |
 | `WORK-003` | Multi-person forms | target | missing |  | No code yet. |

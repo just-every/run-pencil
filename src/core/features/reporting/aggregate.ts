@@ -1,3 +1,5 @@
+import { choiceValidity } from './choiceValidity'
+import { choiceIdsSql } from '../../shared/otherChoices'
 import { ratingScale } from '../../shared/ratingScale'
 import { scoreOptions } from '../../shared/scoreQuestions'
 import { sqlEmail, sqlTextWithin } from './textValidity'
@@ -14,15 +16,14 @@ const evidence = `FROM response_answers a JOIN responses r ON r.id = a.response_
 const value = "json_extract(a.value_json, '$')"
 const kind = 'json_type(a.value_json)'
 const settings = "COALESCE(s.question_settings_json, '{}')"
-const option = `EXISTS (SELECT 1 FROM choice_options c WHERE c.step_id = s.id AND c.stable_id = ${value})`
 const arrayValid = `NOT EXISTS (SELECT 1 FROM json_each(a.value_json) j WHERE j.type != 'text' OR NOT EXISTS (SELECT 1 FROM choice_options c WHERE c.step_id = s.id AND c.stable_id = j.value)) AND json_array_length(a.value_json) = (SELECT COUNT(DISTINCT value) FROM json_each(a.value_json))`
 const valid = `CASE s.question_type
  WHEN 'short_text' THEN ${kind} = 'text' AND ${sqlTextWithin(value, 200)}
  WHEN 'long_text' THEN ${kind} = 'text' AND ${sqlTextWithin(value, 5000)}
  WHEN 'email' THEN ${kind} = 'text' AND ${sqlTextWithin(value, 200)} AND ${sqlEmail(value)}
- WHEN 'single_choice' THEN ${kind} = 'text' AND ${option}
- WHEN 'dropdown' THEN ${kind} = 'text' AND ${option}
- WHEN 'multiple_choice' THEN ${kind} = 'array' AND ${arrayValid} AND json_array_length(a.value_json) BETWEEN COALESCE(json_extract(${settings}, '$.minSelections'), 1) AND COALESCE(json_extract(${settings}, '$.maxSelections'), (SELECT COUNT(*) FROM choice_options c WHERE c.step_id = s.id))
+ WHEN 'single_choice' THEN ${choiceValidity(false)}
+ WHEN 'dropdown' THEN ${choiceValidity(false)}
+ WHEN 'multiple_choice' THEN ${choiceValidity(true)}
  WHEN 'priority' THEN ${kind} = 'array' AND ${arrayValid} AND json_array_length(a.value_json) = (SELECT COUNT(*) FROM choice_options c WHERE c.step_id = s.id)
  WHEN 'yes_no' THEN ${kind} IN ('true','false')
  WHEN 'thumbs_rating' THEN ${kind} IN ('true','false')
@@ -56,7 +57,7 @@ export async function aggregateRevision(db: D1Database, revisionId: string, step
     db.prepare(`SELECT s.stable_id AS stepId, j.value AS value, COUNT(*) AS count, SUM(j.key = 0) AS first, AVG(CAST(j.key AS INTEGER)+1) AS average
       FROM response_answers a JOIN responses r ON r.id = a.response_id
       LEFT JOIN flow_steps s ON s.revision_id = r.revision_id AND s.stable_id = a.step_id,
-      json_each(CASE WHEN s.question_type = 'consent' THEN json_extract(a.value_json, '$.accepted') ELSE a.value_json END) j
+      json_each(CASE WHEN s.question_type = 'consent' THEN json_extract(a.value_json, '$.accepted') WHEN s.question_type IN ('single_choice','multiple_choice','dropdown') THEN ${choiceIdsSql('a.value_json')} ELSE a.value_json END) j
       WHERE r.revision_id = ? AND r.state = 'released' AND EXISTS (SELECT 1 FROM flow_revisions v JOIN flows f ON f.id=v.flow_id WHERE v.id=r.revision_id AND f.id=r.flow_id AND f.workspace_id=r.workspace_id) AND s.question_type IN ('single_choice','dropdown','multiple_choice','priority','rating','nps','yes_no','consent','csat','ces','emoji_rating','thumbs_rating')
       AND (${valid}) GROUP BY s.stable_id, j.value`).bind(revisionId),
     db.prepare(`WITH ranked AS (SELECT s.stable_id AS stepId, ${value} AS value,
@@ -79,7 +80,7 @@ export async function aggregateRevision(db: D1Database, revisionId: string, step
     const type = step.questionType
     const entries = grouped.filter(bucket => bucket.stepId === step.id)
     let summary: AnswerSummary = {}
-    if (['short_text','long_text','email'].includes(type ?? '')) summary = { texts: [] }
+    if (['short_text','long_text','email'].includes(type ?? '') || JSON.parse(step.settingsJson ?? '{}').otherChoiceId) summary = { texts: [] }
     if (answered && row) {
       if (type === 'rating') summary = { average: row.average }
       if (type === 'csat') summary = { csat: { satisfied: row.satisfied, answered, percentage: row.satisfied / answered * 100 } }

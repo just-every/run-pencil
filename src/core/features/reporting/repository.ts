@@ -1,3 +1,4 @@
+import { choiceIdsSql, isOtherAnswer } from '../../shared/otherChoices'
 import { displayCalendarDate } from '../../shared/dateFormat'
 import { retainedAnswer } from './retainedAnswer'
 import { aggregateRevision } from './aggregate'
@@ -31,7 +32,7 @@ export class ReportingRepository {
       r.completed_at AS completedAt, r.released_at AS releasedAt,
       32768 + 12 * COALESCE((SELECT SUM(length(CAST(a.value_json AS BLOB))) FROM response_answers a WHERE a.response_id = r.id),0)
       + 12 * COALESCE((SELECT SUM(length(CAST(s.prompt AS BLOB))) FROM flow_steps s WHERE s.revision_id = r.revision_id),0)
-      + 12 * COALESCE((SELECT SUM(length(CAST(c.label AS BLOB))+length(CAST(c.value AS BLOB))) FROM response_answers a JOIN flow_steps s ON s.revision_id=r.revision_id AND s.stable_id=a.step_id JOIN json_each(a.value_json) j JOIN choice_options c ON c.step_id=s.id AND c.stable_id=j.value WHERE a.response_id=r.id AND s.question_type IN ('single_choice','dropdown','multiple_choice','priority')),0) AS cost
+      + 12 * COALESCE((SELECT SUM(length(CAST(c.label AS BLOB))+length(CAST(c.value AS BLOB))) FROM response_answers a JOIN flow_steps s ON s.revision_id=r.revision_id AND s.stable_id=a.step_id JOIN json_each(${choiceIdsSql('a.value_json')}) j JOIN choice_options c ON c.step_id=s.id AND c.stable_id=j.value WHERE a.response_id=r.id AND s.question_type IN ('single_choice','dropdown','multiple_choice','priority')),0) AS cost
       FROM responses r JOIN flow_revisions revision ON revision.id = r.revision_id AND revision.flow_id = r.flow_id
       WHERE ${where}${after} ORDER BY r.completed_at DESC,r.id DESC LIMIT ? OFFSET ?),
       budget AS (SELECT *, SUM(cost) OVER (ORDER BY completedAt DESC,id DESC) AS bytes, ROW_NUMBER() OVER (ORDER BY completedAt DESC,id DESC) AS ordinal FROM candidates)
@@ -46,7 +47,7 @@ export class ReportingRepository {
     const optionRows = rows.length ? (await this.binding.prepare(`WITH selected_responses AS (
       SELECT id,revision_id FROM responses WHERE id IN (${rows.map(()=>'?').join(',')})),
       selected_questions AS (SELECT DISTINCT r.revision_id,a.step_id FROM response_answers a JOIN selected_responses r ON r.id=a.response_id),
-      selected_choices AS (SELECT DISTINCT r.revision_id,a.step_id,j.value FROM response_answers a JOIN selected_responses r ON r.id=a.response_id JOIN json_each(a.value_json) j)
+      selected_choices AS (SELECT DISTINCT r.revision_id,a.step_id,j.value FROM response_answers a JOIN selected_responses r ON r.id=a.response_id JOIN json_each(${choiceIdsSql('a.value_json')}) j)
       SELECT c.stable_id AS id, CASE WHEN picked.value IS NOT NULL THEN c.label END AS label, CASE WHEN picked.value IS NOT NULL THEN c.value END AS value, s.stable_id AS stepId,s.revision_id AS revisionId
       FROM choice_options c JOIN flow_steps s ON s.id=c.step_id JOIN selected_questions q ON q.revision_id=s.revision_id AND q.step_id=s.stable_id
       LEFT JOIN selected_choices picked ON picked.revision_id=s.revision_id AND picked.step_id=s.stable_id AND picked.value=c.stable_id`).bind(...rows.map(row=>row.id)).all<{id:string;label:string|null;value:string|null;stepId:string;revisionId:string}>()).results : []
@@ -71,6 +72,7 @@ export class ReportingRepository {
         if (publishedValue === undefined) throw new Error('A retained answer is missing its published choice value')
         return publishedValue
       }
+      if (isOtherAnswer(value)) return value
       return Array.isArray(value) ? value.map(choiceValue) : choiceValue(value)
     }
     const display = (value: unknown, stepId: string, revisionId: string, questionType: string, settings: Record<string, unknown>) => {
@@ -81,6 +83,7 @@ export class ReportingRepository {
         if (label === undefined) throw new Error('A retained answer is missing its published choice label')
         return label
       }
+      if (isOtherAnswer(value)) return value.choiceIds.map(id => `${label(id)}${id === settings.otherChoiceId ? `: ${value.otherText}` : ''}`).join('\n')
       if (['single_choice', 'multiple_choice', 'dropdown', 'priority'].includes(questionType)) return Array.isArray(value) ? value.map((id, index) => `${questionType === 'priority' ? `${index + 1}. ` : ''}${label(id)}`).join('\n') : label(value)
       if (questionType === 'yes_no') return booleanAnswer(value) ? 'Yes' : 'No'
       if (questionType === 'thumbs_rating') return booleanAnswer(value) ? 'Thumbs up' : 'Thumbs down'

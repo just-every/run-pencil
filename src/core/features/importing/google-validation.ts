@@ -18,6 +18,7 @@ export function validateGoogleDefinition(definition:Record<string,any>) {
       if(!['RADIO','CHECKBOX','DROP_DOWN'].includes(value.type)||!Array.isArray(value.options)) invalid()
       if(value.options.length>manifest.limits.steps.choiceOptionsPerStep) throw new ValidationError('Google choices exceed the configured native choice limit.')
       if(value.shuffle!==undefined&&typeof value.shuffle!=='boolean') invalid()
+      if(value.options.filter((option:unknown)=>record(option)&&option.isOther===true).length>1 || value.type==='DROP_DOWN'&&value.options.some((option:unknown)=>record(option)&&option.isOther===true)) invalid()
       for(const option of value.options) {
         if(!record(option)||typeof option.value!=='string'||option.goToAction!==undefined&&typeof option.goToAction!=='string'||option.goToSectionId!==undefined&&(typeof option.goToSectionId!=='string'||!option.goToSectionId)||option.isOther!==undefined&&typeof option.isOther!=='boolean') invalid()
       }

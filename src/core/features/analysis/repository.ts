@@ -1,3 +1,4 @@
+import { isOtherAnswer } from '../../shared/otherChoices'
 import { civilOpening, civilParts, nextDay } from '../../shared/civilTime'
 import { NotFoundError } from '../../shared/errors'
 import { defaultPolicies, type Level, type Policies, type PolicySnapshot, type RunState } from './model'
@@ -108,7 +109,8 @@ export class AnalysisRepository {
     for (const row of results) {
       const response = responses.get(row.id) ?? { id: row.id, completedAt: row.completedAt, source: row.source, answers: [] }
       responses.set(row.id, response)
-      const value = row.value === null ? null : JSON.parse(row.value)
+      const stored = row.value === null ? null : JSON.parse(row.value)
+      const value = isOtherAnswer(stored) ? stored.otherText : stored
       if (row.questionId && typeof value === 'string') response.answers.push({ questionId: row.questionId, prompt: detail.questions.find(question => question.id === row.questionId)?.prompt ?? '', text: value })
     }
     return { timeZone: detail.timeZone, flowId: detail.flowId, theme: { id: theme.id, rank: theme.rank, title: theme.title }, responses: [...responses.values()] }

@@ -62,12 +62,17 @@ export function mapGoogleFields(definition: Record<string, any>, scope: string, 
       const options=q.choiceQuestion.options
       if (selected?.type==='yes_no') {
         const labels=options.map((o:any)=>o.value)
-        if (labels.length!==2 || !labels.includes(selected.yesLabel) || !labels.includes(selected.noLabel)) throw new ValidationError('Yes/No requires exactly the two original options, with explicit Yes and No meanings.')
-      } else step.choices=options.map((o:any,i:number)=>({id:stableId(scope,`${id}:choice:${i}`),sourceId:String(i),label:typeof o.value==='string'?o.value:''}))
+        if (labels.length!==2 || options.some((o:any)=>o.isOther===true) || !labels.includes(selected.yesLabel) || !labels.includes(selected.noLabel)) throw new ValidationError('Yes/No requires exactly two fixed original options, with explicit Yes and No meanings.')
+      } else {
+        step.choices=options.map((o:any,i:number)=>({id:stableId(scope,`${id}:choice:${i}`),sourceId:String(i),label:o.value}))
+        const other=options.findIndex((o:any)=>o.isOther===true)
+        if (other!==-1) step.settings.otherChoiceId=step.choices[other].id
+      }
       if (type==='multiple_choice') { step.settings.minSelections=step.required?1:0; step.settings.maxSelections=step.choices.length }
       for (const [i,option] of options.entries()) {
         if (option.goToAction!==undefined || option.goToSectionId!==undefined) navigation.push({step,section:sections.length-1,option:i,value:option.value,action:option.goToAction,target:option.goToSectionId,location:`${location}/questionItem/question/choiceQuestion/options/${i}`})
-        if (option.isOther || option.image) report(`${location}/questionItem/question/choiceQuestion/options/${i}`,title,'choice option','unsupported','Other input or option image omitted','Only fixed text options are represented; edit the question if an Other answer is needed.')
+        if (option.isOther) report(`${location}/questionItem/question/choiceQuestion/options/${i}/isOther`,title,'Other choice','imported','Other option and write-in text','The stable Other choice retains typed historical values; ambiguous checkbox exports need explicit repair.')
+        if (option.image) report(`${location}/questionItem/question/choiceQuestion/options/${i}/image`,title,'choice image','unsupported','Option image omitted','No source image bytes or URLs are retained.')
       }
       if(q.choiceQuestion.shuffle) report(`${location}/questionItem/question/choiceQuestion/shuffle`,title,qKind,'unsupported','Choice shuffle omitted','Choices retain their documented source order.')
     }

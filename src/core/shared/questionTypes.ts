@@ -1,3 +1,4 @@
+import { choiceSettingsValid } from './otherChoices'
 import { scoreQuestionTypes } from './scoreQuestions'
 import { textSettingsValid } from './textValidation'
 import { ratingSettingsValid } from './ratingScale'
@@ -18,6 +19,8 @@ export function typeSettingsValid(type: string | null, settings: Record<string, 
   if (!settings || typeof settings !== 'object' || Array.isArray(settings)) return false
   const text = (value: unknown) => typeof value === 'string' && value.trim().length > 0 && value.length <= 1000
   if (type === 'short_text' || type === 'long_text') return textSettingsValid(type, settings)
+  if (['single_choice', 'multiple_choice', 'dropdown'].includes(type ?? '')) return choiceSettingsValid(type!, settings)
+  if (settings.otherChoiceId !== undefined || settings.noneChoiceId !== undefined || settings.otherValidation !== undefined) return false
   if ((scoreQuestionTypes as readonly string[]).includes(type ?? '')) return Object.keys(settings).length === 0
   if (type === 'rating') return ratingSettingsValid(settings)
   if (type === 'nps') return ['lowLabel', 'highLabel'].every(key => settings[key] === undefined || text(settings[key]))

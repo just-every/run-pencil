@@ -1,3 +1,4 @@
+import { isOtherAnswer } from '../../shared/otherChoices'
 import { analysableTypes, outputJsonSchema } from './model'
 
 export type EvidenceQuestion = { id: string; prompt: string; questionType: string }
@@ -14,7 +15,7 @@ export async function releasedResponseIds(db: D1Database, workspaceId: string, r
 export async function analysableQuestions(db: D1Database, revisionId: string): Promise<EvidenceQuestion[]> {
   // Answers name their question by its stable ID (response_answers.step_id = flow_steps.stable_id).
   const { results } = await db.prepare(`SELECT stable_id AS id, prompt, question_type AS questionType FROM flow_steps WHERE revision_id = ? AND kind = 'question'
-    AND question_type IN (${analysableTypes.map(() => '?').join(',')}) ORDER BY position`).bind(revisionId, ...analysableTypes).all<EvidenceQuestion>()
+    AND (question_type IN (${analysableTypes.map(() => '?').join(',')}) OR json_extract(question_settings_json,'$.otherChoiceId') IS NOT NULL) ORDER BY position`).bind(revisionId, ...analysableTypes).all<EvidenceQuestion>()
   return results
 }
 
@@ -32,7 +33,8 @@ function group(rows: Array<{ responseId: string; questionId: string | null; valu
     const response = responses.get(row.responseId) ?? { id: row.responseId, answers: {} }
     responses.set(row.responseId, response)
     if (!row.questionId || row.value === null) continue
-    const value = JSON.parse(row.value)
+    const stored = JSON.parse(row.value)
+    const value = isOtherAnswer(stored) ? stored.otherText : stored
     if (typeof value === 'string' && value.length) response.answers[row.questionId] = value
   }
   return [...responses.values()]

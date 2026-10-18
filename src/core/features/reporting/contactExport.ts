@@ -1,3 +1,4 @@
+import { isOtherAnswer } from '../../shared/otherChoices'
 import { deflateRawSync, inflateRawSync } from 'node:zlib'
 import { Buffer } from 'node:buffer'
 import { contactExportFields } from '../../shared/contactAnswers'
@@ -14,12 +15,12 @@ export async function contactColumnInventory(db: D1Database, workspaceId: string
   for (;;) {
     signal?.throwIfAborted()
     const rows = (await db.prepare(`SELECT DISTINCT s.stable_id AS id, s.question_type AS type
-      FROM flow_steps s WHERE s.question_type IN ('phone','postal_address','full_name','url','currency')
+      FROM flow_steps s WHERE (s.question_type IN ('phone','postal_address','full_name','url','currency') OR json_extract(s.question_settings_json,'$.otherChoiceId') IS NOT NULL)
       AND s.stable_id||char(0)||s.question_type>?
       AND s.revision_id IN(SELECT r.revision_id FROM responses r WHERE ${where})
       ORDER BY s.stable_id,s.question_type LIMIT 100`).bind(after, ...bindings).all<{ id: string; type: string }>()).results
     for (const row of rows) {
-      for (const field of Object.keys(contactExportFields(row.type, undefined))) columns.add(`${row.id}.${field}`)
+      for (const field of (['single_choice','multiple_choice','dropdown'].includes(row.type) ? ['other_text'] : Object.keys(contactExportFields(row.type, undefined)))) columns.add(`${row.id}.${field}`)
     }
     if (rows.length < 100) break
     const last = rows[rows.length - 1]
@@ -41,7 +42,9 @@ export function contactColumns(inventory?: string): string[] {
 
 export function contactRecord(row: LedgerResponse, columns: string[]): Array<string | number> {
   const values = new Map<string, string | number>()
-  for (const answer of row.answers) if (isContactType(answer.questionType)) {
+  for (const answer of row.answers) {
+    if (isOtherAnswer(answer.value)) values.set(`${answer.stepId}.other_text`, answer.value.otherText)
+    if (!isContactType(answer.questionType)) continue
     for (const [key, value] of Object.entries(contactExportFields(answer.questionType, answer.value))) values.set(`${answer.stepId}.${key}`, value)
   }
   return columns.map(column => values.get(column) ?? '')

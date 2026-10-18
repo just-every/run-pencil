@@ -41,8 +41,11 @@ function answerExists(step: StoredStep, choices: string[], settings: Record<stri
       const literals = indexes.map((index) => positive ? index : -index)
       return (predicate.predicateKind === 'all_of') === matched ? literals.map((literal) => [literal]) : [literals]
     })
+    const noneIndex = choices.indexOf(String(settings.noneChoiceId)) + 1
+    if (noneIndex && satisfies([settings.noneChoiceId])) return true
+    if (noneIndex) clauses.push([-noneIndex])
     // Empty selections normalize to unanswered, including when minSelections=0.
-    return selectionIsPossible(choices.length, clauses, Math.max(1, settings.minSelections as number), settings.maxSelections as number)
+    return selectionIsPossible(choices.length, clauses, Math.max(1, settings.minSelections as number ?? 1), settings.maxSelections as number ?? choices.length)
   }
   if (step.questionType === 'priority') {
     const equality = requirements.find(({ predicate, matched }) => matched && predicate.predicateKind === 'equals')

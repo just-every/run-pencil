@@ -47,9 +47,11 @@ function validSettings(step: StoredStep, choices: StoredChoice[]) {
   if (!typeSettingsValid(step.questionType, value as Record<string, unknown>)) return { valid: false, value: {} as Record<string, unknown> }
   if (step.questionType === 'multiple_choice') {
     const { minSelections, maxSelections } = value as { minSelections?: unknown; maxSelections?: unknown }
-    if (!Number.isInteger(minSelections) || !Number.isInteger(maxSelections) || (minSelections as number) < 0 || (maxSelections as number) < (minSelections as number) || (maxSelections as number) > choices.length) return { valid: false, value: {} as Record<string, unknown> }
+    if ((minSelections !== undefined && (!Number.isInteger(minSelections) || (minSelections as number) < 0)) || (maxSelections !== undefined && (!Number.isInteger(maxSelections) || (maxSelections as number) < (minSelections as number ?? 1) || (maxSelections as number) > choices.length))) return { valid: false, value: {} as Record<string, unknown> }
   }
-  return { valid: true, value: value as Record<string, unknown> }
+  const special = value as Record<string, unknown>
+  if (['otherChoiceId', 'noneChoiceId'].some(key => special[key] !== undefined && !choices.some(choice => choice.stableId === special[key]))) return { valid: false, value: special }
+  return { valid: true, value: special }
 }
 
 export function questionSettings(step: StoredStep, choices: StoredChoice[]): { valid: boolean; value: Record<string, unknown> } {
