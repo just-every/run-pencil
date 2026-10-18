@@ -1,4 +1,4 @@
-import { QrKioskControls } from '../../collectors/ui/QrKioskControls'
+import { QrKioskControls } from '../../collectors'
 import { Copy } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type FocusEvent } from 'react'
 import { Link } from '@tanstack/react-router'
