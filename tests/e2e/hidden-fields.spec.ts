@@ -21,7 +21,8 @@ contract('FIELD-001','builds hidden link fields, previews their rules, collects 
     {kind:'completion',questionType:null,prompt:'Choose your plan'},
   ])await call(`${base}/draft/steps`,'POST',{expectedVersion:(await read()).flow.draftVersion,step})
   await page.goto(`/app/flows/${flow.id}/builder`)
-  await page.getByText('Hidden fields and identity',{exact:true}).click()
+  await page.getByText('Publication options',{exact:true}).click()
+  await page.locator('.publication-options').getByText('Hidden fields and identity',{exact:true}).click()
   await page.getByRole('button',{name:'Add hidden field',exact:true}).click()
   await page.getByLabel('Parameter name 1',{exact:true}).fill('plan')
   await page.getByRole('button',{name:'Add hidden field',exact:true}).click()
@@ -29,7 +30,7 @@ contract('FIELD-001','builds hidden link fields, previews their rules, collects 
   await page.getByLabel('Purpose 2',{exact:true}).selectOption('campaign')
   await expect(page.getByRole('button',{name:'Publish',exact:true})).toBeDisabled()
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
-  await page.screenshot({path:`test-results/${info.project.name}-hidden-builder.png`,fullPage:true})
+  await page.locator('.hidden-fields-settings').screenshot({path:`test-results/${info.project.name}-hidden-builder.png`})
   await page.getByRole('button',{name:'Save hidden fields',exact:true}).click()
   await expect(page.getByText('Saved.',{exact:true})).toBeVisible()
   const draft=await read(),plan=draft.formSettings!.hiddenFields.find(field=>field.name==='plan')!,[question,,enterprise,blank]=draft.steps

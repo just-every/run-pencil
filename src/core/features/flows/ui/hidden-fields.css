@@ -1,5 +1,6 @@
-.hidden-fields-settings { padding: 1rem; margin-block: 1rem; }
-.hidden-fields-settings[open] > summary { margin-bottom: 1rem; }
+.hidden-fields-settings { padding: 0; margin-block: 0; border: 0; background: transparent; }
+.hidden-fields-settings > summary { min-height: 44px; padding: 10px 0; line-height: 24px; box-sizing: border-box; }
+.hidden-fields-settings[open] > summary { margin-bottom: .75rem; }
 .hidden-fields-settings > fieldset > p { max-width: 75ch; }
 .hidden-field-row { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto; gap: .75rem; padding: 1rem; margin-block: 1rem; align-items: end; }
 .hidden-field-row > label { margin: 0; }

@@ -115,7 +115,7 @@ Next: [Answer paths](branching.md), or go straight to [Publish and share](publis
 
 ## Hidden fields from a link
 
-Open **Hidden fields and identity** in the builder. Add a parameter name, its type and purpose, then choose **Save hidden fields**. For example, declare `utm_campaign` as campaign text and use `/f/your-form?utm_campaign=spring`. Only declared, valid values are retained; missing fields stay blank. Parameters are unverified input from whoever holds the link.
+Open **Publication options**, then **Hidden fields and identity** in the builder. Add a parameter name, its type and purpose, then choose **Save hidden fields**. For example, declare `utm_campaign` as campaign text and use `/f/your-form?utm_campaign=spring`. Only declared, valid values are retained; missing fields stay blank. Parameters are unverified input from whoever holds the link.
 
 Use **Add condition rule** to choose a hidden field for an answer path, or **Insert an earlier answer** to insert a declared hidden field into a prompt or completion. Preview offers separate test link values. Results show the retained values with each response, offer hidden-field filtering and search, and include them in CSV and JSON exports.
 

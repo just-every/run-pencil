@@ -41,11 +41,14 @@ export class ReportingRepository {
     const pageBindings = [...bindings]
     const after = continuation?.after ? ' AND (r.completed_at < ? OR (r.completed_at = ? AND r.id < ?))' : ''
     if (continuation?.after) pageBindings.push(continuation.after.time, continuation.after.time, continuation.after.id)
+    // The fixed row overhead covers identity and counters; only hidden payloads add variable cost.
     const rows = (await this.binding.prepare(`WITH candidates AS (
       SELECT r.id, r.revision_id AS revisionId, revision.number AS revisionNumber, r.source, r.started_at AS startedAt,
       r.completed_at AS completedAt, r.released_at AS releasedAt, r.state, r.quarantine_reason AS quarantineReason,
       r.response_context_json AS contextJson, revision.form_settings_json AS settingsJson, r.participant_id AS participantId,
-      32768 + 12 * (length(CAST(r.response_context_json AS BLOB)) + length(CAST(revision.form_settings_json AS BLOB)))
+      32768 + 12 * (
+        MAX(0, COALESCE(length(CAST(json_extract(r.response_context_json, '$.hidden') AS BLOB)), 2) - 2)
+        + MAX(0, COALESCE(length(CAST(json_extract(revision.form_settings_json, '$.hiddenFields') AS BLOB)), 2) - 2))
       + 12 * COALESCE((SELECT SUM(length(CAST(a.value_json AS BLOB))) FROM response_answers a WHERE a.response_id = r.id),0)
       + 12 * COALESCE((SELECT SUM(length(CAST(s.prompt AS BLOB))) FROM flow_steps s WHERE s.revision_id = r.revision_id),0)
       + 12 * COALESCE((SELECT SUM(length(CAST(c.label AS BLOB))+length(CAST(c.value AS BLOB))) FROM response_answers a JOIN flow_steps s ON s.revision_id=r.revision_id AND s.stable_id=a.step_id JOIN json_each(${choiceIdsSql('a.value_json')}) j JOIN choice_options c ON c.step_id=s.id AND c.stable_id=j.value WHERE a.response_id=r.id AND s.question_type IN ('single_choice','dropdown','multiple_choice','priority')),0) AS cost
