@@ -1,3 +1,4 @@
+import { TeamTemplates } from '../features/flows'
 import { ResumeService, ResumeRepository } from '../features/resuming'
 import { CollectorRepository, CollectorService } from '../features/collectors'
 import { DigestDispatcher } from '../features/notifications/digest-dispatcher'
@@ -64,6 +65,7 @@ export function createPencilServices(platform: PencilPlatform) {
   const responses = new ResponseService(flowRepository, responseRepository, collectors)
   return {
     resuming: new ResumeService(new ResumeRepository(platform.databaseBinding), responseRepository, flowRepository, collectors, responses, sender, {origin:platform.configuration.appOrigin,from,secret:platform.configuration.sessionSecret,local:platform.configuration.mail.kind==='local-development'}),
+    templates: new TeamTemplates(platform.databaseBinding, flowRepository),
     collectors,
     connections: new IntegrationConnections(platform),
     notifications: {

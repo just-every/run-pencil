@@ -192,3 +192,6 @@
 .named-collectors-disclosure { margin: 0 0 24px; }
 .named-collectors-disclosure > summary { display: list-item; min-height: 44px; padding: 12px 4px; font-weight: 500; }
 .named-collectors-disclosure[open] > summary { margin-bottom: 12px; }
+
+.team-template-save { padding: 16px; margin: 12px 0; display: grid; gap: 12px; }
+.team-template-save > button { justify-self: start; }

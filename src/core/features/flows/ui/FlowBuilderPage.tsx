@@ -1,3 +1,4 @@
+import { SaveTeamTemplate } from './SaveTeamTemplate'
 import { RecallHelp } from './RecallHelp'
 import { SpecialChoicesEditor } from './SpecialChoicesEditor'
 import { CollectorsPanel } from '../../collectors'
@@ -213,6 +214,7 @@ export function FlowBuilderPage() {
         </div>
       </header>
       {notice && (notice.tone !== 'success' || !dirty) ? <p className="status-note" data-tone={notice.tone} role={notice.tone === 'error' ? 'alert' : 'status'}>{notice.message}</p> : null}
+      <SaveTeamTemplate key={draft.flow.id} flowId={flowId} version={draft.flow.draftVersion} title={draft.flow.title} published={draft.flow.status !== 'draft'} disabled={saving||dirty} />
       {sharing ? <><FlowSharePanel key={draft.flow.id} flow={draft.flow} />{['open', 'closed'].includes(draft.flow.status) ? <>{timeZone ? <details className="named-collectors-disclosure"><summary>Manage named collectors</summary><CollectorsPanel flowId={draft.flow.id} timeZone={timeZone} /></details> : null}<DistributionPanel flowId={draft.flow.id} /></> : null}</> : null}
       {dirty ? <p className="status-note" role="status">{stepDirty ? 'Unsaved step changes.' : 'Unsaved answer-path changes.'} Save or discard before switching steps, changing structure, previewing or publishing. <button className="quiet-button" disabled={saving} type="button" onClick={() => void load()}>Discard changes</button></p> : null}
 

@@ -1,3 +1,4 @@
+import { TeamTemplatePicker } from './TeamTemplatePicker'
 import { flowTemplates, type FlowTemplateId } from '../../flows'
 import { Plus, RefreshCw } from 'lucide-react'
 import { Link, useNavigate, useRouter } from '@tanstack/react-router'
@@ -26,6 +27,7 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
   const [slug, setSlug] = useState('')
   const [slugEdited, setSlugEdited] = useState(false)
   const [showCreate, setShowCreate] = useState(!initialData.hasFlows)
+  const [teamTemplate,setTeamTemplate]=useState<string>()
   const [template, setTemplate] = useState<FlowTemplateId>()
   const [creating, setCreating] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -71,16 +73,16 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
     setError(undefined); setCreating(true)
     try {
       const input = { title, slug, ...(template ? { template } : {}) }
-      const flow = await api.createFlow(input)
+      const flow = teamTemplate ? await api.createFromTeamTemplate(teamTemplate,{title,slug}) : await api.createFlow(input)
       if (!mounted.current) return
-      setTitle(''); setSlug(''); setSlugEdited(false); setTemplate(undefined); setShowCreate(false); markSaved()
+      setTitle(''); setSlug(''); setSlugEdited(false); setTemplate(undefined); setTeamTemplate(undefined); setShowCreate(false); markSaved()
       await router.invalidate({ filter: match => match.routeId === '/app/' })
       if (!mounted.current) return
       await navigate({ to: '/app/flows/$flowId/builder', params: { flowId: flow.id } })
     } catch (reason) { if (mounted.current) setError(reason instanceof Error ? reason.message : 'The draft flow could not be created.') }
     finally { if (mounted.current) setCreating(false) }
   }
-  const cancel = () => { setShowCreate(false); setTitle(''); setSlug(''); setSlugEdited(false); setTemplate(undefined); setError(undefined) }
+  const cancel = () => { setShowCreate(false); setTitle(''); setSlug(''); setSlugEdited(false); setTemplate(undefined); setTeamTemplate(undefined); setError(undefined) }
 
   const openCreate = () => { if (dirty && !window.confirm('Discard the unfinished copy and create a new flow?')) return; setError(undefined); setShowCreate(true) }
   const firstFlow = !hasFlows && status === 'active'
@@ -103,9 +105,10 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
       <div className="dashboard-create">
         {!hasFlows ? <><p className="eyebrow">Ask → Signal → Act</p><h2 className="display">Create your first flow</h2><p className="muted">Ask a clear question, use the answers to make a decision, then act.</p></> : <h2 className="display">New flow</h2>}
         <div aria-label="Flow templates" className="builder-actions template-choices">
-          {flowTemplates.map(item => <button className="secondary-button focus-ring" aria-pressed={template === item.id} disabled={creating} type="button" key={item.id} onClick={() => { setTemplate(item.id); setTitle(item.title); setSlug(`${suggestedSlug(item.title)}-${crypto.randomUUID().slice(0, 8)}`); setSlugEdited(false) }}>{item.title}</button>)}
-          <button className="secondary-button focus-ring" aria-pressed={!template} disabled={creating} type="button" onClick={() => { setTemplate(undefined); setTitle(''); setSlug(''); setSlugEdited(false) }}>Blank flow</button>
+          {flowTemplates.map(item => <button className="secondary-button focus-ring" aria-pressed={template === item.id} disabled={creating} type="button" key={item.id} onClick={() => { setTeamTemplate(undefined); setTemplate(item.id); setTitle(item.title); setSlug(`${suggestedSlug(item.title)}-${crypto.randomUUID().slice(0, 8)}`); setSlugEdited(false) }}>{item.title}</button>)}
+          <button className="secondary-button focus-ring" aria-pressed={!template && !teamTemplate} disabled={creating} type="button" onClick={() => { setTemplate(undefined); setTeamTemplate(undefined); setTitle(''); setSlug(''); setSlugEdited(false) }}>Blank flow</button>
         </div>
+        <TeamTemplatePicker selected={teamTemplate} disabled={creating} onSelect={item=>{setTeamTemplate(item?.id);setTemplate(undefined);if(item){setTitle(item.name);setSlug(`${suggestedSlug(item.name)}-${crypto.randomUUID().slice(0,8)}`);setSlugEdited(false)}}} />
         {template ? <p className="muted">{flowTemplates.find(item => item.id === template)?.description} You can edit every question before publishing.</p> : null}
         <label className="inspector-field">Flow name<input disabled={creating} required className="text-input" onChange={(event) => { const name = event.target.value; setTitle(name); if (!slugEdited) setSlug(suggestedSlug(name)) }} placeholder="Post-visit feedback" value={title} /></label>
         <label className="inspector-field">Public link<input disabled={creating} required maxLength={120} className="text-input" onChange={(event) => { setSlugEdited(true); setSlug(event.target.value) }} placeholder="post-visit-feedback" value={slug} /></label>

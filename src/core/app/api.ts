@@ -1,4 +1,5 @@
 import type { QuestionType } from '../shared/questionKinds'
+export type TeamTemplate = {id:string;name:string;createdAt:string;createdBy:string|null}
 export type FlowStep = {
   id: string
   position: number
@@ -109,6 +110,10 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   dashboard: (status?: DashboardFlow['status']) => request<DashboardFlow[]>(`/api/app/dashboard${status ? `?status=${encodeURIComponent(status)}` : ''}`),
+  teamTemplates: () => request<TeamTemplate[]>('/api/app/templates'),
+  saveTeamTemplate: (flowId:string,input:{name:string;source:'draft'|'published';expectedVersion:number}) => request<{id:string;name:string}>(`/api/app/flows/${encodeURIComponent(flowId)}/templates`,{method:'POST',body:JSON.stringify(input)}),
+  retireTeamTemplate: (id:string) => request<void>(`/api/app/templates/${encodeURIComponent(id)}`,{method:'DELETE'}),
+  createFromTeamTemplate: (id:string,input:{title:string;slug:string}) => request<{id:string;title:string;slug:string}>(`/api/app/templates/${encodeURIComponent(id)}/flows`,{method:'POST',body:JSON.stringify(input)}),
   createFlow: (input: { title: string; slug: string }) => request<{ id: string; slug: string; title: string }>('/api/app/flows', { method: 'POST', body: JSON.stringify(input) }),
   duplicateFlow: (flowId: string, input: { title: string; slug: string }) => request<{ id: string; slug: string; title: string }>(`/api/app/flows/${encodeURIComponent(flowId)}/duplicate`, { method: 'POST', body: JSON.stringify(input) }),
   builder: (flowId: string) => request<BuilderDraft>(`/api/app/flows/${encodeURIComponent(flowId)}/draft`),

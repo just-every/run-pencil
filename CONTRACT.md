@@ -221,7 +221,7 @@ The status table at the end lists every clause with its status and evidence path
 
 **TMPL-001 — Template gallery.** New form offers a searchable gallery of at least 60 US-business templates in named categories: customer feedback, NPS, CSAT, CES, product research, employee engagement and eNPS, event registration, contact and lead capture, order and payment forms, job applications, client intake, W-9 and vendor onboarding, quizzes, and patient intake for HIPAA mode (GOV-001). Each template previews in the respondent experience, passes FLOW-006 publish validation, and creates an ordinary editable draft; templates that use payment, upload or signature fields show what connection they need before creation. *Acceptance:* a Worker test creates and publishes every gallery template with no validation error; a browser journey searches the gallery, previews one with branching, creates it and collects a response. *Status: partial — three templates ship (`src/core/features/flows/templates.ts`, `tests/e2e/templates.spec.ts`).*
 
-**TMPL-002 — Team templates.** An Editor can save any draft or published form as a workspace template with its structure, logic, branding choice and settings but no responses, audience, connections' credentials or external IDs; Admins can retire one. *Acceptance:* a Worker test saves a form with logic as a template, creates a new form from it and proves new stable IDs, identical logic and no copied responses or credentials. *Status: missing.*
+**TMPL-002 — Team templates.** An Editor can save any draft or published form as a workspace template with its structure, logic, branding choice and settings but no responses, audience, connections' credentials or external IDs; Admins can retire one. *Acceptance:* a Worker test saves a form with logic as a template, creates a new form from it and proves new stable IDs, identical logic and no copied responses or credentials. *Status: partial — version-checked draft or published content snapshots, private workspace reuse with remapped IDs, source-version isolation and retirement ship (`src/core/features/flows/team-templates.ts`, `tests/runtime/team-templates.worker.test.ts`, `tests/e2e/team-templates.spec.ts`). Current workspace branding applies to new flows; per-form theme choice awaits BRAND-002.*
 
 **AI-001 — Generate a form from a prompt or a document.** An operator describes the goal in words, or pastes or uploads a document (Word, PDF, Google Doc export, an existing paper form or a SurveyMonkey/Typeform question list), and the configured `ai.provider.v1` drafts a form: question types, choices, required flags, branching, hidden fields and a completion screen. The draft opens in the builder with each generated step marked, passes FLOW-012 to FLOW-014 before it can be published, and is never published, distributed or connected without an operator. Uploaded source documents are used for this request only and are not retained. *Acceptance:* a Worker test with the AI receiver fixture turns a prompt and a two-page PDF into drafts whose graph validates; schema-invalid provider output fails under ANLY-012 rules with no draft written; a browser journey edits and publishes the generated draft. *Status: partial — guarded rewrites of saved questions ship (`src/core/features/analysis/rewrites.ts`, `tests/runtime/feedback-rewrites.worker.test.ts`); whole-form generation does not.*
 
@@ -544,8 +544,8 @@ These totals are computed from the current Status rows; done targets remain dist
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 113 | 0 | 0 | 113 |
-| Target and push further | 4 | 40 | 81 | 125 |
-| All | 117 | 40 | 81 | 238 |
+| Target and push further | 4 | 41 | 80 | 125 |
+| All | 117 | 41 | 80 | 238 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -569,7 +569,7 @@ These totals are computed from the current Status rows; done targets remain dist
 | `DASH-001` | First flow | published | done | `tests/runtime/first-owner.worker.test.ts` |  |
 | `DASH-002` | Flow list | published | done | `tests/runtime/feedback-attention.worker.test.ts`, `tests/runtime/foundation.worker.test.ts`, `tests/runtime/journey.worker.test.ts` |  |
 | `TMPL-001` | Template gallery | target | partial | `src/core/features/flows/templates.ts`, `tests/e2e/templates.spec.ts` | Only the behaviour named in Evidence ships; the rest of the clause is not built. |
-| `TMPL-002` | Team templates | target | missing |  | No code yet. |
+| `TMPL-002` | Team templates | target | partial | `src/core/features/flows/team-templates.ts`, `tests/runtime/team-templates.worker.test.ts`, `tests/e2e/team-templates.spec.ts` | Version-checked saved draft/published templates retain questions, settings and remapped logic, with isolated workspace reuse and retirement. Per-form theme choice awaits BRAND-002; retirement uses current equal-operator authority until ROLE-001 ships. |
 | `AI-001` | Generate a form from a prompt or a document | target | partial | `src/core/features/analysis/rewrites.ts`, `tests/runtime/feedback-rewrites.worker.test.ts` | Whole-form generation does not. |
 | `FLOW-001` | Lifecycle | published | done | `tests/runtime/foundation.worker.test.ts` |  |
 | `FLOW-002` | Ordered steps | published | done | `tests/e2e/journey.spec.ts` |  |

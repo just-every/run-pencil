@@ -81,3 +81,6 @@
 }
 .dashboard-create-panel:not(:has(.dashboard-create-preview)) { grid-template-columns: minmax(0, 760px); }
 @media (max-width: 379px) { .dashboard-actions, .filter-row, .flow-card-actions { flex-wrap: wrap; } }
+
+.team-template-picker { padding: 16px; min-width: 0; margin: 8px 0 20px; }
+.team-template-picker legend { padding: 0 6px; font-weight: 600; }

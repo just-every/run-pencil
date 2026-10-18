@@ -62,6 +62,17 @@ export function registerFlowRoutes(app: Hono<WorkerEnvironment>, services: Reque
     }
   })
 
+  app.get('/api/app/templates', async context => context.json(await services(context).templates.list(context.get('operatorSession').workspaceId)))
+  app.post('/api/app/flows/:flowId/templates', zValidator('param', z.object({flowId:resourceId})), zValidator('json', z.object({name:z.string().trim().min(1).max(100),source:z.enum(['draft','published']),expectedVersion:z.number().int().nonnegative()})), async context => {
+    try { requireSameOriginRequest(context.req.raw); return context.json(await services(context).templates.save({...context.req.valid('json'),flowId:context.req.param('flowId'),...context.get('operatorSession')}),201) } catch(error) { return failure(context,error) }
+  })
+  app.delete('/api/app/templates/:templateId', zValidator('param', z.object({templateId:resourceId})), async context => {
+    try { requireSameOriginRequest(context.req.raw); await services(context).templates.retire(context.get('operatorSession').workspaceId,context.req.param('templateId')); return context.body(null,204) } catch(error) { return failure(context,error) }
+  })
+  app.post('/api/app/templates/:templateId/flows', zValidator('param', z.object({templateId:resourceId})), zValidator('json', z.object({title:z.string().trim().min(1).max(200),slug:z.string().trim().min(1).max(120)})), async context => {
+    try { requireSameOriginRequest(context.req.raw); return context.json(await services(context).templates.create({...context.req.valid('json'),templateId:context.req.param('templateId'),workspaceId:context.get('operatorSession').workspaceId}),201) } catch(error) { return failure(context,error) }
+  })
+
   app.post('/api/app/flows', zValidator('json', z.object({ title: z.string().trim().min(1).max(200), slug: z.string().trim().min(1).max(120), template: z.enum(['feedback', 'nps', 'lead']).optional() })), async (context) => {
     try {
       requireSameOriginRequest(context.req.raw)
