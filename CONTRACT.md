@@ -287,7 +287,7 @@ The status table at the end lists every clause with its status and evidence path
 
 **DIST-011 — SMS invitations and reminders.** Operators send invitations and reminders by text message through Twilio to contacts with a mobile number and recorded SMS consent (TCPA prior express consent: actor, time, source and wording). Messages carry the opaque link and "Reply STOP to opt out"; an inbound STOP, sent to a signed Twilio status/inbound webhook, opts the contact out of SMS immediately (DIST-005 for SMS), and HELP returns the business name. Delivery attempts, retries and terminal failures follow DIST-006, DIST-008 and DIST-010; quiet hours follow WS-002 in the contact's time zone where known. A2P 10DLC registration is the owner's Twilio account step and the settings page shows its state. *Acceptance:* a Worker test with a Twilio receiver fixture sends to a consented contact, refuses an unconsented one, records a STOP that blocks the scheduled reminder, and verifies the inbound webhook signature. *Status: missing.*
 
-**DIST-012 — QR codes and kiosk mode.** Every public link and collector has a downloadable QR code (SVG and PNG) carrying its source label; kiosk mode restarts the form after completion on a shared device, clears all answers from the browser after a configurable idle time, and never shows the previous respondent's answers. *Acceptance:* a browser journey completes a kiosk form twice and proves the second session starts empty and the first response's source is the kiosk collector. *Status: missing.*
+- **DIST-012 — QR codes and kiosk mode.** Every public link and collector has a downloadable QR code (SVG and PNG) carrying its source label; kiosk mode restarts the form after completion on a shared device, clears all answers from the browser after a configurable idle time, and never shows the previous respondent's answers. *Acceptance:* a browser journey completes a kiosk form twice and proves the second session starts empty and the first response's source is the kiosk collector. *Status: done — Labelled SVG/PNG downloads encode each public or named collector link; shared-device completion unmounts all answer/session state, and configurable idle expiry clears abandoned answers. Two isolated responses, exact QR decoding and retained collector attribution are proved at 1440 and 390. Evidence: `src/core/features/collectors/qr.ts`, `src/core/features/responses/ui/KioskFlow.tsx`, `tests/runtime/qr.worker.test.ts`, `tests/e2e/kiosk.spec.ts`.*
 
 **DIST-013 — Embed modes and site plugins.** Besides the inline script and iframe (DIST-002), the embed offers full-page, popup on click, popover bubble, slider and side tab modes, with open triggers on click, delay, scroll depth or exit intent, frequency capping per browser, and the same isolation as DIST-009. A WordPress plugin and a Webflow/Squarespace snippet install the embed without editing theme code. Every mode and the WordPress shortcode take DIST-021's forward, fixed-value, `hidden` and `_ga` options, so a popup on a paid-ad landing page carries the campaign like an inline embed. *Acceptance:* a browser journey on a host fixture opens each mode by its trigger, completes a response, and proves the host receives only loaded, height and completed events; the popup and side-tab modes on `/landing?utm_campaign=spring` store the forwarded `utm_campaign`; the WordPress plugin renders a form via shortcode in a WordPress test container. *Status: partial — inline script and iframe embeds ship (`src/core/features/embedding/script.ts`, `tests/e2e/script-embed.spec.ts`); the other modes and plugins do not.*
 
@@ -551,9 +551,9 @@ These totals are computed from the current Status rows; done targets remain dist
 
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Published | 116 | 0 | 0 | 116 |
-| Target and push further | 7 | 41 | 74 | 122 |
-| All | 123 | 41 | 74 | 238 |
+| Published | 117 | 0 | 0 | 117 |
+| Target and push further | 7 | 41 | 73 | 121 |
+| All | 124 | 41 | 73 | 238 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -644,7 +644,7 @@ These totals are computed from the current Status rows; done targets remain dist
 | `DIST-009` | Embed isolation | published | done | `tests/e2e/embed-security-foundation.spec.ts`, `tests/e2e/rendering-migration.spec.ts`, `tests/e2e/script-embed.spec.ts` |  |
 | `DIST-010` | Ambiguous mail outcome | published | done | `tests/e2e/mail-recovery.spec.ts`, `tests/runtime/distribution.worker.test.ts`, `tests/runtime/notification-restore.worker.test.ts` |  |
 | `DIST-011` | SMS invitations and reminders | target | missing |  | No code yet. |
-| `DIST-012` | QR codes and kiosk mode | target | missing |  | No code yet. |
+| `DIST-012` | QR codes and kiosk mode | published | done | `src/core/features/collectors/qr.ts`, `src/core/features/responses/ui/KioskFlow.tsx`, `tests/runtime/qr.worker.test.ts`, `tests/e2e/kiosk.spec.ts` | None for public links and named collectors. Historical invitation/imported/unknown source buckets have no public URL. |
 | `DIST-013` | Embed modes and site plugins | target | partial | `src/core/features/embedding/script.ts`, `tests/e2e/script-embed.spec.ts` | The other modes and plugins do not. |
 | `DIST-014` | Email-embedded first question | target | missing |  | No code yet. |
 | `DIST-015` | In-product and website surveys | target | missing |  | No code yet. |

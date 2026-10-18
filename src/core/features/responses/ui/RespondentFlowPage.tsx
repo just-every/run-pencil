@@ -37,13 +37,13 @@ function choicesForStep(choices: ChoiceOption[], stepId: string) {
   return choices.filter((choice) => choice.stepId === stepId).sort((left, right) => left.position - right.position)
 }
 
-export function RespondentFlowPage({ config, slug, embedded = false, landing = false, initialFlow, invitationToken, collectorKey, resume }: { config: PublicSeedConfig; slug: string; embedded?: boolean; landing?: boolean; initialFlow: PublicFlow; invitationToken?: string; collectorKey?:string; resume?: Extract<SavedResponseState, { state: 'open' }> }) {
+export function RespondentFlowPage({ config, slug, embedded = false, landing = false, initialFlow, invitationToken, collectorKey, resume, onKioskComplete }: { config: PublicSeedConfig; slug: string; embedded?: boolean; landing?: boolean; initialFlow: PublicFlow; invitationToken?: string; collectorKey?:string; resume?: Extract<SavedResponseState, { state: 'open' }>; onKioskComplete?: () => void }) {
   const [closedFlow, setClosedFlow] = useState<ClosedFlow>()
   const [unconfirmedClosedFlow, setUnconfirmedClosedFlow] = useState<ClosedFlow>()
   const [closedRestart, setClosedRestart] = useState(false)
   const [baseFlow, setFlow] = useState<PublicFlow>(initialFlow)
   const [hidden, setHidden] = useState<Record<string,unknown>>(() => Object.fromEntries((initialFlow.formSettings?.hiddenFields ?? []).flatMap(field => initialFlow.hiddenContext?.hidden[field.id] === undefined ? [] : [[field.name,initialFlow.hiddenContext.hidden[field.id]]])))
-  useEffect(() => { if (!resume) setHidden(Object.fromEntries([...new URLSearchParams(window.location.search)].filter(([name])=>!['collector','resume','source','challenge'].includes(name)))) }, [])
+  useEffect(() => { if (!resume) setHidden(Object.fromEntries([...new URLSearchParams(window.location.search)].filter(([name])=>!['collector','resume','source','challenge','kiosk'].includes(name)))) }, [])
   const hiddenContext = normalizeHidden(baseFlow.formSettings ?? {hiddenFields:[],identityMode:'anonymous'},hidden)
   const flow = {...baseFlow,hiddenContext}
   const view = useViewCounter({slug,revisionId:flow.revision.id,source:embedded?'embed':'direct',collectorKey,invitationToken},!resume&&!initialFlow.completedStepId, resume?.loadTime)
@@ -150,6 +150,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
     const completionStepId = receipt.completionStepId
     const completion = flow.steps.find((step) => step.id === completionStepId && step.kind === 'completion')
     if (!completion) throw new Error('The completion acknowledgement could not be read. Retry your submission.')
+    if (onKioskComplete) { onKioskComplete(); return }
     setPendingFinal(undefined)
     setUnconfirmedClosedFlow(undefined)
     setCompletedStepId(completion.id)
@@ -259,7 +260,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
         {pendingFinal && !submitting ? <p className="status-note">Retry to confirm the answers already submitted.</p> : null}
         {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
         {!isCompletion ? <footer className="respondent-actions">{index > 0 ? <button className="secondary-button focus-ring" disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onClick={() => { setError(undefined); const target = Math.max(0, index - 1); const earlier = new Set(screens.slice(0,target).flatMap(screen=>screen.steps.map(step=>step.id))); setSkipped(previous => new Set([...previous].filter(id => earlier.has(id)))); setIndex(target) }} type="button"><ArrowLeft aria-hidden="true" size={17} /> Back</button> : null}<button className="primary-button focus-ring" disabled={!hydrated || submitting} onClick={needsAdmission && !pendingFinal ? restart : next} type="button">{submitting ? (needsAdmission ? 'Starting again…' : pendingFinal || nextCandidate?.kind === 'completion' ? 'Submitting…' : 'Continuing…') : primaryLabel} <ArrowRight aria-hidden="true" size={17} /></button></footer> : null}
-        {!isCompletion ? <SaveResponse disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onSave={saveForLater} /> : null}
+        {!isCompletion && !onKioskComplete ? <SaveResponse disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onSave={saveForLater} /> : null}
       </article>
       {landing && config.showPoweredByCredit ? <footer className="respondent-landing-credit">Powered by {config.productName} · <a href="https://runeditrun.com">runeditrun.com</a></footer> : null}
     </main>

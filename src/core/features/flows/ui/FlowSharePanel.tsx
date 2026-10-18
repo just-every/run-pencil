@@ -1,3 +1,4 @@
+import { QrKioskControls } from '../../collectors/ui/QrKioskControls'
 import { Copy } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type FocusEvent } from 'react'
 import { Link } from '@tanstack/react-router'
@@ -48,7 +49,7 @@ export function FlowSharePanel({ flow }: { flow: BuilderDraft['flow'] }) {
     <h2 id="flow-share-title">Share this flow</h2>
     {!available ? <p className="muted">{flow.status === 'archived' ? 'This flow is archived. Its public link is unavailable.' : 'Publish this flow before sharing it. An unpublished flow has no public form.'}</p> : <>
       <p className="muted">{flow.status === 'closed' ? 'This flow is closed. Visitors will see the closed page until the flow accepts responses again.' : 'These links open the current published form. Unpublished draft changes are not included.'}</p>
-      {links ? <><CopyField key={links.publicUrl} label="Public link" value={links.publicUrl} /><CopyField key={links.scriptCode} label="Script embed" value={links.scriptCode} multiline /><CopyField key={links.embedCode} label="Embed code" value={links.embedCode} multiline /></> : <p className="muted" role="status">Loading sharing links…</p>}
+      {links ? <><CopyField key={links.publicUrl} label="Public link" value={links.publicUrl} /><QrKioskControls flowId={flow.id} publicPath={new URL(links.publicUrl).pathname} label="Public link" /><CopyField key={links.scriptCode} label="Script embed" value={links.scriptCode} multiline /><CopyField key={links.embedCode} label="Embed code" value={links.embedCode} multiline /></> : <p className="muted" role="status">Loading sharing links…</p>}
       <p className="muted">Embedding works only on hosts allowed in <Link className="focus-ring" to="/app/settings">Settings</Link>. An empty host list blocks embedding.</p>
     </>}
   </section>
