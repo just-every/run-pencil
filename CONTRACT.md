@@ -644,7 +644,7 @@ These totals are computed from the current Status rows; done targets remain dist
 | `DIST-009` | Embed isolation | published | done | `tests/e2e/embed-security-foundation.spec.ts`, `tests/e2e/rendering-migration.spec.ts`, `tests/e2e/script-embed.spec.ts` |  |
 | `DIST-010` | Ambiguous mail outcome | published | done | `tests/e2e/mail-recovery.spec.ts`, `tests/runtime/distribution.worker.test.ts`, `tests/runtime/notification-restore.worker.test.ts` |  |
 | `DIST-011` | SMS invitations and reminders | target | missing |  | No code yet. |
-| `DIST-012` | QR codes and kiosk mode | published | done | `src/core/features/collectors/qr.ts`, `src/core/features/responses/ui/KioskFlow.tsx`, `tests/runtime/qr.worker.test.ts`, `tests/e2e/kiosk.spec.ts` | None for public links and named collectors. Historical invitation/imported/unknown source buckets have no public URL. |
+| `DIST-012` | QR codes and kiosk mode | published | done | `src/core/features/collectors/qr.ts`, `src/core/features/responses/ui/KioskFlow.tsx`, `tests/runtime/qr.worker.test.ts`, `tests/e2e/kiosk.spec.ts` | None for named and default direct/embed public links. Historical invitation/imported/unknown source buckets have no public URL or QR download. |
 | `DIST-013` | Embed modes and site plugins | target | partial | `src/core/features/embedding/script.ts`, `tests/e2e/script-embed.spec.ts` | The other modes and plugins do not. |
 | `DIST-014` | Email-embedded first question | target | missing |  | No code yet. |
 | `DIST-015` | In-product and website surveys | target | missing |  | No code yet. |

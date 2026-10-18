@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "5876f0f2d0b9cdb74b94d274af22542b45f3c5f21eb1a5bd36d3a0a5286f824d",
+      "sha256": "531d6fe2a8e4721bb62f3e81de2b5087f1edef00e06bfcfea3745a6cee9e48e2",
       "executable": false
     },
     "DEMO.md": {
@@ -949,7 +949,7 @@
       "executable": false
     },
     "docs/guide/publish-and-share.md": {
-      "sha256": "395dd7497659cc7fbc87dab8d50e0e84ecc520b932f1587bdb9af7efbc319b5e",
+      "sha256": "90a6259a541aa2127fd30192569d3684a7013e07b3ebdb7f746467dbbf1bf773",
       "executable": false
     },
     "docs/guide/results.md": {
@@ -4141,7 +4141,7 @@
       "executable": false
     },
     "src/core/features/collectors/service.ts": {
-      "sha256": "420e084e55968912585c2cd2eddc7117778462f50e2165dd9f2b5a43c3e8dcf4",
+      "sha256": "9688400db25b7aafb2ab83fedc0929b0e03bf3266d32218adeb731a05fb83f30",
       "executable": false
     },
     "src/core/features/collectors/ui/client.ts": {
@@ -5277,7 +5277,7 @@
       "executable": false
     },
     "src/core/features/responses/service.ts": {
-      "sha256": "dd9440bb63bcd96b6dffc72cc7e0b94142ac71e8e01e2057e532baa729b4eb44",
+      "sha256": "cb0c724f45e4a8eebe6af7ead9070ddedc147e80e5aa9cf12971cf0942e07647",
       "executable": false
     },
     "src/core/features/responses/ui/CompletionDisclosure.tsx": {
@@ -5593,7 +5593,7 @@
       "executable": false
     },
     "src/core/features/traffic/service.ts": {
-      "sha256": "20c108bf277c940dd8c88dd06d394271e1f690884eb366be3761843705a72b5c",
+      "sha256": "fd55ef0e22348c00cf45dcd2faffe5272aeff1df45fede053947348982e8852d",
       "executable": false
     },
     "src/core/features/workspace/repository.ts": {
@@ -6329,7 +6329,7 @@
       "executable": false
     },
     "tests/e2e/kiosk.spec.ts": {
-      "sha256": "fa7d567de3042cc7fa1a13aa24336a9fa61dfcfa0909c7afd924c9d2457649c2",
+      "sha256": "731eecdde829c1529978b21089e2b2c74b4a9444927c7ed711e7bba6afbeb571",
       "executable": false
     },
     "tests/e2e/ledger-filters.spec.ts": {
@@ -6945,7 +6945,7 @@
       "executable": false
     },
     "tests/runtime/qr.worker.test.ts": {
-      "sha256": "83cecb71aa13e0ad24c80eb313ba7f03474b635655122c83b42c8e496d98cdf5",
+      "sha256": "c37b41a7f15c0785ed72a9ca5ada8da4aaf3284ccd7d1ec6ce2d84d9677d6053",
       "executable": false
     },
     "tests/runtime/question-counts.worker.test.ts": {

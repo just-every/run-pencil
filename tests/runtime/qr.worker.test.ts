@@ -2,6 +2,7 @@ import { applyD1Migrations, env, SELF, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
 import { developmentInbox } from '../helpers/mail-capture.mjs'
+import { matureLoad } from './load-time-fixture'
 import { devKeyHeaders } from '../helpers/dev-key.mjs'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 let cookie=''
@@ -24,4 +25,23 @@ contract('DIST-012','QR downloads require operator authority, retain the exact c
   const other=await call('/api/app/flows',{title:'Another form',slug:'other-aurora-qr'})
   expect((await request(`/api/app/flows/${other.id}/collectors/${collector.id}/qr`)).status).toBe(404)
   const direct=await request(root+'/qr');expect(await direct.text()).toContain('/f/aurora-qr')
+  let draft=await call(root+'/draft')
+  await call(root+'/draft/steps',{expectedVersion:draft.flow.draftVersion,step:{kind:'question',questionType:'short_text',required:true,prompt:'What could Aurora improve?'}})
+  draft=await call(root+'/draft');const stepId=draft.steps[0].id
+  await call(root+'/draft/steps',{expectedVersion:draft.flow.draftVersion,step:{kind:'completion',questionType:null,prompt:'Thank you.'}})
+  draft=await call(root+'/draft');await call(root+'/publish',{expectedVersion:draft.flow.draftVersion})
+  const sources=await call(root+'/collectors')
+  for(const source of sources.filter((row:any)=>row.systemSource)){
+    if(['direct','embed'].includes(source.systemSource)){
+      const url=new URL(source.publicPath,'http://localhost');expect(url.pathname).toBe('/f/aurora-qr')
+      const view=await call('/api/public/flows/aurora-qr/views',{revisionId:(await call('/api/public/flows/aurora-qr')).revision.id,source:'direct',collectorKey:source.publicKey})
+      const session=await call('/api/public/flows/aurora-qr/sessions',{deviceClass:'desktop',source:'direct',collectorKey:source.publicKey});await matureLoad(session)
+      const receipt=await call('/api/public/flows/aurora-qr/responses',{...session,idempotencyKey:'qr-default-'+session.sessionId,answers:[{stepId,value:'Offer an earlier workshop.'}]})
+      expect((await call(root+'/ledger')).responses.find((row:any)=>row.id===receipt.responseId)).toMatchObject({source:source.systemSource,collector:{id:source.id}})
+      expect(view.loadTime).toBeTruthy()
+    }else{
+      expect(source.publicPath).toBeNull()
+      expect((await request(root+`/collectors/${encodeURIComponent(source.id)}/qr?format=png`)).status).toBe(400)
+    }
+  }
 })

@@ -117,6 +117,6 @@ Next: [Invitations, reminders and consent](invitations.md), or read what comes b
 
 ## QR codes and shared devices
 
-In **Share this flow**, download the public link as an SVG or PNG QR code. **Manage named collectors** gives each campaign or counter its own labelled QR downloads; responses retain that collector in the ledger and exports.
+In **Share this flow**, download the public link as an SVG or PNG QR code. **Manage named collectors** gives each campaign or counter its own labelled QR downloads; responses retain that collector in the ledger and exports. Default direct and embed collectors also have scannable public links; opening one outside an iframe keeps its declared source label, while actual embeds still require an allowed host.
 
 Open **Kiosk** for a public link or named collector, choose how long idle answers may remain, then open its kiosk link on the shared device. Submission clears the form before the next person begins. An idle timeout or leaving the tab clears unsent answers. Kiosks do not offer Save and finish later. Keep this tab visible while collecting.

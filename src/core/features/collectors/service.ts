@@ -25,7 +25,7 @@ export class CollectorService {
     const query = `?collector=${encodeURIComponent(row.publicKey)}`
     const directPath = `/f/${encodeURIComponent(slug)}${query}`
     const embedPath = `/embed/${encodeURIComponent(slug)}${query}`
-    const publicPath = row.systemSource === 'embed' ? embedPath : row.systemSource === null || row.systemSource === 'direct' ? directPath : null
+    const publicPath = row.systemSource === null || row.systemSource === 'direct' || row.systemSource === 'embed' ? directPath : null
     return { ...collectorState(row, now), publicPath, embedPath: row.systemSource === null || row.systemSource === 'embed' ? embedPath : null }
   }
   async list(workspaceId: string, flowId: string) {
@@ -92,7 +92,10 @@ export class CollectorService {
     const row = key === undefined
       ? await this.repository.publicDefault(flowId, systemCollectorId(flowId, source))
       : await this.repository.publicKey(flowId, key)
-    if (!row || row.systemSource !== null && row.systemSource !== source) throw new NotFoundError('This collection link is not part of the requested flow.')
+    // An explicit public collector link retains its declared source even when
+    // scanned outside an iframe. The /embed document still checks its host.
+    const publicLink = key !== undefined && ['direct','embed'].includes(source) && row && ['direct','embed'].includes(row.systemSource ?? '')
+    if (!row || row.systemSource !== null && row.systemSource !== source && !publicLink) throw new NotFoundError('This collection link is not part of the requested flow.')
     return collectorState(row, new Date().toISOString())
   }
   async requireOpen(flowId: string, source: CollectorSource, key?: string) {

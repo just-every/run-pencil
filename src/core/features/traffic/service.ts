@@ -14,7 +14,7 @@ export class TrafficService {
     if(publicFlow.flow.slug!==input.slug || publicFlow.revision.id!==input.revisionId || invitation?.invitation.responseStatus==='completed')throw new ValidationError('This published form is no longer available for a new view.')
     if(input.invitationToken&&input.collectorKey)throw new ValidationError('An invitation uses its original collector.')
     const collector=invitation?.collector??await this.collectors.requireOpen(publicFlow.flow.id,input.source,input.collectorKey)
-    const source=collector.systemSource===null?'collector:'+collector.id:invitation?'invitation':input.source
+    const source=collector.systemSource===null?'collector:'+collector.id:collector.systemSource
     return this.count(publicFlow.flow.id,input.revisionId,source)
   }
   /** Called only after the resume route has resolved and admitted the saved response. */

@@ -128,7 +128,7 @@ export class ResponseService {
     const session = {
       id: ulid(),
       revisionId: revision.id,
-      source: invitationContext ? 'invitation' as const : input.source,
+      source: invitationContext ? 'invitation' as const : collector.systemSource === 'direct' || collector.systemSource === 'embed' ? collector.systemSource : input.source,
       participantId: invitationContext?.invitation.id ?? null,
       deviceClass: input.deviceClass,
       furthestStepId: firstStep.stableId,

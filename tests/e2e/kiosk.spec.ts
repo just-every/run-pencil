@@ -6,7 +6,7 @@ import { contract } from './contract'
 import { signInEmptyWorkspace } from './authoring-helpers'
 
 contract('DIST-012','download labelled QR codes and collect isolated shared-device responses with idle clearing',async({page},info)=>{
-  info.setTimeout(90000)
+  info.setTimeout(120000)
   await signInEmptyWorkspace(page)
   await page.getByRole('button',{name:'Customer feedback',exact:true}).click()
   await page.getByRole('button',{name:'Create draft flow'}).click()
@@ -23,7 +23,27 @@ contract('DIST-012','download labelled QR codes and collect isolated shared-devi
   const publicUrl=await collector.getByLabel('Aurora counter link',{exact:true}).inputValue()
   await share.getByText('QR and kiosk · Public link',{exact:true}).click()
   await collector.getByText('QR and kiosk · Aurora counter',{exact:true}).click()
-  for(const [region,label,target] of [[share,'Public link',direct],[collector,'Aurora counter',publicUrl]] as const){
+  const sources=await (await page.request.get(`/api/app/flows/${flowId}/collectors`)).json()
+  const defaultDirect=sources.find((row:any)=>row.systemSource==='direct')
+  const defaultEmbed=sources.find((row:any)=>row.systemSource==='embed')
+  await page.getByText('Default source collectors',{exact:true}).click()
+  const defaults=page.getByRole('region',{name:'Named collectors'}).locator('details').filter({has:page.getByText('Default source collectors',{exact:true})})
+  const cases=[{region:share,label:'Public link',target:direct,collectorId:defaultDirect.id},{region:collector,label:'Aurora counter',target:publicUrl,collectorId:sources.find((row:any)=>row.name==='Aurora counter').id}]
+  for(const source of sources.filter((row:any)=>row.systemSource)){
+    const row=defaults.locator('li').filter({hasText:`${source.name}:`})
+    if(['direct','embed'].includes(source.systemSource)){
+      expect(source.publicPath).toBeTruthy()
+      await row.getByText(`QR and kiosk · ${source.name}`,{exact:true}).click()
+      cases.push({region:row,label:source.name,target:new URL(source.publicPath,new URL(direct).origin).href,collectorId:source.id})
+    }else{
+      expect(source.publicPath).toBeNull()
+      expect(await row.getByRole('link').count()).toBe(0)
+      expect((await page.request.get(`/api/app/flows/${flowId}/collectors/${encodeURIComponent(source.id)}/qr?format=svg`)).status()).toBe(400)
+    }
+  }
+  await defaults.screenshot({path:`test-results/${info.project.name}-qr-default-sources.png`})
+  const expectedCounts:Record<string,number>={}
+  for(const {region,label,target,collectorId} of cases){
     for(const format of ['SVG','PNG']){
       const waiting=page.waitForEvent('download')
       await region.getByRole('link',{name:`Download ${label} QR (${format})`,exact:true}).click()
@@ -40,7 +60,23 @@ contract('DIST-012','download labelled QR codes and collect isolated shared-devi
         raster=Buffer.from(data,'base64')
       }
       const png=PNG.sync.read(raster)
-      expect(jsQR(new Uint8ClampedArray(png.data),png.width,png.height)?.data).toBe(target)
+      const decoded=jsQR(new Uint8ClampedArray(png.data),png.width,png.height)?.data
+      expect(decoded).toBe(target)
+      // A QR scan is a fresh public browser, without the operator context's Origin or cookies.
+      const visitContext=await page.context().browser()!.newContext({viewport:page.viewportSize()!})
+      const visit=await visitContext.newPage()
+      try{
+        await visit.goto(decoded!)
+        const respondent=visit
+        await expect(respondent.locator('.respondent-shell[data-hydrated=true]')).toBeVisible()
+        await respondent.getByRole('radio',{name:'Good',exact:true}).click()
+        await respondent.getByRole('button',{name:'Continue',exact:true}).click()
+        await respondent.getByRole('textbox').fill(`Collected by scanning ${label} ${format}.`)
+        await visit.waitForTimeout(3200)
+        await respondent.getByRole('button',{name:'Submit response',exact:true}).click()
+        await expect(respondent.getByRole('heading',{name:'Thank you. Your response has been received.'})).toBeVisible()
+        expectedCounts[collectorId]=(expectedCounts[collectorId]??0)+1
+      }finally{await visitContext.close()}
     }
   }
   await share.scrollIntoViewIfNeeded();await share.screenshot({path:`test-results/${info.project.name}-qr-share.png`})
@@ -78,7 +114,10 @@ contract('DIST-012','download labelled QR codes and collect isolated shared-devi
   await page.screenshot({path:`test-results/${info.project.name}-kiosk-idle-cleared.png`})
   await page.goto(builder)
   const ledger=await (await page.request.get(`/api/app/flows/${flowId}/ledger`)).json()
-  expect(ledger.total).toBe(2)
-  expect(ledger.responses.every((response:any)=>response.collector.name==='Aurora counter')).toBe(true)
+  expectedCounts[sources.find((row:any)=>row.name==='Aurora counter').id]+=2
+  expect(ledger.total).toBe(Object.values(expectedCounts).reduce((sum,count)=>sum+count,0))
+  for(const [id,count] of Object.entries(expectedCounts))expect(ledger.responses.filter((row:any)=>row.collector.id===id)).toHaveLength(count)
+  const after=await (await page.request.get(`/api/app/flows/${flowId}/collectors`)).json()
+  for(const source of after.filter((row:any)=>['invitation','imported','unknown'].includes(row.systemSource))){expect(source.publicPath).toBeNull();expect(source.released).toBe(0)}
   expect(JSON.stringify(ledger)).not.toContain('Private abandoned answer')
 })
