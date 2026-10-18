@@ -5,7 +5,7 @@ const labels: Record<string, string> = {
   picture_choice: 'Picture choice', yes_no: 'Yes / No', opinion_scale: 'Opinion scale', nps: 'NPS',
   phone_number: 'Phone number', submittedAt: 'Submission time', startedAt: 'Start time',
   welcome: 'Welcome screen', completion: 'Completion screen', legal: 'Legal consent', priority: 'Ranking',
-  native: 'Pencil', artifact: 'Source file',
+  native: 'Pencil', artifact: 'Source file', group: 'Question group', inline_group: 'Question group',
 }
 export function typeLabel(value: string) {
   const readable = labels[value] ?? value.replaceAll('_', ' ')

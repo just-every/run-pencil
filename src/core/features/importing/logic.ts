@@ -1,5 +1,6 @@
 import { object } from './fields'
 import type { ImportForm, ImportStep } from './model'
+import type { ScreenLayout } from '../../shared/screenLayout'
 function condition(raw: unknown, step: ImportStep): { predicate: string; expected: unknown } | undefined {
   const c = object(raw), vars = Array.isArray(c.vars) ? c.vars : []
   const ref = vars[0], value = vars[1]
@@ -20,24 +21,40 @@ function condition(raw: unknown, step: ImportStep): { predicate: string; expecte
 export function mapLogic(form: ImportForm, raw: unknown) {
   const incomplete = new Set<ImportStep>()
   const firstQuestion = form.steps.find(step => step.kind === 'question')
+  const groups = form.steps.flatMap(step => {
+    const screen = step.settings.screen as ScreenLayout | undefined
+    if (screen?.kind !== 'group') return []
+    return [{ head: step, tail: form.steps.find(member => member.id === screen.questionIds.at(-1))!, ids: screen.questionIds }]
+  })
+  const groupFor = (step: ImportStep) => groups.find(group => group.ids.includes(step.id))
+  const exit = (step: ImportStep) => groupFor(step)?.tail ?? step
+  const sourceFor = (ref: unknown) => {
+    const group = groups.find(group => group.head.groupSourceId === ref)
+    return group?.tail ?? form.steps.find(step => step.sourceId === ref && step.kind === 'question')
+  }
   for (const [i, item] of (Array.isArray(raw) ? raw : []).entries()) {
     const logic = object(item), actions = Array.isArray(logic.actions) ? logic.actions : []
-    if (!actions.length) { const source = form.steps.find(step => step.sourceId === logic.ref && step.kind === 'question') ?? firstQuestion; if (source) incomplete.add(source); form.report.push({ location: `/logic/${i}`, label: String(logic.ref ?? 'Logic'), sourceType: String(logic.type ?? ''), state: 'unsupported', change: 'No path imported', reason: 'No supported jump action.' }) }
+    if (!actions.length) { const source = sourceFor(logic.ref) ?? firstQuestion; if (source) incomplete.add(exit(source)); form.report.push({ location: `/logic/${i}`, label: String(logic.ref ?? 'Logic'), sourceType: String(logic.type ?? ''), state: 'unsupported', change: 'No path imported', reason: 'No supported jump action.' }) }
     let defaultSeen = false
     for (const [j, actionValue] of actions.entries()) {
       const action = object(actionValue), details = object(action.details), to = object(details.to), c = object(action.condition)
-      const source = form.steps.find(s => s.sourceId === logic.ref && s.kind === 'question')
-      const destination = form.steps.find(s => s.sourceId === to.value && s.kind !== 'welcome')
+      const source = sourceFor(logic.ref)
+      const destination = form.steps.find(s => (s.sourceId === to.value || s.groupSourceId === to.value) && s.kind !== 'welcome')
+      const sourceGroup = source && groupFor(source), destinationGroup = destination && groupFor(destination)
+      const insideSource = sourceGroup && sourceGroup.tail.id !== source.id
+      const insideDestination = destinationGroup && destinationGroup.head.id !== destination.id
       const report = { location: `/logic/${i}/actions/${j}`, label: source?.prompt ?? String(logic.ref ?? 'Logic'), sourceType: String(action.action ?? 'unknown'), state: 'unsupported' as 'imported' | 'unsupported', change: 'No path imported', reason: 'Only same-question supported comparisons and forward destinations are imported; calculations, hidden variables and cross-question conditions are omitted.' }
-      if (logic.type === 'field' && source && destination && action.action === 'jump' && !defaultSeen && ['field', 'thankyou'].includes(to.type)) {
+      if (logic.type === 'field' && source && destination && !insideSource && !insideDestination && action.action === 'jump' && !defaultSeen && ['field', 'thankyou'].includes(to.type)) {
         const mapped = condition(c, source)
         if (c.op === 'always') { source.next = destination.id; defaultSeen = true; report.state = 'imported'; report.change = `${source.prompt} → ${destination.prompt} (default)`; report.reason = 'Ordered unconditional jump.' }
         else if (mapped) { form.rules.push({ source: source.id, destination: destination.id, predicate: mapped.predicate, expected: mapped.expected, position: form.rules.filter(r => r.source === source.id).length }); report.state = 'imported'; report.change = `${source.prompt} → ${destination.prompt}`; report.reason = `First matching ${mapped.predicate} path.` }
       }
       // Calculations never route a respondent: an omitted add/subtract/multiply/divide/set leaves the question's paths intact.
       if (report.state === 'unsupported' && action.action !== 'jump') report.reason = 'Calculations and variables are not imported; the question keeps its imported paths.'
+      if (report.state === 'unsupported' && action.action === 'jump' && insideSource) report.reason = 'A question group can branch only after its last question. This jump needs native repair before publication.'
+      if (report.state === 'unsupported' && action.action === 'jump' && insideDestination) report.reason = 'A jump must enter a question group at its first question. This jump needs native repair before publication.'
       form.report.push(report)
-      if (report.state === 'unsupported' && action.action === 'jump' && (source ?? firstQuestion)) incomplete.add((source ?? firstQuestion)!)
+      if (report.state === 'unsupported' && action.action === 'jump' && (source ?? firstQuestion)) incomplete.add(exit((source ?? firstQuestion)!))
     }
   }
   for (const source of incomplete) source.next = null

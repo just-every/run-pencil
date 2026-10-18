@@ -2,12 +2,21 @@ import { sha256 } from '../../../base/import-kit/src/provenance/identity'
 import type { ImportForm, ImportStep, QuestionType, ReportItem } from './model'
 import { forbiddenSource, sourceNames } from './source-privacy'
 import { ValidationError } from '../../shared/errors'
+import { mapQuestionGroup } from './typeform-groups'
 export const stableId = (scope: string, id: string) => `i_${sha256(scope + ':' + id).slice(0, 28)}`
 export function object(value: unknown): Record<string, any> { return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, any> : {} }
 export function mapFields(definition: Record<string, any>, scope: string, forbidden: Set<string>): ImportForm {
   const report: ReportItem[] = [], steps: ImportStep[] = []
   const identities = new Set<string>()
-  const add = (raw: unknown, location: string, kind?: 'welcome' | 'completion') => {
+  const omittedChildren = (values: unknown, path: string) => {
+    if (!Array.isArray(values)) return
+    for (const [i, value] of values.entries()) {
+      const child = object(value), privateField = sourceNames(child).some(name => forbiddenSource(name, forbidden))
+      report.push({ location: `${path}/${i}`, label: privateField ? 'Private source field' : String(child.title ?? '(untitled)'), sourceType: String(child.type ?? 'unknown'), state: 'unsupported', change: 'Nested field omitted', reason: 'Its parent field has no native representation; nested groups are not supported.' })
+      omittedChildren(object(child.properties).fields, `${path}/${i}/properties/fields`)
+    }
+  }
+  const add = (raw: unknown, location: string, kind?: 'welcome' | 'completion', inGroup = false) => {
     const field = object(raw), properties = object(field.properties), validations = object(field.validations)
     const type = String(field.type ?? kind ?? 'unknown'), sourceId = String(field.ref ?? field.id ?? '')
     const item: ReportItem = { location, label: String(field.title ?? '(untitled)'), sourceType: type, state: 'imported', change: '', reason: '' }
@@ -15,14 +24,21 @@ export function mapFields(definition: Record<string, any>, scope: string, forbid
     if (!kind && sourceNames(field).some(name => forbiddenSource(name, forbidden))) { item.label = 'Private source field'; item.state = 'unsupported'; item.change = 'Field and answers omitted'; item.reason = 'Hidden and network/IP source identities cannot be imported, including through their display titles.'; return }
     if (!sourceId || identities.has(sourceId)) { item.state = 'unsupported'; item.reason = 'Missing or duplicated field reference; no identity was guessed.'; return }
     identities.add(sourceId)
+    if (!kind && ['group', 'inline_group'].includes(type)) {
+      if (inGroup) {
+        item.state = 'unsupported'; item.change = 'Nested group omitted'; item.reason = 'Question groups cannot contain another group.'
+        omittedChildren(properties.fields, `${location}/properties/fields`)
+      } else mapQuestionGroup({ field, sourceId, location, item, steps, report, add: (child, path) => add(child, path, undefined, true) })
+      return
+    }
     // Typeform's documented choice types: picture_choice follows allow_multiple_selection like multiple_choice; checkbox always allows several.
     const choiceTypes = ['multiple_choice', 'picture_choice', 'checkbox', 'dropdown', 'ranking']
     const selection: QuestionType = properties.allow_multiple_selection === true ? 'multiple_choice' : 'single_choice'
     const mapped: Record<string, QuestionType> = { short_text: 'short_text', long_text: 'long_text', email: 'email', multiple_choice: selection, picture_choice: selection, checkbox: 'multiple_choice', dropdown: 'dropdown', yes_no: 'yes_no', rating: 'rating', opinion_scale: 'rating', nps: 'nps', number: 'number', date: 'date', legal: 'consent', ranking: 'priority', phone_number: 'short_text', website: 'short_text' }
     if (['picture_choice', 'checkbox'].includes(type) && !(Array.isArray(properties.choices) && properties.choices.length)) { item.state = 'unsupported'; item.reason = 'A choice field without choices has no native representation. The field and its answers are omitted.'; return }
-    if (type === 'statement' && steps.length === 0 && !kind) kind = 'welcome'
+    if (type === 'statement' && steps.length === 0 && !kind && !inGroup) kind = 'welcome'
     const questionType = kind ? null : mapped[type]
-    if (!kind && !questionType) { item.state = 'unsupported'; item.reason = 'No native question representation. The field and its answers are omitted.'; const nested = (values: unknown, path: string) => { if (!Array.isArray(values)) return; for (const [i, value] of values.entries()) { const child = object(value); report.push({ location: `${path}/${i}`, label: String(child.title ?? '(untitled)'), sourceType: String(child.type ?? 'unknown'), state: 'unsupported', change: 'Nested field omitted', reason: 'Its parent field has no native representation; groups are not flattened.' }); nested(object(child.properties).fields, `${path}/${i}/properties/fields`) } }; nested(properties.fields, `${location}/properties/fields`); return }
+    if (!kind && !questionType) { item.state = 'unsupported'; item.reason = 'No native question representation. The field and its answers are omitted.'; omittedChildren(properties.fields, `${location}/properties/fields`); return }
     const choices = choiceTypes.includes(type) && Array.isArray(properties.choices) ? properties.choices.map((c: any, i: number) => ({ id: stableId(scope, `${sourceId}:choice:${c.ref ?? c.id ?? i}`), sourceId: String(c.ref ?? c.id ?? i), label: String(c.label ?? '') })) : []
     const settings: Record<string, unknown> = {}
     const supportsOther = ['single_choice', 'multiple_choice', 'dropdown'].includes(questionType ?? '')

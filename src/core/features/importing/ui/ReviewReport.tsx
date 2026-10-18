@@ -1,10 +1,12 @@
 import { RowErrors } from './RowErrors'
 import { type ColumnMapping, type ImportReview } from '../model'
 import { reportText, typeLabel } from './report-labels'
+import { ImportStructure } from './ImportStructure'
 export function ReviewReport({ review, columns, change, busy }: { review: ImportReview; columns: ColumnMapping[]; change: (value: ColumnMapping[]) => void; busy: boolean }) {
   return <section aria-labelledby="mapping-heading">
     <h2 id="mapping-heading">Review the mapping</h2>
     <p>{review.title} · {review.questions.length} questions · {review.responseCount} valid response rows</p>
+    <ImportStructure questions={review.questions} />
     {review.google ? <div className="quiet-panel" style={{padding:'1rem'}}><p>{review.google.mode === 'csv-only' ? 'CSV-only reconstruction' : 'Google Forms definition'} · {review.google.dateOrder ?? 'Choose date order'} · {review.google.timeZone ?? 'Choose Sheet time zone'}</p>{review.google.firstTimestamp ? <p>First: {review.google.firstTimestamp.local} → {review.google.firstTimestamp.utc}</p> : null}{review.google.lastTimestamp ? <p>Last: {review.google.lastTimestamp.local} → {review.google.lastTimestamp.utc}</p> : null}</div> : null}
     <p className="muted">Every field and logic jump is listed below. Historical responses stay anonymous on an immutable imported revision. Editing the new draft does not change those answers.</p>
     {review.headers.length ? <fieldset disabled={busy} style={{ minWidth: 0, margin: 0, padding: 0, border: 0 }}><legend>CSV columns</legend><p>{review.source === 'google-forms' ? 'Choose a question, the submission timestamp, a separate Other text column, or Skip. Fixed selections use one question column. Changed mappings need a fresh report.' : 'Choose a question, a timestamp, a separate multiple-choice option, an Other text column, or Skip. Changed mappings need a fresh report. Accepted selection encodings are shown in the moving guide.'}</p>
