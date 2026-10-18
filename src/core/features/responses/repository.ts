@@ -1,3 +1,4 @@
+import { ValidationError } from '../../shared/errors'
 import { trafficDay } from '../../shared/trafficDay'
 import { bindSessionCollectorSql, collectorAdmissionSql, sessionCollectorAdmissionSql, throwCollectorAdmissionFailure } from '../collectors'
 import { analysisErasureStatements } from '../analysis'
@@ -288,7 +289,10 @@ export class ResponseRepository {
       const results = await this.binding.batch(statements)
       // Trigger writes also contribute to changes; the guarded response insert still creates one row or none.
       return changes(results[0]) > 0
-    } catch (error) { throwCollectorAdmissionFailure(error) }
+    } catch (error) {
+      if(String(error).includes('ACCESS_ALREADY_COMPLETED') || String((error as Error)?.cause).includes('ACCESS_ALREADY_COMPLETED'))throw new ValidationError('This email address has already completed this form.')
+      throwCollectorAdmissionFailure(error)
+    }
   }
 
   async releaseQuarantinedResponse(input: { workspaceId: string; responseId: string; operatorId: string; now: string }) {

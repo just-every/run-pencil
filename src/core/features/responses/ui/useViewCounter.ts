@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-type ViewInput = {slug:string;revisionId:string;source:'direct'|'embed';collectorKey?:string;invitationToken?:string}
+type ViewInput = {slug:string;revisionId:string;source:'direct'|'embed';collectorKey?:string;invitationToken?:string;accessToken?:string}
 
 /** One anonymous count and signed load timestamp per mounted form document. */
 export function useViewCounter(input:ViewInput,enabled:boolean,resumedLoadTime?:string) {

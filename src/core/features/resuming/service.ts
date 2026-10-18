@@ -39,6 +39,9 @@ export class ResumeService {
     } else if (input.invitationToken) throw new ValidationError('This response does not use an invitation.')
     const graph = await this.flows.getRevisionGraph(context.revision.id)
     const hiddenContext = normalizeHidden(formSettings(context.revision.formSettingsJson),input.hidden ?? {})
+    const accessIdentity=await this.responseService.sessionAccessIdentity(input.sessionId,formSettings(context.revision.formSettingsJson))
+    if(accessIdentity?.email){hiddenContext.verifiedEmail=accessIdentity.email;hiddenContext.identityMode='identified'}
+    if(accessIdentity?.subject){hiddenContext.verifiedSubject=accessIdentity.subject;hiddenContext.identityMode='identified'}
     const answers = validateSavedAnswers(graph,context.revision.policySnapshotJson,input.currentStepId,input.answers,hiddenAnswers(hiddenContext),formSettings(context.revision.formSettingsJson))
     const previous = await this.repository.bySession(input.sessionId)
     if (previous?.command_key===input.commandKey) {

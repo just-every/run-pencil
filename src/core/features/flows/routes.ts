@@ -1,3 +1,4 @@
+import { AccessRequiredError } from '../restricted-access'
 import { hiddenSettingsIssue, type FormSettings } from '../../shared/hiddenFields'
 import { conditionShape } from '../../shared/conditionValidation'
 import type { Condition } from '../../shared/conditions'
@@ -50,6 +51,7 @@ const updateDraftSchema = z.object({
 })
 
 function failure(context: Context<WorkerEnvironment>, error: unknown) {
+  if(error instanceof AccessRequiredError)return context.json({error:error.code,message:error.message,restriction:error.requirement},403)
   if (error instanceof PencilError) {
     if (error instanceof FlowClosedError) return context.json({ error: error.code, message: error.message, closedFlow: error.flow }, 409)
     const status = error instanceof RateLimitError ? 429 : error.code === 'NOT_FOUND' ? 404 : 400
@@ -224,7 +226,7 @@ export function registerFlowRoutes(app: Hono<WorkerEnvironment>, services: Reque
 
   app.get('/api/public/flows/:slug', zValidator('param', z.object({ slug: flowSlug })), zValidator('query',z.object({collector:z.string().regex(/^[a-f0-9]{32}$/).optional(),source:z.enum(['direct','embed']).default('direct')})), async (context) => {
     try {
-      const flow=await services(context).flows.getPublicFlow(context.req.param('slug'))
+      const flow=await services(context).flows.getPublicFlow(context.req.param('slug'),context.req.header('x-pencil-access'))
       const {source,collector}=context.req.valid('query')
       await services(context).collectors.requireOpen(flow.flow.id,source,collector)
       return context.json(flow)

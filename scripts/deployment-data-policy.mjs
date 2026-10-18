@@ -3,6 +3,10 @@ import { failure } from './deployment-data-errors.mjs';
 // Every persisted column is reviewed here. A migration cannot silently add data
 // to an archive: both new tables and new columns fail closed until classified.
 const retained = {
+  form_access_rules: 'id flow_id mode domains_json emails_json public_key created_at',
+  access_challenges: 'id rule_id revision_id email code_hash attempts expires_at created_at delivery_state',
+  session_access: 'session_id rule_id email subject',
+  response_access: 'response_id flow_id email subject',
   workspace_codes: 'id workspace_id label normalized_label created_by_operator_id created_at',
   answer_code_assignments: 'id workspace_id answer_id code_id source actor_operator_id quote_id created_at',
   code_suggestion_decisions: 'quote_id workspace_id decision code_id actor_operator_id decided_at',
@@ -175,6 +179,7 @@ const retained = {
 const nul = { type: 'null' };
 const captured = { local_mail_outbox: ['message_json'], rer_mail_development_outbox: ['message'], rer_ai_development_outbox: ['record'] };
 export const exclusions = {
+  form_access_rules: {password_verifier:nul},
   respondent_saves: { token_hash: nul, delivery_email: nul },
   digest_deliveries: { replay_enabled: { type: 'integer', value: '0' }, retry_authorized: { type: 'integer', value: '0' } },
   invitation_launches: { resume_enabled: { type: 'integer', value: '0' } },
@@ -207,7 +212,7 @@ const excludedCaptureTables = new Set(['notification_timer', 'local_mail_outbox'
 // Sign-in authorization never travels: sessions (native, dev, review, provider), sign-in and invitation links, step-up
 // challenges, minted API credentials and the provider bindings of those sessions. A restore cannot revive a session that
 // was signed out or revoked after the backup, so everyone signs in again. Operators, roles and the audit history stay.
-export const authorizationTables = new Set(['oa_sessions', 'oa_tokens', 'oa_owner_signins', 'oa_credentials', 'oa_step_up_challenges', 'oa_provider_sessions', 'oa_provider_session_pins', 'operator_sessions', 'auth_magic_links']);
+export const authorizationTables = new Set(['access_challenges','session_access','oa_sessions', 'oa_tokens', 'oa_owner_signins', 'oa_credentials', 'oa_step_up_challenges', 'oa_provider_sessions', 'oa_provider_session_pins', 'operator_sessions', 'auth_magic_links']);
 export const rowsNeverTravel = name => excludedCaptureTables.has(name) || authorizationTables.has(name);
 export function refuseAuthorization(table, rows) {
   if (authorizationTables.has(table.name) && rows.length) throw failure('LIVE_AUTHORIZATION', 'Archive holds sign-in authorization (sessions, sign-in or invitation links, or credentials). Export again from the source; sign-in authorization never travels.');

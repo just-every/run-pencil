@@ -2,6 +2,7 @@ import { registerResumeRoutes } from '../features/resuming'
 import { registerAuditRoutes } from '../features/audit'
 import { registerSubmissionRoutes } from '../features/submissions/routes'
 import { SubmissionService } from '../features/submissions/service'
+import { registerAccessRoutes } from '../features/restricted-access/routes'
 import { registerQrRoutes } from '../features/collectors/qr'
 import { registerCollectorRoutes } from '../features/collectors'
 import { registerBackupRoutes } from '../features/backup/routes'
@@ -140,6 +141,7 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
   registerReportingRoutes(app, context => context.get('services'))
   registerCollectorRoutes(app, context => context.get('services'))
   registerQrRoutes(app, context => context.get('services'))
+  registerAccessRoutes(app, context => context.get('services'))
   registerDistributionRoutes(app, context => context.get('services'))
   registerNotificationRoutes(app, context => context.get('services'))
   registerActionRoutes(app, context => context.get('services'))
