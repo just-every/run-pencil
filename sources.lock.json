@@ -4165,7 +4165,7 @@
       "executable": false
     },
     "src/core/features/collectors/ui/QrKioskControls.tsx": {
-      "sha256": "6f8880955e46e57e7118ab73207f29e7a36c143544a880ef7b58c5d5847d0495",
+      "sha256": "a11377dc95fdc8b941061da516c9b4234a1416fd9e51d32adcff554bf7bfa633",
       "executable": false
     },
     "src/core/features/dashboard/ui/dashboard.css": {
@@ -6329,7 +6329,7 @@
       "executable": false
     },
     "tests/e2e/kiosk.spec.ts": {
-      "sha256": "7ab64acb0b18f5b4de08ddf199010d77bcb5e77c41bd54173fdc448d87eee2a4",
+      "sha256": "fa7d567de3042cc7fa1a13aa24336a9fa61dfcfa0909c7afd924c9d2457649c2",
       "executable": false
     },
     "tests/e2e/ledger-filters.spec.ts": {
