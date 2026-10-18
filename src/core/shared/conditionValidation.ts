@@ -1,7 +1,7 @@
 import type { FlowStep, ChoiceOption } from '../app/api'
 import { calendarDate } from './questionTypes'
 import { conditionOperators, type Condition, type ConditionOperator } from './conditions'
-import manifest from '../../../seed.json'
+import manifest from '../../../seed.json' with { type: 'json' }
 
 export function operatorsFor(type: string | null): ConditionOperator[] {
   const common: ConditionOperator[] = ['is_answered', 'is_blank']
