@@ -1,6 +1,6 @@
 import { createFlowStructure, type FlowStructure } from './structure'
 import { readCurrentPublicSnapshot } from './publicSnapshot'
-import { and, desc, eq, inArray, ne } from 'drizzle-orm'
+import { and, desc, eq, inArray, ne, sql } from 'drizzle-orm'
 import type { PencilDatabase } from '../../platform/db/repository'
 import { choiceOptions, flowBranchRules, flowRevisions, flowSteps, flows, workspaces } from '../../platform/db/schema'
 
@@ -138,7 +138,7 @@ export class FlowRepository {
 
   async getChoices(stepIds: string[]) {
     if (stepIds.length === 0) return []
-    return this.database.select().from(choiceOptions).where(inArray(choiceOptions.stepId, stepIds)).orderBy(choiceOptions.position)
+    return this.database.select().from(choiceOptions).where(sql`${choiceOptions.stepId} IN (SELECT value FROM json_each(${JSON.stringify(stepIds)}))`).orderBy(choiceOptions.position)
   }
 
   async getBranchRules(revisionId: string) {
@@ -195,8 +195,8 @@ export class FlowRepository {
     const deleteMissingChoices = preservedChoices.length === 0
       ? this.binding.prepare(`DELETE FROM choice_options WHERE step_id IN (SELECT id FROM flow_steps WHERE revision_id = ? AND stable_id = ?) AND ${choiceGuard}`)
         .bind(input.revisionId, input.stepStableId, input.flowId, input.expectedVersion)
-      : this.binding.prepare(`DELETE FROM choice_options WHERE step_id IN (SELECT id FROM flow_steps WHERE revision_id = ? AND stable_id = ?) AND stable_id NOT IN (${preservedChoices.map(() => '?').join(', ')}) AND ${choiceGuard}`)
-        .bind(input.revisionId, input.stepStableId, ...preservedChoices, input.flowId, input.expectedVersion)
+      : this.binding.prepare(`DELETE FROM choice_options WHERE step_id IN (SELECT id FROM flow_steps WHERE revision_id = ? AND stable_id = ?) AND stable_id NOT IN (SELECT value FROM json_each(?)) AND ${choiceGuard}`)
+        .bind(input.revisionId, input.stepStableId, JSON.stringify(preservedChoices), input.flowId, input.expectedVersion)
     const results = await this.auditedDraft(input, [
       this.binding.prepare(`
         UPDATE flow_steps

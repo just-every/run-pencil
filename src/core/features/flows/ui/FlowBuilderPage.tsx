@@ -270,7 +270,7 @@ export function FlowBuilderPage() {
               if (!['single_choice', 'multiple_choice', 'priority', 'dropdown'].includes(nextType ?? '')) setChoices([])
               if (nextType !== questionType) { setCanvasAnswer(undefined); setRules([]) }
             }} value={questionType ?? ''}>{questionTypes.map(type => <option value={type} key={type}>{questionTypeLabels[type]}</option>)}</select></label> : null}
-            {selected.kind === 'question' && ['single_choice', 'multiple_choice', 'priority', 'dropdown'].includes(questionType ?? '') ? <ChoiceEditor disabled={saving} choices={choices} onChange={setChoices} /> : null}
+            {selected.kind === 'question' && ['single_choice', 'multiple_choice', 'priority', 'dropdown'].includes(questionType ?? '') ? <ChoiceEditor key={selected.id} disabled={saving} choices={choices} onChange={setChoices} /> : null}
             <SpecialChoicesEditor type={questionType} choices={choices} settings={settings} disabled={saving} onChoices={setChoices} onSettings={next => setSettingsText(JSON.stringify(next, null, 2))} />
             <TypeSettings type={questionType} settings={settings} disabled={saving} onChange={(key, value) => { const next: Record<string, unknown> = { ...settings }; if (value === undefined) delete next[key]; else next[key] = value; setSettingsText(Object.keys(next).length ? JSON.stringify(next, null, 2) : '') }} />
             {selected.kind === 'question' && questionType === 'rating' ? <RatingSettings settings={settings} disabled={saving} onChangeSettings={next => setSettingsText(JSON.stringify(next, null, 2))} /> : null}

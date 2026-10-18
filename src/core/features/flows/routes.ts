@@ -1,3 +1,4 @@
+import { formLimits } from '../../shared/formLimits'
 import { questionTypes } from '../../shared/questionKinds'
 import { validateInput as zValidator, resourceId, flowSlug, emptyMutationBody, answerValue } from '../../shared/validation'
 import type { Context, Hono } from 'hono'
@@ -16,7 +17,7 @@ const stepSchema = z.object({
   required: z.boolean().optional(),
   nextStepId: resourceId.nullable().optional(),
   questionSettings: z.record(z.string(), z.unknown()).nullable().optional(),
-  choices: z.array(z.object({ value: z.string().trim().min(1).max(200), label: z.string().trim().min(1).max(300) })).max(100).optional(),
+  choices: z.array(z.object({ value: z.string().trim().min(1).max(200), label: z.string().trim().min(1).max(300) })).max(formLimits.questions.dropdownChoices).optional(),
 })
 
 const branchesSchema = z.object({
@@ -41,7 +42,7 @@ const updateDraftSchema = z.object({
   nextStepId: resourceId.nullable().optional(),
   questionSettings: z.record(z.string(), z.unknown()).nullable().optional(),
   questionType: questionType.nullable().optional(),
-  choices: z.array(z.object({ id: resourceId.optional(), newId: resourceId.optional(), value: z.string().trim().max(200), label: z.string().trim().max(300) })).max(100).optional(),
+  choices: z.array(z.object({ id: resourceId.optional(), newId: resourceId.optional(), value: z.string().trim().max(200), label: z.string().trim().max(300) })).max(formLimits.questions.dropdownChoices).optional(),
 })
 
 function failure(context: Context<WorkerEnvironment>, error: unknown) {
@@ -143,7 +144,7 @@ export function registerFlowRoutes(app: Hono<WorkerEnvironment>, services: Reque
     }
   })
 
-  app.put('/api/app/flows/:flowId/draft/order', zValidator('param', z.object({ flowId: resourceId })), zValidator('json', z.object({ expectedVersion: z.number().int().nonnegative(), orderedStepIds: z.array(resourceId).max(50) })), async (context) => {
+  app.put('/api/app/flows/:flowId/draft/order', zValidator('param', z.object({ flowId: resourceId })), zValidator('json', z.object({ expectedVersion: z.number().int().nonnegative(), orderedStepIds: z.array(resourceId).max(formLimits.steps.perRevision) })), async (context) => {
     try {
       requireSameOriginRequest(context.req.raw)
       return context.json(await services(context).flows.reorderDraftSteps({ operatorId: context.get('operatorSession').operatorId, workspaceId: context.get('operatorSession').workspaceId, flowId: context.req.param('flowId'), ...context.req.valid('json') }))
@@ -161,7 +162,7 @@ export function registerFlowRoutes(app: Hono<WorkerEnvironment>, services: Reque
     }
   })
 
-  app.post('/api/app/flows/:flowId/draft/preview', zValidator('param', z.object({ flowId: resourceId })), zValidator('json', z.object({ answers: z.record(resourceId, answerValue).refine(answers => Object.keys(answers).length <= 50) })), async (context) => {
+  app.post('/api/app/flows/:flowId/draft/preview', zValidator('param', z.object({ flowId: resourceId })), zValidator('json', z.object({ answers: z.record(resourceId, answerValue).refine(answers => Object.keys(answers).length <= formLimits.questions.perRevision) })), async (context) => {
     try {
       requireSameOriginRequest(context.req.raw)
       return context.json(await services(context).flows.previewDraft({ workspaceId: context.get('operatorSession').workspaceId, flowId: context.req.param('flowId'), ...context.req.valid('json') }))

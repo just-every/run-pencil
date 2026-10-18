@@ -1,3 +1,4 @@
+import { formLimits } from '../../shared/formLimits'
 import { collectorKey, CollectorClosedError } from '../collectors'
 import { validateInput as zValidator, resourceId, flowSlug, emptyMutationBody, answerValue } from '../../shared/validation'
 import type { Context, Hono } from 'hono'
@@ -24,7 +25,7 @@ const submitResponseSchema = sessionCredentials.extend({
   // retain their original format bounds and never bypass service admission.
   sessionToken: z.string().min(32).max(200).optional(),
   idempotencyKey: z.string().min(12).max(200),
-  answers: z.array(z.object({ stepId: resourceId, value: answerValue })).max(50),
+  answers: z.array(z.object({ stepId: resourceId, value: answerValue })).max(formLimits.questions.perRevision),
   invitationToken: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   honeypot: z.string().max(500).optional(),
   loadTime: z.string().max(84).optional(),

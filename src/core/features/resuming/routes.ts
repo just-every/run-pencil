@@ -1,3 +1,4 @@
+import { formLimits } from '../../shared/formLimits'
 import type { Hono, Context } from 'hono'
 import { z } from 'zod'
 import type { WorkerEnvironment } from '../../app/environment'
@@ -6,7 +7,7 @@ import { answerValue, flowSlug, resourceId, validateInput } from '../../shared/v
 import { FlowClosedError, PencilError } from '../../shared/errors'
 
 const slug = z.object({slug:flowSlug})
-const save = z.object({sessionId:resourceId,sessionToken:z.string().min(32).max(200),commandKey:z.string().min(12).max(100).regex(/^[A-Za-z0-9_-]+$/),email:z.string().trim().email().max(254),currentStepId:resourceId,answers:z.array(z.object({stepId:resourceId,value:answerValue})).max(50),invitationToken:z.string().regex(/^[a-f0-9]{64}$/).optional()})
+const save = z.object({sessionId:resourceId,sessionToken:z.string().min(32).max(200),commandKey:z.string().min(12).max(100).regex(/^[A-Za-z0-9_-]+$/),email:z.string().trim().email().max(254),currentStepId:resourceId,answers:z.array(z.object({stepId:resourceId,value:answerValue})).max(formLimits.questions.perRevision),invitationToken:z.string().regex(/^[a-f0-9]{64}$/).optional()})
 function failure(context: Context<WorkerEnvironment>, error: unknown) {
   if (error instanceof FlowClosedError) return context.json({error:error.code,message:error.message,closedFlow:error.flow},409)
   if (error instanceof PencilError) return context.json({error:error.code,message:error.message},error.code==='RATE_LIMITED'?429:error.code==='RESUME_MAIL_UNAVAILABLE'?503:400)
