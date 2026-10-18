@@ -21,6 +21,8 @@ contract('DIST-012','download labelled QR codes and collect isolated shared-devi
   await page.getByRole('button',{name:'Create collector',exact:true}).click()
   const collector=page.locator('.collector-card').filter({has:page.getByRole('heading',{name:'Aurora counter',exact:true})})
   const publicUrl=await collector.getByLabel('Aurora counter link',{exact:true}).inputValue()
+  await share.getByText('QR and kiosk · Public link',{exact:true}).click()
+  await collector.getByText('QR and kiosk · Aurora counter',{exact:true}).click()
   for(const [region,label,target] of [[share,'Public link',direct],[collector,'Aurora counter',publicUrl]] as const){
     for(const format of ['SVG','PNG']){
       const waiting=page.waitForEvent('download')
