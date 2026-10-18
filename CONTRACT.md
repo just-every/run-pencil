@@ -537,7 +537,7 @@ are data, compiled into the owned source and applied by one local runtime.
 
 ## Status
 
-Judged from the code and tests at commit `d9e187def3caf614c8a3a86fde0c7049aa2c9aa9` (19 October 2026).
+Judged from the code and tests at commit `f5f5b3196384e898f08846c3a8e9672dcb9e9fb6` (19 October 2026).
 
 RESP-016 and RSLT-012 include the sd-pencil-t5 implementation and native/browser journeys.
 
