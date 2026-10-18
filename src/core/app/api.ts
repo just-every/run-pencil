@@ -56,6 +56,7 @@ export type BuilderDraft = PublicFlow & {
   flow: PublicFlow['flow'] & { status: DashboardFlow['status']; draftVersion: number }
 }
 
+export type TrafficReport = {rows:Array<import('../features/traffic').TrafficRow>;totals:{views:number;starts:number;submissions:number};startedAt:string|null;timeZone:string}
 export type FlowResults = {
   flow: { id: string; title: string; slug: string; status: DashboardFlow['status'] }
   revision: PublicFlow['revision']
@@ -110,6 +111,7 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   dashboard: (status?: DashboardFlow['status']) => request<DashboardFlow[]>(`/api/app/dashboard${status ? `?status=${encodeURIComponent(status)}` : ''}`),
+  traffic: (flowId:string,revisionId:string,from?:string,to?:string) => request<TrafficReport>(`/api/app/flows/${encodeURIComponent(flowId)}/traffic?${new URLSearchParams({revisionId,...(from?{from}:{}),...(to?{to}:{})})}`),
   teamTemplates: () => request<TeamTemplate[]>('/api/app/templates'),
   saveTeamTemplate: (flowId:string,input:{name:string;source:'draft'|'published';expectedVersion:number}) => request<{id:string;name:string}>(`/api/app/flows/${encodeURIComponent(flowId)}/templates`,{method:'POST',body:JSON.stringify(input)}),
   retireTeamTemplate: (id:string) => request<void>(`/api/app/templates/${encodeURIComponent(id)}`,{method:'DELETE'}),

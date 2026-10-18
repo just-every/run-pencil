@@ -3,3 +3,4 @@ export { branchMatches, questionSettings, resolveNextStep, validateRevisionGraph
 export { publicSteps, publicChoices, publicRules } from './serialization'
 export { flowTemplates, templatePreview, type FlowTemplateId } from './templates'
 export { TeamTemplates } from './team-templates'
+export type { FlowService } from './service'

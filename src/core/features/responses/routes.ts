@@ -39,6 +39,16 @@ function failure(context: Context<WorkerEnvironment>, error: unknown) {
 }
 
 export function registerResponseRoutes(app: Hono<WorkerEnvironment>, services: RequestServices) {
+  app.post('/api/public/flows/:slug/views',zValidator('param',z.object({slug:flowSlug})),zValidator('json',z.object({revisionId:resourceId,source:z.enum(['direct','embed']),collectorKey:collectorKey.optional(),invitationToken:z.string().regex(/^[a-f0-9]{64}$/).optional()}).strict()),async context=>{
+    try {
+      if(/prefetch/i.test(context.req.header('Sec-Purpose')??context.req.header('Purpose')??''))return context.body(null,204)
+      await services(context).traffic.view({slug:context.req.param('slug'),...context.req.valid('json')});return context.body(null,204)
+    }catch(error){return failure(context,error)}
+  })
+  app.get('/api/app/flows/:flowId/traffic',zValidator('param',z.object({flowId:resourceId})),zValidator('query',z.object({revisionId:resourceId,from:z.iso.date().optional(),to:z.iso.date().optional()})),async context=>{
+    try {const {revisionId,from,to}=context.req.valid('query');return context.json(await services(context).traffic.report(context.get('operatorSession').workspaceId,context.req.param('flowId'),revisionId,from,to))}catch(error){return failure(context,error)}
+  })
+
   app.post('/api/public/flows/:slug/sessions', zValidator('param', z.object({ slug: flowSlug })), zValidator('json', startSessionSchema), async (context) => {
     try {
       return context.json(await services(context).responses.startPublicSession({ slug: context.req.param('slug'), clientAddress: context.req.header('CF-Connecting-IP'), ...context.req.valid('json') }), 201)

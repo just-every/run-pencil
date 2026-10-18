@@ -34,6 +34,8 @@ contract('TMPL-002','workspace templates preserve branching and settings without
   await call(root+'/draft',{stepId:question.id,prompt:'How was your visit?',required:true,expectedVersion:draft.flow.draftVersion,
     rules:[{sourceStepId:question.id,predicateKind:'equals',expectedValue:draft.choices[0].id,destinationStepId:end.id,position:0}]},'PUT')
   draft=await call<BuilderDraft>(root+'/draft')
+  await call(root+'/draft',{stepId:followup.id,prompt:followup.prompt,required:false,expectedVersion:draft.flow.draftVersion,questionSettings:{minLength:3,maxLength:100,validationMessage:'Please give a little more detail.'}},'PUT')
+  draft=await call<BuilderDraft>(root+'/draft')
   await call(root+'/publish',{expectedVersion:draft.flow.draftVersion})
   const session=await call<{sessionId:string;sessionToken:string;revisionId:string}>('/api/public/flows/team-source/sessions',{source:'direct',deviceClass:'desktop'})
   await env.DB.prepare('UPDATE respondent_sessions SET created_at=? WHERE id=?').bind(new Date(Date.now()-6000).toISOString(),session.sessionId).run()

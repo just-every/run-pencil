@@ -1,3 +1,4 @@
+import { trafficDay } from '../../shared/trafficDay'
 import { bindSessionCollectorSql, collectorAdmissionSql, sessionCollectorAdmissionSql, throwCollectorAdmissionFailure } from '../collectors'
 import { analysisErasureStatements } from '../analysis'
 import { and, count, eq, sql } from 'drizzle-orm'
@@ -60,6 +61,8 @@ export class ResponseRepository {
   }
 
   async createSession(input: SessionInsert & { collectorId: string; participantId?: string | null; workspaceId: string; flowId: string; deadlineAt: string | null; targetCompletedResponses: number | null }) {
+    const workspace=await this.binding.prepare('SELECT time_zone AS zone FROM workspaces WHERE id=?').bind(input.workspaceId).first<{zone:string}>()
+    const day=trafficDay(input.createdAt,workspace!.zone)
     const collectorOpen = collectorAdmissionSql('?', 'f.id', input.createdAt, '?')
     const statements: D1PreparedStatement[] = [
       this.binding.prepare(`
@@ -128,6 +131,15 @@ export class ResponseRepository {
     ]
     statements.push(this.binding.prepare(`UPDATE invitation_participants SET response_status = 'started' WHERE id = ? AND response_status = 'not-started'
       AND EXISTS (SELECT 1 FROM respondent_sessions WHERE id = ?)`).bind(input.participantId ?? null, input.id))
+    statements.push(
+      this.binding.prepare('INSERT OR IGNORE INTO traffic_tracking(id,started_at) SELECT 1,? WHERE EXISTS(SELECT 1 FROM respondent_sessions WHERE id=?)').bind(input.createdAt,input.id),
+      this.binding.prepare(`INSERT INTO session_traffic(session_id,source,day)
+        SELECT s.id,CASE WHEN c.system_source IS NULL THEN 'collector:'||c.id ELSE s.source END,?
+        FROM respondent_sessions s JOIN session_collector sc ON sc.session_id=s.id JOIN collectors c ON c.id=sc.collector_id WHERE s.id=?`).bind(day,input.id),
+      this.binding.prepare(`INSERT INTO revision_start_counters(revision_id,source,day,count)
+        SELECT s.revision_id,t.source,t.day,1 FROM session_traffic t JOIN respondent_sessions s ON s.id=t.session_id WHERE s.id=?
+        ON CONFLICT(revision_id,source,day) DO UPDATE SET count=count+1`).bind(input.id),
+    )
     try {
       const results = await this.binding.batch<{ id: string }>(statements)
       return results[3].results.some(row => row.id === input.id)

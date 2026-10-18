@@ -1,3 +1,4 @@
+import { TrafficPanel } from './TrafficPanel'
 import { CollectorComparison } from '../../collectors'
 import { TrendsPanel } from './TrendsPanel'
 import { NotificationsPanel } from '../../notifications'
@@ -86,6 +87,7 @@ export function ResultsPage() {
         <article className="panel metric-card"><span className="muted">Average time</span><strong>{duration(results.averageCompletionMilliseconds)}</strong><span className="muted">{results.liveCompletedResponses} live completed responses</span></article>
       </div>
       <details className="results-scope"><summary>How we count</summary><p className="muted">Summary scope: revision {results.revision.number}, all its recorded starts and released responses. Imported responses contribute to answers and the ledger; they do not count toward starts, completion rate, average time or devices. Response-only ledger filters below do not change this summary or device split.</p></details>
+      <TrafficPanel key={results.revision.id} flowId={flowId} revisionId={results.revision.id} />
       <CollectorComparison flowId={flowId} />
       <TrendsPanel key={results.revision.id} flowId={flowId} questions={questions} timeZone={timeZone} revisionId={results.revision.id} />
       <ResponseLedger key={`${results.revision.id}:${refresh}`} flowId={flowId} revisionId={results.revision.id} timeZone={timeZone} questions={questions} onChanged={() => setRefresh((value) => value + 1)} exportSlot={exportSlot} />

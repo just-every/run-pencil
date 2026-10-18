@@ -1,3 +1,4 @@
+import { useViewCounter } from './useViewCounter'
 import { interpolateAnswerRecall } from '../../../shared/answerRecall'
 import { SaveResponse } from './SaveResponse'
 import { BrandIdentity } from '../../brand'
@@ -32,6 +33,7 @@ function choicesForStep(choices: ChoiceOption[], stepId: string) {
 }
 
 export function RespondentFlowPage({ config, slug, embedded = false, landing = false, initialFlow, invitationToken, collectorKey, resume }: { config: PublicSeedConfig; slug: string; embedded?: boolean; landing?: boolean; initialFlow: PublicFlow; invitationToken?: string; collectorKey?:string; resume?: Extract<SavedResponseState, { state: 'open' }> }) {
+  useViewCounter({slug,revisionId:initialFlow.revision.id,source:embedded?'embed':'direct',collectorKey,invitationToken},!resume&&!initialFlow.completedStepId)
   const [closedFlow, setClosedFlow] = useState<ClosedFlow>()
   const [unconfirmedClosedFlow, setUnconfirmedClosedFlow] = useState<ClosedFlow>()
   const [closedRestart, setClosedRestart] = useState(false)

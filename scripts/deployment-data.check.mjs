@@ -42,6 +42,11 @@ function fixture() {
   for (const state of ['pending', 'dispatched', 'failed']) insert('response_outbox', { id: `effect-${state}`, workspace_id: 'workspace', response_id: 'completed', kind: `synthetic.effect.${state}`, idempotency_key: `effect-${state}`, payload_json: '{"responseId":"completed"}', status: state, available_at: stamp, dispatched_at: state === 'dispatched' ? stamp : null, failure_reason: state === 'failed' ? 'synthetic failure' : null, created_at: stamp, updated_at: stamp });
   insert('audit_entries', { id: 'removed-actor', workspace_id: 'workspace', kind: 'synthetic.audit', actor_operator_id: 'operator-removed-earlier', subject_type: 'flow', subject_id: 'flow', details_json: '{}', created_at: stamp });
   insert('revision_metric_counters', { id: 'metric', revision_id: 'revision', starts: 9223372036854775807n, completions: 0, total_completion_milliseconds: 0, mobile_starts: 0, tablet_starts: 0, desktop_starts: 0, created_at: stamp, updated_at: stamp });
+  insert('team_templates', { id: 'team-template', workspace_id: 'workspace', name: 'Reusable intake', structure_json: '{"steps":[{"id":"template-question","stableId":"template-question","kind":"question","questionType":"short_text","prompt":"Your request","position":0,"required":true,"nextStepStableId":"template-end"},{"id":"template-end","stableId":"template-end","kind":"completion","prompt":"Received","position":1}],"choices":[],"rules":[]}', created_by: 'operator', created_at: stamp });
+  insert('revision_view_counters', { revision_id: 'revision', source: 'direct', day: '2026-10-02', count: 5 });
+  insert('revision_start_counters', { revision_id: 'revision', source: 'direct', day: '2026-10-02', count: 2 });
+  insert('response_traffic', { response_id: 'completed', source: 'direct', day: '2026-10-02' });
+  insert('traffic_tracking', { id: 1, started_at: stamp });
   database.close();
   return { directory, source, archive: join(directory, 'archive.json'), restored: join(directory, 'restored.sqlite') };
 }
@@ -72,6 +77,12 @@ test('full current-data roundtrip preserves stable revisions, quarantine, receip
     for (const table of ['operator_sessions', 'auth_magic_links', 'oa_tokens', 'oa_sessions']) assert.equal(database.prepare(`SELECT count(*) AS n FROM ${table}`).get().n, 0, table);
     assert.equal(database.prepare('SELECT operator_id FROM oa_external_identities').get().operator_id, 'operator');
     assert.equal(database.prepare('SELECT initialized_at FROM local_fixture_initializations').get().initialized_at, stamp);
+    assert.equal(database.prepare('SELECT name FROM team_templates').get().name, 'Reusable intake');
+    assert.equal(JSON.parse(database.prepare('SELECT structure_json FROM team_templates').get().structure_json).steps[0].nextStepStableId, 'template-end');
+    assert.equal(database.prepare('SELECT count FROM revision_view_counters').get().count, 5);
+    assert.equal(database.prepare('SELECT count FROM revision_start_counters').get().count, 2);
+    assert.equal(database.prepare('SELECT response_id FROM response_traffic').get().response_id, 'completed');
+    assert.equal(database.prepare('SELECT started_at FROM traffic_tracking').get().started_at, stamp);
     database.close();
   } finally { rmSync(f.directory, { recursive: true }); }
 });

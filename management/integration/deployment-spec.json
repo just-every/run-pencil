@@ -276,6 +276,12 @@
       "name": "0044_team_templates.sql",
       "sha256": "69e3682825fde67d467f8fcbd425f8c4c4467b42e537bad3dc5de66c51f7c957",
       "sql": "CREATE TABLE team_templates (\n  id TEXT PRIMARY KEY,\n  workspace_id TEXT NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,\n  name TEXT NOT NULL,\n  structure_json TEXT NOT NULL,\n  created_by TEXT REFERENCES operators(id) ON DELETE SET NULL,\n  created_at TEXT NOT NULL,\n  retired_at TEXT\n);\nCREATE INDEX team_templates_workspace ON team_templates(workspace_id, retired_at, created_at);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0045_traffic_metrics.sql",
+      "sha256": "3ba04700d8d8258ba3ef957cb242e23830eb38ca21019ca7a80fbd37307af5ac",
+      "sql": "-- Views are counts only. No session/response key or visitor metadata exists here.\nCREATE TABLE revision_view_counters (\n  revision_id TEXT NOT NULL REFERENCES flow_revisions(id) ON DELETE CASCADE,\n  source TEXT NOT NULL,\n  day TEXT NOT NULL,\n  count INTEGER NOT NULL DEFAULT 0 CHECK(count >= 0),\n  PRIMARY KEY(revision_id, source, day)\n);\nCREATE TABLE revision_start_counters (\n  revision_id TEXT NOT NULL REFERENCES flow_revisions(id) ON DELETE CASCADE,\n  source TEXT NOT NULL,\n  day TEXT NOT NULL,\n  count INTEGER NOT NULL DEFAULT 0 CHECK(count >= 0),\n  PRIMARY KEY(revision_id, source, day)\n);\n-- The start cohort travels with existing private session/response custody.\n-- There is deliberately no key pointing at an individual view.\nCREATE TABLE session_traffic (\n  session_id TEXT PRIMARY KEY REFERENCES respondent_sessions(id) ON DELETE CASCADE,\n  source TEXT NOT NULL,\n  day TEXT NOT NULL\n);\nCREATE TABLE response_traffic (\n  response_id TEXT PRIMARY KEY REFERENCES responses(id) ON DELETE CASCADE,\n  source TEXT NOT NULL,\n  day TEXT NOT NULL\n);\nCREATE TRIGGER response_traffic_capture AFTER INSERT ON responses WHEN NEW.source != 'imported'\nBEGIN\n  INSERT INTO response_traffic(response_id,source,day)\n    SELECT NEW.id,source,day FROM session_traffic WHERE session_id=NEW.session_id;\nEND;\nCREATE TABLE traffic_tracking (id INTEGER PRIMARY KEY CHECK(id=1), started_at TEXT NOT NULL);\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

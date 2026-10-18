@@ -1,0 +1,46 @@
+import { expect } from './fixtures'
+import { contract } from './contract'
+import { signInEmptyWorkspace } from './authoring-helpers'
+
+contract('RSLT-013','three real form loads yield two starts and one submission, while preview remains isolated',async({page},info)=>{
+  await signInEmptyWorkspace(page)
+  const zone=await page.request.put('/api/app/workspace',{headers:{Origin:new URL(page.url()).origin},data:{timeZone:'America/New_York',sendingWindowStart:'09:00',sendingWindowEnd:'17:00'}})
+  expect(zone.ok()).toBe(true)
+  await page.getByRole('button',{name:'Customer feedback',exact:true}).click()
+  await page.getByRole('button',{name:'Create draft flow'}).click()
+  await expect(page.getByRole('heading',{name:'Customer feedback',exact:true})).toBeVisible()
+  const builderUrl=page.url(),flowId=/flows\/([^/]+)\//.exec(builderUrl)![1]
+  await page.getByRole('button',{name:'Publish',exact:true}).click()
+  const publicUrl=await page.getByRole('region',{name:'Share this flow'}).getByLabel('Public link',{exact:true}).inputValue()
+  const load=async()=>{const counted=page.waitForResponse(response=>response.url().endsWith('/views')&&response.status()===204);await page.goto(publicUrl);await counted;await expect(page.locator('.respondent-shell[data-hydrated=true]')).toBeVisible()}
+  await load()
+  await load()
+  const started=page.waitForResponse(response=>response.url().endsWith('/sessions')&&response.status()===201)
+  await page.getByRole('radio',{name:'Great',exact:true}).click();await started
+  await load()
+  await page.getByRole('radio',{name:'Good',exact:true}).click()
+  await page.getByRole('button',{name:'Continue',exact:true}).click()
+  await page.getByRole('textbox',{name:'What could we do better?'}).fill('Offer an earlier workshop session.')
+  await page.waitForTimeout(3200)
+  await page.getByRole('button',{name:'Submit response',exact:true}).click()
+  await expect(page.getByRole('heading',{name:'Thank you. Your response has been received.'})).toBeVisible()
+  await page.goto(builderUrl)
+  await page.getByRole('button',{name:'Preview draft',exact:true}).click()
+  await expect(page.getByText('Preview', {exact:true}).first()).toBeVisible()
+  await page.goto(`/app/flows/${flowId}/results`)
+  const traffic=page.getByRole('region',{name:'Views to submissions'})
+  await expect(traffic.getByText('2 starts / 3 views',{exact:true})).toBeVisible()
+  await expect(traffic.getByText('1 submission / 2 starts',{exact:true})).toBeVisible()
+  await expect(traffic.getByText('3 views · 2 starts · 1 submission',{exact:true})).toBeVisible()
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true)
+  await traffic.scrollIntoViewIfNeeded()
+  await traffic.getByText('Traffic counting scope',{exact:true}).click()
+  await traffic.screenshot({path:`test-results/${info.project.name}-traffic.png`})
+  await traffic.getByLabel('Traffic source').selectOption('direct')
+  await expect(traffic.getByText('2 starts / 3 views',{exact:true})).toBeVisible()
+  await traffic.getByLabel('Traffic from').fill('2000-01-01')
+  await traffic.getByLabel('Traffic through').fill('2000-01-02')
+  await expect(traffic.getByText('0 starts / 0 views',{exact:true})).toBeVisible()
+  await expect(traffic.getByLabel('Traffic source')).toHaveValue('direct')
+  await traffic.screenshot({path:`test-results/${info.project.name}-traffic-empty.png`})
+})

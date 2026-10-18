@@ -3,6 +3,11 @@ import { failure } from './deployment-data-errors.mjs';
 // Every persisted column is reviewed here. A migration cannot silently add data
 // to an archive: both new tables and new columns fail closed until classified.
 const retained = {
+  revision_view_counters: 'revision_id source day count',
+  revision_start_counters: 'revision_id source day count',
+  session_traffic: 'session_id source day',
+  response_traffic: 'response_id source day',
+  traffic_tracking: 'id started_at',
   team_templates: 'id workspace_id name structure_json created_by created_at retired_at',
   // Explicit saves travel as private session history, with no live capability or delivery address.
   respondent_saves: 'session_id revision_id token_hash command_key delivery_id delivery_email delivery_state current_step_id answers_json participant_id response_id completion_step_id expires_at created_at updated_at',
