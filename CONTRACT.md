@@ -537,7 +537,7 @@ are data, compiled into the owned source and applied by one local runtime.
 
 ## Status
 
-Status rows updated from code and targeted tests on 18 October 2026; the preceding inventory was judged at `13a0b530e583f52ccddc83a9e78b5caef2617acc`.
+Judged from the code and tests at commit `61d4784785194b9890250adf07f047940782db10` (18 October 2026).
 
 These totals are computed from the current Status rows; done targets remain distinct from published release-wall clauses.
 
