@@ -3,6 +3,9 @@ import { failure } from './deployment-data-errors.mjs';
 // Every persisted column is reviewed here. A migration cannot silently add data
 // to an archive: both new tables and new columns fail closed until classified.
 const retained = {
+  workspace_codes: 'id workspace_id label normalized_label created_by_operator_id created_at',
+  answer_code_assignments: 'id workspace_id answer_id code_id source actor_operator_id quote_id created_at',
+  code_suggestion_decisions: 'quote_id workspace_id decision code_id actor_operator_id decided_at',
   revision_view_counters: 'revision_id source day count',
   revision_start_counters: 'revision_id source day count',
   session_traffic: 'session_id source day',

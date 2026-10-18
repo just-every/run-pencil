@@ -236,6 +236,13 @@
         "IMPORT-003",
         "IMPORT-004"
       ]
+    },
+    {
+      "id": "open-text-coding",
+      "description": "Operator-authored workspace codes, manual and explicitly accepted exact-quote assignments, response filters, charts and code crosstabs with retained provenance.",
+      "clauses": [
+        "RSLT-012"
+      ]
     }
   ],
   "nonGoals": [

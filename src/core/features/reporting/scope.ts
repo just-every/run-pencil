@@ -1,3 +1,4 @@
+import { responseCodeFilter } from '../coding'
 import { responseSearch } from './search'
 import { workflowScope } from '../submissions'
 import { structuredAnswerFilter } from './answerFilter'
@@ -23,6 +24,7 @@ export function responseScope(workspaceId: string, flowId: string, filter: Ledge
     if (filter.participantStatus) {
       parts.push(`EXISTS (SELECT 1 FROM invitation_participants p LEFT JOIN distribution_contacts c ON c.id = p.contact_id WHERE p.id = r.participant_id AND p.workspace_id = r.workspace_id AND ${filter.participantStatus === 'bounced' ? "p.delivery_status = 'bounced'" : filter.participantStatus === 'opted-out' ? 'c.opted_out_at IS NOT NULL' : "c.id IS NOT NULL AND c.opted_out_at IS NULL AND p.delivery_status != 'bounced'"})`)
     }
+    if (filter.codeId) { const code = responseCodeFilter(filter.codeId); parts.push(code.sql); bindings.push(...code.bindings) }
     if (filter.search) {
       const search = responseSearch(filter.search)
       parts.push(search.sql); bindings.push(...search.bindings)

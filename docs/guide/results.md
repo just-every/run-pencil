@@ -96,3 +96,13 @@ At the bottom of the results page, **Response notifications** lets each operator
 - A failed digest keeps its original day and interval when retried; it is not merged into the next day. Switching away from Daily cancels pending digests. Enabling Daily again starts from that moment, and restored digest history cannot be resent.
 
 On Managed hosting, emails use RER's assigned verified relay sender automatically. With SendGrid or Resend, emails come from your no-reply sender address (`MAIL_FROM`): if it is not a plain `noreply@` or `no-reply@` address, collecting responses and sign-in email carry on but this page says why response notification mail is off. Analysis outcomes have their own [in-app notifications](analysis.md#analysis-notifications), separate from these email choices.
+
+## Organize open text with codes
+
+In Results, **Organize feedback with codes** lets you create a workspace vocabulary and assign several codes to each retained text answer or Other write-in. Remove a code with its × button. Coding history records who assigned it and whether it was manual or an accepted AI suggestion.
+
+Validated analysis themes supply exact quoted suggestions. Choose a workspace code and **Accept**, or **Reject** to leave the answer uncoded. Manual coding needs no AI connection. Withheld or redacted findings never supply visible suggestions; erasure withdraws affected AI coding while unrelated manual assignments remain.
+
+The distribution chart counts coded answers against all nonempty text answers in the current ledger filters, and also names the response count. One answer can have several codes, so shares can total more than 100%. Choose two codes for a crosstab of their presence or absence in each released response. The code filter applies to the ledger, downloads and coding reports together. It does not change the revision summary.
+
+Response exports omit automated bot-check and minimum-time exclusions by default. **Include automated exclusions in exports** adds those retained answers to CSV or JSON with their quarantine state and reason. This does not release them, change results or send notifications. Any change to selected evidence during a download stops it; refresh and start again.
