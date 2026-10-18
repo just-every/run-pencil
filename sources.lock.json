@@ -5876,6 +5876,14 @@
       "sha256": "7529ebef8e48f2e0ba92185adbb28e4556dc058b0f9ab603c59d105852f6646f",
       "executable": false
     },
+    "tests/runtime/upgrades/0.5.0.json": {
+      "sha256": "d3ba8dda24439875ad6a1d3f4e5a33c3f9e74d7895ff3a0d767502d3984333ad",
+      "executable": false
+    },
+    "tests/runtime/upgrades/0.5.0.sql": {
+      "sha256": "3f5aaa5b56fffb108363aa77da76270e0f3036e2b8046395e967a01906a4442a",
+      "executable": false
+    },
     "tests/runtime/upgrades/queued-retry-dispatch.ts": {
       "sha256": "9eae98e496e374606f9d1385e6327ff28f5a3d3f3b224f4ebf39b641c43e9334",
       "executable": false
