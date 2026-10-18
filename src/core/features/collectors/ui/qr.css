@@ -1,0 +1,5 @@
+.qr-kiosk-controls { min-width: 0; margin-block: 1rem; }
+.qr-kiosk-controls .builder-actions { flex-wrap: wrap; }
+.qr-kiosk-controls a { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.qr-kiosk-controls details { margin-block: .75rem; }
+.qr-kiosk-controls select { max-width: 100%; }
