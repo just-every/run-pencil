@@ -4333,7 +4333,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/FlowBuilderPage.tsx": {
-      "sha256": "2d67367f81560cdf334679712afb6b411062875ee9f6743330db810b102b1038",
+      "sha256": "b3b0cb9fb94990edd73496187384bd773b952cd80abccd2e55f2010180c24481",
       "executable": false
     },
     "src/core/features/flows/ui/FlowSharePanel.tsx": {
@@ -4349,7 +4349,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/SaveTeamTemplate.tsx": {
-      "sha256": "7d7f1aecdeab37aac120c6df88a52e1b017f2e013ebd96f99e9e7d433c6f7a64",
+      "sha256": "bb6b6f79c2e78732cdde5c716e61f9760bd1fb8544bdf7cd0ef38dc3ff2fc516",
       "executable": false
     },
     "src/core/features/flows/ui/SpecialChoicesEditor.tsx": {
@@ -6069,7 +6069,7 @@
       "executable": false
     },
     "tests/e2e/team-templates.spec.ts": {
-      "sha256": "af3a59af4ef8f32f7ec810d65cd1868b2deb4910a0838fb5e824364af3d9df61",
+      "sha256": "59af35a942c7ceb27dac9952ce989d9fa49e259aaeebe8f4279e3efcea231bd0",
       "executable": false
     },
     "tests/e2e/templates.spec.ts": {

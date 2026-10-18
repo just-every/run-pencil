@@ -4,7 +4,7 @@ import { api } from '../../../app/api'
 export function SaveTeamTemplate({flowId,version,title,published,disabled}:{flowId:string;version:number;title:string;published:boolean;disabled:boolean}) {
   const [open,setOpen]=useState(false), [name,setName]=useState(title), [source,setSource]=useState<'draft'|'published'>('draft')
   const [busy,setBusy]=useState(false), [message,setMessage]=useState(''), [failed,setFailed]=useState(false)
-  return <div>
+  return <section aria-label="Team template">
     <button className="secondary-button focus-ring" type="button" disabled={disabled||busy} aria-expanded={open} onClick={()=>setOpen(!open)}>Save as team template</button>
     {open ? <form className="quiet-panel team-template-save" aria-label="Save team template" onSubmit={async event=>{
       event.preventDefault();setBusy(true);setMessage('');setFailed(false)
@@ -18,5 +18,5 @@ export function SaveTeamTemplate({flowId,version,title,published,disabled}:{flow
       <button className="primary-button focus-ring" type="submit" disabled={busy||!name.trim()}>{busy?'Saving…':'Save template'}</button>
     </form>:null}
     {message?<p className="status-note" role={failed?'alert':'status'}>{message}</p>:null}
-  </div>
+  </section>
 }
