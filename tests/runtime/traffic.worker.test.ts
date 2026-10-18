@@ -1,3 +1,5 @@
+import { issueLoadTime } from '../../src/core/features/traffic'
+import { matureLoad } from './load-time-fixture'
 import { applyD1Migrations, env, SELF, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -42,9 +44,9 @@ contract('RSLT-013','anonymous view and durable start buckets report native conv
   expect((await request(view,{...input,visitorId:'forbidden'})).status).toBe(400)
   expect((await request(view,{...input,revisionId:'not-a-published-revision'})).status).toBe(400)
   expect((await request(root+'/traffic?revisionId='+revisionId,undefined,'GET',false)).status).toBe(401)
-  const start=()=>call<{sessionId:string;sessionToken:string;revisionId:string}>('/api/public/flows/traffic-form/sessions',{source:'direct',deviceClass:'desktop'})
+  const start=()=>call<{sessionId:string;sessionToken:string;revisionId:string;loadTime:string}>('/api/public/flows/traffic-form/sessions',{source:'direct',deviceClass:'desktop'})
   const first=await start(),second=await start()
-  await env.DB.prepare('UPDATE respondent_sessions SET created_at=? WHERE id=?').bind(new Date(Date.now()-6000).toISOString(),first.sessionId).run()
+  await matureLoad(first)
   const submit=(session:Awaited<ReturnType<typeof start>>)=>call<{responseId:string;disposition:string}>('/api/public/flows/traffic-form/responses',{...session,idempotencyKey:'traffic-'+session.sessionId,answers:[{stepId:draft.steps[0].id,value:draft.choices[0].id}]})
   const completed=await submit(first)
   expect(completed.disposition).toBe('released')
@@ -81,7 +83,7 @@ contract('RSLT-013','anonymous view and durable start buckets report native conv
   const collector=await call<{id:string;publicKey:string}>(root+'/collectors',{name:'Workshop poster',channel:'qr'})
   await call(view,{...input,collectorKey:collector.publicKey})
   const named=await call<Awaited<ReturnType<typeof start>>>('/api/public/flows/traffic-form/sessions',{source:'direct',deviceClass:'mobile',collectorKey:collector.publicKey})
-  await env.DB.prepare('UPDATE respondent_sessions SET created_at=? WHERE id=?').bind(new Date(Date.now()-6000).toISOString(),named.sessionId).run()
+  await matureLoad(named)
   await submit(named)
   expect((await report()).rows.find(row=>row.source==='collector:'+collector.id)).toMatchObject({views:1,starts:1,submissions:1})
   const contact=await call<{id:string}>('/api/app/distribution/contacts',{name:'Invited workshop attendee',email:'attendee@example.test'})
@@ -90,7 +92,7 @@ contract('RSLT-013','anonymous view and durable start buckets report native conv
   expect(participant).not.toBeNull()
   await call(view,{...input,invitationToken:participant!.token})
   const invited=await call<Awaited<ReturnType<typeof start>>>('/api/public/flows/traffic-form/sessions',{source:'direct',deviceClass:'desktop',invitationToken:participant!.token})
-  await env.DB.prepare('UPDATE respondent_sessions SET created_at=? WHERE id=?').bind(new Date(Date.now()-6000).toISOString(),invited.sessionId).run()
+  await matureLoad(invited)
   await call('/api/public/flows/traffic-form/responses',{...invited,invitationToken:participant!.token,idempotencyKey:'traffic-invited-response',answers:[{stepId:draft.steps[0].id,value:draft.choices[0].id}]})
   expect((await report()).rows.find(row=>row.source==='invitation')).toMatchObject({views:1,starts:1,submissions:1})
   expect((await request(view,{...input,invitationToken:participant!.token})).status).toBe(400)
@@ -100,4 +102,63 @@ contract('RSLT-013','anonymous view and durable start buckets report native conv
   await call(root+'/close',{})
   expect((await request(view,input)).status).toBe(409)
   expect((await report()).totals.views).toBe(6)
+})
+
+contract('RSLT-013','signed form-load timing and retained bot exclusions leave anonymous view and start counters unchanged on review',async()=>{
+  const {id}=await call<{id:string}>('/api/app/flows',{title:'Training evaluation',slug:'traffic-load-time',template:'feedback'})
+  const root=`/api/app/flows/${id}`
+  const draft=await call<BuilderDraft>(root+'/draft')
+  await call(root+'/publish',{expectedVersion:draft.flow.draftVersion})
+  const revision=await call<{revision:{id:string}}>('/api/public/flows/traffic-load-time')
+  const revisionId=revision.revision.id,view='/api/public/flows/traffic-load-time/views'
+  const load=()=>call<{loadTime:string}>(view,{revisionId,source:'direct'})
+  const start=()=>call<{sessionId:string;sessionToken:string;revisionId:string;loadTime:string}>('/api/public/flows/traffic-load-time/sessions',{source:'direct',deviceClass:'desktop'})
+  const submit=(session:Awaited<ReturnType<typeof start>>,loadTime:string,honeypot='')=>request('/api/public/flows/traffic-load-time/responses',{
+    ...session,loadTime,honeypot,idempotencyKey:'time-'+session.sessionId,answers:[{stepId:draft.steps[0].id,value:draft.choices[0].id}],
+  })
+  const firstLoad=await load()
+  await new Promise(resolve=>setTimeout(resolve,3200))
+  // A fresh session is accepted because the signed *document* load is mature.
+  const human=await start()
+  const tampered=firstLoad.loadTime.slice(0,-1)+(firstLoad.loadTime.endsWith('0')?'1':'0')
+  expect((await submit(human,tampered)).status).toBe(400)
+  expect((await submit(human,'')).status).toBe(400)
+  for(const [revision,at] of [[revisionId,Date.now()-31*86400000],[revisionId,Date.now()+86400000],['another-revision',Date.now()]] as const) {
+    expect((await submit(human,await issueLoadTime(env.SESSION_SECRET,revision,at))).status).toBe(400)
+  }
+  const accepted=await submit(human,firstLoad.loadTime)
+  expect(accepted.status).toBe(201)
+  const humanReceipt=await accepted.json<{responseId:string;disposition:string}>()
+  expect(humanReceipt.disposition).toBe('released')
+  const early=await start()
+  await matureLoad(early)
+  const newLoad=await load()
+  // An old session cannot bypass the new, signed load-time minimum.
+  const earlyReply=await submit(early,newLoad.loadTime)
+  const earlyReceipt=await earlyReply.json<{responseId:string;disposition:string}>()
+  expect(earlyReceipt.disposition).toBe('quarantined')
+  const bot=await start(), botLoad=await load()
+  const botReply=await submit(bot,botLoad.loadTime,'automated website')
+  const botReceipt=await botReply.json<{responseId:string;disposition:string}>()
+  expect(botReceipt.disposition).toBe('quarantined')
+  const held=await call<Array<{id:string;quarantineReason:string;answers:unknown[]}>>(`/api/app/revisions/${revisionId}/quarantine`)
+  expect(held.map(row=>row.quarantineReason).sort()).toEqual(['honeypot','minimum-fill-time'])
+  expect(held.every(row=>row.answers.length===1)).toBe(true)
+  expect((await env.DB.prepare('SELECT id FROM response_outbox WHERE response_id IN (?,?)').bind(earlyReceipt.responseId,botReceipt.responseId).all()).results).toEqual([])
+  const report=()=>call<{totals:{views:number;starts:number;submissions:number}}>(root+'/traffic?revisionId='+revisionId)
+  expect((await report()).totals).toEqual({views:3,starts:3,submissions:1})
+  const counters=async()=>{
+    const result=await env.DB.batch(['revision_view_counters','revision_start_counters'].map(table=>env.DB.prepare(`SELECT * FROM ${table} WHERE revision_id=? ORDER BY source,day`).bind(revisionId)))
+    return result.map(item=>item.results)
+  }
+  const before=await counters()
+  await call(`/api/app/responses/${earlyReceipt.responseId}/release`,{})
+  await call(`/api/app/responses/${botReceipt.responseId}/release`,{})
+  expect(await counters()).toEqual(before)
+  expect((await report()).totals).toEqual({views:3,starts:3,submissions:3})
+  const retried=await submit(bot,botLoad.loadTime,'automated website')
+  expect(await retried.json()).toMatchObject({responseId:botReceipt.responseId,idempotent:true,disposition:'released'})
+  expect((await call<{total:number}>(root+'/ledger')).total).toBe(3)
+  const privateRows=JSON.stringify(await env.DB.prepare('SELECT * FROM revision_view_counters WHERE revision_id=?').bind(revisionId).all())
+  for(const privateValue of [human.sessionId,early.sessionId,bot.sessionToken,humanReceipt.responseId,firstLoad.loadTime])expect(privateRows).not.toContain(privateValue)
 })

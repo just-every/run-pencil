@@ -45,21 +45,31 @@ contract(['RESP-006', 'RESP-010', 'FLOW-019'], 'retains no abandoned answers or 
   expect(Object.keys(response!).some(key => /email|contact|address|device|agent|host/.test(key))).toBe(false)
 }, 60_000)
 
-contract('RESP-016', 'drops a honeypot with one anonymous defence audit and no response, answer, counter, session or outbox change', async () => {
+contract(['RESP-016','RSLT-013'], 'retains honeypot exclusions for reversible review without downstream delivery or view and start changes', async () => {
   const f = await foundationFixture('foundation-honeypot')
   await f.add({ kind: 'question', questionType: 'short_text', prompt: 'Answer', required: true })
   await f.add({ kind: 'completion', questionType: null, prompt: 'Done' }); await f.publish()
   const session = await f.start()
-  const tables = ['responses', 'response_answers', 'response_outbox', 'respondent_sessions', 'respondent_session_step_events', 'revision_metric_counters', 'revision_step_metric_counters']
-  const snapshot = async () => (await env.DB.batch(tables.map(table => env.DB.prepare(`SELECT * FROM ${table} ORDER BY id`)))).map(result => result.results)
+  const snapshot = async () => (await env.DB.batch(['revision_view_counters','revision_start_counters'].map(table => env.DB.prepare(`SELECT * FROM ${table} ORDER BY revision_id,source,day`)))).map(result => result.results)
   const before = await snapshot()
-  const receipt = await f.final(session, [{ stepId: session.flow.steps[0].id, value: 'do not retain this answer' }], 'bot')
-  expect(receipt).toMatchObject({ disposition: 'dropped' })
+  const answers = [{ stepId: session.flow.steps[0].id, value: 'Keep this answer for human review' }]
+  const receipt = await f.final(session, answers, 'bot')
+  expect(receipt).toMatchObject({ disposition: 'quarantined' })
+  expect(await f.final(session, answers, 'bot')).toMatchObject({responseId:receipt.responseId,idempotent:true})
   expect(await snapshot()).toEqual(before)
-  const audit = await env.DB.prepare("SELECT actor_operator_id, subject_id, details_json, created_at FROM audit_entries WHERE kind = 'response.honeypot-dropped' AND workspace_id = ? ORDER BY created_at DESC LIMIT 1").bind(f.scope.workspaceId).first()
+  expect(await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, {})).toMatchObject({responses:[]})
+  expect((await env.DB.prepare('SELECT id FROM response_outbox WHERE response_id=?').bind(receipt.responseId).all()).results).toEqual([])
+  const retained=await f.services.responses.listQuarantinedResponses({workspaceId:f.scope.workspaceId,revisionId:session.revisionId})
+  expect(retained).toMatchObject([{id:receipt.responseId,quarantineReason:'honeypot',answers:[{stepId:answers[0].stepId,value:answers[0].value}]}])
+  const audit = await env.DB.prepare("SELECT actor_operator_id, subject_id, details_json FROM audit_entries WHERE kind = 'response.quarantined' AND workspace_id = ? ORDER BY created_at DESC LIMIT 1").bind(f.scope.workspaceId).first()
   expect(audit).not.toBeNull()
-  expect(JSON.stringify(audit)).not.toContain('do not retain this answer')
+  expect(JSON.stringify(audit)).not.toContain(answers[0].value)
   expect(audit!.actor_operator_id).toBeNull()
+  await f.services.responses.releaseQuarantinedResponse({workspaceId:f.scope.workspaceId,responseId:receipt.responseId,operatorId:f.operatorId})
+  expect(await snapshot()).toEqual(before)
+  const exported=await fixtureExport(env.DB,f.scope.workspaceId,f.flow.flowId,{})
+  expect(exported.responses).toHaveLength(1)
+  expect(exported.responses[0].answers[0].value).toBe(answers[0].value)
 }, 60_000)
 
 contract(['FLOW-001','FLOW-011','FLOW-015','DASH-002'], 'lifecycle preserves collected history while duplication creates an independent draft and fresh structure IDs', async () => {

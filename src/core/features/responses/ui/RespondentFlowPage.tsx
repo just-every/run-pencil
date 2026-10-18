@@ -15,7 +15,7 @@ import { api, ApiError, type ClosedFlow, type ChoiceOption, type PublicFlow, typ
 import type { PublicSeedConfig } from '../../../shared/config'
 
 type AnswerValues = Record<string, unknown>
-type PendingFinal = { input: Parameters<typeof api.submitResponse>[1]; completionStepId: string }
+type PendingFinal = { input: Parameters<typeof api.submitResponse>[1] }
 type SessionCredentials = { sessionId: string; sessionToken: string; revisionId: string }
 
 function deviceClass(): 'mobile' | 'tablet' | 'desktop' {
@@ -33,11 +33,11 @@ function choicesForStep(choices: ChoiceOption[], stepId: string) {
 }
 
 export function RespondentFlowPage({ config, slug, embedded = false, landing = false, initialFlow, invitationToken, collectorKey, resume }: { config: PublicSeedConfig; slug: string; embedded?: boolean; landing?: boolean; initialFlow: PublicFlow; invitationToken?: string; collectorKey?:string; resume?: Extract<SavedResponseState, { state: 'open' }> }) {
-  useViewCounter({slug,revisionId:initialFlow.revision.id,source:embedded?'embed':'direct',collectorKey,invitationToken},!resume&&!initialFlow.completedStepId)
   const [closedFlow, setClosedFlow] = useState<ClosedFlow>()
   const [unconfirmedClosedFlow, setUnconfirmedClosedFlow] = useState<ClosedFlow>()
   const [closedRestart, setClosedRestart] = useState(false)
   const [flow, setFlow] = useState<PublicFlow>(initialFlow)
+  const view = useViewCounter({slug,revisionId:flow.revision.id,source:embedded?'embed':'direct',collectorKey,invitationToken},!resume&&!initialFlow.completedStepId, resume?.loadTime)
   const [hydrated, setHydrated] = useState(false)
   useEffect(() => { setHydrated(true) }, [])
   const responseContext = useRef(0)
@@ -128,7 +128,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
 
   const confirmFinal = async (attempt: PendingFinal) => {
     const receipt = await api.submitResponse(slug, attempt.input)
-    const completionStepId = receipt.disposition === 'dropped' ? attempt.completionStepId : receipt.completionStepId
+    const completionStepId = receipt.completionStepId
     const completion = flow.steps.find((step) => step.id === completionStepId && step.kind === 'completion')
     if (!completion) throw new Error('The completion acknowledgement could not be read. Retry your submission.')
     setPendingFinal(undefined)
@@ -183,7 +183,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
       if (credentials.revisionId !== flow.revision.id) return
       if (nextCandidate!.kind === 'completion') {
         const submittedAnswers = questionSteps.flatMap((step) => filled(answers[step.id]) ? [{ stepId: step.id, value: answers[step.id] }] : [])
-        const attempt = { input: { ...credentials, idempotencyKey: idempotencyKey.current, answers: submittedAnswers, honeypot, ...(invitationToken ? { invitationToken } : {}) }, completionStepId: nextCandidate!.id }
+        const attempt = { input: { ...credentials, idempotencyKey: idempotencyKey.current, answers: submittedAnswers, honeypot, loadTime: await view.token(), ...(invitationToken ? { invitationToken } : {}) } }
         attemptedFinal = attempt
         setPendingFinal(attempt)
         await confirmFinal(attempt)

@@ -1,3 +1,4 @@
+import { matureLoad } from './load-time-fixture'
 import { applyD1Migrations, env, SELF, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -7,8 +8,8 @@ import { devKeyHeaders } from '../helpers/dev-key.mjs'
 
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(()=>applyD1Migrations(env.DB,__PENCIL_CORE_MIGRATIONS__))
-type Session = {sessionId:string;sessionToken:string;revisionId:string;flow:{steps:Array<{id:string;kind:string}>}}
-type Resumed = {state:string;sessionId:string;sessionToken:string;revisionId:string;currentStepId:string;answers:Array<{stepId:string;value:unknown}>;invitationToken?:string;completionStepId?:string}
+type Session = {sessionId:string;sessionToken:string;loadTime:string;revisionId:string;flow:{steps:Array<{id:string;kind:string}>}}
+type Resumed = {state:string;sessionId:string;sessionToken:string;loadTime:string;revisionId:string;currentStepId:string;answers:Array<{stepId:string;value:unknown}>;invitationToken?:string;completionStepId?:string}
 const post=(slug:string,path:string,data:unknown)=>SELF.fetch(`http://localhost/api/public/flows/${slug}/${path}`,{method:'POST',headers:{'Content-Type':'application/json','CF-Connecting-IP':slug},body:JSON.stringify(data)})
 async function ok<T>(slug:string,path:string,data:unknown):Promise<T>{
   const response=await post(slug,path,data)
@@ -56,9 +57,11 @@ contract('PART-002','explicit saves resume a pinned response through public door
   await f.publish()
   const resumed=await ok<Resumed>(f.slug,'resume',{token})
   expect(resumed).toMatchObject({state:'open',sessionId:session.sessionId,revisionId:session.revisionId,currentStepId:last.id,answers:savedAnswers})
-  expect(await ok<Resumed>(f.slug,'resume',{token})).toEqual(resumed)
-  await f.mature(session.sessionId)
-  const receipt=await ok<{responseId:string}>(f.slug,'responses',{sessionId:resumed.sessionId,sessionToken:resumed.sessionToken,idempotencyKey:crypto.randomUUID(),answers:[...resumed.answers,{stepId:last.id,value:'Finished on another device'}]})
+  const repeated=await ok<Resumed>(f.slug,'resume',{token})
+  expect(repeated).toEqual({...resumed,loadTime:expect.any(String)})
+  expect(resumed.loadTime).toBeTruthy();expect(repeated.loadTime).toBeTruthy()
+  await matureLoad(resumed, 5000)
+  const receipt=await ok<{responseId:string}>(f.slug,'responses',{sessionId:resumed.sessionId,sessionToken:resumed.sessionToken,loadTime:resumed.loadTime,idempotencyKey:crypto.randomUUID(),answers:[...resumed.answers,{stepId:last.id,value:'Finished on another device'}]})
   expect(await env.DB.prepare('SELECT id FROM respondent_sessions WHERE id=?').bind(session.sessionId).first()).toBeNull()
   expect(await env.DB.prepare('SELECT answers_json,delivery_email,current_step_id,delivery_state,completion_step_id FROM respondent_saves WHERE session_id=?').bind(session.sessionId).first()).toEqual({answers_json:null,delivery_email:null,current_step_id:null,delivery_state:'completed',completion_step_id:done.id})
   expect(await ok<Resumed>(f.slug,'resume',{token})).toMatchObject({state:'completed',completionStepId:done.id})
@@ -109,8 +112,8 @@ contract('PART-002','save mail failures retry one durable state, expiry purges i
   const invitedToken=await emailedToken(resumeEmail), resumed=await ok<Resumed>(invited.slug,'resume',{token:invitedToken})
   expect(resumed.invitationToken).toBe(participant!.token)
   expect(await env.DB.prepare('SELECT participant_id FROM respondent_saves WHERE session_id=?').bind(invitedSession.sessionId).first()).toEqual({participant_id:participant!.id})
-  await invited.mature(invitedSession.sessionId)
-  const result=await ok<{responseId:string}>(invited.slug,'responses',{sessionId:resumed.sessionId,sessionToken:resumed.sessionToken,invitationToken:resumed.invitationToken,idempotencyKey:crypto.randomUUID(),answers:invitedSession.flow.steps.filter(step=>step.kind==='question').map(step=>({stepId:step.id,value:'Invited retained answer'}))})
+  await matureLoad(resumed, 5000)
+  const result=await ok<{responseId:string}>(invited.slug,'responses',{sessionId:resumed.sessionId,sessionToken:resumed.sessionToken,loadTime:resumed.loadTime,invitationToken:resumed.invitationToken,idempotencyKey:crypto.randomUUID(),answers:invitedSession.flow.steps.filter(step=>step.kind==='question').map(step=>({stepId:step.id,value:'Invited retained answer'}))})
   expect(await env.DB.prepare('SELECT participant_id,source FROM responses WHERE id=?').bind(result.responseId).first()).toEqual({participant_id:participant!.id,source:'invitation'})
   expect(await env.DB.prepare('SELECT collector_id FROM response_collector WHERE response_id=?').bind(result.responseId).first()).toEqual(await env.DB.prepare('SELECT collector_id FROM invitation_launch_collector WHERE launch_id=?').bind(launch.id).first())
 },90_000)

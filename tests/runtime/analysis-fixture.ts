@@ -1,3 +1,4 @@
+import { matureLoad } from './load-time-fixture'
 import { env } from 'cloudflare:test'
 import { expect } from 'vitest'
 import { hashToken, opaqueToken } from '../../src/base/operator-auth/crypto.mjs'
@@ -53,8 +54,8 @@ export async function analysisHttp(bindings: Partial<WorkerBindings> = aiBinding
   // A response submitted at once from a fresh session is held as suspected (quarantined); others are released.
   const respond = async (text: string, extra: { name?: string; email?: string; address?: string; quarantine?: boolean } = {}) => {
     const session = await services.responses.startPublicSession({ slug, deviceClass: 'mobile', source: 'direct', clientAddress: extra.address ?? `${slug}-${crypto.randomUUID()}` })
-    if (!extra.quarantine) await env.DB.prepare('UPDATE respondent_sessions SET created_at = ? WHERE id = ?').bind(new Date(Date.now() - 5000).toISOString(), session.sessionId).run()
-    await services.responses.submitPublicResponse({ slug, sessionId: session.sessionId, sessionToken: session.sessionToken, idempotencyKey: `key-${session.sessionId}`, honeypot: '', clientAddress: extra.address ?? `${slug}-${session.sessionId}`,
+    if (!extra.quarantine) await matureLoad(session, 5000)
+    await services.responses.submitPublicResponse({ slug, sessionId: session.sessionId, sessionToken: session.sessionToken, loadTime: session.loadTime, idempotencyKey: `key-${session.sessionId}`, honeypot: '', clientAddress: extra.address ?? `${slug}-${session.sessionId}`,
       answers: [{ stepId: improve.id, value: text }, ...(extra.name ? [{ stepId: name.id, value: extra.name }] : []), ...(extra.email ? [{ stepId: email.id, value: extra.email }] : [])] })
     const row = await env.DB.prepare('SELECT id, state FROM responses WHERE session_id = ?').bind(session.sessionId).first<{ id: string; state: string }>()
     expect(row?.state).toBe(extra.quarantine ? 'quarantined' : 'released')

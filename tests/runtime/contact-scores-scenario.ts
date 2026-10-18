@@ -1,3 +1,4 @@
+import { matureLoad } from './load-time-fixture'
 import { env, SELF } from 'cloudflare:test'
 import { expect } from 'vitest'
 import type { BuilderDraft, LedgerResponse, QuestionReport } from '../../src/core/app/api'
@@ -37,9 +38,9 @@ export async function contactScoresScenario() {
   draft = await call<BuilderDraft>(`${root}/draft`)
   await call(`${root}/publish`, { expectedVersion: draft.flow.draftVersion })
   const start = async () => {
-    const session = await call<{ sessionId: string; sessionToken: string; revisionId: string }>(`/api/public/flows/${slug}/sessions`, { source: 'direct', deviceClass: 'desktop' })
+    const session = await call<{ sessionId: string; sessionToken: string; loadTime: string; revisionId: string }>(`/api/public/flows/${slug}/sessions`, { source: 'direct', deviceClass: 'desktop' })
     // A mature synthetic session exercises ordinary admission without changing its policy.
-    await env.DB.prepare('UPDATE respondent_sessions SET created_at=? WHERE id=?').bind(new Date(Date.now() - 5000).toISOString(), session.sessionId).run()
+    await matureLoad(session, 5000)
     return session
   }
   const values: unknown[] = [5, 7, 5, false, { number: '(202) 555-0142', extension: '0123' }, { street: '560 Cedar Street', unit: 'Suite 4', city: 'Portland', state: 'or', postalCode: '972051234', country: 'us' }, { given: 'Taylor', middle: 'Alex', family: 'Reed', suffix: 'Jr.' }, 'https://EXAMPLE.TEST/intake', '1,250.50']

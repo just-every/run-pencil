@@ -20,7 +20,7 @@ async function inspectState(page: Page, name: string, project: string) {
   }
 }
 
-contract('PART-002', 'a respondent saves two answers, resumes privately on another device and sees completion on reuse', async ({ page, browser }, info) => {
+contract(['PART-002','RSLT-013'], 'a respondent saves two answers, resumes privately on another device and sees completion on reuse', async ({ page, browser }, info) => {
   test.setTimeout(120_000)
   const email = operatorEmail()
   await page.goto('/signin'); await page.getByLabel('Operator email').fill(email)
@@ -43,6 +43,7 @@ contract('PART-002', 'a respondent saves two answers, resumes privately on anoth
     { kind: 'completion', questionType: null, prompt: 'Your project brief is with us.' },
   ]) await call(`${path}/draft/steps`, { expectedVersion: (await draft()).flow.draftVersion, step })
   await call(`${path}/publish`, { expectedVersion: (await draft()).flow.draftVersion })
+  const original=await call<{revision:{id:string}}>(`/api/public/flows/${slug}`)
   const origin = new URL(page.url()).origin
   const firstContext = await browser.newContext({ baseURL: origin, viewport: info.project.use.viewport, extraHTTPHeaders: { 'CF-Connecting-IP': '198.18.182.10' } })
   const otherContext = await browser.newContext({ baseURL: origin, viewport: info.project.use.viewport, extraHTTPHeaders: { 'CF-Connecting-IP': '198.18.182.11' } })
@@ -71,8 +72,6 @@ contract('PART-002', 'a respondent saves two answers, resumes privately on anoth
     // A later publication must not reinterpret the saved answers.
     await call(`${path}/publish`, { expectedVersion: (await draft()).flow.draftVersion })
     const resumed = await otherContext.newPage()
-    // Model the pause between devices while preserving the real abuse rules.
-    await first.waitForTimeout(3100)
     await resumed.goto(target).catch(() => { throw new Error('The private emailed resume link could not load.') })
     await expect(resumed.getByRole('heading', { name: 'Tell us about your project.' })).toBeVisible()
     await resumed.getByRole('button', { name: 'Back', exact: true }).click()
@@ -83,6 +82,8 @@ contract('PART-002', 'a respondent saves two answers, resumes privately on anoth
     await resumed.getByRole('button', { name: 'Continue', exact: true }).click()
     await resumed.getByRole('textbox', { name: 'Tell us about your project.' }).fill('We need a booking site for our new studio.')
     await inspectState(resumed, 'resume', info.project.name)
+    // The minimum now measures this device's signed document load, not the old session.
+    await resumed.waitForTimeout(3100)
     await resumed.getByRole('button', { name: 'Submit response' }).click()
     await expect(resumed.getByRole('heading', { name: 'Your project brief is with us.' })).toBeVisible()
     await resumed.goto(target).catch(() => { throw new Error('The private emailed resume link could not load.') })
@@ -90,6 +91,8 @@ contract('PART-002', 'a respondent saves two answers, resumes privately on anoth
     await expect(resumed.getByRole('button', { name: 'Save and finish later' })).toHaveCount(0)
     const ledger = await call<Ledger>(`${path}/ledger`)
     expect(ledger.total).toBe(1)
+    const traffic=await call<{totals:{views:number;starts:number;submissions:number}}>(`${path}/traffic?revisionId=${original.revision.id}`)
+    expect(traffic.totals).toEqual({views:2,starts:1,submissions:1})
     expect(ledger.responses[0].participant).toBeUndefined()
     expect(JSON.stringify(ledger.responses)).not.toContain(resumeEmail)
     expect(ledger.responses[0].answers.map(answer => answer.value)).toEqual(['Jo Taylor', 'jo@harbour.example', 'We need a booking site for our new studio.'])
@@ -98,6 +101,7 @@ contract('PART-002', 'a respondent saves two answers, resumes privately on anoth
     await expect(resumed.getByRole('heading', { name: 'This resume link is no longer available.' })).toBeVisible()
     await expect(resumed.getByRole('link', { name: 'Start again' })).toHaveAttribute('href', `/f/${slug}`)
     await inspectState(resumed, 'unavailable', info.project.name)
+    expect((await call<{totals:unknown}>(`${path}/traffic?revisionId=${original.revision.id}`)).totals).toEqual(traffic.totals)
     const draftSlug = `private-${slug}`
     await call('/api/app/flows', { title: 'Unpublished catering draft', slug: draftSlug })
     const privateDraft = await otherContext.request.get(`/f/${draftSlug}?resume=${'0'.repeat(64)}`)

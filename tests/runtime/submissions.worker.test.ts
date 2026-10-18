@@ -1,3 +1,4 @@
+import { matureLoad } from './load-time-fixture'
 import { applyD1Migrations, env, SELF, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -44,8 +45,8 @@ contract(['WORK-001', 'BASE-ACCESS-004', 'BASE-DATA-003', 'BASE-OPS-005', 'IMPOR
   await call(root + '/publish', { expectedVersion: draft.flow.draftVersion })
   const ids: string[] = []
   for (const answer of ['Repair the front door', 'Send an estimate']) {
-    const session = await call<{ sessionId: string; sessionToken: string; revisionId: string }>(`/api/public/flows/${slug}/sessions`, { source: 'direct', deviceClass: 'desktop' })
-    await env.DB.prepare('UPDATE respondent_sessions SET created_at=? WHERE id=?').bind(new Date(Date.now() - 6000).toISOString(), session.sessionId).run()
+    const session = await call<{ sessionId: string; sessionToken: string; loadTime: string; revisionId: string }>(`/api/public/flows/${slug}/sessions`, { source: 'direct', deviceClass: 'desktop' })
+    await matureLoad(session)
     const receipt = await call<{ responseId: string; disposition: string }>(`/api/public/flows/${slug}/responses`, { ...session, idempotencyKey: 'inbox-' + session.sessionId, answers: [{ stepId, value: answer }] })
     expect(receipt.disposition).toBe('released'); expect(receipt).not.toHaveProperty('workflow')
     ids.push(receipt.responseId)

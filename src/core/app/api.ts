@@ -35,7 +35,7 @@ export type PublicFlow = {
 }
 
 export type SavedResponseState =
-  | { state: 'open'; flow: PublicFlow; sessionId: string; sessionToken: string; revisionId: string; answers: Array<{ stepId: string; value: unknown }>; currentStepId: string; invitationToken?: string }
+  | { state: 'open'; loadTime: string; flow: PublicFlow; sessionId: string; sessionToken: string; revisionId: string; answers: Array<{ stepId: string; value: unknown }>; currentStepId: string; invitationToken?: string }
   | { state: 'completed'; flow: PublicFlow; completionStepId: string }
   | { state: 'unavailable'; startAgain: string; message: string }
 
@@ -147,8 +147,8 @@ export const api = {
   saveResponse: (slug: string, input: { sessionId: string; sessionToken: string; commandKey: string; email: string; currentStepId: string; answers: Array<{ stepId: string; value: unknown }>; invitationToken?: string }) =>
     request<{ state: 'saved'; expiresAt: string }>(`/api/public/flows/${encodeURIComponent(slug)}/sessions/save`, { method: 'POST', body: JSON.stringify(input) }),
   resumeResponse: (slug: string, token: string) => request<SavedResponseState>(`/api/public/flows/${encodeURIComponent(slug)}/resume`, { method: 'POST', body: JSON.stringify({ token }) }),
-  submitResponse: (slug: string, input: { sessionId: string; sessionToken: string; idempotencyKey: string; answers: Array<{ stepId: string; value: unknown }>; honeypot?: string; invitationToken?: string }) =>
-    request<{ responseId: string | null; idempotent: boolean; completionStepId: string | null; disposition: 'released' | 'quarantined' | 'dropped' }>(`/api/public/flows/${encodeURIComponent(slug)}/responses`, { method: 'POST', body: JSON.stringify(input) }),
+  submitResponse: (slug: string, input: { sessionId: string; sessionToken: string; loadTime: string; idempotencyKey: string; answers: Array<{ stepId: string; value: unknown }>; honeypot?: string; invitationToken?: string }) =>
+    request<{ responseId: string; idempotent: boolean; completionStepId: string; disposition: 'released' | 'quarantined' }>(`/api/public/flows/${encodeURIComponent(slug)}/responses`, { method: 'POST', body: JSON.stringify(input) }),
   quarantinedResponses: (revisionId: string) => request<Array<{ id: string; quarantineReason: string | null; completedAt: string; answers: Array<{ stepId: string; value: unknown }> }>>(`/api/app/revisions/${encodeURIComponent(revisionId)}/quarantine`),
   releaseQuarantinedResponse: (responseId: string) => request<void>(`/api/app/responses/${encodeURIComponent(responseId)}/release`, { method: 'POST' }),
   deleteQuarantinedResponse: (responseId: string) => request<void>(`/api/app/responses/${encodeURIComponent(responseId)}/quarantine`, { method: 'DELETE' }),

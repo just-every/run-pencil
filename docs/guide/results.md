@@ -36,6 +36,14 @@ Imported responses (see [Moving in](moving-in.md)) count in the answers and the 
 
 Pencil counts that a session started and how far it got. It never keeps what someone typed in a form they abandoned, so those partial answers cannot be read, counted or exported.
 
+## Views and start rate
+
+**Views to submissions** shows views, starts and accepted submissions by published revision, source and day. Its source and date filters change each numerator and denominator together. A named collector lets you distinguish a QR poster, campaign link or an embed in your website's popup. Start rate is starts divided by views; completion rate is accepted submissions divided by starts.
+
+Views are anonymous aggregate counts, recorded separately from starts and accepted submissions. Reloads and open saved-resume documents count as views; previews, unavailable forms and completed receipts do not. A resume keeps its original revision and source and does not create another start. Earlier traffic cannot be reconstructed.
+
+Bot checks run only when a response is submitted. A signed form-load timestamp measures elapsed time without storing a visitor or view record. Quarantine, release and erasure change accepted submissions; they never revise aggregate views or starts. A newly opened resume page uses its own load time.
+
 ## The response ledger
 
 **Response ledger** lists every completed, released response. Choose **View answers** on one to see its revision, when it started and was submitted, who it came from (an invited person or an anonymous response), and each answer beside its question. Questions that person skipped are shown as **Not answered · skipped or optional**. Answers stay linked to the question and revision that asked them, even after you edit or delete the question.
@@ -63,12 +71,12 @@ A response export is a working copy of the answers, not a backup. For a product-
 
 ## Review suspicious submissions
 
-Pencil protects public forms without a CAPTCHA and without loading anything from outside your installation. It uses a hidden field that real people never see, a minimum time between starting and submitting, a token tied to each session, and per-address rate limits. A person filling in a form at a normal pace stays well inside them, though many people sharing one address, such as an office network, can reach the per-address limits together.
+Pencil protects public forms without a CAPTCHA and without loading anything from outside your installation. It uses a hidden field that real people never see, a minimum time between loading the form and submitting, a token tied to each session, and per-address rate limits. A person filling in a form at a normal pace stays well inside them, though many people sharing one address, such as an office network, can reach the per-address limits together.
 
-- A submission that **fills the hidden field** is treated as a bot. The sender is shown the normal completion screen, but nothing is saved, and Pencil keeps a private note that it happened. It contains no answers.
-- A submission that arrived **faster than a person could fill it in** (under 3 seconds after starting) is saved complete but quarantined. It is kept out of every count, result and export.
+- A submission that **fills the hidden field** is saved complete but quarantined with the hidden-field reason. The sender sees the normal completion screen. An operator can release or delete the retained answers.
+- A submission that arrived **faster than a person could fill it in** (under the configured minimum time after loading the form) is saved complete but quarantined. It is kept out of accepted-response counts, results and response exports.
 
-Quarantined responses appear in **Quarantined responses**, under **Human review**. Each shows when it arrived, **Defence:** and the reason, and its answers. Choose **Release into results** to make it an ordinary response from that moment, with every figure updated. Choose **Delete quarantined response** and then **Confirm deletion** to remove it for good. You can release one even after the flow has closed, and releasing never reopens the flow. Nothing leaves quarantine until an operator acts on it, and Pencil never deletes one on its own.
+Quarantined responses appear in **Quarantined responses**, under **Human review**. Each shows when it arrived, the reason, and its answers. Choose **Release into results** to make it an ordinary response from that moment, with every figure updated. Choose **Delete quarantined response** and then **Confirm deletion** to remove it for good. You can release one even after the flow has closed, and releasing never reopens the flow. Nothing leaves quarantine until an operator acts on it, and Pencil never deletes one on its own.
 
 ## Erase a response
 

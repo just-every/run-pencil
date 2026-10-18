@@ -31,7 +31,7 @@ contract(['FLOW-003', 'FLOW-005', 'FLOW-019', 'RESP-003', 'LEDG-004', 'FIELD-013
     await f.publish()
     const session = await f.start(); await f.mature(session.sessionId)
     await expect(f.final(session, [{ stepId: q.id, value: type === 'yes_no' ? 'false' : type === 'consent' ? false : type === 'date' ? '2023-02-29' : type === 'dropdown' ? 'unknown' : 11.5 }])).rejects.toThrow()
-    const response = await f.SELF.fetch(`http://localhost/api/public/flows/${f.slug}/responses`, { method: 'POST', headers: { Origin: 'http://localhost', 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.18.244.23' }, body: JSON.stringify({ sessionId: session.sessionId, sessionToken: session.sessionToken, idempotencyKey: `key-${session.sessionId}`, answers: [{ stepId: q.id, value }] }) })
+    const response = await f.SELF.fetch(`http://localhost/api/public/flows/${f.slug}/responses`, { method: 'POST', headers: { Origin: 'http://localhost', 'Content-Type': 'application/json', 'CF-Connecting-IP': '198.18.244.23' }, body: JSON.stringify({ sessionId: session.sessionId, sessionToken: session.sessionToken, loadTime: await f.loadTime(session), idempotencyKey: `key-${session.sessionId}`, answers: [{ stepId: q.id, value }] }) })
     expect(response.status).toBe(201)
     const receipt = await response.json() as { responseId: string }
     const retried = await f.final(session, [{ stepId: q.id, value: 'changed retry input' }])
@@ -74,7 +74,7 @@ contract(['FLOW-003', 'FLOW-005', 'FLOW-019', 'RESP-003', 'LEDG-004', 'FIELD-013
   const answers = (set:unknown[]) => set.map((value,index)=>({stepId:draft.steps[index].id,value}))
   for (const invalid of ['12','12345678901','abc-defg']) await expect(f.final(session,answers([invalid,...values.slice(1)]))).rejects.toThrow('seven-digit')
   await expect(f.final(session,answers([values[0],'2026-02-30',0]))).rejects.toThrow('DD.MM.YYYY')
-  const response = await f.SELF.fetch(`http://localhost/api/public/flows/${f.slug}/responses`,{method:'POST',headers:{Origin:'http://localhost','Content-Type':'application/json','CF-Connecting-IP':'198.18.244.24'},body:JSON.stringify({sessionId:session.sessionId,sessionToken:session.sessionToken,idempotencyKey:`key-${session.sessionId}`,answers:answers(values)})})
+  const response = await f.SELF.fetch(`http://localhost/api/public/flows/${f.slug}/responses`,{method:'POST',headers:{Origin:'http://localhost','Content-Type':'application/json','CF-Connecting-IP':'198.18.244.24'},body:JSON.stringify({sessionId:session.sessionId,sessionToken:session.sessionToken,loadTime:await f.loadTime(session),idempotencyKey:`key-${session.sessionId}`,answers:answers(values)})})
   expect(response.status).toBe(201)
   expect(await response.json()).toMatchObject({completionStepId:draft.steps[3].id})
   const ledger = await f.services.reporting.ledger(f.scope.workspaceId,f.flow.flowId,{})

@@ -6,7 +6,7 @@ import { completionMetricStatements } from './completionMetrics'
 import { eraseResponseLocalMail, eraseResponseLocalMailStatement } from '../../platform/mail/erasure'
 import type { D1Sql } from '../../../base/import-kit/src/d1/types'
 import type { PencilDatabase } from '../../platform/db/repository'
-import { auditEntries, flowRevisions, flows, respondentSessions, responseAnswers, responses, revisionMetricCounters } from '../../platform/db/schema'
+import { flowRevisions, flows, respondentSessions, responseAnswers, responses, revisionMetricCounters } from '../../platform/db/schema'
 
 type SessionInsert = typeof respondentSessions.$inferInsert
 export type ResponseErasureInput = { workspaceId: string; responseId: string; operatorId: string; sessionId?: string }
@@ -272,6 +272,9 @@ export class ResponseRepository {
       `).bind(input.completedAt, input.completedAt, response.flowId, response.revisionId),
     ]
     statements.push(
+      this.binding.prepare(`INSERT INTO audit_entries (id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at)
+        SELECT ?,workspace_id,'response.quarantined',NULL,'flow-revision',revision_id,json_object('defence',quarantine_reason),?
+        FROM responses WHERE id=? AND state='quarantined'`).bind(`quarantine-${response.id}`,input.completedAt,response.id),
       this.binding.prepare(`UPDATE respondent_saves SET completion_step_id=? WHERE response_id=?`).bind(input.completionStepId ?? null,response.id),
       this.binding.prepare(`UPDATE invitation_participants SET response_status = 'completed', completed_at = ?, completion_step_id = ?
         WHERE id = (SELECT participant_id FROM responses WHERE id = ?)`).bind(input.completedAt, input.completionStepId ?? null, response.id),
@@ -349,19 +352,6 @@ export class ResponseRepository {
     const results = await this.eraseResponse(this.binding, input, statements)
     // D1 includes the invitation-erasure trigger's writes in meta.changes.
     return changes(results.at(-1)) > 0
-  }
-
-  async recordHoneypotDrop(input: { workspaceId: string; revisionId: string; at: string }) {
-    await this.database.insert(auditEntries).values({
-      id: `audit-${input.revisionId}-${input.at}-${crypto.randomUUID()}`,
-      workspaceId: input.workspaceId,
-      kind: 'response.honeypot-dropped',
-      actorOperatorId: null,
-      subjectType: 'flow-revision',
-      subjectId: input.revisionId,
-      detailsJson: JSON.stringify({ defence: 'honeypot' }),
-      createdAt: input.at,
-    })
   }
 
   async incrementPublicRateLimit(input: { scope: 'request' | 'session' | 'submission'; addressHash: string; windowStartedAt: string; expiresAt: string; limit: number; now: string }) {

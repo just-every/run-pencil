@@ -63,10 +63,10 @@ export function createPencilServices(platform: PencilPlatform) {
   const dispatcher = new DistributionDispatcher(platform.databaseBinding, deliveries, sender, platform.configuration.appOrigin, platform.configuration.mail.kind === 'local-development' ? 'no-reply@pencil.test' : platform.configuration.mail.from)
   const from = platform.configuration.mail.kind === 'local-development' ? 'no-reply@pencil.test' : platform.configuration.mail.from
   const mailProvider = platform.configuration.mail.kind
-  const responses = new ResponseService(flowRepository, responseRepository, collectors)
+  const responses = new ResponseService(flowRepository, responseRepository, collectors, platform.configuration.sessionSecret)
   return {
     resuming: new ResumeService(new ResumeRepository(platform.databaseBinding), responseRepository, flowRepository, collectors, responses, sender, {origin:platform.configuration.appOrigin,from,secret:platform.configuration.sessionSecret,local:platform.configuration.mail.kind==='local-development'}),
-    traffic: new TrafficService(platform.databaseBinding,flows,responses,collectors),
+    traffic: new TrafficService(platform.databaseBinding,flows,responses,collectors,platform.configuration.sessionSecret),
     templates: new TeamTemplates(platform.databaseBinding, flowRepository),
     collectors,
     connections: new IntegrationConnections(platform),

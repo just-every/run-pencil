@@ -1,3 +1,4 @@
+import { matureLoad } from './load-time-fixture'
 import { applyD1Migrations, env, SELF, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -37,8 +38,8 @@ contract('TMPL-002','workspace templates preserve branching and settings without
   await call(root+'/draft',{stepId:followup.id,prompt:followup.prompt,required:false,expectedVersion:draft.flow.draftVersion,questionSettings:{minLength:3,maxLength:100,validationMessage:'Please give a little more detail.'}},'PUT')
   draft=await call<BuilderDraft>(root+'/draft')
   await call(root+'/publish',{expectedVersion:draft.flow.draftVersion})
-  const session=await call<{sessionId:string;sessionToken:string;revisionId:string}>('/api/public/flows/team-source/sessions',{source:'direct',deviceClass:'desktop'})
-  await env.DB.prepare('UPDATE respondent_sessions SET created_at=? WHERE id=?').bind(new Date(Date.now()-6000).toISOString(),session.sessionId).run()
+  const session=await call<{sessionId:string;sessionToken:string;loadTime:string;revisionId:string}>('/api/public/flows/team-source/sessions',{source:'direct',deviceClass:'desktop'})
+  await matureLoad(session)
   await call('/api/public/flows/team-source/responses',{...session,idempotencyKey:'source-response',answers:[{stepId:question.id,value:draft.choices[0].id}]})
   draft=await call<BuilderDraft>(root+'/draft')
   const published=await call<{id:string}>(root+'/templates',{name:'Published intake',source:'published',expectedVersion:draft.flow.draftVersion})

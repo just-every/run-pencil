@@ -1,3 +1,4 @@
+import { matureLoad } from './load-time-fixture'
 import { applyD1Migrations, env, SELF, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -9,7 +10,7 @@ import type { TrendReport } from '../../src/core/features/reporting'
 
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 type Collector = Awaited<ReturnType<CollectorService['create']>>
-type Session = { sessionId:string;sessionToken:string;revisionId:string }
+type Session = { sessionId:string;sessionToken:string;loadTime:string;revisionId:string }
 let cookie='',serial=0
 const request=(path:string,data?:unknown,method=data===undefined?'GET':'POST')=>SELF.fetch('http://localhost'+path,{method,headers:{Host:'localhost',Origin:'http://localhost',cookie,'content-type':'application/json','CF-Connecting-IP':`198.18.203.${++serial%250}`},...(data===undefined?{}:{body:JSON.stringify(data)}),redirect:'manual'})
 async function call<T>(path:string,data?:unknown,method?:string):Promise<T>{const response=await request(path,data,method);expect(response.ok,response.ok?path:`${path}: ${await response.text()}`).toBe(true);return response.status===204?undefined as T:response.json<T>()}
@@ -30,7 +31,7 @@ contract(['DIST-017','RSLT-007'],'named collectors enforce independent atomic li
   draft=await call<BuilderDraft>(root+'/draft');await call(root+'/publish',{expectedVersion:draft.flow.draftVersion})
   const a=await call<Collector>(root+'/collectors',{name:'July mailing',channel:'email',responseLimit:2}),b=await call<Collector>(root+'/collectors',{name:'Product feedback',channel:'embed',responseLimit:10,closeAt:'2026-12-01T17:00'})
   expect(b.deadlineAt).toBe('2026-12-01T22:00:00.000Z');expect(b.deadlineTimeZone).toBe('America/New_York')
-  const start=async(collector:Collector)=>{const session=await call<Session>(`/api/public/flows/${slug}/sessions`,{source:collector.id===b.id?'embed':'direct',deviceClass:'desktop',collectorKey:collector.publicKey});await env.DB.prepare('UPDATE respondent_sessions SET created_at=? WHERE id=?').bind(new Date(Date.now()-6000).toISOString(),session.sessionId).run();return session}
+  const start=async(collector:Collector)=>{const session=await call<Session>(`/api/public/flows/${slug}/sessions`,{source:collector.id===b.id?'embed':'direct',deviceClass:'desktop',collectorKey:collector.publicKey});await matureLoad(session);return session}
   const body=(session:Session,value:number)=>({...session,idempotencyKey:'collector-'+session.sessionId,answers:[{stepId,value}]})
   const dateResponse=async(id:string,time:string)=>{await env.DB.prepare('UPDATE responses SET started_at=?,completed_at=?,released_at=?,created_at=?,updated_at=? WHERE id=?').bind(new Date(Date.parse(time)-6000).toISOString(),time,time,time,time,id).run()}
   const sessions=await Promise.all([start(a),start(a),start(a)])

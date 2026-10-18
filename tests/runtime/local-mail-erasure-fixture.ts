@@ -1,3 +1,4 @@
+import { matureLoad } from './load-time-fixture'
 import { env } from 'cloudflare:test'
 import { expect } from 'vitest'
 import { DistributionDispatcher } from '../../src/core/features/distribution/dispatcher'
@@ -47,8 +48,7 @@ export async function localMailErasureFixture(slug: string) {
   const complete = async (participant?: MailParticipant, quarantine = false) => {
     const session = await f.services.responses.startPublicSession({ slug, deviceClass: 'mobile', source: 'direct',
       invitationToken: participant?.token })
-    if (quarantine) await env.DB.prepare('UPDATE respondent_sessions SET created_at = ? WHERE id = ?')
-      .bind(new Date(Date.now() + 5000).toISOString(), session.sessionId).run()
+    if (quarantine) await matureLoad(session, 0)
     else await f.mature(session.sessionId)
     const receipt = await f.final(session, [{ stepId: session.flow.steps[0].id, value: 'Synthetic private feedback' }], '', participant?.token)
     expect(receipt.disposition).toBe(quarantine ? 'quarantined' : 'released')

@@ -538,7 +538,7 @@
       "retentionDays": 30
     },
     "abuse": {
-      "minimumSecondsFromSessionStartToSubmit": 3
+      "minimumSecondsFromFormLoadToSubmit": 3
     },
     "publicRateLimits": {
       "requestsPerIpPerMinute": 120,

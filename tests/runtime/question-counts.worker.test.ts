@@ -1,3 +1,4 @@
+import { matureLoad } from './load-time-fixture'
 import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { eraseResponseAndImportCustody } from '../../src/core/features/importing/erasure'
 import { allTexts } from '../helpers/report-download'
@@ -53,12 +54,12 @@ async function fixture(slug: string, target?: number) {
   await publish()
   const publicFlow = await ok<PublicFlow>(`/api/public/flows/${slug}`)
   const start = async (fast = false, source = 'direct') => {
-    const session = await ok<{ sessionId: string; sessionToken: string; revisionId: string; flow: PublicFlow }>(`/api/public/flows/${slug}/sessions`, { deviceClass: 'desktop', source })
+    const session = await ok<{ sessionId: string; sessionToken: string; loadTime: string; revisionId: string; flow: PublicFlow }>(`/api/public/flows/${slug}/sessions`, { deviceClass: 'desktop', source })
     expect(session.flow.revision.id).toBe(session.revisionId)
-    if (!fast) await env.DB.prepare('UPDATE respondent_sessions SET created_at = ? WHERE id = ?').bind(new Date(Date.now() - 5000).toISOString(), session.sessionId).run()
+    if (!fast) await matureLoad(session, 5000)
     return session
   }
-  const submit = (session: { sessionId: string; sessionToken: string }, answers: unknown[], key = 'synthetic-journey-idempotency-123') => req(`/api/public/flows/${slug}/responses`, { ...session, answers, idempotencyKey: key })
+  const submit = (session: { sessionId: string; sessionToken: string; loadTime: string }, answers: unknown[], key = 'synthetic-journey-idempotency-123') => req(`/api/public/flows/${slug}/responses`, { ...session, answers, idempotencyKey: key })
   return { path, flow, draft, current, route, detail, end, skip, more, start, submit, publicFlow }
 }
 

@@ -26,7 +26,14 @@ export function registerResumeRoutes(app: Hono<WorkerEnvironment>, services: Req
     catch(error){return failure(c,error)}
   })
   app.post('/api/public/flows/:slug/resume',validateInput('param',slug),validateInput('json',z.object({token:z.string().regex(/^[a-f0-9]{64}$/)})),async c=>{
-    try{return c.json(await services(c).resuming.resolve(c.req.param('slug'),c.req.valid('json').token))}
+    try{
+      const value=await services(c).resuming.resolve(c.req.param('slug'),c.req.valid('json').token)
+      if(value.state==='open') {
+        const timing=await services(c).traffic.resumedView(value.sessionId,value.flow.flow.id,value.revisionId)
+        return c.json({...value,...timing})
+      }
+      return c.json(value)
+    }
     catch(error){return failure(c,error)}
   })
 }

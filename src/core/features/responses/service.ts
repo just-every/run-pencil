@@ -1,3 +1,4 @@
+import { issueLoadTime, verifyLoadTime } from '../traffic'
 import { type CollectorService } from '../collectors'
 import { collectorFlowFailure } from './collectorFailure'
 import { runtimeAnswerValue, storedAnswerValue } from './answerStorage'
@@ -14,7 +15,7 @@ type PublicSource = 'direct' | 'embed'
 type AnswerInput = { stepId: string; value: unknown }
 
 const sessionRetentionMilliseconds = manifest.limits.respondentSessions.retentionDays * 24 * 60 * 60 * 1000
-const minimumFillMilliseconds = manifest.limits.abuse.minimumSecondsFromSessionStartToSubmit * 1000
+const minimumFillMilliseconds = manifest.limits.abuse.minimumSecondsFromFormLoadToSubmit * 1000
 function normalizeOptional(value: unknown) { return isUnanswered(value) ? undefined : value }
 
 export class ResponseService {
@@ -22,6 +23,7 @@ export class ResponseService {
     private readonly flowRepository: FlowRepository,
     private readonly repository: ResponseRepository,
     private readonly collectors: CollectorService,
+    private readonly loadTimeSecret: string,
   ) {}
 
   async ensureSampleResponses(input: {
@@ -145,7 +147,7 @@ export class ResponseService {
         .catch(error => collectorFlowFailure(error, { title: revision.title, slug: flow.slug }))
       throw new ValidationError('This form changed before you began. Please start again using the current version.')
     }
-    return { sessionId: session.id, sessionToken: token, revisionId: revision.id, flowId: flow.id, flow: { branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) } }
+    return { sessionId: session.id, sessionToken: token, loadTime: await issueLoadTime(this.loadTimeSecret, revision.id), revisionId: revision.id, flowId: flow.id, flow: { branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) } }
   }
 
   async advancePublicSession(input: { slug: string; sessionId: string; sessionToken: string; stepId: string }) {
@@ -158,7 +160,7 @@ export class ResponseService {
     }
   }
 
-  async submitPublicResponse(input: { slug: string; sessionId: string; sessionToken: string; idempotencyKey: string; answers: AnswerInput[]; honeypot?: string; clientAddress?: string; invitationToken?: string }) {
+  async submitPublicResponse(input: { slug: string; sessionId: string; sessionToken: string; idempotencyKey: string; answers: AnswerInput[]; honeypot?: string; loadTime?: string; clientAddress?: string; invitationToken?: string }) {
     await this.enforcePublicRequestRateLimit({ clientAddress: input.clientAddress, scope: 'submission' })
     if (!input.sessionToken) throw new SessionUnavailableError()
     const tokenHash = await this.hash(input.sessionToken)
@@ -212,17 +214,15 @@ export class ResponseService {
       collectorFlowFailure(error, { title: revision.title, slug: flow.slug })
     }
 
-    if (input.honeypot?.trim()) {
-      await this.repository.recordHoneypotDrop({ workspaceId: flow.workspaceId, revisionId: revision.id, at: new Date().toISOString() })
-      return { responseId: null, idempotent: false, disposition: 'dropped' as const, completionStepId: null }
-    }
+    const loadedAt = await verifyLoadTime(this.loadTimeSecret, revision.id, input.loadTime ?? '')
 
     const { steps, choices, rules } = await this.flowRepository.getRevisionGraph(revision.id)
     const { accepted: acceptedAnswers, completionStepId, reachedStepIds } = this.validatePathAnswers(steps, choices, rules, input.answers, revisionBranchSelection(revision.policySnapshotJson))
     const now = new Date().toISOString()
     const responseId = ulid()
-    const elapsed = Math.max(0, Date.now() - Date.parse(session.createdAt))
-    const state = elapsed < minimumFillMilliseconds ? 'quarantined' as const : 'released' as const
+    const elapsed = Math.max(0, Date.now() - loadedAt)
+    const quarantineReason = input.honeypot?.trim() ? 'honeypot' : elapsed < minimumFillMilliseconds ? 'minimum-fill-time' : null
+    const state = quarantineReason ? 'quarantined' as const : 'released' as const
     const created = await this.repository.createCompletedResponse({
       response: {
         id: responseId,
@@ -234,7 +234,7 @@ export class ResponseService {
         sessionTokenHash: tokenHash,
         idempotencyKey: input.idempotencyKey,
         state,
-        quarantineReason: state === 'quarantined' ? 'minimum-fill-time' : null,
+        quarantineReason,
         releasedAt: state === 'released' ? now : null,
         releasedByOperatorId: null,
         completionMilliseconds: elapsed,

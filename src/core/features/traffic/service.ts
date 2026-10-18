@@ -1,3 +1,4 @@
+import { issueLoadTime } from './loadTime'
 import { trafficDay } from '../../shared/trafficDay'
 import { NotFoundError, ValidationError } from '../../shared/errors'
 import type { CollectorService } from '../collectors'
@@ -6,7 +7,7 @@ import type { FlowService } from '../flows'
 
 export type TrafficRow={source:string;day:string;views:number;starts:number;submissions:number;label:string}
 export class TrafficService {
-  constructor(private readonly db:D1Database,private readonly flows:FlowService,private readonly responses:ResponseService,private readonly collectors:CollectorService){}
+  constructor(private readonly db:D1Database,private readonly flows:FlowService,private readonly responses:ResponseService,private readonly collectors:CollectorService,private readonly loadTimeSecret:string){}
   async view(input:{slug:string;revisionId:string;source:'direct'|'embed';collectorKey?:string;invitationToken?:string}) {
     const invitation=input.invitationToken?await this.responses.invitationFlow(input.invitationToken):undefined
     const publicFlow=invitation?.publicFlow??await this.flows.getPublicFlow(input.slug)
@@ -14,11 +15,23 @@ export class TrafficService {
     if(input.invitationToken&&input.collectorKey)throw new ValidationError('An invitation uses its original collector.')
     const collector=invitation?.collector??await this.collectors.requireOpen(publicFlow.flow.id,input.source,input.collectorKey)
     const source=collector.systemSource===null?'collector:'+collector.id:invitation?'invitation':input.source
-    const workspace=await this.db.prepare('SELECT w.time_zone AS zone FROM workspaces w JOIN flows f ON f.workspace_id=w.id WHERE f.id=?').bind(publicFlow.flow.id).first<{zone:string}>()
-    const day=trafficDay(new Date().toISOString(),workspace!.zone)
-    await this.db.batch([this.db.prepare('INSERT OR IGNORE INTO traffic_tracking(id,started_at) VALUES(1,?)').bind(new Date().toISOString()),this.db.prepare(`INSERT INTO revision_view_counters(revision_id,source,day,count) VALUES (?,?,?,1)
-      ON CONFLICT(revision_id,source,day) DO UPDATE SET count=count+1`).bind(input.revisionId,source,day)])
+    return this.count(publicFlow.flow.id,input.revisionId,source)
   }
+  /** Called only after the resume route has resolved and admitted the saved response. */
+  async resumedView(sessionId:string,flowId:string,revisionId:string) {
+    const row=await this.db.prepare(`SELECT CASE WHEN c.system_source IS NULL THEN 'collector:' || c.id ELSE s.source END AS source FROM respondent_sessions s JOIN session_collector sc ON sc.session_id=s.id JOIN collectors c ON c.id=sc.collector_id WHERE s.id=?`).bind(sessionId).first<{source:string}>()
+    if(!row)throw new ValidationError('This saved form has no retained traffic source.')
+    return this.count(flowId,revisionId,row.source)
+  }
+  private async count(flowId:string,revisionId:string,source:string) {
+    const workspace=await this.db.prepare('SELECT w.time_zone AS zone FROM workspaces w JOIN flows f ON f.workspace_id=w.id WHERE f.id=?').bind(flowId).first<{zone:string}>()
+    if(!workspace)throw new NotFoundError('This form is no longer available.')
+    const at=Date.now(), day=trafficDay(new Date(at).toISOString(),workspace.zone)
+    await this.db.batch([this.db.prepare('INSERT OR IGNORE INTO traffic_tracking(id,started_at) VALUES(1,?)').bind(new Date(at).toISOString()),this.db.prepare(`INSERT INTO revision_view_counters(revision_id,source,day,count) VALUES (?,?,?,1)
+      ON CONFLICT(revision_id,source,day) DO UPDATE SET count=count+1`).bind(revisionId,source,day)])
+    return {loadTime:await issueLoadTime(this.loadTimeSecret,revisionId,at)}
+  }
+
   async report(workspaceId:string,flowId:string,revisionId:string,from?:string,to?:string) {
     const flow=await this.db.prepare(`SELECT f.id,w.time_zone AS zone FROM flows f JOIN workspaces w ON w.id=f.workspace_id JOIN flow_revisions r ON r.flow_id=f.id WHERE f.id=? AND f.workspace_id=? AND r.id=? AND r.state='published'`).bind(flowId,workspaceId,revisionId).first<{id:string;zone:string}>()
     if(!flow)throw new NotFoundError('This published revision is not available in your workspace.')

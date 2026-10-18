@@ -1,3 +1,4 @@
+import { matureLoad } from './load-time-fixture'
 import { env } from 'cloudflare:test'
 import { expect } from 'vitest'
 import { hashToken, opaqueToken } from '../../src/base/operator-auth/crypto.mjs'
@@ -40,9 +41,9 @@ export async function actionsHttp(bindings: Partial<WorkerBindings> = {}, label 
   const choiceStep = published.steps.find(step => step.prompt === 'How was the wait?')!, commentStep = published.steps.find(step => step.prompt === 'Anything else?')!
   const respond = async (choiceLabel: 'Short' | 'Too long', text: string) => {
     const session = await services.responses.startPublicSession({ slug, deviceClass: 'mobile', source: 'direct', clientAddress: `${slug}-${crypto.randomUUID()}` })
-    await env.DB.prepare('UPDATE respondent_sessions SET created_at = ? WHERE id = ?').bind(new Date(Date.now() - 5000).toISOString(), session.sessionId).run()
+    await matureLoad(session, 5000)
     const option = published.choices.find(item => item.stepId === choiceStep.id && item.label === choiceLabel)!
-    await services.responses.submitPublicResponse({ slug, sessionId: session.sessionId, sessionToken: session.sessionToken, idempotencyKey: `key-${session.sessionId}`, answers: [{ stepId: choiceStep.id, value: option.id }, { stepId: commentStep.id, value: text }], honeypot: '', clientAddress: `${slug}-${session.sessionId}` })
+    await services.responses.submitPublicResponse({ slug, sessionId: session.sessionId, sessionToken: session.sessionToken, loadTime: session.loadTime, idempotencyKey: `key-${session.sessionId}`, answers: [{ stepId: choiceStep.id, value: option.id }, { stepId: commentStep.id, value: text }], honeypot: '', clientAddress: `${slug}-${session.sessionId}` })
   }
   const revisionId = (await call(`/api/app/flows/${created.id}/results`).then(response => response.json() as Promise<{ revision: { id: string } }>)).revision.id
   const input = (overrides: Record<string, unknown> = {}) => ({

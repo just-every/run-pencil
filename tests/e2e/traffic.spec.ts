@@ -12,7 +12,7 @@ contract('RSLT-013','three real form loads yield two starts and one submission, 
   const builderUrl=page.url(),flowId=/flows\/([^/]+)\//.exec(builderUrl)![1]
   await page.getByRole('button',{name:'Publish',exact:true}).click()
   const publicUrl=await page.getByRole('region',{name:'Share this flow'}).getByLabel('Public link',{exact:true}).inputValue()
-  const load=async()=>{const counted=page.waitForResponse(response=>response.url().endsWith('/views')&&response.status()===204);await page.goto(publicUrl);await counted;await expect(page.locator('.respondent-shell[data-hydrated=true]')).toBeVisible()}
+  const load=async()=>{const counted=page.waitForResponse(response=>response.url().endsWith('/views')&&response.status()===200);await page.goto(publicUrl);await counted;await expect(page.locator('.respondent-shell[data-hydrated=true]')).toBeVisible()}
   await load()
   await load()
   const started=page.waitForResponse(response=>response.url().endsWith('/sessions')&&response.status()===201)
