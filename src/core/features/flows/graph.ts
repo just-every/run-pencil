@@ -1,3 +1,4 @@
+import { choiceLimit, structureLimitIssue } from '../../shared/formLimits'
 import { validateAnswerRecall } from '../../shared/answerRecall'
 import { publicSteps, publicChoices, publicRules } from './serialization'
 import { scoreQuestionTypes, scoreAnswerIssue } from '../../shared/scoreQuestions'
@@ -86,6 +87,8 @@ function branchRuleIsValid(rule: StoredBranchRule, source: StoredStep, choiceIds
 
 export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice[], rules: StoredBranchRule[], selection: BranchSelection = 'first-matching-rule'): GraphIssue[] {
   const issues: GraphIssue[] = []
+  const capacityIssue = structureLimitIssue(steps)
+  if (capacityIssue) issues.push({ stepId: 'flow', reason: capacityIssue })
   const byStableId = new Map(steps.map((step) => [step.stableId, step]))
   const choicesByStep = new Map<string, StoredChoice[]>()
   for (const choice of choices) {
@@ -110,7 +113,7 @@ export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice
     if (structured && stepChoices.length === 0) issues.push({ stepId: step.stableId, reason: 'This structured question needs at least one choice.' })
     if (new Set(stepChoices.map((choice) => choice.label.trim().toLocaleLowerCase())).size !== stepChoices.length) issues.push({ stepId: step.stableId, reason: 'Each choice needs a different label.' })
     if (new Set(stepChoices.map((choice) => choice.value)).size !== stepChoices.length) issues.push({ stepId: step.stableId, reason: 'Each choice needs a different answer value.' })
-    if (stepChoices.length > 100 || (step.questionType === 'priority' && stepChoices.length > 10)) issues.push({ stepId: step.stableId, reason: 'This question exceeds its configured choice limit.' })
+    if (stepChoices.length > choiceLimit(step.questionType)) issues.push({ stepId: step.stableId, reason: 'This question exceeds its configured choice limit.' })
     if (!questionSettings(step, stepChoices).valid) issues.push({ stepId: step.stableId, reason: 'This question has invalid type-specific settings.' })
     if (step.kind === 'completion' && step.nextStepStableId) issues.push({ stepId: step.stableId, reason: 'A completion screen cannot lead to another step.' })
     if (step.kind !== 'completion' && !step.nextStepStableId) issues.push({ stepId: step.stableId, reason: 'Every non-completion step needs a default path.' })

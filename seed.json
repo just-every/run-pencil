@@ -522,10 +522,11 @@
       "perFlow": 100
     },
     "steps": {
-      "perRevision": 50,
-      "choiceOptionsPerStep": 100,
+      "perRevision": 300,
+      "choiceOptionsPerStep": 250,
       "priorityOptionsPerStep": 10,
-      "branchRulesPerStep": 100
+      "branchRulesPerStep": 100,
+      "structurePerRevision": 50
     },
     "contacts": {
       "customFields": 20,
@@ -572,13 +573,14 @@
       "supportingLineCharacters": 240
     },
     "questions": {
-      "dropdownChoices": 100,
+      "dropdownChoices": 1000,
       "npsMinimum": 0,
       "npsMaximum": 10,
       "numberMaximumDecimalPlaces": 15,
       "dateMinimum": "0001-01-01",
       "dateMaximum": "9999-12-31",
-      "consentStatementCharacters": 1000
+      "consentStatementCharacters": 1000,
+      "perRevision": 250
     },
     "import": {
       "combinedBytes": 8388608,

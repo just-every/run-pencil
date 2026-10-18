@@ -1,3 +1,4 @@
+import { choiceLimit } from '../../shared/formLimits'
 import manifest from '../../../../seed.json'
 import { ValidationError } from '../../shared/errors'
 const record = (value:unknown):value is Record<string,any> => !!value && typeof value==='object' && !Array.isArray(value)
@@ -16,7 +17,7 @@ export function validateGoogleDefinition(definition:Record<string,any>) {
     const kind=kinds[0], value=q[kind]
     if(kind==='choiceQuestion') {
       if(!['RADIO','CHECKBOX','DROP_DOWN'].includes(value.type)||!Array.isArray(value.options)) invalid()
-      if(value.options.length>manifest.limits.steps.choiceOptionsPerStep) throw new ValidationError('Google choices exceed the configured native choice limit.')
+      if(value.options.length>choiceLimit(value.type==='DROP_DOWN'?'dropdown':'single_choice')) throw new ValidationError('Google choices exceed the configured native choice limit.')
       if(value.shuffle!==undefined&&typeof value.shuffle!=='boolean') invalid()
       if(value.options.filter((option:unknown)=>record(option)&&option.isOther===true).length>1 || value.type==='DROP_DOWN'&&value.options.some((option:unknown)=>record(option)&&option.isOther===true)) invalid()
       for(const option of value.options) {

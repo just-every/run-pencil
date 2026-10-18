@@ -1,3 +1,4 @@
+import { choiceLimit, structureLimitIssue } from '../../shared/formLimits'
 import { remapAnswerRecall } from '../../shared/answerRecall'
 import { remapChoiceSettings } from '../../shared/otherChoices'
 import type { QuestionType } from '../../shared/questionKinds'
@@ -237,7 +238,7 @@ export class FlowService {
     if (input.choices !== undefined && !structured && input.choices.length > 0) throw new ValidationError('Only structured questions can have choices.')
     const requestedChoices = input.choices ?? currentChoices.map((choice) => ({ id: choice.stableId, value: choice.value, label: choice.label }))
     if (input.choices !== undefined && input.choices.some((choice) => !choice.value.trim() || !choice.label.trim())) throw new ValidationError('Every choice needs a value and label.')
-    if (requestedChoices.length > 100 || (selectedQuestionType === 'priority' && requestedChoices.length > 10)) throw new ValidationError('This question exceeds its configured choice limit.')
+    if (requestedChoices.length > choiceLimit(selectedQuestionType)) throw new ValidationError('This question exceeds its configured choice limit.')
     const choicesByStableId = new Map(currentChoices.map((choice) => [choice.stableId, choice]))
     const now = new Date().toISOString()
     const persistedChoices = structured ? requestedChoices.map((choice, position) => {
@@ -273,6 +274,9 @@ export class FlowService {
     if (input.expectedVersion !== draft.flow.draftVersion) return draftConflict(draft.flow.draftVersion)
     if (draft.flow.status === 'archived') throw new ValidationError('Duplicate an archived flow to create an editable draft.')
     if (input.step.kind === 'welcome' && draft.steps.some((step) => step.kind === 'welcome')) throw new ValidationError('A flow may contain only one welcome screen.')
+    const capacityIssue = structureLimitIssue([...draft.steps, input.step])
+    if (capacityIssue) throw new ValidationError(capacityIssue)
+    if ((input.step.choices?.length ?? 0) > choiceLimit(input.step.questionType)) throw new ValidationError('This question exceeds its configured choice limit.')
     const completionIndex = draft.steps.findIndex((step) => step.kind === 'completion')
     const position = input.step.kind === 'welcome' ? 0 : input.step.kind === 'question' && completionIndex >= 0 ? completionIndex : draft.steps.length
     const following = draft.steps[position]

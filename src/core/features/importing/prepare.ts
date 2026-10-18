@@ -1,3 +1,4 @@
+import { choiceLimit, structureLimitIssue } from '../../shared/formLimits'
 import { Buffer } from 'node:buffer'
 import { canonicalJson, sha256, type SourceBundle, type TargetEffect, type Json, type SourceRecord } from '../../../base/import-kit/src/d1/index'
 import manifest from '../../../../seed.json'
@@ -41,9 +42,10 @@ export function prepareImport(input: ImportInput, workspaceId: string, hashPaylo
   reportGraph(form)
   const limits = manifest.limits
   if ((google ? definition.items?.length ?? 0 : definition.fields.length) + (definition.welcome_screens?.length ?? 0) + (definition.thankyou_screens?.length ?? 0) > limits.steps.perRevision || form.steps.length > limits.steps.perRevision || form.title.length > 200 || limits.flowRevisions.perFlow < 2) throw new ValidationError('Form exceeds the configured flow, revision, step or title limits. Nothing was written.')
+  if (structureLimitIssue(form.steps)) throw new ValidationError(structureLimitIssue(form.steps)!)
   for (const step of form.steps) {
     if (!typeSettingsValid(step.questionType, step.settings)) throw new ValidationError('A question has invalid native type settings. Nothing was written.')
-    if (step.prompt.length > 1000 || !step.prompt.trim() || (step.helperText?.length ?? 0) > 1000 || step.choices.length > limits.steps.choiceOptionsPerStep || (step.questionType === 'priority' && step.choices.length > limits.steps.priorityOptionsPerStep) || form.rules.filter(r => r.source === step.id).length > limits.steps.branchRulesPerStep) throw new ValidationError('A question exceeds the configured prompt, choice or branch limits. Nothing was written.')
+    if (step.prompt.length > 1000 || !step.prompt.trim() || (step.helperText?.length ?? 0) > 1000 || step.choices.length > choiceLimit(step.questionType) || (step.questionType === 'priority' && step.choices.length > limits.steps.priorityOptionsPerStep) || form.rules.filter(r => r.source === step.id).length > limits.steps.branchRulesPerStep) throw new ValidationError(`Question ${step.id} (${step.choices.length} choices) exceeds the configured prompt, choice or branch limits. Nothing was written.`)
     if (new Set(step.choices.map(c => c.id)).size !== step.choices.length || new Set(step.choices.map(c => c.label.trim().toLowerCase())).size !== step.choices.length || step.choices.some(c => !c.label.trim() || c.label.length > 300)) throw new ValidationError('Choices need distinct nonempty labels within 300 characters.')
     if (['single_choice', 'multiple_choice', 'dropdown', 'priority'].includes(step.questionType ?? '') && !step.choices.length) throw new ValidationError('A choice question has no choices.')
     if (step.questionType === 'rating' && (!Number.isInteger(step.settings.min) || !Number.isInteger(step.settings.max) || Number(step.settings.max) <= Number(step.settings.min) || Number(step.settings.max) - Number(step.settings.min) > 10)) throw new ValidationError('A scale exceeds native rating limits.')
