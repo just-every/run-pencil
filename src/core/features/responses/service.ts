@@ -182,7 +182,7 @@ export class ResponseService {
       const completionStepId = this.retainedCompletion(steps, rules, {...hiddenAnswers(JSON.parse(response.contextJson ?? '{}') as ResponseContext),...variableAnswers((JSON.parse(response.contextJson ?? '{}') as ResponseContext).calculations),...Object.fromEntries(answers.map((answer) => [answer.stepId, runtimeAnswerValue(steps.find(step => step.stableId === answer.stepId), JSON.parse(answer.valueJson))]))}, revisionBranchSelection(revision.policySnapshotJson))
       const retainedContext = JSON.parse(response.contextJson ?? '{}') as ResponseContext
       const redirectUrl = completionRedirect({steps:publicSteps(steps),choices:publicChoices(steps,choices),branchRules:publicRules(rules),formSettings:formSettings(revision.formSettingsJson),hiddenContext:retainedContext},completionStepId,Object.fromEntries(answers.map(answer=>[answer.stepId,runtimeAnswerValue(steps.find(step=>step.stableId===answer.stepId),JSON.parse(answer.valueJson))])))
-      return { responseId: response.id, idempotent: true, disposition: response.state, completionStepId, redirectUrl }
+      return { responseId: response.id, idempotent: true, disposition: response.state, completionStepId, redirectUrl: response.state === 'released' ? redirectUrl : null }
     }
     const receipt = async () => {
       const retained = await this.repository.findResponseBySessionToken(input.sessionId, tokenHash)
@@ -276,7 +276,7 @@ export class ResponseService {
       throw new ValidationError('This response session has already completed or cannot accept this submission.')
     }
     const redirectUrl = completionRedirect({steps:publicSteps(steps),choices:publicChoices(steps,choices),branchRules:publicRules(rules),formSettings:settings,hiddenContext},completionStepId,Object.fromEntries(acceptedAnswers.map(answer=>[answer.stepId,answer.value])))
-    return { responseId, idempotent: false, disposition: state, completionStepId, redirectUrl }
+    return { responseId, idempotent: false, disposition: state, completionStepId, redirectUrl: state === 'released' ? redirectUrl : null }
   }
 
   async releaseQuarantinedResponse(input: { workspaceId: string; responseId: string; operatorId: string }) {

@@ -31,6 +31,13 @@ contract('LOGIC-005','chooses screen or approved redirect from accepted answer, 
     expect(receipt.redirectUrl).toBe(shouldRedirect?'https://sales.example.test/book?fixed=consultation&team=60&campaign=enterprise&quote=120':null)
     if(shouldRedirect)original={input,receipt}
   }
+  const excludedSession=await f.http.call(`/api/public/flows/${f.slug}/sessions`,{deviceClass:'desktop',source:'direct'},{auth:false}).then(response=>response.json()) as {sessionId:string;sessionToken:string;revisionId:string}
+  const excludedInput={...excludedSession,idempotencyKey:crypto.randomUUID(),honeypot:'https://spam.example.test',hidden:{plan:'enterprise'},loadTime:await issueLoadTime(env.SESSION_SECRET,excludedSession.revisionId,Date.now()-5000),answers:[{stepId:f.score.id,value:5},{stepId:f.size.id,value:60},{stepId:f.ready.id,value:true}]}
+  for(let retry=0;retry<2;retry++) {
+    const excluded=await f.http.call(`/api/public/flows/${f.slug}/responses`,excludedInput,{auth:false})
+    expect(excluded.status).toBe(201)
+    expect(await excluded.json()).toMatchObject({disposition:'quarantined',completionStepId:f.redirect.id,redirectUrl:null,idempotent:retry>0})
+  }
   // Changing approvals on the new draft cannot reinterpret the admitted revision.
   await f.call(`${f.base}/draft/settings`,{expectedVersion:(await f.read()).flow.draftVersion,settings:{...f.settings,redirectOrigins:[]}},'PUT')
   const retry=await f.http.call(`/api/public/flows/${f.slug}/responses`,{...original!.input as object,hidden:{plan:'changed'},answers:[]},{auth:false})

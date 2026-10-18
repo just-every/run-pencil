@@ -57,7 +57,8 @@ contract('LOGIC-005','authors an approved redirect, previews without leaving and
   await expect(page.getByRole('region',{name:'Share this flow'})).toBeVisible()
   let destination:string|undefined
   await page.route('https://sales.example.test/**',async route=>{destination=route.request().url();await route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="en"><title>Sales destination</title><h1>Schedule your consultation</h1></html>'})})
-  for(const plan of ['basic','enterprise']) {
+  for(const [plan,excluded] of [['basic',false],['enterprise',false],['enterprise',true]] as const) {
+    destination=undefined
     await page.goto(`/f/${slug}?plan=${plan}&secret=not-declared`)
     await expect(page.locator('[data-disclosure=completion-redirect]')).toContainText('https://sales.example.test')
     await expect(page.locator('[data-disclosure=completion-redirect]')).toContainText('team, campaign, quote')
@@ -68,12 +69,13 @@ contract('LOGIC-005','authors an approved redirect, previews without leaving and
     await page.getByRole('spinbutton',{name:'Team size',exact:true}).fill('60')
     await page.getByRole('button',{name:'Continue',exact:true}).click()
     await page.getByRole('radio',{name:'Yes',exact:true}).check()
+    if(excluded)await page.locator('input[name=company-website]').fill('https://spam.example.test',{force:true})
     await page.waitForTimeout(3200)
     await page.getByRole('button',{name:'Submit response',exact:true}).click()
-    if(plan==='basic') {
-      await expect(page.getByRole('heading',{name:'We will keep in touch',exact:true})).toBeVisible()
+    if(plan==='basic'||excluded) {
+      await expect(page.getByRole('heading',{name:excluded?'Book your consultation':'We will keep in touch',exact:true})).toBeVisible()
       expect(destination).toBeUndefined()
-      await page.screenshot({path:`test-results/${info.project.name}-completion-screen.png`,fullPage:true})
+      await page.screenshot({path:`test-results/${info.project.name}-completion-${excluded?'quarantined':'screen'}.png`,fullPage:true})
     } else {
       await expect(page).toHaveURL('https://sales.example.test/book?fixed=consultation&team=60&campaign=enterprise&quote=120')
       expect(destination).not.toContain('secret')
