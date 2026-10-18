@@ -537,7 +537,9 @@ are data, compiled into the owned source and applied by one local runtime.
 
 ## Status
 
-Status rows updated on 18 October 2026 from the in-repository tests cited below. RESP-016 and RSLT-012 include the sd-pencil-t5 implementation and native/browser journeys.
+Judged from the code and tests at commit `d31273e51b36b20d8f12c2ee4d67f3dde72ee79e` (18 October 2026).
+
+RESP-016 and RSLT-012 include the sd-pencil-t5 implementation and native/browser journeys.
 
 FIELD-003 and RSLT-013 include the later 18 October round's in-repository evidence. RESP-015 to RESP-017 now use RSLT-013's retained-exclusion rule; RESP-016 is done with filtered, cutoff-bound explicit inclusion of automated exclusions in CSV and JSON, without releasing them.
 
