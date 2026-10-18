@@ -3529,7 +3529,7 @@
       "executable": false
     },
     "src/core/app/styles/controls.css": {
-      "sha256": "81c05d6d0c1675108fe2694487e8f30e86f566208e49d6584937bcbb06dc463d",
+      "sha256": "51c1e7013daa0f3956a7a2f0ca1b24a083ef00defe2d3265141f97d62b2d5532",
       "executable": false
     },
     "src/core/app/styles/surfaces.css": {
@@ -3801,7 +3801,7 @@
       "executable": false
     },
     "src/core/features/audit/ui/audit.css": {
-      "sha256": "7c4fac30db7d7b3f4aec2eec110f620cb7f1cb8db1a0b4d07a4b8b3abd135d45",
+      "sha256": "ff4fe8b227e75a4c0ebd6005256ad22523b52c3838825d60e5d56437474cfd3a",
       "executable": false
     },
     "src/core/features/audit/ui/AuditPage.tsx": {
@@ -5265,7 +5265,7 @@
       "executable": false
     },
     "src/core/features/submissions/ui/inbox.css": {
-      "sha256": "20f7f6dc3f6bfd37d0130268261aeac5487ffe13922935800e36a80945bdff2d",
+      "sha256": "366c9147fb24f71162ca8dd4423392946e2d0939aa6ba182e999ed897c297caa",
       "executable": false
     },
     "src/core/features/submissions/ui/InboxList.tsx": {

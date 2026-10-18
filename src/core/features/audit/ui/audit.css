@@ -8,9 +8,9 @@
 .audit-viewer .filters{display:grid;grid-template-columns:208px 206px 203px 189px 184px 1fr;gap:20px;align-items:end;margin-bottom:27px}
 .audit-viewer .field label{display:block;color:#525c70;font-size:13px;margin:0 0 1px 3px}
 .audit-viewer .input-wrap{position:relative}
-.audit-viewer .field select,.audit-viewer .field input{width:100%;height:44px;border:1px solid #c7cad2;border-radius:13px;background:rgba(255,255,255,.65);padding:0 16px;appearance:none;outline-offset:2px}
-.audit-viewer .field select{padding-right:36px}
-.audit-viewer .field input{color:#667086;padding-right:36px}
+.audit-viewer .field select,.audit-viewer .field input{width:100%;height:44px;border:1px solid #c7cad2;border-radius:13px;background-color:rgba(255,255,255,.65);padding:0 16px;outline-offset:2px}
+.audit-viewer .field select:not([multiple],[size]:not([size="1"])){padding-inline-end:40px}
+.audit-viewer .field input{appearance:none;color:#667086;padding-right:36px}
 .audit-viewer .input-wrap svg{position:absolute;right:15px;top:15px;width:14px;height:14px;pointer-events:none}
 .audit-viewer .actions{display:flex;gap:12px;justify-content:flex-end;padding-bottom:4px}
 .audit-viewer .pill{border-radius:24px;padding:10px 20px;border:1px solid #b8bbc3;background:transparent;display:inline-flex;align-items:center;justify-content:center;gap:10px;white-space:normal}

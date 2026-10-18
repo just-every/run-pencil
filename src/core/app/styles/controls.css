@@ -60,7 +60,7 @@
   border: 1px solid var(--line);
   border-radius: 10px;
   color: var(--ink);
-  background: var(--card);
+  background-color: var(--card);
   padding: 10px 14px;
   font-size: 16px;
   font-weight: 400;
@@ -70,13 +70,24 @@
 .text-input:hover:not(:disabled), .text-area:hover:not(:disabled) { border-color: var(--line-bright); }
 /* Focus: one ink edge with a soft yellow halo (a single ring, never a double black one). */
 .text-input:focus-visible, .text-area:focus-visible, .pencil-canvas :is(.text-input, .text-area):focus-visible { border-color: var(--ink); outline: none; box-shadow: 0 0 0 1px var(--ink), 0 0 0 5px rgba(242, 179, 61, 0.35); }
-.text-input:disabled, .text-area:disabled { color: var(--subtle); background: var(--paper-deep); }
+.text-input:disabled, .text-area:disabled { color: var(--subtle); background-color: var(--paper-deep); }
 .text-area { min-height: 8rem; resize: vertical; }
-select.text-input {
+/* Base #247: single-choice chevrons; list boxes keep native controls. */
+select:not([multiple],[size]:not([size="1"])) {
+  --rer-select-ink: var(--muted);
+  -webkit-appearance: none;
   appearance: none;
-  padding-right: 42px;
-  background: var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231e2124' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center / 16px 16px;
+  padding-inline-end: 40px;
+  text-overflow: ellipsis;
+  background-image:
+    linear-gradient(to top right, transparent calc(50% - 1.1px), var(--rer-select-ink) calc(50% - .55px), var(--rer-select-ink) calc(50% + .55px), transparent calc(50% + 1.1px)),
+    linear-gradient(to top left, transparent calc(50% - 1.1px), var(--rer-select-ink) calc(50% - .55px), var(--rer-select-ink) calc(50% + .55px), transparent calc(50% + 1.1px));
+  background-repeat: no-repeat;
+  background-position: right 20px center, right 14px center;
+  background-size: 6px 6px;
 }
+select:not([multiple],[size]:not([size="1"])):focus-visible { --rer-select-ink: var(--ink); }
+select:not([multiple],[size]:not([size="1"])):disabled { --rer-select-ink: color-mix(in srgb, var(--muted) 55%, transparent); }
 select.text-input:disabled { background-color: var(--paper-deep); }
 .pencil-canvas input[type='checkbox'] { inline-size: 18px; block-size: 18px; accent-color: var(--ink); }
 .pencil-canvas input[type='file'] { max-width: 100%; color: var(--subtle); font-size: 15px; }
@@ -95,7 +106,7 @@ select.text-input:disabled { background-color: var(--paper-deep); }
 .pencil-canvas details > summary { cursor: pointer; color: var(--ink); }
 
 /* Badges */
-.badge { display: inline-flex; width: fit-content; align-items: center; gap: 6px; border: 1px solid transparent; border-radius: 999px; padding: 4px 10px; color: var(--subtle); background: var(--paper-deep); font-size: 12px; font-weight: 600; line-height: 1.3; text-transform: capitalize; }
+.badge { display: inline-flex; width: fit-content; align-items: center; gap: 6px; border: 1px solid transparent; border-radius: 999px; padding: 4px 10px; color: var(--subtle); background-color: var(--paper-deep); font-size: 12px; font-weight: 600; line-height: 1.3; text-transform: capitalize; }
 .badge[data-status='open'], .badge[data-status='healthy'] { color: var(--green); background: var(--wash-great); }
 .badge[data-status='draft'] { color: var(--draft-ink); background: var(--yellow-wash); }
 .badge[data-status='closed'] { border-color: var(--line-bright); background: transparent; }
