@@ -32,9 +32,9 @@ export async function textPage(db: D1Database, secret: string, identity: { works
     for (const row of rows) {
       const value: unknown = JSON.parse(row.value)
       const text: unknown = step.otherChoiceId ? isOtherAnswer(value) ? value.otherText : '' : value
-      if (!retainedTextValid(step.otherChoiceId ? 'short_text' : step.type,text) && text !== '') throw new Error('Invalid retained text answer.')
+      if ((!step.otherChoiceId || isOtherAnswer(value)) && !retainedTextValid(step.otherChoiceId ? 'short_text' : step.type,text)) throw new Error('Invalid retained text answer.')
       cursor.after = { time: row.time, id: row.id }; processed++
-      if (typeof text === 'string' && text.length && text.toLocaleLowerCase().includes(needle)) {
+      if ((!step.otherChoiceId || isOtherAnswer(value)) && typeof text === 'string' && text.toLocaleLowerCase().includes(needle)) {
         if (input.countOnly) cursor.matched = (cursor.matched ?? 0)+1
         else texts.push(text)
       }
