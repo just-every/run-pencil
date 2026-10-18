@@ -1505,7 +1505,7 @@
       "executable": false
     },
     "scripts/deployment-data-hosted.check.mjs": {
-      "sha256": "d904f3ea1b9fa84175beba68a9aab2a5d182ab78d6a07e2a08f1732e0ec0d76a",
+      "sha256": "6ca4bed2250473c0da98d6d70323e881a873eae656efb65c9c798ac65e74d39b",
       "executable": false
     },
     "scripts/deployment-data-initialized.check.mjs": {
@@ -1601,7 +1601,7 @@
       "executable": false
     },
     "scripts/diagnose-native-load.mjs": {
-      "sha256": "a403eb8488e076a36781450154d74276e50e90c7d98b5548e2fa91cd448658cb",
+      "sha256": "1c69721ae8dc7ade1aae65c99cd1833a4da768181d5d4d2f92bc411b8be4cacd",
       "executable": false
     },
     "scripts/distribution-data.check.mjs": {
@@ -1709,7 +1709,7 @@
       "executable": false
     },
     "scripts/prepare-synthetic-comparison-review.mjs": {
-      "sha256": "20df0e2c8ea89052ca74435f7872362f25b09c13bfbd1975eeb9a9423b61e553",
+      "sha256": "e5018a9dd1466a84f94dee47d5c552c0cb3538e205dc96be138ac36f363c38dd",
       "executable": false
     },
     "scripts/progress-recovery.test.mjs": {
@@ -6261,7 +6261,7 @@
       "executable": false
     },
     "tests/helpers/scheduled-notification.mjs": {
-      "sha256": "7d6448f651712801cf0eb4a9b0086b429655ae259bb05b5b1745ac547529bf76",
+      "sha256": "5fd696de2756c04bba44af24ce62fbcef62e05fec02f3caaf95ae875d49a5790",
       "executable": false
     },
     "tests/helpers/sql-tokens.ts": {
@@ -6297,7 +6297,7 @@
       "executable": false
     },
     "tests/managed-mail.test.ts": {
-      "sha256": "4d08d1af1b971ec0f7c0916057e3dbb49cbacf08e726d36c11b2dce8eea8cb7f",
+      "sha256": "95071372914aa369e5b3a83b2105c24442241506403f3dac59d95f6ac2356060",
       "executable": false
     },
     "tests/native/closure-recovery.mjs": {

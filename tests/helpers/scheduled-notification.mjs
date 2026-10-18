@@ -20,7 +20,7 @@ export async function scheduledNotification({ request, publicRequest, email }) {
  const session = await publicPost('sessions', { deviceClass: 'desktop', source: 'direct' });
  await new Promise(resolve => setTimeout(resolve, 4000));
  const answer = 'Synthetic private response must stay out of mail';
- const receipt = await publicPost('responses', { sessionId: session.sessionId, sessionToken: session.sessionToken, idempotencyKey: crypto.randomUUID(), answers: [{ stepId: draft.steps[0].id, value: answer }] });
+ const receipt = await publicPost('responses', { sessionId: session.sessionId, sessionToken: session.sessionToken, loadTime: session.loadTime, idempotencyKey: crypto.randomUUID(), answers: [{ stepId: draft.steps[0].id, value: answer }] });
  assert.equal(receipt.disposition, 'released');
  const submittedAt = Date.now(), deadline = submittedAt + 90_000;
  let message, deliveries;

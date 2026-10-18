@@ -44,7 +44,7 @@ try {
   const start = source => ok(`/api/public/flows/${slug}/sessions`, { deviceClass: source === 'embed' ? 'mobile' : 'desktop', source })
   const advance = (session, stepId) => ok(`/api/public/flows/${slug}/sessions/advance`, { sessionId: session.sessionId, sessionToken: session.sessionToken, stepId })
   const submit = async (session, answers, key, disposition) => {
-    const input = { sessionId: session.sessionId, sessionToken: session.sessionToken, idempotencyKey: key, answers }
+    const input = { sessionId: session.sessionId, sessionToken: session.sessionToken, loadTime: session.loadTime, idempotencyKey: key, answers }
     const receipt = await ok(`/api/public/flows/${slug}/responses`, input)
     assert.equal(receipt.idempotent, false); assert.equal(receipt.disposition, disposition)
     assert.equal(receipt.completionStepId, completion.id)

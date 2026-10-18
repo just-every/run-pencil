@@ -27,7 +27,7 @@ test('owner recovery command round-trips a kit-created installation filled throu
     await fixture.call('/api/public/flows/preserved-form/sessions/advance',resume(),204);
     // A respondent who completed the form holds a resume credential too.
     const finished=await fixture.call('/api/public/flows/preserved-form/sessions',{deviceClass:'desktop'},201);
-    const submission={sessionId:finished.sessionId,sessionToken:finished.sessionToken,idempotencyKey:'completed-before-backup',answers:finished.flow.steps.filter(step=>step.kind==='question').map(step=>({stepId:step.id,value:step.questionType==='single_choice'?finished.flow.choices.find(choice=>choice.stepId===step.id).id:step.questionType==='long_text'?'Completed answer':5}))};
+    const submission={sessionId:finished.sessionId,sessionToken:finished.sessionToken,loadTime:finished.loadTime,idempotencyKey:'completed-before-backup',answers:finished.flow.steps.filter(step=>step.kind==='question').map(step=>({stepId:step.id,value:step.questionType==='single_choice'?finished.flow.choices.find(choice=>choice.stepId===step.id).id:step.questionType==='long_text'?'Completed answer':5}))};
     await fixture.call('/api/public/flows/preserved-form/responses',submission,201);
     assert.ok(network.length>0);
     assert.ok(source.prepare("SELECT count(*) n FROM mail_deliveries WHERE status='sent'").get().n>0);

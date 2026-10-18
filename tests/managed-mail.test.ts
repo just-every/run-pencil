@@ -1,3 +1,4 @@
+import { issueLoadTime } from '../src/core/features/traffic/loadTime'
 import { expect } from 'vitest'
 import { contract } from '../src/test/contract'
 import type { BuilderDraft } from '../src/core/app/api'
@@ -60,10 +61,10 @@ contract(['OPER-003', 'NOTIFY-002', 'NOTIFY-003', 'NOTIFY-004', 'BASE-SECRET-001
     const current = await draft()
     await json(`${path}/publish`, { expectedVersion: current.flow.draftVersion })
     async function submit() {
-      const session = await json<{ sessionId: string; sessionToken: string }>('/api/public/flows/managed-feedback/sessions', { deviceClass: 'desktop', source: 'direct' })
+      const session = await json<{ sessionId: string; sessionToken: string; revisionId: string; loadTime: string }>('/api/public/flows/managed-feedback/sessions', { deviceClass: 'desktop', source: 'direct' })
       await db.prepare('UPDATE respondent_sessions SET created_at=? WHERE id=?').bind(new Date(Date.now() - 5000).toISOString(), session.sessionId).run()
       await json('/api/public/flows/managed-feedback/responses', { sessionId: session.sessionId,
-        sessionToken: session.sessionToken, idempotencyKey: crypto.randomUUID(),
+        sessionToken: session.sessionToken, loadTime: await issueLoadTime(bindings.SESSION_SECRET, session.revisionId, Date.now()-5000), idempotencyKey: crypto.randomUUID(),
         answers: [{ stepId: current.steps[0].id, value: 'PRIVATE-ANSWER-NEVER-MAILED' }] })
     }
     const state = () => json<{ mode: string; senderError: string | null; daily?: { nextOpening: string }; deliveries: Array<{ id: string; status: string; attempts: number; availableAt: string; reason: string | null; day?: string }> }>(`${path}/notifications`)

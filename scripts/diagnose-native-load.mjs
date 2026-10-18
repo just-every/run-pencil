@@ -57,7 +57,7 @@ try {
   const finals = await Promise.all(Array.from({ length: 30 }, (_, index) => start(500 + index)))
   await new Promise(resolve => setTimeout(resolve, 3100))
   const finalSubmission = await measure('finalSubmission', 30, 10, async index => {
-    const response = await call(`${root}/responses`, 500 + index, { sessionId: finals[index].sessionId, sessionToken: finals[index].sessionToken, idempotencyKey: `load-submission-${index}`, answers: [{ stepId: rating.id, value: 5 }, { stepId: choiceQuestion.id, value: choice.id }] })
+    const response = await call(`${root}/responses`, 500 + index, { sessionId: finals[index].sessionId, sessionToken: finals[index].sessionToken, loadTime: finals[index].loadTime, idempotencyKey: `load-submission-${index}`, answers: [{ stepId: rating.id, value: 5 }, { stepId: choiceQuestion.id, value: choice.id }] })
     assert.equal(response.status(), 201)
     const receipt = await response.json(); assert.equal(receipt.disposition, 'released'); assert.equal(receipt.idempotent, false)
   })
