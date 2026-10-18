@@ -32,7 +32,7 @@ function retainedContext(contextJson: string, settingsJson: string, participantI
     if (value !== null && (calculation.type === 'number' ? typeof value !== 'number' || !Number.isFinite(value) : typeof value !== 'string')) throw new Error('A retained calculation does not match its published type.')
     return [{ id: calculation.id, name: calculation.name, type: calculation.type, value }]
   })
-  return { hiddenFields, calculations, identityMode: context.identityMode ?? (participantId ? 'identified' as const : 'anonymous' as const), discardedParameters: context.discarded ?? 0 }
+  return { hiddenFields, calculations, identityMode: participantId ? 'identified' as const : context.identityMode ?? 'anonymous' as const, discardedParameters: context.discarded ?? 0 }
 }
 
 export class ReportingRepository {

@@ -78,6 +78,22 @@ contract('FIELD-001','collects only declared typed link values, routes present a
   expect(await refused.text()).toContain('condition 1')
   expect((await f.call(`${f.base}/draft/settings`,{settings:f.settings,expectedVersion:draft.flow.draftVersion},{method:'PUT'})).status).toBe(200)
   expect(await (await f.call(`/api/public/flows/${f.slug}`)).json()).toMatchObject({formSettings:f.settings})
+  const contactResponse=await f.call('/api/app/distribution/contacts',{name:'Invited customer',email:'invited@example.test'})
+  expect(contactResponse.status).toBe(201)
+  const contact=await contactResponse.json() as {id:string}
+  const launch=await f.call(`${f.base}/distribution`,{contactIds:[contact.id],commandKey:crypto.randomUUID()})
+  expect(launch.status,await launch.clone().text()).toBe(201)
+  const participant=await env.DB.prepare('SELECT token FROM invitation_participants WHERE contact_id=?').bind(contact.id).first<{token:string}>()
+  const session=await (await f.call(`/api/public/flows/${f.slug}/sessions`,{deviceClass:'desktop',source:'direct',invitationToken:participant!.token})).json() as {sessionId:string;sessionToken:string;revisionId:string}
+  const invited=await f.call(`/api/public/flows/${f.slug}/responses`,{...session,invitationToken:participant!.token,loadTime:await issueLoadTime(env.SESSION_SECRET,session.revisionId,Date.now()-5000),idempotencyKey:crypto.randomUUID(),answers:[{stepId:f.question.id,value:12}],hidden:{plan:'enterprise'}})
+  expect(invited.status,await invited.clone().text()).toBe(201)
+  const receipt=await invited.json() as {responseId:string}
+  const invitedLedger=await (await f.call(`${f.base}/ledger`)).json() as Ledger
+  expect(invitedLedger.responses.find(row=>row.id===receipt.responseId)).toMatchObject({identityMode:'identified',participant:{name:'Invited customer',email:'invited@example.test'}})
+  const stored=await env.DB.prepare('SELECT response_context_json AS context FROM responses WHERE id=?').bind(receipt.responseId).first<{context:string}>()
+  expect(JSON.parse(stored!.context).identityMode).toBe('identified')
+  await env.DB.prepare("UPDATE responses SET response_context_json=json_set(response_context_json,'$.identityMode','anonymous') WHERE id=?").bind(receipt.responseId).run()
+  expect(((await (await f.call(`${f.base}/ledger`)).json()) as Ledger).responses.find(row=>row.id===receipt.responseId)?.identityMode).toBe('identified')
 },60_000)
 
 contract('FIELD-001','requires identified publication for identity fields and rejects merge tags, invalid values and anonymous click IDs',async()=>{

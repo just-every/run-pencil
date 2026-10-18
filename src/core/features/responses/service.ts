@@ -224,6 +224,7 @@ export class ResponseService {
     const { steps, choices, rules } = await this.flowRepository.getRevisionGraph(revision.id)
     const settings = formSettings(revision.formSettingsJson)
     const hiddenContext = normalizeHidden(settings,input.hidden ?? {})
+    if(invitation) hiddenContext.identityMode='identified'
     const { accepted: acceptedAnswers, completionStepId, reachedStepIds } = this.validatePathAnswers(steps, choices, rules, input.answers, revisionBranchSelection(revision.policySnapshotJson),hiddenAnswers(hiddenContext),settings)
     if(settings.calculations?.length) hiddenContext.calculations=evaluateCalculations(settings.calculations ?? [],Object.fromEntries(acceptedAnswers.map(answer=>[answer.stepId,answer.value])),hiddenContext.hidden)
     const now = new Date().toISOString()
