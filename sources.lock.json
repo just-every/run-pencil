@@ -5101,7 +5101,7 @@
       "executable": false
     },
     "src/core/features/results/ui/ResponseLedger.tsx": {
-      "sha256": "b268e16144d49b978f7eaae8246385c4b4f584ebfec2dc705b43fba20b4d492e",
+      "sha256": "797de569df652f71923d5b7468795576dffa43b0159ee7c8bbe68aae93240ffb",
       "executable": false
     },
     "src/core/features/results/ui/results.css": {

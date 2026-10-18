@@ -48,7 +48,7 @@ export function ResponseLedger({ flowId, revisionId, timeZone, questions, onChan
     setExporting(true); setError(undefined); setExportNotice(undefined)
     try {
       const result = await downloadResponses(flowId, { ...filter, offset: undefined }, format, includeAutomatedExclusions)
-      setExportNotice(`${result.total} responses exported at ${result.cutoff}. ${result.includedQuarantined} automated exclusions included; ${result.excludedQuarantined} quarantined responses excluded.`)
+      setExportNotice(`${result.total} ${includeAutomatedExclusions ? 'responses' : 'released responses'} exported at ${result.cutoff}. ${result.includedQuarantined} automated exclusions included; ${result.excludedQuarantined} quarantined responses excluded.`)
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'Export failed.') } finally { setExporting(false) }
   }
   const answerQuestion = questions.find(question => question.id === filter.answerStepId)
