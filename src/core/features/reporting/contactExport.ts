@@ -4,12 +4,12 @@ import { Buffer } from 'node:buffer'
 import { contactExportFields } from '../../shared/contactAnswers'
 import { ValidationError } from '../../shared/errors'
 import { isContactType } from './contactReports'
-import { responseScope } from './scope'
+import { responseScope, type ResponseSelection } from './scope'
 import type { LedgerFilter, LedgerResponse } from './repository'
 
 /** The selected revision inventory is frozen even when an optional answer is blank. */
-export async function contactColumnInventory(db: D1Database, workspaceId: string, flowId: string, filter: LedgerFilter, cutoff: string, signal?: AbortSignal) {
-  const { where, bindings } = responseScope(workspaceId, flowId, filter, cutoff)
+export async function contactColumnInventory(db: D1Database, workspaceId: string, flowId: string, filter: LedgerFilter, cutoff: string, signal?: AbortSignal, state: ResponseSelection = 'released') {
+  const { where, bindings } = responseScope(workspaceId, flowId, filter, cutoff, state)
   const columns = new Set<string>()
   let after = ''
   for (;;) {

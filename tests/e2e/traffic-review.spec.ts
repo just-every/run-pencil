@@ -32,7 +32,7 @@ async function trainingForm(page:import('@playwright/test').Page,withOther=false
   return {flow,root,call,origin,revisionId:published.revision.id}
 }
 
-contract('RSLT-013','an operator reviews and releases a retained bot exclusion without changing views or starts',async({page},info)=>{
+contract(['RSLT-013','RESP-016'],'an operator reviews and releases a retained bot exclusion without changing views or starts',async({page},info)=>{
   const f=await trainingForm(page,true)
   await page.goto(`/f/${f.flow.slug}`)
   await expect(page.locator('.respondent-shell[data-hydrated=true]')).toBeVisible()
@@ -47,6 +47,29 @@ contract('RSLT-013','an operator reviews and releases a retained bot exclusion w
   const review=page.getByRole('region',{name:'Quarantined responses'})
   await expect(review.getByText('Held for review: the hidden bot-check field was filled.',{exact:true})).toBeVisible()
   await expect(review.locator('dd')).toContainText('Please keep this feedback for a person to review.')
+  const ledger=page.getByRole('region',{name:'Response ledger'})
+  const include=ledger.getByRole('checkbox',{name:'Include automated exclusions in exports'})
+  await expect(include).not.toBeChecked()
+  const download=async(format:'JSON'|'CSV')=>{
+    const pending=page.waitForEvent('download')
+    await ledger.getByRole('button',{name:'Export '+format,exact:true}).click()
+    const file=await pending
+    const stream=await file.createReadStream()
+    const chunks:Buffer[]=[]
+    for await(const chunk of stream!)chunks.push(Buffer.from(chunk))
+    return Buffer.concat(chunks).toString('utf8')
+  }
+  expect(JSON.parse(await download('JSON')).responses).toEqual([])
+  await include.check()
+  const exported=JSON.parse(await download('JSON'))
+  expect(exported.responses).toHaveLength(1)
+  expect(exported.responses[0]).toMatchObject({state:'quarantined',quarantineReason:'honeypot',releasedAt:null})
+  expect(JSON.stringify(exported.responses[0].answers)).toContain('Please keep this feedback')
+  const csv=await download('CSV')
+  expect(csv).toContain('honeypot')
+  expect(csv).toContain('Please keep this feedback')
+  await expect(ledger.getByRole('status')).toContainText('1 automated exclusions included')
+  await ledger.screenshot({path:`test-results/${info.project.name}-retained-exclusion-export.png`})
   await review.screenshot({path:`test-results/${info.project.name}-traffic-quarantine.png`})
   await review.getByRole('button',{name:'Release into results',exact:true}).click()
   await expect(review.getByText('No quarantined responses for this revision.',{exact:true})).toBeVisible()

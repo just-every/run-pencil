@@ -46,7 +46,7 @@ contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'FLOW-019', 'IMPORT-003', 'RSLT-00
     expect(snapshot.excludedQuarantined).toBe(0)
     for (const response of snapshot.responses) {
       expect(response.answers.find(answer => answer.questionType === 'consent')?.value).toEqual({ accepted: value !== 'false', statement: consentStatement })
-      expect(response.completedAt <= snapshot.cutoff && response.releasedAt <= snapshot.cutoff).toBe(true)
+      expect(response.completedAt <= snapshot.cutoff && response.releasedAt !== null && response.releasedAt <= snapshot.cutoff).toBe(true)
     }
     for (const [source, revisionId, expectedId] of [['direct', scenario.nativeRevisionId, expected.find(id => id === scenario.nativePositive.responseId || id === scenario.nativeNegative.responseId)!], ['imported', scenario.importedRevisionId, expected.find(id => id === scenario.importedPositive.id || id === scenario.importedNegative.id)!]]) {
       params.set('source', source); params.set('revisionId', revisionId)

@@ -43,15 +43,15 @@ export function registerReportingRoutes(app: Hono<WorkerEnvironment>, services: 
     return context.json(await textPage(context.get('platform').databaseBinding,context.get('platform').configuration.sessionSecret,{workspaceId:session.workspaceId,sessionId:session.id,flowId:context.req.param('flowId')},context.req.valid('json'),context.req.raw.signal))
   })
   app.get('/api/app/export-worker.js', context => new Response(downloadWorker, { headers: { 'Content-Type': 'text/javascript; charset=utf-8', 'Service-Worker-Allowed': '/app/exports/', 'Cache-Control':'no-store' } }))
-  app.get('/api/app/flows/:flowId/responses/export/start', zValidator('param', z.object({flowId:resourceId})), zValidator('query',filter.extend({format:z.enum(['json','csv'])})), async context => {
+  app.get('/api/app/flows/:flowId/responses/export/start', zValidator('param', z.object({flowId:resourceId})), zValidator('query',filter.extend({format:z.enum(['json','csv']),includeAutomatedExclusions:z.enum(['true','false']).transform(value=>value==='true').default(false)})), async context => {
     const session = context.get('operatorSession')
-    const {format,...selected} = context.req.valid('query')
-    return context.json(await startExport(context.get('platform').databaseBinding,context.get('platform').configuration.sessionSecret,{workspaceId:session.workspaceId,sessionId:session.id,flowId:context.req.param('flowId')},selected,format,context.req.raw.signal))
+    const {format,includeAutomatedExclusions,...selected} = context.req.valid('query')
+    return context.json(await startExport(context.get('platform').databaseBinding,context.get('platform').configuration.sessionSecret,{workspaceId:session.workspaceId,sessionId:session.id,flowId:context.req.param('flowId')},selected,format,context.req.raw.signal,includeAutomatedExclusions))
   })
-  app.post('/api/app/flows/:flowId/responses/export/start', zValidator('param', z.object({flowId:resourceId})), zValidator('json',filter.extend({format:z.enum(['json','csv'])})), async context => {
+  app.post('/api/app/flows/:flowId/responses/export/start', zValidator('param', z.object({flowId:resourceId})), zValidator('json',filter.extend({format:z.enum(['json','csv']),includeAutomatedExclusions:z.boolean().default(false)})), async context => {
     const session = context.get('operatorSession')
-    const {format,...selected} = context.req.valid('json')
-    return context.json(await startExport(context.get('platform').databaseBinding,context.get('platform').configuration.sessionSecret,{workspaceId:session.workspaceId,sessionId:session.id,flowId:context.req.param('flowId')},selected,format,context.req.raw.signal))
+    const {format,includeAutomatedExclusions,...selected} = context.req.valid('json')
+    return context.json(await startExport(context.get('platform').databaseBinding,context.get('platform').configuration.sessionSecret,{workspaceId:session.workspaceId,sessionId:session.id,flowId:context.req.param('flowId')},selected,format,context.req.raw.signal,includeAutomatedExclusions))
   })
   app.get('/api/app/flows/:flowId/responses/export', zValidator('param', z.object({flowId:resourceId})), zValidator('query',z.object({token:z.string().min(1).max(65536)})), async context => {
     const session = context.get('operatorSession')

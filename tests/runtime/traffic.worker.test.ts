@@ -104,7 +104,7 @@ contract('RSLT-013','anonymous view and durable start buckets report native conv
   expect((await report()).totals.views).toBe(6)
 })
 
-contract('RSLT-013','signed form-load timing and retained bot exclusions leave anonymous view and start counters unchanged on review',async()=>{
+contract(['RSLT-013','RESP-016'],'signed form-load timing and retained bot exclusions leave anonymous view and start counters unchanged on review',async()=>{
   const {id}=await call<{id:string}>('/api/app/flows',{title:'Training evaluation',slug:'traffic-load-time',template:'feedback'})
   const root=`/api/app/flows/${id}`
   const draft=await call<BuilderDraft>(root+'/draft')
@@ -151,10 +151,39 @@ contract('RSLT-013','signed form-load timing and retained bot exclusions leave a
     const result=await env.DB.batch(['revision_view_counters','revision_start_counters'].map(table=>env.DB.prepare(`SELECT * FROM ${table} WHERE revision_id=? ORDER BY source,day`).bind(revisionId)))
     return result.map(item=>item.results)
   }
+  // Response exports have a separate explicit opt-in; review and counters are untouched.
+  const exportStart = async (format: 'json'|'csv', includeAutomatedExclusions = false, extra = {}) => call<{token:string;total:number;includedQuarantined:number;excludedQuarantined:number}>(root+'/responses/export/start',{format,includeAutomatedExclusions,...extra})
+  const readExport = async (token:string) => {
+    let next:string|null=token, text=''
+    while(next) {
+      const part=await request(root+'/responses/export',{token:next})
+      expect(part.status).toBe(200)
+      text+=new TextDecoder().decode(await part.arrayBuffer());next=part.headers.get('X-Export-Next')
+    }
+    return text
+  }
+  const ordinary=await exportStart('json')
+  expect(ordinary).toMatchObject({total:1,includedQuarantined:0,excludedQuarantined:2})
+  expect(JSON.parse(await readExport(ordinary.token)).responses.map((row:{id:string})=>row.id)).toEqual([humanReceipt.responseId])
+  const selected=await exportStart('json',true,{revisionId})
+  expect(selected).toMatchObject({total:3,includedQuarantined:2,excludedQuarantined:0})
+  const exported=JSON.parse(await readExport(selected.token))
+  expect(exported.includeAutomatedExclusions).toBe(true)
+  expect(exported.responses.filter((row:{state:string})=>row.state==='quarantined').map((row:{quarantineReason:string})=>row.quarantineReason).sort()).toEqual(['honeypot','minimum-fill-time'])
+  expect(exported.responses.every((row:{answers:unknown[]})=>row.answers.length===1)).toBe(true)
+  expect(exported.responses.find((row:{id:string})=>row.id===botReceipt.responseId)).toMatchObject({releasedAt:null,state:'quarantined',quarantineReason:'honeypot'})
+  const csvStart=await exportStart('csv',true)
+  const csv=await readExport(csvStart.token)
+  for(const value of [humanReceipt.responseId,earlyReceipt.responseId,botReceipt.responseId,'honeypot','minimum-fill-time'])expect(csv).toContain(value)
+  expect((await exportStart('json',true,{source:'imported'})).total).toBe(0)
+  expect((await request(root+'/responses/export/start',{format:'json',includeAutomatedExclusions:'yes'})).status).toBe(400)
+  expect((await request(root+'/responses/export/start',{format:'json',includeAutomatedExclusions:true},'POST',false)).status).toBe(401)
+  expect((await report()).totals).toEqual({views:3,starts:3,submissions:1})
   const before=await counters()
   await call(`/api/app/responses/${earlyReceipt.responseId}/release`,{})
   await call(`/api/app/responses/${botReceipt.responseId}/release`,{})
   expect(await counters()).toEqual(before)
+  expect((await request(root+'/responses/export',{token:selected.token})).status).toBe(400)
   expect((await report()).totals).toEqual({views:3,starts:3,submissions:3})
   const retried=await submit(bot,botLoad.loadTime,'automated website')
   expect(await retried.json()).toMatchObject({responseId:botReceipt.responseId,idempotent:true,disposition:'released'})

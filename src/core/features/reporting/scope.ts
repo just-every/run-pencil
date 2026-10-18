@@ -2,9 +2,14 @@ import { responseSearch } from './search'
 import { workflowScope } from '../submissions'
 import { structuredAnswerFilter } from './answerFilter'
 import type { LedgerFilter } from './repository'
-export function responseScope(workspaceId: string, flowId: string, filter: LedgerFilter, cutoff: string, state: 'released' | 'quarantined' = 'released') {
-    const parts = ['r.workspace_id = ?', 'r.flow_id = ?', 'r.state = ?', 'r.completed_at <= ?']
-    const bindings: unknown[] = [workspaceId, flowId, state, cutoff]
+export type ResponseSelection = 'released' | 'quarantined' | 'with-automated-exclusions' | 'automated-exclusions'
+export function responseScope(workspaceId: string, flowId: string, filter: LedgerFilter, cutoff: string, state: ResponseSelection = 'released') {
+    const parts = ['r.workspace_id = ?', 'r.flow_id = ?', 'r.completed_at <= ?']
+    const bindings: unknown[] = [workspaceId, flowId, cutoff]
+    const automated = "(r.state = 'quarantined' AND r.quarantine_reason IN ('honeypot','minimum-fill-time'))"
+    if (state === 'with-automated-exclusions') { parts.push(`((r.state = 'released' AND r.released_at <= ?) OR ${automated})`); bindings.push(cutoff) }
+    else if (state === 'automated-exclusions') parts.push(automated)
+    else { parts.push('r.state = ?'); bindings.push(state) }
     parts.push("(r.source != 'imported' OR EXISTS (SELECT 1 FROM form_import_targets t WHERE t.target_id = r.id AND t.kind = 'response' AND t.workspace_id = r.workspace_id AND t.committed_at <= ?))")
     bindings.push(cutoff)
     if (state === 'released') { parts.push('r.released_at <= ?'); bindings.push(cutoff) }

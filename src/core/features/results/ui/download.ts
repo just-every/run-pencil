@@ -1,5 +1,5 @@
 import { reportingApi, type LedgerFilter } from '../../../app/api'
-export async function downloadResponses(flowId: string, filter: LedgerFilter, format: 'json'|'csv') {
+export async function downloadResponses(flowId: string, filter: LedgerFilter, format: 'json'|'csv', includeAutomatedExclusions = false) {
   if (!('serviceWorker' in navigator)) throw new Error('Streamed downloads require a browser with service workers on HTTPS or localhost.')
   const registration = await navigator.serviceWorker.register('/api/app/export-worker.js',{scope:'/app/exports/'})
   const worker = registration.installing ?? registration.waiting ?? registration.active
@@ -7,7 +7,7 @@ export async function downloadResponses(flowId: string, filter: LedgerFilter, fo
   if (worker.state !== 'activated') await new Promise<void>((resolve,reject)=> {
     worker.addEventListener('statechange',()=> { if (worker.state === 'activated') resolve(); if (worker.state === 'redundant') reject(new Error('The download worker could not start.')) })
   })
-  const start = await reportingApi.startExport(flowId,filter,format)
+  const start = await reportingApi.startExport(flowId,filter,format,includeAutomatedExclusions)
   const channel = crypto.randomUUID()
   await new Promise<void>((resolve) => {
     const ports = new MessageChannel()

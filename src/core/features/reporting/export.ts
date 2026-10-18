@@ -1,31 +1,32 @@
 import { NotFoundError, ValidationError } from '../../shared/errors'
 import { checkGeneration, generation, openCursor, sealCursor, type EvidenceScope } from './cursor'
 import { ReportingRepository, type LedgerFilter, type LedgerResponse } from './repository'
-import { responseScope } from './scope'
+import { responseScope, type ResponseSelection } from './scope'
 import { contactColumnInventory, contactColumns, contactRecord } from './contactExport'
-export type ExportCursor = EvidenceScope & { kind: 'export'; filter: LedgerFilter; format: 'json' | 'csv'; contactInventory?: string; total: number; excludedQuarantined: number; written: number; after?: {time:string;id:string} }
+export type ExportCursor = EvidenceScope & { kind: 'export'; filter: LedgerFilter; format: 'json' | 'csv'; includeAutomatedExclusions: boolean; includedQuarantined: number; contactInventory?: string; total: number; excludedQuarantined: number; written: number; after?: {time:string;id:string} }
 export type ExportIdentity = { workspaceId: string; sessionId: string; flowId: string }
-export async function startExport(db: D1Database, secret: string, identity: ExportIdentity, filter: LedgerFilter, format: 'json' | 'csv', signal?: AbortSignal) {
+export async function startExport(db: D1Database, secret: string, identity: ExportIdentity, filter: LedgerFilter, format: 'json' | 'csv', signal?: AbortSignal, includeAutomatedExclusions = false) {
   signal?.throwIfAborted()
   const repository = new ReportingRepository(db)
   if (!await repository.flow(identity.workspaceId,identity.flowId)) throw new NotFoundError('This flow is not available in your workspace.')
   const scope = { ...identity, generation: await generation(db,identity.workspaceId), cutoff: new Date().toISOString() }
-  const counts = await db.batch(['released','quarantined'].map(state => {
-    const {where,bindings} = responseScope(identity.workspaceId,identity.flowId,filter,scope.cutoff,state as 'released'|'quarantined')
+  const counts = await db.batch((['released','quarantined','automated-exclusions'] as ResponseSelection[]).map(state => {
+    const {where,bindings} = responseScope(identity.workspaceId,identity.flowId,filter,scope.cutoff,state)
     return db.prepare(`SELECT COUNT(*) AS count FROM responses r WHERE ${where}`).bind(...bindings)
   }))
-  const contactInventory = format === 'csv' ? await contactColumnInventory(db, identity.workspaceId, identity.flowId, filter, scope.cutoff, signal) : undefined
+  const contactInventory = format === 'csv' ? await contactColumnInventory(db, identity.workspaceId, identity.flowId, filter, scope.cutoff, signal, includeAutomatedExclusions ? 'with-automated-exclusions' : 'released') : undefined
   signal?.throwIfAborted()
   await checkGeneration(db,scope)
-  const cursor: ExportCursor = { kind: 'export', ...scope, filter: { ...filter, offset: undefined }, format, contactInventory, total: (counts[0].results[0] as {count:number}).count, excludedQuarantined: (counts[1].results[0] as {count:number}).count, written: 0 }
+  const includedQuarantined = includeAutomatedExclusions ? (counts[2].results[0] as {count:number}).count : 0
+  const cursor: ExportCursor = { kind: 'export', ...scope, filter: { ...filter, offset: undefined }, format, contactInventory, includeAutomatedExclusions, includedQuarantined, total: (counts[0].results[0] as {count:number}).count + includedQuarantined, excludedQuarantined: (counts[1].results[0] as {count:number}).count - includedQuarantined, written: 0 }
   const token = await sealCursor(cursor,secret)
   if (token.length > 62000) throw new ValidationError('This export exceeds the report cursor size limit. Narrow the selected responses and export again.')
-  return { token, cutoff: scope.cutoff, total: cursor.total, excludedQuarantined: cursor.excludedQuarantined, filename: `pencil-responses-${scope.cutoff.replaceAll(':','-')}.${format}`, format }
+  return { token, cutoff: scope.cutoff, total: cursor.total, includedQuarantined, includeAutomatedExclusions, excludedQuarantined: cursor.excludedQuarantined, filename: `pencil-responses-${scope.cutoff.replaceAll(':','-')}.${format}`, format }
 }
 const csv = (value: unknown) => `"${String(value ?? '').replaceAll('"','""')}"`
-export const csvHeader = 'response_id,revision_id,revision_number,source,started_at,completed_at,released_at,participant_json,answers_json,cutoff,excluded_quarantined,omitted_questions_json,collector_id,collector_name,collector_channel'
+export const csvHeader = 'response_id,revision_id,revision_number,source,started_at,completed_at,released_at,participant_json,answers_json,cutoff,excluded_quarantined,omitted_questions_json,collector_id,collector_name,collector_channel,response_state,exclusion_reason'
 export function csvRecord(row: LedgerResponse, cursor: Pick<ExportCursor,'cutoff'|'excludedQuarantined'|'contactInventory'>, columns = contactColumns(cursor.contactInventory)) {
-  return '\r\n'+[row.id,row.revisionId,row.revisionNumber,row.source,row.startedAt,row.completedAt,row.releasedAt,row.participant ? JSON.stringify(row.participant) : '',JSON.stringify(row.answers),cursor.cutoff,cursor.excludedQuarantined,JSON.stringify(row.omittedQuestions),row.collector.id,row.collector.name,row.collector.channel,...contactRecord(row, columns)].map(csv).join(',')
+  return '\r\n'+[row.id,row.revisionId,row.revisionNumber,row.source,row.startedAt,row.completedAt,row.releasedAt,row.participant ? JSON.stringify(row.participant) : '',JSON.stringify(row.answers),cursor.cutoff,cursor.excludedQuarantined,JSON.stringify(row.omittedQuestions),row.collector.id,row.collector.name,row.collector.channel,row.state,row.quarantineReason,...contactRecord(row, columns)].map(csv).join(',')
 }
 export async function exportPart(db: D1Database, secret: string, identity: ExportIdentity, token: string, signal: AbortSignal) {
   const cursor = await openCursor<ExportCursor>(token,secret)
@@ -33,7 +34,7 @@ export async function exportPart(db: D1Database, secret: string, identity: Expor
   if (Object.entries(identity).some(([key,value]) => cursor[key as keyof ExportCursor] !== value)) throw new ValidationError('This export belongs to a different session or flow.')
   signal.throwIfAborted()
   await checkGeneration(db,cursor)
-  const page = await new ReportingRepository(db).ledger(identity.workspaceId,identity.flowId,cursor.filter,cursor.cutoff,'released',32,{ total: cursor.total, after: cursor.after },signal,'export')
+  const page = await new ReportingRepository(db).ledger(identity.workspaceId,identity.flowId,cursor.filter,cursor.cutoff,cursor.includeAutomatedExclusions ? 'with-automated-exclusions' : 'released',32,{ total: cursor.total, after: cursor.after },signal,'export')
   signal.throwIfAborted()
   await checkGeneration(db,cursor)
   const last = page.responses.at(-1)
@@ -53,7 +54,7 @@ export async function exportPart(db: D1Database, secret: string, identity: Expor
         if (!started) {
           started = true
           if (cursor.written === 0) {
-            controller.enqueue(encoder.encode(cursor.format === 'csv' ? csvHeader + columns.map(column => ',' + csv(column)).join('') : JSON.stringify({ cutoff: cursor.cutoff, filter: cursor.filter, excludedQuarantined: cursor.excludedQuarantined }).slice(0,-1)+',"responses":['))
+            controller.enqueue(encoder.encode(cursor.format === 'csv' ? csvHeader + columns.map(column => ',' + csv(column)).join('') : JSON.stringify({ cutoff: cursor.cutoff, filter: cursor.filter, excludedQuarantined: cursor.excludedQuarantined, includedQuarantined: cursor.includedQuarantined, includeAutomatedExclusions: cursor.includeAutomatedExclusions }).slice(0,-1)+',"responses":['))
             return
           }
         }
