@@ -4401,11 +4401,11 @@
       "executable": false
     },
     "src/core/features/flows/ui/authoring.css": {
-      "sha256": "12b0572117f6e19cacd6b5e5c82e3946195b1ef62cbddeea080f1130affd4b9c",
+      "sha256": "a3c2f8207fda2db73ec6d02fb7427e7837c8534eb9414662b6ae5d9dbe3d026a",
       "executable": false
     },
     "src/core/features/flows/ui/BranchEditor.tsx": {
-      "sha256": "6c86386c05fbd312445c22432f31e1f6b4e690826c0893ffa180a964901f1438",
+      "sha256": "578e78c1c5909ef0fa2b8950a209da1a69aeeedaa177e6403da8d09b3feb820f",
       "executable": false
     },
     "src/core/features/flows/ui/ChoiceBulkEditor.tsx": {
@@ -4429,7 +4429,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/FlowBuilderPage.tsx": {
-      "sha256": "f25811caa755edf801dc99e2d96dfe0f995b59a66aee5d240e45d473a07f281a",
+      "sha256": "fa59a91dbd89f9e9af782f45b9e4adf2ff9a09a00e81837db986589e9ff1ba6e",
       "executable": false
     },
     "src/core/features/flows/ui/FlowSharePanel.tsx": {
@@ -6013,7 +6013,7 @@
       "executable": false
     },
     "tests/e2e/conditions.spec.ts": {
-      "sha256": "4ab1e58c54806f74ec52bc45e6d9911c239936fe2126b1cdcfabbfc482910e20",
+      "sha256": "ffc96adcd5d7d5123d7d90599f4f14cb7d580c791d89725891fe937090a5b864",
       "executable": false
     },
     "tests/e2e/contract.ts": {

@@ -10,12 +10,12 @@ import { stepRules, type AuthoringDraft, type EditableChoice, type EditableRule 
 import { StepCanvas } from './StepCanvas'
 import { ChoiceEditor } from './ChoiceEditor'
 import { DistributionPanel } from '../../distribution'
-import { ArrowDown, ArrowLeft, ArrowUp, Copy, Eye, Plus, Save, Send, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUp, GitBranch, Copy, Eye, Plus, Save, Send, Trash2 } from 'lucide-react'
 import { Link, useParams, useRouter } from '@tanstack/react-router'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useProtectUnsavedChanges } from '../../../shared/ui/UnsavedChanges'
 import { timeZoneName, zonedInstant } from '../../../shared/timeZone'
-import { BranchEditor } from './BranchEditor'
+import { BranchEditor, supportsAnswerPaths } from './BranchEditor'
 import { DraftPreview } from './DraftPreview'
 import { FlowSharePanel } from './FlowSharePanel'
 import { api, ApiError, type FlowStep } from '../../../app/api'
@@ -51,6 +51,7 @@ export function FlowBuilderPage() {
   const [canvasAnswer, setCanvasAnswer] = useState<unknown>()
   const [previewing, setPreviewing] = useState(false)
   const [sharing, setSharing] = useState(false)
+  const [showAnswerPaths, setShowAnswerPaths] = useState(false)
   const [timeZone, setTimeZone] = useState<string>()
   const [timeZoneError, setTimeZoneError] = useState<string>()
   const [deadline, setDeadline] = useState('')
@@ -79,6 +80,7 @@ export function FlowBuilderPage() {
 
   useLayoutEffect(() => {
     if (selected) {
+      setShowAnswerPaths(false)
       setCanvasAnswer(undefined)
       setRules(stepRules(draft!, selected.id))
       setPrompt(selected.prompt)
@@ -285,8 +287,9 @@ export function FlowBuilderPage() {
               <button className="secondary-button focus-ring" disabled={saving || dirty || selectedIndex === draft.steps.length - 1} onClick={() => move(1)} aria-label="Move down" title="Move down" type="button"><ArrowDown aria-hidden="true" size={15} /></button>
               <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={() => reloadAfterMutation(() => api.duplicateDraftStep(flowId, selected.id, draft.flow.draftVersion))} type="button"><Copy aria-hidden="true" size={15} /> Duplicate</button>
               <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={() => { if (window.confirm(`Delete “${selected.prompt || stepLabel(selected)}”? Any branching rules that lead to this question will also be removed. Published responses stay unchanged.`)) void reloadAfterMutation(() => api.deleteDraftStep(flowId, selected.id, draft.flow.draftVersion)) }} type="button"><Trash2 aria-hidden="true" size={15} /> Delete</button>
+              {selected.kind === 'question' && !supportsAnswerPaths(questionType) && rules.length === 0 ? <button className="secondary-button focus-ring builder-path-toggle" type="button" aria-label="Answer paths" title="Answer paths" aria-expanded={showAnswerPaths} disabled={saving} onClick={() => setShowAnswerPaths(value => !value)}><GitBranch aria-hidden="true" size={15}/></button> : null}
             </div>
-            <BranchEditor disabled={saving} draft={{ ...draft, choices: [...draft.choices.filter(choice => choice.stepId !== selected.id), ...choices.map((choice, position) => ({ ...choice, id: choice.id ?? choice.newId!, stepId: selected.id, position }))] }} step={{ ...selected, questionType }} rules={rules} onChange={setRules} />
+            {supportsAnswerPaths(questionType) || rules.length > 0 || showAnswerPaths ? <BranchEditor disabled={saving} draft={{ ...draft, choices: [...draft.choices.filter(choice => choice.stepId !== selected.id), ...choices.map((choice, position) => ({ ...choice, id: choice.id ?? choice.newId!, stepId: selected.id, position }))] }} step={{ ...selected, questionType }} rules={rules} onChange={setRules} /> : null}
             <div className="builder-save">
               <button className="primary-button focus-ring" disabled={saving} onClick={save} type="button"><Save aria-hidden="true" size={16} /> {saving ? 'Saving…' : 'Save'}</button>
             </div>

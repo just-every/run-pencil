@@ -6,12 +6,14 @@ import type { EditableRule } from '../authoring'
 
 const comparisons = [ ['equals', 'is'], ['greater_than', 'is greater than'], ['greater_than_or_equal', 'is at least'], ['less_than', 'is less than'], ['less_than_or_equal', 'is at most'] ] as const
 
+export const supportsAnswerPaths = (type: FlowStep['questionType']) => ['single_choice', 'multiple_choice', 'rating', 'priority', 'dropdown', 'yes_no', 'consent', 'nps', 'number', 'date', 'csat', 'ces', 'emoji_rating', 'thumbs_rating'].includes(type ?? '')
+
 export function BranchEditor({ draft, step, rules, onChange: setRules, disabled = false }: { disabled?: boolean; draft: BuilderDraft; step: FlowStep; rules: EditableRule[]; onChange: (update: (current: EditableRule[]) => EditableRule[]) => void }) {
   const choices = draft.choices.filter(choice => choice.stepId === step.id)
   const destinations = draft.steps.filter((candidate) => candidate.id !== step.id && candidate.kind !== 'welcome')
   const operands = [...earlierRecallQuestions(draft, step.id), step].filter(item => item.position <= step.position)
   if (step.kind !== 'question') return null
-  const legacySupported = ['single_choice', 'multiple_choice', 'rating', 'priority', 'dropdown', 'yes_no', 'consent', 'nps', 'number', 'date', 'csat', 'ces', 'emoji_rating', 'thumbs_rating'].includes(step.questionType ?? '')
+  const legacySupported = supportsAnswerPaths(step.questionType)
   const update = (index: number, change: Partial<EditableRule>) => setRules((current) => current.map((rule, position) => position === index ? { ...rule, ...change } : rule))
   const move = (index: number, delta: number) => setRules((current) => {
     const result = [...current]; [result[index], result[index + delta]] = [result[index + delta], result[index]]; return result
