@@ -69,6 +69,8 @@ contract('FIELD-008','builds three classic pages, edits in-page visibility and c
   await page.getByRole('spinbutton',{name:'Number of locations',exact:true}).fill('2')
   await page.getByRole('button',{name:'Continue',exact:true}).click()
   await expect(page.getByRole('heading',{name:'Project details',exact:true})).toBeVisible()
+  await expect(page.getByRole('progressbar',{name:'Response progress'})).toHaveAttribute('aria-valuenow','33')
+  await expect(page.getByText('2 remaining',{exact:true})).toBeVisible()
   await page.getByRole('button',{name:'Back',exact:true}).click()
   await page.getByRole('group',{name:'Need installation?',exact:true}).getByRole('radio',{name:'No',exact:true}).click()
   await expect(page.getByRole('textbox',{name:'Installation address',exact:true})).toHaveCount(0)
