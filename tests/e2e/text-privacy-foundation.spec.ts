@@ -47,8 +47,11 @@ contract(['BASE-INPUT-002', 'BASE-PUBLIC-001', 'BASE-DATA-004', 'BASE-DATA-005']
     await expect(publicPage.getByRole('heading', { name: 'Text safely recorded' })).toBeVisible()
     await page.goto(`/app/flows/${flow.id}/results`)
     await page.getByRole('button', { name: /View answers/ }).click()
-    await expect(page.getByText(answer, { exact: true })).toHaveCount(2)
-    await expect(page.getByText(answer, { exact: true }).last()).toBeVisible()
+    for (const name of ['Answers', 'Response ledger', 'Retained text answers']) {
+      const literal = page.getByRole('region', { name, exact: true }).getByText(answer, { exact: true })
+      await expect(literal).toHaveCount(1)
+      await expect(literal).toBeVisible()
+    }
     for (const surface of [page, publicPage]) {
       expect(await surface.evaluate(() => (window as unknown as { pencilInjected?: boolean }).pencilInjected)).toBeUndefined()
       expect(await surface.locator('img[src*="tracker.invalid"], form[action*="tracker.invalid"]').count()).toBe(0)
