@@ -1,3 +1,4 @@
+import { completionRedirectIssues } from '../../shared/completionRedirect'
 import { calculationOperands, calculationInputs } from '../../shared/calculationInputs'
 import { validateCalculations } from '../../shared/calculationValidation'
 import { hiddenOperands, type FormSettings } from '../../shared/hiddenFields'
@@ -103,6 +104,7 @@ export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice
   const operands = [...hidden,...calculationOperands(calculations)]
   const issues: GraphIssue[] = validateScreens({formSettings:settings,steps:publicSteps(steps),choices:publicChoices(steps,choices),branchRules:publicRules(rules)})
   issues.push(...validateCalculations(calculations,publicSteps(steps),settings?.hiddenFields ?? [],publicChoices(steps,choices)).map(error=>({stepId:error.calculationId ?? 'flow',reason:error.message})))
+  issues.push(...completionRedirectIssues({steps:publicSteps(steps),choices:publicChoices(steps,choices),branchRules:publicRules(rules)},settings))
   const capacityIssue = structureLimitIssue(steps)
   if (capacityIssue) issues.push({ stepId: 'flow', reason: capacityIssue })
   const byStableId = new Map(steps.map((step) => [step.stableId, step]))

@@ -150,6 +150,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
     setPendingFinal(undefined)
     setUnconfirmedClosedFlow(undefined)
     setCompletedStepId(completion.id)
+    if (receipt.redirectUrl) window.location.assign(receipt.redirectUrl)
   }
 
   const restart = async () => {

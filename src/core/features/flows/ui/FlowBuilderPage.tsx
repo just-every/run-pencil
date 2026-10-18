@@ -1,3 +1,5 @@
+import { CompletionSettings } from './CompletionSettings'
+import { RedirectOriginsSettings } from './RedirectOriginsSettings'
 import { CalculationSettings } from './CalculationSettings'
 import { HiddenFieldsSettings } from './HiddenFieldsSettings'
 import { ScreenSettings } from './ScreenSettings'
@@ -35,6 +37,7 @@ export function FlowBuilderPage() {
   const router = useRouter()
   const { flowId } = useParams({ from: '/app/flows/$flowId/builder' })
   const [draft, setDraft] = useState<AuthoringDraft>()
+  const [redirectDirty,setRedirectDirty]=useState(false)
   const [calculationDirty,setCalculationDirty]=useState(false)
   const [settingsDirty,setSettingsDirty]=useState(false)
   const [draftRead, setDraftRead] = useState(0)
@@ -100,10 +103,10 @@ export function FlowBuilderPage() {
 
   const stepDirty = !!selected && (prompt !== selected.prompt || helperText !== (selected.helperText ?? '') || required !== selected.required || nextStepId !== selected.nextStepId || questionType !== selected.questionType || settingsText !== (selected.questionSettings ? JSON.stringify(selected.questionSettings, null, 2) : '') || JSON.stringify(choices) !== JSON.stringify((draft?.choices ?? []).filter((choice) => choice.stepId === selected.id).map((choice) => ({ id: choice.id, value: choice.value, label: choice.label }))))
   const branchDirty = !!selected && JSON.stringify(rules.map((rule, position) => ({ ...rule, position }))) !== JSON.stringify(stepRules(draft!, selected.id))
-  const dirty = stepDirty || branchDirty || settingsDirty || calculationDirty
+  const dirty = stepDirty || branchDirty || settingsDirty || calculationDirty || redirectDirty
   useProtectUnsavedChanges(dirty || !!deadline || !!target)
   const updateSetting = (name: string, value: string) => { const settings = settingsText ? JSON.parse(settingsText) : {}; if (value === '') delete settings[name]; else settings[name] = Number(value); setSettingsText(Object.keys(settings).length ? JSON.stringify(settings, null, 2) : '') }
-  const settings = settingsText ? JSON.parse(settingsText) as Record<string, string | number> : {}
+  const settings = settingsText ? JSON.parse(settingsText) as Record<string, unknown> : {}
 
   const reloadAfterMutation = async (work: () => Promise<{ kind: string; step?: { id: string } }>) => {
     if (!draft) return
@@ -145,7 +148,8 @@ export function FlowBuilderPage() {
       helperText: helperText || null,
       required,
       nextStepId,
-      ...(selected.kind === 'question' ? { questionType, choices, questionSettings } : {}),
+      questionSettings,
+      ...(selected.kind === 'question' ? { questionType, choices } : {}),
       expectedVersion: draft!.flow.draftVersion,
       rules: [...draft!.branchRules.filter(rule => rule.sourceStepId !== selected.id), ...rules.map((rule, position) => ({ ...rule, position }))],
     }
@@ -279,9 +283,10 @@ export function FlowBuilderPage() {
             }} value={questionType ?? ''}>{questionTypes.map(type => <option value={type} key={type}>{questionTypeLabels[type]}</option>)}</select></label> : null}
             {selected.kind === 'question' && ['single_choice', 'multiple_choice', 'priority', 'dropdown'].includes(questionType ?? '') ? <ChoiceEditor key={selected.id} disabled={saving} choices={choices} onChange={setChoices} /> : null}
             <SpecialChoicesEditor type={questionType} choices={choices} settings={settings} disabled={saving} onChoices={setChoices} onSettings={next => setSettingsText(JSON.stringify(next, null, 2))} />
+            {selected.kind==='completion'?<CompletionSettings draft={draft} stepId={selected.id} value={settings.redirect} disabled={saving} onChange={redirect=>{const next={...settings};if(redirect)next.redirect=redirect;else delete next.redirect;setSettingsText(JSON.stringify(next,null,2))}}/>:null}
             <TypeSettings type={questionType} settings={settings} disabled={saving} onChange={(key, value) => { const next: Record<string, unknown> = { ...settings }; if (value === undefined) delete next[key]; else next[key] = value; setSettingsText(Object.keys(next).length ? JSON.stringify(next, null, 2) : '') }} />
             {selected.kind === 'question' && questionType === 'rating' ? <RatingSettings settings={settings} disabled={saving} onChangeSettings={next => setSettingsText(JSON.stringify(next, null, 2))} /> : null}
-            {selected.kind === 'question' && questionType === 'multiple_choice' ? <div className="ledger-filters">{[['minSelections', 'Minimum selections', 1], ['maxSelections', 'Maximum selections', choices.length]].map(([key, label, fallback]) => <label className="inspector-field" key={key}>{label}<input disabled={saving} className="text-input" type="number" min={0} max={choices.length} value={settings[String(key)] ?? fallback} onChange={(event) => updateSetting(String(key), event.target.value)} /></label>)}</div> : null}
+            {selected.kind === 'question' && questionType === 'multiple_choice' ? <div className="ledger-filters">{[['minSelections', 'Minimum selections', 1], ['maxSelections', 'Maximum selections', choices.length]].map(([key, label, fallback]) => <label className="inspector-field" key={key}>{label}<input disabled={saving} className="text-input" type="number" min={0} max={choices.length} value={settings[String(key)] as number ?? fallback} onChange={(event) => updateSetting(String(key), event.target.value)} /></label>)}</div> : null}
             {selected.kind !== 'completion' ? <label className="inspector-field">Default next screen<select className="text-input" disabled={saving} onChange={(event) => setNextStepId(event.target.value || null)} value={nextStepId ?? ''}><option value="">Choose a screen</option>{draft.steps.filter((step) => step.id !== selected.id && step.kind !== 'welcome').map((step) => <option key={step.id} value={step.id}>{stepLabel(step)} · {step.prompt}</option>)}</select></label> : null}
             {selected.kind === 'question' ? <div className="toggle-row">
               <label htmlFor="step-required">Required response</label>
@@ -305,8 +310,9 @@ export function FlowBuilderPage() {
       </div>
       <details hidden={sharing} className="quiet-panel publication-options" aria-label="Publication limits"><summary className="focus-ring">Publication options</summary><p className="muted">Optional limits for the next publication. Deadlines use {publicationZone.name} and retain that zone if settings change. <Link to="/app/settings">Change time zone in Settings</Link>.</p>{publicationZone.error ? <p role="alert">{publicationZone.error}</p> : null}<div className="ledger-filters"><label className="inspector-field">Close at{timeZone ? ` (${publicationZone.name})` : ''}<input disabled={saving || !timeZone} className="text-input" type="datetime-local" value={deadline} onChange={(event) => setDeadline(event.target.value)} /></label><label className="inspector-field">Completed response target<input disabled={saving} className="text-input" type="number" min={1} step={1} placeholder="No target" value={target} onChange={(event) => setTarget(event.target.value)} /></label></div>
       <div className="revision-value-settings">
-      <HiddenFieldsSettings key={draftRead} settings={draft.formSettings ?? {hiddenFields:[],identityMode:'anonymous'}} onDirtyChange={setSettingsDirty} disabled={saving||stepDirty||branchDirty||calculationDirty||draft.flow.status==='archived'} onSave={async settings=>{setSaving(true);try {const result=await api.saveFormSettings(flowId,settings,draft.flow.draftVersion);if(result.kind==='conflict')throw new Error('Another operator saved first. Reload the draft before saving hidden fields.');await load();setNotice({tone:'success',message:'Saved.'})}finally{setSaving(false)}}} />
-      <CalculationSettings key={`calculations-${draftRead}`} draft={draft} calculations={draft.formSettings?.calculations ?? []} onDirtyChange={setCalculationDirty} disabled={saving||stepDirty||branchDirty||settingsDirty||draft.flow.status==='archived'} onSave={async calculations=>{setSaving(true);try {const result=await api.saveFormSettings(flowId,{...draft.formSettings!,calculations},draft.flow.draftVersion);if(result.kind==='conflict')throw new Error('Another operator saved first. Reload before saving calculations.');await load();setNotice({tone:'success',message:'Saved.'})}finally{setSaving(false)}}}/>
+      <HiddenFieldsSettings key={draftRead} settings={draft.formSettings ?? {hiddenFields:[],identityMode:'anonymous'}} onDirtyChange={setSettingsDirty} disabled={saving||stepDirty||branchDirty||calculationDirty||redirectDirty||draft.flow.status==='archived'} onSave={async settings=>{setSaving(true);try {const result=await api.saveFormSettings(flowId,settings,draft.flow.draftVersion);if(result.kind==='conflict')throw new Error('Another operator saved first. Reload the draft before saving hidden fields.');await load();setNotice({tone:'success',message:'Saved.'})}finally{setSaving(false)}}} />
+      <RedirectOriginsSettings key={`redirects-${draftRead}`} origins={draft.formSettings?.redirectOrigins ?? []} onDirtyChange={setRedirectDirty} disabled={saving||stepDirty||branchDirty||settingsDirty||calculationDirty||draft.flow.status==='archived'} onSave={async redirectOrigins=>{setSaving(true);try{const result=await api.saveFormSettings(flowId,{...draft.formSettings!,redirectOrigins},draft.flow.draftVersion);if(result.kind==='conflict')throw new Error('Another operator saved first. Reload before saving redirect origins.');await load();setNotice({tone:'success',message:'Saved.'})}finally{setSaving(false)}}}/>
+      <CalculationSettings key={`calculations-${draftRead}`} draft={draft} calculations={draft.formSettings?.calculations ?? []} onDirtyChange={setCalculationDirty} disabled={saving||stepDirty||branchDirty||settingsDirty||redirectDirty||draft.flow.status==='archived'} onSave={async calculations=>{setSaving(true);try {const result=await api.saveFormSettings(flowId,{...draft.formSettings!,calculations},draft.flow.draftVersion);if(result.kind==='conflict')throw new Error('Another operator saved first. Reload before saving calculations.');await load();setNotice({tone:'success',message:'Saved.'})}finally{setSaving(false)}}}/>
       </div>
       <SaveTeamTemplate key={draft.flow.id} flowId={flowId} version={draft.flow.draftVersion} title={draft.flow.title} published={draft.flow.status !== 'draft'} disabled={saving||dirty} /></details>
       <footer className="builder-lifecycle" aria-label="Flow lifecycle">

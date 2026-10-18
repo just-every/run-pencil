@@ -1,3 +1,4 @@
+import { completionRedirect } from '../../shared/completionRedirect'
 import { formAnswerContext, variableAnswers } from '../../shared/calculationContext'
 import { evaluateCalculations } from '../../shared/calculations'
 import { formSettings, normalizeHidden, hiddenAnswers, type ResponseContext } from '../../shared/hiddenFields'
@@ -170,7 +171,7 @@ export class ResponseService {
     if (!input.sessionToken) throw new SessionUnavailableError()
     const tokenHash = await this.hash(input.sessionToken)
     const replay = async (response: { id: string; revisionId: string; state: 'released' | 'quarantined'; contextJson?:string }) => {
-      const [{ steps, rules }, answers, revision] = await Promise.all([
+      const [{ steps, choices, rules }, answers, revision] = await Promise.all([
         this.flowRepository.getRevisionGraph(response.revisionId),
         this.repository.getRetainedResponseAnswers(response.id),
         this.flowRepository.findRevisionById(response.revisionId),
@@ -179,7 +180,9 @@ export class ResponseService {
       // A retry is the original committed path, regardless of newer submitted
       // values. The immutable graph and retained answers also cover old rows.
       const completionStepId = this.retainedCompletion(steps, rules, {...hiddenAnswers(JSON.parse(response.contextJson ?? '{}') as ResponseContext),...variableAnswers((JSON.parse(response.contextJson ?? '{}') as ResponseContext).calculations),...Object.fromEntries(answers.map((answer) => [answer.stepId, runtimeAnswerValue(steps.find(step => step.stableId === answer.stepId), JSON.parse(answer.valueJson))]))}, revisionBranchSelection(revision.policySnapshotJson))
-      return { responseId: response.id, idempotent: true, disposition: response.state, completionStepId }
+      const retainedContext = JSON.parse(response.contextJson ?? '{}') as ResponseContext
+      const redirectUrl = completionRedirect({steps:publicSteps(steps),choices:publicChoices(steps,choices),branchRules:publicRules(rules),formSettings:formSettings(revision.formSettingsJson),hiddenContext:retainedContext},completionStepId,Object.fromEntries(answers.map(answer=>[answer.stepId,runtimeAnswerValue(steps.find(step=>step.stableId===answer.stepId),JSON.parse(answer.valueJson))])))
+      return { responseId: response.id, idempotent: true, disposition: response.state, completionStepId, redirectUrl }
     }
     const receipt = async () => {
       const retained = await this.repository.findResponseBySessionToken(input.sessionId, tokenHash)
@@ -272,7 +275,8 @@ export class ResponseService {
         .catch(error => collectorFlowFailure(error, { title: revision.title, slug: flow.slug }))
       throw new ValidationError('This response session has already completed or cannot accept this submission.')
     }
-    return { responseId, idempotent: false, disposition: state, completionStepId }
+    const redirectUrl = completionRedirect({steps:publicSteps(steps),choices:publicChoices(steps,choices),branchRules:publicRules(rules),formSettings:settings,hiddenContext},completionStepId,Object.fromEntries(acceptedAnswers.map(answer=>[answer.stepId,answer.value])))
+    return { responseId, idempotent: false, disposition: state, completionStepId, redirectUrl }
   }
 
   async releaseQuarantinedResponse(input: { workspaceId: string; responseId: string; operatorId: string }) {

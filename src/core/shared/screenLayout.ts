@@ -44,6 +44,10 @@ export function remapLayoutSettings(json: string | null, steps: Map<string,strin
     const layout = settings.screen as ScreenLayout
     settings.screen = {...layout,questionIds:layout.questionIds.map(id => steps.get(id) ?? id)}
   }
+  if (settings.redirect) {
+    const redirect = settings.redirect as import('./completionRedirect').CompletionRedirect
+    settings.redirect = {...redirect,parameters:redirect.parameters.map(item=>({...item,operand:steps.get(item.operand) ?? item.operand}))}
+  }
   if (settings.showWhen) settings.showWhen = remapCondition(settings.showWhen as Condition,steps,choices)
   return JSON.stringify(settings)
 }
