@@ -4396,6 +4396,10 @@
       "sha256": "ef7ab83e48c87f3be48342630675a643926121b3afa166519570d97bbb8a6cd4",
       "executable": false
     },
+    "src/core/features/flows/ui/ChoiceBulkEditor.tsx": {
+      "sha256": "7d0474c09fb98eddfee897f3de36a1bdd4b7f05a86e169755b8288d42e7ed1fe",
+      "executable": false
+    },
     "src/core/features/flows/ui/ChoiceEditor.tsx": {
       "sha256": "d4fe3665b7bcbabdc5a6741b90462d9cdc6ad7a019e0ff1bbd290a894b638656",
       "executable": false
@@ -5540,6 +5544,10 @@
       "sha256": "b533f56fa050b7bcb94d87c378b5d04dee04a9fde35f4b2b5dcd6088d493e39c",
       "executable": false
     },
+    "src/core/shared/choiceLists.ts": {
+      "sha256": "dbe0277b1a2c87f00d2dcdce6ecb990f775d7454de71cb1e4bc7bb7076b69dfc",
+      "executable": false
+    },
     "src/core/shared/civilTime.ts": {
       "sha256": "b019fbd48d36eff27864435d2e96b3db47c9a29d3e270a598ac50c9f7afb4edf",
       "executable": false
@@ -5586,6 +5594,10 @@
     },
     "src/core/shared/flowPolicies.ts": {
       "sha256": "f46b16c05e7ec8fd10e4b1b6e041c5edb138d94af6cc30925a137d0a9a99002c",
+      "executable": false
+    },
+    "src/core/shared/formLimits.ts": {
+      "sha256": "d56d9b2c45111e8a0ed5434a4384c426240ac8e713f5bff5c3800f9a1562633b",
       "executable": false
     },
     "src/core/shared/ianaTimeZone.ts": {
@@ -6066,6 +6078,10 @@
     },
     "tests/e2e/ledger-filters.spec.ts": {
       "sha256": "2cf7bcd3e4088c07d24d3dd4201bdd20c1b4c32c987320385daa9cfc453062e3",
+      "executable": false
+    },
+    "tests/e2e/long-choices.spec.ts": {
+      "sha256": "cc480c4143eca63d2221c56cb4455a04357aef7379a85242acf9641cfc075abf",
       "executable": false
     },
     "tests/e2e/mail-recovery.spec.ts": {
@@ -6586,6 +6602,10 @@
     },
     "tests/runtime/local-mail-erasure.worker.test.ts": {
       "sha256": "53bdf73eceadf8b6774722ec601e4ddf8df71666dc22195b36edd6a6360d0187",
+      "executable": false
+    },
+    "tests/runtime/long-forms.worker.test.ts": {
+      "sha256": "fb7fef133b6690f8fd4d0558d2314e3dba91bae4008cd21353d50f169a7c77a9",
       "executable": false
     },
     "tests/runtime/new-question-types.worker.test.ts": {
