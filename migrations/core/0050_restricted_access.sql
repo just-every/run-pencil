@@ -23,10 +23,10 @@ CREATE TABLE response_access (
   UNIQUE(flow_id,email)
 );
 -- Admission and the unique verified-email claim serialize with final collection.
+-- Restored history is fenced from delivery; live collection alone carries
+-- notification_eligible=1, set by the trusted response transaction.
 CREATE TRIGGER response_requires_access BEFORE INSERT ON responses
 WHEN json_extract((SELECT form_settings_json FROM flow_revisions WHERE id=NEW.revision_id),'$.access.id') IS NOT NULL
-  -- Restored history is already fenced from delivery; only live collection
-  -- carries notification_eligible=1, set by the trusted response transaction.
   AND NEW.source != 'imported' AND NEW.notification_eligible=1
 BEGIN
   SELECT CASE WHEN NOT EXISTS (

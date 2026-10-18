@@ -123,7 +123,7 @@ Open **Kiosk** for a public link or named collector, choose how long idle answer
 
 ## Restricted forms
 
-Open **Publication options → Form access** in the builder. Choose a password, verified email, or a signed link from your own app. Save, then publish: each revision keeps its own access rule. The server withholds the question graph and refuses new sessions until the check succeeds. Password access can remain anonymous; email and app access disclose the verified identity before answers and retain it in the ledger and CSV/JSON.
+Open **Share → Form access** in the builder. Choose a password, verified email, or a signed link from your own app. Save, then publish: each revision keeps its own access rule. The server withholds the question graph and refuses new sessions until the check succeeds. Password access can remain anonymous; email and app access disclose the verified identity before answers and retain it in the ledger and CSV/JSON.
 
 For email access, list exact allowed domains or individual addresses. A six-digit code expires after ten minutes and permits at most five attempts. Codes are single-use; the verified email may complete the form once across its revisions. An expired code or failed delivery can be requested again. Local development suppresses email, so email verification requires a configured production sender to receive the code. There is no development inbox.
 

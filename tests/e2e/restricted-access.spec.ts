@@ -11,8 +11,8 @@ contract('DIST-019','build password, verified-email and app-signed forms, with s
   await page.getByRole('button',{name:'Customer feedback',exact:true}).click();await page.getByRole('button',{name:'Create draft flow'}).click()
   await expect(page.getByRole('heading',{name:'Customer feedback',exact:true})).toBeVisible()
   const builder=page.url(),flowId=/flows\/([^/]+)\//.exec(builder)![1]
-  const options=page.getByRole('group',{name:'Publication limits'})
-  const openSettings=async()=>{await options.getByText('Publication options',{exact:true}).click();await options.getByText('Form access',{exact:true}).click();await expect(page.getByLabel('Access requirement')).toBeEnabled()}
+  const options=page.locator('details').filter({has:page.getByText('Form access',{exact:true})})
+  const openSettings=async()=>{await page.getByRole('button',{name:'Share',exact:true}).click();await options.getByText('Form access',{exact:true}).click();await expect(page.getByLabel('Access requirement')).toBeEnabled()}
   await openSettings()
   await page.getByLabel('Access requirement').selectOption('password');await page.getByLabel('New form password').fill('Aurora-team-access-2026')
   await page.getByRole('button',{name:'Save form access',exact:true}).click()
