@@ -28,7 +28,8 @@
 .step-button:disabled { cursor: not-allowed; }
 .step-index { display: grid; width: 28px; height: 28px; place-items: center; border-radius: 50%; color: var(--ink); background: var(--card); font-size: 13px; font-weight: 600; }
 .step-button[data-selected='true'] .step-index { background: rgba(255, 255, 255, 0.7); }
-.step-prompt { display: block; overflow-wrap: break-word; font-size: 14px; font-weight: 500; line-height: 1.3; }
+.step-button > span { min-width: 0; }
+.step-prompt { display: block; overflow-wrap: anywhere; font-size: 14px; font-weight: 500; line-height: 1.3; }
 .step-type { display: block; margin-top: 2px; color: var(--subtle); font-size: 13px; }
 .step-type::first-letter, .canvas-chip::first-letter { text-transform: uppercase; }
 
@@ -90,7 +91,7 @@
 .draft-preview { margin-bottom: 24px; padding: 24px; }
 .draft-preview .preview-surface { margin: 20px 8px 8px; padding: 32px; rotate: -0.8deg; }
 .draft-preview-actions { margin-top: 18px; }
-.draft-trace { margin-top: 16px; padding: 16px 18px; }
+.draft-trace { overflow-wrap: anywhere; margin-top: 16px; padding: 16px 18px; }
 .draft-trace ol, .draft-trace ul { margin: 8px 0 0; padding-left: 20px; }
 .flow-share-panel { margin-bottom: 24px; padding: 24px; }
 .flow-share-panel h2 { margin: 0; font-family: var(--font-serif); font-size: 28px; font-weight: 400; }

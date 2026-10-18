@@ -2,7 +2,7 @@ import type { BranchRule, FlowStep, PublicFlow } from '../app/api'
 import { matchesBranch } from './branching'
 type AnswerValues = Record<string, unknown>
 
-export function visiblePath(flow: PublicFlow, answers: AnswerValues) {
+export function visiblePath(flow: Pick<PublicFlow, 'steps' | 'branchRules' | 'branchSelection'>, answers: AnswerValues) {
   const steps = flow.steps.filter((step) => step.kind === 'welcome' || step.kind === 'question' || step.kind === 'completion').sort((left, right) => left.position - right.position)
   const byId = new Map(steps.map((step) => [step.id, step]))
   const rulesBySource = new Map<string, BranchRule[]>()
