@@ -8,7 +8,9 @@ import type { RequestServices } from '../../app/request-context'
 import { FlowClosedError, PencilError, RateLimitError, ValidationError } from '../../shared/errors'
 import { requireSameOriginRequest } from '../auth'
 
+const orderMap=z.record(resourceId,z.array(resourceId).max(1000)).refine(value=>Object.keys(value).length<=250)
 const startSessionSchema = z.object({
+  presentation:z.object({choices:orderMap,blocks:orderMap}).strict().optional(),
   accessToken:z.string().max(8192).optional(),
   deviceClass: z.enum(['mobile', 'tablet', 'desktop']),
   source: z.enum(['direct', 'embed']).default('direct'),

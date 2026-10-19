@@ -1,3 +1,4 @@
+import { presentFlow } from '../../shared/presentationOrder'
 import { formSettings, normalizeHidden, hiddenAnswers } from '../../shared/hiddenFields'
 import type { MailSender } from '../../../base/operator-auth/index.mjs'
 import manifest from '../../../../seed.json'
@@ -91,6 +92,6 @@ export class ResumeService {
     const invitation=row.participant_id ? await this.repository.invitationToken(row.participant_id) : undefined
     if (row.participant_id && !invitation) return unavailable()
     if (!row.answers_json || !row.current_step_id) return unavailable()
-    return {state:'open' as const,flow:{...resumedPublicFlow(flow,revision,graph,!!row.participant_id),hiddenContext:JSON.parse(row.response_context_json ?? '{}')},sessionId:row.session_id,sessionToken,revisionId:revision.id,answers:JSON.parse(row.answers_json) as Array<{stepId:string;value:unknown}>,currentStepId:row.current_step_id,...(invitation?{invitationToken:invitation.token}:{})}
+    return {state:'open' as const,flow:presentFlow({...resumedPublicFlow(flow,revision,graph,!!row.participant_id),hiddenContext:JSON.parse(row.response_context_json ?? '{}')},(()=>{const order=JSON.parse(context.session.presentationJson);return {choices:order.choices ?? {},blocks:order.blocks ?? {}}})()),sessionId:row.session_id,sessionToken,revisionId:revision.id,answers:JSON.parse(row.answers_json) as Array<{stepId:string;value:unknown}>,currentStepId:row.current_step_id,...(invitation?{invitationToken:invitation.token}:{})}
   }
 }

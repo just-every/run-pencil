@@ -87,9 +87,9 @@ export class ResponseRepository {
       this.binding.prepare(`
         INSERT INTO respondent_sessions (
           id, revision_id, source, device_class, furthest_step_id, session_token_hash, completed_at, metric_folded_at,
-          completion_outcome, expires_at, created_at, updated_at
+          completion_outcome, expires_at, created_at, updated_at, presentation_json
         )
-        SELECT ?, ?, ?, ?, ?, ?, NULL, NULL, NULL, ?, ?, ?
+        SELECT ?, ?, ?, ?, ?, ?, NULL, NULL, NULL, ?, ?, ?, ?
         WHERE EXISTS (
           SELECT 1 FROM flows f
           JOIN flow_revisions r ON r.id = ?
@@ -105,7 +105,7 @@ export class ResponseRepository {
         ) RETURNING id
       `).bind(
         input.id, input.revisionId, input.source, input.deviceClass, input.furthestStepId, input.sessionTokenHash,
-        input.expiresAt, input.createdAt, input.updatedAt, input.revisionId, input.flowId, input.participantId ?? null, input.participantId ?? null, input.collectorId, input.createdAt, input.collectorId, input.source, ...collectorOpen.params,
+        input.expiresAt, input.createdAt, input.updatedAt, input.presentationJson ?? '{}', input.revisionId, input.flowId, input.participantId ?? null, input.participantId ?? null, input.collectorId, input.createdAt, input.collectorId, input.source, ...collectorOpen.params,
       ),
       ...bindSessionCollectorSql({ sessionId: input.id, collectorId: input.collectorId, flowId: input.flowId, source: input.source, now: input.createdAt })
         .map(statement => this.binding.prepare(statement.sql).bind(...statement.params)),

@@ -211,6 +211,7 @@ export const respondentSessions = sqliteTable(
       .references(() => flowRevisions.id),
     source: text('source', { enum: ['direct', 'embed', 'invitation'] }).notNull(),
     deviceClass: text('device_class', { enum: ['mobile', 'tablet', 'desktop'] }).notNull(),
+    presentationJson: text('presentation_json').notNull().default('{}'),
     furthestStepId: text('furthest_step_id'),
     sessionTokenHash: text('session_token_hash').notNull(),
     completedAt: text('completed_at'),

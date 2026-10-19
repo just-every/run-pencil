@@ -109,7 +109,7 @@ const retained = {
   operators: 'id workspace_id email display_name created_at updated_at is_setup_operator',
   public_rate_limit_windows: 'id scope address_hash window_started_at count expires_at created_at updated_at',
   respondent_session_step_events: 'id session_id revision_id step_stable_id counted_at created_at',
-  respondent_sessions: 'id revision_id source device_class furthest_step_id completed_at expires_at created_at updated_at session_token_hash metric_folded_at completion_outcome',
+  respondent_sessions: 'presentation_json id revision_id source device_class furthest_step_id completed_at expires_at created_at updated_at session_token_hash metric_folded_at completion_outcome',
   // Anonymous report consistency metadata contains no answers or respondent identities.
   reporting_generations: 'workspace_id generation',
   reporting_changes: 'workspace_id flow_id eligible_at generation',

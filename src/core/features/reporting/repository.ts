@@ -13,7 +13,7 @@ import { type ReportStep, type ReportChoice } from './questionReport'
 export type LedgerFilter = WorkflowFilter & { codeId?: string; search?: string; collectorId?: string; revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown' | 'imported'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
 export type LedgerHiddenField = Pick<HiddenField, 'id' | 'name' | 'type'> & { value: string | number | boolean }
 export type LedgerCalculation = Pick<Calculation, 'id' | 'name' | 'type'> & { value: CalculationValue }
-export type LedgerResponse = { verifiedEmail?:string;verifiedSubject?:string; calculations: LedgerCalculation[]; hiddenFields: LedgerHiddenField[]; identityMode: 'anonymous' | 'identified'; discardedParameters: number; collector: { id: string; name: string; channel: string }; omittedQuestions: Array<{ stepId: string; label: string; position: number; questionType?: string }>; participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string | null; state: 'released' | 'quarantined'; quarantineReason: string | null; answers: Array<{ stepId: string; label: string; position: number; questionType: string; value: unknown; displayValue: string }> }
+export type LedgerResponse = { presentedOrder:import('../../shared/presentationOrder').PresentationOrder|null; verifiedEmail?:string;verifiedSubject?:string; calculations: LedgerCalculation[]; hiddenFields: LedgerHiddenField[]; identityMode: 'anonymous' | 'identified'; discardedParameters: number; collector: { id: string; name: string; channel: string }; omittedQuestions: Array<{ stepId: string; label: string; position: number; questionType?: string }>; participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string | null; state: 'released' | 'quarantined'; quarantineReason: string | null; answers: Array<{ stepId: string; label: string; position: number; questionType: string; value: unknown; displayValue: string }> }
 
 function retainedContext(contextJson: string, settingsJson: string, participantId: string | null) {
   const context = JSON.parse(contextJson) as Partial<ResponseContext>
@@ -32,7 +32,7 @@ function retainedContext(contextJson: string, settingsJson: string, participantI
     if (value !== null && (calculation.type === 'number' ? typeof value !== 'number' || !Number.isFinite(value) : typeof value !== 'string')) throw new Error('A retained calculation does not match its published type.')
     return [{ id: calculation.id, name: calculation.name, type: calculation.type, value }]
   })
-  return { ...(context.verifiedEmail?{verifiedEmail:context.verifiedEmail}:{}), ...(context.verifiedSubject?{verifiedSubject:context.verifiedSubject}:{}), hiddenFields, calculations, identityMode: participantId ? 'identified' as const : context.identityMode ?? 'anonymous' as const, discardedParameters: context.discarded ?? 0 }
+  return { presentedOrder:context.presentedOrder ?? null, ...(context.verifiedEmail?{verifiedEmail:context.verifiedEmail}:{}), ...(context.verifiedSubject?{verifiedSubject:context.verifiedSubject}:{}), hiddenFields, calculations, identityMode: participantId ? 'identified' as const : context.identityMode ?? 'anonymous' as const, discardedParameters: context.discarded ?? 0 }
 }
 
 export class ReportingRepository {
@@ -63,6 +63,7 @@ export class ReportingRepository {
         MAX(0, COALESCE(length(CAST(json_extract(r.response_context_json, '$.hidden') AS BLOB)), 2) - 2)
         + MAX(0, COALESCE(length(CAST(json_extract(revision.form_settings_json, '$.hiddenFields') AS BLOB)), 2) - 2)
         + MAX(0, COALESCE(length(CAST(json_extract(r.response_context_json, '$.calculations') AS BLOB)), 2) - 2)
+        + MAX(0, COALESCE(length(CAST(json_extract(r.response_context_json, '$.presentedOrder') AS BLOB)), 2) - 2)
         + MAX(0, (SELECT length(CAST(json_group_array(json_object(
           'id', json_extract(calculation.value, '$.id'), 'name', json_extract(calculation.value, '$.name'), 'type', json_extract(calculation.value, '$.type')
         )) AS BLOB)) FROM json_each(revision.form_settings_json, '$.calculations') calculation) - 2))

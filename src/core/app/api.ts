@@ -26,6 +26,7 @@ export type BranchRule = {
 }
 
 export type PublicFlow = {
+  presentation?: import('../shared/presentationOrder').PresentationOrder
   formSettings?: import('../shared/hiddenFields').FormSettings
   hiddenContext?: import('../shared/hiddenFields').ResponseContext
   branchSelection?: import('../shared/flowPolicies').BranchSelection
@@ -147,8 +148,8 @@ export const api = {
   archiveFlow: (flowId: string) => request<void>(`/api/app/flows/${encodeURIComponent(flowId)}/archive`, { method: 'POST' }),
   results: (flowId: string, revisionId?: string) => request<FlowResults>(`/api/app/flows/${encodeURIComponent(flowId)}/results${revisionId ? `?revisionId=${encodeURIComponent(revisionId)}` : ''}`),
   publicFlow: (slug: string) => request<PublicFlow>(`/api/public/flows/${encodeURIComponent(slug)}`),
-  startSession: (slug: string, deviceClass: 'mobile' | 'tablet' | 'desktop', source: 'direct' | 'embed', invitationToken?: string, collectorKey?: string, accessToken?:string) =>
-    request<{ sessionId: string; sessionToken: string; revisionId: string; flowId: string; flow: PublicFlow }>(`/api/public/flows/${encodeURIComponent(slug)}/sessions`, { method: 'POST', body: JSON.stringify({ deviceClass, source, invitationToken, collectorKey, accessToken }) }),
+  startSession: (slug: string, deviceClass: 'mobile' | 'tablet' | 'desktop', source: 'direct' | 'embed', invitationToken?: string, collectorKey?: string, accessToken?:string, presentation?:import('../shared/presentationOrder').PresentationOrder) =>
+    request<{ sessionId: string; sessionToken: string; revisionId: string; flowId: string; flow: PublicFlow }>(`/api/public/flows/${encodeURIComponent(slug)}/sessions`, { method: 'POST', body: JSON.stringify({ deviceClass, source, invitationToken, collectorKey, accessToken, presentation }) }),
   advanceSession: (slug: string, input: { sessionId: string; sessionToken: string; stepId: string }) => request<void>(`/api/public/flows/${encodeURIComponent(slug)}/sessions/advance`, { method: 'POST', body: JSON.stringify(input) }),
   saveResponse: (slug: string, input: { sessionId: string; sessionToken: string; commandKey: string; email: string; currentStepId: string; answers: Array<{ stepId: string; value: unknown }>; invitationToken?: string; hidden?:Record<string,unknown> }) =>
     request<{ state: 'saved'; expiresAt: string }>(`/api/public/flows/${encodeURIComponent(slug)}/sessions/save`, { method: 'POST', body: JSON.stringify(input) }),
@@ -170,7 +171,7 @@ export const api = {
 }
 
 export type LedgerFilter = { codeId?: string; workflowStatus?: string; workflowAssignee?: string; workflowTag?: string; search?: string; collectorId?: string; revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown' | 'imported'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
-export type LedgerResponse = {
+export type LedgerResponse = { presentedOrder:import('../shared/presentationOrder').PresentationOrder|null;
   verifiedEmail?:string
   verifiedSubject?:string; calculations:Array<{id:string;name:string;type:'number'|'text';value:number|string|null}>; hiddenFields:Array<{id:string;name:string;type:import('../shared/hiddenFields').HiddenField['type'];value:string|number|boolean}>;identityMode:'anonymous'|'identified';discardedParameters:number; collector: { id: string; name: string; channel: string }; omittedQuestions: Array<{ stepId: string; label: string; position: number; questionType?: string }>; participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string | null; state: 'released' | 'quarantined'; quarantineReason: string | null; answers: Array<{ stepId: string; label: string; position: number; questionType: string; value: unknown; displayValue: string }> }
 export type Ledger = { flow: { id: string; title: string; slug: string }; cutoff: string; filter: LedgerFilter; revisions: Array<{ calculations:Array<Pick<import('../shared/calculations').Calculation,'id'|'name'|'type'>>; hiddenFields:Array<Pick<import('../shared/hiddenFields').HiddenField,'id'|'name'|'type'>>; id: string; number: number; isCurrent: number }>; total: number; responses: LedgerResponse[] }

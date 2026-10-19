@@ -154,7 +154,7 @@ export function registerFlowRoutes(app: Hono<WorkerEnvironment>, services: Reque
     try { requireSameOriginRequest(context.req.raw); return context.json(await services(context).flows.updateFormSettings({...context.req.valid('json'),flowId:context.req.param('flowId'),...context.get('operatorSession')})) } catch(error) {return failure(context,error)}
   })
 
-  app.put('/api/app/flows/:flowId/draft/screen' , zValidator('param',z.object({flowId:resourceId})), zValidator('json',z.object({stepId:resourceId,expectedVersion:z.number().int().nonnegative(),layout:z.object({kind:z.enum(['page','group']),title:z.string().trim().min(1).max(200),description:z.string().max(1000).optional(),questionIds:z.array(resourceId).min(1).max(formLimits.questions.perRevision)}).nullable()})), async context => {
+  app.put('/api/app/flows/:flowId/draft/screen' , zValidator('param',z.object({flowId:resourceId})), zValidator('json',z.object({stepId:resourceId,expectedVersion:z.number().int().nonnegative(),layout:z.object({kind:z.enum(['page','group']),title:z.string().trim().min(1).max(200),description:z.string().max(1000).optional(),randomize:z.boolean().optional(),questionIds:z.array(resourceId).min(1).max(formLimits.questions.perRevision)}).nullable()})), async context => {
     try { requireSameOriginRequest(context.req.raw); return context.json(await services(context).flows.updateScreen({...context.req.valid('json'),flowId:context.req.param('flowId'),...context.get('operatorSession')})) } catch(error) {return failure(context,error)}
   })
 

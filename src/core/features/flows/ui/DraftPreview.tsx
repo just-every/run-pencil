@@ -1,3 +1,4 @@
+import { presentFlow } from '../../../shared/presentationOrder'
 import { AnswerFieldset } from '../../../shared/ui/AnswerFieldset'
 import { completionRedirect } from '../../../shared/completionRedirect'
 import { normalizeHidden } from '../../../shared/hiddenFields'
@@ -17,8 +18,10 @@ import { QuestionInput } from '../../../shared/ui/QuestionInput'
 
 type Trace = Awaited<ReturnType<typeof api.previewDraft>>
 export function DraftPreview({ draft, onClose, onReload, reloadDisabled = false }: { draft: BuilderDraft; onClose: () => void; onReload: () => void; reloadDisabled?: boolean }) {
+  const [presentation] = useState(() => presentFlow(draft).presentation)
+  const presentedDraft = useMemo(() => presentFlow(draft, presentation), [draft, presentation])
   const [hidden,setHidden]=useState<Record<string,string>>({})
-  draft = {...draft,hiddenContext:normalizeHidden(draft.formSettings ?? {hiddenFields:[],identityMode:'anonymous'},hidden)}
+  draft = useMemo(() => ({ ...presentedDraft, hiddenContext: normalizeHidden(presentedDraft.formSettings ?? { hiddenFields: [], identityMode: 'anonymous' }, hidden) }), [presentedDraft, hidden])
   const [brand, setBrand] = useState<PublicSeedConfig>()
   const [brandError, setBrandError] = useState<string>()
   useEffect(() => { void brandApi.get().then(value => setBrand(publicBrandConfig(value, { productName: 'Pencil', organizationName: '', showPoweredByCredit: false }))).catch(e => setBrandError((e as Error).message)) }, [])
@@ -32,7 +35,7 @@ export function DraftPreview({ draft, onClose, onReload, reloadDisabled = false 
   const mounted = useRef(true)
   useEffect(() => { mounted.current = true; return () => { mounted.current = false } }, [])
   const path = useMemo(() => visiblePath(draft, answers), [draft, answers])
-  const screens = responseScreens(draft.steps,path)
+  const screens = responseScreens(draft.steps,path,presentation)
   const screen = screens[Math.min(index,screens.length-1)]
   const step = screen?.steps[0]
   const [fieldErrors,setFieldErrors]=useState<Record<string,string>>({})

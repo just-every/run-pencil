@@ -7,7 +7,7 @@ import type { FlowStep } from '../app/api'
 
 export type HiddenField = { id: string; name: string; type: 'text' | 'number' | 'email' | 'date' | 'boolean'; category: 'plain' | 'campaign' | 'identifying' | 'click_id' }
 export type FormSettings = { access?: {id:string;mode:'password'|'email'|'signed'}; redirectOrigins?: string[]; calculations?: Calculation[]; hiddenFields: HiddenField[]; identityMode: 'anonymous' | 'identified' }
-export type ResponseContext = { verifiedEmail?:string; verifiedSubject?:string; calculations?: Record<string,number|string|null>; hidden: Record<string, string | number | boolean>; discarded: number; identityMode: 'anonymous' | 'identified' }
+export type ResponseContext = { presentedOrder?: import('./presentationOrder').PresentationOrder; verifiedEmail?:string; verifiedSubject?:string; calculations?: Record<string,number|string|null>; hidden: Record<string, string | number | boolean>; discarded: number; identityMode: 'anonymous' | 'identified' }
 const reserved = new Set(['collector','resume','source','challenge','kiosk','__proto__','constructor','prototype'])
 export const hiddenFieldLimits = manifest.limits.hiddenFields
 

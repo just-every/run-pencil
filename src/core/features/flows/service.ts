@@ -17,6 +17,7 @@ import { typeSettingsValid } from '../../shared/questionTypes'
 import { templateStructure, type FlowTemplateId } from './templates'
 import { structureContent } from './unpublished'
 import { defaultFlowPolicies, evaluateFlowPolicies, revisionBranchSelection, type FlowPolicies } from '../../shared/flowPolicies'
+import { presentFlow } from '../../shared/presentationOrder'
 import { publicSteps, publicChoices, publicRules } from './serialization'
 import { ulid } from 'ulid'
 import { FlowClosedError, NotFoundError, ValidationError } from '../../shared/errors'
@@ -486,7 +487,7 @@ export class FlowService {
       await this.access.require(formSettings(revision.formSettingsJson),revision.id,revision.title,flow.slug,accessToken)
     }
     const { steps, choices, rules } = resolved
-    return { formSettings: formSettings(revision.formSettingsJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: flow.title }, revision: this.publicRevision(revision), steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) }
+    return presentFlow({ formSettings: formSettings(revision.formSettingsJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: flow.title }, revision: this.publicRevision(revision), steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) })
   }
 
   private async requireWorkspaceFlow(workspaceId: string, flowId: string) {

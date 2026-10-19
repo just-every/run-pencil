@@ -3,7 +3,7 @@ import type { Condition } from './conditions'
 import { remapCondition } from './conditions'
 import { conditionShape } from './conditionValidation'
 
-export type ScreenLayout = { kind: 'page' | 'group'; title: string; description?: string; questionIds: string[] }
+export type ScreenLayout = { kind: 'page' | 'group'; title: string; description?: string; randomize?: boolean; questionIds: string[] }
 export type ResponseScreen = { id: string; layout?: ScreenLayout; steps: FlowStep[] }
 
 export function screenLayout(step: FlowStep): ScreenLayout | undefined {
@@ -17,12 +17,13 @@ export function layoutSettingsValid(settings: Record<string, unknown>) {
   if (layout !== undefined && (!layout || typeof layout !== 'object' || Array.isArray(layout) || !['page','group'].includes(layout.kind)
     || typeof layout.title !== 'string' || !layout.title.trim() || layout.title.length > 200
     || (layout.description !== undefined && (typeof layout.description !== 'string' || layout.description.length > 1000))
+    || (layout.randomize !== undefined && typeof layout.randomize !== 'boolean')
     || !Array.isArray(layout.questionIds) || !layout.questionIds.length || layout.questionIds.length > 250
     || layout.questionIds.some(id => typeof id !== 'string' || !id || id.length > 200) || new Set(layout.questionIds).size !== layout.questionIds.length
-    || Object.keys(layout).some(key => !['kind','title','description','questionIds'].includes(key)))) return false
+    || Object.keys(layout).some(key => !['kind','title','description','questionIds','randomize'].includes(key)))) return false
   return settings.showWhen === undefined || conditionShape(settings.showWhen)
 }
-export function responseScreens(steps: FlowStep[], path: FlowStep[]): ResponseScreen[] {
+export function responseScreens(steps: FlowStep[], path: FlowStep[], presentation?: import('./presentationOrder').PresentationOrder): ResponseScreen[] {
   const owners = new Map<string, {id:string;layout:ScreenLayout}>()
   for (const step of steps) {
     const layout = screenLayout(step)
@@ -35,6 +36,7 @@ export function responseScreens(steps: FlowStep[], path: FlowStep[]): ResponseSc
     if (previous?.id === id) previous.steps.push(step)
     else screens.push({id,layout:owner?.layout,steps:[step]})
   }
+  for(const screen of screens) { const order=presentation?.blocks[screen.id]; if(order)screen.steps.sort((a,b)=>order.indexOf(a.id)-order.indexOf(b.id)) }
   return screens
 }
 export function remapLayoutSettings(json: string | null, steps: Map<string,string>, choices: Map<string,string>) {

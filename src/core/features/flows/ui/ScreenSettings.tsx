@@ -24,6 +24,7 @@ function ScreenSettingsEditor({ draft, selected, disabled, allowGroups = false, 
   const [kind, setKind] = useState<'standalone' | ScreenLayout['kind']>(layout?.kind ?? 'standalone')
   const [title, setTitle] = useState(layout?.title ?? '')
   const [description, setDescription] = useState(layout?.description ?? '')
+  const [randomize, setRandomize] = useState(layout?.randomize ?? false)
   const [lastId, setLastId] = useState(layout?.questionIds.at(-1) ?? selected.id)
   const steps = [...draft.steps].sort((a, b) => a.position - b.position)
   const anchor = steps.find(step => step.id !== selected.id && screenLayout(step)?.questionIds.includes(selected.id))
@@ -36,7 +37,7 @@ function ScreenSettingsEditor({ draft, selected, disabled, allowGroups = false, 
   }
   const lastIndex = available.findIndex(step => step.id === lastId)
   const nextLayout: ScreenLayout | null = kind === 'standalone' ? null : {
-    kind, title: title.trim(), ...(description.trim() ? { description: description.trim() } : {}),
+    kind, title: title.trim(), ...(randomize ? { randomize: true } : {}), ...(description.trim() ? { description: description.trim() } : {}),
     questionIds: available.slice(0, lastIndex + 1).map(step => step.id),
   }
   const invalid = nextLayout !== null && (!nextLayout.title || lastIndex < 0)
@@ -72,6 +73,10 @@ function ScreenSettingsEditor({ draft, selected, disabled, allowGroups = false, 
           <select aria-label="Last included question" className="text-input" value={lastId} onChange={event => setLastId(event.target.value)}>
             {available.map(step => <option key={step.id} value={step.id}>{step.prompt}</option>)}
           </select>
+        </label>
+        <label className="toggle-row">
+          <input type="checkbox" checked={randomize} onChange={event => setRandomize(event.target.checked)} />
+          Randomize question order in this block
         </label>
         <p className="muted">Includes this question and every consecutive question through the selected question.</p>
       </> : null}

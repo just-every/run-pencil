@@ -1,3 +1,4 @@
+import { presentationOrder, presentFlow, retainedPresentation, type PresentationOrder } from '../../shared/presentationOrder'
 import type { RestrictedAccess } from '../restricted-access'
 import { completionRedirect } from '../../shared/completionRedirect'
 import { formAnswerContext, variableAnswers } from '../../shared/calculationContext'
@@ -114,10 +115,10 @@ export class ResponseService {
       .catch(error => collectorFlowFailure(error, { title: revision.title, slug: flow.slug }))
     await this.access.require(formSettings(revision.formSettingsJson),revision.id,revision.title,flow.slug,accessToken)
     const { steps, choices, rules } = await this.flowRepository.getRevisionGraph(revision.id)
-    return { invitation, collector, flow, revision, steps, choices, rules, publicFlow: { formSettings: formSettings(revision.formSettingsJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules), identity: 'identified' as const, completedStepId: invitation.responseStatus === 'completed' ? invitation.completionStepId : null } }
+    return { invitation, collector, flow, revision, steps, choices, rules, publicFlow: presentFlow({ formSettings: formSettings(revision.formSettingsJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules), identity: 'identified' as const, completedStepId: invitation.responseStatus === 'completed' ? invitation.completionStepId : null }) }
   }
 
-  async startPublicSession(input: { slug: string; deviceClass: DeviceClass; source: PublicSource; clientAddress?: string; invitationToken?: string; collectorKey?: string; accessToken?:string }) {
+  async startPublicSession(input: { slug: string; deviceClass: DeviceClass; source: PublicSource; clientAddress?: string; invitationToken?: string; collectorKey?: string; accessToken?:string; presentation?:PresentationOrder }) {
     if (input.invitationToken && input.collectorKey !== undefined) throw new ValidationError('An invitation uses its original collector; remove the collection-link override.')
     await this.enforcePublicRequestRateLimit({ clientAddress: input.clientAddress, scope: 'session' })
     const invitationContext = input.invitationToken ? await this.invitationFlow(input.invitationToken,input.accessToken) : undefined
@@ -127,12 +128,15 @@ export class ResponseService {
     const collector = invitationContext?.collector ?? await this.collectors.requireOpen(flow.id, input.source, input.collectorKey)
       .catch(error => collectorFlowFailure(error, { title: revision.title, slug: flow.slug }))
     const grant=await this.access.require(formSettings(revision.formSettingsJson),revision.id,revision.title,flow.slug,input.accessToken)
+    let presentation:PresentationOrder
+    try { presentation=presentationOrder({steps:publicSteps(steps),choices:publicChoices(steps,choices)},input.presentation) } catch(error) { throw new ValidationError((error as Error).message) }
     const firstStep = steps[0]
     if (!firstStep) throw new ValidationError('This published flow has no first screen.')
     const now = new Date()
     const token = crypto.randomUUID().replaceAll('-', '') + crypto.randomUUID().replaceAll('-', '')
     const session = {
       id: ulid(),
+      presentationJson:JSON.stringify(presentation),
       revisionId: revision.id,
       source: invitationContext ? 'invitation' as const : collector.systemSource === 'direct' || collector.systemSource === 'embed' ? collector.systemSource : input.source,
       participantId: invitationContext?.invitation.id ?? null,
@@ -160,7 +164,7 @@ export class ResponseService {
       throw new ValidationError('This form changed before you began. Please start again using the current version.')
     }
     await this.access.bindSession(session.id,grant)
-    return { sessionId: session.id, sessionToken: token, loadTime: await issueLoadTime(this.loadTimeSecret, revision.id), revisionId: revision.id, flowId: flow.id, flow: { formSettings: formSettings(revision.formSettingsJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) } }
+    return { sessionId: session.id, sessionToken: token, loadTime: await issueLoadTime(this.loadTimeSecret, revision.id), revisionId: revision.id, flowId: flow.id, flow: presentFlow({ formSettings: formSettings(revision.formSettingsJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) },presentation) }
   }
 
   async advancePublicSession(input: { slug: string; sessionId: string; sessionToken: string; stepId: string }) {
@@ -240,6 +244,8 @@ export class ResponseService {
     if(invitation) hiddenContext.identityMode='identified'
     const { accepted: acceptedAnswers, completionStepId, reachedStepIds } = this.validatePathAnswers(steps, choices, rules, input.answers, revisionBranchSelection(revision.policySnapshotJson),hiddenAnswers(hiddenContext),settings)
     if(settings.calculations?.length) hiddenContext.calculations=evaluateCalculations(settings.calculations ?? [],Object.fromEntries(acceptedAnswers.map(answer=>[answer.stepId,answer.value])),hiddenContext.hidden)
+    const order=JSON.parse(session.presentationJson) as Partial<PresentationOrder>
+    hiddenContext.presentedOrder=retainedPresentation({choices:order.choices ?? {},blocks:order.blocks ?? {}},reachedStepIds)
     const now = new Date().toISOString()
     const responseId = ulid()
     const elapsed = Math.max(0, Date.now() - loadedAt)
