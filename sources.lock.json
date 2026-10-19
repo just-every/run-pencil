@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "e0ce7ac3efdecb1dc1814821516a96ec21dd9a5377042ac2a64de6cfc9aa8d84",
+      "sha256": "7e1422a833db557fc3af5c00deab829afadac524b7baf14ff8b25cccf71cddcf",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "fa5be8776fbb790b937656ec2168c56110b05c0a000aeaab26ced509f456edad",
+      "sha256": "7a67557b0aa7ae9df4ba2a97b386f9dbe812fc3d6387575e5130faa6446187f9",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "5a36bb935c4b8039b69a47aa9abf1b0cb877e8e253c7adc35ae5757123e0a3df",
+      "sha256": "7cf3a22ddaecd6b0473c3feb004032d33d7b73911672763fbdeceb5fd1b5f0c5",
       "executable": false
     },
     "DEMO.md": {
@@ -6326,6 +6326,10 @@
     },
     "tests/e2e/contract.ts": {
       "sha256": "498f039d55132ed02047db370f79145b2a566215c0c1930e2314b7e4cb768b49",
+      "executable": false
+    },
+    "tests/e2e/date-format.spec.ts": {
+      "sha256": "63637600b6d6961db86f7c766d36e4690506fbb2edbe716a377df428e5339c09",
       "executable": false
     },
     "tests/e2e/distribution-foundation.spec.ts": {
