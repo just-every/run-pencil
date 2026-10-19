@@ -1,3 +1,4 @@
+import { randomizableChoices } from '../../../shared/presentationOrder'
 import { CompletionSettings } from './CompletionSettings'
 import { RedirectOriginsSettings } from './RedirectOriginsSettings'
 import { CalculationSettings } from './CalculationSettings'
@@ -289,9 +290,9 @@ export function FlowBuilderPage() {
             {selected.kind === 'question' && questionType === 'rating' ? <RatingSettings settings={settings} disabled={saving} onChangeSettings={next => setSettingsText(JSON.stringify(next, null, 2))} /> : null}
             {selected.kind === 'question' && questionType === 'multiple_choice' ? <div className="ledger-filters">{[['minSelections', 'Minimum selections', 1], ['maxSelections', 'Maximum selections', choices.length]].map(([key, label, fallback]) => <label className="inspector-field" key={key}>{label}<input disabled={saving} className="text-input" type="number" min={0} max={choices.length} value={settings[String(key)] as number ?? fallback} onChange={(event) => updateSetting(String(key), event.target.value)} /></label>)}</div> : null}
             {selected.kind !== 'completion' ? <label className="inspector-field">Default next screen<select className="text-input" disabled={saving} onChange={(event) => setNextStepId(event.target.value || null)} value={nextStepId ?? ''}><option value="">Choose a screen</option>{draft.steps.filter((step) => step.id !== selected.id && step.kind !== 'welcome').map((step) => <option key={step.id} value={step.id}>{stepLabel(step)} · {step.prompt}</option>)}</select></label> : null}
-            {selected.kind === 'question' ? <div className="toggle-row">
-              <label htmlFor="step-required">Required response</label>
-              <input checked={required} disabled={saving} id="step-required" onChange={(event) => setRequired(event.target.checked)} type="checkbox" />
+            {selected.kind === 'question' ? <div className="question-options">
+              <label className="toggle-row"><input checked={required} disabled={saving} onChange={(event) => setRequired(event.target.checked)} type="checkbox" /><span>Required response</span></label>
+              {randomizableChoices(questionType) ? <label className="toggle-row" title="Other and None stay last."><input type="checkbox" aria-label="Randomize choice order" aria-description="Other and None stay last." disabled={saving} checked={settings.randomizeChoices === true} onChange={event => setSettingsText(JSON.stringify({ ...settings, randomizeChoices: event.target.checked }))} /><span>Randomize choice order</span></label> : null}
             </div> : null}
             <div className="builder-actions builder-step-tools">
               <button className="secondary-button focus-ring" disabled={saving || dirty || selectedIndex <= 0} onClick={() => move(-1)} aria-label="Move up" title="Move up" type="button"><ArrowUp aria-hidden="true" size={15} /></button>

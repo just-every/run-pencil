@@ -245,7 +245,8 @@ export class ResponseService {
     const { accepted: acceptedAnswers, completionStepId, reachedStepIds } = this.validatePathAnswers(steps, choices, rules, input.answers, revisionBranchSelection(revision.policySnapshotJson),hiddenAnswers(hiddenContext),settings)
     if(settings.calculations?.length) hiddenContext.calculations=evaluateCalculations(settings.calculations ?? [],Object.fromEntries(acceptedAnswers.map(answer=>[answer.stepId,answer.value])),hiddenContext.hidden)
     const order=JSON.parse(session.presentationJson) as Partial<PresentationOrder>
-    hiddenContext.presentedOrder=retainedPresentation({choices:order.choices ?? {},blocks:order.blocks ?? {}},reachedStepIds)
+    const presentedOrder=retainedPresentation({choices:order.choices ?? {},blocks:order.blocks ?? {}},reachedStepIds)
+    if(Object.keys(presentedOrder.choices).length || Object.keys(presentedOrder.blocks).length) hiddenContext.presentedOrder=presentedOrder
     const now = new Date().toISOString()
     const responseId = ulid()
     const elapsed = Math.max(0, Date.now() - loadedAt)

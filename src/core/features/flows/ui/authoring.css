@@ -206,3 +206,6 @@
 .builder-inspector .step-content-heading .screen-layout-settings { min-width:0; margin-top:0; font-size:14px; font-weight:400; letter-spacing:normal; text-transform:none; }
 .builder-inspector .step-content-heading .screen-layout-settings > summary { padding:0; font-size:12px; line-height:1.5; }
 .step-content-heading:has(details[open]) { display:block; }
+
+.question-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px 12px; margin-top: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.builder-inspector .question-options .toggle-row { display: flex; align-items: center; gap: 8px; margin: 0; min-height: 44px; font-size: 14px; line-height: 20px; }
