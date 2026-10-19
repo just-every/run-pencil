@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "da0a6fbfa7e10ab09493633e018908452cd54e64b5f3095271b0e69b81870b31",
+      "sha256": "800be2fd6c7d84f74c15a65b7df0e11717946fe01e20e54e88f3c9d2bbc0c4d5",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "1ce5368b0e83dbb20e8bfe248fdbc673de9ff5de429df0423b1f5da6a84b3184",
+      "sha256": "7b3cf1fe10fea6a8e11d6875d3abf1228e5398bd74fde5ba8b4545208a16f4d9",
       "executable": false
     },
     "DEMO.md": {
@@ -4561,7 +4561,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/FlowBuilderPage.tsx": {
-      "sha256": "ade8b51b2d958293b902dfddf574b59f41794b321fb830a464802466cffe87d3",
+      "sha256": "811d97a230f3b9567eee2d4f8de1d63ae0e3c7e1b326482f89dda46d2e905cbb",
       "executable": false
     },
     "src/core/features/flows/ui/FlowSharePanel.tsx": {
