@@ -2,18 +2,18 @@ import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { spawn } from 'node:child_process'
+import { browserShards as shards } from './verification-lanes.mjs'
 // Each viewport runs the complete native suite in freshly migrated runtimes.
 // Production auth limits remain unchanged; sessions/rate ledgers never get
 // reset inside a journey. Local sign-in links share one loopback allowance of
-// 30 per 15 minutes, so each viewport's journeys run in four shards, each with
+// 30 per 15 minutes, so each viewport's journeys run in isolated shards, each with
 // its own runtime and empty ledgers. Browser evidence retains every outcome.
-const shards = 4
 const [output, selectedProject, selectedShard] = process.argv.slice(2)
-if ((selectedProject || selectedShard) && (!['desktop', 'mobile'].includes(selectedProject) || !['1', '2', '3', '4'].includes(selectedShard))) {
-  throw new Error('A browser lane requires desktop or mobile and shard 1 through 4.')
+if ((selectedProject || selectedShard) && (!['desktop', 'mobile'].includes(selectedProject) || !Number.isInteger(Number(selectedShard)) || Number(selectedShard) < 1 || Number(selectedShard) > shards)) {
+  throw new Error(`A browser lane requires desktop or mobile and shard 1 through ${shards}.`)
 }
 const projects = selectedProject ? [selectedProject] : ['desktop', 'mobile']
-const selectedShards = selectedShard ? [Number(selectedShard)] : [1, 2, 3, 4]
+const selectedShards = selectedShard ? [Number(selectedShard)] : Array.from({ length: shards }, (_, index) => index + 1)
 const directory = await mkdtemp(join(process.env.PENCIL_VERIFICATION_TMPDIR ?? tmpdir(), 'pencil-browser-projects-'))
 const reports = []
 let failed = false

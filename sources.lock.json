@@ -809,7 +809,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "f5b62814feed55b785f8bf3c4aac527f4d970b05f00ec913c070aeded7c8b264",
+      "sha256": "b871dc2b412c2c95dca3fa1c56610a9fefe156ff296ec170f0289fe012971a43",
       "executable": false
     },
     ".gitignore": {
@@ -1313,7 +1313,7 @@
       "executable": false
     },
     "scripts/ci-contract-evidence.mjs": {
-      "sha256": "d81452213574d9a23a578f7a98ca198cc5fdbbb3dc5952ba4f4b8c1ba6dd2118",
+      "sha256": "ab48b252f9bb86b4cb38eee94f7a5a80efc641e222cf5d3cc9a0fe6d0d37f355",
       "executable": false
     },
     "scripts/contract-evidence.mjs": {
@@ -1741,11 +1741,11 @@
       "executable": false
     },
     "scripts/run-browser-checks.mjs": {
-      "sha256": "b0c5faca7285d7a43646ac37453e428bbb1922826f349f7cfe11c1ff134167f4",
+      "sha256": "33f83462e55c2613842e0c8dcebf7c5beb56f56412358a4911eb7e289c3c52af",
       "executable": false
     },
     "scripts/run-contract-lane.mjs": {
-      "sha256": "3670fa28885a65d65f0e6b14a1adfd801aaaf6649aec5b5c31b5174db6197bcf",
+      "sha256": "112b5e3b383bd8bef2f7cf50d28e037103538c2a1ef16258d95f19aec2326abd",
       "executable": false
     },
     "scripts/run-e2e-server.mjs": {
@@ -1784,6 +1784,10 @@
       "sha256": "0cb6691a66a0719e1db15ad468a2cf905de0fa2fd3853ce0ce28c540ee50919c",
       "executable": false
     },
+    "scripts/verification-lanes.mjs": {
+      "sha256": "80a29cdab2feae63f04c050d023cbbd9aefbd18a466cbbb11cbd63af0bb20342",
+      "executable": false
+    },
     "scripts/verify-base-source.mjs": {
       "sha256": "5185b24044f16999493e67f8b2bd745f27ff89a0c8c805416936207af8c76219",
       "executable": false
@@ -1809,7 +1813,7 @@
       "executable": false
     },
     "scripts/vitest-evidence.mjs": {
-      "sha256": "7f71e21f0e9c2dd51ee8fac5f7e51b3e5fded39c7803c0aa94150cf18ad8fe2d",
+      "sha256": "a9340b0bbc39404c0c84f97304cd038b905ce441f653236cc5e099c614d430a5",
       "executable": false
     },
     "SEED-COMMAND-CONTRACT.md": {

@@ -3,7 +3,8 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { isAbsolute, join, relative, resolve } from 'node:path'
 import { playwrightPassedTests } from './contract-evidence.mjs'
 
-export const contractLanes = ['unit', 'worker', 'desktop-1', 'desktop-2', 'desktop-3', 'desktop-4', 'mobile-1', 'mobile-2', 'mobile-3', 'mobile-4']
+import { contractLanes, runtimeLanes } from './verification-lanes.mjs'
+export { contractLanes } from './verification-lanes.mjs'
 
 function identity(root) {
   const { GITHUB_RUN_ID: run, GITHUB_RUN_ATTEMPT: attempt } = process.env
@@ -35,7 +36,7 @@ function browserSuites(root, report) {
 // assertion values, stdout and credentials stay in the disposable runner.
 export async function writeCiContractEvidence(root, directory, lane, run) {
   if (!contractLanes.includes(lane)) throw new Error(`Unknown contract lane: ${lane}`)
-  const report = ['unit', 'worker'].includes(lane) ? {
+  const report = runtimeLanes.includes(lane) ? {
     testResults: run.report.testResults.map(file => ({
       name: containedFile(root, file.name),
       assertionResults: (file.assertionResults ?? []).map(test => ({ title: test.title, status: test.status })),
@@ -57,10 +58,10 @@ export async function readCiContractEvidence(root, directory) {
     }
     return run
   }))
-  const runtime = runs.slice(0, 2).map(run => ({ code: run.code, report: {
+  const runtime = runs.filter(run => runtimeLanes.includes(run.lane)).map(run => ({ code: run.code, report: {
     ...run.report, testResults: run.report.testResults.map(file => ({ ...file, name: resolve(root, containedFile(root, file.name)) })),
   } }))
-  const browsers = runs.slice(2)
+  const browsers = runs.filter(run => !runtimeLanes.includes(run.lane))
   const report = {
     config: { rootDir: root }, suites: browsers.flatMap(run => run.report.suites),
     stats: { startTime: browsers[0].report.stats.startTime,

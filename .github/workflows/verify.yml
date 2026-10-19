@@ -40,7 +40,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lane: [unit, worker]
+        lane: [unit, worker-1, worker-2]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -54,7 +54,7 @@ jobs:
         if: matrix.lane == 'unit'
         run: pnpm build:delivery
       - name: Prove all released migration cases
-        if: matrix.lane == 'worker'
+        if: matrix.lane == 'worker-1'
         run: pnpm verify:migrations
       - run: node scripts/run-contract-lane.mjs "${{ matrix.lane }}" "$RUNNER_TEMP/contract-evidence"
       - uses: actions/upload-artifact@v4
@@ -71,7 +71,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        lane: [desktop-1, desktop-2, desktop-3, desktop-4, mobile-1, mobile-2, mobile-3, mobile-4]
+        lane: [desktop-1, desktop-2, desktop-3, desktop-4, desktop-5, desktop-6, desktop-7, desktop-8, mobile-1, mobile-2, mobile-3, mobile-4, mobile-5, mobile-6, mobile-7, mobile-8]
     steps:
       - uses: actions/checkout@v4
         with:
