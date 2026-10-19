@@ -537,7 +537,7 @@ are data, compiled into the owned source and applied by one local runtime.
 
 ## Status
 
-Judged from the code and tests at commit `3e4367fdb8b962a2b475355e595a6c5f4b877f4c` (19 October 2026).
+Judged from the code and tests at commit `4bd18aa39ca284d8e8279d8b702332131c65a17b` (19 October 2026). Release 0.6.0 is cut from this code: its gate ran the homepage jobs locally and on a disposable hosted deployment with real mail, and an in-place upgrade from 0.5.0 (CHANGELOG.md). Each done row's evidence is its tagged tests, which `rer verify` runs.
 
 FIELD-006 includes this round’s choice/block presentation implementation and tagged native/browser journeys cited below.
 
