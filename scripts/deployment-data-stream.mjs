@@ -5,8 +5,8 @@ import { tableRows, readCells } from './deployment-data-values.mjs';
 import { createHash } from 'node:crypto';
 import { closeSync, openSync, mkdtempSync, rmSync, writeSync, fsyncSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { archiveSchema, canonicalDatabaseSchema, cell, decode, failure, initialize, integrity, inventory, metadata, quote, readTable, schema } from './deployment-data-core.mjs';
-import { checkedLedger, validateLedger } from './deployment-data-ledger.mjs';
+import { archiveSchema, canonicalDatabaseSchema, cell, decode, failure, initialize, integrity, inventory, keptHistory, metadata, quote, readTable, schema } from './deployment-data-core.mjs';
+import { checkedLedger, keepsHistory, validateLedger } from './deployment-data-ledger.mjs';
 import { classify, sanitize, rowsNeverTravel, refuseAuthorization } from './deployment-data-policy.mjs';
 import { refuseDevRows } from './deployment-data-dev.mjs';
 import { readArchiveJSON } from './deployment-data-json.mjs';
@@ -101,9 +101,12 @@ export function populateStore(database, store) {
   assertInitialized(database, inventory(database));
   const triggers = database.prepare("SELECT name,sql FROM sqlite_schema WHERE type='trigger'").all();
   for (const trigger of triggers) database.exec(`DROP TRIGGER ${quote(trigger.name)}`);
-  database.exec(`DELETE FROM ${quote(store.payload.d1Migrations.name)}`);
+  const kept = keepsHistory(store.payload.d1Migrations);
+  if (kept) keptHistory(database, checkedLedger(database), store);
+  else database.exec(`DELETE FROM ${quote(store.payload.d1Migrations.name)}`);
   for (const statement of initializedReplacement(store.payload.tables)) database.exec(statement.sql);
   for (const [index, table] of [store.payload.d1Migrations, ...store.payload.tables].entries()) {
+    if (kept && index === 0) continue;
     const insert = database.prepare(`INSERT INTO ${quote(table.name)} (${table.columns.map(quote).join(',')}) VALUES (${table.columns.map(() => '?').join(',')}) RETURNING ${rowExpression(table)} AS cells`);
     for (const row of index === 0 ? table.rows : store.rows(index - 1)) {
       if (row.length !== table.columns.length) throw failure('INVALID_ROW', 'Archive row width differs from its table.');

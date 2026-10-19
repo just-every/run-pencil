@@ -2,7 +2,7 @@ import type { Database } from 'sql.js'
 import manifest from 'virtual:pencil-backup-manifest'
 import type { BackupArchive } from './model'
 import { digest } from './model'
-import { canonicalSchema, hashedLedgerSQL, kitLedgerSQL, ledgerDefinition, schemaQuery } from '../../../../scripts/deployment-data-browser-shared.mjs'
+import { canonicalSchema, hashedLedgerSQL, kitLedgerSQL, ledgerDefinition, platformLedger, platformLedgerSQL, schemaQuery } from '../../../../scripts/deployment-data-browser-shared.mjs'
 import { insertRows, readRows } from './sqlite-values'
 
 type SchemaEntry = {type: string; name: string; tbl_name: string; sql: string}
@@ -11,7 +11,7 @@ export async function restoreInDatabase(db: Database, archive: BackupArchive) {
   const ledger = ledgerDefinition(archive.payload.d1Migrations).table
   // Only the application's build-time schema is executed. Uploaded archive
   // SQL is compared against that schema by checkBackup and never executed.
-  const ledgerSQL = ledger.name === '_rer_deploy_migrations' ? kitLedgerSQL : ledger.columns.includes('sha256') ? hashedLedgerSQL : 'CREATE TABLE d1_migrations (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)'
+  const ledgerSQL = ledger.name === platformLedger.name ? platformLedgerSQL : ledger.name === '_rer_deploy_migrations' ? kitLedgerSQL : ledger.columns.includes('sha256') ? hashedLedgerSQL : 'CREATE TABLE d1_migrations (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)'
   db.run('PRAGMA foreign_keys=OFF; BEGIN IMMEDIATE')
   try {
     db.run(ledgerSQL)

@@ -1,7 +1,7 @@
 import manifest from 'virtual:pencil-backup-manifest'
 import { backupBytes, backupRows, digest, type BackupArchive, type BackupCell } from './model'
 import { checkBackup } from './check'
-import { assertLedgerShape, canonicalSchema, quote, rowExpression, rowsNeverTravel, sanitize, schemaQuery } from '../../../../scripts/deployment-data-browser-shared.mjs'
+import { assertLedgerShape, canonicalSchema, platformLedger, quote, rowExpression, rowsNeverTravel, sanitize, schemaQuery } from '../../../../scripts/deployment-data-browser-shared.mjs'
 import { ValidationError } from '../../shared/errors'
 
 function readCells(json: string): BackupCell[] {
@@ -20,8 +20,8 @@ function sumTerms(terms: string[]): string {
   const middle = Math.floor(terms.length/2)
   return `(${sumTerms(terms.slice(0,middle))}+${sumTerms(terms.slice(middle))})`
 }
-const ledgerShapeSQL = "SELECT name FROM sqlite_schema WHERE type='table' AND name IN ('d1_migrations','_rer_deploy_migrations') ORDER BY name"
-const shapes: Record<string, string[]> = { d1_migrations: ['id','name','applied_at'], _rer_deploy_migrations: ['name','sha256','state'] }
+const ledgerShapeSQL = "SELECT name FROM sqlite_schema WHERE type='table' AND name IN ('d1_migrations','_rer_deploy_migrations','rer_migrations') ORDER BY name"
+const shapes: Record<string, string[]> = { d1_migrations: ['id','name','applied_at'], _rer_deploy_migrations: ['name','sha256','state'], rer_migrations: ['name','sha256','applied_at'] }
 
 export async function exportBackup(db: D1Database) {
   // Discovery selects only a controller name, never product data. The actual
@@ -32,7 +32,8 @@ export async function exportBackup(db: D1Database) {
   const ledgerName = discovered.results[0].name
   const shape = (await db.prepare(`PRAGMA table_xinfo(${quote(ledgerName)})`).all<{name:string}>()).results.map(row => row.name)
   if (!(ledgerName in shapes)) throw new ValidationError('The database migration history is unsupported.')
-  const history = {name: ledgerName, columns: shape}
+  // Platform's applied_at stays with the installation; its committed history travels.
+  const history = {name: ledgerName, columns: ledgerName === platformLedger.name ? platformLedger.columns : shape}
   const retained = manifest.tables.filter(table => !rowsNeverTravel(table.name))
   // JSON escaping needs at most six bytes per source byte; the fixed allowance
   // covers cell wrappers and numeric representations. The guard fails before

@@ -13,4 +13,6 @@ export function canonicalSchema(actual: unknown[], expected: string): string;
 export function ledgerDefinition(table: {name: string; columns: string[]}): {table: {name: string; columns: string[]}; shape: unknown[]};
 export const kitLedgerSQL: string;
 export const hashedLedgerSQL: string;
+export const platformLedger: {name: string; columns: string[]};
+export const platformLedgerSQL: string;
 export function erasureFence(store: {payload: import('../src/core/features/backup/model').BackupArchive['payload']; rows(index: number): BackupCell[][]}, later: {payload: import('../src/core/features/backup/model').BackupArchive['payload']; rows(index: number): BackupCell[][]}): {erasureEpoch: number};

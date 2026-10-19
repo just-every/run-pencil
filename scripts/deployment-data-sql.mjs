@@ -1,12 +1,12 @@
 import { initializedPredicate, initializedReplacement } from './deployment-data-initialized.mjs';
 // Shared by the REST client and real D1 runtime checks. Values are always bound;
 // the only executable schema is supplied by the locally committed migrations.
-import { ledgerDefinition, ledgerShapeQuery, historyGuard } from './deployment-data-ledger.mjs';
+import { ledgerDefinition, ledgerShapeQuery, historyGuard, keepsHistory } from './deployment-data-ledger.mjs';
 export { ledger } from './deployment-data-ledger.mjs';
 export const quote = name => `"${name.replaceAll('"', '""')}"`;
 // Cloudflare owns both metadata tables, and Base's demo guard owns rer_demo (present only under RER_DEMO);
 // none belongs to the Pencil product graph.
-export const schemaQuery = "SELECT type, name, tbl_name, sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*' AND name NOT IN ('_cf_METADATA','_cf_KV','rer_demo') AND name NOT IN ('d1_migrations','_rer_deploy_migrations') ORDER BY type, name";
+export const schemaQuery = "SELECT type, name, tbl_name, sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*' AND name NOT IN ('_cf_METADATA','_cf_KV','rer_demo') AND name NOT IN ('d1_migrations','_rer_deploy_migrations','rer_migrations') ORDER BY type, name";
 export function rowExpression(table) {
   const cells = table.columns.map(name => {
     const column = quote(name);
@@ -48,8 +48,10 @@ export function restoreStatements(archive, trustedSchema, toHex) {
   ];
   const triggers = trustedSchema.filter(entry => entry.type === 'trigger');
   statements.push(...triggers.map(trigger => ({ sql: `DROP TRIGGER ${quote(trigger.name)}` })));
-  statements.push({ sql: `DELETE FROM ${quote(archive.payload.d1Migrations.name)}` }, ...initializedReplacement(tables));
-  for (const table of [archive.payload.d1Migrations, ...tables]) {
+  const kept = keepsHistory(archive.payload.d1Migrations);
+  if (!kept) statements.push({ sql: `DELETE FROM ${quote(archive.payload.d1Migrations.name)}` });
+  statements.push(...initializedReplacement(tables));
+  for (const table of kept ? tables : [archive.payload.d1Migrations, ...tables]) {
     for (const row of table.rows) statements.push(insertStatement(table, row, toHex));
   }
   statements.push(...triggers.map(trigger => ({ sql: trigger.sql })));

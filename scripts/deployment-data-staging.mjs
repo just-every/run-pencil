@@ -3,7 +3,7 @@ import { Buffer } from 'node:buffer';
 import { randomBytes } from 'node:crypto';
 import { quote } from './deployment-data-sql.mjs';
 import { insertStatement, insertRowsStatement, schemaQuery } from './deployment-data-sql.mjs';
-import { ledgerDefinition, ledgerShapeQuery, historyGuard } from './deployment-data-ledger.mjs';
+import { ledgerDefinition, ledgerShapeQuery, historyGuard, keepsHistory } from './deployment-data-ledger.mjs';
 import { renameSQL, canonicalSchema } from './deployment-data-schema.mjs';
 import { assertQueryBudget, queryLimits } from './deployment-data-provider.mjs';
 
@@ -20,9 +20,11 @@ export function destinationGuards(store, actualSchema) {
 }
 export function stagingPlan(store, trusted, restorePrefix) {
   const prefix = restorePrefix ?? `_pencil_restore_${randomBytes(12).toString('hex')}_`;
-  const tables = [store.payload.d1Migrations,...store.payload.tables];
+  // A kept ledger is never staged, dropped or renamed; the guards verify it in place.
+  const kept = keepsHistory(store.payload.d1Migrations);
+  const tables = kept ? [...store.payload.tables] : [store.payload.d1Migrations,...store.payload.tables];
   const names = Object.fromEntries(tables.map(table => [table.name, prefix + table.name]));
-  const allSchema = trusted.schema;
+  const allSchema = kept ? trusted.schema.filter(row => row.tbl_name !== store.payload.d1Migrations.name) : trusted.schema;
   const indexes = allSchema.filter(row => row.type === 'index');
   const triggers = allSchema.filter(row => row.type === 'trigger');
   const views = allSchema.filter(row => row.type === 'view');
@@ -71,7 +73,7 @@ export function stagingPlan(store, trusted, restorePrefix) {
     ]),
     { type:'table',name:stateName,tbl_name:stateName,sql:stateSQL },
   ].sort((a,b)=>a.type<b.type?-1:a.type>b.type?1:a.name<b.name?-1:a.name>b.name?1:0);
-  return { ledgerName:store.payload.d1Migrations.name, prefix, names, ordered, create, publish, cleanup, stateName, stagedSchema, sha256:store.sha256 };
+  return { ledgerName:store.payload.d1Migrations.name, probe:kept ? stateName : names[store.payload.d1Migrations.name], prefix, names, ordered, create, publish, cleanup, stateName, stagedSchema, sha256:store.sha256 };
 
 }
 export async function stageRows(query, store, plan) {
@@ -102,7 +104,7 @@ export async function stageRows(query, store, plan) {
 export async function cleanupStage(query, plan) {
   // The presence probe distinguishes an uncommitted preparation from an
   // existing inert stage. Never drop or delete original application records.
-  const [result] = await query([{ sql: 'SELECT name FROM sqlite_schema WHERE type=\'table\' AND name=?', params: [plan.names[plan.ledgerName]] }]);
+  const [result] = await query([{ sql: 'SELECT name FROM sqlite_schema WHERE type=\'table\' AND name=?', params: [plan.probe] }]);
   if (result.results.length) {
     const [actual] = await query([{sql:schemaQuery}]);
     canonicalSchema(actual.results,JSON.stringify(plan.stagedSchema));

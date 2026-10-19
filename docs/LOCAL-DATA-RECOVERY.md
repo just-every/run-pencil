@@ -78,7 +78,11 @@ node scripts/deployment-data-cli.mjs export --output exports/deployed.rer --writ
 
 Separately provision an empty target with the same kit, migration-ledger kind
 and migration bytes. It may contain only fully applied migrations and their
-initialization rows. The recovery script does not provision or attach it. A
+initialization rows. A database installed by Run Edit Run Platform keeps its
+migration history in Platform's `rer_migrations` ledger. Export carries that
+history's names and digests; restore checks the target's own `rer_migrations`
+against them and never rewrites, drops or recreates it, so the target keeps its
+own applied times. The recovery script does not provision or attach it. A
 normal `rer deploy` claims an owner and makes its database nonempty; do not
 delete owner records to bypass the guard. Keep all target writers stopped,
 and point `CLOUDFLARE_DATABASE_ID` at that target:

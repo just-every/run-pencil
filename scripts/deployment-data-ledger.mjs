@@ -5,10 +5,16 @@ export const hashedLedger = { name: 'd1_migrations', columns: ['id', 'name', 'ap
 export const hashedLedgerSQL = "CREATE TABLE d1_migrations (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL UNIQUE, applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, sha256 TEXT, state TEXT CHECK(state IN ('applying','applied')))";
 export const kitLedger = { name: '_rer_deploy_migrations', columns: ['name', 'sha256', 'state'] };
 export const kitLedgerSQL = "CREATE TABLE _rer_deploy_migrations (name TEXT PRIMARY KEY, sha256 TEXT NOT NULL, state TEXT NOT NULL CHECK(state IN ('applying','applied')))";
-// Both ledgers together are deliberately invalid: recovery never guesses which
+// Platform's installer owns rer_migrations. An archive carries its committed
+// history (name, sha256); applied_at stays the destination's own record, and
+// restore validates that history in place without ever rewriting or dropping it.
+export const platformLedger = { name: 'rer_migrations', columns: ['name', 'sha256'] };
+export const platformLedgerSQL = 'CREATE TABLE rer_migrations (name TEXT PRIMARY KEY, sha256 TEXT NOT NULL, applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)';
+const ledgerNames = ['d1_migrations', '_rer_deploy_migrations', 'rer_migrations'];
+// Any two ledgers together are deliberately invalid: recovery never guesses which
 // controller owns history. Hidden/generated columns are included in this check.
 // SQLite's final ALTER TABLE quotes the published table name. Those are the
-// two controller-owned definitions; do not normalize SQL literals or CHECKs.
+// controller-owned definitions; do not normalize SQL literals or CHECKs.
 const schemas = (sql, name) => [sql, sql.replace(name, `"${name}"`)]
   .map(value => `'${value.replaceAll("'", "''")}'`).join(',');
 export const ledgerShapeQuery = `SELECT cid,name,upper(type) AS type,"notnull",dflt_value,pk,hidden FROM pragma_table_xinfo('d1_migrations')
@@ -16,8 +22,10 @@ WHERE (SELECT count(*) FROM pragma_table_xinfo('d1_migrations'))=3
 OR (SELECT sql FROM sqlite_schema WHERE name='d1_migrations') IN (${schemas(hashedLedgerSQL, hashedLedger.name)})
 UNION ALL SELECT cid,name,upper(type) AS type,"notnull",dflt_value,pk,hidden FROM pragma_table_xinfo('_rer_deploy_migrations')
 WHERE (SELECT sql FROM sqlite_schema WHERE name='_rer_deploy_migrations') IN (${schemas(kitLedgerSQL, kitLedger.name)})
+UNION ALL SELECT cid,name,upper(type) AS type,"notnull",dflt_value,pk,hidden FROM pragma_table_xinfo('rer_migrations')
+WHERE (SELECT sql FROM sqlite_schema WHERE name='rer_migrations') IN (${schemas(platformLedgerSQL, platformLedger.name)})
 UNION ALL SELECT -1,'mixed-ledgers','',0,NULL,0,0 WHERE
-(SELECT count(*) FROM sqlite_schema WHERE type='table' AND name IN ('d1_migrations','_rer_deploy_migrations'))=2 ORDER BY cid`;
+(SELECT count(*) FROM sqlite_schema WHERE type='table' AND name IN (${ledgerNames.map(name => `'${name}'`).join(',')}))>=2 ORDER BY cid`;
 export const ledgerShape = [
   { cid: 0, name: 'id', type: 'INTEGER', notnull: 0, dflt_value: null, pk: 1, hidden: 0 },
   { cid: 1, name: 'name', type: 'TEXT', notnull: 0, dflt_value: null, pk: 0, hidden: 0 },
@@ -35,10 +43,16 @@ export const hashedLedgerShape = [
   { cid: 3, name: 'sha256', type: 'TEXT', notnull: 0, dflt_value: null, pk: 0, hidden: 0 },
   { cid: 4, name: 'state', type: 'TEXT', notnull: 0, dflt_value: null, pk: 0, hidden: 0 },
 ];
+export const platformLedgerShape = [
+  kitLedgerShape[0],
+  kitLedgerShape[1],
+  { cid: 2, name: 'applied_at', type: 'TEXT', notnull: 1, dflt_value: 'CURRENT_TIMESTAMP', pk: 0, hidden: 0 },
+];
 const definitions = [
   { table: ledger, shape: ledgerShape },
   { table: hashedLedger, shape: hashedLedgerShape },
   { table: kitLedger, shape: kitLedgerShape },
+  { table: platformLedger, shape: platformLedgerShape },
 ];
 const equal = (left, right) => JSON.stringify(left) === JSON.stringify(right);
 const mismatch = () => Object.assign(new Error('D1 migration ledger differs from its explicit schema or committed migration history.'), { recoveryCode: 'MIGRATION_MISMATCH' });
@@ -46,6 +60,10 @@ export function ledgerDefinition(table) {
   const result = definitions.find(item => item.table.name === table.name && equal(item.table.columns, table.columns));
   if (!result) throw mismatch();
   return result;
+}
+// The destination's own ledger is history to verify, never archive rows to write.
+export function keepsHistory(table) {
+  return ledgerDefinition(table).table === platformLedger;
 }
 export function sameLedger(left, right) {
   return ledgerDefinition(left) === ledgerDefinition(right);
@@ -60,6 +78,12 @@ export function checkedLedger(database) { return assertLedgerShape(database.prep
 export function validateLedger(table, migrations) {
   const { table: expected } = ledgerDefinition(table);
   const rows = [...table.rows];
+  if (expected === platformLedger) {
+    if (rows.some(row => row.length !== 2 || row.some(cell => cell?.type !== 'text'))) throw mismatch();
+    const history = rows.map(([name, sha256]) => ({ name: name.value, sha256: sha256.value })).sort((a,b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
+    if (!equal(history, migrations.map(({ name, sha256 }) => ({ name, sha256 })))) throw mismatch();
+    return expected;
+  }
   if (expected === hashedLedger) {
     if (rows.some(row => row[0]?.type !== 'integer' || !/^-?(?:0|[1-9]\d*)$/.test(row[0].value))) throw mismatch();
     rows.sort((a,b) => BigInt(a[0].value) < BigInt(b[0].value) ? -1 : BigInt(a[0].value) > BigInt(b[0].value) ? 1 : 0);
@@ -76,6 +100,7 @@ export function validateLedger(table, migrations) {
 }
 export function historyGuard(table, migrations) {
   const { table: expected } = ledgerDefinition(table);
+  if (expected === platformLedger) return { sql: "(SELECT json_group_array(json_object('name',name,'sha256',sha256)) FROM (SELECT name,sha256 FROM rer_migrations ORDER BY name))=?", params: [JSON.stringify(migrations.map(({ name, sha256 }) => ({ name, sha256 })))] };
   if (expected !== ledger) return { sql: `(SELECT json_group_array(json_object('name',name,'sha256',sha256,'state',state)) FROM (SELECT name,sha256,state FROM ${expected.name} ORDER BY ${expected === hashedLedger ? 'id' : 'name'}))=?`, params: [JSON.stringify(migrations.map(row=>({...row,state:'applied'})))] };
   return { sql: "(SELECT group_concat(name,',') FROM (SELECT name FROM d1_migrations ORDER BY name))=?", params:[migrations.map(row=>row.name).join(',')] };
 }

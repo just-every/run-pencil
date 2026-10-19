@@ -6,7 +6,8 @@ import { join } from 'node:path';
 import { recoveryCommand } from './deployment-data-cli.mjs';
 import { kitDatabase, providerFetch, providerEnv, application } from './deployment-data-hosted-test-helpers.mjs';
 import { hostedFixture } from './deployment-data-hosted-fixture.mjs';
-import { snapshot, metadata, hash } from './deployment-data-core.mjs';
+import { snapshot, metadata, hash, migrations } from './deployment-data-core.mjs';
+import { DatabaseSync } from 'node:sqlite';
 import { exportRemote, importRemote } from './deployment-data-remote.mjs';
 import { exportData, restoreData } from './deployment-data-local.mjs';
 import { sqliteTransport } from './deployment-data-test-helpers.mjs';
@@ -131,4 +132,49 @@ test('kit recovery refuses incomplete, uncertain, altered and mixed migration le
       }finally{db.close();rmSync(path);}
     }
   }finally{source.close();rmSync(dir,{recursive:true});}
+});
+
+// Platform's installer ledger, verbatim from runeditrun/platform src/integrations/cloudflare-migrations.ts.
+const platformLedgerDDL='CREATE TABLE IF NOT EXISTS rer_migrations (name TEXT PRIMARY KEY, sha256 TEXT NOT NULL, applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)';
+function platformDatabase(path,appliedAt,ddl=platformLedgerDDL){
+  const db=new DatabaseSync(path);db.exec(ddl);
+  for(const [index,migration] of migrations().entries()){db.exec(migration.sql);db.prepare('INSERT INTO rer_migrations(name,sha256,applied_at) VALUES(?,?,?)').run(migration.name,metadata()[index].sha256,appliedAt);}
+  db.exec('PRAGMA foreign_keys=ON');return db;
+}
+
+test('[BASE-DATA-001,DATA-001] owner recovery command exports and restores a Platform-installed database: rer_migrations is validated and kept, never rewritten or dropped', async () => {
+  const dir=directory(), source=platformDatabase(join(dir,'source.sqlite'),'2026-10-01 09:00:00'), target=platformDatabase(join(dir,'target.sqlite'),'2026-10-19 06:00:00');
+  const mail=mock.method(globalThis,'fetch',async url=>{assert.equal(String(url),'https://api.sendgrid.com/v3/mail/send');return new Response(null,{status:202,headers:{'X-Message-Id':'platform-delivery'}});});
+  let timers;
+  try {
+    await hostedFixture(dir,source);
+    timers=mock.method(globalThis,'setTimeout',(fn,_delay,...args)=>{queueMicrotask(()=>fn(...args));return {unref(){}};});
+    const command=(args,db)=>recoveryCommand([...args,'--writers-stopped'],{env:providerEnv,fetch:providerFetch(db).fetch});
+    const archive=join(dir,'platform.rer'), after=join(dir,'platform-restored.rer');
+    const exported=await command(['export','--output',archive],source), bytes=readFileSync(archive,'utf8');
+    const history=JSON.parse(bytes).payload.d1Migrations;
+    assert.deepEqual({name:history.name,columns:history.columns},{name:'rer_migrations',columns:['name','sha256']});
+    assert.deepEqual(history.rows.map(([name,sha256])=>({name:name.value,sha256:sha256.value})),metadata());
+    const kept=target.prepare('SELECT name,sha256,applied_at FROM rer_migrations ORDER BY name').all(), ddl=target.prepare("SELECT sql FROM sqlite_schema WHERE name='rer_migrations'").get().sql;
+    assert.deepEqual(await command(['import','--input',archive,'--yes'],target),exported);
+    assert.deepEqual(target.prepare('SELECT name,sha256,applied_at FROM rer_migrations ORDER BY name').all(),kept);
+    assert.equal(target.prepare("SELECT sql FROM sqlite_schema WHERE name='rer_migrations'").get().sql,ddl);
+    assert.equal(target.prepare("SELECT count(*) n FROM sqlite_schema WHERE name GLOB '_pencil_restore_*'").get().n,0);
+    assert.deepEqual(await command(['export','--output',after],target),exported);
+    assert.equal(readFileSync(after,'utf8'),bytes);
+    assert.equal(target.prepare("SELECT slug FROM flows WHERE slug='preserved-form'").get().slug,'preserved-form');
+    // A destination whose Platform history differs, or a ledger that is not Platform's exact definition, is refused without writes.
+    const altered=platformDatabase(join(dir,'altered.sqlite'),'2026-10-19 06:00:00');
+    const reshaped=platformDatabase(join(dir,'reshaped.sqlite'),'2026-10-19 06:00:00',platformLedgerDDL.replace(' DEFAULT CURRENT_TIMESTAMP',''));
+    try {
+      altered.exec("UPDATE rer_migrations SET sha256='altered' WHERE name=(SELECT min(name) FROM rer_migrations)");
+      for(const db of [altered,reshaped]){
+        const path=db===altered?'altered.sqlite':'reshaped.sqlite', before=readFileSync(join(dir,path));
+        await assert.rejects(command(['import','--input',archive,'--yes'],db));
+        await assert.rejects(command(['export','--output',join(dir,'refused.rer')],db),{recoveryCode:'MIGRATION_MISMATCH'});
+        assert.equal(existsSync(join(dir,'refused.rer')),false);
+        assert.deepEqual(readFileSync(join(dir,path)),before);
+      }
+    } finally {altered.close();reshaped.close();}
+  } finally {timers?.mock.restore();mail.mock.restore();source.close();target.close();rmSync(dir,{recursive:true});}
 });

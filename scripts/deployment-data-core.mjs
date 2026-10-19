@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 import { classify, sanitize, refuseAuthorization } from './deployment-data-policy.mjs';
 import { refuseDevRows } from './deployment-data-dev.mjs';
-import { checkedLedger, ledger, kitLedger, kitLedgerSQL, hashedLedger, hashedLedgerSQL, ledgerDefinition, sameLedger, validateLedger } from './deployment-data-ledger.mjs';
+import { checkedLedger, ledger, kitLedger, kitLedgerSQL, hashedLedger, hashedLedgerSQL, platformLedger, platformLedgerSQL, keepsHistory, ledgerDefinition, sameLedger, validateLedger } from './deployment-data-ledger.mjs';
 import { failure } from './deployment-data-errors.mjs';
 import { canonicalSchema } from './deployment-data-schema.mjs';
 import { tableRows } from './deployment-data-values.mjs';
@@ -48,6 +48,14 @@ export function initialize(database, history = ledger) {
     }
     return;
   }
+  if (table === platformLedger) {
+    database.exec(platformLedgerSQL);
+    for (const migration of migrations()) {
+      database.exec(migration.sql);
+      database.prepare('INSERT INTO rer_migrations (name,sha256) VALUES (?,?)').run(migration.name, hash(migration.sql));
+    }
+    return;
+  }
   database.exec('CREATE TABLE d1_migrations (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)');
   for (const migration of migrations()) {
     database.exec(migration.sql);
@@ -57,7 +65,7 @@ export function initialize(database, history = ledger) {
 
 export function metadata() { return migrations().map(({ name, sql }) => ({ name, sha256: hash(sql) })); }
 export function schema(database) {
-  return JSON.stringify(database.prepare("SELECT type, name, tbl_name, sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*' AND name NOT IN ('_cf_METADATA','_cf_KV') AND name NOT IN ('d1_migrations','_rer_deploy_migrations') ORDER BY type, name").all());
+  return JSON.stringify(database.prepare("SELECT type, name, tbl_name, sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*' AND name NOT IN ('_cf_METADATA','_cf_KV') AND name NOT IN ('d1_migrations','_rer_deploy_migrations','rer_migrations') ORDER BY type, name").all());
 }
 export function canonicalDatabaseSchema(database) {
   const expected = new DatabaseSync(':memory:');
@@ -65,7 +73,7 @@ export function canonicalDatabaseSchema(database) {
   finally { expected.close(); }
 }
 export function inventory(database) {
-  return database.prepare("SELECT name FROM sqlite_schema WHERE type = 'table' AND name NOT GLOB 'sqlite_*' AND name NOT IN ('_cf_METADATA','_cf_KV') AND name NOT IN ('d1_migrations','_rer_deploy_migrations') ORDER BY name").all().map(({ name }) => ({ name, columns: database.prepare(`PRAGMA table_xinfo(${quote(name)})`).all().filter(column => column.hidden === 0).map(column => column.name) }));
+  return database.prepare("SELECT name FROM sqlite_schema WHERE type = 'table' AND name NOT GLOB 'sqlite_*' AND name NOT IN ('_cf_METADATA','_cf_KV') AND name NOT IN ('d1_migrations','_rer_deploy_migrations','rer_migrations') ORDER BY name").all().map(({ name }) => ({ name, columns: database.prepare(`PRAGMA table_xinfo(${quote(name)})`).all().filter(column => column.hidden === 0).map(column => column.name) }));
 }
 export function encode(value) {
   if (value === null) return { type: 'null' };
@@ -94,14 +102,16 @@ export function readTable(database, table) {
 export function populate(database, archive, { existing = false } = {}) {
   database.exec('PRAGMA foreign_keys = OFF; BEGIN IMMEDIATE');
   try {
-    checkedLedger(database);
+    const history = checkedLedger(database);
     if (existing) assertEmpty(database, archive);
     else assertInitialized(database, inventory(database));
-    database.exec(`DELETE FROM ${quote(archive.payload.d1Migrations.name)}`);
+    const kept = keepsHistory(archive.payload.d1Migrations);
+    if (kept) keptHistory(database, history, archive);
+    else database.exec(`DELETE FROM ${quote(archive.payload.d1Migrations.name)}`);
     const triggers = database.prepare("SELECT name,sql FROM sqlite_schema WHERE type='trigger'").all();
     for (const trigger of triggers) database.exec(`DROP TRIGGER ${quote(trigger.name)}`);
     for (const statement of initializedReplacement(archive.payload.tables)) database.exec(statement.sql);
-    for (const table of [archive.payload.d1Migrations, ...archive.payload.tables]) {
+    for (const table of kept ? archive.payload.tables : [archive.payload.d1Migrations, ...archive.payload.tables]) {
       const insert = database.prepare(`INSERT INTO ${quote(table.name)} (${table.columns.map(quote).join(',')}) VALUES (${table.columns.map(() => '?').join(',')})`);
       for (const row of table.rows) insert.run(...row.map(decode));
     }
@@ -111,6 +121,11 @@ export function populate(database, archive, { existing = false } = {}) {
   } catch (error) { database.exec('ROLLBACK'); throw error; }
 }
 
+// Restore writes no ledger rows here: the destination must already hold exactly the committed history.
+export function keptHistory(database, history, archive) {
+  if (!sameLedger(history, archive.payload.d1Migrations)) throw failure('MIGRATION_MISMATCH', 'Destination uses a different migration controller.');
+  validateLedger(readTable(database, history), metadata());
+}
 export function integrity(database) {
   if (database.prepare('PRAGMA integrity_check').get().integrity_check !== 'ok' || database.prepare('PRAGMA foreign_key_check').get()) throw failure('INTEGRITY_FAILURE', 'Database integrity or foreign-key check failed.');
 }
