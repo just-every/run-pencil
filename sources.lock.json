@@ -1829,7 +1829,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "be00ff1b41218cceb20e4ede1821fa2f5b18b7b0272460571339ae820dd5b39e",
+      "sha256": "50827a7450666b4a879107851e2ce4a85650582e039c94359fead6aff11afa83",
       "executable": false
     },
     "src/base/ai/client.mjs": {
