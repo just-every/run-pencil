@@ -1,3 +1,4 @@
+import { RetentionService } from '../features/retention/service'
 import { RestrictedAccess } from '../features/restricted-access/service'
 import { TrafficService } from '../features/traffic'
 import { TeamTemplates } from '../features/flows'
@@ -68,6 +69,7 @@ export function createPencilServices(platform: PencilPlatform) {
   const responses = new ResponseService(flowRepository, responseRepository, collectors, platform.configuration.sessionSecret, access)
   return {
     access,
+    retention: new RetentionService(platform.databaseBinding),
     resuming: new ResumeService(new ResumeRepository(platform.databaseBinding), responseRepository, flowRepository, collectors, responses, sender, {origin:platform.configuration.appOrigin,from,secret:platform.configuration.sessionSecret,local:platform.configuration.mail.kind==='local-development'}),
     traffic: new TrafficService(platform.databaseBinding,flows,responses,collectors,platform.configuration.sessionSecret),
     templates: new TeamTemplates(platform.databaseBinding, flowRepository),

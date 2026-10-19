@@ -15,7 +15,8 @@ This page says what Pencil collects from the people who answer your forms, what 
 - where it came from: direct link, embed or invitation,
 - when it started,
 - the furthest step reached, and
-- the device class: mobile, tablet or desktop.
+- the device class: mobile, tablet or desktop, and
+- the stable choice and question-block order when the form randomizes them.
 
 It holds no answers, no contact details, no IP address and no browser identification string. It expires after 30 days. When a session ends or expires, only counts are kept (that one session started, where it stopped and on what kind of device). Those counts cannot be traced back to a person, a session or a response.
 
@@ -23,11 +24,11 @@ It holds no answers, no contact details, no IP address and no browser identifica
 
 **People are told before they share.** The **Before you share** note says why you are asking, whether the response is anonymous or identified through an invitation, who can see individual answers (your operators), and that personal details they type identify them to those operators.
 
-**Abandoned forms leave nothing to read.** Pencil counts that a session started and how far it got. It never stores, shows or exports what someone typed into a form they did not submit.
+**Abandoned forms are not captured automatically.** Pencil counts that a session started and how far it got. Choosing **Save and finish later** explicitly keeps private answers for that respondent to resume; operators, completed results and ordinary response exports cannot read those saved answers. Without that choice, abandoned answers are not retained.
 
 **Embedding keeps the host page out.** On a page that embeds your form, the form runs in an isolated frame. The host page cannot read answers, response IDs, invitation links or contact details. The script embed tells it only that the form loaded, how tall it is and that someone finished. Only websites on your **Allowed embed hosts** list can embed the form at all.
 
-**Spam protection does not spy on people.** Pencil uses a hidden field, a minimum time to fill a form in, a token tied to the session, and per-address rate limits (by default 120 requests a minute and 30 final submissions a minute per address). It uses no CAPTCHA and no outside reputation service. A submission that fills the hidden field or arrives before the minimum time from form load is saved complete but held for review, excluded from accepted results, and deleted only if you delete it. Timing uses a signed load timestamp carried by the form, with no stored visitor or individual view record. Releasing or deleting a response never changes aggregate views or starts. See [Results, review and exports](results.md#review-suspicious-submissions).
+**Spam protection does not spy on people.** Pencil uses a hidden field, a minimum time to fill a form in, a token tied to the session, and per-address rate limits (by default 120 requests a minute and 30 final submissions a minute per address). It uses no CAPTCHA and no outside reputation service. A submission that fills the hidden field or arrives before the minimum time from form load is saved complete but held for review, excluded from accepted results, and erased when you delete it or its form’s retention schedule reaches the deletion date. Timing uses a signed load timestamp carried by the form, with no stored visitor or individual view record. Releasing or deleting a response never changes aggregate views or starts. See [Results, review and exports](results.md#review-suspicious-submissions).
 
 One exception to "nothing from outside" is deliberate. Your business logo is stored in your database and shown from your own installation, to anyone who loads a form. Treat it as a public image.
 
@@ -62,7 +63,13 @@ Saved segment rule values are operator configuration, not subject rows. Rules ca
 
 ## Keeping and erasing data
 
-Pencil never deletes your data automatically. Only three things expire: sign-in sessions, respondent sessions (after 30 days) and rate-limit counters.
+Response retention is off by default. The installation owner can open a form’s builder, choose **Share**, and use **Retention and legal hold** to set a period in days. Confirming and saving it applies to that form’s released and quarantined responses across its revisions, including closed and archived forms. Other forms keep their data until you erase it.
+
+A response’s age starts at completion. Private saved answers use the earlier of their original expiry and the chosen period from their creation. Scheduled deletion always receives at least seven days of advance in-app notice in this panel, including answers already older than a newly enabled period. A missed scheduled run can delay deletion; it never shortens the notice. Notice times use your workspace time zone. Erasure updates results and redacts and marks affected analyses stale.
+
+Turn on **Legal hold** to pause all automatic deletion for the form, including expiry of private saved answers. An expired resume link stays unavailable while its data is held. Releasing hold starts a fresh seven-day notice window before deletion can resume. You can still explicitly erase a response while hold is active.
+
+Sign-in sessions, respondent sessions and rate-limit state expire as before. A private save governed by retention or legal hold keeps its data until the applicable notice and hold conditions permit deletion; this does not extend its resume link’s original validity.
 
 You can erase a response, or a recipient and everything they gave, at any time. Erasure also revokes their invitation links. It removes the answers and updates your totals, within five minutes. A count-only erasure audit and anonymised delivery facts remain, with no subject identity or answer values. See [Results, review and exports](results.md#erase-a-response) and [Invitations, reminders and consent](invitations.md#opt-outs-and-consent).
 

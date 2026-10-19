@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { initialize, exportData, importData } from './deployment-data.mjs'
 
-test('archive roundtrip retains invitation data and private saved answers while disabling restored delivery capabilities', () => {
+test('archive roundtrip retains invitation data, private saves and retention custody while disabling restored delivery capabilities', () => {
   const directory = mkdtempSync(join(process.env.PENCIL_VERIFICATION_TMPDIR ?? tmpdir(), 'pencil-distribution-data-'))
   const source = join(directory, 'source.sqlite'), archive = join(directory, 'data.json'), target = join(directory, 'target.sqlite')
   const db = new DatabaseSync(source)
@@ -34,6 +34,8 @@ test('archive roundtrip retains invitation data and private saved answers while 
     insert('responses', {notification_eligible:0,response_context_json:responseContext, id: 'response', workspace_id: 'w', flow_id: 'f', revision_id: 'r', session_id: 'removed-session', session_token_hash: 'synthetic-hash', idempotency_key: 'synthetic-response-key', state: 'quarantined', quarantine_reason: 'minimum-fill-time', completed_at: stamp, created_at: stamp, updated_at: stamp, source: 'invitation', started_at: stamp, participant_id: 'p' })
     const savedAnswers = JSON.stringify([{stepId:'stable-question',value:'A private saved answer'}])
     insert('respondent_saves', {response_context_json:responseContext,session_id:'saved-session',revision_id:'r',token_hash:'synthetic-resume-hash',command_key:'save-command',delivery_id:'resume:saved-session:save-command',delivery_email:'resume-only@example.test',delivery_state:'sending',current_step_id:'stable-question',answers_json:savedAnswers,expires_at:'2026-11-06T00:00:00.000Z',created_at:stamp,updated_at:stamp})
+    insert('form_retention',{flow_id:'f',days:30,legal_hold:1,version:1,change_id:'retention-change',created_at:stamp,updated_at:stamp})
+    for(const [kind,item_id] of [['response','response'],['save','saved-session']])insert('retention_notices',{flow_id:'f',kind,item_id,policy_version:1,notified_at:stamp,delete_after:'2026-11-06T00:00:00.000Z'})
     const value = JSON.stringify('Original\n"quoted", =literal 😀\u0000')
     insert('response_answers', { id: 'answer', response_id: 'response', step_id: 'stable-question', value_json: value, created_at: stamp, updated_at: stamp })
     insert('form_access_rules',{id:'access-rule',flow_id:'f',mode:'password',password_verifier:'synthetic-private-verifier',domains_json:'[]',emails_json:'[]',created_at:stamp})
@@ -49,6 +51,8 @@ test('archive roundtrip retains invitation data and private saved answers while 
     assert.equal(saved.rows[0][saved.columns.indexOf('prompt')].value,prompt)
     const restored = new DatabaseSync(target)
     try {
+      assert.deepEqual({...restored.prepare('SELECT days,legal_hold,version FROM form_retention WHERE flow_id=?').get('f')},{days:30,legal_hold:1,version:1})
+      assert.deepEqual(restored.prepare('SELECT kind,item_id,policy_version,notified_at,delete_after FROM retention_notices ORDER BY kind').all().map(row=>({...row})),[['response','response'],['save','saved-session']].map(([kind,item_id])=>({kind,item_id,policy_version:1,notified_at:stamp,delete_after:'2026-11-06T00:00:00.000Z'})))
       assert.equal(restored.prepare('SELECT password_verifier FROM form_access_rules').get().password_verifier,null)
       assert.equal(restored.prepare('SELECT count(*) AS n FROM access_challenges').get().n,0)
       assert.equal(restored.prepare('SELECT email FROM response_access').get().email,'verified@example.test')

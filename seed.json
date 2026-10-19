@@ -222,7 +222,8 @@
       "description": "Complete export and bounded response erasure across every dependent record.",
       "clauses": [
         "DATA-001",
-        "DATA-002"
+        "DATA-002",
+        "GOV-003"
       ]
     },
     {

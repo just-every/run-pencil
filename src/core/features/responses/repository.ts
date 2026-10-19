@@ -1,10 +1,11 @@
+import { responseErasureStatements } from './erasure'
+import { ungovernedSaveSql } from '../retention'
 import { ValidationError } from '../../shared/errors'
 import { trafficDay } from '../../shared/trafficDay'
 import { bindSessionCollectorSql, collectorAdmissionSql, sessionCollectorAdmissionSql, throwCollectorAdmissionFailure } from '../collectors'
-import { analysisErasureStatements } from '../analysis'
 import { and, count, eq, sql } from 'drizzle-orm'
 import { completionMetricStatements } from './completionMetrics'
-import { eraseResponseLocalMail, eraseResponseLocalMailStatement } from '../../platform/mail/erasure'
+import { eraseResponseLocalMail } from '../../platform/mail/erasure'
 import type { D1Sql } from '../../../base/import-kit/src/d1/types'
 import type { PencilDatabase } from '../../platform/db/repository'
 import { flowRevisions, flows, respondentSessions, responseAnswers, responses, revisionMetricCounters } from '../../platform/db/schema'
@@ -336,23 +337,7 @@ export class ResponseRepository {
 
   async eraseReleasedResponse(input: ResponseErasureInput & { now: string }) {
     const auditId = crypto.randomUUID()
-    const statements: D1Sql[] = [
-      { sql: `INSERT INTO audit_entries (id, workspace_id, kind, actor_operator_id, subject_type, subject_id, details_json, created_at)
-        SELECT ?, workspace_id, 'response.erased', (SELECT id FROM operators WHERE id = ? AND workspace_id = responses.workspace_id), 'response', NULL, '{}', ? FROM responses
-        WHERE id = ? AND workspace_id = ? AND state = 'released'`, params: [auditId, input.operatorId, input.now, input.responseId, input.workspaceId] },
-      { sql: `UPDATE revision_metric_counters SET completions = MAX(0, completions - 1),
-        total_completion_milliseconds = MAX(0, total_completion_milliseconds - COALESCE((SELECT completion_milliseconds FROM responses WHERE id = ?), 0)), updated_at = ?
-        WHERE revision_id = (SELECT revision_id FROM responses WHERE id = ? AND source != 'imported') AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`, params: [input.responseId, input.now, input.responseId, auditId] },
-      { sql: `UPDATE audit_entries SET subject_id = NULL, details_json = '{}' WHERE workspace_id = ? AND subject_type = 'response' AND subject_id = ? AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`, params: [input.workspaceId, input.responseId, auditId] },
-      eraseResponseLocalMailStatement(input.responseId, input.workspaceId, auditId),
-      { sql: 'DELETE FROM response_outbox WHERE response_id = ? AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)', params: [input.responseId, auditId] },
-      ...analysisErasureStatements('SELECT id FROM responses WHERE id = ? AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)', [input.responseId, auditId], input.now),
-      { sql: 'DELETE FROM response_answers WHERE response_id = ? AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)', params: [input.responseId, auditId] },
-      { sql: `DELETE FROM respondent_session_step_events WHERE session_id = (SELECT session_id FROM responses WHERE id = ?) AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`, params: [input.responseId, auditId] },
-      { sql: `DELETE FROM respondent_sessions WHERE id = (SELECT session_id FROM responses WHERE id = ?) AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`, params: [input.responseId, auditId] },
-      { sql: `DELETE FROM form_import_targets WHERE target_id = ? AND workspace_id = ? AND kind = 'response' AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`, params: [input.responseId, input.workspaceId, auditId] },
-      { sql: `DELETE FROM responses WHERE id = ? AND workspace_id = ? AND state = 'released' AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`, params: [input.responseId, input.workspaceId, auditId] },
-    ]
+    const statements = responseErasureStatements({...input,state:'released'},auditId)
     const results = await this.eraseResponse(this.binding, input, statements)
     // D1 includes the invitation-erasure trigger's writes in meta.changes.
     return changes(results.at(-1)) > 0
@@ -373,7 +358,7 @@ export class ResponseRepository {
   }
 
   async foldExpiredSessions(now: string, limit = 1000) {
-    const selected = `SELECT id FROM respondent_sessions WHERE expires_at <= ? ORDER BY expires_at, id LIMIT ?`
+    const selected = `SELECT id FROM respondent_sessions WHERE expires_at <= ? AND ${ungovernedSaveSql('respondent_sessions.id')} ORDER BY expires_at, id LIMIT ?`
     const results = await this.binding.batch([
       this.binding.prepare(`INSERT INTO revision_step_metric_counters (id, revision_id, step_stable_id, reached, dropped, created_at, updated_at)
         SELECT 'step-metric-' || revision_id || '-' || furthest_step_id, revision_id, furthest_step_id, 0, COUNT(*), ?, ?
@@ -382,7 +367,7 @@ export class ResponseRepository {
         ON CONFLICT(revision_id, step_stable_id) DO UPDATE SET dropped = dropped + excluded.dropped, updated_at = excluded.updated_at`).bind(now, now, now, limit),
       this.binding.prepare(`DELETE FROM respondent_session_step_events WHERE session_id IN (${selected})`).bind(now, limit),
       this.binding.prepare(`DELETE FROM respondent_sessions WHERE id IN (${selected})`).bind(now, limit),
-      this.binding.prepare(`DELETE FROM respondent_saves WHERE session_id IN (SELECT session_id FROM respondent_saves WHERE expires_at<=? ORDER BY expires_at,session_id LIMIT ?)` ).bind(now,limit),
+      this.binding.prepare(`DELETE FROM respondent_saves WHERE session_id IN (SELECT session_id FROM respondent_saves WHERE expires_at<=? AND ${ungovernedSaveSql('respondent_saves.session_id')} ORDER BY expires_at,session_id LIMIT ?)` ).bind(now,limit),
     ])
     return Math.max(changes(results[2]),changes(results[3]))
   }

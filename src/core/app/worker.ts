@@ -1,3 +1,4 @@
+import { registerRetentionRoutes } from '../features/retention/routes'
 import { registerResumeRoutes } from '../features/resuming'
 import { registerAuditRoutes } from '../features/audit'
 import { registerSubmissionRoutes } from '../features/submissions/routes'
@@ -124,6 +125,7 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
   app.use('/app', requireOperator)
   app.use('/app/*', requireOperator)
 
+  registerRetentionRoutes(app)
   registerBackupRoutes(app)
   registerManagementRoutes(app)
   registerAuthRoutes(app, context => context.get('services'), context => context.get('platform').configuration)
