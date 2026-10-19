@@ -1,222 +1,54 @@
 {
-  "version": "0.6.0",
-  "previousVersion": "0.5.0",
+  "version": "0.7.0",
+  "previousVersion": "0.6.0",
   "date": "2026-10-19",
   "contractChanges": {
-    "A11Y-001": {
+    "FIELD-006": {
       "change": "added",
-      "summary": "Every respondent page, question type, layout, error, progress indicator and completion screen meets WCAG 2.2 AA, proved by keyboard-only completion and axe across all 22 shipped question types and three layouts at 1440 and 390 pixels."
-    },
-    "DIST-012": {
-      "change": "added",
-      "summary": "Every public collector, including the default direct and embed links, has its own public URL and an SVG/PNG QR code carrying its source, and kiosk mode restarts the form empty for each person and clears answers after the idle time."
-    },
-    "DIST-019": {
-      "change": "added",
-      "summary": "A form can require a password, a verified email in an allowed domain or list (one response per verified email) or a signed link from the business's own app, checked on the server before the first step renders.",
+      "summary": "An operator can randomize a question's choices, with Other and None of the above anchored last, or the questions in a page or group; each respondent's order is stable through preview, Back and resume, stored with the response and exported.",
       "migrationIds": [
-        "0050_restricted_access.sql"
+        "0051_presentation_order.sql"
       ]
     },
-    "LOGIC-005": {
+    "GOV-003": {
       "change": "added",
-      "summary": "A flow can choose its completion screen, or redirect after a committed response to an HTTPS URL on an approved origin with declared values appended, by rules over answers, hidden fields, calculations or scores."
-    },
-    "RSLT-012": {
-      "change": "added",
-      "summary": "Operators tag open-text answers with workspace codes by hand or by accepting exact-quote AI suggestions, then chart, filter and crosstab by code, with every assignment's provenance retained.",
+      "summary": "A form's owner can opt into a retention period after which released and quarantined responses and private saves are deleted under DATA-002, with seven days' in-app notice and a legal hold that pauses all automatic deletion; other forms keep BASE-DATA-002.",
       "migrationIds": [
-        "0047_open_text_coding.sql"
+        "0052_retention.sql"
       ]
     },
-    "FIELD-003": {
-      "change": "added",
-      "summary": "CSAT, CES, emoji and thumbs ratings are typed questions with fixed semantics; results report CSAT as the share of 4-5 answers and CES as the mean, with stated denominators.",
+    "RESP-013": {
+      "change": "changed",
+      "summary": "A respondent session record also holds FIELD-006's stable choice and block presentation IDs, never answers or identity.",
       "migrationIds": [
-        "0040_scores_contact_fields.sql"
-      ]
-    },
-    "FIELD-004": {
-      "change": "added",
-      "summary": "Phone, postal address, full name, URL and USD amount are typed questions with field-specific validation and normalized and formatted export columns.",
-      "migrationIds": [
-        "0040_scores_contact_fields.sql"
-      ]
-    },
-    "FIELD-008": {
-      "change": "added",
-      "summary": "A flow can use classic pages with several questions and in-page conditions; only visible questions are validated and progress counts reachable pages."
-    },
-    "DIST-017": {
-      "change": "added",
-      "summary": "Each form can have named collectors with their own link, close date and response limit; every response records its collector and results filter and compare by collector.",
-      "migrationIds": [
-        "0041_collectors.sql"
-      ]
-    },
-    "PART-002": {
-      "change": "added",
-      "summary": "A respondent who chooses Save and finish later gets an emailed resume link that reopens the same revision and answers on any device until it expires (30 days) or the form closes; saved answers stay out of counts, results, analysis and default exports.",
-      "migrationIds": [
-        "0043_saved_responses.sql"
-      ]
-    },
-    "WORK-001": {
-      "change": "added",
-      "summary": "Each form has a submission inbox with statuses, assignees, tags and private notes, version-checked bulk updates and an audited history.",
-      "migrationIds": [
-        "0042_submission_workflow.sql"
-      ]
-    },
-    "RSLT-013": {
-      "change": "added",
-      "summary": "Results show views, starts and submissions per revision, source and day with start and completion rates; a view is an anonymous aggregate count with no identifier, cookie or link to a response.",
-      "migrationIds": [
-        "0045_traffic_metrics.sql"
-      ]
-    },
-    "FLOW-008": {
-      "change": "changed",
-      "summary": "Loading a published flow still creates no session or visitor record; its only load-time effect is RSLT-013's anonymous aggregate view count.",
-      "was": "Published revisions. Publishing creates an immutable numbered revision and makes it the current revision resolved by the flow's canonical direct and embed URL. Every invitation, first-interaction session permitted by RESP-013, completed response, analysis, and export records the revision it used; merely loading the page creates no record.",
-      "now": "Published revisions. Publishing creates an immutable numbered revision and makes it the current revision resolved by the flow's canonical direct and embed URL. Every invitation, first-interaction session permitted by RESP-013, completed response, analysis, and export records the revision it used; merely loading the page creates no session or visitor record. The only load-time recording is RSLT-013’s anonymous aggregate counter increment, with no identifier or cookie and no link to a response."
-    },
-    "FLOW-019": {
-      "change": "changed",
-      "summary": "Stored answer shapes now include Other write-ins as {choiceIds, otherText}, an exclusive None option, and the typed values of the new score and contact questions.",
-      "was": "Answer values by type. A stored answer is exactly one of: for short text and long text, a string within that type's character limit in `seed.json → limits`; for email, a syntactically valid address stored as the respondent typed it and compared case-insensitively; for single choice and dropdown, one stable choice ID belonging to that question; for multiple choice, a set of distinct stable choice IDs belonging to that question, within its configured minimum and maximum selections; for rating, an integer within the question's configured scale; for priority, a complete ordering of that question's stable choice IDs with no repetition and no omission; for yes/no, a boolean; for NPS, an integer from 0 through 10; for number, a finite number within optional minimum, maximum and decimal precision; for date, a true calendar YYYY-MM-DD value within optional earliest/latest bounds without timezone conversion; for consent, `{accepted: boolean, statement: string}` retaining the immutable published statement, with required consent accepting only true. Nothing else is a valid answer.",
-      "now": "Answer values by type. A stored answer is exactly one of: for short text and long text, a string within that type's character limit in `seed.json → limits`; for email, a syntactically valid address stored as the respondent typed it and compared case-insensitively; for single choice and dropdown without Other selected, one stable choice ID belonging to that question; for multiple choice without Other selected, a set of distinct stable choice IDs belonging to that question, within its configured minimum and maximum selections, except that the configured None option alone satisfies the minimum; when Other is selected on any of these types, exactly `{choiceIds: string[], otherText: string}`, with distinct IDs belonging to the question and including its configured Other ID, exactly one ID for single choice or dropdown, and non-blank Other text within the short-text limit and configured FIELD-013 validation. None cannot be combined with another choice or an Other-answer object, and Other text without the Other selection is invalid; for rating, an integer within the question's configured scale; for priority, a complete ordering of that question's stable choice IDs with no repetition and no omission; for yes/no, a boolean; for NPS, an integer from 0 through 10; for number, a finite number within optional minimum, maximum and decimal precision; for date, a true calendar YYYY-MM-DD value within optional earliest/latest bounds without timezone conversion; for consent, `{accepted: boolean, statement: string}` retaining the immutable published statement, with required consent accepting only true. For FIELD-003 score and FIELD-004 contact questions, the stored values are the typed, normalized values those clauses define. Nothing else is a valid answer."
-    },
-    "LEDG-004": {
-      "change": "changed",
-      "summary": "Response exports still omit automatically excluded responses by default, and an owner can now explicitly include them, each marked with its exclusion reason.",
-      "was": "Response export. Starting an export fixes its filter and evidence-cutoff time. CSV and JSON contain exactly the matching released responses committed by that cutoff, including response and revision IDs, source, timestamps, stable step IDs and labels, and lossless values for every answer including open text. Quarantined responses are excluded until released, and the export names how many were excluded.",
-      "now": "Response export. Starting an export fixes its filter and evidence-cutoff time. By default, CSV and JSON contain exactly the matching released responses committed by that cutoff, including response and revision IDs, source, timestamps, stable step IDs and labels, and lossless values for every answer including open text. Quarantined and excluded responses stay out until released, and the export names how many were excluded. An owner may explicitly choose to include automatically excluded responses (honeypot or minimum-time); each included response is marked with its exclusion reason. This RESP-016 option is the only exception: included exclusions obey the same filter and cutoff and remain quarantined, without changing accepted-response counts or downstream effects. *Acceptance:* A default export omits automatically excluded responses; an explicit include adds them, each marked with its exclusion reason."
-    },
-    "RESP-001": {
-      "change": "changed",
-      "summary": "Questions follow the flow's chosen layout: one per screen, classic pages, or question groups.",
-      "was": "One question at a time. A respondent sees one welcome, question, or completion screen at a time, with no builder or operator controls.",
-      "now": "One question at a time. A respondent sees one welcome or completion screen at a time. Questions use the flow's selected layout: one question per screen; classic pages (FIELD-008), with several questions per page, shared LOGIC-006 page conditions, validation of visible questions only and progress by page; or question groups (FIELD-012), with several questions under one heading on one screen, individual required flags and validation, and progress counting each grouped question. No layout exposes builder or operator controls. One-question screens, classic pages (FIELD-008) and grouped questions ship. FIELD-012 remains partial for optional group media (FIELD-005) and statement blocks (FIELD-011)."
-    },
-    "RESP-002": {
-      "change": "changed",
-      "summary": "Classic page layouts show the current page and the remaining reachable pages instead of a question count.",
-      "was": "Truthful progress. The page shows the respondent's current position and remaining reachable questions for the answers already given. Branching can change that count, and skipped or unreachable questions are never counted.",
-      "now": "Truthful progress. The page shows the respondent's current position and remaining reachable questions for the answers already given; classic layouts under FIELD-008 show the current page and remaining reachable pages instead. Branching can change that count, and skipped or unreachable questions are never counted."
-    },
-    "RESP-003": {
-      "change": "changed",
-      "summary": "Choosing Other makes its text required, None is exclusive, and classic pages validate only visible questions.",
-      "was": "Answers. The respondent can submit only the values FLOW-019 defines for the published question's type and configured limits. Every question begins unanswered. False yes/no answers and zero scores or numbers count only after explicit selection or entry. Rating, priority, and choice questions begin unselected and require affirmative respondent selection. Required fields show Required and expose required semantics; a required unanswered or invalid question stays on screen with a field-specific error and creates no response. Progress is the share of currently reachable questions answered validly or deliberately skipped when optional; remaining includes every unfinished reachable question. Skipping never creates an answer.",
-      "now": "Answers. The respondent can submit only the values FLOW-019 defines for the published question's type and configured limits. Every question begins unanswered. False yes/no answers and zero scores or numbers count only after explicit selection or entry. Rating, priority, and choice questions begin unselected and require affirmative respondent selection. Required fields show Required and expose required semantics; a required unanswered or invalid question stays on screen with a field-specific error and creates no response. Choosing Other makes its text box required even on an otherwise optional question: empty or whitespace-only text shows the field-specific “Please specify your Other answer.” error and cannot create a response. Configured Other-text validation applies in both browser and API, and None is exclusive. In one-question and question-group layouts, progress is the share of currently reachable questions answered validly or deliberately skipped when optional; remaining includes every unfinished reachable question. Classic pages under FIELD-008 count reachable pages, validate only visible questions and do not let a hidden required question block progress. Skipping never creates an answer."
-    },
-    "RESP-005": {
-      "change": "changed",
-      "summary": "Public links are anonymous by default; a revision published in identified mode discloses its typed, unverified link-supplied identity before answers.",
-      "was": "Privacy disclosure. Before the first answer, the flow states why feedback is requested, whether the response is anonymous or identified, who can see individual answers, and each configured external and data category declared in `seed.json → externals` that may receive the answers. The policy decides which identity mode applies; it can never suppress or weaken the disclosure of the mode it chose. *Policy: `response.identity.v1`; default: public-link responses are anonymous and invited responses are identified.*",
-      "now": "Privacy disclosure. Before the first answer, the flow states why feedback is requested, whether the response is anonymous or identified, who can see individual answers, and each configured external and data category declared in `seed.json → externals` that may receive the answers. The policy decides which identity mode applies; it can never suppress or weaken the disclosure of the mode it chose. *Policy: `response.identity.v1`; default: `anonymous-public-link`, with invited responses identified. Publishing a form in identified mode records `identified-public-link` on that revision; declared identifying hidden fields supplied by the public link are typed, link-supplied and unverified, and their values and forwarding implications are disclosed before answering. RESP-023 requires the identifying link to bind one revision and fix those identifying values, with a reasoned refusal on another revision; its partial status records the remaining link-binding work.*"
-    },
-    "RESP-010": {
-      "change": "changed",
-      "summary": "Pencil still never captures partial answers silently; a respondent's explicit Save under PART-002 is the one exception and stays private resume state.",
-      "was": "No silent partials. Answers from an abandoned or reloaded session are not visible to operators, included in results, exported as responses, or counted as completions. Only final submission creates response data in the deployment.",
-      "now": "No silent partials. Pencil never captures partial answers silently. Unless a respondent explicitly chooses to save a partial response under PART-002, answers from an abandoned or reloaded session are not visible to operators, included in results, exported as responses, or counted as completions. A respondent-chosen save is the explicit exception: it may retain answers only for save and resume, without counting them as a completion or including them in completed results or default response exports. Only final submission creates completed response data; PART-002 stores an explicitly requested save separately and never makes its answers available to operators, completed results, analysis or default response exports."
-    },
-    "RESP-015": {
-      "change": "changed",
-      "summary": "Minimum fill time is measured from a signed, non-identifying form-load timestamp, and honeypot or too-fast submissions are retained for review instead of dropped.",
-      "was": "Abuse defences. Every public submission is checked by defences the deployment owns entirely: a hidden honeypot field, a minimum elapsed time from session start to final submission taken from `seed.json → limits`, a submission token bound to the RESP-013 session, and the public rate limits enforced under BASE-ACCESS-003. Pencil loads no third-party challenge, script, or reputation service on a public surface, so BASE-PUBLIC-001 continues to hold. A submission whose session token is missing or unrecognised is refused under RESP-014 with a visible, retryable error naming the expired session, never silently discarded. Scoring a respondent's trustworthiness beyond these checks is out of scope.",
-      "now": "Abuse defenses. Every public submission is checked by defenses the deployment owns entirely: a hidden honeypot field, a minimum elapsed time from form load to final submission taken from `seed.json → limits`, a submission token bound to the RESP-013 session, and the public rate limits enforced under BASE-ACCESS-003. Elapsed time uses the signed, non-identifying load timestamp carried by the form and returned with its submission under RSLT-013; it creates no visitor identity or server-side view record. Pencil loads no third-party challenge, script, or reputation service on a public surface, so BASE-PUBLIC-001 continues to hold. A submission whose session token is missing or unrecognized is refused under RESP-014 with a visible, retryable error naming the expired session, never silently discarded. A filled honeypot or a submission under the minimum time is retained with its reason and answers under RESP-016 and RESP-017 for owner review and reversal under RESP-018. Scoring a respondent's trustworthiness beyond these checks is out of scope."
-    },
-    "RESP-016": {
-      "change": "changed",
-      "summary": "A honeypot submission is now committed as an excluded, quarantined response with its reason and answers, reversible by an owner, instead of being dropped.",
-      "was": "Bot submissions are dropped. A submission that fills the honeypot is shown the ordinary completion screen and creates no response, answer, count change, session-metric change, or downstream effect. The drop records an audit entry under BASE-OPS-005 naming the defence that fired, the revision, and the time, and containing no answer text or respondent identity. The honeypot is the only check whose failure discards a submission.",
-      "now": "Bot submissions are excluded and retained. A submission that fills the honeypot is shown the ordinary completion screen and committed under RESP-007 as an excluded, quarantined response with its honeypot reason and all its answers retained. While excluded it changes no accepted-response count, admission check, result, analysis evidence set, notification or other downstream effect; exclusion and reversal leave anonymous view and start counters unchanged. Response exports omit automatically excluded responses by default. An owner may explicitly choose to include automatically excluded responses (honeypot or minimum-time); each included response is marked with its exclusion reason. An owner can review its reason and answers and reverse a false positive under RESP-018, after which it counts as an ordinary completed response. The exclusion records an audit entry under BASE-OPS-005 naming the defense that fired, the revision, and the time, and containing no answer text or respondent identity. It creates no visitor identity or server-side view record, and is erased under the form's normal retention and DATA-002 erasure rules. *Acceptance:* a honeypot hit retains its reason and answers in quarantine, an owner reviews and reverses it and it then counts. A default export omits automatically excluded responses; an explicit include adds them, each marked with its exclusion reason. *Status: done — Retained honeypot and minimum-time answers, review/release, default omission and explicit inclusion in filtered, cutoff-bound CSV/JSON exports are proved by `tests/runtime/traffic.worker.test.ts` and `tests/e2e/traffic-review.spec.ts` at 1440 and 390. Rows carry state and reason; inclusion changes no accepted counts or effects. `migrations/core/0046_exclusion_export_consistency.sql` invalidates snapshots on excluded-answer changes.*",
-      "migrationIds": [
-        "0046_exclusion_export_consistency.sql"
-      ]
-    },
-    "RESP-017": {
-      "change": "changed",
-      "summary": "A too-fast submission is quarantined with its reason and answers, omitted from exports by default, reversible, and subject to normal retention and erasure.",
-      "was": "Suspected submissions are quarantined, not lost. A submission that fails only the minimum-elapsed-time check is committed under RESP-007 as a quarantined response. It is stored complete with its answers, is excluded from completed-response counts, admission checks, results, analysis evidence sets, notifications, and response exports, and is never destroyed automatically.",
-      "now": "Suspected submissions are quarantined, not lost. A submission that fails only the minimum-elapsed-time check, measured from the signed, non-identifying load timestamp under RESP-015, is committed under RESP-007 as an excluded, quarantined response with its minimum-fill-time reason and all its answers retained. While excluded it is omitted from completed-response counts, admission checks, results, analysis evidence sets and notifications. Response exports omit it by default; RESP-016 governs the explicit include option for automated exclusions. An owner can review and reverse a false positive under RESP-018, after which it counts as an ordinary completed response. Exclusion and reversal leave anonymous view and start counters unchanged and create no visitor identity or server-side view record. It is erased under the form's normal retention and DATA-002 erasure rules."
-    },
-    "WS-003": {
-      "change": "changed",
-      "summary": "Optional AI and task connections are set up on their own pages in the app, with deployment variables kept as an alternative.",
-      "was": "Optional externals are configuration, not degradation. *Supersedes `BASE-SECRET-002`.* Pencil starts only when every variable marked required in `seed.json → env` is present, and fails at startup naming the first missing one. `ai.provider.v1` and `task.destination.v1` are declared optional: with either absent the deployment starts and serves, every clause that does not name that adapter holds in full, and each feature offered by the implemented profile that does name it is shown as unavailable alongside the variables that would enable it. Features deferred by the declared contract profile are omitted from the interface until implemented. No feature silently produces a reduced result instead.",
-      "now": "Optional externals are configuration, not degradation. *Supersedes `BASE-SECRET-002`.* Pencil starts only when every variable marked required in `seed.json → env` is present, and fails at startup naming the first missing one. `ai.provider.v1` and `task.destination.v1` are declared optional: with either absent the deployment starts and serves, every clause that does not name that adapter holds in full, and each feature offered by the implemented profile that does name it is shown as unavailable alongside page-local connection setup, with deployment variables retained as an alternative. Features deferred by the declared contract profile are omitted from the interface until implemented. No feature silently produces a reduced result instead."
+        "0051_presentation_order.sql"
+      ],
+      "was": "A session record held the session, revision, source, start time, furthest step and device class.",
+      "now": "It also holds FIELD-006's stable choice and block presentation IDs; still never answers, contact identity, raw IP, user-agent or host identity."
     }
   },
   "proseChanges": [
     {
-      "document": "README.md",
+      "document": "docs/LOCAL-DATA-RECOVERY.md",
       "change": "changed",
-      "date": "2026-10-18",
-      "summary": "Start Pencil with one npx line and back up a hosted copy from the Backup page.",
-      "was": "Installation was npm install -g @runeditrun/rer@0.2.24, git clone and rer dev; the README described no hosted Backup page.",
-      "now": "npx -y @runeditrun/rer dev just-every/run-pencil starts Pencil (or a curl installer without Node); a hosted owner downloads, checks and test-restores a backup at /app/backup; Pencil pins rer 0.2.65."
+      "date": "2026-10-19",
+      "summary": "Deployed D1 recovery explains how Run Edit Run Platform's migration ledger is handled.",
+      "was": "Recovery named the same kit and ledger kind for the target and did not mention Platform's rer_migrations ledger.",
+      "now": "A Platform-installed database's rer_migrations history travels as names and digests; restore checks the target's own ledger and never rewrites, drops or recreates it."
     }
   ],
   "extensionPointChanges": [],
   "migrations": [
     {
-      "id": "0038_integration_connections.sql",
-      "buyerSteps": "Adds private, encrypted storage for AI and task connections set up in the app. Additive; connection secrets never travel in backups. Local installs: export first, then rer setup after pulling (rer dev also applies it before serving). Hosted deployments apply it through rer deploy."
+      "id": "0051_presentation_order.sql",
+      "buyerSteps": "Adds each respondent session's stored presentation order for randomized choices and question blocks. Additive; existing sessions get an empty order. Local installs: export first, then rer setup after pulling (rer dev also applies it before serving). Hosted deployments apply it through rer deploy."
     },
     {
-      "id": "0039_notification_timer.sql",
-      "buyerSteps": "Adds the timer state that schedules response notifications. Additive. Local installs: export first, then rer setup after pulling (rer dev also applies it before serving). Hosted deployments apply it through rer deploy."
-    },
-    {
-      "id": "0040_scores_contact_fields.sql",
-      "buyerSteps": "Rebuilds the question and choice tables to allow the CSAT, CES, emoji, thumbs, phone, address, name, URL and USD amount question types. Every existing row, stable ID and import custody record is kept. Local installs: export first, then rer setup after pulling (rer dev also applies it before serving). Hosted deployments apply it through rer deploy."
-    },
-    {
-      "id": "0041_collectors.sql",
-      "buyerSteps": "Adds named collectors and per-response collector attribution. Existing responses are attributed to their original source bucket. Local installs: export first, then rer setup after pulling (rer dev also applies it before serving). Hosted deployments apply it through rer deploy."
-    },
-    {
-      "id": "0042_submission_workflow.sql",
-      "buyerSteps": "Adds the submission inbox: statuses, assignees, tags, notes and their audit. Additive. Local installs: export first, then rer setup after pulling (rer dev also applies it before serving). Hosted deployments apply it through rer deploy."
-    },
-    {
-      "id": "0043_saved_responses.sql",
-      "buyerSteps": "Adds private respondent saves for Save and finish later. Additive; saves are never operator-visible partials. Local installs: export first, then rer setup after pulling (rer dev also applies it before serving). Hosted deployments apply it through rer deploy."
-    },
-    {
-      "id": "0044_team_templates.sql",
-      "buyerSteps": "Adds team templates. Additive. Local installs: export first, then rer setup after pulling (rer dev also applies it before serving). Hosted deployments apply it through rer deploy."
-    },
-    {
-      "id": "0045_traffic_metrics.sql",
-      "buyerSteps": "Adds anonymous per-revision, per-source, per-day view counters. Additive; no visitor identifier is stored. Local installs: export first, then rer setup after pulling (rer dev also applies it before serving). Hosted deployments apply it through rer deploy."
-    },
-    {
-      "id": "0046_exclusion_export_consistency.sql",
-      "buyerSteps": "Keeps retained honeypot and minimum-time exclusions out of default exports and reports while allowing the explicit include option. Existing responses are unchanged. Local installs: export first, then rer setup after pulling (rer dev also applies it before serving). Hosted deployments apply it through rer deploy."
-    },
-    {
-      "id": "0047_open_text_coding.sql",
-      "buyerSteps": "Adds workspace codes and per-answer code assignments with provenance. Additive. Local installs: export first, then rer setup after pulling (rer dev also applies it before serving). Hosted deployments apply it through rer deploy."
-    },
-    {
-      "id": "0048_condition_trees.sql",
-      "buyerSteps": "Adds bounded AND/OR condition trees beside existing branch rules. Existing rules keep routing as before. Local installs: export first, then rer setup after pulling (rer dev also applies it before serving). Hosted deployments apply it through rer deploy."
-    },
-    {
-      "id": "0049_hidden_fields.sql",
-      "buyerSteps": "Adds revision form settings for hidden fields and calculations (existing revisions get empty settings) and their response context. Existing revisions and responses are unchanged. Local installs: export first, then rer setup after pulling (rer dev also applies it before serving). Hosted deployments apply it through rer deploy."
-    },
-    {
-      "id": "0050_restricted_access.sql",
-      "buyerSteps": "Adds restricted-access rules and verified-access records. Additive; existing forms stay unrestricted. Local installs: export first, then rer setup after pulling (rer dev also applies it before serving). Hosted deployments apply it through rer deploy."
+      "id": "0052_retention.sql",
+      "buyerSteps": "Adds per-form retention schedules and their notices. Additive; every existing form stays without a schedule and keeps all its data. Local installs: export first, then rer setup after pulling (rer dev also applies it before serving). Hosted deployments apply it through rer deploy."
     }
   ],
   "breaking": false,
-  "publicReleaseNotes": "Pencil 0.6.0 is the next regular release after 0.5.0. Forms gain classic pages and question groups, CSAT, CES, emoji, thumbs and US contact questions, Other and None choices, recalled answers, hidden link fields and calculations, compound conditions, conditional completion and redirects to approved sites, Save and finish later, restricted access (password, verified email or signed app link), named collectors with QR codes and a shared-device kiosk mode, team templates and WCAG 2.2 AA respondent pages. Results gain views and start rate, trends, collector comparison, response search, open-text coding and a submission inbox; honeypot and too-fast submissions are now kept for review instead of dropped, and stay out of default exports.\n\nRelease gate (19 October 2026, rer 0.2.65): on a fresh clone, the core loop ran locally at 1440 and 390 px: setup, a branching form from a template, preview showing which rule matched, publish, two public responses on different paths with path-only progress, no cookies and only same-origin requests, a respondent who started on revision 2 finishing it after revision 3 was published, results, a search-filtered CSV export, a Typeform JSON and CSV import (6 of 6 responses) and rer export. Hosted on a disposable Cloudflare deployment with SendGrid, the owner signed in from a real emailed link, collected direct, embedded and invited responses, received an invitation with its opt-out link and three new-response emails in a real inbox (SPF, DKIM and DMARC pass), and downloaded a backup that passed Check backup and Test restoration and held the hosted-only answers. A v0.5.0 install with a published flow and two responses upgraded in place: migrations 0038 to 0050 applied, every v0.5.0 row was unchanged and the upgraded app showed and collected responses.\n\nNot in this release: CONTRACT.md's target clauses marked partial or missing, among them file uploads, payments, signatures, matrix grids, quizzes, multi-language forms, roles and SSO, integrations (Google Sheets, HubSpot, Slack, Zapier and others), shared report links and SMS. Pencil is an alternative to Typeform, Google Forms and Jotform for the jobs on its homepage, not yet for every feature those products sell.\n\nKnown issues: there is no supported way to restore a hosted backup into a new deployment. rer deploy claims the owner, and the restore command then refuses the target (NONEMPTY_TARGET) and writes nothing; keep the original deployment, and use Test restoration or the local restore test to prove an archive. A new Worker's cron can take up to about two hours to start on some Cloudflare accounts, which delays reminders and Daily digests until then. Capacity limits are design targets, not measured hosted capacity. The Typeform importer has been checked against documented example files only.\n\nBack up first. Locally: stop dev, mkdir -p exports, rer export --output exports/before-0.6.0.rer, pull, then rer install, rer setup and rer dev. Hosted: download and check a backup at /app/backup and choose Test restoration, then rer deploy on the same environment. Migrations 0038 to 0050 apply in order and keep existing data.",
-  "agentUpdateInstructions": "Read CHANGELOG.md 0.6.0, OPERATIONS.md, docs/guide/backup.md and docs/HOSTING.md. Back up first: locally rer export --output exports/before-0.6.0.rer (create the ignored exports folder with mkdir -p exports), hosted from /app/backup with Check backup and Test restoration. Preserve every applied migration's bytes, including 0019 as your database applied it (migrations/released-rewrites.json), and apply 0038 to 0050 in order after 0037 before serving the new source: locally with rer setup (rer dev also applies pending migrations), hosted with rer deploy on the same environment and receipt. Keep the rer pin 0.2.65 from package.json and its lockfile. Keep automatically excluded responses out of default exports, results, analysis and notifications; never turn a respondent's explicit save into an operator-visible partial; never send restricted-access passwords, verified emails or app signatures to backups or logs. There is no supported hosted replacement restore: deployment-data-cli import refuses an owner-claimed target with NONEMPTY_TARGET; never delete owner records to bypass it, and keep the original deployment until a maintainer attaches a restored replacement. Run the populated 0.5.0 upgrade test (pnpm verify:migrations) and the complete verification gate on the integrated source."
+  "publicReleaseNotes": "Pencil 0.7.0 is the next regular release after 0.6.0. It fixes backup on a Pencil installed by Run Edit Run, and adds randomized order and retention schedules.\n\nBackup fix: on a Pencil installed by Run Edit Run (Managed), the Backup page and the recovery command refused to export with a migration-history error, because they did not recognise the migration ledger Run Edit Run keeps (rer_migrations). Both now check that ledger against Pencil's own migrations and export normally. Restoring into another installation checks the target's ledger and never rewrites, drops or recreates it. Installations set up locally or with rer deploy are unchanged.\n\nForms: an operator can shuffle a question's choices, with Other and None of the above kept last, and shuffle the questions in a page or group. Each respondent keeps the order they first saw through preview, Back and resume. That order is stored with the response and included in CSV and JSON exports. Retention: an owner can turn on a retention period for a form. Responses and private saves past it are then deleted, after seven days' notice in the app, and a legal hold pauses all automatic deletion. Forms without a schedule keep everything as before.\n\nRelease checks (19 October 2026, rer 0.2.65): Verify, including its installer and README jobs, passed on the release source. A populated scratch database installed by Run Edit Run Platform's own migration runner was upgraded from the Pencil source Run Edit Run currently installs (43 migrations) to 0.7.0 (53). It was then exported with the native recovery command, restored into a second Platform-installed database whose ledger stayed byte-identical, and re-exported to the same archive. The populated 0.6.0 upgrade test applies 0051 and 0052 with every row kept.\n\nNot in this release: CONTRACT.md's target clauses marked partial or missing, among them file uploads, payments, signatures, matrix grids, quizzes, multi-language forms, roles and SSO, integrations, shared report links and SMS.\n\nKnown issues: there is still no supported way to restore a hosted backup into a deployment that rer deploy has already claimed. The restore command refuses that target (NONEMPTY_TARGET) and writes nothing. An archive restores only into the Pencil version that made it. Back up before upgrading, and keep the original deployment.\n\nBack up first. Locally: stop dev, mkdir -p exports, rer export --output exports/before-0.7.0.rer, pull, then rer install, rer setup and rer dev. Hosted: download and check a backup at /app/backup and choose Test restoration, then rer deploy on the same environment. Migrations 0051 and 0052 are additive and apply in order.\n\nProduct screenshot: .github/assets/release/pencil-0.5.0-results-1440.png",
+  "agentUpdateInstructions": "Read CHANGELOG.md 0.7.0, OPERATIONS.md, docs/LOCAL-DATA-RECOVERY.md and docs/guide/backup.md. Back up first: locally rer export --output exports/before-0.7.0.rer (create the ignored exports folder with mkdir -p exports), hosted from /app/backup with Check backup and Test restoration. Preserve every applied migration's bytes, including 0019 as your database applied it (migrations/released-rewrites.json), and apply 0051 and 0052 in order after 0050 before serving the new source: locally with rer setup (rer dev also applies pending migrations), hosted with rer deploy on the same environment and receipt. Keep the rer pin 0.2.65 from package.json and its lockfile. Keep Platform's rer_migrations ledger recognised exactly as scripts/deployment-data-ledger.mjs defines it: export carries only its names and digests, restore validates the target's ledger in place and never writes it, and mixed or altered ledgers stay refused. Never let a retention schedule delete data on a form whose owner did not opt in, or while a legal hold is on. Run the populated 0.6.0 upgrade test (pnpm verify:migrations) and the complete verification gate on the integrated source."
 }

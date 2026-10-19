@@ -1,4 +1,4 @@
--- Synthetic populated Pencil 0.5.0 data: the 0.4.0 fixture rows applied on the released 0000 through 0037 schema, plus rows for what 0.5.0 added.
+-- Synthetic populated Pencil 0.6.0 data: the 0.5.0 fixture rows applied on the released 0000 through 0050 schema, plus rows for what 0.6.0 added.
 INSERT INTO workspaces (id,name,time_zone,sending_window_start,sending_window_end,setup_operator_initialized_at,embed_allowed_origins_json,created_at,updated_at) VALUES ('upgrade-workspace','Cedar Studio','Australia/Brisbane','08:30','18:00','2026-10-01T12:00:00.000Z','["https://example.org"]','2026-10-01T12:00:00.000Z','2026-10-01T12:00:00.000Z');
 INSERT INTO operators (id,workspace_id,email,display_name,is_setup_operator,created_at,updated_at) VALUES ('upgrade-operator-1','upgrade-workspace','operator1@example.com','Operator 1',1,'2026-10-01T12:00:00.000Z','2026-10-01T12:00:00.000Z');
 INSERT INTO operators (id,workspace_id,email,display_name,is_setup_operator,created_at,updated_at) VALUES ('upgrade-operator-2','upgrade-workspace','operator2@example.com','Operator 2',0,'2026-10-01T12:00:00.000Z','2026-10-01T12:00:00.000Z');
@@ -67,3 +67,14 @@ INSERT INTO analysis_attention (run_id,operator_id,created_at,read_at) VALUES ('
 -- Pencil 0.5.0 additions (0037): a prepared import checkpoint and a completed import erasure's progress record.
 INSERT INTO ik_d1_preparation_steps (id,destination,namespace,mapping_version,principal_id,operation_key,reversal_policy,codec_id,source_digest,total,records,stages,phase,hash_json,fingerprint,verified_revision,revision) VALUES ('upgrade-preparation-1','pencil.form-import','typeform','1','upgrade-operator-1','upgrade-preparation-key-1','undo',NULL,'synthetic-upgrade-source-digest',6,6,'["records"]','prepared',NULL,'synthetic-upgrade-fingerprint',NULL,0);
 INSERT INTO ik_d1_erasure_progress (id,destination,request_hash,generation,phase,index_rows,value_rows,revision,records_erased,field_matches_json,created_at) VALUES ('upgrade-erasure-1','pencil.form-import','synthetic-upgrade-request-hash','1','complete',2,3,5,1,'{}','2026-10-15T12:00:00.000Z');
+
+-- Pencil 0.6.0 additions (0038 to 0050), written as 0.6.0 writes them. Its triggers attribute every flow, session, response and launch above to a system collector.
+INSERT INTO collectors (id,flow_id,name,channel,public_key,deadline_at,deadline_time_zone,response_limit,created_at,updated_at) VALUES ('upgrade-collector-desk','upgrade-flow','Front desk QR','qr','0123456789abcdef0123456789abcdef','2026-12-01T00:00:00.000Z','Australia/Brisbane',50,'2026-10-16T12:00:00.000Z','2026-10-16T12:00:00.000Z');
+INSERT INTO submission_statuses (id,flow_id,name,created_at) VALUES ('upgrade-status-review','upgrade-flow','Needs review','2026-10-16T12:00:00.000Z');
+INSERT INTO submission_workflows (response_id,status_id,assignee_id,version,updated_at) VALUES ('upgrade-response-1','upgrade-status-review','upgrade-operator-2',2,'2026-10-16T12:00:00.000Z');
+INSERT INTO submission_tags (response_id,tag) VALUES ('upgrade-response-1','follow-up');
+INSERT INTO submission_notes (id,response_id,text,author_id,created_at) VALUES ('upgrade-note-1','upgrade-response-1','Called back about parking.','upgrade-operator-1','2026-10-16T12:00:00.000Z');
+INSERT INTO workspace_codes (id,workspace_id,label,normalized_label,created_by_operator_id,created_at) VALUES ('upgrade-code-1','upgrade-workspace','Parking','parking','upgrade-operator-1','2026-10-16T12:00:00.000Z');
+INSERT INTO answer_code_assignments (id,workspace_id,answer_id,code_id,source,actor_operator_id,created_at) VALUES ('upgrade-code-assignment-1','upgrade-workspace','upgrade-answer-1','upgrade-code-1','manual','upgrade-operator-1','2026-10-16T12:00:00.000Z');
+INSERT INTO revision_view_counters (revision_id,source,day,count) VALUES ('upgrade-revision-2','direct','2026-10-16',7);
+INSERT INTO form_access_rules (id,flow_id,mode,domains_json,emails_json,created_at) VALUES ('upgrade-access-1','upgrade-digest-flow','email','["example.com"]','[]','2026-10-16T12:00:00.000Z');

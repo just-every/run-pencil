@@ -849,7 +849,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "041245a193f647c4ca4dd890d71b6dcb53a984649092da10a25d16ab99dace74",
+      "sha256": "bc7fcc8d731a16c9d7bfa7531ac3e74e2c11197827e8f42e1645bc1b7ee0be4f",
       "executable": false
     },
     "CLAIMS.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "224a6ea04684d64e604e9784d3f64c157f81a1fedded7496ad5bf527e53dd4ee",
+      "sha256": "097d80d5e2a5e3c9853a473a75924448ab69835e88f22714579cf3470a43065b",
       "executable": false
     },
     "DEMO.md": {
@@ -901,7 +901,7 @@
       "executable": false
     },
     "docs/FIRST-RELEASE.md": {
-      "sha256": "d6e3f86144374ce94468a7dfed229b551528e61cff5f75ac50902cba0e54a1b5",
+      "sha256": "8a072be2058d68d0792807e222292c1f7a1e39406bd28db63541056d8e29a12b",
       "executable": false
     },
     "docs/guide/actions.md": {
@@ -941,7 +941,7 @@
       "executable": false
     },
     "docs/guide/overview.md": {
-      "sha256": "0fbbe6752ae3a27ece5100a726274a3b184f8ae292d401138267d3d14aeb7b65",
+      "sha256": "ec2a9ca277e7df578b3d27690ab7410c7e8307ad66819ba515d03884d6111289",
       "executable": false
     },
     "docs/guide/privacy.md": {
@@ -985,7 +985,7 @@
       "executable": false
     },
     "HANDOVER.md": {
-      "sha256": "fbf543d034acae2dc2374630b17a204635c8499605f1577527577aed110ade7c",
+      "sha256": "6ef4aca4d5908206de417a6cb98ada4c065bc6a056eaab08874101ddc1e67bc4",
       "executable": false
     },
     "LICENSE": {
@@ -1225,7 +1225,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "a1c1d8526b6602d20ef21e102d83dece443272411c2a793d08caead4c923585c",
+      "sha256": "b6d6aa99841804a4d96a3d3fe52391e431f504efb824cb1cf20b4725eae34c70",
       "executable": false
     },
     "playwright.admission.config.ts": {
@@ -1285,7 +1285,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "890843b3d8510d6972b2a983dba0b406d4b15fc528feadb61a2a654210fe759b",
+      "sha256": "ccd9c1a2ce5b344003ac34fce1aebb863f216432d684c8588a1d1474959e7f9c",
       "executable": false
     },
     "rer-project.json": {
@@ -1829,7 +1829,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "ec243a6dd7418d56c66d60240857607a4fb86fabb632e66a9a3167599d9138e8",
+      "sha256": "50827a7450666b4a879107851e2ce4a85650582e039c94359fead6aff11afa83",
       "executable": false
     },
     "src/base/ai/client.mjs": {
@@ -7116,12 +7116,12 @@
       "sha256": "6ea2c5ea5a63f02cad4c98ca0172083f36278ebaf56e943df31f857ff9980a33",
       "executable": false
     },
-    "tests/runtime/upgrades/0.5.0.json": {
-      "sha256": "33a9fe262aff97b436e6626c415257a5354e8a609a2792323a175705e76102c5",
+    "tests/runtime/upgrades/0.6.0.json": {
+      "sha256": "a19775f2f6355845e4053bfbd662b34f4e5eb7de6dc494a2d3990aeb9dd22eef",
       "executable": false
     },
-    "tests/runtime/upgrades/0.5.0.sql": {
-      "sha256": "cdcec66b4ce4148b5079e1059e147718d6030419b8935587eeeb59de04ee9dac",
+    "tests/runtime/upgrades/0.6.0.sql": {
+      "sha256": "4df72e451cb6b8e58d762b7085fd0797c9157b46993a320a8d50be45a6263ed9",
       "executable": false
     },
     "tests/runtime/upgrades/queued-retry-dispatch.ts": {
