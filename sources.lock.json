@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "bccbd6854a8b2d5119f8df7ef65d9ebabbcb0799ac429d4c8a001691f9ee6c31",
+      "sha256": "da0a6fbfa7e10ab09493633e018908452cd54e64b5f3095271b0e69b81870b31",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "ca2d8e25536b49c9786c2579866dc572019d720b44d49d53a2ac29f6e77d948d",
+      "sha256": "1ce5368b0e83dbb20e8bfe248fdbc673de9ff5de429df0423b1f5da6a84b3184",
       "executable": false
     },
     "DEMO.md": {
@@ -993,7 +993,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "2ad7b643e2347bdcc7de7addda23df0bf7575b1fd92002903b3a72bfc4514fb8",
+      "sha256": "cc31aa2aaa6d306273db7493c32d26565ca3cc0b39d90e13fa61008cfb4c3138",
       "executable": false
     },
     "migrations/core/0000_seeded_flowly_data_spine.sql": {
@@ -4517,7 +4517,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/authoring.css": {
-      "sha256": "c672b69815d0ef64bdc703b6592bc89b4fc58efefbc2d22fef8ceec4dc4cbcd5",
+      "sha256": "71779e6b39c1f41d03432b9676a0a60f7ac97dc4fc7193de00a8173d8a1bb771",
       "executable": false
     },
     "src/core/features/flows/ui/BranchEditor.tsx": {
@@ -4561,7 +4561,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/FlowBuilderPage.tsx": {
-      "sha256": "9fe0bd8ca7fa1390e01e36e5a28519faf666891e3c1047648f75176ccfba17b0",
+      "sha256": "ade8b51b2d958293b902dfddf574b59f41794b321fb830a464802466cffe87d3",
       "executable": false
     },
     "src/core/features/flows/ui/FlowSharePanel.tsx": {
@@ -4609,7 +4609,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/TypeSettings.tsx": {
-      "sha256": "5861ae79b4ed46396d3a051956f51bc5826d2b14a689d2ce4353262adf469bcf",
+      "sha256": "4adf790693937dc6874c11ed890977d1c83eed7c571fa9ee8db57a8738f2e114",
       "executable": false
     },
     "src/core/features/flows/unpublished.ts": {
@@ -5297,7 +5297,7 @@
       "executable": false
     },
     "src/core/features/responses/service.ts": {
-      "sha256": "cbd5a74f522e9a49f63f36e8e164b9fcce3ad0db82bf174c025de62b7fd078b1",
+      "sha256": "4992f6d4dcf74d0838f5d7fdc169899b4e7aed7b888145276f24aba65c3225c5",
       "executable": false
     },
     "src/core/features/responses/ui/CompletionDisclosure.tsx": {
