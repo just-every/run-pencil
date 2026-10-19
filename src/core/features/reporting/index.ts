@@ -1,4 +1,5 @@
 export type { TrendReport, TrendPoint, TrendRevision } from './trends'
 export { responseScope } from './scope'
+export { searchPhrase } from './search'
 export { retainedTextValid } from './textValidity'
 export type { LedgerFilter } from './repository'

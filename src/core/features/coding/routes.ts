@@ -1,6 +1,7 @@
 import type { Hono } from 'hono'
 import { z } from 'zod'
 import { workflowTag } from '../submissions'
+import { searchPhrase } from '../reporting'
 import type { WorkerEnvironment } from '../../app/environment'
 import { emptyMutationBody, resourceId, validateInput } from '../../shared/validation'
 import { listCodes, createCode } from './catalog'
@@ -11,7 +12,7 @@ import { codingCounts, codingCrosstab } from './metrics'
 
 const flowParams=validateInput('param',z.object({flowId:resourceId}))
 const assignmentParams=validateInput('param',z.object({responseId:resourceId,questionId:resourceId,codeId:resourceId}))
-const filter=z.object({codeId:resourceId.optional(),search:z.string().trim().max(200).optional(),revisionId:resourceId.optional(),collectorId:resourceId.optional(),
+const filter=z.object({codeId:resourceId.optional(),search:searchPhrase.optional(),revisionId:resourceId.optional(),collectorId:resourceId.optional(),
   source:z.enum(['direct','embed','invitation','unknown','imported']).optional(),participantStatus:z.enum(['eligible','opted-out','bounced']).optional(),
   from:z.string().datetime().optional(),to:z.string().datetime().optional(),answerStepId:resourceId.optional(),answerValue:z.string().max(5000).optional(),
   workflowStatus:resourceId.optional(),workflowAssignee:resourceId.optional(),workflowTag:workflowTag.optional()})

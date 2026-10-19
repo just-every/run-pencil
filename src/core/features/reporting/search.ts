@@ -1,10 +1,40 @@
+import { z } from 'zod'
 import { choiceIdsSql } from '../../shared/otherChoices'
+const sigma = ['Σ', 'σ', 'ς']
+const ascii = (char: string) => char.charCodeAt(0) < 128
+const single = (value: string) => [...value].length === 1
+
+/** Case-insensitive matching for the NFC phrase. SQLite lower() folds only
+ * ASCII, so each other letter of the phrase is folded in the haystack by
+ * replace() from its single-code-point case forms (É to é, Ж to ж, Σ and ς to
+ * σ); the phrase is folded the same way. instr treats %, _, * and SQL
+ * punctuation as literal text, and the replacements are letters only.
+ */
+export function searchFold(search: string) {
+  const canonical = (char: string) => sigma.includes(char) ? 'σ' : single(char.toLowerCase()) ? char.toLowerCase() : char
+  const phrase = [...search.normalize('NFC')].map(char => ascii(char) ? char.toLowerCase() : canonical(char)).join('')
+  const replacements = new Map<string, string>()
+  for (const char of new Set(phrase)) {
+    if (ascii(char)) continue
+    for (const form of [char.toUpperCase(), ...(char === 'σ' ? sigma : [])]) if (form !== char && single(form)) replacements.set(form, char)
+  }
+  const quote = (value: string) => `'${value.replaceAll("'", "''")}'`
+  return { phrase, letters: replacements.size, fold: (value: string) => [...replacements].reduce((sql, [from, to]) => `replace(${sql}, ${quote(from)}, ${quote(to)})`, `lower(${value})`) }
+}
+
+/** D1 caps an expression tree at depth 100, each folded letter nests one
+ * replace() and the response scope already uses about 60 levels. */
+export const searchFoldedLetterLimit = 32
+export const searchPhrase = z.string().trim().max(200).refine(value => searchFold(value).letters <= searchFoldedLetterLimit, {
+  message: `Search for at most ${searchFoldedLetterLimit} different accented or non-Latin letters at once.`,
+})
+
 /** Search answers, choice labels, invitation identity, hidden values and calculated text.
  * The enclosing response scope owns workspace, state and cutoff restrictions.
- * instr treats %, _ and SQL punctuation as literal text.
  */
 export function responseSearch(search: string) {
-  const contains = (value: string) => `instr(lower(${value}), lower(?)) > 0`
+  const { phrase, fold } = searchFold(search)
+  const contains = (value: string) => `instr(${fold(value)}, ?) > 0`
   return {
     sql: `(EXISTS (
       SELECT 1 FROM response_answers sa
@@ -37,6 +67,6 @@ export function responseSearch(search: string) {
       WHERE calculated.type='text' AND json_extract(declared.value, '$.type')='text'
         AND ${contains('calculated.value')}
     ))`,
-    bindings: Array(6).fill(search) as string[],
+    bindings: Array(6).fill(phrase) as string[],
   }
 }

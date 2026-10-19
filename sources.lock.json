@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "7e1422a833db557fc3af5c00deab829afadac524b7baf14ff8b25cccf71cddcf",
+      "sha256": "c373695d8305cdd8f5c4c7e729c3e3476a4b479a1b4abcd9a4abcee7b8ec4d84",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "7a67557b0aa7ae9df4ba2a97b386f9dbe812fc3d6387575e5130faa6446187f9",
+      "sha256": "552a07708e1cf1c2a2c24fe8675f9d97776b7dc3c9f4ce22af164b1094afe12b",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "7cf3a22ddaecd6b0473c3feb004032d33d7b73911672763fbdeceb5fd1b5f0c5",
+      "sha256": "bef874dd9eb5fbf95ee0f34f575feac2f89748ca588da1278e006aa2b5c3616c",
       "executable": false
     },
     "DEMO.md": {
@@ -4093,7 +4093,7 @@
       "executable": false
     },
     "src/core/features/coding/routes.ts": {
-      "sha256": "a2bcb12b7c8c6f9d9c3079ba81ab0fed843590835a63ef5de6f901d2e1c0cbc4",
+      "sha256": "f5f4e5d452dd4a7a130cc6cfeb8e039141d6d0e1ed0a8a5313648aeb013160b3",
       "executable": false
     },
     "src/core/features/coding/suggestions.ts": {
@@ -5221,7 +5221,7 @@
       "executable": false
     },
     "src/core/features/reporting/index.ts": {
-      "sha256": "24bc835007b501e3086bf52028a93f86dbdf36bfcf5cde017ad7de4c581efffa",
+      "sha256": "9d4687d6c8dab0cd604602cfff0f679f023c41ccf17b2abcb5aaf38d51ad469f",
       "executable": false
     },
     "src/core/features/reporting/questionReport.ts": {
@@ -5237,7 +5237,7 @@
       "executable": false
     },
     "src/core/features/reporting/routes.ts": {
-      "sha256": "ff0f6d94cdb422d1db2e8d0b8b7753256bb134247176b8c7e112cb3c1a59d63d",
+      "sha256": "a908b44bb13efc731d68373deb18f557fd742191303d9c2b0707102157f6b139",
       "executable": false
     },
     "src/core/features/reporting/scope.ts": {
@@ -5245,7 +5245,7 @@
       "executable": false
     },
     "src/core/features/reporting/search.ts": {
-      "sha256": "8c1101029da8b1d2d476fb035c08d0f18cf147620b5cfb1f33930dcf5954a128",
+      "sha256": "a357cdb839ec418bd66dcd739288633759d408d6b238a55e83344f7cf41c522e",
       "executable": false
     },
     "src/core/features/reporting/service.ts": {
@@ -7001,7 +7001,7 @@
       "executable": false
     },
     "tests/runtime/ledger-filters.worker.test.ts": {
-      "sha256": "a730f05b61948fe05380249ccc165df705c2cc8a41e5ba0dabc027b534871c0d",
+      "sha256": "2e63b3ef58c904cf77c630063f12ce897c972c1a9da52fe5956ee46b6e3a51ed",
       "executable": false
     },
     "tests/runtime/load-time-fixture.ts": {

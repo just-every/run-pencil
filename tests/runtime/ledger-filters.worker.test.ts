@@ -7,7 +7,7 @@ import { contract } from '../../src/test/contract'
 import { developmentInbox } from '../helpers/development-outbox'
 import { collectLedgerFilterScenario, consentStatement } from '../ledger-filter-scenario'
 import type { ScenarioCall } from '../results-scenario'
-import type { Ledger, LedgerResponse, FlowResults } from '../../src/core/app/api'
+import type { BuilderDraft, Ledger, LedgerResponse, FlowResults } from '../../src/core/app/api'
 import { ReportingRepository } from '../../src/core/features/reporting/repository'
 
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
@@ -101,4 +101,42 @@ contract('LEDG-006', 'response search composes with revision and source filters,
   await call(`/api/app/responses/${scenario.slow}`, undefined, 'DELETE')
   expect(ids((await ledger('queue')).responses)).toEqual([scenario.faster])
   expect((await ledger('Cold brew')).total).toBe(0)
+}, 60_000)
+
+contract('LEDG-006', 'an accented and a non-ASCII phrase match case-insensitively while wildcards stay literal', async () => {
+  const slug = 'ledger-search-unicode'
+  const flow = await call<{ id: string }>('/api/app/flows', { title: 'Café feedback', slug })
+  const path = `/api/app/flows/${flow.id}`
+  for (const step of [
+    { kind: 'question', questionType: 'long_text', prompt: 'Tell us more', required: true },
+    { kind: 'question', questionType: 'single_choice', prompt: 'Dessert', required: true, choices: [{ label: 'Crème brûlée', value: 'creme' }, { label: 'Tea cake', value: 'cake' }] },
+    { kind: 'completion', questionType: null, prompt: 'Thank you.' },
+  ]) await call(`${path}/draft/steps`, { expectedVersion: (await call<BuilderDraft>(`${path}/draft`)).flow.draftVersion, step })
+  const draft = await call<BuilderDraft>(`${path}/draft`)
+  await call(`${path}/publish`, { expectedVersion: draft.flow.draftVersion })
+  const [text, choice] = draft.steps, options = draft.choices.filter(option => option.stepId === choice.id)
+  const submit = async (message: string, option: number) => {
+    const session = await call<{ sessionId: string; sessionToken: string }>(`/api/public/flows/${slug}/sessions`, { deviceClass: 'desktop', source: 'direct' })
+    const receipt = await call<{ responseId: string; disposition: string }>(`/api/public/flows/${slug}/responses`, { ...session, idempotencyKey: `unicode-${session.sessionId}`, answers: [{ stepId: text.id, value: message }, { stepId: choice.id, value: options[option].id }] })
+    if (receipt.disposition === 'quarantined') await call(`/api/app/responses/${receipt.responseId}/release`, {})
+    return receipt.responseId
+  }
+  const french = await submit('Le CAFÉ était FROID', 1)
+  const russian = await submit('Очень ВКУСНО', 1)
+  const greek = await submit('ΚΑΦΕΣ ΚΑΛΟΣ', 1)
+  const dessert = await submit('Rated 5* overall', 0)
+  const found = async (search: string) => (await call<Ledger>(`${path}/ledger?${new URLSearchParams({ search })}`)).responses.map(response => response.id).sort()
+  expect(await found('café était froid')).toEqual([french])
+  expect(await found('очень вкусно')).toEqual([russian])
+  expect(await found('καφες καλος')).toEqual([greek])
+  expect(await found('CRÈME BRÛLÉE')).toEqual([dessert])
+  for (const literal of ['5*', '*']) expect(await found(literal), literal).toEqual([dessert])
+  // Every distinct folded letter nests one replace() under D1's expression-depth cap of 100.
+  const alphabet = 'АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЭЮЯΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΤΥΦΧΨΩ', widest = alphabet.slice(0, 32).repeat(6)
+  expect((await call<Ledger>(`${path}/ledger?${new URLSearchParams({ search: widest, revisionId: draft.revision.id, source: 'direct' })}`)).total).toBe(0)
+  expect((await call<{ responses: LedgerResponse[] }>(`${path}/responses/export?${new URLSearchParams({ search: widest })}`)).responses).toEqual([])
+  expect((await call<{ responses: LedgerResponse[] }>(`${path}/responses/export?${new URLSearchParams({ search: 'ΚΑΦΕΣ' })}`)).responses.map(response => response.id)).toEqual([greek])
+  for (const literal of ['cafe etait', '?', '[', '%_']) expect(await found(literal), literal).toEqual([])
+  const refused = await SELF.fetch(`http://localhost${path}/ledger?${new URLSearchParams({ search: alphabet.slice(0, 33) })}`, { headers: { Host: 'localhost', cookie } })
+  expect(refused.status).toBe(400)
 }, 60_000)
