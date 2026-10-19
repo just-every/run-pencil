@@ -318,6 +318,12 @@
       "name": "0051_presentation_order.sql",
       "sha256": "7be093e71550321e70774513538ed28b856559f51dbb4e841566b9aa959c0f6e",
       "sql": "ALTER TABLE respondent_sessions ADD COLUMN presentation_json TEXT NOT NULL DEFAULT '{}';\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0052_retention.sql",
+      "sha256": "047a76715621d400899b83128d3c3a11765baf36ff4c9a102232d5ea0b7ac9fb",
+      "sql": "-- Retention is an explicit per-form owner decision. Existing forms remain off.\nCREATE TABLE form_retention (\n  flow_id TEXT PRIMARY KEY NOT NULL REFERENCES flows(id) ON DELETE CASCADE,\n  days INTEGER CHECK(days IS NULL OR (days BETWEEN 1 AND 36500)),\n  legal_hold INTEGER NOT NULL DEFAULT 0 CHECK(legal_hold IN (0,1)),\n  version INTEGER NOT NULL,\n  change_id TEXT NOT NULL,\n  created_at TEXT NOT NULL,\n  updated_at TEXT NOT NULL\n);\n-- A notice names private data only by its internal key. It never holds answers.\nCREATE TABLE retention_notices (\n  flow_id TEXT NOT NULL REFERENCES form_retention(flow_id) ON DELETE CASCADE,\n  kind TEXT NOT NULL CHECK(kind IN ('response','save')),\n  item_id TEXT NOT NULL,\n  policy_version INTEGER NOT NULL,\n  notified_at TEXT NOT NULL,\n  delete_after TEXT NOT NULL,\n  PRIMARY KEY(flow_id,kind,item_id)\n);\nCREATE INDEX retention_notices_due ON retention_notices(delete_after);\nCREATE TRIGGER retention_response_deleted AFTER DELETE ON responses BEGIN\n  DELETE FROM retention_notices WHERE kind='response' AND item_id=OLD.id;\nEND;\nCREATE TRIGGER retention_save_deleted AFTER DELETE ON respondent_saves BEGIN\n  DELETE FROM retention_notices WHERE kind='save' AND item_id=OLD.session_id;\nEND;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

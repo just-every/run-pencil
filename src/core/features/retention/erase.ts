@@ -1,5 +1,5 @@
 import type { D1ImportContext, D1Sql } from '../../../base/import-kit/src/d1/index'
-import { eraseResponseAndImportCustody, importTargets, mappingVersion } from '../importing'
+import { eraseResponseAndImportCustody, importTargets, mappingVersion } from '../importing/server'
 import { restoreCheckpoint } from '../../platform/restore/checkpoint'
 import { responseErasureStatements } from '../responses'
 import { retainedItemsSql } from './items'
