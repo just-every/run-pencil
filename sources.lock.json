@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "777566fdb482b6545004ed4d98e28db82544aad23db58620daf54b15d96a0942",
+      "sha256": "b0deb510151f58451d84c098d713530789f415d72a028523ced18df09a2bd789",
       "executable": false
     },
     "DEMO.md": {
@@ -1829,7 +1829,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "61ddbbc84a58eecc023723e5b255d5fbec3230007b668a0cf43412cd723cfa62",
+      "sha256": "50827a7450666b4a879107851e2ce4a85650582e039c94359fead6aff11afa83",
       "executable": false
     },
     "src/base/ai/client.mjs": {
