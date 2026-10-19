@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "1d05e23f01f6c6afceb8fadf8ec1538a05ac19ff8be1a28ce8fd3ec9f5907cb9",
+      "sha256": "e0ce7ac3efdecb1dc1814821516a96ec21dd9a5377042ac2a64de6cfc9aa8d84",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "073379f13d0c0461d5fa3763954c2165b4ff9554690aa696fb7a8cdcc197c8d0",
+      "sha256": "fa5be8776fbb790b937656ec2168c56110b05c0a000aeaab26ced509f456edad",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "c0c8a02756bc44286790f62e623ae7fbf44d2dbbe99a5b4d205deaf738650d1e",
+      "sha256": "5a36bb935c4b8039b69a47aa9abf1b0cb877e8e253c7adc35ae5757123e0a3df",
       "executable": false
     },
     "DEMO.md": {
@@ -6450,6 +6450,10 @@
     },
     "tests/e2e/operator-custody.spec.ts": {
       "sha256": "3f17bfabb36da5b49318114dc74002e455c5ca87eab93480a327b2f8be233162",
+      "executable": false
+    },
+    "tests/e2e/opinion-scale.spec.ts": {
+      "sha256": "4b3525c1a2875424bae44c39c9470844656815026ac2c7412713b025d000b20e",
       "executable": false
     },
     "tests/e2e/other-choices.spec.ts": {
