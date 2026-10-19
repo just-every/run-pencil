@@ -537,7 +537,7 @@ are data, compiled into the owned source and applied by one local runtime.
 
 ## Status
 
-Judged from the code and tests at commit `f5f5b3196384e898f08846c3a8e9672dcb9e9fb6` (19 October 2026).
+Judged from the code and tests at commit `4bd18aa` (19 October 2026). Release 0.6.0 is cut from this code: its gate ran the homepage jobs locally and on a disposable hosted deployment with real mail, and an in-place upgrade from 0.5.0 (CHANGELOG.md). Each done row's evidence is its tagged tests, which `rer verify` runs.
 
 RESP-016 and RSLT-012 include the sd-pencil-t5 implementation and native/browser journeys.
 
