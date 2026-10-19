@@ -119,3 +119,86 @@ contract(['LOGIC-003', 'LOGIC-006'], 'builds a conditional total, previews calcu
   const exportedTotals = records.map(record => (JSON.parse(record.calculations_json) as Ledger['responses'][number]['calculations']).find(value => value.id === totalId)?.value)
   expect(exportedTotals.sort((a, b) => Number(a) - Number(b))).toEqual([64, 128])
 })
+
+contract('LOGIC-003', 'a BMI from two decimal answers gates a branch and publishes', async ({ page }, info) => {
+  test.setTimeout(120_000)
+  page.setDefaultTimeout(15_000)
+  await signInEmptyWorkspace(page)
+  const slug = `bmi-${info.project.name}-${Date.now()}`
+  const call = async <T,>(path: string, method = 'GET', data?: unknown) => {
+    const response = await page.request.fetch(path, { method, ...(data === undefined ? {} : { data }) })
+    expect(response.status(), await response.text()).toBeLessThan(300)
+    return response.json() as Promise<T>
+  }
+  const screenshot = async (state: string) => {
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    const path = info.outputPath(`bmi-${state}-${info.project.name}.png`)
+    await page.screenshot({ path, fullPage: true })
+    await info.attach(`BMI ${state} · ${info.project.name}`, { path, contentType: 'image/png' })
+  }
+  const flow = await call<{ id: string }>('/api/app/flows', 'POST', { title: 'Health check', slug })
+  const base = `/api/app/flows/${flow.id}`
+  const read = () => call<BuilderDraft>(`${base}/draft`)
+  for (const step of [
+    { kind: 'question', questionType: 'number', prompt: 'Weight in kilograms', required: true, questionSettings: { min: 1, decimalPlaces: 1 } },
+    { kind: 'question', questionType: 'number', prompt: 'Height in metres', required: true, questionSettings: { min: 0.5, max: 2.5, decimalPlaces: 2 } },
+    { kind: 'question', questionType: 'yes_no', prompt: 'Do you smoke?', required: true },
+    { kind: 'completion', questionType: null, prompt: 'Healthy range · BMI {{variable:bmi}}' },
+    { kind: 'completion', questionType: null, prompt: 'Follow-up · BMI {{variable:bmi}}' },
+  ]) await call(`${base}/draft/steps`, 'POST', { expectedVersion: (await read()).flow.draftVersion, step })
+  const [weight, height, smoker, , followUp] = (await read()).steps
+  const answer = (stepId: string) => ({ kind: 'answer', stepId })
+  await call(`${base}/draft/settings`, 'PUT', { expectedVersion: (await read()).flow.draftVersion, settings: { hiddenFields: [], identityMode: 'anonymous', calculations: [
+    { id: 'bmi', name: 'BMI', type: 'number', expression: { kind: 'round', decimalPlaces: 1, value: { kind: 'divide', left: answer(weight.id), right: { kind: 'multiply', left: answer(height.id), right: answer(height.id) } } } },
+  ] } })
+  await call(`${base}/draft/branches`, 'PUT', { expectedVersion: (await read()).flow.draftVersion, rules: [
+    { sourceStepId: smoker.id, predicateKind: 'greater_than_or_equal', expectedValue: 25, destinationStepId: followUp.id, position: 0, condition: { kind: 'test', stepId: 'variable:bmi', operator: 'greater_than_or_equal', value: 25 } },
+  ] })
+
+  await page.goto(`/app/flows/${flow.id}/builder`)
+  await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
+  await page.getByRole('button', { name: 'Preview draft', exact: true }).click()
+  const preview = page.getByRole('region', { name: 'Draft preview', exact: true })
+  const trace = preview.getByRole('region', { name: 'Preview rule evaluations', exact: true })
+  const forward = () => preview.getByRole('button', { name: 'Continue preview', exact: true }).click()
+  const back = () => preview.getByRole('button', { name: 'Back in preview', exact: true }).click()
+  await preview.getByRole('spinbutton', { name: weight.prompt, exact: true }).fill('70.5')
+  await forward()
+  await preview.getByRole('spinbutton', { name: height.prompt, exact: true }).fill('1.75')
+  await forward()
+  await preview.getByRole('radio', { name: 'No', exact: true }).check()
+  await preview.getByRole('button', { name: 'Inspect answer path', exact: true }).click()
+  await expect(trace).toContainText('Calculation: BMI: 23')
+  await expect(trace).toContainText('is at least → false')
+  await screenshot('preview-healthy')
+  await forward()
+  await expect(preview.getByRole('heading', { name: 'Healthy range · BMI 23', exact: true })).toBeVisible()
+  await back(); await back(); await back()
+  await preview.getByRole('spinbutton', { name: weight.prompt, exact: true }).fill('95.2')
+  await forward(); await forward()
+  await preview.getByRole('radio', { name: 'No', exact: true }).check()
+  await preview.getByRole('button', { name: 'Inspect answer path', exact: true }).click()
+  await expect(trace).toContainText('Calculation: BMI: 31.1')
+  await expect(trace).toContainText('is at least → true')
+  await screenshot('preview-follow-up')
+  await forward()
+  await expect(preview.getByRole('heading', { name: 'Follow-up · BMI 31.1', exact: true })).toBeVisible()
+  await preview.getByRole('button', { name: 'Close preview', exact: true }).click()
+  await page.getByRole('button', { name: 'Publish', exact: true }).click()
+  await expect(page.getByRole('region', { name: 'Share this flow', exact: true })).toBeVisible()
+
+  for (const [kilograms, heading, state] of [['70.5', 'Healthy range · BMI 23', 'healthy'], ['95.2', 'Follow-up · BMI 31.1', 'follow-up']] as const) {
+    await page.goto(`/f/${slug}`)
+    await page.getByRole('spinbutton', { name: weight.prompt, exact: true }).fill(kilograms)
+    await page.getByRole('button', { name: 'Continue', exact: true }).click()
+    await page.getByRole('spinbutton', { name: height.prompt, exact: true }).fill('1.75')
+    await page.getByRole('button', { name: 'Continue', exact: true }).click()
+    await page.getByRole('radio', { name: 'No', exact: true }).check()
+    await page.waitForTimeout(3200)
+    await page.getByRole('button', { name: 'Submit response', exact: true }).click()
+    await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible()
+    await screenshot(`completed-${state}`)
+  }
+  const ledger = await call<Ledger>(`${base}/ledger`)
+  expect(ledger.responses.map(response => response.calculations.find(value => value.id === 'bmi')?.value).sort((a, b) => Number(a) - Number(b))).toEqual([23, 31.1])
+})

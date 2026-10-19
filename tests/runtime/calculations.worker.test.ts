@@ -197,3 +197,50 @@ contract('LOGIC-003', 'calculates typed hidden inputs, arithmetic, calendar diff
   expect(Object.fromEntries(copied.calculations.map(value => [value.name, value.value]))).toEqual(expected)
   expect(copied.calculations.every(value => !original.calculations.some(source => source.id === value.id))).toBe(true)
 }, 60_000)
+
+contract('LOGIC-003', 'a BMI from two decimal answers gates a branch and publishes', async () => {
+  const f = await googleHttp(), slug = `bmi-${crypto.randomUUID()}`
+  const { id } = await accepted<{ id: string }>(await f.call('/api/app/flows', { title: 'Health check', slug }), 201)
+  const base = `/api/app/flows/${id}`, read = async () => accepted<BuilderDraft>(await f.call(`${base}/draft`))
+  for (const step of [
+    { kind: 'question', questionType: 'number', prompt: 'Weight in kilograms', required: true, questionSettings: { min: 1, decimalPlaces: 1 } },
+    { kind: 'question', questionType: 'number', prompt: 'Height in metres', required: true, questionSettings: { min: 0.5, max: 2.5, decimalPlaces: 2 } },
+    { kind: 'question', questionType: 'yes_no', prompt: 'Do you smoke?', required: true },
+    { kind: 'completion', questionType: null, prompt: 'Healthy range · BMI {{variable:bmi}}' },
+    { kind: 'completion', questionType: null, prompt: 'Follow-up · BMI {{variable:bmi}}' },
+    { kind: 'completion', questionType: null, prompt: 'Smoker follow-up' },
+  ]) await accepted(await f.call(`${base}/draft/steps`, { expectedVersion: (await read()).flow.draftVersion, step }), 201)
+  const [weight, height, smoker, healthy, followUp, smokers] = (await read()).steps
+  const answer = (stepId: string): CalculationExpression => ({ kind: 'answer', stepId })
+  const bmi: Calculation = { id: 'bmi', name: 'BMI', type: 'number', expression: { kind: 'round', decimalPlaces: 1, value: { kind: 'divide', left: answer(weight.id), right: { kind: 'multiply', left: answer(height.id), right: answer(height.id) } } } }
+  const risk: Calculation = { id: 'risk', name: 'Risk points', type: 'number', expression: { kind: 'conditional', condition: { kind: 'test', stepId: smoker.id, operator: 'equals', value: true }, then: literal(1), else: literal(0) } }
+  await accepted(await f.call(`${base}/draft/settings`, { expectedVersion: (await read()).flow.draftVersion, settings: { hiddenFields: [], identityMode: 'anonymous', calculations: [bmi, risk] } }, { method: 'PUT' }))
+  const bmiRule = { sourceStepId: smoker.id, predicateKind: 'equals', expectedValue: null, destinationStepId: followUp.id, position: 0, condition: { kind: 'test', stepId: 'variable:bmi', operator: 'greater_than_or_equal', value: 25 } }
+  const rules = async (extra: unknown[]) => accepted(await f.call(`${base}/draft/branches`, { expectedVersion: (await read()).flow.draftVersion, rules: [bmiRule, ...extra] }, { method: 'PUT' }))
+  const publish = async () => f.call(`${base}/publish`, { expectedVersion: (await read()).flow.draftVersion })
+
+  // Finite calculated tests are still proved exactly: risk is 0 or 1, never above 1.
+  const riskRule = (operator: string) => ({ ...bmiRule, destinationStepId: smokers.id, position: 1, condition: { kind: 'test', stepId: 'variable:risk', operator, value: 1 } })
+  await rules([riskRule('greater_than')])
+  const refused = await publish()
+  expect(refused.status, await refused.clone().text()).toBe(400)
+  expect(await refused.text()).toMatch(/reachable/i)
+  await rules([riskRule('greater_than_or_equal')])
+
+  const cases = [[70.5, 1.75, 23], [95.2, 1.75, 31.1]] as const
+  for (const [kilograms, metres, value] of cases) {
+    const preview = await accepted<{ complete: boolean; screens: Array<{ stepId: string; evaluations: Array<{ matched: boolean; trace?: { value: unknown } }> }> }>(await f.call(`${base}/draft/preview`, { answers: { [weight.id]: kilograms, [height.id]: metres, [smoker.id]: false } }))
+    const gate = preview.screens.find(screen => screen.stepId === smoker.id)!.evaluations[0]
+    expect(gate.trace?.value).toBe(value)
+    expect(gate.matched).toBe(value >= 25)
+    expect(preview.screens.at(-1)?.stepId).toBe(value >= 25 ? followUp.id : healthy.id)
+  }
+  await accepted(await publish(), 201)
+  for (const [kilograms, metres, value] of cases) {
+    const session = await accepted<Session>(await f.call(`/api/public/flows/${slug}/sessions`, { deviceClass: 'desktop', source: 'direct' }, { auth: false }), 201)
+    const receipt = await accepted<Receipt>(await f.call(`/api/public/flows/${slug}/responses`, { ...session, loadTime: await issueLoadTime(env.SESSION_SECRET, session.revisionId, Date.now() - 5000), idempotencyKey: crypto.randomUUID(), answers: [{ stepId: weight.id, value: kilograms }, { stepId: height.id, value: metres }, { stepId: smoker.id, value: false }] }, { auth: false }), 201)
+    expect(receipt.completionStepId).toBe(value >= 25 ? followUp.id : healthy.id)
+    const stored = (await accepted<Ledger>(await f.call(`${base}/ledger`))).responses.find(response => response.id === receipt.responseId)!
+    expect(stored.calculations.find(item => item.id === 'bmi')?.value).toBe(value)
+  }
+}, 60_000)

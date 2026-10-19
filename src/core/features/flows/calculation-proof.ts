@@ -12,13 +12,19 @@ type DerivedRequirement = Requirement & { available: ReadonlySet<string> }
 const normalized = (value: string) => value.trim().normalize('NFC').toLowerCase()
 const textOperators = new Set(['equals', 'not_equals', 'is_blank', 'is_answered'])
 
+// Always caught below. Not a ConditionProofError subclass: that import is cyclic at module load.
+class UnboundedDomain extends Error {}
+
 function unsupported(question: ConditionQuestion, reason: string): never {
-  throw new ConditionProofError(`Exact calculated-condition reachability for “${question.step.prompt}” exceeds the finite-domain limit: ${reason}.`)
+  throw new UnboundedDomain(`Calculated-condition input “${question.step.prompt}” has no finite proof domain: ${reason}.`)
 }
 
 /** A shared assignment preserves correlations between variables and path prefixes.
  * Domains are exhaustive finite values, or observational equality classes for
- * text. Unsupported domains refuse publication rather than approximating it.
+ * text. A derived test whose variable reads an input without a finite domain
+ * (unbounded or decimal numbers, dates, multi-select, masked text) may be true
+ * or false: it is dropped from the proof, so only destinations the remaining
+ * finite tests show unreachable are refused.
  */
 export function proveCalculatedConditions(
   calculations: Calculation[],
@@ -77,16 +83,27 @@ export function proveCalculatedConditions(
   }
   const relevant = calculations.filter(calculation => variables.has(calculation.id))
   const assignment: Record<string, unknown> = Object.create(null)
-  const entries = [...sources].map(id => {
+  const unbounded = new Set<string>()
+  const domains = [...sources].map(id => {
     const question = questions.get(id)
     if (!question) throw new ConditionProofError(`A calculation references missing source input “${id}”.`)
     // Inputs later than every tested prefix cannot affect any derived test.
     if (!visited.has(id) || !derived.some(requirement => requirement.available.has(id))) return [id, [undefined]] as const
     const requirements = constraints.get(id) ?? []
     const tests = [...requirements.map(requirement => requirement.condition), ...inputTests.get(id) ?? []]
-    return [id, sourceDomain(id, question, requirements, tests, strings, budget)] as const
+    try {
+      return [id, sourceDomain(id, question, requirements, tests, strings, budget)] as const
+    } catch (error) {
+      if (!(error instanceof UnboundedDomain)) throw error
+      unbounded.add(id)
+      return [id, [undefined]] as const
+    }
   })
-  const witness = () => derived.every(({ condition, matched, available }) => {
+  const reads = sourceReader(definitions)
+  const proved = derived.filter(({ condition }) => ![...reads(condition.stepId.slice(9))].some(id => unbounded.has(id)))
+  if (!proved.length) return true
+  const entries = domains.filter(([id]) => !unbounded.has(id))
+  const witness = () => proved.every(({ condition, matched, available }) => {
     spendConditionProof(budget)
     const answers: Record<string, unknown> = Object.create(null), hidden: Record<string, unknown> = Object.create(null)
     for (const [id, value] of Object.entries(assignment)) if (available.has(id)) {
@@ -109,6 +126,34 @@ export function proveCalculatedConditions(
     return false
   }
   return search(0)
+}
+
+/** The question and hidden-field inputs a variable reads, through its conditions and variables. */
+function sourceReader(definitions: ReadonlyMap<string, Calculation>) {
+  const cache = new Map<string, Set<string>>()
+  const reads = (variableId: string): Set<string> => {
+    const known = cache.get(variableId)
+    if (known) return known
+    const found = new Set<string>()
+    cache.set(variableId, found)
+    const operand = (stepId: string) => stepId.startsWith('variable:') ? reads(stepId.slice(9)).forEach(id => found.add(id)) : found.add(stepId)
+    const visit = (node: CalculationExpression) => {
+      switch (node.kind) {
+        case 'literal': break
+        case 'answer': found.add(node.stepId); break
+        case 'hidden': found.add(`hidden:${node.fieldId}`); break
+        case 'variable': operand(`variable:${node.variableId}`); break
+        case 'conditional': conditionTests(node.condition).forEach(test => operand(test.stepId)); visit(node.then); visit(node.else); break
+        case 'round': visit(node.value); break
+        case 'date_difference': visit(node.start); visit(node.end); break
+        default: visit(node.left); visit(node.right)
+      }
+    }
+    const definition = definitions.get(variableId)
+    if (definition) visit(definition.expression)
+    return found
+  }
+  return reads
 }
 
 function sourceDomain(id: string, question: ConditionQuestion, requirements: Requirement[], tests: Test[], strings: ReadonlySet<string>, budget: ConditionProofBudget): unknown[] {
