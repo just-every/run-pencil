@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "626b6393a36cfea4371e56317775a7e3d824cb4537786d6d93256f6649258914",
+      "sha256": "84fa905ced8cb4a1fa2cb4a92f48fc8c678e0c84514c1c3471d8fb1c4624807c",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "13299fd2bb7e48cc9e9d5dbd5a3c183a33c98e07242e0d8ab2fa4aba55c43cdf",
+      "sha256": "777566fdb482b6545004ed4d98e28db82544aad23db58620daf54b15d96a0942",
       "executable": false
     },
     "DEMO.md": {
@@ -1829,7 +1829,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "50827a7450666b4a879107851e2ce4a85650582e039c94359fead6aff11afa83",
+      "sha256": "61ddbbc84a58eecc023723e5b255d5fbec3230007b668a0cf43412cd723cfa62",
       "executable": false
     },
     "src/base/ai/client.mjs": {
@@ -7097,7 +7097,7 @@
       "executable": false
     },
     "tests/runtime/team-templates.worker.test.ts": {
-      "sha256": "fb8a9bffc82cc676c67324d1424922a612c46853eee3c26d7392ccdc22e10dc6",
+      "sha256": "6066bd6762347bb949f2867e92e23aff21deb4a60ec418ab025df1ac8da4659d",
       "executable": false
     },
     "tests/runtime/traffic.worker.test.ts": {
