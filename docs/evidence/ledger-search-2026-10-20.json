@@ -1,0 +1,284 @@
+{
+  "environment": "local Workers runtime and D1",
+  "responses": 100000,
+  "answers": 300000,
+  "warmups": 4,
+  "requests": 40,
+  "concurrency": 1,
+  "operation": "authenticated HTTP ledger, count + first page + JSON body",
+  "p95Milliseconds": 208,
+  "results": [
+    {
+      "search": "QUEUE MOVED SLOWLY",
+      "total": 1000,
+      "samples": 10,
+      "p95Milliseconds": 89
+    },
+    {
+      "search": "VISIT",
+      "total": 100000,
+      "samples": 10,
+      "p95Milliseconds": 210
+    },
+    {
+      "search": "café était froid",
+      "total": 9000,
+      "samples": 10,
+      "p95Milliseconds": 120
+    },
+    {
+      "search": "unrecorded %_* phrase",
+      "total": 0,
+      "samples": 10,
+      "p95Milliseconds": 81
+    }
+  ],
+  "samples": [
+    {
+      "search": "QUEUE MOVED SLOWLY",
+      "milliseconds": 83,
+      "pageRows": 29
+    },
+    {
+      "search": "VISIT",
+      "milliseconds": 208,
+      "pageRows": 29
+    },
+    {
+      "search": "café était froid",
+      "milliseconds": 101,
+      "pageRows": 29
+    },
+    {
+      "search": "unrecorded %_* phrase",
+      "milliseconds": 81,
+      "pageRows": 0
+    },
+    {
+      "search": "QUEUE MOVED SLOWLY",
+      "milliseconds": 86,
+      "pageRows": 29
+    },
+    {
+      "search": "VISIT",
+      "milliseconds": 205,
+      "pageRows": 29
+    },
+    {
+      "search": "café était froid",
+      "milliseconds": 101,
+      "pageRows": 29
+    },
+    {
+      "search": "unrecorded %_* phrase",
+      "milliseconds": 77,
+      "pageRows": 0
+    },
+    {
+      "search": "QUEUE MOVED SLOWLY",
+      "milliseconds": 85,
+      "pageRows": 29
+    },
+    {
+      "search": "VISIT",
+      "milliseconds": 202,
+      "pageRows": 29
+    },
+    {
+      "search": "café était froid",
+      "milliseconds": 100,
+      "pageRows": 29
+    },
+    {
+      "search": "unrecorded %_* phrase",
+      "milliseconds": 78,
+      "pageRows": 0
+    },
+    {
+      "search": "QUEUE MOVED SLOWLY",
+      "milliseconds": 83,
+      "pageRows": 29
+    },
+    {
+      "search": "VISIT",
+      "milliseconds": 206,
+      "pageRows": 29
+    },
+    {
+      "search": "café était froid",
+      "milliseconds": 99,
+      "pageRows": 29
+    },
+    {
+      "search": "unrecorded %_* phrase",
+      "milliseconds": 77,
+      "pageRows": 0
+    },
+    {
+      "search": "QUEUE MOVED SLOWLY",
+      "milliseconds": 83,
+      "pageRows": 29
+    },
+    {
+      "search": "VISIT",
+      "milliseconds": 204,
+      "pageRows": 29
+    },
+    {
+      "search": "café était froid",
+      "milliseconds": 102,
+      "pageRows": 29
+    },
+    {
+      "search": "unrecorded %_* phrase",
+      "milliseconds": 81,
+      "pageRows": 0
+    },
+    {
+      "search": "QUEUE MOVED SLOWLY",
+      "milliseconds": 86,
+      "pageRows": 29
+    },
+    {
+      "search": "VISIT",
+      "milliseconds": 208,
+      "pageRows": 29
+    },
+    {
+      "search": "café était froid",
+      "milliseconds": 99,
+      "pageRows": 29
+    },
+    {
+      "search": "unrecorded %_* phrase",
+      "milliseconds": 77,
+      "pageRows": 0
+    },
+    {
+      "search": "QUEUE MOVED SLOWLY",
+      "milliseconds": 84,
+      "pageRows": 29
+    },
+    {
+      "search": "VISIT",
+      "milliseconds": 209,
+      "pageRows": 29
+    },
+    {
+      "search": "café était froid",
+      "milliseconds": 104,
+      "pageRows": 29
+    },
+    {
+      "search": "unrecorded %_* phrase",
+      "milliseconds": 77,
+      "pageRows": 0
+    },
+    {
+      "search": "QUEUE MOVED SLOWLY",
+      "milliseconds": 85,
+      "pageRows": 29
+    },
+    {
+      "search": "VISIT",
+      "milliseconds": 210,
+      "pageRows": 29
+    },
+    {
+      "search": "café était froid",
+      "milliseconds": 120,
+      "pageRows": 29
+    },
+    {
+      "search": "unrecorded %_* phrase",
+      "milliseconds": 81,
+      "pageRows": 0
+    },
+    {
+      "search": "QUEUE MOVED SLOWLY",
+      "milliseconds": 89,
+      "pageRows": 29
+    },
+    {
+      "search": "VISIT",
+      "milliseconds": 204,
+      "pageRows": 29
+    },
+    {
+      "search": "café était froid",
+      "milliseconds": 101,
+      "pageRows": 29
+    },
+    {
+      "search": "unrecorded %_* phrase",
+      "milliseconds": 78,
+      "pageRows": 0
+    },
+    {
+      "search": "QUEUE MOVED SLOWLY",
+      "milliseconds": 87,
+      "pageRows": 29
+    },
+    {
+      "search": "VISIT",
+      "milliseconds": 208,
+      "pageRows": 29
+    },
+    {
+      "search": "café était froid",
+      "milliseconds": 100,
+      "pageRows": 29
+    },
+    {
+      "search": "unrecorded %_* phrase",
+      "milliseconds": 79,
+      "pageRows": 0
+    }
+  ],
+  "queryPlan": [
+    {
+      "id": 4,
+      "parent": 0,
+      "notused": 49,
+      "detail": "SEARCH r USING INDEX responses_reporting_page (workspace_id=? AND flow_id=? AND state=? AND completed_at<?)"
+    },
+    {
+      "id": 20,
+      "parent": 0,
+      "notused": 0,
+      "detail": "LIST SUBQUERY 2"
+    },
+    {
+      "id": 23,
+      "parent": 20,
+      "notused": 216,
+      "detail": "SCAN response_search_values"
+    },
+    {
+      "id": 32,
+      "parent": 20,
+      "notused": 0,
+      "detail": "CREATE BLOOM FILTER"
+    },
+    {
+      "id": 45,
+      "parent": 0,
+      "notused": 0,
+      "detail": "CORRELATED SCALAR SUBQUERY 1"
+    },
+    {
+      "id": 50,
+      "parent": 45,
+      "notused": 39,
+      "detail": "SEARCH t USING INDEX sqlite_autoindex_form_import_targets_1 (target_id=?)"
+    }
+  ],
+  "recordedAt": "2026-10-20T01:52:43Z",
+  "implementationCommit": "3b9d1ea3faefef7a5e26de8e7b17c7e24c6f1747",
+  "runner": "m1-runner, macOS ARM64, Node.js 22.20.0, local Workers runtime and D1; normal shared-runner load",
+  "runnerAdmissionOneMinuteLoad": 3.9,
+  "remoteJob": "20261020T015154686668Z-heavy-slot-6b01c13b",
+  "command": "PENCIL_RUN_LOAD=1 PENCIL_LOAD_MODE=1 pnpm exec vitest run --config vitest.release.config.ts tests/release/ledger-search.worker.test.ts --maxWorkers=1",
+  "workload": "One published revision; 100,000 released responses; retained text, published choice and contact answer per response. Ordinary database writes execute migration 0053 triggers. No concurrent requests, timing starts before authenticated HTTP request and ends after count, first page and JSON decoding. Four warmups, then ten samples each for selective, all-match, accented and no-match literal phrases.",
+  "portability": "Ordinary product search tables and Unicode initialization rows are retained by the archive policy. The archive round trip restores folded values and proves exact re-export equality. SQL write triggers maintain native/import/edit/backfill values; erasure cascades them."
+}

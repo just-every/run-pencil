@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "756ec8b81dbc4d4fda62559677b8d5cf1015d11054777eef33ae9b063c6abef5",
+      "sha256": "a98388a0335f1a5d261435c77ff208af5359cca282f9b5308c9e3694908569bd",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "2c1a08f35d24a4c909846d71fa16fde312560915c4ee7136accb8dde2fced49d",
+      "sha256": "72f933123b84f6570420905d58eddb386c05bea9c1ef09afe5ecd86c29024d30",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "05c29c6fc970fc34a2aa6a7ea4537d16be2780eb0924123c0fcdd2f22241de8d",
+      "sha256": "d039bdc7bea08f3153df2c7e556725aa04bcdb807ba682b17fb985616788e513",
       "executable": false
     },
     "DEMO.md": {
@@ -898,6 +898,10 @@
     },
     "docs/contract-changes-20261012.json": {
       "sha256": "907af6ec833ad744769c17f9b18df59b39cddf9b1098f359c26279937f3a5a4b",
+      "executable": false
+    },
+    "docs/evidence/ledger-search-2026-10-20.json": {
+      "sha256": "e7bb4ff2624f02bdcee5a99521d4c7d3596adb74145fc3ce5037f71ae9e16437",
       "executable": false
     },
     "docs/FIRST-RELEASE.md": {
