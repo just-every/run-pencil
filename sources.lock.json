@@ -1209,7 +1209,7 @@
       "executable": false
     },
     "migrations/core/0053_response_search_values.sql": {
-      "sha256": "c249044c1fb8b48d7160fcc8f271cbe0b8238e747774550e5a54c1ac10ca8106",
+      "sha256": "591d5f70976ba5964807ac1876bf3c637524673b04fffe2626d265bae2424b52",
       "executable": false
     },
     "migrations/released-rewrites.json": {
@@ -1681,7 +1681,7 @@
       "executable": false
     },
     "scripts/generate-search-unicode.py": {
-      "sha256": "d496dba6744eb6a1dbcf75392b0ff8c4f67e57ed6dad8c7f8c72db23b5f73ede",
+      "sha256": "6650876832ce02b68819ed587f0b5baf51a3448360fb3c953645cebd06ec01d3",
       "executable": false
     },
     "scripts/generate-site-icons.mjs": {

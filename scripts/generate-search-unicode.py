@@ -1,5 +1,5 @@
 from pathlib import Path
-import unicodedata as u, json, sys
+import unicodedata as u, json, sys, re
 root=Path(sys.argv[1]) if len(sys.argv)>1 else Path(__file__).resolve().parents[1]
 q=lambda s:"'"+s.replace("'","''")+"'"
 rows=[]; pairs=[]; folds={}
@@ -148,7 +148,10 @@ for event in ['INSERT','UPDATE OF response_context_json,participant_id,revision_
 # Snapshot identity changes must discard the old identity search values too.
 selected=context_select.replace('WHERE hidden.type', 'WHERE r.participant_id=NEW.id AND hidden.type').replace('WHERE calculated.type', 'WHERE r.participant_id=NEW.id AND calculated.type').replace('WHERE p.name_snapshot', 'WHERE r.participant_id=NEW.id AND p.name_snapshot').replace('WHERE p.email_snapshot', 'WHERE r.participant_id=NEW.id AND p.email_snapshot')
 tail+='CREATE TRIGGER response_identity_search_update AFTER UPDATE OF name_snapshot,email_snapshot ON invitation_participants BEGIN\n DELETE FROM response_search_values WHERE answer_id IS NULL AND response_id IN (SELECT id FROM responses WHERE participant_id=NEW.id);\n INSERT INTO response_search_input(response_id,answer_id,value) '+selected+';\nEND;\n'
-(root/'migrations/core/0053_response_search_values.sql').write_text(head+normalizer+tail)
+# Wrangler recognizes compound CASE/END tokens only across whitespace. Keep
+# that boundary explicit so its CLI splitter retains each complete trigger.
+sql=re.sub(r'\bEND\b', 'END ', re.sub(r'\bCASE\b', ' CASE', normalizer+tail))
+(root/'migrations/core/0053_response_search_values.sql').write_text(head+sql)
 (root/'scripts/search-unicode-data.json').write_text(json.dumps({'map': rows, 'composition': pairs},ensure_ascii=False,separators=(',',':'))+'\n')
 (root/'src/core/shared/unicode-search-fold.json').write_text(json.dumps(folds,ensure_ascii=False,separators=(',',':'))+'\n')
 print('Unicode',u.unidata_version,'map',len(rows),'pairs',len(pairs),'folds',len(folds))

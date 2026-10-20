@@ -62,16 +62,16 @@ WITH RECURSIVE
   SELECT id,1,coalesce(unicode(CAST(substr(CAST(value AS BLOB),1,4) AS TEXT)),0),length(CAST(value AS BLOB))
   FROM response_search_input WHERE length(CAST(value AS BLOB))>0
   UNION ALL
-  SELECT c.id,c.position+CASE WHEN c.code<128 THEN 1 WHEN c.code<2048 THEN 2 WHEN c.code<65536 THEN 3 ELSE 4 END,
-   coalesce(unicode(CAST(substr(CAST(i.value AS BLOB),c.position+CASE WHEN c.code<128 THEN 1 WHEN c.code<2048 THEN 2 WHEN c.code<65536 THEN 3 ELSE 4 END,4) AS TEXT)),0),c.bytes
+  SELECT c.id,c.position+ CASE WHEN c.code<128 THEN 1 WHEN c.code<2048 THEN 2 WHEN c.code<65536 THEN 3 ELSE 4 END ,
+   coalesce(unicode(CAST(substr(CAST(i.value AS BLOB),c.position+ CASE WHEN c.code<128 THEN 1 WHEN c.code<2048 THEN 2 WHEN c.code<65536 THEN 3 ELSE 4 END ,4) AS TEXT)),0),c.bytes
   FROM characters c JOIN response_search_input i ON i.id=c.id
-  WHERE c.position+CASE WHEN c.code<128 THEN 1 WHEN c.code<2048 THEN 2 WHEN c.code<65536 THEN 3 ELSE 4 END<=c.bytes
+  WHERE c.position+ CASE WHEN c.code<128 THEN 1 WHEN c.code<2048 THEN 2 WHEN c.code<65536 THEN 3 ELSE 4 END <=c.bytes
  ),
  expanded AS (
-  SELECT c.id,c.position,CASE WHEN c.code BETWEEN 44032 AND 55203 THEN
+  SELECT c.id,c.position, CASE WHEN c.code BETWEEN 44032 AND 55203 THEN
    char(4352+(c.code-44032)/588,4449+((c.code-44032)%588)/28)
-   || CASE WHEN (c.code-44032)%28=0 THEN '' ELSE char(4519+(c.code-44032)%28) END
-   ELSE coalesce(m.value,char(c.code)) END AS value
+   ||  CASE WHEN (c.code-44032)%28=0 THEN '' ELSE char(4519+(c.code-44032)%28) END 
+   ELSE coalesce(m.value,char(c.code)) END  AS value
   FROM characters c LEFT JOIN search_unicode_map m ON m.code=c.code
  ),
  letters(id,original,position,value,ccc) AS (
@@ -89,28 +89,28 @@ WITH RECURSIVE
   SELECT id,0,'','','',0 FROM response_search_input
   UNION ALL
   SELECT c.id,o.position,
-   CASE WHEN (CASE WHEN unicode(c.starter) BETWEEN 4352 AND 4370 AND unicode(o.value) BETWEEN 4449 AND 4469
+    CASE WHEN ( CASE WHEN unicode(c.starter) BETWEEN 4352 AND 4370 AND unicode(o.value) BETWEEN 4449 AND 4469
  THEN 44032+(unicode(c.starter)-4352)*588+(unicode(o.value)-4449)*28
  WHEN unicode(c.starter) BETWEEN 44032 AND 55203 AND (unicode(c.starter)-44032)%28=0 AND unicode(o.value) BETWEEN 4520 AND 4546
- THEN unicode(c.starter)+unicode(o.value)-4519 ELSE p.composed END) IS NOT NULL AND (c.last_ccc<o.ccc OR c.last_ccc=0) THEN ''
-        WHEN o.ccc=0 THEN c.starter||c.marks ELSE '' END,
-   CASE WHEN (CASE WHEN unicode(c.starter) BETWEEN 4352 AND 4370 AND unicode(o.value) BETWEEN 4449 AND 4469
+ THEN unicode(c.starter)+unicode(o.value)-4519 ELSE p.composed END ) IS NOT NULL AND (c.last_ccc<o.ccc OR c.last_ccc=0) THEN ''
+        WHEN o.ccc=0 THEN c.starter||c.marks ELSE '' END ,
+    CASE WHEN ( CASE WHEN unicode(c.starter) BETWEEN 4352 AND 4370 AND unicode(o.value) BETWEEN 4449 AND 4469
  THEN 44032+(unicode(c.starter)-4352)*588+(unicode(o.value)-4449)*28
  WHEN unicode(c.starter) BETWEEN 44032 AND 55203 AND (unicode(c.starter)-44032)%28=0 AND unicode(o.value) BETWEEN 4520 AND 4546
- THEN unicode(c.starter)+unicode(o.value)-4519 ELSE p.composed END) IS NOT NULL AND (c.last_ccc<o.ccc OR c.last_ccc=0) THEN char((CASE WHEN unicode(c.starter) BETWEEN 4352 AND 4370 AND unicode(o.value) BETWEEN 4449 AND 4469
+ THEN unicode(c.starter)+unicode(o.value)-4519 ELSE p.composed END ) IS NOT NULL AND (c.last_ccc<o.ccc OR c.last_ccc=0) THEN char(( CASE WHEN unicode(c.starter) BETWEEN 4352 AND 4370 AND unicode(o.value) BETWEEN 4449 AND 4469
  THEN 44032+(unicode(c.starter)-4352)*588+(unicode(o.value)-4449)*28
  WHEN unicode(c.starter) BETWEEN 44032 AND 55203 AND (unicode(c.starter)-44032)%28=0 AND unicode(o.value) BETWEEN 4520 AND 4546
- THEN unicode(c.starter)+unicode(o.value)-4519 ELSE p.composed END))
-        WHEN o.ccc=0 THEN o.value ELSE c.starter END,
-   CASE WHEN (CASE WHEN unicode(c.starter) BETWEEN 4352 AND 4370 AND unicode(o.value) BETWEEN 4449 AND 4469
+ THEN unicode(c.starter)+unicode(o.value)-4519 ELSE p.composed END ))
+        WHEN o.ccc=0 THEN o.value ELSE c.starter END ,
+    CASE WHEN ( CASE WHEN unicode(c.starter) BETWEEN 4352 AND 4370 AND unicode(o.value) BETWEEN 4449 AND 4469
  THEN 44032+(unicode(c.starter)-4352)*588+(unicode(o.value)-4449)*28
  WHEN unicode(c.starter) BETWEEN 44032 AND 55203 AND (unicode(c.starter)-44032)%28=0 AND unicode(o.value) BETWEEN 4520 AND 4546
- THEN unicode(c.starter)+unicode(o.value)-4519 ELSE p.composed END) IS NOT NULL AND (c.last_ccc<o.ccc OR c.last_ccc=0) THEN c.marks
-        WHEN o.ccc=0 THEN '' ELSE c.marks||o.value END,
-   CASE WHEN (CASE WHEN unicode(c.starter) BETWEEN 4352 AND 4370 AND unicode(o.value) BETWEEN 4449 AND 4469
+ THEN unicode(c.starter)+unicode(o.value)-4519 ELSE p.composed END ) IS NOT NULL AND (c.last_ccc<o.ccc OR c.last_ccc=0) THEN c.marks
+        WHEN o.ccc=0 THEN '' ELSE c.marks||o.value END ,
+    CASE WHEN ( CASE WHEN unicode(c.starter) BETWEEN 4352 AND 4370 AND unicode(o.value) BETWEEN 4449 AND 4469
  THEN 44032+(unicode(c.starter)-4352)*588+(unicode(o.value)-4449)*28
  WHEN unicode(c.starter) BETWEEN 44032 AND 55203 AND (unicode(c.starter)-44032)%28=0 AND unicode(o.value) BETWEEN 4520 AND 4546
- THEN unicode(c.starter)+unicode(o.value)-4519 ELSE p.composed END) IS NOT NULL AND (c.last_ccc<o.ccc OR c.last_ccc=0) THEN c.last_ccc ELSE o.ccc END
+ THEN unicode(c.starter)+unicode(o.value)-4519 ELSE p.composed END ) IS NOT NULL AND (c.last_ccc<o.ccc OR c.last_ccc=0) THEN c.last_ccc ELSE o.ccc END 
   FROM composed c JOIN ordered o ON o.id=c.id AND o.position=c.position+1
   LEFT JOIN search_unicode_composition p ON p.first=unicode(c.starter) AND p.second=unicode(o.value)
  ),
@@ -132,7 +132,7 @@ CREATE TRIGGER response_search_normalize AFTER INSERT ON response_search_input B
  SELECT NEW.response_id,NEW.answer_id,value FROM response_search_normalized
  WHERE id=NEW.id AND length(NEW.value)!=length(CAST(NEW.value AS BLOB));
  DELETE FROM response_search_input WHERE id=NEW.id;
-END;
+END ;
 
 INSERT INTO response_search_input(response_id,answer_id,value) SELECT a.response_id,a.id,leaf.value FROM response_answers a
  JOIN responses r ON r.id=a.response_id
@@ -143,10 +143,10 @@ INSERT INTO response_search_input(response_id,answer_id,value) SELECT a.response
  SELECT a.response_id,a.id,choice.label FROM response_answers a
  JOIN responses r ON r.id=a.response_id
  JOIN flow_steps s ON s.revision_id=r.revision_id AND s.stable_id=a.step_id
- JOIN json_each(CASE WHEN json_type(a.value_json)='object' THEN json_extract(a.value_json,'$.choiceIds') ELSE a.value_json END) selected
+ JOIN json_each( CASE WHEN json_type(a.value_json)='object' THEN json_extract(a.value_json,'$.choiceIds') ELSE a.value_json END ) selected
  JOIN choice_options choice ON choice.step_id=s.id AND choice.stable_id=selected.value
  WHERE s.question_type IN ('single_choice','multiple_choice','dropdown','priority');
-INSERT INTO response_search_input(response_id,answer_id,value) SELECT r.id,NULL,CASE hidden.type WHEN 'true' THEN 'true' WHEN 'false' THEN 'false' ELSE CAST(hidden.value AS TEXT) END
+INSERT INTO response_search_input(response_id,answer_id,value) SELECT r.id,NULL, CASE hidden.type WHEN 'true' THEN 'true' WHEN 'false' THEN 'false' ELSE CAST(hidden.value AS TEXT) END 
  FROM responses r JOIN flow_revisions rev ON rev.id=r.revision_id AND rev.flow_id=r.flow_id
  JOIN json_each(r.response_context_json,'$.hidden') hidden
  JOIN json_each(rev.form_settings_json,'$.hiddenFields') declared ON json_extract(declared.value,'$.id')=hidden.key
@@ -172,10 +172,10 @@ CREATE TRIGGER response_answer_search_insert AFTER INSERT ON response_answers BE
  SELECT a.response_id,a.id,choice.label FROM response_answers a
  JOIN responses r ON r.id=a.response_id
  JOIN flow_steps s ON s.revision_id=r.revision_id AND s.stable_id=a.step_id
- JOIN json_each(CASE WHEN json_type(a.value_json)='object' THEN json_extract(a.value_json,'$.choiceIds') ELSE a.value_json END) selected
+ JOIN json_each( CASE WHEN json_type(a.value_json)='object' THEN json_extract(a.value_json,'$.choiceIds') ELSE a.value_json END ) selected
  JOIN choice_options choice ON choice.step_id=s.id AND choice.stable_id=selected.value
  WHERE a.id=NEW.id AND s.question_type IN ('single_choice','multiple_choice','dropdown','priority');
-END;
+END ;
 CREATE TRIGGER response_answer_search_update AFTER UPDATE OF value_json,step_id,response_id ON response_answers BEGIN
  DELETE FROM response_search_values WHERE answer_id=NEW.id;
  INSERT INTO response_search_input(response_id,answer_id,value) SELECT a.response_id,a.id,leaf.value FROM response_answers a
@@ -187,13 +187,13 @@ CREATE TRIGGER response_answer_search_update AFTER UPDATE OF value_json,step_id,
  SELECT a.response_id,a.id,choice.label FROM response_answers a
  JOIN responses r ON r.id=a.response_id
  JOIN flow_steps s ON s.revision_id=r.revision_id AND s.stable_id=a.step_id
- JOIN json_each(CASE WHEN json_type(a.value_json)='object' THEN json_extract(a.value_json,'$.choiceIds') ELSE a.value_json END) selected
+ JOIN json_each( CASE WHEN json_type(a.value_json)='object' THEN json_extract(a.value_json,'$.choiceIds') ELSE a.value_json END ) selected
  JOIN choice_options choice ON choice.step_id=s.id AND choice.stable_id=selected.value
  WHERE a.id=NEW.id AND s.question_type IN ('single_choice','multiple_choice','dropdown','priority');
-END;
+END ;
 CREATE TRIGGER response_context_search_insert AFTER INSERT ON responses BEGIN
  DELETE FROM response_search_values WHERE response_id=NEW.id AND answer_id IS NULL;
- INSERT INTO response_search_input(response_id,answer_id,value) SELECT r.id,NULL,CASE hidden.type WHEN 'true' THEN 'true' WHEN 'false' THEN 'false' ELSE CAST(hidden.value AS TEXT) END
+ INSERT INTO response_search_input(response_id,answer_id,value) SELECT r.id,NULL, CASE hidden.type WHEN 'true' THEN 'true' WHEN 'false' THEN 'false' ELSE CAST(hidden.value AS TEXT) END 
  FROM responses r JOIN flow_revisions rev ON rev.id=r.revision_id AND rev.flow_id=r.flow_id
  JOIN json_each(r.response_context_json,'$.hidden') hidden
  JOIN json_each(rev.form_settings_json,'$.hiddenFields') declared ON json_extract(declared.value,'$.id')=hidden.key
@@ -208,10 +208,10 @@ CREATE TRIGGER response_context_search_insert AFTER INSERT ON responses BEGIN
  SELECT r.id,NULL,p.name_snapshot FROM responses r JOIN invitation_participants p ON p.id=r.participant_id AND p.workspace_id=r.workspace_id WHERE r.id=NEW.id AND p.name_snapshot IS NOT NULL
  UNION ALL
  SELECT r.id,NULL,p.email_snapshot FROM responses r JOIN invitation_participants p ON p.id=r.participant_id AND p.workspace_id=r.workspace_id WHERE r.id=NEW.id AND p.email_snapshot IS NOT NULL;
-END;
+END ;
 CREATE TRIGGER response_context_search_update AFTER UPDATE OF response_context_json,participant_id,revision_id ON responses BEGIN
  DELETE FROM response_search_values WHERE response_id=NEW.id AND answer_id IS NULL;
- INSERT INTO response_search_input(response_id,answer_id,value) SELECT r.id,NULL,CASE hidden.type WHEN 'true' THEN 'true' WHEN 'false' THEN 'false' ELSE CAST(hidden.value AS TEXT) END
+ INSERT INTO response_search_input(response_id,answer_id,value) SELECT r.id,NULL, CASE hidden.type WHEN 'true' THEN 'true' WHEN 'false' THEN 'false' ELSE CAST(hidden.value AS TEXT) END 
  FROM responses r JOIN flow_revisions rev ON rev.id=r.revision_id AND rev.flow_id=r.flow_id
  JOIN json_each(r.response_context_json,'$.hidden') hidden
  JOIN json_each(rev.form_settings_json,'$.hiddenFields') declared ON json_extract(declared.value,'$.id')=hidden.key
@@ -226,10 +226,10 @@ CREATE TRIGGER response_context_search_update AFTER UPDATE OF response_context_j
  SELECT r.id,NULL,p.name_snapshot FROM responses r JOIN invitation_participants p ON p.id=r.participant_id AND p.workspace_id=r.workspace_id WHERE r.id=NEW.id AND p.name_snapshot IS NOT NULL
  UNION ALL
  SELECT r.id,NULL,p.email_snapshot FROM responses r JOIN invitation_participants p ON p.id=r.participant_id AND p.workspace_id=r.workspace_id WHERE r.id=NEW.id AND p.email_snapshot IS NOT NULL;
-END;
+END ;
 CREATE TRIGGER response_identity_search_update AFTER UPDATE OF name_snapshot,email_snapshot ON invitation_participants BEGIN
  DELETE FROM response_search_values WHERE answer_id IS NULL AND response_id IN (SELECT id FROM responses WHERE participant_id=NEW.id);
- INSERT INTO response_search_input(response_id,answer_id,value) SELECT r.id,NULL,CASE hidden.type WHEN 'true' THEN 'true' WHEN 'false' THEN 'false' ELSE CAST(hidden.value AS TEXT) END
+ INSERT INTO response_search_input(response_id,answer_id,value) SELECT r.id,NULL, CASE hidden.type WHEN 'true' THEN 'true' WHEN 'false' THEN 'false' ELSE CAST(hidden.value AS TEXT) END 
  FROM responses r JOIN flow_revisions rev ON rev.id=r.revision_id AND rev.flow_id=r.flow_id
  JOIN json_each(r.response_context_json,'$.hidden') hidden
  JOIN json_each(rev.form_settings_json,'$.hiddenFields') declared ON json_extract(declared.value,'$.id')=hidden.key
@@ -244,4 +244,4 @@ CREATE TRIGGER response_identity_search_update AFTER UPDATE OF name_snapshot,ema
  SELECT r.id,NULL,p.name_snapshot FROM responses r JOIN invitation_participants p ON p.id=r.participant_id AND p.workspace_id=r.workspace_id WHERE r.participant_id=NEW.id AND p.name_snapshot IS NOT NULL
  UNION ALL
  SELECT r.id,NULL,p.email_snapshot FROM responses r JOIN invitation_participants p ON p.id=r.participant_id AND p.workspace_id=r.workspace_id WHERE r.participant_id=NEW.id AND p.email_snapshot IS NOT NULL;
-END;
+END ;
