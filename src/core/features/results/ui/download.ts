@@ -1,5 +1,5 @@
-import { reportingApi, type LedgerFilter } from '../../../app/api'
-export async function downloadResponses(flowId: string, filter: LedgerFilter, format: 'json'|'csv', includeAutomatedExclusions = false) {
+import { reportingApi, type LedgerFilter, type ExportFormat } from '../../../app/api'
+export async function downloadResponses(flowId: string, filter: LedgerFilter, format: ExportFormat, includeAutomatedExclusions = false) {
   if (!('serviceWorker' in navigator)) throw new Error('Streamed downloads require a browser with service workers on HTTPS or localhost.')
   const registration = await navigator.serviceWorker.register('/api/app/export-worker.js',{scope:'/app/exports/'})
   const worker = registration.installing ?? registration.waiting ?? registration.active

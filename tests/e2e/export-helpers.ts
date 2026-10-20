@@ -1,4 +1,11 @@
 import type { Download } from '@playwright/test'
+export async function downloadedBytes(download: Download) {
+  const stream = await download.createReadStream()
+  if (!stream) throw new Error('The export download could not be read.')
+  const chunks: Buffer[] = []
+  for await (const chunk of stream) chunks.push(Buffer.from(chunk))
+  return Buffer.concat(chunks)
+}
 export async function downloadedText(download: Download) {
   const stream = await download.createReadStream()
   if (!stream) throw new Error('The export download could not be read.')

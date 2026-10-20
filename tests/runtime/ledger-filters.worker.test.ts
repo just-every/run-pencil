@@ -9,6 +9,7 @@ import { collectLedgerFilterScenario, consentStatement } from '../ledger-filter-
 import type { ScenarioCall } from '../results-scenario'
 import type { BuilderDraft, Ledger, LedgerResponse, FlowResults } from '../../src/core/app/api'
 import { ReportingRepository } from '../../src/core/features/reporting/repository'
+import { matureLoad } from './load-time-fixture'
 
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 let cookie = '', serial = 0
@@ -31,7 +32,7 @@ beforeAll(async () => {
   cookie = login.headers.get('set-cookie')!.split(';')[0]
 })
 
-contract(['LEDG-006', 'LEDG-001', 'LEDG-003', 'LEDG-004', 'FLOW-019', 'IMPORT-003', 'RSLT-001', 'RSLT-003'], 'typed filters return exact native and imported IDs with retained consent and revision/source scopes in snapshot exports', async () => {
+contract(['LEDG-006', 'LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019', 'IMPORT-003', 'RSLT-001', 'RSLT-003'], 'typed filters return exact native and imported IDs with retained consent and revision/source scopes in snapshot CSV, JSON and LEDG-005 XLSX and SAV exports read back by independent readers', async () => {
   const scenario = await collectLedgerFilterScenario(call, 'Typed response filter study')
   const positive = [scenario.nativePositive.responseId, scenario.importedPositive.id].sort()
   const negative = [scenario.nativeNegative.responseId, scenario.importedNegative.id].sort()
@@ -80,6 +81,72 @@ contract(['LEDG-006', 'LEDG-001', 'LEDG-003', 'LEDG-004', 'FLOW-019', 'IMPORT-00
   const exported = await call<{ responses: LedgerResponse[]; excludedQuarantined: number }>(`${scenario.path}/responses/export?${new URLSearchParams(filter)}`)
   expect(ids(exported.responses)).toEqual(negative)
   expect(exported.excludedQuarantined).toBe(1)
+  // LEDG-005: the same selection as XLSX and SAV, read back by read-excel-file and sav-reader in Node (export-reader.global.ts).
+  const reader = (env as unknown as { EXPORT_READER_ORIGIN: string }).EXPORT_READER_ORIGIN
+  const download = async (format: string, extra: Record<string, string> = {}) => {
+    const start = await call<{ token: string; filename: string }>(`${scenario.path}/responses/export/start?${new URLSearchParams({ format, ...extra })}`)
+    expect(start.filename).toMatch(new RegExp(`^pencil-responses-[\\w.-]+\\.${format}$`))
+    const parts: Uint8Array[] = []
+    for (let token: string | null = start.token; token;) {
+      const response = await SELF.fetch(`http://localhost${scenario.path}/responses/export?token=${encodeURIComponent(token)}`, { headers: { Host: 'localhost', cookie } })
+      expect(response.status).toBe(200); parts.push(new Uint8Array(await response.arrayBuffer())); token = response.headers.get('x-export-next')
+    }
+    const bytes = new Uint8Array(parts.reduce((sum, part) => sum + part.length, 0)); let offset = 0
+    for (const part of parts) { bytes.set(part, offset); offset += part.length }
+    return bytes
+  }
+  const read = async <T,>(kind: 'xlsx' | 'sav', bytes: Uint8Array) => { const response = await fetch(`${reader}/${kind}`, { method: 'POST', body: bytes }); expect(response.status, await response.clone().text()).toBe(200); return response.json<T>() }
+  const csvRows = (text: string) => { const rows: string[][] = [[]]; let field = '', quoted = false; for (let i = 0; i < text.length; i++) { const char = text[i]; if (quoted) { if (char === '"' && text[i + 1] === '"') { field += '"'; i++ } else if (char === '"') quoted = false; else field += char } else if (char === '"') quoted = true; else if (char === ',') { rows.at(-1)!.push(field); field = '' } else if (char === '\r' && text[i + 1] === '\n') { rows.at(-1)!.push(field); field = ''; rows.push([]); i++ } else field += char } rows.at(-1)!.push(field); return rows }
+  type Workbook = { sheets: Array<{ name: string; rows: Array<Array<string | number | null | object>> }> }
+  type Sav = { header: { n_cases: number; encoding: string }; variables: Array<{ name: string; label: string; type: number }>; valueLabels: Array<{ appliesTo: string[]; entries: Array<{ val: number; label: string }> }>; rows: Array<Record<string, string | number | null>> }
+  // A collector name that a spreadsheet would evaluate if it were written as a formula.
+  const formulaCollector = await call<{ id: string; publicKey: string }>(`${scenario.path}/collectors`, { name: '=1+2', channel: 'web' })
+  const replayed = (await env.DB.prepare('SELECT step_id AS stepId, value_json AS value FROM response_answers WHERE response_id = ?').bind(scenario.nativePositive.responseId).all<{ stepId: string; value: string }>()).results.map(answer => { const value = JSON.parse(answer.value); return { stepId: answer.stepId, value: value && typeof value === 'object' && 'accepted' in value ? value.accepted : value } })
+  const formulaSession = await call<{ sessionId: string; sessionToken: string; loadTime?: string }>(`/api/public/flows/${scenario.current.flow.slug}/sessions`, { deviceClass: 'desktop', source: 'direct', collectorKey: formulaCollector.publicKey })
+  await matureLoad(formulaSession)
+  const formulaResponse = await call<{ responseId: string; disposition: string }>(`/api/public/flows/${scenario.current.flow.slug}/responses`, { ...formulaSession, idempotencyKey: `formula-${formulaSession.sessionId}`, answers: replayed })
+  expect(formulaResponse.disposition).toBe('released')
+  const compare = async (extra: Record<string, string>, expected: string[]) => {
+    const csvText = new TextDecoder().decode(await download('csv', extra)), table = csvRows(csvText), header = table[0], records = table.slice(1)
+    expect(records.map(row => row[0]).sort()).toEqual([...expected].sort())
+    const workbook = await read<Workbook>('xlsx', await download('xlsx', extra))
+    expect(workbook.sheets.map(sheet => sheet.name)).toEqual(['Responses', 'Questions'])
+    const [responses, questions] = workbook.sheets
+    // Each export fixes its own cutoff; every other cell is the CSV's, and text never arrives as a formula object.
+    const cutoff = header.indexOf('cutoff'), withoutCutoff = (rows: string[][]) => rows.map((row, i) => row.map((cell, j) => i && j === cutoff ? 'cutoff' : cell))
+    expect(withoutCutoff(responses.rows.map(row => row.map(cell => cell === null ? '' : typeof cell === 'object' ? JSON.stringify(cell) : String(cell))))).toEqual(withoutCutoff(table))
+    const metadata = questions.rows.slice(1).map(row => Object.fromEntries(questions.rows[0].map((key, index) => [String(key), row[index]])) as Record<string, string | number | null>)
+    const sav = await read<Sav>('sav', await download('sav', extra))
+    expect(sav.header).toMatchObject({ n_cases: records.length, encoding: 'UTF-8' })
+    expect(sav.rows.map(row => row.response_id)).toEqual(records.map(row => row[0]))
+    for (const [index, record] of records.entries()) {
+      const row = sav.rows[index], column = (name: string) => record[header.indexOf(name)]
+      for (const name of ['revision_id', 'source', 'completed_at', 'response_state', 'exclusion_reason', 'collector_name']) expect(row[name] ?? '').toBe(column(name))
+      expect(row.revision_number).toBe(Number(column('revision_number')))
+      for (const answer of JSON.parse(column('answers_json')) as Array<{ stepId: string; questionType: string; value: unknown }>) {
+        const meta = metadata.filter(item => item.revision_id === column('revision_id') && item.step_id === answer.stepId), variable = String(meta[0].sav_variable)
+        const code = (value: unknown) => meta.find(item => item.choice_value === value)!.sav_code
+        if (answer.questionType === 'dropdown') {
+          expect(row[variable]).toBe(code(answer.value))
+          expect(sav.valueLabels.find(set => set.appliesTo.includes(variable))!.entries.find(entry => entry.val === row[variable])!.label).toBe(meta.find(item => item.choice_value === answer.value)!.choice_label)
+        } else if (answer.questionType === 'multiple_choice') for (const item of meta) expect(row[`${variable}_${item.sav_code}`]).toBe((answer.value as string[]).includes(String(item.choice_value)) ? 1 : 0)
+        else if (answer.questionType === 'priority') for (const item of meta) expect(row[`${variable}_${item.sav_code}`]).toBe((answer.value as string[]).indexOf(String(item.choice_value)) + 1)
+        else if (answer.questionType === 'yes_no') expect(row[variable]).toBe(answer.value ? 1 : 0)
+        else if (answer.questionType === 'consent') expect(row[variable]).toBe((answer.value as { accepted: boolean }).accepted ? 1 : 0)
+        else expect(row[variable]).toBe(answer.value)
+      }
+    }
+    expect(sav.variables.find(variable => variable.name === metadata.find(item => item.question_type === 'dropdown')!.sav_variable)!.label).toBe('Drink')
+    return { table, header, sav }
+  }
+  const everything = await compare({}, [...positive, ...negative, formulaResponse.responseId])
+  const formula = everything.table.findIndex(row => row[0] === formulaResponse.responseId)
+  expect(everything.table[formula][everything.header.indexOf('collector_name')]).toBe('=1+2')
+  expect(everything.sav.rows.some(row => row.response_id === pending.responseId)).toBe(false)
+  const included = await compare({ includeAutomatedExclusions: 'true' }, [...positive, ...negative, formulaResponse.responseId, pending.responseId])
+  expect(included.table.find(row => row[0] === pending.responseId)![included.header.indexOf('response_state')]).toBe('quarantined')
+  expect(included.sav.rows.find(row => row.response_id === pending.responseId)).toMatchObject({ response_state: 'quarantined', exclusion_reason: included.table.find(row => row[0] === pending.responseId)![included.header.indexOf('exclusion_reason')] })
+  await compare(filter, negative)
   await call(`/api/app/responses/${pending.responseId}/release`, {})
   expect(ids((await repository.ledger(workspace.id, scenario.flowId, filter, cutoff)).responses)).toEqual(ids(before.responses))
   expect((await call<Ledger>(`${scenario.path}/ledger?${new URLSearchParams(filter)}`)).total).toBe(3)
