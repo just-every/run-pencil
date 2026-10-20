@@ -50,7 +50,8 @@ self.addEventListener('fetch', event => {
               done = true; controller.close(); await notify(channel,{ complete: true, written }); settle(); return
             }
             const response = await fetch(`/api/app/flows/${encodeURIComponent(flowId)}/responses/export`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({token:nextToken}), credentials: 'same-origin', cache: 'no-store', signal: abort.signal })
-            if (!response.ok && !response.redirected) throw new Error(await response.json().then(body => body.message).catch(() => undefined) ?? 'Export failed. The evidence may have changed; refresh and try again.')
+            // A refused part names its reason, such as a value too long for the chosen format.
+            if (!response.ok && !response.redirected) throw new Error(`Export failed. ${await response.json().then(body => body.message).catch(() => undefined) ?? 'The evidence may have changed; refresh and try again.'}`)
             if (!response.ok || response.redirected || !response.body || response.headers.get('Content-Type') !== 'application/octet-stream' || !/^\d+$/.test(response.headers.get('X-Export-Written') ?? '')) throw new Error('Export failed. The evidence may have changed; refresh and try again.')
             nextToken = response.headers.get('X-Export-Next')
             written = Number(response.headers.get('X-Export-Written'))

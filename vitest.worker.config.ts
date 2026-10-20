@@ -36,7 +36,7 @@ export default defineConfig({
           TASK_RECEIVER_ORIGIN: inject('taskReceiverOrigin'),
           // The loopback AI provider edge; analysis tests opt in with their own AI bindings.
           AI_RECEIVER_ORIGIN: inject('aiReceiverOrigin'),
-          // The loopback independent XLSX and SAV readers (exceljs, sav-reader) for LEDG-005 exports.
+          // The loopback independent XLSX and SAV readers (read-excel-file, sav-reader) for LEDG-005 exports.
           EXPORT_READER_ORIGIN: inject('exportReaderOrigin'),
           MAIL_PROVIDER: 'local',
           SESSION_SECRET: 'synthetic-worker-session-secret-at-least-32-characters',

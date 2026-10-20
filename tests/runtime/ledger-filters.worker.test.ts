@@ -81,7 +81,7 @@ contract(['LEDG-006', 'LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019'
   const exported = await call<{ responses: LedgerResponse[]; excludedQuarantined: number }>(`${scenario.path}/responses/export?${new URLSearchParams(filter)}`)
   expect(ids(exported.responses)).toEqual(negative)
   expect(exported.excludedQuarantined).toBe(1)
-  // LEDG-005: the same selection as XLSX and SAV, read back by exceljs and sav-reader in Node (export-reader.global.ts).
+  // LEDG-005: the same selection as XLSX and SAV, read back by read-excel-file and sav-reader in Node (export-reader.global.ts).
   const reader = (env as unknown as { EXPORT_READER_ORIGIN: string }).EXPORT_READER_ORIGIN
   const download = async (format: string, extra: Record<string, string> = {}) => {
     const start = await call<{ token: string; filename: string }>(`${scenario.path}/responses/export/start?${new URLSearchParams({ format, ...extra })}`)

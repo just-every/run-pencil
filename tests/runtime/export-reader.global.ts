@@ -1,8 +1,8 @@
 // Test harness only: a loopback edge that reads exported XLSX and SAV bytes with published, independent
-// readers (exceljs and sav-reader) in Node, so the Worker test checks Pencil's writers against code they share nothing with.
+// readers (read-excel-file and sav-reader) in Node, so the Worker test checks Pencil's writers against code they share nothing with.
 import { createServer, type IncomingMessage } from 'node:http'
 import type { AddressInfo } from 'node:net'
-import ExcelJS from 'exceljs'
+import readXlsxFile from 'read-excel-file/node'
 import { createRequire } from 'node:module'
 import type * as SavReaderModule from 'sav-reader'
 import type { TestProject } from 'vitest/node'
@@ -12,13 +12,7 @@ const { SavBufferReader } = createRequire(import.meta.url)('sav-reader') as type
 const body = (request: IncomingMessage) => new Promise<Buffer>(resolve => { const chunks: Buffer[] = []; request.on('data', chunk => chunks.push(chunk)); request.on('end', () => resolve(Buffer.concat(chunks))) })
 
 async function readXlsx(bytes: Buffer) {
-  const workbook = new ExcelJS.Workbook()
-  await workbook.xlsx.load(bytes)
-  return { sheets: workbook.worksheets.map(sheet => {
-    const rows: unknown[][] = []
-    sheet.eachRow({ includeEmpty: true }, (row, number) => { rows[number - 1] = Array.from({ length: sheet.columnCount }, (_, index) => { const value = row.getCell(index + 1).value; return value && typeof value === 'object' && 'richText' in value ? value.richText.map(part => part.text).join('') : value ?? null }) })
-    return { name: sheet.name, rows }
-  }) }
+  return { sheets: (await readXlsxFile(bytes)).map(sheet => ({ name: sheet.sheet, rows: sheet.data })) }
 }
 
 async function readSav(bytes: Buffer) {

@@ -13,7 +13,8 @@
 .results-heading__exports:empty { display: none; }
 .results-compare { grid-column: 1 / -1; justify-self: end; margin-top: 6px; }
 @media (max-width: 760px) { .results-compare { justify-self: start; } }
-@media (min-width: 1101px) { .results-heading__tools, .results-heading__exports { flex-wrap: nowrap; } .results-heading__exports { flex: none; } }
+/* Four export formats keep one row; beside a long title they wrap below the revision picker instead of overlapping it. */
+@media (min-width: 1101px) { .results-heading__exports { flex-wrap: nowrap; flex: none; } }
 .results-heading__exports .secondary-button { min-height: 44px; padding: 0 24px; }
 
 .results-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin: 24px 0 0; }
