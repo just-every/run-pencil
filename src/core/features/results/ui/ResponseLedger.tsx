@@ -9,7 +9,7 @@ import { StructuredAnswerFilter } from './StructuredAnswerFilter'
 import { dayBoundary } from '../../../shared/timeZone'
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { api, reportingApi, type Ledger, type LedgerFilter, type QuestionReport } from '../../../app/api'
+import { api, reportingApi, type Ledger, type LedgerFilter, type QuestionReport, type ExportFormat } from '../../../app/api'
 
 /** The ledger's sources in the words of its Source filter. */
 const sourceLabels: Record<string, string> = { direct: 'Direct link', embed: 'Embed', invitation: 'Invitation', unknown: 'Historical source unavailable', imported: 'Imported' }
@@ -49,7 +49,7 @@ export function ResponseLedger({ flowId, revisionId, timeZone, questions, onChan
   const filterScope = JSON.stringify({...filter,offset:undefined})
   useEffect(() => { setHistory([]) }, [flowId,filterScope])
   useEffect(() => { load(); return () => { requestVersion.current++ } }, [flowId, filter])
-  const exportResponses = async (format: 'json' | 'csv') => {
+  const exportResponses = async (format: ExportFormat) => {
     setExporting(true); setError(undefined); setExportNotice(undefined)
     try {
       const result = await downloadResponses(flowId, { ...filter, offset: undefined }, format, includeAutomatedExclusions)
@@ -62,7 +62,7 @@ export function ResponseLedger({ flowId, revisionId, timeZone, questions, onChan
   const hiddenField = hiddenFields.find(field => `hidden:${field.id}` === filter.answerStepId)
   const answerQuestion = questions.find(question => question.id === filter.answerStepId)
   const time = (value: string) => new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short', timeZone }).format(new Date(value))
-  const exportButtons = <><button className="secondary-button focus-ring" disabled={exporting} onClick={() => exportResponses('json')} type="button">Export JSON</button><button className="secondary-button focus-ring" disabled={exporting} onClick={() => exportResponses('csv')} type="button">Export CSV</button></>
+  const exportButtons = <><button className="secondary-button focus-ring" disabled={exporting} onClick={() => exportResponses('json')} type="button">Export JSON</button><button className="secondary-button focus-ring" disabled={exporting} onClick={() => exportResponses('csv')} type="button">Export CSV</button><button className="secondary-button focus-ring" disabled={exporting} onClick={() => exportResponses('xlsx')} type="button">Export XLSX</button><button className="secondary-button focus-ring" disabled={exporting} onClick={() => exportResponses('sav')} type="button">Export SPSS</button></>
   return <><section className="panel results-card ledger" aria-labelledby="ledger-title">
     {exportSlot ? createPortal(exportButtons, exportSlot) : null}
     <header className="toggle-row"><div><p className="eyebrow">Individual responses</p><h2 id="ledger-title" className="display">Response ledger</h2><p className="muted">Response-only filters below apply to the ledger and exports. They do not change the revision summary, starts or device counts above. Answers keep the question and revision that asked them.</p></div><div className="builder-actions">{exportButtons}<button className="quiet-button" type="button" onClick={() => { load(); onChanged() }}>Refresh</button></div></header>

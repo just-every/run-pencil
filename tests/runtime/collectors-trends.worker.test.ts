@@ -20,7 +20,7 @@ beforeAll(async()=>{
   await call('/auth/magic-link',{email:owner!.email});const inbox=await developmentInbox(path=>SELF.fetch('http://localhost'+path,{headers:{Host:'localhost',...devKeyHeaders}}),owner!.email)
   const login=await request('/auth/confirm',{token:inbox.messages[0].magicLinkToken});expect(login.status).toBe(303);cookie=login.headers.get('set-cookie')!.split(';')[0]
 })
-contract(['DIST-017','RSLT-007','RSLT-006'],'named collectors enforce independent atomic limits and retain attribution in zoned, revision-marked score trends, exports and RSLT-006 crosstabs with stated shares, chi-square and suppression',async()=>{
+contract(['DIST-017','RSLT-007','RSLT-006','LEDG-005'],'named collectors enforce independent atomic limits and retain attribution in zoned, revision-marked score trends, exports, RSLT-006 crosstabs with stated shares, chi-square and suppression, and multi-part LEDG-005 XLSX and SAV exports',async()=>{
   const workspace=await call<WorkspaceSettings>('/api/app/workspace')
   await call('/api/app/workspace',{timeZone:'America/New_York',sendingWindowStart:workspace.sendingWindowStart,sendingWindowEnd:workspace.sendingWindowEnd},'PUT')
   const slug='northstar-collector-trends',flow=await call<{id:string}>('/api/app/flows',{title:'Northstar customer feedback',slug}),root=`/api/app/flows/${flow.id}`
@@ -117,5 +117,13 @@ contract(['DIST-017','RSLT-007','RSLT-006'],'named collectors enforce independen
   expect(counts(filtered)).toEqual([[null,5],[6,null],[3,5]]);expect(stated(filtered,2,1,'rowShare')).toEqual({numerator:5,denominator:8,percentage:62.5});expect(stated(full,2,1,'rowShare')).toEqual({numerator:10,denominator:13,percentage:10/13*100})
   expect(filtered.filter).toMatchObject({collectorId:web.id,revisionId:xpublication.revision.id})
   expect((await request(xroot+`/crosstab?${new URLSearchParams({revisionId:xpublication.revision.id,rows:`question:${plan.id}`,columns:`question:${plan.id}`})}`)).status).toBe(400)
+  // LEDG-005 across export parts: 43 responses span two cursor pages, so the XLSX CRC and the SAV command block carry over.
+  const reader=(env as unknown as {EXPORT_READER_ORIGIN:string}).EXPORT_READER_ORIGIN
+  const exported=async(format:string)=>{let {token}=await call<{token:string}>(xroot+`/responses/export/start?format=${format}`);const parts:Uint8Array[]=[];while(token){const response=await request(xroot+'/responses/export',{token});expect(response.status).toBe(200);parts.push(new Uint8Array(await response.arrayBuffer()));token=response.headers.get('x-export-next')??''}expect(parts.length).toBe(2);return new Uint8Array(await new Blob(parts).arrayBuffer())}
+  const csvIds=new TextDecoder().decode(await exported('csv')).split('\r\n').slice(1).map(line=>line.slice(1,line.indexOf('"',1)))
+  const read=async<T,>(kind:string,bytes:Uint8Array)=>{const response=await fetch(`${reader}/${kind}`,{method:'POST',body:bytes});expect(response.status,await response.clone().text()).toBe(200);return response.json<T>()}
+  const workbook=await read<{sheets:Array<{rows:unknown[][]}>}>('xlsx',await exported('xlsx'));expect(workbook.sheets[0].rows.slice(1).map(row=>row[0])).toEqual(csvIds)
+  const sav=await read<{header:{n_cases:number};rows:Array<Record<string,unknown>>}>('sav',await exported('sav'));expect(sav.header.n_cases).toBe(43);expect(sav.rows.map(row=>row.response_id)).toEqual(csvIds)
+  expect(sav.rows.map(row=>row.hidden_tier??'')).toEqual(await Promise.all(csvIds.map(async id=>(await env.DB.prepare("SELECT COALESCE(json_extract(response_context_json,'$.hidden.tier'),'') AS tier FROM responses WHERE id=?").bind(id).first<{tier:string}>())!.tier)))
   await call('/api/app/analysis/policies',{...policies,disclosureThreshold:5},'PUT')
 },120000)

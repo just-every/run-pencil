@@ -171,6 +171,7 @@ export const api = {
   removeOperator: (operatorId: string) => request<void>(`/api/app/operators/${encodeURIComponent(operatorId)}`, { method: 'DELETE' }),
 }
 
+export type ExportFormat = 'json' | 'csv' | 'xlsx' | 'sav'
 export type LedgerFilter = { codeId?: string; workflowStatus?: string; workflowAssignee?: string; workflowTag?: string; search?: string; collectorId?: string; revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown' | 'imported'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
 export type LedgerResponse = { presentedOrder:import('../shared/presentationOrder').PresentationOrder|null;
   verifiedEmail?:string
@@ -186,5 +187,5 @@ export const reportingApi = {
   questions: (flowId: string, revisionId: string) => request<QuestionReport[]>(`/api/app/flows/${encodeURIComponent(flowId)}/questions?revisionId=${encodeURIComponent(revisionId)}`),
   textPage: (flowId: string, input: { revisionId:string;questionId:string;search:string;cursor?:string;countOnly?:boolean }, signal?: AbortSignal) => request<{texts:string[];cursor?:string;scanning:boolean;countCursor?:string;matching?:number}>(`/api/app/flows/${encodeURIComponent(flowId)}/questions/text`,{method:'POST',body:JSON.stringify(input),signal}),
   crosstab: (flowId: string, input: { revisionId: string; rows: string; columns: string } & LedgerFilter) => request<import('../features/reporting').Crosstab>(`/api/app/flows/${encodeURIComponent(flowId)}/crosstab?${query(input)}`),
-  startExport: (flowId: string, filter: LedgerFilter, format: 'json'|'csv', includeAutomatedExclusions = false) => request<{token:string;cutoff:string;total:number;excludedQuarantined:number;includedQuarantined:number;filename:string;format:'json'|'csv'}>(`/api/app/flows/${encodeURIComponent(flowId)}/responses/export/start`,{method:'POST',body:JSON.stringify({...filter,format,includeAutomatedExclusions})}),
+  startExport: (flowId: string, filter: LedgerFilter, format: ExportFormat, includeAutomatedExclusions = false) => request<{token:string;cutoff:string;total:number;excludedQuarantined:number;includedQuarantined:number;filename:string;format:ExportFormat}>(`/api/app/flows/${encodeURIComponent(flowId)}/responses/export/start`,{method:'POST',body:JSON.stringify({...filter,format,includeAutomatedExclusions})}),
 }

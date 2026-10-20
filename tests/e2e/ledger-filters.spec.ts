@@ -5,12 +5,16 @@ import AxeBuilder from '@axe-core/playwright'
 import { contract } from './contract'
 import { expect, test, openMailLink } from './fixtures'
 import { operatorEmail } from './auth-identity'
-import { downloadedText, csvRows } from './export-helpers'
+import { downloadedText, downloadedBytes, csvRows } from './export-helpers'
+import { createRequire } from 'node:module'
+import type * as SavReaderModule from 'sav-reader'
 import { collectLedgerFilterScenario, consentStatement } from '../ledger-filter-scenario'
 import type { ScenarioCall } from '../results-scenario'
 import type { LedgerResponse } from '../../src/core/app/api'
 
-contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'FLOW-019', 'IMPORT-003', 'BASE-PUBLIC-003'], 'native and imported typed filters download exact response snapshots with readable decisions and compact rows at both widths', async ({ page }, info) => {
+// sav-reader publishes only a CommonJS entry and shares no code with Pencil's writer. exceljs reads XLSX in the Worker case.
+const { SavBufferReader } = createRequire(import.meta.url)('sav-reader') as typeof SavReaderModule
+contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019', 'IMPORT-003', 'BASE-PUBLIC-003'], 'native and imported typed filters download exact JSON, CSV, LEDG-005 XLSX and SPSS response snapshots with readable decisions and compact rows at both widths', async ({ page }, info) => {
   test.setTimeout(180_000)
   await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
   const email = operatorEmail()
@@ -80,6 +84,21 @@ contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'FLOW-019', 'IMPORT-003', 'BASE-PU
           expect(record.completed_at <= record.cutoff && record.released_at <= record.cutoff).toBe(true)
           expect(record.excluded_quarantined).toBe('0')
         }
+      }
+      if (type === 'consent') for (const format of ['XLSX', 'SPSS']) {
+        const download = page.waitForEvent('download')
+        await ledger.getByRole('button', { name: `Export ${format}`, exact: true }).click()
+        const file = await download
+        expect(file.suggestedFilename()).toMatch(format === 'XLSX' ? /^pencil-responses-[\w.-]+\.xlsx$/ : /^pencil-responses-[\w.-]+\.sav$/)
+        const bytes = await downloadedBytes(file)
+        if (format === 'XLSX') {
+          expect(bytes.subarray(0, 4)).toEqual(Buffer.from('PK\x03\x04', 'latin1'))
+          expect(bytes.includes(Buffer.from(`<t xml:space="preserve">${expectedId}</t>`))).toBe(true)
+        } else {
+          const reader = new SavBufferReader(bytes); await reader.open()
+          expect((await reader.readAllRows()).map(row => row.response_id)).toEqual([expectedId])
+        }
+        if (process.env.PENCIL_CAPTURE_DIR && format === 'SPSS' && source === 'direct' && positive) await ledger.locator('header').first().screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-ledger-exports.png`) })
       }
       const article = ledger.locator('.ledger-list article')
       const date = await page.evaluate(({ value, timeZone }) => new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short', timeZone }).format(new Date(value)), { value: downloaded!.completedAt, timeZone: workspace.timeZone })

@@ -36,6 +36,8 @@ export default defineConfig({
           TASK_RECEIVER_ORIGIN: inject('taskReceiverOrigin'),
           // The loopback AI provider edge; analysis tests opt in with their own AI bindings.
           AI_RECEIVER_ORIGIN: inject('aiReceiverOrigin'),
+          // The loopback independent XLSX and SAV readers (exceljs, sav-reader) for LEDG-005 exports.
+          EXPORT_READER_ORIGIN: inject('exportReaderOrigin'),
           MAIL_PROVIDER: 'local',
           SESSION_SECRET: 'synthetic-worker-session-secret-at-least-32-characters',
           PENCIL_LOCAL_DEVELOPMENT: 'true',
@@ -49,7 +51,7 @@ export default defineConfig({
     // Native D1 journeys run serially on shared and cold CI workers.
     testTimeout: 30_000,
     include: ['tests/runtime/**/*.worker.test.ts'],
-    globalSetup: ['tests/runtime/task-receiver.global.ts', 'tests/runtime/ai-receiver.global.ts'],
+    globalSetup: ['tests/runtime/task-receiver.global.ts', 'tests/runtime/ai-receiver.global.ts', 'tests/runtime/export-reader.global.ts'],
     fileParallelism: false,
   },
 })

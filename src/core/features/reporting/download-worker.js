@@ -3,6 +3,7 @@
 self.addEventListener('install', () => self.skipWaiting())
 self.addEventListener('activate', event => event.waitUntil(self.clients.claim()))
 const pendingDownloads = new Map()
+const contentTypes = { json: 'application/json', csv: 'text/csv; charset=utf-8', xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', sav: 'application/x-spss-sav' }
 const notify = async (channel, message) => {
   for (const client of await self.clients.matchAll({ includeUncontrolled: true, type: 'window' })) client.postMessage({ kind: 'pencil-export', channel, ...message })
 }
@@ -29,7 +30,7 @@ self.addEventListener('fetch', event => {
   pendingDownloads.delete(channel)
   pending?.release()
   const { flowId, token, filename } = pending?.input ?? {}
-  if (!flowId || !token || !filename || !/^pencil-responses-[\w.:-]+\.(json|csv)$/.test(filename)) {
+  if (!flowId || !token || !filename || !/^pencil-responses-[\w.:-]+\.(json|csv|xlsx|sav)$/.test(filename)) {
     event.waitUntil(notify(channel,{ error:'Download could not start. Try again.' }))
     event.respondWith(new Response('Invalid export download.', { status: 400 })); return
   }
@@ -49,6 +50,7 @@ self.addEventListener('fetch', event => {
               done = true; controller.close(); await notify(channel,{ complete: true, written }); settle(); return
             }
             const response = await fetch(`/api/app/flows/${encodeURIComponent(flowId)}/responses/export`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({token:nextToken}), credentials: 'same-origin', cache: 'no-store', signal: abort.signal })
+            if (!response.ok && !response.redirected) throw new Error(await response.json().then(body => body.message).catch(() => undefined) ?? 'Export failed. The evidence may have changed; refresh and try again.')
             if (!response.ok || response.redirected || !response.body || response.headers.get('Content-Type') !== 'application/octet-stream' || !/^\d+$/.test(response.headers.get('X-Export-Written') ?? '')) throw new Error('Export failed. The evidence may have changed; refresh and try again.')
             nextToken = response.headers.get('X-Export-Next')
             written = Number(response.headers.get('X-Export-Written'))
@@ -66,7 +68,7 @@ self.addEventListener('fetch', event => {
     async cancel() { done = true; abort.abort(); if (reader) await reader.cancel().catch(() => {}); await notify(channel,{ error: 'Download cancelled.' }); settle() },
   }, { highWaterMark: 0 })
   event.respondWith(new Response(stream, { headers: {
-    'Content-Type': filename.endsWith('.csv') ? 'text/csv; charset=utf-8' : 'application/json',
+    'Content-Type': contentTypes[filename.slice(filename.lastIndexOf('.') + 1)],
     'Content-Disposition': `attachment; filename="${filename}"`,
     'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff',
   }}))
