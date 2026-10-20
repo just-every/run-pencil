@@ -1297,7 +1297,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "e64707cab50017d50c1f72bed1a9ef0518bde6333e215ae835a226c281842fcd",
+      "sha256": "d0c6b7fc4a4f86bdeb9e2123580643c7fc40aef8ad4b1ad5149826319416f58b",
       "executable": false
     },
     "playwright.admission.config.ts": {
@@ -1317,7 +1317,7 @@
       "executable": false
     },
     "pnpm-lock.yaml": {
-      "sha256": "3f81a6681b2711c7171c83df8f2161fe27b3dc3f05f8b54c03ee1a0ed5c0035c",
+      "sha256": "777243f37878b0dbfcda621cd8b24364b1b65f4f7ddb4a2cca7c61b1da26df48",
       "executable": false
     },
     "public/brand/band.svg": {
