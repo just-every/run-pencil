@@ -35,7 +35,6 @@ BEGIN
  WHERE action_id=NEW.id AND status IN ('pending','sending')
  AND (NEW.verdict IS NOT NULL OR NEW.state='closed' OR NEW.review_date<>OLD.review_date
    OR (NEW.owner_operator_id IS NOT OLD.owner_operator_id AND (status='sending' OR attempts>0)));
- -- A not-yet-attempted occurrence follows reassignment instead of being lost.
  UPDATE action_reminders SET operator_id=NEW.owner_operator_id,reason=NULL,updated_at=NEW.updated_at
  WHERE action_id=NEW.id AND status='pending' AND attempts=0 AND NEW.owner_operator_id IS NOT OLD.owner_operator_id;
 END;
