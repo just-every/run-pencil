@@ -1,6 +1,6 @@
 import type { MailSender } from '../../../base/operator-auth/index.mjs'
 import type { MailConfiguration } from '../../platform/mail'
-import { insideSendingWindow, nextSendingInstant, retryInstant } from '../distribution'
+import { insideSendingWindow, nextSendingInstant, retryInstant } from '../distribution/schedule'
 import type { ReminderKind } from '../actions/reminder-schedule'
 import { notificationSenderError } from './compose'
 import { safeNotificationReceipt } from './failure'
