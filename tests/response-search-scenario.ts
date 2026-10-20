@@ -30,5 +30,6 @@ export async function collectResponseSearchScenario(call: ScenarioCall, slug: st
   const second = await publish()
   const faster = await submit('The queue was shorter.', 1)
   const quarantined = await submit('queue awaiting review', 1, false)
-  return { flowId: flow.id, path, firstRevision: first.revision.id, secondRevision: second.revision.id, slow, tea, faster, quarantined }
+  const unicode = await submit('Le CAFE\u0301 et la Straße sont agréables. Очень ВКУСНО.', 1)
+  return { flowId: flow.id, path, firstRevision: first.revision.id, secondRevision: second.revision.id, slow, tea, faster, quarantined, unicode }
 }

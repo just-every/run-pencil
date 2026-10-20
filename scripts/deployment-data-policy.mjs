@@ -3,6 +3,10 @@ import { failure } from './deployment-data-errors.mjs';
 // Every persisted column is reviewed here. A migration cannot silently add data
 // to an archive: both new tables and new columns fail closed until classified.
 const retained = {
+  search_unicode_map: 'code value ccc',
+  search_unicode_composition: 'first second composed',
+  response_search_values: 'id response_id answer_id value',
+  response_search_input: 'id response_id answer_id value',
   form_retention: 'flow_id days legal_hold version change_id created_at updated_at',
   retention_notices: 'flow_id kind item_id policy_version notified_at delete_after',
   form_access_rules: 'id flow_id mode domains_json emails_json public_key created_at',

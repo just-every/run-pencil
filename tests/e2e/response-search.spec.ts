@@ -41,9 +41,20 @@ contract('LEDG-006', 'operators search responses, see matching answers and downl
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   if (process.env.PENCIL_CAPTURE_DIR) {
     await mkdir(process.env.PENCIL_CAPTURE_DIR, { recursive: true })
-    await ledger.scrollIntoViewIfNeeded()
-    await ledger.screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `response-search-${info.project.name}.png`) })
+    await ledger.locator('.ledger-answer mark').scrollIntoViewIfNeeded()
+    await page.screenshot({ scale: 'css', path: join(process.env.PENCIL_CAPTURE_DIR, `response-search-${info.project.name}.png`) })
   }
   await ledger.getByRole('button', { name: 'Clear search' }).click()
   await expect(ledger.getByRole('button', { name: 'View answers', exact: true })).toHaveCount(2)
+  await ledger.getByLabel('Response revision').selectOption('')
+  await ledger.getByRole('searchbox', { name: 'Search responses', exact: true }).fill('café et la STRASSE')
+  await ledger.getByRole('button', { name: 'Search', exact: true }).click()
+  await expect(ledger.getByRole('button', { name: 'View answers', exact: true })).toHaveCount(1)
+  await ledger.getByRole('button', { name: 'View answers', exact: true }).click()
+  await expect(ledger.locator('.ledger-answer mark')).toHaveText('CAFE\u0301 et la Straße')
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  if (process.env.PENCIL_CAPTURE_DIR) {
+    await ledger.locator('.ledger-answer mark').scrollIntoViewIfNeeded()
+    await page.screenshot({ scale: 'css', path: join(process.env.PENCIL_CAPTURE_DIR, `response-search-unicode-${info.project.name}.png`) })
+  }
 })

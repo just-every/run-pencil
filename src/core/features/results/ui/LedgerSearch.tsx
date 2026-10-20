@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useState } from 'react'
+import { searchRanges } from '../../../shared/searchFold'
 
 export function LedgerSearch({ value, onSearch }: { value?: string; onSearch: (value?: string) => void }) {
   const [query, setQuery] = useState(value ?? '')
@@ -12,7 +13,11 @@ export function LedgerSearch({ value, onSearch }: { value?: string; onSearch: (v
 
 export function SearchHighlight({ text, search }: { text: string; search?: string }) {
   if (!search) return <>{text}</>
-  const escaped = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const parts = text.split(new RegExp(`(${escaped})`, 'gi'))
-  return <>{parts.map((part, index) => index % 2 ? <mark key={index}>{part}</mark> : <Fragment key={index}>{part}</Fragment>)}</>
+  const ranges = searchRanges(text, search)
+  let end = 0
+  return <>{ranges.map(range => {
+    const before = text.slice(end, range.start)
+    end = range.end
+    return <Fragment key={range.start}>{before}<mark>{text.slice(range.start, range.end)}</mark></Fragment>
+  })}{text.slice(end)}</>
 }

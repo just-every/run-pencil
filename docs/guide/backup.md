@@ -13,6 +13,7 @@ The archive contains these product records, with the exclusions below:
 - Operators, workspace settings, branding and your logo.
 - Flows, revisions, steps, choices and answer paths, with stable IDs.
 - Every response and answer, including quarantined answers and their state.
+- The stored Unicode search values for those answers, with the same private-data and erasure rules. Restoration retains them so existing answers remain searchable.
 - Contacts, custom fields, consent history, saved segments, invitation audiences and delivery history.
 - Audit history, starts and drop-off counters, notification preferences and delivery history.
 - Analysis runs, evidence links, draft rewrite sources and decisions, and AI usage.

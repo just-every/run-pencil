@@ -31,10 +31,12 @@ beforeAll(async () => {
   cookie = login.headers.get('set-cookie')!.split(';')[0]
 })
 
-contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'FLOW-019', 'IMPORT-003', 'RSLT-001', 'RSLT-003'], 'typed filters return exact native and imported IDs with retained consent and revision/source scopes in snapshot exports', async () => {
+contract(['LEDG-006', 'LEDG-001', 'LEDG-003', 'LEDG-004', 'FLOW-019', 'IMPORT-003', 'RSLT-001', 'RSLT-003'], 'typed filters return exact native and imported IDs with retained consent and revision/source scopes in snapshot exports', async () => {
   const scenario = await collectLedgerFilterScenario(call, 'Typed response filter study')
   const positive = [scenario.nativePositive.responseId, scenario.importedPositive.id].sort()
   const negative = [scenario.nativeNegative.responseId, scenario.importedNegative.id].sort()
+  const importedSearch = await call<Ledger>(`${scenario.path}/ledger?${new URLSearchParams({ search: 'MIXED.CASE@EXAMPLE.TEST', source: 'imported' })}`)
+  expect(importedSearch.responses.map(response => response.id)).toEqual([scenario.importedPositive.id])
   const ids = (responses: LedgerResponse[]) => responses.map(response => response.id).sort()
   const numericAndDates = [['number', '11.0'], ['nps', '10.0'], ['rating', '5.0'], ['date', '2024-02-29'], ['email', 'mixed.case@example.TEST']]
   for (const [type, value] of [...['yes_no', 'consent'].flatMap(type => [[type, 'true'], [type, 'false']]), ...numericAndDates]) {
@@ -131,12 +133,18 @@ contract('LEDG-006', 'an accented and a non-ASCII phrase match case-insensitivel
   expect(await found('καφες καλος')).toEqual([greek])
   expect(await found('CRÈME BRÛLÉE')).toEqual([dessert])
   for (const literal of ['5*', '*']) expect(await found(literal), literal).toEqual([dessert])
-  // Every distinct folded letter nests one replace() under D1's expression-depth cap of 100.
-  const alphabet = 'АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЭЮЯΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΤΥΦΧΨΩ', widest = alphabet.slice(0, 32).repeat(6)
-  expect((await call<Ledger>(`${path}/ledger?${new URLSearchParams({ search: widest, revisionId: draft.revision.id, source: 'direct' })}`)).total).toBe(0)
-  expect((await call<{ responses: LedgerResponse[] }>(`${path}/responses/export?${new URLSearchParams({ search: widest })}`)).responses).toEqual([])
+  const alphabet = 'АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЭЮЯΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΤΥΦΧΨΩÉÀÖÜÑÇ'
+  const widest = alphabet.repeat(4).slice(0, 200)
+  const wide = await submit(widest, 1)
+  expect(await found(widest.toLowerCase())).toEqual([wide])
+  expect((await call<{ responses: LedgerResponse[] }>(`${path}/responses/export?${new URLSearchParams({ search: widest.toLowerCase() })}`)).responses.map(response => response.id)).toEqual([wide])
+  const decomposed = await submit('Le CAFE\u0301 et la Straße', 1)
+  expect(await found('café et la STRASSE')).toEqual([decomposed])
+  // The database write path also maintains the value on edits; stale text stops matching.
+  await env.DB.prepare('UPDATE response_answers SET value_json=? WHERE response_id=? AND step_id=?').bind(JSON.stringify('Après la RÉVISION'), decomposed, text.id).run()
+  expect(await found('café et la STRASSE')).toEqual([])
+  expect(await found('après la révision')).toEqual([decomposed])
   expect((await call<{ responses: LedgerResponse[] }>(`${path}/responses/export?${new URLSearchParams({ search: 'ΚΑΦΕΣ' })}`)).responses.map(response => response.id)).toEqual([greek])
   for (const literal of ['cafe etait', '?', '[', '%_']) expect(await found(literal), literal).toEqual([])
-  const refused = await SELF.fetch(`http://localhost${path}/ledger?${new URLSearchParams({ search: alphabet.slice(0, 33) })}`, { headers: { Host: 'localhost', cookie } })
-  expect(refused.status).toBe(400)
+
 }, 60_000)
