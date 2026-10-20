@@ -5357,7 +5357,7 @@
       "executable": false
     },
     "src/core/features/responses/ui/ReviewAnswers.tsx": {
-      "sha256": "1d4aecc3dab6e37f224b073896eceefc8c1ddf47463999ae96647cab4e274c17",
+      "sha256": "a8dc8b71d3c3d5169340e6f6454c189df8a7495acba92bd7f674b5457fcba4c0",
       "executable": false
     },
     "src/core/features/responses/ui/SaveResponse.tsx": {
@@ -6565,7 +6565,7 @@
       "executable": false
     },
     "tests/e2e/review-journey.ts": {
-      "sha256": "eaa0f067875266a56a97758e126f0a68625a9f0e136822d1e27ce1ffcf05d64c",
+      "sha256": "89c26ba3e81fdf5fbf3b09baf3dfc5d841add30d2ea27995109ceb435091ad77",
       "executable": false
     },
     "tests/e2e/revision-comparison-http.spec.ts": {

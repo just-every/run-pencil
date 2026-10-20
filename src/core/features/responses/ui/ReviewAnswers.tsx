@@ -1,7 +1,7 @@
 import type { PublicFlow } from '../../../app/api'
 import { formattedAnswer, interpolateAnswerRecall } from '../../../shared/answerRecall'
 import { isUnanswered } from '../../../shared/answers'
-import { isOtherAnswer } from '../../../shared/otherChoices'
+import { isOtherAnswer, selectedChoiceIds } from '../../../shared/otherChoices'
 import { ratingScale } from '../../../shared/ratingScale'
 import type { FlowStep } from '../../../app/api'
 import './review-answers.css'
@@ -18,8 +18,10 @@ export function ReviewAnswers({ flow, steps, answers, disabled, onEdit }: {
       if (!isUnanswered(value)) {
         display = formattedAnswer(step, flow.choices.filter(choice => choice.stepId === step.id), value, recall)
         if (isOtherAnswer(value)) {
-          const label = flow.choices.find(choice => choice.id === step.questionSettings?.otherChoiceId)?.label
-          if (label) display = display.replace(value.otherText, `${recall(label)}: ${value.otherText}`)
+          display = selectedChoiceIds(value).map(id => {
+            const label = recall(flow.choices.find(choice => choice.id === id)!.label)
+            return id === step.questionSettings?.otherChoiceId ? `${label}: ${value.otherText}` : label
+          }).join(', ')
         }
         if (step.questionType === 'rating') {
           const scale = ratingScale(step.questionSettings ?? {})

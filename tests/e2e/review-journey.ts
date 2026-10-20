@@ -34,7 +34,7 @@ export async function configureReview(page: Page, info: TestInfo, flowId: string
   await page.getByLabel('Review answers before submitting').scrollIntoViewIfNeeded()
   await mkdir('docs/evidence',{recursive:true})
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
-  await page.screenshot({path:`docs/evidence/resp024-builder-${info.project.name}.png`,fullPage:true})
+  await page.screenshot({path:`docs/evidence/resp024-builder-${info.project.name}.png`,fullPage:false})
 }
 export async function reviewJourney(page: Page, info: TestInfo, flowId: string, slug: string) {
   const call=door(page,info), base=`/api/app/flows/${flowId}`
@@ -67,6 +67,7 @@ export async function reviewJourney(page: Page, info: TestInfo, flowId: string, 
     submitted.push(route.request().postDataJSON()); const response=await route.fetch()
     if(submitted.length===1) await route.abort('failed'); else await route.fulfill({response})
   })
+  await page.waitForTimeout(3200)
   await click('Submit response'); await expect(page.getByRole('button',{name:'Retry submission',exact:true})).toBeVisible(); await click('Retry submission')
   await expect(page.getByRole('heading',{name:'Booked for 07/04/2026',exact:true})).toBeVisible()
   await page.screenshot({path:info.outputPath(`resp024-completed-${info.project.name}.png`),fullPage:true})
