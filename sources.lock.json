@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "94fe92751c2e9a9049b161853c1ca75c971866c516342d61fa3677adaf567513",
+      "sha256": "039b2adcccb76bc1f520f3e978ce2335bc4f67e5daed73f97d9471e1c945227b",
       "executable": false
     },
     "DEMO.md": {
@@ -902,6 +902,22 @@
     },
     "docs/data-ownership.md": {
       "sha256": "991819d6bb394d9f37b1396b665db3af5a4bd4382026708f1e140b3a4fa9b795",
+      "executable": false
+    },
+    "docs/evidence/act009-reminders-scheduled-1440.png": {
+      "sha256": "b867beaf4b26bb8489bbafc68139542150a162313158339db8455a8afa50f53e",
+      "executable": false
+    },
+    "docs/evidence/act009-reminders-scheduled-390.png": {
+      "sha256": "b65c0496073af84344758bf1894e9d3b2ef5240e3e302df27c55313a61010aec",
+      "executable": false
+    },
+    "docs/evidence/act009-reminders-stopped-1440.png": {
+      "sha256": "b966e34ddab73af9afaec9b01b6e2236f49708a7bd1f0b36482c88c23a7b52f0",
+      "executable": false
+    },
+    "docs/evidence/act009-reminders-stopped-390.png": {
+      "sha256": "2947855af78bec44ed8fd8c9ca3b7979b743f653a5271967c867d846f782321d",
       "executable": false
     },
     "docs/evidence/ledger-search-2026-10-20.json": {
