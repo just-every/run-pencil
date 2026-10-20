@@ -12,7 +12,7 @@ import { backupManifest } from './scripts/deployment-data-browser-manifest.mjs'
 import { demoSockets } from './src/base/demo/vite.mjs'
 // The Worker runs first for every deployed path. Under the dev server, Vite's own module, client-entry and file paths, and the one
 // root file browser code imports (seed.json), must reach Vite, or no page hydrates. Every other root file stays behind the Worker.
-const backupSharedFiles = ['browser-shared', 'policy', 'dev', 'sql', 'ledger', 'schema', 'errors', 'initialized', 'journal'].map(name => `scripts/deployment-data-${name}.mjs`)
+const backupSharedFiles = [...['browser-shared', 'policy', 'dev', 'sql', 'ledger', 'schema', 'errors', 'initialized', 'journal'].map(name => `scripts/deployment-data-${name}.mjs`), 'scripts/search-unicode-data.json']
 const devServedByVite = ['/*', '!/@*', '!/src/*', '!/node_modules/*', '!/seed.json', ...backupSharedFiles.map(path => `!/${path}`)]
 // Only `vite dev` loads the local-only entry and the checkout's dev key; a build keeps src/server.ts and never sees either
 // (rer build checks its output).
