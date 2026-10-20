@@ -1813,7 +1813,7 @@
       "executable": false
     },
     "scripts/verify-base-source.mjs": {
-      "sha256": "5185b24044f16999493e67f8b2bd745f27ff89a0c8c805416936207af8c76219",
+      "sha256": "808fce264b88ae4aaa6fedb38855043270f96a335f8ca8da2ad130701ca092ad",
       "executable": false
     },
     "scripts/verify-boundaries.mjs": {
