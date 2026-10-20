@@ -95,7 +95,7 @@ export function createPencilServices(platform: PencilPlatform) {
     attention: new AnalysisAttention(platform.databaseBinding),
     rewrites: new DraftRewrites(platform.databaseBinding, platform.ai),
     analysis: new AnalysisService(platform.databaseBinding, platform.ai),
-    actions: { records: new ActionService(platform.databaseBinding, notificationSenderError(from,mailProvider) ?? senderFailure, mailProvider === 'local-development'), tasks: new TaskDeliveries(platform.databaseBinding, platform.configuration.task, platform.configuration.appOrigin) },
+    actions: { records: new ActionService(platform.databaseBinding, notificationSenderError(from,mailProvider) ?? senderFailure, mailProvider === 'local-development' || platform.configuration.isHostedDemo), tasks: new TaskDeliveries(platform.databaseBinding, platform.configuration.task, platform.configuration.appOrigin) },
   }
 }
 

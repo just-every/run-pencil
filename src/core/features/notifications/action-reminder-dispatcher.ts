@@ -67,9 +67,10 @@ export class ActionReminderDispatcher {
           .bind(now,row.id).run()
         return
       }
-      if (!insideSendingWindow(new Date(now), live)) {
+      const transportTime = new Date().toISOString()
+      if (!insideSendingWindow(new Date(transportTime), live)) {
         await this.db.prepare("UPDATE action_reminders SET status='pending',available_at=?,reason='Held until the sending window opens.',updated_at=? WHERE id=? AND status='sending'")
-          .bind(nextSendingInstant(now,live),now,row.id).run()
+          .bind(nextSendingInstant(transportTime,live),transportTime,row.id).run()
         return
       }
       // Compose current content as well: an edit during the first read cannot leak stale text.
