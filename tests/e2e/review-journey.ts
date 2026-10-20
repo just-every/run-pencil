@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright'
 import { mkdir } from 'node:fs/promises'
 import type { Page, TestInfo } from '@playwright/test'
 import { expect } from './fixtures'
@@ -38,16 +39,17 @@ export async function configureReview(page: Page, info: TestInfo, flowId: string
 export async function reviewJourney(page: Page, info: TestInfo, flowId: string, slug: string) {
   const call=door(page,info), base=`/api/app/flows/${flowId}`
   const click=async (name: string)=>page.getByRole('button',{name,exact:true}).click()
-  await page.getByLabel('Anything we should know before 07/04/2026?',{exact:true}).fill('My own booking details')
+  await page.getByRole('textbox',{name:'Anything we should know before 07/04/2026?',exact:true}).fill('My own booking details')
   await click('Continue')
   await page.getByRole('radio',{name:'At the venue',exact:true}).click(); await click('Continue')
-  await page.getByLabel('Venue instructions',{exact:true}).fill('Use the side entrance'); await click('Continue')
+  await page.getByRole('textbox',{name:'Venue instructions',exact:true}).fill('Use the side entrance'); await click('Continue')
   await page.getByRole('radio',{name:'0 out of 6, Not confident',exact:true}).click(); await click('Review answers')
   await expect(page.getByRole('heading',{name:'Review your answers',exact:true})).toBeFocused()
   const review=page.getByRole('region',{name:'Your answers',exact:true})
   await expect(review.getByRole('definition')).toHaveText(['07/04/2026','My own booking details','At the venue','Use the side entrance','0 — Not confident'])
   await page.screenshot({path:`docs/evidence/resp024-review-before-${info.project.name}.png`,fullPage:true})
-  await review.getByRole('link',{name:'Edit Where will we meet?',exact:true}).click()
+  await review.getByRole('link',{name:'Edit Where will we meet?',exact:true}).focus()
+  await page.keyboard.press('Enter')
   await expect(page.getByRole('heading',{name:'Where will we meet?',exact:true})).toBeFocused()
   await page.getByRole('radio',{name:'Send a delivery',exact:true}).click(); await click('Continue')
   await expect(page.getByRole('heading',{name:'Delivery date',exact:true})).toBeVisible()
@@ -58,6 +60,7 @@ export async function reviewJourney(page: Page, info: TestInfo, flowId: string, 
   await expect(review).not.toContainText('Venue instructions'); await expect(review).not.toContainText('Use the side entrance')
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
   await page.screenshot({path:`docs/evidence/resp024-review-after-${info.project.name}.png`,fullPage:true})
+  expect((await new AxeBuilder({page}).analyze()).violations).toEqual([])
   // Lose the acknowledgement after a real commit, then retry with the same key.
   const submitted: Array<{idempotencyKey:string;answers:Array<{stepId:string;value:unknown}>}>=[]
   await page.route(`**/api/public/flows/${slug}/responses`,async route=>{
@@ -75,9 +78,9 @@ export async function reviewJourney(page: Page, info: TestInfo, flowId: string, 
   // or first respondent data, and does not submit another response.
   await page.goto(`/f/${slug}`)
   for(const [label,value] of [['Month','08'],['Day','05'],['Year','2026']]) await page.getByLabel(label,{exact:true}).fill(value)
-  await click('Continue'); await page.getByLabel('Anything we should know before 08/05/2026?',{exact:true}).fill('A separate respondent'); await click('Continue')
+  await click('Continue'); await page.getByRole('textbox',{name:'Anything we should know before 08/05/2026?',exact:true}).fill('A separate respondent'); await click('Continue')
   await page.getByRole('radio',{name:'At the venue',exact:true}).click(); await click('Continue')
-  await page.getByLabel('Venue instructions',{exact:true}).fill('Meet in reception'); await click('Continue')
+  await page.getByRole('textbox',{name:'Venue instructions',exact:true}).fill('Meet in reception'); await click('Continue')
   await page.getByRole('radio',{name:'3 out of 6, Somewhat confident',exact:true}).click(); await click('Review answers')
   await expect(review.getByRole('definition')).toHaveText(['08/05/2026','A separate respondent','At the venue','Meet in reception','3 — Somewhat confident'])
   await expect(review).not.toContainText('My own booking details'); await expect(review).not.toContainText('20.10.2026')

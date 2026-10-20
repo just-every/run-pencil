@@ -5352,6 +5352,14 @@
       "sha256": "1d2adf7c5fdf7ec480dbdcbf7494b28e9b2b328ad26984574bd19d19c2ee55de",
       "executable": false
     },
+    "src/core/features/responses/ui/review-answers.css": {
+      "sha256": "b144005cf5ad5541ff9b6ee228dcb9c5a6e1f103512143c0fcdc663213281c8c",
+      "executable": false
+    },
+    "src/core/features/responses/ui/ReviewAnswers.tsx": {
+      "sha256": "e47647335415998019a855c179100953978463cb625b86e15e63b5fb753d297a",
+      "executable": false
+    },
     "src/core/features/responses/ui/SaveResponse.tsx": {
       "sha256": "412564e31cf8675625708bebe07208b2442a3b774b723dfc2130e82746bea7cd",
       "executable": false
@@ -6554,6 +6562,10 @@
     },
     "tests/e2e/review-corrections.spec.ts": {
       "sha256": "512c76622559e133cb11068840586757d8e249234398769b5155610028dd7236",
+      "executable": false
+    },
+    "tests/e2e/review-journey.ts": {
+      "sha256": "eaa0f067875266a56a97758e126f0a68625a9f0e136822d1e27ce1ffcf05d64c",
       "executable": false
     },
     "tests/e2e/revision-comparison-http.spec.ts": {
