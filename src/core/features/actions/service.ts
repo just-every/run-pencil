@@ -1,3 +1,4 @@
+import { readActionReminders } from './reminders'
 import { ulid } from 'ulid'
 import { ConflictError, NotFoundError, ValidationError } from '../../shared/errors'
 import { legalTransitions, stateLabels, editableStates, awaitingReview, type ActionDetail, type ActionEvent, type ActionState, type ActionSummary, type CreateActionInput, type EditActionInput, type EvidenceFigures, type Measurement, type Verdict } from './model'
@@ -20,7 +21,7 @@ export function workspaceToday(timeZone: string, now = new Date()) {
 }
 
 export class ActionService {
-  constructor(private readonly db: D1Database) {}
+  constructor(private readonly db: D1Database, private readonly reminderSenderFailure: string | null = null, private readonly reminderMailSuppressed = false) {}
 
   private async timeZone(workspaceId: string) {
     const row = await this.db.prepare('SELECT time_zone AS timeZone FROM workspaces WHERE id = ?').bind(workspaceId).first<{ timeZone: string }>()
@@ -67,6 +68,7 @@ export class ActionService {
     const frozen = evidence.results[0] as { flowId: string; revisionId: string; questionId: string | null; figures: string; capturedAt: string }
     return {
       ...this.summary(row, today),
+      reminders: await readActionReminders(this.db,workspaceId,actionId,today,this.reminderSenderFailure,this.reminderMailSuppressed),
       rationale: row.rationale, source: row.source, analysisId: row.analysisId, version: row.version, createdAt: row.createdAt,
       metric: { name: row.metricName, unit: row.metricUnit, direction: row.metricDirection, baselineValue: row.baselineValue, baselineSource: row.baselineSource, baselineObservedAt: row.baselineObservedAt },
       evidence: { ...frozen, figures: JSON.parse(frozen.figures) as EvidenceFigures },

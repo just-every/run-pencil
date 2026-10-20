@@ -1,3 +1,4 @@
+import { ActionReminderDispatcher } from '../features/notifications/action-reminder-dispatcher'
 import { RetentionService } from '../features/retention/service'
 import { RestrictedAccess } from '../features/restricted-access/service'
 import { TrafficService } from '../features/traffic'
@@ -76,6 +77,7 @@ export function createPencilServices(platform: PencilPlatform) {
     collectors,
     connections: new IntegrationConnections(platform),
     notifications: {
+      actionReminders: new ActionReminderDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,senderFailure,mailProvider),
       digest: new DigestDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,undefined,senderFailure,mailProvider),
       preferences: new NotificationRepository(platform.databaseBinding, notificationSenderError(from,mailProvider) ?? senderFailure, mailProvider === 'local-development', platform.configuration.isHostedDemo),
       dispatcher: new NotificationDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,workspaceId => readNotificationBrand(platform.databaseBinding,workspaceId),senderFailure,mailProvider),
@@ -93,7 +95,7 @@ export function createPencilServices(platform: PencilPlatform) {
     attention: new AnalysisAttention(platform.databaseBinding),
     rewrites: new DraftRewrites(platform.databaseBinding, platform.ai),
     analysis: new AnalysisService(platform.databaseBinding, platform.ai),
-    actions: { records: new ActionService(platform.databaseBinding), tasks: new TaskDeliveries(platform.databaseBinding, platform.configuration.task, platform.configuration.appOrigin) },
+    actions: { records: new ActionService(platform.databaseBinding, notificationSenderError(from,mailProvider) ?? senderFailure, mailProvider === 'local-development'), tasks: new TaskDeliveries(platform.databaseBinding, platform.configuration.task, platform.configuration.appOrigin) },
   }
 }
 

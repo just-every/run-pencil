@@ -1,3 +1,4 @@
+import { ActionReminders } from './ActionReminders'
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
@@ -62,6 +63,7 @@ export function ActionPage({ actionId }: { actionId: string }) {
         <EvidenceFigures figures={action.evidence.figures} />
         <p className="muted">Copied from results on {new Date(action.evidence.capturedAt).toLocaleString('en', { timeZone })}. Later responses do not change these figures.</p>
       </section>
+      <ActionReminders reminders={action.reminders} />
       <ActionMeasurements action={action} timeZone={timeZone} onChanged={() => void load()} />
       <ActionTask actionId={action.id} status={action.task} onChanged={() => void load()} />
       <ActionHistory history={action.history} timeZone={timeZone} />

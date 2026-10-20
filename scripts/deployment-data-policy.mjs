@@ -43,6 +43,8 @@ const retained = {
   // Actions hold operator-written text and frozen aggregate counts, never answers or response IDs. The task key is
   // never stored, so nothing here is a credential; the confirmed payload and every attempt travel as recorded.
   actions: 'id workspace_id title rationale owner_operator_id state verdict review_date source analysis_id metric_name metric_unit metric_direction baseline_value baseline_source baseline_observed_at version last_event_id created_by_operator_id created_at updated_at',
+  action_reminders: 'id action_id operator_id kind due_date review_date status idempotency_key attempts first_attempt_at last_attempt_at available_at reason provider_id provider provider_code created_at updated_at',
+  action_reminder_attempts: 'id reminder_id ordinal event provider provider_code created_at',
   action_evidence: 'action_id flow_id revision_id question_stable_id figures_json captured_at',
   action_events: 'id action_id kind from_state to_state note changes_json operator_id created_at',
   action_measurements: 'id action_id flow_id revision_id observed_value unit observed_at operator_id created_at',
@@ -187,6 +189,8 @@ const retained = {
 const nul = { type: 'null' };
 const captured = { local_mail_outbox: ['message_json'], rer_mail_development_outbox: ['message'], rer_ai_development_outbox: ['record'] };
 export const exclusions = {
+  // Retain reminder history while refusing queued and future replay for restored actions.
+  actions: { reminders_enabled: { type: 'integer', value: '0' } },
   form_access_rules: {password_verifier:nul},
   respondent_saves: { token_hash: nul, delivery_email: nul },
   digest_deliveries: { replay_enabled: { type: 'integer', value: '0' }, retry_authorized: { type: 'integer', value: '0' } },

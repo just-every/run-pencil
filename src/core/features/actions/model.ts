@@ -1,3 +1,4 @@
+import type { ActionReminders } from './reminders'
 import { z } from 'zod'
 import { resourceId } from '../../shared/validation'
 import { actionStates, type ActionState, type Verdict } from './states'
@@ -46,6 +47,7 @@ export type ActionSummary = {
 export type ActionEvent = { id: string; kind: 'created' | 'transition' | 'edited' | 'measurement'; fromState: ActionState | null; toState: ActionState | null; note: string | null; changes: Record<string, { from: unknown; to: unknown }> | null; operator: string | null; createdAt: string }
 export type Measurement = { id: string; flowId: string; flowTitle: string; revisionId: string | null; revisionNumber: number | null; observedValue: number; unit: string; observedAt: string; operator: string | null; createdAt: string; difference: number; direction: 'desired' | 'undesired' | 'unchanged' }
 export type ActionDetail = ActionSummary & {
+  reminders: ActionReminders
   rationale: string; source: 'manual' | 'analysis'; analysisId: string | null; version: number
   metric: ActionSummary['metric'] & { baselineValue: number; baselineSource: string; baselineObservedAt: string }
   evidence: { flowId: string; revisionId: string; questionId: string | null; figures: EvidenceFigures; capturedAt: string }

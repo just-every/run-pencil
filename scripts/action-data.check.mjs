@@ -7,7 +7,7 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { initialize, exportData, importData } from './deployment-data.mjs'
 
-test('archive roundtrip keeps actions, history, evidence, measurements and an unknown task delivery unknown, and restoring sends nothing', async () => {
+test('archive roundtrip keeps actions, history, evidence, measurements and an unknown task delivery unknown, plus every reminder occurrence/attempt without replay, and restoring sends nothing', async () => {
   const directory = mkdtempSync(join(process.env.PENCIL_VERIFICATION_TMPDIR ?? tmpdir(), 'pencil-action-data-'))
   const source = join(directory, 'source.sqlite'), archive = join(directory, 'data.json'), target = join(directory, 'target.sqlite')
   const db = new DatabaseSync(source)
@@ -33,6 +33,12 @@ test('archive roundtrip keeps actions, history, evidence, measurements and an un
     const payload = JSON.stringify({ idempotencyKey: 'pencil-action-a', action: { title: action.title, reportLink: 'https://forms.example.test/app/actions/a' } })
     insert('action_task_deliveries', { action_id: 'a', idempotency_key: 'pencil-action-a', state: 'unknown', payload_json: payload, payload_sha256: 'a'.repeat(64), action_version: 2, confirmed_by_operator_id: 'o', confirmed_at: stamp, in_flight_attempt_id: null, remote_task_id: null, updated_at: stamp })
     insert('action_task_attempts', { id: 't1', action_id: 'a', ordinal: 1, idempotency_key: 'pencil-action-a', payload_sha256: 'a'.repeat(64), operator_id: 'o', started_at: stamp, outcome: 'unknown', outcome_class: 'network', http_status: null, remote_task_id: null, finished_at: stamp })
+    for (const status of ['pending','sending','sent','failed','unknown','cancelled']) {
+      insert('action_reminders', {id:status,action_id:'a',operator_id:'o',kind:'overdue',due_date:`2026-12-${String(8+['pending','sending','sent','failed','unknown','cancelled'].indexOf(status)).padStart(2,'0')}`,review_date:'2026-12-01',status,idempotency_key:`reminder:${status}`,attempts:1,first_attempt_at:stamp,last_attempt_at:stamp,available_at:stamp,reason:'Retained reminder reason',provider_id:`receipt:${status}`,provider:'sendgrid',provider_code:'provider_uncertain',created_at:stamp,updated_at:stamp})
+      insert('action_reminder_attempts', {id:`attempt:${status}`,reminder_id:status,ordinal:1,event:'started',created_at:stamp})
+    }
+    const reminderRows = db.prepare('SELECT * FROM action_reminders ORDER BY id').all()
+    const reminderAttempts = db.prepare('SELECT * FROM action_reminder_attempts ORDER BY id').all()
     db.close()
     const summary = exportData(source, archive)
     const importedSummary = importData(archive, target)
@@ -43,12 +49,20 @@ test('archive roundtrip keeps actions, history, evidence, measurements and an un
     assert.equal(readFileSync(archive, 'utf8'), readFileSync(second, 'utf8'))
     const restored = new DatabaseSync(target)
     try {
-      assert.deepEqual({ ...restored.prepare('SELECT * FROM actions').get() }, action)
+      assert.deepEqual({ ...restored.prepare('SELECT * FROM actions').get() }, {...action,reminders_enabled:0})
       assert.deepEqual({ ...restored.prepare('SELECT state, idempotency_key, payload_json, remote_task_id FROM action_task_deliveries').get() }, { state: 'unknown', idempotency_key: 'pencil-action-a', payload_json: payload, remote_task_id: null })
       assert.deepEqual(restored.prepare('SELECT id, outcome FROM action_task_attempts').all().map(row => ({ ...row })), [{ id: 't1', outcome: 'unknown' }])
       assert.equal(restored.prepare('SELECT count(*) n FROM action_events').get().n, 2)
       assert.equal(restored.prepare('SELECT observed_value FROM action_measurements').get().observed_value, 52)
+      assert.deepEqual(restored.prepare('SELECT * FROM action_reminders ORDER BY id').all(),reminderRows)
+      assert.deepEqual(restored.prepare('SELECT * FROM action_reminder_attempts ORDER BY id').all(),reminderAttempts)
       assert.deepEqual(restored.prepare('PRAGMA foreign_key_check').all(), [])
+      // The same FK path used by action erasure removes its full delivery graph.
+      restored.prepare('DELETE FROM action_task_attempts').run()
+      for (const table of ['action_task_deliveries','action_events','action_measurements','action_evidence']) restored.exec(`DELETE FROM ${table}`)
+      restored.prepare('DELETE FROM actions').run()
+      assert.equal(restored.prepare('SELECT count(*) n FROM action_reminders').get().n,0)
+      assert.equal(restored.prepare('SELECT count(*) n FROM action_reminder_attempts').get().n,0)
     } finally { restored.close() }
     assert.deepEqual(requests, [])
   } finally {
