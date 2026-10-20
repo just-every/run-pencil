@@ -11,7 +11,7 @@ import { defaultFlowPolicies } from '../../src/core/shared/flowPolicies'
 import { visiblePath } from '../../src/core/shared/flowPath'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
-contract('FLOW-016', 'publication freezes evaluated policy configuration and prior sessions and receipts retain their original branch selection', async () => {
+contract(['FLOW-016','RESP-024'], 'publication freezes branch and review policies while prior sessions and receipts retain their original settings', async () => {
   const f = await foundationFixture('snapshot-policy')
   await f.add({ kind: 'question', questionType: 'rating', prompt: 'Rating', required: true })
   await f.add({ kind: 'completion', questionType: null, prompt: 'First matching completion' })
@@ -24,6 +24,7 @@ contract('FLOW-016', 'publication freezes evaluated policy configuration and pri
   ] })
   await f.publish()
   const original = await f.start()
+  expect(original.flow.reviewBeforeSubmit).toBe(false)
   expect(visiblePath(original.flow, { [question.id]: 2 }).at(-1)!.id).toBe(last.id)
   const originalRow = await env.DB.prepare('SELECT policy_snapshot_json FROM flow_revisions WHERE id = ?').bind(original.revisionId).first<{ policy_snapshot_json: string }>()
   expect(JSON.parse(originalRow!.policy_snapshot_json)).toEqual(defaultFlowPolicies)
@@ -32,8 +33,12 @@ contract('FLOW-016', 'publication freezes evaluated policy configuration and pri
   const changed = new FlowService(new FlowRepository(platform.database, env.DB), new ResponseRepository(platform.database, env.DB, eraseResponseAndImportCustody), changedPolicy)
   const preview = await changed.previewDraft({ ...f.flow, answers: { [question.id]: 5 } })
   expect(preview.screens[0].nextStepId).toBe(last.id)
+  const reviewDraft = await f.draft()
+  await f.services.flows.updateFormSettings({...f.flow,expectedVersion:reviewDraft.flow.draftVersion,settings:{...reviewDraft.formSettings!,reviewBeforeSubmit:true}})
   await changed.publishDraft({ ...f.flow, expectedVersion: (await f.draft()).flow.draftVersion })
   const next = await f.start()
+  expect(next.flow.reviewBeforeSubmit).toBe(true)
+  expect(original.flow.reviewBeforeSubmit).toBe(false)
   expect(next.flow.branchSelection).toBe('last-matching-rule')
   expect(visiblePath(next.flow, { [question.id]: 5 }).at(-1)!.id).toBe(last.id)
   expect(visiblePath(next.flow, { [question.id]: 2 }).at(-1)!.id).toBe(last.id)

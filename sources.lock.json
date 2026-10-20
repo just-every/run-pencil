@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "07050295afbf96f3304665e3a2fdca15c2a6f655cf75602468612d9505bf2976",
+      "sha256": "d7bd281fcb7a9629af7999317878a3b2b365319d3c4d3caf8388c6813e31742f",
       "executable": false
     },
     "DEMO.md": {
@@ -902,6 +902,30 @@
     },
     "docs/evidence/ledger-search-2026-10-20.json": {
       "sha256": "e7bb4ff2624f02bdcee5a99521d4c7d3596adb74145fc3ce5037f71ae9e16437",
+      "executable": false
+    },
+    "docs/evidence/resp024-builder-desktop.png": {
+      "sha256": "5634596588c5020f3c2e5fd90d4aa067bb5caaf55b5bb8d06d9bebf3b107bcda",
+      "executable": false
+    },
+    "docs/evidence/resp024-builder-mobile.png": {
+      "sha256": "d0c5298a92596b1243744b09b449d28ee2e9658b811d9e7dba51a4088379825b",
+      "executable": false
+    },
+    "docs/evidence/resp024-review-after-desktop.png": {
+      "sha256": "dbd3753471f9c974a1d3723d921a256a9e75235a402dc62b128be4d3223c604e",
+      "executable": false
+    },
+    "docs/evidence/resp024-review-after-mobile.png": {
+      "sha256": "23cc1bdb0cf11636a8c5ab45f350abcf47910f1885dbf581b537d6693704e01e",
+      "executable": false
+    },
+    "docs/evidence/resp024-review-before-desktop.png": {
+      "sha256": "cf0f12800ab4a7a6e8d77185ac1086ed81308bca725c75feeb4cc77cbcdcb718",
+      "executable": false
+    },
+    "docs/evidence/resp024-review-before-mobile.png": {
+      "sha256": "d26c12ec45e500b30bc2feb90dbbc7dd9675a9e33ac6c73617de2c0cb4b45cd8",
       "executable": false
     },
     "docs/FIRST-RELEASE.md": {
@@ -7105,7 +7129,7 @@
       "executable": false
     },
     "tests/runtime/policy-snapshot.worker.test.ts": {
-      "sha256": "23e1fb23489a72873426530d81ab116e5cff2c9b32e647cdf4f5ee9e88cb8477",
+      "sha256": "5e44bca5891edfa265ae7df91b826abef1e7316c925509f04a6c92e1fb590d90",
       "executable": false
     },
     "tests/runtime/private-auth-freshness.worker.test.ts": {
