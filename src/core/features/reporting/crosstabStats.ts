@@ -30,7 +30,7 @@ export function crosstabTable(counts: CrosstabCounts, threshold: number, multipl
   const total = (count: number, withheld: boolean): CrosstabTotal => withheld ? { withheld: true } : { withheld: false, count }
   const notes: string[] = []
   if (multipleSelect) notes.push('Multiple select: a response counts in each option it chose, so row or column shares may total more than 100%.')
-  if (suppressedCells) notes.push(`${suppressedCells} ${suppressedCells === 1 ? 'cell has' : 'cells have'} fewer than ${threshold} responses and ${suppressedCells === 1 ? 'is' : 'are'} suppressed (ANLY-005). The totals, shares and chi-square that would reveal ${suppressedCells === 1 ? 'it' : 'them'} are withheld. The ledger and exports are unchanged.`)
+  if (suppressedCells) notes.push(`${suppressedCells} ${suppressedCells === 1 ? 'cell has' : 'cells have'} fewer than ${threshold} responses and ${suppressedCells === 1 ? 'is' : 'are'} suppressed (ANLY-005). Totals, shares and chi-square that would reveal a suppressed cell within this table are withheld. This protects only the table: withheld figures can be derived from the answer summaries, response count, other results panels, ledger and exports, which stay complete for operators who may read this form’s responses. Pencil makes no non-reconstruction guarantee beyond this table.`)
   return {
     rows: counts.rows, columns: counts.columns, cells, threshold, suppressedCells, notes,
     rowTotals: counts.rowTotals.map((count, i) => total(count, rowWithheld[i])),

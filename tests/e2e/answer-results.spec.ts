@@ -1,3 +1,4 @@
+import { operatorDisclosureExposure } from './disclosure-exposure'
 import { appHeaders } from './api-headers'
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -12,6 +13,7 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
     if (!process.env.PENCIL_CAPTURE_DIR) return
     await mkdir(process.env.PENCIL_CAPTURE_DIR, { recursive: true })
     await page.screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-results-${name}.png`), fullPage: true })
+    if (name === 'operator-exposure') await page.locator('section.crosstab').screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-results-exposure-note.png`) })
   }
   await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
   const email = operatorEmail()
@@ -96,4 +98,5 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
   await capture('after-erasure')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   expect((await new AxeBuilder({ page }).include('.operator-content').analyze()).violations).toEqual([])
+  await operatorDisclosureExposure(page, call, `disclosure-${info.project.name}-${Date.now()}`, capture)
 })

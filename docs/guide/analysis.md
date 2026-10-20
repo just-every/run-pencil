@@ -81,7 +81,7 @@ A completed run shows:
 - **Primary finding**: the theme supported by the most responses, with its count, its share of the responses read, and the provider's summary labelled **Analysis**. A summary is the model's wording, never a quote.
 - **Quotes**: text in quotation marks is an exact excerpt of a stored answer. Pencil checks the exact characters against the answer before the run completes. **Response …** opens that response's retained answers; **See the responses** lists every response behind the theme.
 - **Other themes**, ranked by how many responses support them.
-- **Withheld themes**: a theme supported by fewer responses than the disclosure threshold (5 by default) shows no title, excerpt or breakdown, because a small group can identify people. A theme with exactly the threshold is shown. This only affects the analysis view: your results, ledger and exports are unchanged.
+- **Withheld themes**: a theme supported by fewer responses than the disclosure threshold (5 by default) shows no title, excerpt or breakdown, because a small group can identify people. A theme with exactly the threshold is shown. Withheld themes affect the analysis view; Results crosstabs use the same threshold for small cells. Answer summaries, the ledger and exports are unchanged.
 - **Recommendation**: at most one proposed action, from the highest-ranked theme that can be shown, with the provider's rationale (labelled **Analysis**), confidence, expected impact and effort.
 - **This run**: the questions read, where they were sent, the provider's reported usage and cost, and the policies the run used.
 

@@ -4,7 +4,9 @@ import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
 import { developmentInbox } from '../helpers/mail-capture.mjs'
 import { devKeyHeaders } from '../helpers/dev-key.mjs'
-import type { BuilderDraft, Ledger, WorkspaceSettings } from '../../src/core/app/api'
+import { collectDisclosureScenario } from '../disclosure-scenario'
+import { csvRows } from '../e2e/export-helpers'
+import type { FlowResults, QuestionReport, LedgerResponse, BuilderDraft, Ledger, WorkspaceSettings } from '../../src/core/app/api'
 import type { CollectorService } from '../../src/core/features/collectors'
 import type { Crosstab, TrendReport } from '../../src/core/features/reporting'
 
@@ -97,7 +99,7 @@ contract(['DIST-017','RSLT-007','RSLT-006','LEDG-005'],'named collectors enforce
   expect(full.chiSquare).toMatchObject({offered:true,withheld:false,degreesOfFreedom:2,flagged:true});if(!full.chiSquare.offered||full.chiSquare.withheld)throw new Error('chi-square missing')
   expect(full.chiSquare.statistic).toBeCloseTo(5.529262,5);expect(full.chiSquare.pValue).toBeCloseTo(Math.exp(-5.529262258/2),6);expect(full.chiSquare.minimumExpected).toBeCloseTo(13*19/43,6)
   expect(full.notes).toContain('Rows (Which plan?): Unanswered — none in this selection.')
-  // Default analysis.disclosure.v1 threshold 5: the 3-response cell is suppressed; 5 is shown; anything that would back it out is withheld.
+  // Default analysis.disclosure.v1 threshold 5: the 3-response cell is suppressed; 5 is shown; table totals and shares that would back it out are withheld.
   await call('/api/app/analysis/policies',{...policies,disclosureThreshold:5},'PUT')
   const guarded=await cross(`question:${plan.id}`,`question:${renew.id}`)
   expect(guarded.threshold).toBe(5);expect(guarded.suppressedCells).toBe(1);expect(guarded.cells[2][0]).toEqual({suppressed:true});expect(counts(guarded)).toEqual([[10,5],[6,9],[null,10]])
@@ -126,4 +128,61 @@ contract(['DIST-017','RSLT-007','RSLT-006','LEDG-005'],'named collectors enforce
   const sav=await read<{header:{n_cases:number};rows:Array<Record<string,unknown>>}>('sav',await exported('sav'));expect(sav.header.n_cases).toBe(43);expect(sav.rows.map(row=>row.response_id)).toEqual(csvIds)
   expect(sav.rows.map(row=>row.hidden_tier??'')).toEqual(await Promise.all(csvIds.map(async id=>(await env.DB.prepare("SELECT COALESCE(json_extract(response_context_json,'$.hidden.tier'),'') AS tier FROM responses WHERE id=?").bind(id).first<{tier:string}>())!.tier)))
   await call('/api/app/analysis/policies',{...policies,disclosureThreshold:5},'PUT')
+
+  // ct exposure phase: a different matrix with Scale = 8, including Renew = 3 and Churn = 5.
+  const exposure = await collectDisclosureScenario(call, 'operator-disclosure')
+  const exposureTable = await call<Crosstab>(exposure.path + '/crosstab?' + new URLSearchParams({ revisionId: exposure.revisionId, rows: `question:${exposure.planId}`, columns: `question:${exposure.renewalId}` }))
+  expect(exposureTable.revision.id).toBe(exposure.revisionId)
+  expect(exposureTable.filter).toEqual({ revisionId: exposure.revisionId })
+  expect(counts(exposureTable)).toEqual([[10,5],[10,10],[null,5]])
+  expect(exposureTable.rowTotals[2]).toEqual({ withheld: true })
+  expect(exposureTable.columnTotals[0]).toEqual({ withheld: true })
+  expect(exposureTable.total).toEqual({ withheld: true })
+  expect(exposureTable.chiSquare).toMatchObject({ offered: true, withheld: true })
+  const summaries = await call<QuestionReport[]>(exposure.path + '/questions?revisionId=' + exposure.revisionId)
+  const planSummary = summaries.find(question => question.id === exposure.planId)!
+  expect(planSummary.answered).toBe(43)
+  expect(planSummary.distribution.find(bucket => bucket.label === 'Scale')).toMatchObject({ count: 8 })
+  const results = await call<FlowResults>(exposure.path + '/results?revisionId=' + exposure.revisionId)
+  expect(results.revision.id).toBe(exposure.revisionId); expect(results.completedResponses).toBe(43)
+  const selected = await call<Ledger>(exposure.path + '/ledger?' + new URLSearchParams(exposure.filter))
+  expect(selected.total).toBe(3)
+  expect(selected.responses.map(row => row.id).sort()).toEqual([...exposure.exposedIds].sort())
+  for (const row of selected.responses) {
+    expect(row.revisionId).toBe(exposure.revisionId); expect(row.state).toBe('released')
+    expect(row.completedAt <= exposureTable.cutoff && row.releasedAt! <= exposureTable.cutoff).toBe(true)
+    expect(row.answers.find(answer => answer.stepId === exposure.planId)?.value).toBe(exposure.scaleId)
+    expect(row.answers.find(answer => answer.stepId === exposure.renewalId)?.value).toBe(exposure.renewId)
+  }
+  const exposureExport = async (format: string, filter: Record<string, string> = exposure.filter) => {
+    let { token } = await call<{ token: string }>(exposure.path + '/responses/export/start?' + new URLSearchParams({ format, ...filter }))
+    const parts: Uint8Array[] = []
+    while (token) {
+      const response = await request(exposure.path + '/responses/export', { token }); expect(response.status).toBe(200)
+      parts.push(new Uint8Array(await response.arrayBuffer())); token = response.headers.get('x-export-next') ?? ''
+    }
+    return new Uint8Array(await new Blob(parts).arrayBuffer())
+  }
+  const snapshot = JSON.parse(new TextDecoder().decode(await exposureExport('json'))) as { responses: LedgerResponse[]; filter: unknown }
+  expect(snapshot.filter).toMatchObject(exposure.filter)
+  expect(snapshot.responses).toEqual(selected.responses.map(row => ({ ...row, answers: row.answers.map(answer => ({ ...answer, value: answer.stepId === exposure.planId ? 'scale' : 'renew' })) })))
+  const [head, ...csv] = csvRows(new TextDecoder().decode(await exposureExport('csv')))
+  expect(csv).toHaveLength(3)
+  expect(csv.map(row => row[head.indexOf('response_id')])).toEqual(selected.responses.map(row => row.id))
+  for (const row of csv) expect(JSON.parse(row[head.indexOf('answers_json')])).toEqual(snapshot.responses.find(item => item.id === row[0])!.answers)
+  const exposureWorkbook = await read<{ sheets: Array<{ rows: unknown[][] }> }>('xlsx', await exposureExport('xlsx'))
+  expect(exposureWorkbook.sheets[0].rows[0]).toEqual(head)
+  for (const [index, row] of exposureWorkbook.sheets[0].rows.slice(1).entries()) {
+    expect(row.map(value => String(value ?? '')).filter((_, i) => head[i] !== 'cutoff')).toEqual(csv[index].filter((_, i) => head[i] !== 'cutoff'))
+  }
+  expect(exposureWorkbook.sheets[0].rows).toHaveLength(4)
+  const exposureSav = await read<{ rows: Array<Record<string, unknown>> }>('sav', await exposureExport('sav'))
+  expect(exposureSav.rows.map(row => row.response_id)).toEqual(selected.responses.map(row => row.id))
+  const [metadataHead, ...metadata] = exposureWorkbook.sheets[1].rows
+  for (const [stepId, choiceId] of [[exposure.planId, exposure.scaleId], [exposure.renewalId, exposure.renewId]]) {
+    const entry = metadata.find(row => row[metadataHead.indexOf('step_id')] === stepId && row[metadataHead.indexOf('choice_id')] === choiceId)!
+    for (const row of exposureSav.rows) expect(row[String(entry[metadataHead.indexOf('sav_variable')])]).toBe(entry[metadataHead.indexOf('sav_code')])
+  }
+  const raw = JSON.parse(new TextDecoder().decode(await exposureExport('json', { revisionId: exposure.revisionId }))) as { responses: LedgerResponse[] }
+  expect(raw.responses.map(row => row.id).sort()).toEqual([...exposure.receipts].sort())
 },120000)

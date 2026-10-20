@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "1667505ec87131e0acab2705ee8ac00cb11027f6fcab7fa9796c8ca7fe9c6595",
+      "sha256": "2685f436c6e7b7f7585fbfb153a348e78d8ca77d0396e683359fcceca0753d10",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "7ad2c3f441005a23743b55b89876defef7408d0a022ee5d5873410da12f1cc19",
+      "sha256": "4f6ba25f52daa721f53e1639ad1d0dfa8f9d056554ca130b9a1b103a663b0c50",
       "executable": false
     },
     "DEMO.md": {
@@ -973,7 +973,7 @@
       "executable": false
     },
     "docs/guide/analysis.md": {
-      "sha256": "ef96f82e5607f1cb4665a2dc4160bc0f300c3667c904cb2d11d4f5925b9efb66",
+      "sha256": "83c3c8ec54aedb8fe6fbc9062c939473943d67ecd7a05afdf4cefe8efa5f7541",
       "executable": false
     },
     "docs/guide/backup.md": {
@@ -5317,7 +5317,7 @@
       "executable": false
     },
     "src/core/features/reporting/crosstabStats.ts": {
-      "sha256": "df0374320e31b4206bc903da02e91e3a16243f337ffacb4712b8101c1b2276e9",
+      "sha256": "aa6aec567d4140816e96523d8dc8dc013ca3a0df971371ecfbdc3c6d97694f53",
       "executable": false
     },
     "src/core/features/reporting/cursor.ts": {
@@ -6416,6 +6416,10 @@
       "sha256": "ed9d34d29354f61cd17f25731e9675556b5834a6f37606522f520c2a7ceef666",
       "executable": false
     },
+    "tests/disclosure-scenario.ts": {
+      "sha256": "882b9f8fe46b700f62ed32c420679514b6b4cc8b5b9d4a9e5227ea6f00bd0849",
+      "executable": false
+    },
     "tests/e2e/accessibility-foundation.spec.ts": {
       "sha256": "9fa1e591fcdbea3f9a8da7d1e7a46581f57c2bdf353ec68dc3e0e68a944c8925",
       "executable": false
@@ -6437,7 +6441,7 @@
       "executable": false
     },
     "tests/e2e/answer-results.spec.ts": {
-      "sha256": "504d469801cfa645bd1bbdd9d06a1bdc284da6e666ee1e742e18e528eb97b6d5",
+      "sha256": "b9a19b2a4742bfa8ce932de7aaecc32fd04467ff19fd0e98a2459503ac65ffe6",
       "executable": false
     },
     "tests/e2e/api-headers.ts": {
@@ -6494,6 +6498,10 @@
     },
     "tests/e2e/date-format.spec.ts": {
       "sha256": "8113c26bfaa5121dadbd0d88180d923495df279e73d5b62d3e9a842ae4745ef8",
+      "executable": false
+    },
+    "tests/e2e/disclosure-exposure.ts": {
+      "sha256": "68ae710334e6bedd46f142896d85714db40adaf95e07ffaa4cdc9cea49aff7c9",
       "executable": false
     },
     "tests/e2e/distribution-foundation.spec.ts": {
@@ -7073,7 +7081,7 @@
       "executable": false
     },
     "tests/runtime/collectors-trends.worker.test.ts": {
-      "sha256": "a0cd1ddee533c559936cb2c9b73b82a726722319c1ecf0a61dfae45b48628ac8",
+      "sha256": "084667db832d50a7c2037c7659a6f79d3f81dd6abbabc899c75c76eb7d5d5335",
       "executable": false
     },
     "tests/runtime/completion-redirects.worker.test.ts": {
