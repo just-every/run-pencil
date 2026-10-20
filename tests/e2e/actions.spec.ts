@@ -7,19 +7,26 @@ import { operatorEmail } from './auth-identity'
 import { contract } from './contract'
 import { expect, openMailLink, test } from './fixtures'
 import { startTaskReceiver } from './task-receiver'
-import type { BuilderDraft } from '../../src/core/app/api'
+import type { BuilderDraft, WorkspaceSettings } from '../../src/core/app/api'
 
 async function axe(page: Page) {
   expect((await new AxeBuilder({ page }).analyze()).violations.map(violation => violation.id)).toEqual([])
 }
 
-contract(['ACT-001', 'ACT-002', 'ACT-003', 'ACT-005', 'ACT-006', 'ACT-007', 'ACT-008'], 'an operator turns a question into an action, confirms its task, measures it, marks it effective and closes it; a past review date only shows review due', async ({ page }, info) => {
+contract(['ACT-001', 'ACT-002', 'ACT-003', 'ACT-005', 'ACT-006', 'ACT-007', 'ACT-008', 'ACT-009'], 'ACT-009 shows honest email-only owner reminders that stop at the verdict; an operator turns a question into an action, confirms its task, measures it, marks it effective and closes it; a past review date only shows review due', async ({ page }, info) => {
   test.setTimeout(180_000)
   const viewport = info.project.name === 'mobile' ? 'mobile' : 'desktop'
   const capture = async (step: string) => {
     if (!process.env.PENCIL_CAPTURE_DIR) return
     await mkdir(process.env.PENCIL_CAPTURE_DIR, { recursive: true })
     await page.screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${viewport}-${step}.png`), fullPage: true })
+  }
+  const reminders = page.getByRole('region', { name: 'Owner reminders', exact: true })
+  const captureReminders = async (state: 'scheduled' | 'stopped') => {
+    if (!process.env.PENCIL_CAPTURE_DIR) return
+    await mkdir(process.env.PENCIL_CAPTURE_DIR, { recursive: true })
+    await reminders.scrollIntoViewIfNeeded()
+    await page.screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `act009-reminders-${state}-${page.viewportSize()!.width}.png`) })
   }
   const receiver = await startTaskReceiver()
   try {
@@ -67,6 +74,13 @@ contract(['ACT-001', 'ACT-002', 'ACT-003', 'ACT-005', 'ACT-006', 'ACT-007', 'ACT
     await page.getByRole('button', { name: 'Save action' }).click()
     await expect(page.getByRole('heading', { name: `Open a second till ${suffix}` })).toBeVisible()
     await expect(page.getByText('Planned · recommendation written by an operator')).toBeVisible()
+    const workspace = await call<WorkspaceSettings>('/api/app/workspace')
+    await expect(reminders).toBeVisible()
+    await expect(reminders.getByText(/Email is suppressed/)).toBeVisible()
+    await expect(reminders.getByText(/Email only\./)).toContainText(`${workspace.sendingWindowStart}–${workspace.sendingWindowEnd} (${workspace.timeZone})`)
+    await expect(reminders.getByText(/wait until the next opening/)).toBeVisible()
+    await expect(reminders.getByText(/Pencil never sets one/)).toBeVisible()
+    await captureReminders('scheduled')
     await axe(page)
     await capture('action-planned')
     expect(receiver.requests).toEqual([])
@@ -124,6 +138,9 @@ contract(['ACT-001', 'ACT-002', 'ACT-003', 'ACT-005', 'ACT-006', 'ACT-007', 'ACT
     await page.getByLabel('Note for the next step (optional)').fill('Lunch queues halved after the second till opened.')
     await page.getByRole('button', { name: 'Mark effective' }).click()
     await expect(page.getByText('Effective · recommendation written by an operator')).toBeVisible()
+    await expect(reminders.getByText(/Reminders stopped.*verdict/)).toBeVisible()
+    await expect(reminders.getByText(/^Next scheduled review reminder:/)).toHaveCount(0)
+    await captureReminders('stopped')
     await page.getByRole('button', { name: 'Close action' }).click()
     await expect(page.getByText('Closed · verdict effective · recommendation written by an operator')).toBeVisible()
     await expect(page.getByText('A closed action stays closed.')).toBeVisible()
