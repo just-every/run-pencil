@@ -134,3 +134,8 @@ export class AnalysisRepository {
     return results
   }
 }
+
+/** The workspace's analysis.disclosure.v1 threshold (ANLY-005), which other reports also apply. */
+export async function disclosureThreshold(db: D1Database, workspaceId: string) {
+  return (await new AnalysisRepository(db).policies(workspaceId)).disclosureThreshold
+}

@@ -1,0 +1,19 @@
+/* RSLT-006 crosstab: the table scrolls inside its card so the page never scrolls sideways. */
+.crosstab { margin-top: 28px; }
+.crosstab > h2 { margin: 6px 0 8px; font-size: 32px; line-height: 1.08; }
+.crosstab-form { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; align-items: end; gap: 12px 16px; margin: 16px 0; }
+.crosstab-form .inspector-field { margin: 0; min-width: 0; }
+.crosstab-form .primary-button { min-height: 44px; }
+@media (max-width: 760px) { .crosstab-form { grid-template-columns: minmax(0, 1fr); } }
+.crosstab-label { display: inline-block; margin: 0 0 8px; padding: 2px 10px; border: 1px solid var(--line); border-radius: 999px; font-size: 14px; }
+.crosstab-scroll { max-width: 100%; overflow-x: auto; }
+.crosstab-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.crosstab-cutoff { margin: 0 0 8px; color: var(--subtle); font-size: 14px; overflow-wrap: anywhere; }
+.crosstab-table caption { margin-bottom: 8px; text-align: left; color: var(--subtle); font-size: 14px; }
+.crosstab-table th, .crosstab-table td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; overflow-wrap: normal; }
+.crosstab-table thead th { min-width: 120px; }
+.crosstab-table td strong { display: block; font-size: 20px; }
+.crosstab-share { display: block; color: var(--subtle); font-size: 13px; white-space: nowrap; }
+.crosstab-withheld { color: var(--subtle); font-style: italic; }
+.crosstab-test { margin: 16px 0 8px; }
+.crosstab-notes { margin: 0; padding-left: 20px; color: var(--subtle); font-size: 14px; }

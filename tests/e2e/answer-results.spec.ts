@@ -6,7 +6,7 @@ import { contract } from './contract'
 import { expect, test, openMailLink } from './fixtures'
 import AxeBuilder from '@axe-core/playwright'
 import { collectAnswerScenario, type ScenarioCall } from '../results-scenario'
-contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'LEDG-001', 'DATA-002', 'BASE-PUBLIC-003'], 'answers first across every type, comparison replaces results and ledger confirms erasure', async ({ page }, info) => {
+contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006', 'LEDG-001', 'DATA-002', 'BASE-PUBLIC-003'], 'answers first across every type, an RSLT-006 crosstab states shares and suppression, comparison replaces results and ledger confirms erasure', async ({ page }, info) => {
   test.setTimeout(180000)
   const capture = async (name: string) => {
     if (!process.env.PENCIL_CAPTURE_DIR) return
@@ -46,6 +46,21 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'LEDG-001'
   await text.getByRole('searchbox').fill(''); await text.getByRole('button', { name: 'Show more answers' }).click()
   await expect(text.getByText('Exact retained answer 0', { exact: true })).toBeVisible()
   await capture('summary')
+  const crosstab = page.locator('section.crosstab')
+  await crosstab.getByRole('combobox', { name: 'Rows', exact: true }).selectOption({ label: 'Question single_choice' })
+  await crosstab.getByRole('combobox', { name: 'Columns', exact: true }).selectOption({ label: 'Question yes_no' })
+  await crosstab.getByRole('button', { name: 'Cross', exact: true }).click()
+  const table = crosstab.getByRole('table')
+  await expect(table.getByRole('columnheader')).toHaveText(['Question single_choice', 'Yes', 'No', 'Row total'])
+  // Coffee answered Yes six times and Tea No six times; the empty cells are below the default threshold of 5.
+  await expect(table.getByRole('row', { name: /^Coffee/ })).toContainText('6Row withheldColumn withheld')
+  await expect(table.getByRole('row', { name: /^Coffee/ }).getByText('suppressed', { exact: true })).toBeVisible()
+  await expect(table.getByRole('row', { name: /^Column total/ })).toHaveText(/withheld.*withheld.*withheld/)
+  await expect(crosstab.getByText(/2 cells have fewer than 5 responses and are suppressed \(ANLY-005\)/)).toBeVisible()
+  await expect(crosstab.getByText('Chi-square is withheld because a suppressed cell could be recovered from it.')).toBeVisible()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  expect((await new AxeBuilder({ page }).include('.crosstab').analyze()).violations).toEqual([])
+  if (process.env.PENCIL_CAPTURE_DIR) await crosstab.screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-results-crosstab.png`) })
   const select = await page.getByLabel('Published revision').boundingBox()
   const compare = page.getByRole('button', { name: 'Compare revisions', exact: true })
   const button = await compare.boundingBox(); expect(button!.y - (select!.y + select!.height)).toBeGreaterThanOrEqual(12)

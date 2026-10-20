@@ -6,7 +6,7 @@ import { developmentInbox } from '../helpers/mail-capture.mjs'
 import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import type { BuilderDraft, Ledger, WorkspaceSettings } from '../../src/core/app/api'
 import type { CollectorService } from '../../src/core/features/collectors'
-import type { TrendReport } from '../../src/core/features/reporting'
+import type { Crosstab, TrendReport } from '../../src/core/features/reporting'
 
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 type Collector = Awaited<ReturnType<CollectorService['create']>>
@@ -20,7 +20,7 @@ beforeAll(async()=>{
   await call('/auth/magic-link',{email:owner!.email});const inbox=await developmentInbox(path=>SELF.fetch('http://localhost'+path,{headers:{Host:'localhost',...devKeyHeaders}}),owner!.email)
   const login=await request('/auth/confirm',{token:inbox.messages[0].magicLinkToken});expect(login.status).toBe(303);cookie=login.headers.get('set-cookie')!.split(';')[0]
 })
-contract(['DIST-017','RSLT-007'],'named collectors enforce independent atomic limits and retain attribution in zoned, revision-marked score trends and exports',async()=>{
+contract(['DIST-017','RSLT-007','RSLT-006'],'named collectors enforce independent atomic limits and retain attribution in zoned, revision-marked score trends, exports and RSLT-006 crosstabs with stated shares, chi-square and suppression',async()=>{
   const workspace=await call<WorkspaceSettings>('/api/app/workspace')
   await call('/api/app/workspace',{timeZone:'America/New_York',sendingWindowStart:workspace.sendingWindowStart,sendingWindowEnd:workspace.sendingWindowEnd},'PUT')
   const slug='northstar-collector-trends',flow=await call<{id:string}>('/api/app/flows',{title:'Northstar customer feedback',slug}),root=`/api/app/flows/${flow.id}`
@@ -68,4 +68,54 @@ contract(['DIST-017','RSLT-007'],'named collectors enforce independent atomic li
   await call(root+`/collectors/${a.id}`,{name:'July customer mailing',channel:'email',responseLimit:2},'PUT')
   const invalidated=await request(root+'/responses/export',{token:frozen.token});expect(invalidated.status).toBe(400);expect(await invalidated.json()).toMatchObject({error:'VALIDATION_ERROR'})
   await call(`/api/app/responses/${admitted[0].id}`,undefined,'DELETE');expect(await env.DB.prepare('SELECT count(*) AS n FROM response_collector WHERE response_id=?').bind(admitted[0].id).first()).toEqual({n:0});expect(await env.DB.prepare('PRAGMA foreign_key_check').all()).toMatchObject({results:[]})
-},60000)
+
+  // RSLT-006: a 3-choice by 2-choice crossing over a fixed dataset of 43 released responses.
+  const xslug='northstar-crosstab',xflow=await call<{id:string}>('/api/app/flows',{title:'Northstar plan study',slug:xslug}),xroot=`/api/app/flows/${xflow.id}`
+  for(const step of [{kind:'question',questionType:'single_choice',required:true,prompt:'Which plan?',choices:[{value:'a',label:'Starter'},{value:'b',label:'Growth'},{value:'c',label:'Scale'}]},{kind:'question',questionType:'single_choice',required:true,prompt:'Renew?',choices:[{value:'x',label:'Renew'},{value:'y',label:'Leave'}]},{kind:'completion',questionType:null,prompt:'Thanks.'}]){draft=await call<BuilderDraft>(xroot+'/draft');await call(xroot+'/draft/steps',{expectedVersion:draft.flow.draftVersion,step})}
+  draft=await call<BuilderDraft>(xroot+'/draft');await call(xroot+'/draft/settings',{expectedVersion:draft.flow.draftVersion,settings:{identityMode:'anonymous',hiddenFields:[{id:'tier',name:'tier',type:'text',category:'plain'}]}},'PUT')
+  draft=await call<BuilderDraft>(xroot+'/draft');const xpublication=await call<{revision:{id:string}}>(xroot+'/publish',{expectedVersion:draft.flow.draftVersion})
+  const [plan,renew]=draft.steps.filter(step=>step.kind==='question'),choice=(stepId:string,index:number)=>draft.choices.filter(item=>item.stepId===stepId)[index].id
+  const mail=await call<Collector>(xroot+'/collectors',{name:'Renewal mailing',channel:'email'}),web=await call<Collector>(xroot+'/collectors',{name:'Account page',channel:'web'})
+  const groups:Array<[number,number,number,string|undefined,Collector]>=[[0,0,10,'pro',mail],[0,1,5,'team',web],[1,0,6,'team',web],[1,1,9,'pro',mail],[2,0,3,'pro',web],[2,1,5,'team',mail],[2,1,5,undefined,web]]
+  for(const [p,q,count,tier,collector] of groups)for(let n=0;n<count;n++){
+    const session=await call<Session>(`/api/public/flows/${xslug}/sessions`,{source:'direct',deviceClass:'desktop',collectorKey:collector.publicKey});await matureLoad(session)
+    const receipt=await call<{disposition:string}>(`/api/public/flows/${xslug}/responses`,{...session,idempotencyKey:'cross-'+session.sessionId,answers:[{stepId:plan.id,value:choice(plan.id,p)},{stepId:renew.id,value:choice(renew.id,q)}],...(tier?{hidden:{tier}}:{})});expect(receipt.disposition).toBe('released')
+  }
+  const policies={autorunEnabled:true,autorunMinimum:5,selection:'highest-impact'}
+  const cross=(rows:string,columns:string,extra:Record<string,string>={})=>call<Crosstab>(xroot+`/crosstab?${new URLSearchParams({revisionId:xpublication.revision.id,rows,columns,...extra})}`)
+  const counts=(table:Crosstab)=>table.cells.map(row=>row.map(cell=>cell.suppressed?null:cell.count))
+  const stated=(table:Crosstab,i:number,j:number,side:'rowShare'|'columnShare')=>{const cell=table.cells[i][j];return cell.suppressed?'suppressed':cell[side]}
+  await call('/api/app/analysis/policies',{...policies,disclosureThreshold:1},'PUT')
+  const full=await cross(`question:${plan.id}`,`question:${renew.id}`)
+  expect(full.rows.map(row=>row.label)).toEqual(['Starter','Growth','Scale']);expect(full.columns.map(column=>column.label)).toEqual(['Renew','Leave'])
+  expect(counts(full)).toEqual([[10,5],[6,9],[3,10]]);expect(full.rowTotals).toEqual([15,15,13].map(count=>({withheld:false,count})));expect(full.columnTotals).toEqual([19,24].map(count=>({withheld:false,count})));expect(full.total).toEqual({withheld:false,count:43})
+  for(const [i,j,row,column] of [[0,0,15,19],[0,1,15,24],[1,0,15,19],[1,1,15,24],[2,0,13,19],[2,1,13,24]]){
+    const count=[[10,5],[6,9],[3,10]][i][j]
+    expect(stated(full,i,j,'rowShare')).toEqual({numerator:count,denominator:row,percentage:count/row*100});expect(stated(full,i,j,'columnShare')).toEqual({numerator:count,denominator:column,percentage:count/column*100})
+  }
+  // Hand-computed: expected counts from 15/15/13 by 19/24 of 43; df 2, so p = exp(-χ²/2).
+  expect(full.chiSquare).toMatchObject({offered:true,withheld:false,degreesOfFreedom:2,flagged:true});if(!full.chiSquare.offered||full.chiSquare.withheld)throw new Error('chi-square missing')
+  expect(full.chiSquare.statistic).toBeCloseTo(5.529262,5);expect(full.chiSquare.pValue).toBeCloseTo(Math.exp(-5.529262258/2),6);expect(full.chiSquare.minimumExpected).toBeCloseTo(13*19/43,6)
+  expect(full.notes).toContain('Rows (Which plan?): Unanswered — none in this selection.')
+  // Default analysis.disclosure.v1 threshold 5: the 3-response cell is suppressed; 5 is shown; anything that would back it out is withheld.
+  await call('/api/app/analysis/policies',{...policies,disclosureThreshold:5},'PUT')
+  const guarded=await cross(`question:${plan.id}`,`question:${renew.id}`)
+  expect(guarded.threshold).toBe(5);expect(guarded.suppressedCells).toBe(1);expect(guarded.cells[2][0]).toEqual({suppressed:true});expect(counts(guarded)).toEqual([[10,5],[6,9],[null,10]])
+  expect(guarded.rowTotals).toEqual([{withheld:false,count:15},{withheld:false,count:15},{withheld:true}]);expect(guarded.columnTotals).toEqual([{withheld:true},{withheld:false,count:24}]);expect(guarded.total).toEqual({withheld:true})
+  expect(stated(guarded,2,1,'rowShare')).toBeNull();expect(stated(guarded,0,0,'columnShare')).toBeNull();expect(stated(guarded,0,1,'rowShare')).toEqual({numerator:5,denominator:15,percentage:5/15*100});expect(stated(guarded,2,1,'columnShare')).toEqual({numerator:10,denominator:24,percentage:10/24*100})
+  expect(guarded.chiSquare).toMatchObject({offered:true,withheld:true});expect(JSON.stringify(guarded)).not.toContain('"count":3,')
+  await call('/api/app/analysis/policies',{...policies,disclosureThreshold:1},'PUT')
+  // A hidden field with its own Unanswered column; a zero cell is below any threshold and suppressed.
+  const hidden=await cross(`question:${plan.id}`,'hidden:tier')
+  expect(hidden.columns.map(column=>column.label)).toEqual(['pro','team','Unanswered']);expect(counts(hidden)).toEqual([[10,5,null],[9,6,null],[3,5,5]])
+  expect(hidden.rowTotals[2]).toEqual({withheld:false,count:13});expect(stated(hidden,2,2,'rowShare')).toEqual({numerator:5,denominator:13,percentage:5/13*100});expect(hidden.columnTotals.map(total=>total.withheld)).toEqual([false,false,true]);expect(stated(hidden,0,0,'columnShare')).toEqual({numerator:10,denominator:22,percentage:10/22*100})
+  const byCollector=await cross('collector',`question:${renew.id}`)
+  expect(byCollector.rows.map(row=>row.label)).toEqual(['Renewal mailing','Account page']);expect(counts(byCollector)).toEqual([[10,14],[9,10]]);expect(byCollector.rowTotals).toEqual([24,19].map(count=>({withheld:false,count})))
+  expect(byCollector.chiSquare).toMatchObject({offered:true,withheld:false,degreesOfFreedom:1,flagged:true})
+  // A LEDG-003 filter moves numerator and denominator together.
+  const filtered=await cross(`question:${plan.id}`,`question:${renew.id}`,{collectorId:web.id})
+  expect(counts(filtered)).toEqual([[null,5],[6,null],[3,5]]);expect(stated(filtered,2,1,'rowShare')).toEqual({numerator:5,denominator:8,percentage:62.5});expect(stated(full,2,1,'rowShare')).toEqual({numerator:10,denominator:13,percentage:10/13*100})
+  expect(filtered.filter).toMatchObject({collectorId:web.id,revisionId:xpublication.revision.id})
+  expect((await request(xroot+`/crosstab?${new URLSearchParams({revisionId:xpublication.revision.id,rows:`question:${plan.id}`,columns:`question:${plan.id}`})}`)).status).toBe(400)
+  await call('/api/app/analysis/policies',{...policies,disclosureThreshold:5},'PUT')
+},120000)

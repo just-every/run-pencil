@@ -5,6 +5,8 @@ import { ValidationError } from '../../shared/errors'
 import downloadWorker from './download-worker.js?raw'
 import { textPage } from './textPage'
 import { startExport, exportPart } from './export'
+import { crosstab } from './crosstab'
+import { dimensionPattern } from './crosstabDimensions'
 import { z } from 'zod'
 import { searchPhrase } from './search'
 import { validateInput as zValidator, resourceId } from '../../shared/validation'
@@ -26,6 +28,10 @@ export function registerReportingRoutes(app: Hono<WorkerEnvironment>, services: 
       shareValue=value as string|number|boolean
     }
     return context.json(await reportTrends({db:context.get('platform').databaseBinding,workspaceId:context.get('operatorSession').workspaceId,flowId:context.req.param('flowId'),stableStepId:stepId,cutoff:new Date().toISOString(),filter:{collectorId,revisionId},shareValue,...input}))
+  })
+  app.get('/api/app/flows/:flowId/crosstab', zValidator('param', z.object({ flowId: resourceId })), zValidator('query', filter.extend({ revisionId: resourceId, rows: z.string().regex(dimensionPattern), columns: z.string().regex(dimensionPattern) })), async context => {
+    const { revisionId, rows, columns, ...selected } = context.req.valid('query')
+    return context.json(await crosstab(context.get('platform').databaseBinding, { workspaceId: context.get('operatorSession').workspaceId, flowId: context.req.param('flowId'), revisionId, rows, columns, filter: selected }))
   })
   app.get('/api/app/flows/:flowId/ledger', zValidator('param', z.object({ flowId: resourceId })), zValidator('query', filter), async (context) => {
     return context.json(await services(context).reporting.ledger(context.get('operatorSession').workspaceId, context.req.param('flowId'), context.req.valid('query')))

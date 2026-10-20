@@ -1,6 +1,7 @@
 import { TrafficPanel } from './TrafficPanel'
 import { CollectorComparison } from '../../collectors'
 import { TrendsPanel } from './TrendsPanel'
+import { CrosstabPanel } from './CrosstabPanel'
 import { NotificationsPanel } from '../../notifications'
 import { ArrowLeft, PencilLine } from 'lucide-react'
 import { Link, useParams } from '@tanstack/react-router'
@@ -9,7 +10,7 @@ import { QuestionResults } from './QuestionResults'
 import { RevisionComparison } from './RevisionComparison'
 import { ResponseLedger } from './ResponseLedger'
 import { QuarantineReview } from './QuarantineReview'
-import { api, reportingApi, type QuestionReport, type FlowResults } from '../../../app/api'
+import { api, reportingApi, type QuestionReport, type FlowResults, type Ledger } from '../../../app/api'
 import { LoadProblem } from '../../../app/ui/LoadProblem'
 
 function percent(value: number) {
@@ -28,7 +29,7 @@ export function ResultsPage() {
   const [comparing, setComparing] = useState(false)
   const [questions, setQuestions] = useState<QuestionReport[]>([])
   const [selectedRevision, setSelectedRevision] = useState<string>()
-  const [revisions, setRevisions] = useState<Array<{ id: string; number: number; isCurrent: number }>>([])
+  const [revisions, setRevisions] = useState<Ledger['revisions']>([])
   const [timeZone, setTimeZone] = useState<string>()
   const [refresh, setRefresh] = useState(0)
   const [error, setError] = useState<string>()
@@ -89,6 +90,7 @@ export function ResultsPage() {
       <details className="results-scope"><summary>How we count</summary><p className="muted">Summary scope: revision {results.revision.number}, all its recorded starts and released responses. Imported responses contribute to answers and the ledger; they do not count toward starts, completion rate, average time or devices. Response-only ledger filters below do not change this summary or device split.</p></details>
       <TrafficPanel key={results.revision.id} flowId={flowId} revisionId={results.revision.id} />
       <CollectorComparison flowId={flowId} />
+      {revisions.find(revision => revision.id === results.revision.id) ? <CrosstabPanel key={results.revision.id} flowId={flowId} revision={revisions.find(revision => revision.id === results.revision.id)!} questions={questions} /> : null}
       <TrendsPanel key={results.revision.id} flowId={flowId} questions={questions} timeZone={timeZone} revisionId={results.revision.id} />
       <ResponseLedger key={`${results.revision.id}:${refresh}`} flowId={flowId} revisionId={results.revision.id} timeZone={timeZone} questions={questions} onChanged={() => setRefresh((value) => value + 1)} exportSlot={exportSlot} />
       <QuarantineReview key={results.revision.id} revisionId={results.revision.id} timeZone={timeZone} questions={questions} onChanged={() => setRefresh((value) => value + 1)} />
