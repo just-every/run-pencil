@@ -24,7 +24,7 @@ function runtimeValue(step: FlowStep, value: unknown): unknown {
   return typeof consent.accepted === 'boolean' && typeof consent.statement === 'string' && consent.statement === step.questionSettings?.statement ? consent.accepted : undefined
 }
 
-function formattedAnswer(step: FlowStep, choices: ChoiceOption[], value: unknown, choiceLabel: (text: string) => string): string {
+export function formattedAnswer(step: FlowStep, choices: ChoiceOption[], value: unknown, choiceLabel: (text: string) => string): string {
   if ((contactQuestionTypes as readonly string[]).includes(step.questionType ?? '')) return displayContactAnswer(step.questionType!, value)
   if (step.questionType === 'date') return displayCalendarDate(value as string, step.questionSettings ?? {})
   if ((scoreQuestionTypes as readonly string[]).includes(step.questionType ?? '')) return scoreOptions(step.questionType!).find(option => option.value === value)!.label

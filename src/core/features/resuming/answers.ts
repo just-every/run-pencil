@@ -4,7 +4,7 @@ import { publicChoices, publicRules, publicSteps, questionSettings, resolveNextS
 import { visibilityCondition } from '../../shared/screenLayout'
 import { evaluateCondition } from '../../shared/conditions'
 import { answerIssue, isUnanswered } from '../../shared/answers'
-import { revisionBranchSelection } from '../../shared/flowPolicies'
+import { revisionReviewEnabled, revisionBranchSelection } from '../../shared/flowPolicies'
 import { ValidationError } from '../../shared/errors'
 
 type Answer = { stepId: string; value: unknown }
@@ -50,5 +50,5 @@ export function validateSavedAnswers(graph: Graph, policy: string | null, curren
 }
 
 export function resumedPublicFlow(flow: { id: string; slug: string }, revision: { id: string; number: number; title: string; publishedAt: string | null; deadlineAt: string | null; targetCompletedResponses: number | null; policySnapshotJson: string | null; formSettingsJson?:string }, graph: Graph, identified: boolean, completionStepId?: string) {
-  return { formSettings:formSettings(revision.formSettingsJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(graph.steps), choices: publicChoices(graph.steps, graph.choices), branchRules: publicRules(graph.rules), ...(identified ? { identity: 'identified' as const } : {}), ...(completionStepId ? { completedStepId: completionStepId } : {}) }
+  return { formSettings:formSettings(revision.formSettingsJson), reviewBeforeSubmit: revisionReviewEnabled(revision.policySnapshotJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(graph.steps), choices: publicChoices(graph.steps, graph.choices), branchRules: publicRules(graph.rules), ...(identified ? { identity: 'identified' as const } : {}), ...(completionStepId ? { completedStepId: completionStepId } : {}) }
 }

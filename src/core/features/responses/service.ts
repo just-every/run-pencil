@@ -8,7 +8,7 @@ import { issueLoadTime, verifyLoadTime } from '../traffic'
 import { type CollectorService } from '../collectors'
 import { collectorFlowFailure } from './collectorFailure'
 import { runtimeAnswerValue, storedAnswerValue } from './answerStorage'
-import { revisionBranchSelection, type BranchSelection } from '../../shared/flowPolicies'
+import { revisionReviewEnabled, revisionBranchSelection, type BranchSelection } from '../../shared/flowPolicies'
 import manifest from '../../../../seed.json'
 import { visibilityCondition } from '../../shared/screenLayout'
 import { evaluateCondition } from '../../shared/conditions'
@@ -115,7 +115,7 @@ export class ResponseService {
       .catch(error => collectorFlowFailure(error, { title: revision.title, slug: flow.slug }))
     await this.access.require(formSettings(revision.formSettingsJson),revision.id,revision.title,flow.slug,accessToken)
     const { steps, choices, rules } = await this.flowRepository.getRevisionGraph(revision.id)
-    return { invitation, collector, flow, revision, steps, choices, rules, publicFlow: presentFlow({ formSettings: formSettings(revision.formSettingsJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules), identity: 'identified' as const, completedStepId: invitation.responseStatus === 'completed' ? invitation.completionStepId : null }) }
+    return { invitation, collector, flow, revision, steps, choices, rules, publicFlow: presentFlow({ formSettings: formSettings(revision.formSettingsJson), reviewBeforeSubmit: revisionReviewEnabled(revision.policySnapshotJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules), identity: 'identified' as const, completedStepId: invitation.responseStatus === 'completed' ? invitation.completionStepId : null }) }
   }
 
   async startPublicSession(input: { slug: string; deviceClass: DeviceClass; source: PublicSource; clientAddress?: string; invitationToken?: string; collectorKey?: string; accessToken?:string; presentation?:PresentationOrder }) {
@@ -164,7 +164,7 @@ export class ResponseService {
       throw new ValidationError('This form changed before you began. Please start again using the current version.')
     }
     await this.access.bindSession(session.id,grant)
-    return { sessionId: session.id, sessionToken: token, loadTime: await issueLoadTime(this.loadTimeSecret, revision.id), revisionId: revision.id, flowId: flow.id, flow: presentFlow({ formSettings: formSettings(revision.formSettingsJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) },presentation) }
+    return { sessionId: session.id, sessionToken: token, loadTime: await issueLoadTime(this.loadTimeSecret, revision.id), revisionId: revision.id, flowId: flow.id, flow: presentFlow({ formSettings: formSettings(revision.formSettingsJson), reviewBeforeSubmit: revisionReviewEnabled(revision.policySnapshotJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) },presentation) }
   }
 
   async advancePublicSession(input: { slug: string; sessionId: string; sessionToken: string; stepId: string }) {

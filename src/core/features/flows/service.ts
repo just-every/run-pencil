@@ -16,7 +16,7 @@ import type { QuestionType } from '../../shared/questionKinds'
 import { typeSettingsValid } from '../../shared/questionTypes'
 import { templateStructure, type FlowTemplateId } from './templates'
 import { structureContent } from './unpublished'
-import { defaultFlowPolicies, evaluateFlowPolicies, revisionBranchSelection, type FlowPolicies } from '../../shared/flowPolicies'
+import { defaultFlowPolicies, evaluateFlowPolicies, revisionReviewEnabled, revisionBranchSelection, type FlowPolicies } from '../../shared/flowPolicies'
 import { presentFlow } from '../../shared/presentationOrder'
 import { publicSteps, publicChoices, publicRules } from './serialization'
 import { ulid } from 'ulid'
@@ -445,7 +445,7 @@ export class FlowService {
       newSteps: rawSteps.map((step) => ({ ...step, id: newStepIdByOldId.get(step.id)!, revisionId: nextDraftId, createdAt: now, updatedAt: now })),
       newChoices: rawChoices.map((choice) => ({ ...choice, id: ulid(), stepId: newStepIdByOldId.get(choice.stepId)!, createdAt: now, updatedAt: now })),
       newRules: rawRules.map((rule) => ({ ...rule, id: ulid(), revisionId: nextDraftId, createdAt: now, updatedAt: now })),
-      policySnapshotJson: JSON.stringify(evaluateFlowPolicies({...this.policyConfiguration,'response.identity.v1':(draft.formSettings.identityMode==='identified'||draft.formSettings.access?.mode==='email'||draft.formSettings.access?.mode==='signed')?'identified-public-link':'anonymous-public-link'})), deadlineAt: input.deadlineAt ?? null, deadlineTimeZone: input.deadlineAt ? timeZone ?? 'UTC' : null, targetCompletedResponses: input.targetCompletedResponses ?? null,
+      policySnapshotJson: JSON.stringify(evaluateFlowPolicies({...this.policyConfiguration,'response.review.v1':draft.formSettings.reviewBeforeSubmit === true,'response.identity.v1':(draft.formSettings.identityMode==='identified'||draft.formSettings.access?.mode==='email'||draft.formSettings.access?.mode==='signed')?'identified-public-link':'anonymous-public-link'})), deadlineAt: input.deadlineAt ?? null, deadlineTimeZone: input.deadlineAt ? timeZone ?? 'UTC' : null, targetCompletedResponses: input.targetCompletedResponses ?? null,
     })
     if (!published) return draftConflict((await this.requireWorkspaceFlow(input.workspaceId, input.flowId)).draftVersion)
     return { kind: 'published' as const, revision: { id: draft.revision.id, number: draft.revision.number }, draftVersion: input.expectedVersion + 1 }
@@ -487,7 +487,7 @@ export class FlowService {
       await this.access.require(formSettings(revision.formSettingsJson),revision.id,revision.title,flow.slug,accessToken)
     }
     const { steps, choices, rules } = resolved
-    return presentFlow({ formSettings: formSettings(revision.formSettingsJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: flow.title }, revision: this.publicRevision(revision), steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) })
+    return presentFlow({ formSettings: formSettings(revision.formSettingsJson), reviewBeforeSubmit: revisionReviewEnabled(revision.policySnapshotJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: flow.title }, revision: this.publicRevision(revision), steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) })
   }
 
   private async requireWorkspaceFlow(workspaceId: string, flowId: string) {

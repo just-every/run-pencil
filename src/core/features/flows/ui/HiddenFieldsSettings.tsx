@@ -50,6 +50,11 @@ function HiddenFieldsEditor({ settings, disabled, onSave, onDirtyChange }: Props
     <summary className="focus-ring">Hidden fields and identity</summary>
     <fieldset disabled={disabled} style={{ minWidth: 0, border: 0, padding: 0 }}>
       <legend>Public link settings</legend>
+      <label className="toggle-row"><input type="checkbox" checked={draft.reviewBeforeSubmit === true} onChange={event => {
+        setError('')
+        setDraft(current => ({ ...current, reviewBeforeSubmit: event.target.checked }))
+      }} /><span>Review answers before submitting</span></label>
+      <p className="muted">Respondents can check and edit their answers before the final submission. Applies when you publish this draft.</p>
       <p className="muted">Hidden field names are query parameters in the form link, such as ?campaign=spring. Their values are unverified input from the visitor.</p>
       <label className="inspector-field">Public link identity
         <select aria-label="Public link identity" className="text-input" value={draft.identityMode} onChange={event => {

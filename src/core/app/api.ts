@@ -26,6 +26,7 @@ export type BranchRule = {
 }
 
 export type PublicFlow = {
+  reviewBeforeSubmit?: boolean
   presentation?: import('../shared/presentationOrder').PresentationOrder
   formSettings?: import('../shared/hiddenFields').FormSettings
   hiddenContext?: import('../shared/hiddenFields').ResponseContext

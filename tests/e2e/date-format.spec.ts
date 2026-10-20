@@ -1,3 +1,4 @@
+import { reviewSteps, configureReview, reviewJourney } from './review-journey'
 import { contract } from './contract'
 import { expect, test } from './fixtures'
 import { signInEmptyWorkspace } from './authoring-helpers'
@@ -6,8 +7,8 @@ import type { BuilderDraft, Ledger } from '../../src/core/app/api'
 
 // A British browser locale must not change the published MM/DD/YYYY order.
 test.use({ locale: 'en-GB', extraHTTPHeaders: { 'CF-Connecting-IP': '198.18.240.41' } })
-contract('FIELD-015', 'an MM/DD/YYYY date under an en-GB browser shows 07/04/2026 in recall, completion and review, exports ISO and DD/MM stores the other day', async ({ page }, info) => {
-  test.setTimeout(120_000)
+contract(['RESP-024','FIELD-015','FIELD-016','RESP-012','RESP-006'], 'RESP-024 reviews display formats, edits a branch and submits once; FIELD-015 keeps locale-independent entry, recall and ISO exports', async ({ page }, info) => {
+  test.setTimeout(180_000)
   const origin = new URL(info.project.use.baseURL!).origin
   await signInEmptyWorkspace(page)
   const call = async <T,>(path: string, data?: unknown) => {
@@ -21,7 +22,7 @@ contract('FIELD-015', 'an MM/DD/YYYY date under an en-GB browser shows 07/04/202
     await page.screenshot({ path, fullPage: true })
     await info.attach(`Date format ${state} · ${info.project.name}`, { path, contentType: 'image/png' })
   }
-  const publishDateFlow = async (title: string, displayFormat: string) => {
+  const publishDateFlow = async (title: string, displayFormat: string, review = false) => {
     const slug = `date-${displayFormat.slice(0, 2).toLowerCase()}-${info.project.name}-${Date.now()}`
     const flow = await call<{ id: string }>('/api/app/flows', { title, slug })
     const base = `/api/app/flows/${flow.id}`, read = () => call<BuilderDraft>(`${base}/draft`)
@@ -29,8 +30,10 @@ contract('FIELD-015', 'an MM/DD/YYYY date under an en-GB browser shows 07/04/202
     const date = (await read()).steps[0]
     for (const step of [
       { kind: 'question', questionType: 'short_text', prompt: `Anything we should know before {{${date.id}}}?`, required: false },
+      ...(review ? reviewSteps : []),
       { kind: 'completion', questionType: null, prompt: `Booked for {{${date.id}}}` },
     ]) await call(`${base}/draft/steps`, { expectedVersion: (await read()).flow.draftVersion, step })
+    if (review) await configureReview(page, info, flow.id)
     await call(`${base}/publish`, { expectedVersion: (await read()).flow.draftVersion })
     return { flow, base, slug, date }
   }
@@ -40,7 +43,7 @@ contract('FIELD-015', 'an MM/DD/YYYY date under an en-GB browser shows 07/04/202
     await page.getByLabel('Year', { exact: true }).fill(year)
   }
 
-  const american = await publishDateFlow('Clinic booking', 'MM/DD/YYYY')
+  const american = await publishDateFlow('Clinic booking', 'MM/DD/YYYY', true)
   await page.goto(`/f/${american.slug}`)
   await expect(page.getByText('Date format: MM/DD/YYYY', { exact: true })).toBeVisible()
   const parts = await page.getByRole('group', { name: 'Appointment date', exact: true }).getByRole('textbox').evaluateAll(inputs => inputs.map(input => input.closest('label')?.textContent?.trim()))
@@ -53,12 +56,10 @@ contract('FIELD-015', 'an MM/DD/YYYY date under an en-GB browser shows 07/04/202
   await page.getByRole('button', { name: 'Continue', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Anything we should know before 07/04/2026?', exact: true })).toBeVisible()
   await screenshot('recall')
-  await page.waitForTimeout(3200)
-  await page.getByRole('button', { name: 'Submit response', exact: true }).click()
-  await expect(page.getByRole('heading', { name: 'Booked for 07/04/2026', exact: true })).toBeVisible()
-  await screenshot('completed')
+  await reviewJourney(page, info, american.flow.id, american.slug)
 
   const ledger = await call<Ledger>(`${american.base}/ledger`)
+  expect(ledger.responses).toHaveLength(1)
   expect(ledger.responses[0].answers.find(answer => answer.stepId === american.date.id)?.value).toBe('2026-07-04')
   await page.goto(`/app/flows/${american.flow.id}/results`)
   const region = page.getByRole('region', { name: 'Response ledger', exact: true })
