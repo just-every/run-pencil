@@ -1,5 +1,4 @@
-import { workspaceToday } from '../actions/service'
-import { reminderDates } from '../actions/reminder-schedule'
+import { workspaceToday, reminderDates } from '../actions'
 
 export const activeReminderOwner = `o.id=a.owner_operator_id AND o.workspace_id=a.workspace_id
   AND trim(o.email)<>'' AND NOT EXISTS(SELECT 1 FROM operator_auth_links l JOIN oa_operators auth ON auth.id=l.auth_id WHERE l.operator_id=o.id AND auth.status='inactive')`

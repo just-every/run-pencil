@@ -1,4 +1,4 @@
-import type { ReminderKind } from '../actions/reminder-schedule'
+import type { ReminderKind } from '../actions'
 const escape = (value: string) => value.replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]!)
 const timing = { before: 'Your action review is coming up', on_date: 'Your action is due for review', overdue: 'Your action is overdue for review' }
 export function composeActionReminder(input: { title: string; reviewDate: string; kind: ReminderKind; actionId: string; origin: string; timeZone: string }) {
