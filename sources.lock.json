@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "a98388a0335f1a5d261435c77ff208af5359cca282f9b5308c9e3694908569bd",
+      "sha256": "94e90a4116bbecfa7478e82014d4380fb573c5ee1ef07d37d4f4da56c7be73f8",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "72f933123b84f6570420905d58eddb386c05bea9c1ef09afe5ecd86c29024d30",
+      "sha256": "872151ca80579a05c30c13ca7ffbdc2216e8584c4ea84c12a9b0373893cc559e",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "bbfabc471c07e14cd1dd52f3071d8563bdf31c8d5ba8defcae7e487c432ebba3",
+      "sha256": "07050295afbf96f3304665e3a2fdca15c2a6f655cf75602468612d9505bf2976",
       "executable": false
     },
     "DEMO.md": {
@@ -5353,11 +5353,11 @@
       "executable": false
     },
     "src/core/features/responses/ui/review-answers.css": {
-      "sha256": "b144005cf5ad5541ff9b6ee228dcb9c5a6e1f103512143c0fcdc663213281c8c",
+      "sha256": "7f0b5557be3f5b16b7d047b9fcfed637c9da35e589992794d5d1517394d51e76",
       "executable": false
     },
     "src/core/features/responses/ui/ReviewAnswers.tsx": {
-      "sha256": "e47647335415998019a855c179100953978463cb625b86e15e63b5fb753d297a",
+      "sha256": "1d4aecc3dab6e37f224b073896eceefc8c1ddf47463999ae96647cab4e274c17",
       "executable": false
     },
     "src/core/features/responses/ui/SaveResponse.tsx": {

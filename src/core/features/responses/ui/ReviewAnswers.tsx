@@ -1,6 +1,7 @@
 import type { PublicFlow } from '../../../app/api'
 import { formattedAnswer, interpolateAnswerRecall } from '../../../shared/answerRecall'
 import { isUnanswered } from '../../../shared/answers'
+import { isOtherAnswer } from '../../../shared/otherChoices'
 import { ratingScale } from '../../../shared/ratingScale'
 import type { FlowStep } from '../../../app/api'
 import './review-answers.css'
@@ -16,6 +17,10 @@ export function ReviewAnswers({ flow, steps, answers, disabled, onEdit }: {
       let display = 'Not answered'
       if (!isUnanswered(value)) {
         display = formattedAnswer(step, flow.choices.filter(choice => choice.stepId === step.id), value, recall)
+        if (isOtherAnswer(value)) {
+          const label = flow.choices.find(choice => choice.id === step.questionSettings?.otherChoiceId)?.label
+          if (label) display = display.replace(value.otherText, `${recall(label)}: ${value.otherText}`)
+        }
         if (step.questionType === 'rating') {
           const scale = ratingScale(step.questionSettings ?? {})
           const label = [value === scale.min ? scale.lowLabel : '', typeof value === 'number' && Math.abs(value - (scale.min + scale.max) / 2) <= 0.5 ? scale.middleLabel : '', value === scale.max ? scale.highLabel : ''].filter(Boolean).join(', ')
@@ -23,8 +28,8 @@ export function ReviewAnswers({ flow, steps, answers, disabled, onEdit }: {
         }
       }
       return <div className="response-review-row" key={step.id}>
-        <div><dt>{recall(step.prompt)}</dt><dd>{display}</dd></div>
-        <a className="quiet-button focus-ring" href="#respondent-title" aria-label={`Edit ${recall(step.prompt)}`} aria-disabled={disabled} onClick={event => { event.preventDefault(); if (!disabled) onEdit(step.id) }}>Edit</a>
+        <dt><span>{recall(step.prompt)}</span><a className="quiet-button focus-ring" href="#respondent-title" aria-label={`Edit ${recall(step.prompt)}`} aria-disabled={disabled} onClick={event => { event.preventDefault(); if (!disabled) onEdit(step.id) }}>Edit</a></dt>
+        <dd>{display}</dd>
       </div>
     })}</dl>
   </section>

@@ -1,7 +1,7 @@
 .response-review dl { margin: 1.5rem 0; }
-.response-review-row { display: flex; align-items: start; justify-content: space-between; gap: 1rem; padding: 1.1rem 0; border-bottom: 1px solid var(--line, #dedad2); }
-.response-review-row > div { min-width: 0; }
-.response-review dt { font-weight: 600; overflow-wrap: anywhere; }
+.response-review-row { padding: 1.1rem 0; border-bottom: 1px solid var(--line, #dedad2); }
+.response-review dt { display: flex; align-items: start; justify-content: space-between; gap: 1rem; font-weight: 600; overflow-wrap: anywhere; }
+.response-review dt > span { min-width: 0; }
 .response-review dd { margin: .5rem 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
-.response-review-row > a { flex-shrink: 0; }
-.response-review-row > a[aria-disabled=true] { opacity: .5; pointer-events: none; }
+.response-review dt > a { flex-shrink: 0; }
+.response-review a[aria-disabled=true] { opacity: .5; pointer-events: none; }
