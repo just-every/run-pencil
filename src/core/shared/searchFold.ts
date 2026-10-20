@@ -1,4 +1,4 @@
-import unicodeFold from './unicode-search-fold.json'
+import unicodeFold from './unicode-search-fold.json' with { type: 'json' }
 
 const mapping: Record<string, string> = unicodeFold
 
