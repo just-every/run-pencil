@@ -142,7 +142,7 @@ contract(['LOGIC-003', 'PAY-001', 'FLOW-006'], 'refuses cyclic, deleted, mistype
   const skipPay = (await accepted<{ step: { id: string } }>(await skippedAmount.call(`${skippedAmount.base}/draft/steps`, {
     expectedVersion: (await skippedAmount.read()).flow.draftVersion,
     step: { kind: 'payment', questionType: null, prompt: 'Pay skipped quantity', nextStepId: skippedAmount.ordinary.id,
-      questionSettings: { payment: { products: [{ id: 'item', name: 'Item', unitAmount: 100, quantityStepId: skippedAmount.quantity.id }], options: [], minimum: 50, maximum: 10000 } } },
+      questionSettings: { payment: { products: [], options: [], calculationId: 'total', minimum: 1600, maximum: 200_000 } } },
   }), 201)).step.id
   const route = async (skip: boolean) => accepted(await skippedAmount.call(`${skippedAmount.base}/draft/branches`, {
     expectedVersion: (await skippedAmount.read()).flow.draftVersion,
@@ -155,7 +155,7 @@ contract(['LOGIC-003', 'PAY-001', 'FLOW-006'], 'refuses cyclic, deleted, mistype
   const beforeRevisions = await revisions()
   const skipRefusal = await skippedAmount.publish()
   expect(skipRefusal.status, await skipRefusal.clone().text()).toBe(400)
-  expect((await skipRefusal.json() as { details: Array<{ stepId: string }> }).details).toContainEqual(expect.objectContaining({ stepId: skipPay }))
+  expect((await skipRefusal.json() as { details: Array<{ stepId: string; reason: string }> }).details).toContainEqual({ stepId: skipPay, reason: expect.stringMatching(/without answering “Quantity”/) })
   expect(await revisions()).toEqual(beforeRevisions)
   expect((await skippedAmount.read()).revision.id).toBe(beforeSkip.revision.id)
   await route(false)
@@ -186,7 +186,7 @@ contract(['LOGIC-003', 'PAY-001', 'FLOW-006'], 'refuses cyclic, deleted, mistype
   await unchanged(/\$2,000\.00.*maximum \$1,000\.00/)
   // PAY-001(b): the reachable discounted $16 total falls below a $20 minimum.
   await edit(pay, { questionSettings: { payment: { ...pricing, minimum: 2000 } } })
-  await unchanged(/minimum/i)
+  await unchanged(/\$16\.00.*minimum \$20\.00/)
   await edit(pay, { questionSettings: { payment: pricing } })
   await accepted(await f.publish(), 201)
   current = await live()

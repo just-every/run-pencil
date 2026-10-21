@@ -74,5 +74,24 @@ test('real rer setup, one-click sign-in, preserved owner/settings, confirmed res
   const emptyFlows = await request('/api/app/dashboard'); assert.equal(emptyFlows.status, 200);
   assert.deepEqual(await emptyFlows.json(), [], 'confirmed reset leaves the fresh installation empty');
   await app.stop(empty); await assert.rejects(fetch(app.origin + '/health'));
+  // A Platform-installed local database: export preserves its validated ledger without replaying it through Wrangler.
+  const { DatabaseSync } = await import('node:sqlite');
+  const { databasePath } = await import('../../scripts/local/state.mjs');
+  const { metadata } = await import('../../scripts/deployment-data-core.mjs');
+  const { platformLedgerSQL } = await import('../../scripts/deployment-data-ledger.mjs');
+  const local = new DatabaseSync(await databasePath(app.root));
+  try {
+   local.exec(platformLedgerSQL);
+   for (const { name, sha256 } of metadata()) local.prepare('INSERT INTO rer_migrations(name,sha256) VALUES(?,?)').run(name, sha256);
+   local.exec('DROP TABLE d1_migrations');
+   const ledger = () => local.prepare('SELECT name,sha256,applied_at FROM rer_migrations ORDER BY name').all();
+   const native = () => local.prepare("SELECT count(*) AS n FROM sqlite_schema WHERE name='d1_migrations'").get().n;
+   const kept = ledger();
+   assert.equal((await app.run(['export', '--output', 'exports/platform.rer'])).code, 0, 'a complete Platform ledger exports');
+   assert.deepEqual(ledger(), kept); assert.equal(native(), 0, 'Wrangler created no competing ledger');
+   local.exec("UPDATE rer_migrations SET sha256='altered' WHERE name=(SELECT min(name) FROM rer_migrations)");
+   assert.notEqual((await app.run(['export', '--output', 'exports/altered.rer'])).code, 0, 'an altered Platform ledger is refused');
+   assert.equal(native(), 0);
+  } finally { local.close(); }
  } finally { await app.close(); }
 });

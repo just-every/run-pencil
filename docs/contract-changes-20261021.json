@@ -2,7 +2,7 @@
   "contractChanges": {
     "FLOW-006": {
       "change": "changed",
-      "summary": "Some formerly publishable payment layouts now refuse with their stable payment-step IDs; no audience or data expansion.",
+      "summary": "Publishing now also refuses a misplaced or out-of-range PAY-001 payment step, naming its stable step ID; forms without a payment step publish as in 0.7.0; no audience or data expansion.",
       "was": "**FLOW-006 — Publish validation.** Publishing runs every FLOW-012 through FLOW-014 validation and is rejected with all offending stable step IDs and reasons; rejection creates no revision and leaves the draft editable.",
       "now": "**FLOW-006 — Publish validation.** Publishing runs every FLOW-012 through FLOW-014 validation and is rejected with all offending stable step IDs and reasons; rejection creates no revision and leaves the draft editable. This clause inherits PAY-001: publishing refuses misplaced PAY-001 payment steps by step ID."
     },

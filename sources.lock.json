@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "ca0e430508cfc9498f57fd09bf982262a6ac3eb03df67ffbe2a4051d9b1274e7",
+      "sha256": "bd2c85c5c7a1c4b787d03d20d0f9781fc0e97794f07d1aeb35ac984f684608a7",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "c75769166ca44e045ad79db4bd73b31215bf8a08c8da1b295d96dbf8079d5cbf",
+      "sha256": "18a165f9e5b333bccd025a2db9eaf7349d4742dab05740f97b39ff4c5f4c6655",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "c07cfb577377dcf60698712e55c043e2eaf097df649e00c691148b10da7fa478",
+      "sha256": "50a914571eefd2f0ddd7e785658e15b605284aaf53f5caebc607c17ca2d2faa4",
       "executable": false
     },
     "DEMO.md": {
@@ -901,7 +901,7 @@
       "executable": false
     },
     "docs/contract-changes-20261021.json": {
-      "sha256": "343266bb4c7b18634fdc86667e3bbd4e200f64e99af24502d097d5acf4ddfe6d",
+      "sha256": "b4dd381613d040ff7664236a8c52279e85461c6a02d2b72ebacfe085323182c8",
       "executable": false
     },
     "docs/data-ownership.md": {
@@ -1041,7 +1041,7 @@
       "executable": false
     },
     "docs/guide/overview.md": {
-      "sha256": "876414d31b2b8617b1a9f319393a2c6d4916a6f3c734c3a886867625dee01378",
+      "sha256": "c3491cf7081219227e420191070021a93d158c5ef5cafb3843358ad6135abdb3",
       "executable": false
     },
     "docs/guide/privacy.md": {
@@ -7073,7 +7073,7 @@
       "executable": false
     },
     "tests/local-cli/rer-journey.test.mjs": {
-      "sha256": "b3a82151955c59795334fe95173c99be51e60cfa39c60f33e630267f738902e5",
+      "sha256": "cad1c69b3eb6ee23b9b4d1adc0ce0490493fba653e951c4336d8033ec01f6d0d",
       "executable": false
     },
     "tests/local/setup.spec.ts": {
@@ -7201,7 +7201,7 @@
       "executable": false
     },
     "tests/runtime/calculations.worker.test.ts": {
-      "sha256": "f64074aea647408bc8ddd9015ea6bc14edfac717cb55ae0691608a135406d303",
+      "sha256": "141f3a4652c00d7b627d42adf059367ff0cbbb85a5fe570fbdbc84450a60c903",
       "executable": false
     },
     "tests/runtime/coding.worker.test.ts": {

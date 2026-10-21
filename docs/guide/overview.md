@@ -19,6 +19,8 @@ Pencil is a self-hosted form builder for one business. You build short forms tha
 - **A way in from another form builder.** Import a Typeform form and its responses, or start with a Google Forms response CSV and an optional form-definition JSON, into an editable draft. See [Moving in](moving-in.md).
 - **Backup and restore.** Export product data, excluding credentials, sessions and private settings, and restore into an empty database. `rer export`/`rer import` are local; hosted D1 recovery uses a separate script, requires all writers stopped and an independently provisioned migration-only target. See [Backup and restore](backup.md).
 
+- **Paid forms.** Not in release 0.7.0. The current, unreleased source adds one-time USD Stripe Checkout payments, including calculated amounts, through a restricted key only the owner connects; Connect OAuth is not built and PAY-001 is partial. Proved only against a loopback Stripe stand-in in CI; the real Stripe test-mode run was local and is not committed; no live charge, tax or legal acceptance is claimed. Subscriptions, invoicing and other providers are not built.
+
 ## Who it is for
 
 Pencil is built for one business with one shared workspace. Everyone who signs in is an operator, and every operator can see and change everything. There are no roles and no separate workspaces. If that fits you, you get a feedback and lead-capture tool you fully own and can change, because the whole product is the source code in the repository.
@@ -29,7 +31,6 @@ Check this list before you plan around Pencil. These things are not built yet, s
 
 - **Named task-system integrations.** External tasks go to a webhook you run; there is no built-in Jira, Linear, Asana or similar connection.
 - **Roles, several workspaces, scheduling, file-upload questions, native mobile apps and single sign-on.** These are out of scope.
-- **Paid forms.** The current source supports one-time USD Stripe Checkout payments through an owner-only restricted-key connection, including calculated amounts. Publish validates payment placement and amount bounds; unpaid responses wait before response mail and do not consume collector places. PAY-001 remains partial pending independent re-audit, and Connect OAuth is unbuilt. Proved only against a loopback Stripe stand-in in CI; the real Stripe test-mode run was local and is not committed; no live charge, tax or legal acceptance is claimed. Subscriptions, invoicing and additional providers are outside this proof.
 - **Other kinds of embed.** The Share panel offers the public link, a script embed and a plain iframe, and nothing else.
 
 The dashboard line **Ask → Signal → Act** describes the whole loop: build a form, read results or request an analysis, then accept or write an action and decide whether it worked.
