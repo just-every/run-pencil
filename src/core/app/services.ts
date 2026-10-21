@@ -40,6 +40,8 @@ import type { PencilPlatform } from '../platform/runtime'
 import { ActionService, TaskDeliveries } from '../features/actions'
 import { AnalysisService } from '../features/analysis'
 import { IntegrationConnections } from '../platform/config/connections'
+import { PaymentRepository, PaymentService } from '../features/payments'
+import { PaymentResponses } from '../features/responses/payment-responses'
 
 export function createPencilServices(platform: PencilPlatform) {
   const { database } = platform
@@ -67,7 +69,9 @@ export function createPencilServices(platform: PencilPlatform) {
   const access = new RestrictedAccess(platform.databaseBinding,platform.configuration.sessionSecret,sender,{from,local:mailProvider==='local-development'})
   const flows = new FlowService(flowRepository,responseRepository,extensions.flowPolicies,access)
   const brand = new BrandService(new BrandRepository(database),slug=>flows.getPublicFlow(slug))
-  const responses = new ResponseService(flowRepository, responseRepository, collectors, platform.configuration.sessionSecret, access)
+  const connections = new IntegrationConnections(platform)
+  const payments = new PaymentService(new PaymentRepository(platform.databaseBinding), connections, { appOrigin: platform.configuration.appOrigin, apiOrigin: platform.configuration.paymentApiOrigin, secret: platform.configuration.sessionSecret })
+  const responses = new ResponseService(flowRepository, responseRepository, collectors, platform.configuration.sessionSecret, access, new PaymentResponses(flowRepository, responseRepository, payments, platform.configuration.sessionSecret))
   return {
     access,
     retention: new RetentionService(platform.databaseBinding),
@@ -75,7 +79,8 @@ export function createPencilServices(platform: PencilPlatform) {
     traffic: new TrafficService(platform.databaseBinding,flows,responses,collectors,platform.configuration.sessionSecret),
     templates: new TeamTemplates(platform.databaseBinding, flowRepository),
     collectors,
-    connections: new IntegrationConnections(platform),
+    connections,
+    payments,
     notifications: {
       actionReminders: new ActionReminderDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,senderFailure,mailProvider),
       digest: new DigestDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,undefined,senderFailure,mailProvider),

@@ -9,6 +9,8 @@ import { eraseResponseLocalMail } from '../../platform/mail/erasure'
 import type { D1Sql } from '../../../base/import-kit/src/d1/types'
 import type { PencilDatabase } from '../../platform/db/repository'
 import { flowRevisions, flows, respondentSessions, responseAnswers, responses, revisionMetricCounters } from '../../platform/db/schema'
+import { admittedResponseSql, unpaidResponseSql } from '../payments/admission'
+import { paymentInsertStatement, type PaymentAttempt } from '../payments'
 
 type SessionInsert = typeof respondentSessions.$inferInsert
 export type ResponseErasureInput = { workspaceId: string; responseId: string; operatorId: string; sessionId?: string }
@@ -100,7 +102,7 @@ export class ResponseRepository {
             AND (r.deadline_at IS NULL OR r.deadline_at > ?)
             AND (r.target_completed_responses IS NULL OR (
               SELECT COUNT(*) FROM responses response
-              WHERE response.revision_id = r.id AND response.state = 'released'
+              WHERE response.revision_id = r.id AND ${admittedResponseSql('response')}
             ) < r.target_completed_responses)
             AND ${collectorOpen.sql}
         ) RETURNING id
@@ -185,6 +187,76 @@ export class ResponseRepository {
     return response
   }
 
+  async findResponse(id: string) {
+    const [response] = await this.database.select().from(responses).where(eq(responses.id, id)).limit(1)
+    return response
+  }
+
+  /** PAY-001 cancel return: the reopened tab gets a fresh bearer; the response keeps its RESP-012 key. */
+  async rotateSessionToken(responseId: string, sessionTokenHash: string) {
+    await this.binding.prepare('UPDATE responses SET session_token_hash = ? WHERE id = ?').bind(sessionTokenHash, responseId).run()
+  }
+
+  /** PAY-001: a cancelled or expired attempt is replaced under RESP-012's key, so one session (or invitation) keeps one
+   * response. Final admission is rechecked as for a first submission, and only an unpaid end can be replaced. With no
+   * payment step on the new path the response completes as an ordinary one. */
+  async replaceUnpaidResponse(input: {
+    response: { id: string; revisionId: string; participantId: string | null }
+    attempt: number
+    contextJson: string
+    answers: Array<typeof responseAnswers.$inferInsert>
+    payment?: PaymentAttempt
+    completionStepId: string
+    rebind?: { sessionId: string; sessionTokenHash: string; idempotencyKey: string; reachedStepIds: string[] }
+    now: string
+  }) {
+    const auditId = crypto.randomUUID(), replaced = 'EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)', id = input.response.id
+    const collectorOpen = collectorAdmissionSql('held_collector.collector_id', 'r.flow_id', input.now)
+    const statements: D1PreparedStatement[] = [
+      this.binding.prepare(`INSERT INTO audit_entries (id, workspace_id, kind, actor_operator_id, subject_type, subject_id, details_json, created_at)
+        SELECT ?, r.workspace_id, 'response.payment-replaced', NULL, 'response', r.id, json_object('attempt', ?), ?
+        FROM responses r JOIN flow_revisions v ON v.id = r.revision_id JOIN flows f ON f.id = r.flow_id
+        WHERE r.id = ? AND EXISTS (SELECT 1 FROM response_payments WHERE response_id = r.id AND attempt = ? AND state IN ('cancelled', 'expired'))
+          AND f.status IN ('open', 'closed') AND v.admission_closed_at IS NULL AND (v.deadline_at IS NULL OR v.deadline_at > ?)
+          AND (r.state = 'quarantined' OR v.target_completed_responses IS NULL OR (SELECT COUNT(*) FROM responses held WHERE held.revision_id = v.id AND ${admittedResponseSql('held')}) < v.target_completed_responses)
+          AND NOT EXISTS (SELECT 1 FROM response_collector held_collector WHERE held_collector.response_id = r.id AND NOT ${collectorOpen.sql})
+          ${input.rebind ? 'AND EXISTS (SELECT 1 FROM respondent_sessions s WHERE s.id = ? AND s.revision_id = r.revision_id AND s.session_token_hash = ? AND s.completed_at IS NULL AND s.expires_at > ?)' : ''}`)
+        .bind(auditId, input.attempt + 1, input.now, id, input.attempt, input.now, ...collectorOpen.params, ...(input.rebind ? [input.rebind.sessionId, input.rebind.sessionTokenHash, input.now] : [])),
+      input.payment
+        ? this.binding.prepare(`UPDATE response_payments SET step_id = ?, completion_step_id = ?, livemode = ?, state = 'pending', attempt = ?, amount = ?, lines_json = ?, checkout_session_id = NULL, checkout_url = NULL,
+            checkout_expires_at = NULL, payment_intent_id = NULL, provider_amount = NULL, return_token_hash = ?, state_changed_at = ?, updated_at = ? WHERE response_id = ? AND ${replaced}`)
+          .bind(input.payment.stepId, input.payment.completionStepId, input.payment.livemode ? 1 : 0, input.payment.attempt, input.payment.amount, JSON.stringify(input.payment.lines), input.payment.returnTokenHash, input.now, input.now, id, auditId)
+        : this.binding.prepare(`DELETE FROM response_payments WHERE response_id = ? AND ${replaced}`).bind(id, auditId),
+      this.binding.prepare(`UPDATE responses SET response_context_json = ?, completed_at = ?, updated_at = ?${input.rebind ? ', session_id = ?, session_token_hash = ?, idempotency_key = ?' : ''} WHERE id = ? AND ${replaced}`)
+        .bind(input.contextJson, input.now, input.now, ...(input.rebind ? [input.rebind.sessionId, input.rebind.sessionTokenHash, input.rebind.idempotencyKey] : []), id, auditId),
+      this.binding.prepare(`DELETE FROM response_answers WHERE response_id = ? AND ${replaced}`).bind(id, auditId),
+      ...input.answers.map(answer => this.binding.prepare(`INSERT INTO response_answers (id, response_id, step_id, value_json, created_at, updated_at) SELECT ?, ?, ?, ?, ?, ? WHERE ${replaced}`)
+        .bind(answer.id, id, answer.stepId, answer.valueJson, answer.createdAt, answer.updatedAt, auditId)),
+    ]
+    if (!input.payment) statements.push(
+      this.binding.prepare(`UPDATE invitation_participants SET response_status = 'completed', completed_at = ?, completion_step_id = ? WHERE id = (SELECT participant_id FROM responses WHERE id = ?) AND ${replaced}`).bind(input.now, input.completionStepId, id, auditId),
+      this.binding.prepare(`UPDATE mail_deliveries SET status = 'cancelled', reason = 'Response completed.', updated_at = ? WHERE kind = 'reminder' AND status = 'pending' AND participant_id = (SELECT participant_id FROM responses WHERE id = ?) AND ${replaced}`).bind(input.now, id, auditId),
+      this.binding.prepare(`UPDATE flow_revisions SET admission_closed_at = COALESCE(admission_closed_at, ?), admission_close_reason = COALESCE(admission_close_reason, 'target'), updated_at = ?
+        WHERE id = ? AND target_completed_responses IS NOT NULL AND (SELECT COUNT(*) FROM responses held WHERE held.revision_id = flow_revisions.id AND ${admittedResponseSql('held')}) >= target_completed_responses AND ${replaced}`).bind(input.now, input.now, input.response.revisionId, auditId),
+      this.binding.prepare(`UPDATE flows SET status = 'closed', last_activity_at = ?, updated_at = ? WHERE status = 'open' AND EXISTS (SELECT 1 FROM flow_revisions WHERE id = ? AND flow_id = flows.id AND state = 'published' AND is_current = 1
+        AND admission_closed_at IS NOT NULL AND admission_close_reason = 'target') AND ${replaced}`).bind(input.now, input.now, input.response.revisionId, auditId),
+    )
+    if (input.rebind) statements.push(
+      ...completionMetricStatements(this.binding, { revisionId: input.response.revisionId, responseId: id, sessionId: input.rebind.sessionId, reachedStepIds: input.rebind.reachedStepIds, completedAt: input.now }),
+      this.binding.prepare(`DELETE FROM respondent_session_step_events WHERE session_id = ? AND ${replaced}`).bind(input.rebind.sessionId, auditId),
+      this.binding.prepare(`DELETE FROM respondent_sessions WHERE id = ? AND ${replaced}`).bind(input.rebind.sessionId, auditId),
+    )
+    try {
+      const results = await this.binding.batch(statements)
+      return changes(results[0]) > 0
+    } catch (error) { throwCollectorAdmissionFailure(error) }
+  }
+
+  async findResponseByParticipant(participantId: string) {
+    const [response] = await this.database.select().from(responses).where(eq(responses.participantId, participantId)).limit(1)
+    return response
+  }
+
   async findResponseBySessionToken(sessionId: string, sessionTokenHash: string) {
     const [response] = await this.database
       .select()
@@ -202,6 +274,7 @@ export class ResponseRepository {
     completionMilliseconds: number
     reachedStepIds: string[]
     completionStepId?: string
+    payment?: PaymentAttempt
   }) {
     const response = input.response
     const released = response.state === 'released'
@@ -224,7 +297,7 @@ export class ResponseRepository {
           AND (r.deadline_at IS NULL OR r.deadline_at > ?)
           AND (? = 'quarantined' OR r.target_completed_responses IS NULL OR (
             SELECT COUNT(*) FROM responses completed
-            WHERE completed.revision_id = r.id AND completed.state = 'released'
+            WHERE completed.revision_id = r.id AND ${admittedResponseSql('completed')}
           ) < r.target_completed_responses)
           AND ${collectorOpen.sql}
       `).bind(
@@ -232,6 +305,8 @@ export class ResponseRepository {
         response.state, response.quarantineReason, released ? input.completedAt : null, response.completionMilliseconds, response.completedAt, response.createdAt, response.updatedAt, response.participantId ?? null, response.contextJson ?? '{}',
         response.sessionId, response.revisionId, input.sessionTokenHash, input.completedAt, response.participantId ?? null, response.participantId ?? null, response.flowId, input.completedAt, response.state, ...collectorOpen.params,
       ),
+      // PAY-001: the pending payment commits with its response; it holds no admission place until paid.
+      ...(input.payment ? [paymentInsertStatement(this.binding, response.id, input.payment, input.completedAt)] : []),
       ...input.answers.map((answer) => this.binding.prepare(`
         INSERT INTO response_answers (id, response_id, step_id, value_json, created_at, updated_at)
         SELECT ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM responses WHERE id = ?)
@@ -260,8 +335,8 @@ export class ResponseRepository {
         UPDATE flow_revisions
         SET admission_closed_at = COALESCE(admission_closed_at, ?), admission_close_reason = COALESCE(admission_close_reason, 'target'), updated_at = ?
         WHERE id = ? AND target_completed_responses IS NOT NULL
-          AND (SELECT COUNT(*) FROM responses completed WHERE completed.revision_id = flow_revisions.id AND completed.state = 'released') >= target_completed_responses
-          AND EXISTS (SELECT 1 FROM responses WHERE id = ? AND state = 'released')
+          AND (SELECT COUNT(*) FROM responses completed WHERE completed.revision_id = flow_revisions.id AND ${admittedResponseSql('completed')}) >= target_completed_responses
+          AND EXISTS (SELECT 1 FROM responses admitted WHERE admitted.id = ? AND ${admittedResponseSql('admitted')})
       `).bind(input.completedAt, input.completedAt, response.revisionId, response.id),
       this.binding.prepare(`
         UPDATE flows
@@ -278,10 +353,11 @@ export class ResponseRepository {
         SELECT ?,workspace_id,'response.quarantined',NULL,'flow-revision',revision_id,json_object('defence',quarantine_reason),?
         FROM responses WHERE id=? AND state='quarantined'`).bind(`quarantine-${response.id}`,input.completedAt,response.id),
       this.binding.prepare(`UPDATE respondent_saves SET completion_step_id=? WHERE response_id=?`).bind(input.completionStepId ?? null,response.id),
+      // RESP-008: an unpaid response leaves its invitation open; a verified payment completes it (payments/repository).
       this.binding.prepare(`UPDATE invitation_participants SET response_status = 'completed', completed_at = ?, completion_step_id = ?
-        WHERE id = (SELECT participant_id FROM responses WHERE id = ?)`).bind(input.completedAt, input.completionStepId ?? null, response.id),
+        WHERE id = (SELECT participant_id FROM responses WHERE id = ?) AND NOT ${unpaidResponseSql('?')}`).bind(input.completedAt, input.completionStepId ?? null, response.id, response.id),
       this.binding.prepare(`UPDATE mail_deliveries SET status = 'cancelled', reason = 'Response completed.', updated_at = ?
-        WHERE kind = 'reminder' AND status = 'pending' AND participant_id = (SELECT participant_id FROM responses WHERE id = ?)`).bind(input.completedAt, response.id),
+        WHERE kind = 'reminder' AND status = 'pending' AND participant_id = (SELECT participant_id FROM responses WHERE id = ?) AND NOT ${unpaidResponseSql('?')}`).bind(input.completedAt, response.id, response.id),
       ...completionMetricStatements(this.binding, { revisionId: response.revisionId, responseId: response.id, sessionId: response.sessionId, reachedStepIds: input.reachedStepIds, completedAt: input.completedAt }),
       this.binding.prepare('DELETE FROM respondent_session_step_events WHERE session_id = ? AND EXISTS (SELECT 1 FROM responses WHERE id = ?)').bind(response.sessionId, response.id),
       this.binding.prepare('DELETE FROM respondent_sessions WHERE id = ? AND EXISTS (SELECT 1 FROM responses WHERE id = ?)').bind(response.sessionId, response.id),
@@ -379,15 +455,16 @@ export class ResponseRepository {
     return changes(result)
   }
 
-  async countReleasedResponses(revisionId: string) {
-    const row = await this.binding.prepare("SELECT COUNT(*) AS total FROM responses WHERE revision_id = ? AND state = 'released'").bind(revisionId).first<{ total: number }>()
+  /** The responses that hold admission places: released and, on payment forms, paid. */
+  async countAdmittedResponses(revisionId: string) {
+    const row = await this.binding.prepare(`SELECT COUNT(*) AS total FROM responses admitted WHERE admitted.revision_id = ? AND ${admittedResponseSql('admitted')}`).bind(revisionId).first<{ total: number }>()
     return row?.total ?? 0
   }
 
   async audience(revisionId: string) {
     const counts = await this.binding.prepare(`SELECT COUNT(*) AS launchedParticipants,
       COALESCE(SUM(CASE WHEN c.id IS NOT NULL AND c.opted_out_at IS NULL AND p.delivery_status != 'bounced' THEN 1 ELSE 0 END),0) AS eligibleParticipants,
-      COALESCE(SUM(CASE WHEN c.id IS NOT NULL AND c.opted_out_at IS NULL AND p.delivery_status != 'bounced' AND EXISTS (SELECT 1 FROM responses r WHERE r.participant_id = p.id AND r.state = 'released') THEN 1 ELSE 0 END),0) AS completedParticipants
+      COALESCE(SUM(CASE WHEN c.id IS NOT NULL AND c.opted_out_at IS NULL AND p.delivery_status != 'bounced' AND EXISTS (SELECT 1 FROM responses r WHERE r.participant_id = p.id AND ${admittedResponseSql('r')}) THEN 1 ELSE 0 END),0) AS completedParticipants
       FROM invitation_participants p LEFT JOIN distribution_contacts c ON c.id = p.contact_id WHERE p.revision_id = ?`).bind(revisionId).first<{ launchedParticipants: number; eligibleParticipants: number; completedParticipants: number }>()
     return counts!
   }

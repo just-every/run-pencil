@@ -1,4 +1,7 @@
 import { RetentionPanel } from '../../retention'
+import { PaymentStepSettings } from '../../payments/ui'
+import { formatUsd, type PaymentSettings } from '../../../shared/payments'
+import { CreditCard } from 'lucide-react'
 import { randomizableChoices } from '../../../shared/presentationOrder'
 import { CompletionSettings } from './CompletionSettings'
 import { RedirectOriginsSettings } from './RedirectOriginsSettings'
@@ -33,6 +36,7 @@ import { LoadProblem } from '../../../app/ui/LoadProblem'
 function stepLabel(step: FlowStep) {
   if (step.kind === 'welcome') return 'Welcome'
   if (step.kind === 'completion') return 'Completion'
+  if (step.kind === 'payment') return 'Payment'
   return step.questionType ? questionTypeLabels[step.questionType] : 'Question'
 }
 
@@ -170,6 +174,12 @@ export function FlowBuilderPage() {
     },
   }))
 
+  // PAY-001: a payment step sits after the questions that set its amount and leads straight to a completion screen.
+  const addPayment = () => reloadAfterMutation(() => api.addDraftStep(flowId, {
+    expectedVersion: draft!.flow.draftVersion,
+    step: { kind: 'payment', questionType: null, prompt: 'Pay for your order', nextStepId: draft!.steps.find((step) => step.kind === 'completion')?.id ?? null },
+  }))
+
   const addCompletion = () => reloadAfterMutation(() => api.addDraftStep(flowId, {
     expectedVersion: draft!.flow.draftVersion,
     step: { kind: 'completion', questionType: null, prompt: 'Thank you for your feedback.' },
@@ -243,6 +253,7 @@ export function FlowBuilderPage() {
           {!draft.steps.length ? <p className="muted builder-start-guidance">Start with a question, then add a completion screen.</p> : null}
           <div className="builder-add">
             <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={addQuestion} type="button"><Plus aria-hidden="true" size={15} /> Add question</button>
+            <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={addPayment} type="button"><CreditCard aria-hidden="true" size={15} /> Add payment step</button>
             <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={addCompletion} type="button"><Plus aria-hidden="true" size={15} /> Add completion screen</button>
           {!draft.steps.some((step) => step.kind === 'welcome') ? <button className="secondary-button focus-ring" disabled={saving || dirty} type="button" onClick={() => reloadAfterMutation(() => api.addDraftStep(flowId, { expectedVersion: draft.flow.draftVersion, step: { kind: 'welcome', questionType: null, prompt: 'Before you begin', helperText: 'Share a few answers to help us improve.', nextStepId: draft.steps.find((step) => step.kind === 'question')?.id ?? null } }))}><Plus aria-hidden="true" size={15} /> Add welcome screen</button> : null}
           </div>
@@ -265,6 +276,7 @@ export function FlowBuilderPage() {
               <h2 className="display">{prompt || 'Untitled step'}</h2>
               {helperText ? <p className="respondent-helper">{helperText}</p> : null}
               {selected.kind === 'question' ? <StepCanvas key={`${draftRead}-${selected.id}-${questionType}`} step={{ ...selected, prompt, required, questionType, questionSettings: settings }} choices={choices} value={canvasAnswer} onChange={setCanvasAnswer} /> : null}
+              {selected.kind === 'payment' ? <p className="payment-note">{(() => { const pricing = settings.payment as PaymentSettings | undefined; if (!pricing) return 'Choose how this step prices the order. Respondents see their total, then pay on Stripe Checkout.'; const calculation = draft.formSettings?.calculations?.find(value => value.id === pricing.calculationId); return `${calculation ? `Charges the calculation “${calculation.name}”` : `Charges ${pricing.products.length} product${pricing.products.length === 1 ? '' : 's'} and ${pricing.options.length} option price${pricing.options.length === 1 ? '' : 's'}`}, between ${formatUsd(pricing.minimum)} and ${formatUsd(pricing.maximum)}, on Stripe Checkout.` })()}</p> : null}
             </div>
           </> : <div className="preview-surface"><p className="eyebrow">Start the flow</p><h2 className="display">Add a question and a named completion screen.</h2><p className="respondent-helper">Then connect the question to its next screen before publishing.</p></div>}
         </div>
@@ -286,6 +298,7 @@ export function FlowBuilderPage() {
             }} value={questionType ?? ''}>{questionTypes.map(type => <option value={type} key={type}>{questionTypeLabels[type]}</option>)}</select></label> : null}
             {selected.kind === 'question' && ['single_choice', 'multiple_choice', 'priority', 'dropdown'].includes(questionType ?? '') ? <ChoiceEditor key={selected.id} disabled={saving} choices={choices} onChange={setChoices} /> : null}
             <SpecialChoicesEditor type={questionType} choices={choices} settings={settings} disabled={saving} onChoices={setChoices} onSettings={next => setSettingsText(JSON.stringify(next, null, 2))} />
+            {selected.kind === 'payment' ? <PaymentStepSettings key={`${draftRead}-${selected.id}`} draft={draft} step={selected} value={settings.payment} disabled={saving} onChange={payment => setSettingsText(JSON.stringify({ ...settings, payment }, null, 2))} /> : null}
             {selected.kind==='completion'?<CompletionSettings draft={draft} stepId={selected.id} value={settings.redirect} disabled={saving} onChange={redirect=>{const next={...settings};if(redirect)next.redirect=redirect;else delete next.redirect;setSettingsText(JSON.stringify(next,null,2))}}/>:null}
             <TypeSettings type={questionType} settings={settings} disabled={saving} onChange={(key, value) => { const next: Record<string, unknown> = { ...settings }; if (value === undefined) delete next[key]; else next[key] = value; setSettingsText(Object.keys(next).length ? JSON.stringify(next, null, 2) : '') }} />
             {selected.kind === 'question' && questionType === 'rating' ? <RatingSettings settings={settings} disabled={saving} onChangeSettings={next => setSettingsText(JSON.stringify(next, null, 2))} /> : null}

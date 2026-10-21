@@ -16,6 +16,7 @@ import { calendarDate, typeSettingsValid } from '../../shared/questionTypes'
 import { matchesBranch } from '../../shared/branching'
 import type { BranchSelection } from '../../shared/flowPolicies'
 import { reachableDestinations } from './reachable-destinations'
+import { paymentIssues } from './payment-proof'
 import type { StoredBranchRule, StoredChoice, StoredStep } from './repository'
 
 export type BranchPredicateKind = 'equals' | 'greater_than' | 'greater_than_or_equal' | 'less_than' | 'less_than_or_equal' | 'any_of' | 'all_of'
@@ -146,8 +147,8 @@ export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice
       issues.push({ stepId: rule.sourceStepStableId, reason: 'A branch must start at an existing question.' })
       continue
     }
-    if (!destination || (destination.kind !== 'question' && destination.kind !== 'completion')) {
-      issues.push({ stepId: rule.sourceStepStableId, reason: 'A branch must point to an existing question or completion screen.' })
+    if (!destination || (destination.kind !== 'question' && destination.kind !== 'payment' && destination.kind !== 'completion')) {
+      issues.push({ stepId: rule.sourceStepStableId, reason: 'A branch must point to an existing question, payment step or completion screen.' })
       continue
     }
     if (rule.conditionJson) {
@@ -182,6 +183,7 @@ export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice
     const proof = validateConditionPaths(steps, choices, validRules, selection, hidden, calculations)
     issues.push(...proof.issues)
     issues.push(...validateAnswerRecall({ formSettings:settings, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(validRules), branchSelection: selection }, proof.edges))
+    issues.push(...paymentIssues(steps, choices, settings, proof.edges))
     return issues
   }
   const edges = new Map<string, string[]>()
@@ -192,6 +194,7 @@ export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice
     edges.set(step.stableId, destinations)
   }
   issues.push(...validateAnswerRecall({ formSettings:settings, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(validRules), branchSelection: selection }, edges))
+  issues.push(...paymentIssues(steps, choices, settings, edges))
   const visiting = new Set<string>()
   const visited = new Map<string, boolean>()
   const walk = (stepId: string): boolean => {

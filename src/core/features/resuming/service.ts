@@ -21,7 +21,7 @@ export class ResumeService {
   private async admission(context: NonNullable<Awaited<ReturnType<ResponseRepository['findSubmissionContext']>>>) {
     const { session, revision, flow } = context, now = new Date().toISOString()
     if (session.expiresAt<=now || session.completedAt) throw new SessionUnavailableError()
-    if (!['open','closed'].includes(flow.status) || revision.admissionClosedAt || revision.deadlineAt && revision.deadlineAt<=now || revision.targetCompletedResponses!==null && await this.responses.countReleasedResponses(revision.id)>=revision.targetCompletedResponses) throw new FlowClosedError({ slug: flow.slug, title: revision.title })
+    if (!['open','closed'].includes(flow.status) || revision.admissionClosedAt || revision.deadlineAt && revision.deadlineAt<=now || revision.targetCompletedResponses!==null && await this.responses.countAdmittedResponses(revision.id)>=revision.targetCompletedResponses) throw new FlowClosedError({ slug: flow.slug, title: revision.title })
     try { await this.collectors.requireSessionOpen(flow.id,session.id,session.source) }
     catch (error) { if (error instanceof CollectorClosedError) throw new FlowClosedError({ slug: flow.slug, title: revision.title, collectionClosed: true }); throw error }
   }

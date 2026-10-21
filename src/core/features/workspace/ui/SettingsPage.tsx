@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { TimeZoneField } from './TimeZoneField'
 import { canonicalTimeZone } from '../../../shared/ianaTimeZone'
 import { BrandSettings } from '../../brand'
+import { PaymentConnection } from '../../payments/ui'
 import { Clock3 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { api, type Operator, type WorkspaceSettings } from '../../../app/api'
@@ -64,6 +65,7 @@ export function SettingsPage({ operatorId }: { operatorId: string }) {
         <button className="primary-button focus-ring settings-save" disabled={saving} type="submit">{saving ? 'Saving…' : 'Save workspace settings'}</button>
       </form>
       <section className="panel settings-card"><h2 className="display">Backup and restore</h2><p>Download and check a private copy of your forms, answers and workspace history.</p><Link className="secondary-button focus-ring" to="/app/backup">Open backup and restore</Link></section>
+      <PaymentConnection />
       <BrandSettings />
       <OperatorAccess initialOperators={operators} operatorId={operatorId} />
     </div>

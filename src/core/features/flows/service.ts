@@ -14,6 +14,7 @@ import { remapAnswerRecall } from '../../shared/answerRecall'
 import { remapChoiceSettings } from '../../shared/otherChoices'
 import type { QuestionType } from '../../shared/questionKinds'
 import { typeSettingsValid } from '../../shared/questionTypes'
+import { paymentStepSettingsIssue } from '../../shared/payments'
 import { templateStructure, type FlowTemplateId } from './templates'
 import { structureContent } from './unpublished'
 import { defaultFlowPolicies, evaluateFlowPolicies, revisionReviewEnabled, revisionBranchSelection, type FlowPolicies } from '../../shared/flowPolicies'
@@ -26,7 +27,7 @@ import { resolveNextStep, validateRevisionGraph, type BranchPredicateKind } from
 import type { FlowRepository, StoredBranchRule, StoredChoice, StoredStep } from './repository'
 
 
-type StepKind = 'welcome' | 'question' | 'completion'
+type StepKind = 'welcome' | 'question' | 'payment' | 'completion'
 type DraftStepInput = {
   kind: StepKind
   questionType: QuestionType | null
@@ -263,6 +264,8 @@ export class FlowService {
     if (!selectedRawStep) throw new NotFoundError('The requested draft step does not exist.')
     const currentChoices = rawChoices.filter((choice) => choice.stepId === selectedRawStep.id)
     if (!typeSettingsValid(selectedQuestionType, input.questionSettings === undefined ? selected.questionSettings ?? {} : input.questionSettings ?? {})) throw new ValidationError('This question has invalid type-specific settings.')
+    const paymentIssue = paymentStepSettingsIssue(selected.kind, input.questionSettings === undefined ? selected.questionSettings : input.questionSettings)
+    if (paymentIssue) throw new ValidationError(paymentIssue)
     const structured = ['single_choice', 'multiple_choice', 'priority', 'dropdown'].includes(selectedQuestionType ?? '')
     if (input.choices !== undefined && !structured && input.choices.length > 0) throw new ValidationError('Only structured questions can have choices.')
     const requestedChoices = input.choices ?? currentChoices.map((choice) => ({ id: choice.stableId, value: choice.value, label: choice.label }))
@@ -316,7 +319,7 @@ export class FlowService {
     if (capacityIssue) throw new ValidationError(capacityIssue)
     if ((input.step.choices?.length ?? 0) > choiceLimit(input.step.questionType)) throw new ValidationError('This question exceeds its configured choice limit.')
     const completionIndex = draft.steps.findIndex((step) => step.kind === 'completion')
-    const position = input.step.kind === 'welcome' ? 0 : input.step.kind === 'question' && completionIndex >= 0 ? completionIndex : draft.steps.length
+    const position = input.step.kind === 'welcome' ? 0 : (input.step.kind === 'question' || input.step.kind === 'payment') && completionIndex >= 0 ? completionIndex : draft.steps.length
     const following = draft.steps[position]
     const previous = draft.steps[position - 1]
     const nextId = input.step.nextStepId ?? (input.step.kind === 'completion' ? null : following?.id ?? null)
@@ -329,6 +332,8 @@ export class FlowService {
     if (input.step.kind === 'question' && !input.step.questionType) throw new ValidationError('A question needs a question type.')
     if (input.step.kind !== 'question' && input.step.questionType) throw new ValidationError('Only questions can have a question type.')
     if (!typeSettingsValid(input.step.questionType, input.step.questionSettings ?? {})) throw new ValidationError('This question has invalid type-specific settings.')
+    const paymentIssue = paymentStepSettingsIssue(input.step.kind, input.step.questionSettings)
+    if (paymentIssue) throw new ValidationError(paymentIssue)
     const choiceIdMap = new Map<string, string>()
     const choices = (input.step.choices ?? []).map((choice, position) => { const stableId = ulid(); if ('id' in choice && typeof choice.id === 'string') choiceIdMap.set(choice.id, stableId); return { id: ulid(), stepId, stableId, value: choice.value.trim(), label: choice.label.trim(), position, createdAt: now, updatedAt: now } })
     if (choices.some((choice) => !choice.value || !choice.label)) throw new ValidationError('Every choice needs a value and label.')
@@ -462,8 +467,7 @@ export class FlowService {
     if (flow.status !== 'closed') throw new ValidationError('Only a closed flow can be reopened.')
     const revision = await this.repository.findCurrentPublishedRevision(flowId)
     if (!revision) throw new NotFoundError('This flow has no published revision to reopen.')
-    const results = await this.responseRepository.getResults(revision.id)
-    if ((revision.deadlineAt && Date.parse(revision.deadlineAt) <= Date.now()) || (revision.targetCompletedResponses !== null && results.completedResponses >= revision.targetCompletedResponses)) throw new ValidationError('This revision cannot reopen while its deadline or completion target is still satisfied.')
+    if ((revision.deadlineAt && Date.parse(revision.deadlineAt) <= Date.now()) || (revision.targetCompletedResponses !== null && await this.responseRepository.countAdmittedResponses(revision.id) >= revision.targetCompletedResponses)) throw new ValidationError('This revision cannot reopen while its deadline or completion target is still satisfied.')
     if (!await this.repository.reopenFlow(flowId, new Date().toISOString(), operatorId)) throw new ValidationError('This revision cannot reopen while its deadline or completion target is still satisfied.')
   }
 

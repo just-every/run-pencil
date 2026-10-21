@@ -14,7 +14,7 @@ import { requireSameOriginRequest } from '../auth'
 
 const questionType = z.enum(questionTypes)
 const stepSchema = z.object({
-  kind: z.enum(['welcome', 'question', 'completion']),
+  kind: z.enum(['welcome', 'question', 'payment', 'completion']),
   questionType: questionType.nullable(),
   prompt: z.string().trim().max(1000),
   helperText: z.string().trim().max(1000).nullable().optional(),

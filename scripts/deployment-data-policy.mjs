@@ -126,6 +126,10 @@ const retained = {
   response_answers: 'id response_id step_id value_json created_at updated_at',
   response_outbox: 'id workspace_id response_id kind idempotency_key payload_json status available_at dispatched_at failure_reason created_at updated_at',
   responses: 'response_context_json id workspace_id flow_id revision_id session_id session_token_hash idempotency_key state quarantine_reason released_at released_by_operator_id completion_milliseconds completed_at created_at updated_at source started_at participant_id',
+  // PAY-001 payment state and Stripe IDs travel with their response. No card or bank detail exists to travel;
+  // the Stripe key and signing secret stay sealed in integration_connections, whose rows never travel.
+  response_payments: 'response_id step_id completion_step_id provider livemode state attempt amount currency lines_json checkout_session_id checkout_url checkout_expires_at payment_intent_id provider_amount return_token_hash state_changed_at created_at updated_at',
+  payment_events: 'id type response_id outcome created_at received_at',
   revision_metric_counters: 'id revision_id starts completions total_completion_milliseconds mobile_starts tablet_starts desktop_starts created_at updated_at',
   revision_step_metric_counters: 'id revision_id step_stable_id reached dropped created_at updated_at',
   workspaces: 'id name time_zone created_at updated_at sending_window_start sending_window_end setup_operator_initialized_at embed_allowed_origins_json brand_configured brand_supporting_line brand_accent brand_logo_base64 brand_logo_mime brand_logo_version public_flow_slug first_run_completed_at reminder_delay_hours',
@@ -205,6 +209,8 @@ export const exclusions = {
   respondent_sessions: { session_token_hash: nul },
   // Restoring old response history cannot make it eligible for a new send.
   responses: { session_token_hash: { type: 'text', value: '' }, notification_eligible: { type: 'integer', value: '0' } },
+  // A restored payment keeps its state and Stripe IDs, but no live checkout link or respondent return key.
+  response_payments: { checkout_url: nul, return_token_hash: nul },
   response_outbox: { notification_eligible: { type: 'integer', value: '0' } },
   notification_deliveries: { explicit_retry_authorized: { type: 'integer', value: '0' } },
   // A restored analysis never calls a provider by itself: a queued run waits for an operator's retry, a running one fails.

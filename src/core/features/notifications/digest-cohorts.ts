@@ -1,5 +1,7 @@
+import { unpaidResponseSql } from '../payments/admission'
 import { nextOpening } from '../../shared/civilTime'
-export const liveDigestMember = `r.state='released' AND r.notification_eligible=1 AND r.source IN ('direct','embed','invitation')`
+// PAY-001: an unpaid response joins no digest; once paid it joins the next one.
+export const liveDigestMember = `r.state='released' AND r.notification_eligible=1 AND r.source IN ('direct','embed','invitation') AND NOT ${unpaidResponseSql('r.id')}`
 export async function freezeDigests(db:D1Database,now:string) {
   const prefs=await db.prepare(`SELECT p.*,w.time_zone AS currentZone,w.sending_window_start AS currentStart FROM digest_preferences p JOIN flows f ON f.id=p.flow_id JOIN workspaces w ON w.id=f.workspace_id WHERE p.enabled=1 AND p.next_opening<=? ORDER BY p.next_opening LIMIT 100`).bind(now).all<{flow_id:string;operator_id:string;epoch:string;cutoff:string;next_opening:string;next_day:string;zone:string;currentZone:string;currentStart:string}>()
   for(const p of prefs.results) for(let day=0;day<31 && p.next_opening<=now;day++) {

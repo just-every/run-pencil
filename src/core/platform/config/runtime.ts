@@ -16,6 +16,16 @@ export type RuntimeConfiguration = {
   readonly isLocalDevelopment: boolean
   readonly isHostedDemo: boolean
   readonly seedSampleData: boolean
+  /** PAY-001's Stripe API origin. Only local development may name a loopback stand-in for tests. */
+  readonly paymentApiOrigin: string
+}
+
+const stripeApiOrigin = 'https://api.stripe.com'
+function localPaymentApiOrigin(environment: WorkerBindings) {
+  if (!environment.STRIPE_API_ORIGIN) return stripeApiOrigin
+  const url = new URL(environment.STRIPE_API_ORIGIN)
+  if (!loopbackHostnames.has(url.hostname) || url.origin !== environment.STRIPE_API_ORIGIN) throw new DeploymentConfigurationError('STRIPE_API_ORIGIN must be a loopback origin, and only in local development.')
+  return url.origin
 }
 
 export function isLoopbackRequest(requestUrl: string) {
@@ -104,6 +114,7 @@ export function readRuntimeConfiguration(requestUrl: string, environment: Worker
       isLocalDevelopment: true,
       isHostedDemo: false,
       seedSampleData: environment.SEED_SAMPLE_DATA === 'true',
+      paymentApiOrigin: localPaymentApiOrigin(environment),
     }
   }
   if (isHostedDemoRequest(requestUrl, environment)) {
@@ -118,6 +129,7 @@ export function readRuntimeConfiguration(requestUrl: string, environment: Worker
       isLocalDevelopment: false,
       isHostedDemo: true,
       seedSampleData: false,
+      paymentApiOrigin: stripeApiOrigin,
     }
   }
   return {
@@ -132,5 +144,6 @@ export function readRuntimeConfiguration(requestUrl: string, environment: Worker
     isLocalDevelopment: false,
     isHostedDemo: false,
     seedSampleData: false,
+    paymentApiOrigin: stripeApiOrigin,
   }
 }

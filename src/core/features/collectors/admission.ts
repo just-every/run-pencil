@@ -1,3 +1,4 @@
+import { unpaidResponseSql } from '../payments/admission'
 import type { CollectorSource } from './model'
 import { CollectorClosedError } from './service'
 export type CollectorSql = { sql: string; params: Array<string | number | null> }
@@ -20,7 +21,7 @@ export function collectorAdmissionSql(collectorExpression: string, flowExpressio
     AND admission_collector.closed_at IS NULL
     AND (admission_collector.deadline_at IS NULL OR admission_collector.deadline_at>?)
     AND (admission_collector.response_limit IS NULL OR
-      (SELECT count(*) FROM response_collector WHERE collector_id=admission_collector.id)<admission_collector.response_limit))`, params: [now] }
+      (SELECT count(*) FROM response_collector held WHERE held.collector_id=admission_collector.id AND NOT ${unpaidResponseSql('held.response_id')})<admission_collector.response_limit))`, params: [now] }
 }
 export function sessionCollectorAdmissionSql(sessionExpression: string, flowExpression: string, now: string, sourceExpression?: string): CollectorSql {
   const open = collectorAdmissionSql('session_attribution.collector_id', flowExpression, now, sourceExpression)

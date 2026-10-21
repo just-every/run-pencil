@@ -1,3 +1,4 @@
+import { admittedResponseSql } from '../payments/admission'
 import { sessionCollectorAdmissionSql } from '../collectors'
 
 export type SavedRow = {
@@ -32,7 +33,7 @@ export class ResumeRepository {
         FROM respondent_sessions s JOIN flow_revisions r ON r.id=s.revision_id JOIN flows f ON f.id=r.flow_id
         WHERE s.id=? AND s.session_token_hash=? AND s.revision_id=? AND s.completed_at IS NULL AND s.expires_at>?
           AND f.status IN ('open','closed') AND r.admission_closed_at IS NULL AND (r.deadline_at IS NULL OR r.deadline_at>?)
-          AND (r.target_completed_responses IS NULL OR (SELECT count(*) FROM responses WHERE revision_id=r.id AND state='released')<r.target_completed_responses)
+          AND (r.target_completed_responses IS NULL OR (SELECT count(*) FROM responses admitted WHERE admitted.revision_id=r.id AND ${admittedResponseSql('admitted')})<r.target_completed_responses)
           AND ((s.source!='invitation' AND ? IS NULL) OR (s.source='invitation' AND EXISTS(
             SELECT 1 FROM invitation_participants p JOIN invitation_launch_collector lc ON lc.launch_id=p.launch_id
             JOIN session_collector sc ON sc.collector_id=lc.collector_id AND sc.session_id=s.id
@@ -66,7 +67,7 @@ export class ResumeRepository {
         WHERE saved.session_id=respondent_sessions.id AND saved.token_hash=? AND saved.expires_at>?
           AND saved.response_id IS NULL AND f.status IN ('open','closed') AND r.admission_closed_at IS NULL
           AND (r.deadline_at IS NULL OR r.deadline_at>?)
-          AND (r.target_completed_responses IS NULL OR (SELECT count(*) FROM responses WHERE revision_id=r.id AND state='released')<r.target_completed_responses)
+          AND (r.target_completed_responses IS NULL OR (SELECT count(*) FROM responses admitted WHERE admitted.revision_id=r.id AND ${admittedResponseSql('admitted')})<r.target_completed_responses)
           AND (saved.participant_id IS NULL OR EXISTS(SELECT 1 FROM invitation_participants p WHERE p.id=saved.participant_id AND p.token IS NOT NULL AND p.response_status!='completed'))
           AND ${open.sql})`).bind(sessionHash,now,row.session_id,now,row.token_hash,now,now,...open.params).run()
     return result.meta.changes > 0

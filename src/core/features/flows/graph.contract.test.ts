@@ -13,5 +13,5 @@ contract('FLOW-012', 'rejects absent, nonquestion and incompatible branch source
     expect(validateRevisionGraph([question, completion], choices, [{ ...rule, ...change }])).toContainEqual(expect.objectContaining({ stepId: change.sourceStepStableId ?? 'q', reason: expect.any(String) }))
   }
   const welcome = { ...completion, kind: 'welcome' as const, stableId: 'welcome', position: -1, nextStepStableId: 'q' }
-  expect(validateRevisionGraph([welcome, question, completion], choices, [{ ...rule, destinationStepStableId: 'welcome' }])).toContainEqual(expect.objectContaining({ stepId: 'q', reason: expect.stringContaining('existing question or completion') }))
+  expect(validateRevisionGraph([welcome, question, completion], choices, [{ ...rule, destinationStepStableId: 'welcome' }])).toContainEqual(expect.objectContaining({ stepId: 'q', reason: expect.stringContaining('existing question, payment step or completion') }))
 })

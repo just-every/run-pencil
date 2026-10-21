@@ -1,3 +1,4 @@
+import { admittedResponseSql } from '../payments/admission'
 import { createFlowStructure, type FlowStructure } from './structure'
 import { readCurrentPublicSnapshot } from './publicSnapshot'
 import { and, desc, eq, inArray, ne, sql } from 'drizzle-orm'
@@ -381,7 +382,7 @@ export class FlowRepository {
         SELECT ?, workspace_id, 'flow.reopened', (SELECT id FROM operators WHERE id = ? AND workspace_id = flows.workspace_id), 'flow', id, '{}', ? FROM flows
         WHERE id = ? AND status = 'closed' AND EXISTS (SELECT 1 FROM flow_revisions r WHERE r.flow_id = flows.id AND r.state = 'published' AND r.is_current = 1
           AND (r.deadline_at IS NULL OR r.deadline_at > ?) AND (r.target_completed_responses IS NULL OR
-            (SELECT COUNT(*) FROM responses WHERE revision_id = r.id AND state = 'released') < r.target_completed_responses))`).bind(auditId, operatorId, now, flowId, now),
+            (SELECT COUNT(*) FROM responses admitted WHERE admitted.revision_id = r.id AND ${admittedResponseSql('admitted')}) < r.target_completed_responses))`).bind(auditId, operatorId, now, flowId, now),
       this.binding.prepare(`UPDATE flow_revisions SET admission_closed_at = NULL, admission_close_reason = NULL, updated_at = ? WHERE flow_id = ? AND state = 'published' AND is_current = 1 AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`).bind(now, flowId, auditId),
       this.binding.prepare(`UPDATE flows SET status = 'open', last_activity_at = ?, updated_at = ? WHERE id = ? AND status = 'closed' AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?) RETURNING id`).bind(now, now, flowId, auditId),
     ])

@@ -255,7 +255,7 @@
     "Multiple workspaces",
     "Roles and permissions",
     "Agency management",
-    "Payments and order forms",
+    "Payments beyond one-time Stripe Checkout charges in USD: tax, coupons, receipts, subscriptions, donations, other payment methods and refunds",
     "Appointment scheduling",
     "Public template marketplace",
     "Survey-panel recruitment",
@@ -328,6 +328,19 @@
       "adapters": [
         "typeform.forms.read.v1"
       ]
+    },
+    {
+      "id": "stripe-checkout",
+      "required": false,
+      "requiredWhen": "a published form has a payment step (PAY-001)",
+      "why": "Taking a card or bank payment needs a licensed payment processor and its hosted page. No Cloudflare primitive moves money, and the form must never hold card or bank details or load a third-party card field (BASE-PUBLIC-001).",
+      "data": [
+        "each order's item names, unit amounts and quantities in USD, computed by Pencil from the published revision",
+        "the response ID and payment attempt as the checkout reference",
+        "the form's success and cancel links, carrying the attempt's return key",
+        "owner-saved Stripe restricted key (Bearer authorization only)"
+      ],
+      "adapters": []
     }
   ],
   "env": [

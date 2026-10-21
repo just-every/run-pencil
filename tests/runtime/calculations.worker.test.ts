@@ -6,7 +6,9 @@ import { httpExport } from '../helpers/report-download'
 import { issueLoadTime } from '../../src/core/features/traffic/loadTime'
 import { resumeBearer } from '../../src/core/features/resuming/credentials'
 import { interpolateAnswerRecall } from '../../src/core/shared/answerRecall'
-import type { BuilderDraft, Ledger, PublicFlow } from '../../src/core/app/api'
+import type { BuilderDraft, Ledger, PaymentReturnView, PublicFlow } from '../../src/core/app/api'
+import { materializeNotifications } from '../../src/core/features/notifications/outbox'
+import { deliver, stripe, stripeEvent, stripeKey, webhookSecret } from './payment-fixture'
 import type { Calculation, CalculationExpression } from '../../src/core/shared/calculations'
 
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
@@ -114,7 +116,7 @@ contract('LOGIC-003', 'agrees across preview, collection, recall and exports for
   assertValues((await f.ledger()).responses)
 }, 60_000)
 
-contract('LOGIC-003', 'refuses cyclic, deleted, mistyped and zero-denominator calculations without publishing the draft', async () => {
+contract(['LOGIC-003', 'PAY-001'], 'refuses cyclic, deleted, mistyped and zero-denominator calculations, and misplaced or out-of-range payment steps, without publishing the draft', async () => {
   const f = await fixture(), draftId = (await f.read()).revision.id
   const invalid: Array<{ calculations: Calculation[]; reason: RegExp }> = [
     { calculations: [{ ...f.calculation, expression: { kind: 'variable', variableId: 'other' } }, { id: 'other', name: 'Other total', type: 'number', expression: { kind: 'variable', variableId: 'total' } }], reason: /cycle/i },
@@ -132,9 +134,43 @@ contract('LOGIC-003', 'refuses cyclic, deleted, mistyped and zero-denominator ca
     expect((await f.call(`/api/public/flows/${f.slug}`, undefined, { auth: false })).status).toBe(404)
   }
   await f.save([f.calculation]); await accepted(await f.publish(), 201)
+
+  // PAY-001 under FLOW-006: each refusal names the payment step and leaves the published revision in place.
+  const live = async () => (await accepted<PublicFlow>(await f.call(`/api/public/flows/${f.slug}`, undefined, { auth: false }))).revision.id
+  const pricing = { products: [], options: [], calculationId: 'total', minimum: 1600, maximum: 200_000 }
+  const step = async (body: Record<string, unknown>) => (await accepted<{ step: { id: string } }>(await f.call(`${f.base}/draft/steps`, { expectedVersion: (await f.read()).flow.draftVersion, step: body }), 201)).step.id
+  const edit = async (stepId: string, change: Record<string, unknown>) => { const current = (await f.read()).steps.find(entry => entry.id === stepId)!; await accepted(await f.call(`${f.base}/draft`, { expectedVersion: (await f.read()).flow.draftVersion, stepId, prompt: current.prompt, required: current.required, ...change }, { method: 'PUT' })) }
+  const pay = await step({ kind: 'payment', questionType: null, prompt: 'Pay for the order', nextStepId: f.ordinary.id, questionSettings: { payment: pricing } })
+  await edit(f.discount.id, { nextStepId: pay })
+  await accepted(await f.publish(), 201)
+  const current = await live()
+  const unchanged = async (reason: RegExp) => {
+    const refused = await f.publish()
+    expect(refused.status, await refused.clone().text()).toBe(400)
+    expect((await refused.json() as { details: Array<{ stepId: string; reason: string }> }).details).toContainEqual({ stepId: pay, reason: expect.stringMatching(reason) })
+    expect(await live()).toBe(current)
+  }
+  // A calculated amount that can exceed the maximum: quantity 100 at $20 is $2,000.
+  await edit(pay, { questionSettings: { payment: { ...pricing, maximum: 100_000 } } })
+  await unchanged(/\$2,000\.00.*maximum \$1,000\.00/)
+  // An amount read from a link value the respondent controls.
+  await accepted(await f.call(`${f.base}/draft/settings`, { expectedVersion: (await f.read()).flow.draftVersion, settings: { hiddenFields: [{ id: 'coupon', name: 'coupon', type: 'number', category: 'plain' }], identityMode: 'anonymous', calculations: [f.calculation, { id: 'linked', name: 'Linked price', type: 'number', expression: { kind: 'hidden', fieldId: 'coupon' } }] } }, { method: 'PUT' }))
+  await edit(pay, { questionSettings: { payment: { ...pricing, calculationId: 'linked' } } })
+  await unchanged(/hidden field/)
+  // A quantity answered only after the payment step: a later answer could change the amount.
+  const copies = await step({ kind: 'question', questionType: 'number', prompt: 'Extra copies', required: true, nextStepId: f.ordinary.id, questionSettings: { min: 0, max: 5, decimalPlaces: 0 } })
+  await edit(pay, { nextStepId: f.ordinary.id, questionSettings: { payment: { products: [{ id: 'copy', name: 'Copy', unitAmount: 500, quantityStepId: copies }], options: [], minimum: 50, maximum: 10_000 } } })
+  await unchanged(/comes before “Extra copies”/)
+  // A payment step that leads to a question, then one placed after a completion screen.
+  await edit(pay, { nextStepId: copies, questionSettings: { payment: pricing } })
+  await unchanged(/lead straight to a completion screen/)
+  const order = (await f.read()).steps.map(entry => entry.id).filter(id => id !== pay)
+  await accepted(await f.call(`${f.base}/draft/order`, { expectedVersion: (await f.read()).flow.draftVersion, orderedStepIds: [...order.slice(0, order.indexOf(f.ordinary.id) + 1), pay, ...order.slice(order.indexOf(f.ordinary.id) + 1)] }, { method: 'PUT' }))
+  await edit(pay, { nextStepId: f.high.id })
+  await unchanged(/after a completion screen/)
 }, 60_000)
 
-contract('LOGIC-003', 'excludes off-path and forged operands and completes a private saved quote using its accepted answers', async () => {
+contract(['LOGIC-003', 'PAY-001'], 'excludes off-path and forged operands, completes a private saved quote, and charges only the server-computed total through Stripe Checkout', async () => {
   const f = await fixture(true), gate = f.gate!
   await accepted(await f.publish(), 201)
   const skipped = await f.submit([{ stepId: gate.id, value: false }, { stepId: f.quantity.id, value: 100 }, { stepId: f.discount.id, value: false }], undefined, { calculations: { total: 2000 } })
@@ -155,7 +191,116 @@ contract('LOGIC-003', 'excludes off-path and forged operands and completes a pri
   const completed = (await f.ledger()).responses.find(response => response.id === finished.receipt.responseId)!
   expect(completed.calculations).toEqual([{ id: 'total', name: 'Order total', type: 'number', value: 80 }])
   expect((await f.ledger()).total).toBe(2)
-}, 60_000)
+
+  // PAY-001 inherits LOGIC-003: each branch charges the server-computed total on Stripe Checkout.
+  const p = await fixture(), flowId = p.base.split('/').at(-1)!
+  const role = async (value: 'owner' | 'member') => {
+    await env.DB.prepare('UPDATE oa_operators SET role=? WHERE id=?').bind(value, p.operatorId).run()
+    await env.DB.prepare('UPDATE oa_sessions SET operator_version=(SELECT version FROM oa_operators WHERE id=operator_id) WHERE operator_id=?').bind(p.operatorId).run()
+  }
+  const connection = { secretKey: stripeKey, webhookSecret }
+  await role('member')
+  expect((await p.call('/api/app/connections/payment', connection, { method: 'PUT' })).status).toBe(403)
+  await role('owner')
+  expect(await accepted(await p.call('/api/app/connections/payment', connection, { method: 'PUT' }))).toMatchObject({ saved: true, mode: 'test', restricted: true })
+  expect(JSON.stringify(await accepted(await p.call('/api/app/connections/payment')))).not.toMatch(/rk_test|whsec_/)
+  expect((await env.DB.prepare("SELECT sealed FROM integration_connections WHERE kind='payment'").first<{ sealed: string }>())!.sealed).not.toContain('rk_test')
+  const pricing = { products: [], options: [], calculationId: 'total', minimum: 1600, maximum: 200_000 }
+  const addStep = async (step: Record<string, unknown>) => (await accepted<{ step: { id: string } }>(await p.call(`${p.base}/draft/steps`, { expectedVersion: (await p.read()).flow.draftVersion, step }), 201)).step
+  const standardPay = await addStep({ kind: 'payment', questionType: null, prompt: 'Pay the standard total', nextStepId: p.ordinary.id, questionSettings: { payment: pricing } })
+  const bulkPay = await addStep({ kind: 'payment', questionType: null, prompt: 'Pay the bulk total', nextStepId: p.high.id, questionSettings: { payment: pricing } })
+  await accepted(await p.call(`${p.base}/draft`, { expectedVersion: (await p.read()).flow.draftVersion, stepId: p.discount.id, prompt: p.discount.prompt, required: true, nextStepId: standardPay.id }, { method: 'PUT' }))
+  await accepted(await p.call(`${p.base}/draft/branches`, { expectedVersion: (await p.read()).flow.draftVersion, rules: [{ sourceStepId: p.discount.id, predicateKind: 'equals', expectedValue: null, destinationStepId: bulkPay.id, position: 0, condition: { kind: 'test', stepId: 'variable:total', operator: 'greater_than_or_equal', value: 100 } }] }, { method: 'PUT' }))
+  // RESP-009 on a payment form: a target of three counts only paid responses.
+  await accepted(await p.call(`${p.base}/publish`, { expectedVersion: (await p.read()).flow.draftVersion, targetCompletedResponses: 3 }), 201)
+  await env.DB.prepare("INSERT INTO notification_preferences(flow_id,operator_id,mode,updated_at) VALUES(?,?,'immediately',?) ON CONFLICT(flow_id,operator_id) DO UPDATE SET mode='immediately'").bind(flowId, p.operatorId, new Date().toISOString()).run()
+  type Paying = Receipt & { completionStepId: string | null; payment?: { state: string; checkoutUrl?: string } }
+  const orderInput = async (quantity: number, discount: boolean, session?: Session, extra: Record<string, unknown> = {}) => {
+    const { sessionId, sessionToken, revisionId } = session ?? await p.start()
+    return { sessionId, sessionToken, loadTime: await issueLoadTime(env.SESSION_SECRET, revisionId, Date.now() - 5000), idempotencyKey: crypto.randomUUID(), answers: [{ stepId: p.quantity.id, value: quantity }, { stepId: p.discount.id, value: discount }], ...extra }
+  }
+  const order = async (quantity: number, discount: boolean, session?: Session, extra: Record<string, unknown> = {}) => {
+    const input = await orderInput(quantity, discount, session, extra)
+    return { input, receipt: await accepted<Paying>(await p.call(`/api/public/flows/${p.slug}/responses`, input, { auth: false }), 201) }
+  }
+  const checkoutId = (receipt: Paying) => receipt.payment!.checkoutUrl!.split('/').at(-1)!
+  const sessionCreations = async () => (await stripe.state()).requests.filter(request => request.method === 'POST' && request.path === '/v1/checkout/sessions')
+  const payment = (responseId: string) => env.DB.prepare('SELECT state, attempt, amount, checkout_session_id AS session, payment_intent_id AS intent, provider_amount AS charged FROM response_payments WHERE response_id=?').bind(responseId).first<{ state: string; attempt: number; amount: number; session: string; intent: string | null; charged: number | null }>()
+  const notified = async (responseId: string) => { await materializeNotifications(env.DB, new Date().toISOString()); return (await env.DB.prepare('SELECT count(*) AS n FROM notification_deliveries WHERE response_id=?').bind(responseId).first<{ n: number }>())!.n }
+
+  const bulk = await order(8, true)
+  expect(bulk.receipt).toMatchObject({ completionStepId: null, payment: { state: 'pending', checkoutUrl: expect.stringMatching(/\/pay\/cs_test_/) } })
+  const sent = (await sessionCreations()).at(-1)!
+  expect(sent).toMatchObject({ authorization: `Bearer ${stripeKey}`, idempotencyKey: `pencil-checkout:${bulk.receipt.responseId}:1`, version: '2024-06-20' })
+  const calculated = (await p.ledger()).responses.find(response => response.id === bulk.receipt.responseId)!.calculations[0].value
+  expect(calculated).toBe(128)
+  expect(sent.form).toMatchObject({ mode: 'payment', client_reference_id: bulk.receipt.responseId, 'line_items[0][price_data][currency]': 'usd', 'line_items[0][price_data][unit_amount]': String(Number(calculated) * 100), 'line_items[0][quantity]': '1', 'line_items[0][price_data][product_data][name]': 'Pay the bulk total' })
+  expect((await stripe.state()).sessions[checkoutId(bulk.receipt)].amount_total).toBe(12_800)
+  const sentBefore = (await sessionCreations()).length, refusedAmount = await p.call(`/api/public/flows/${p.slug}/responses`, await orderInput(8, true, undefined, { amount: 1 }), { auth: false })
+  expect(refusedAmount.status).toBe(400)
+  expect(await refusedAmount.text()).toMatch(/submitted amount is refused/)
+  expect((await sessionCreations()).length).toBe(sentBefore)
+  const abandoned = await order(2, false), cancelled = await order(3, false)
+  expect((await p.ledger()).responses.map(response => response.payment?.state)).toEqual(['pending', 'pending', 'pending'])
+  expect(await notified(bulk.receipt.responseId)).toBe(0)
+
+  // Only a correctly signed, current webhook for that Checkout Session marks it paid; delivery is idempotent by event ID.
+  const paidSession = await stripe.settle('complete', checkoutId(bulk.receipt))
+  expect(await deliver(await stripeEvent('checkout.session.completed', paidSession, { secret: 'whsec_example_forged_signing_secret' }))).toMatchObject({ status: 400, outcome: 'invalid-signature' })
+  expect(await deliver(await stripeEvent('checkout.session.completed', paidSession, { at: Math.floor(Date.now() / 1000) - 600 }))).toMatchObject({ status: 400, outcome: 'invalid-signature' })
+  expect((await payment(bulk.receipt.responseId))!.state).toBe('pending')
+  const paid = await stripeEvent('checkout.session.completed', paidSession)
+  expect(await deliver(paid)).toMatchObject({ status: 200, outcome: 'applied' })
+  expect(await deliver(paid)).toMatchObject({ status: 200, outcome: 'duplicate' })
+  expect(await payment(bulk.receipt.responseId)).toMatchObject({ state: 'paid', intent: paidSession.payment_intent, charged: 12_800 })
+  expect(await notified(bulk.receipt.responseId)).toBe(1)
+  // An abandoned Checkout expires; it never notifies and never holds a place.
+  expect(await deliver(await stripeEvent('checkout.session.expired', await stripe.settle('expire', checkoutId(abandoned.receipt))))).toMatchObject({ outcome: 'applied' })
+  expect((await payment(abandoned.receipt.responseId))!.state).toBe('expired')
+  expect(await notified(abandoned.receipt.responseId)).toBe(0)
+
+  // Cancel returns to the payment step with every answer; the next attempt replaces it under the same RESP-012 key.
+  const firstAttempt = checkoutId(cancelled.receipt), cancelLink = new URL((await stripe.state()).sessions[firstAttempt].cancel_url)
+  expect(cancelLink.pathname).toBe(`/f/${p.slug}`)
+  const back = await accepted<PaymentReturnView>(await p.call(`/api/public/flows/${p.slug}/payments/return`, { token: cancelLink.searchParams.get('payment-key'), outcome: cancelLink.searchParams.get('payment-return') }, { auth: false }))
+  expect(back).toMatchObject({ state: 'open', payment: { state: 'cancelled' }, currentStepId: standardPay.id, idempotencyKey: cancelled.input.idempotencyKey, answers: [{ stepId: p.quantity.id, value: 3 }, { stepId: p.discount.id, value: false }] })
+  if (back.state !== 'open') throw new Error('The cancel return did not reopen the payment step.')
+  expect((await stripe.state()).sessions[firstAttempt].status).toBe('expired')
+  const replaced = await order(4, false, back, { idempotencyKey: back.idempotencyKey })
+  expect(replaced.receipt.responseId).toBe(cancelled.receipt.responseId)
+  expect((await env.DB.prepare('SELECT count(*) AS n FROM responses WHERE session_id=?').bind(cancelled.input.sessionId).first<{ n: number }>())!.n).toBe(1)
+  expect(await payment(cancelled.receipt.responseId)).toMatchObject({ state: 'pending', attempt: 2, amount: 8_000 })
+  expect((await sessionCreations()).at(-1)!.idempotencyKey).toBe(`pencil-checkout:${cancelled.receipt.responseId}:2`)
+  expect(await deliver(await stripeEvent('checkout.session.completed', await stripe.settle('complete', checkoutId(replaced.receipt))))).toMatchObject({ outcome: 'applied' })
+  expect(await deliver(await stripeEvent('checkout.session.expired', (await stripe.state()).sessions[firstAttempt]))).toMatchObject({ status: 200, outcome: 'ignored' })
+  const successLink = new URL((await stripe.state()).sessions[checkoutId(replaced.receipt)].success_url)
+  expect(await accepted(await p.call(`/api/public/flows/${p.slug}/payments/return`, { token: successLink.searchParams.get('payment-key'), outcome: 'success' }, { auth: false }))).toMatchObject({ state: 'completed', completionStepId: p.ordinary.id, payment: { state: 'paid' } })
+
+  // RESP-008: an invitation admits one paid response; its expired attempt is replaced from a new session, not duplicated.
+  const contact = await accepted<{ id: string }>(await p.call('/api/app/distribution/contacts', { name: 'Invited buyer', email: `buyer-${crypto.randomUUID()}@example.test` }), 201)
+  const launch = await accepted<{ id: string }>(await p.call(`${p.base}/distribution`, { contactIds: [contact.id], commandKey: crypto.randomUUID() }), 201)
+  const { token: invitationToken, id: participantId } = (await env.DB.prepare('SELECT token, id FROM invitation_participants WHERE launch_id=?').bind(launch.id).first<{ token: string; id: string }>())!
+  const invitedSession = async () => accepted<Session>(await p.call(`/api/public/flows/${p.slug}/sessions`, { deviceClass: 'desktop', source: 'direct', invitationToken }, { auth: false }), 201)
+  const invited = await order(2, false, await invitedSession(), { invitationToken })
+  expect((await env.DB.prepare('SELECT response_status FROM invitation_participants WHERE id=?').bind(participantId).first<{ response_status: string }>())!.response_status).toBe('started')
+  expect(await deliver(await stripeEvent('checkout.session.expired', await stripe.settle('expire', checkoutId(invited.receipt))))).toMatchObject({ outcome: 'applied' })
+  const again = await order(5, false, await invitedSession(), { invitationToken })
+  expect(again.receipt.responseId).toBe(invited.receipt.responseId)
+  expect(await deliver(await stripeEvent('checkout.session.completed', await stripe.settle('complete', checkoutId(again.receipt))))).toMatchObject({ outcome: 'applied' })
+  expect((await env.DB.prepare('SELECT response_status FROM invitation_participants WHERE id=?').bind(participantId).first<{ response_status: string }>())!.response_status).toBe('completed')
+  expect((await env.DB.prepare('SELECT count(*) AS n FROM responses WHERE participant_id=?').bind(participantId).first<{ n: number }>())!.n).toBe(1)
+  // Three paid responses reach the target of three: admission closes although five responses were committed.
+  const closed = await p.call(`/api/public/flows/${p.slug}/sessions`, { deviceClass: 'desktop', source: 'direct' }, { auth: false })
+  expect(closed.status).toBe(409)
+  expect((await p.ledger()).responses.map(response => response.payment?.state).sort()).toEqual(['expired', 'paid', 'paid', 'paid'])
+
+  // DATA-002: erasure removes the payment reference with its response; other payments and their Stripe IDs remain.
+  const erased = await p.call(`/api/app/responses/${abandoned.receipt.responseId}`, {}, { method: 'DELETE' })
+  expect(erased.status, await erased.clone().text()).toBe(204)
+  expect(await payment(abandoned.receipt.responseId)).toBeNull()
+  expect((await env.DB.prepare('SELECT count(*) AS n FROM payment_events WHERE response_id=?').bind(abandoned.receipt.responseId).first<{ n: number }>())!.n).toBe(0)
+  expect(await payment(bulk.receipt.responseId)).toMatchObject({ state: 'paid', session: paidSession.id, intent: paidSession.payment_intent })
+}, 90_000)
 
 contract('LOGIC-003', 'calculates typed hidden inputs, arithmetic, calendar differences and dependent blanks after duplication', async () => {
   const f = await fixture()

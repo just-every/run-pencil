@@ -108,7 +108,7 @@ async function fetchPencil(request: Request, bindings: WorkerBindings, execution
     if (path === '/app' || path.startsWith('/app/')) headers.set('Content-Security-Policy', editorPolicy(headers.get('Content-Security-Policy') ?? '', bindings))
     // no-transform: no proxy rewrites the document React hydrates (Cloudflare's email address obfuscation included).
     headers.set('Cache-Control', 'no-store, no-transform')
-    if (/^\/f\//.test(path) && new URL(request.url).searchParams.has('resume')) headers.set('X-Robots-Tag', 'noindex, nofollow')
+    if (/^\/f\//.test(path) && (new URL(request.url).searchParams.has('resume') || new URL(request.url).searchParams.has('payment-key'))) headers.set('X-Robots-Tag', 'noindex, nofollow')
     // /setup's native forms POST to this origin, whose exact Origin check needs the browser to send it; no-referrer would send Origin: null.
     headers.set('Referrer-Policy', path === '/setup' ? 'same-origin' : 'no-referrer')
     headers.set('X-Content-Type-Options', 'nosniff')

@@ -40,6 +40,8 @@ export interface WorkerBindings {
   readonly SESSION_SECRET?: string
   readonly SETUP_TOKEN?: string
   readonly PENCIL_LOCAL_DEVELOPMENT?: string
+  /** Local runtimes only: a loopback Stripe stand-in for tests (PAY-001). Deployments always use api.stripe.com. */
+  readonly STRIPE_API_ORIGIN?: string
   /** Local runtimes only: the checkout's key gate and dev identity switch. `rer deploy` refuses both. */
   readonly RER_DEV_ORIGIN?: string
   readonly RER_DEV_KEY?: string

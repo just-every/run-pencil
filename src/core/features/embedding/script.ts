@@ -1,8 +1,10 @@
 import type { Hono } from 'hono'
 import type { WorkerEnvironment } from '../../app/environment'
 import type { RequestServices } from '../../app/request-context'
+import { checkoutOrigin } from './messages'
 
-/** No respondent state crosses this interface. The only dynamic value is layout. */
+/** No respondent answer crosses this interface. The dynamic values are layout and, for a payment step, the Stripe
+ * Checkout page the host opens at top level (Checkout refuses to load in a frame). */
 export function embeddingScript(install: string, host: string, slug: string, collectorKey?: string) {
   const literal = (value: string) => JSON.stringify(value).replace(/</g, '\\u003c')
   return `(() => {
@@ -24,6 +26,7 @@ const receive=(event)=>{
  if(data.type==='pencil:height' && keys.length===3 && Number.isInteger(data.height) && data.height>0 && data.height<=100000 && loaded) { frame.style.height=data.height+'px'; frame.dispatchEvent(new CustomEvent('pencil:height',{detail:{height:data.height},bubbles:true})); }
  else if(data.type==='pencil:loaded' && keys.length===2) { if(!loaded) { loaded=true; frame.dispatchEvent(new CustomEvent('pencil:loaded',{bubbles:true})); } frame.contentWindow.postMessage({type:'pencil:init',challenge},'*'); }
  else if(data.type==='pencil:completed' && keys.length===2 && loaded && !completed) { completed=true; frame.dispatchEvent(new CustomEvent('pencil:completed',{bubbles:true})); }
+ else if(data.type==='pencil:checkout' && keys.length===3 && loaded && typeof data.url==='string' && data.url.startsWith('${checkoutOrigin}/')) { location.assign(data.url); }
 };
 addEventListener('message',receive);
 script.insertAdjacentElement('afterend',frame);

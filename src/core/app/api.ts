@@ -1,10 +1,11 @@
 import type { Condition, ConditionTrace } from '../shared/conditions'
 import type { QuestionType } from '../shared/questionKinds'
+import type { PaymentState } from '../shared/payments'
 export type TeamTemplate = {id:string;name:string;createdAt:string;createdBy:string|null}
 export type FlowStep = {
   id: string
   position: number
-  kind: 'welcome' | 'question' | 'completion'
+  kind: 'welcome' | 'question' | 'payment' | 'completion'
   questionType: QuestionType | null
   prompt: string
   helperText: string | null
@@ -41,9 +42,14 @@ export type PublicFlow = {
 }
 
 export type SavedResponseState =
-  | { state: 'open'; loadTime: string; flow: PublicFlow; sessionId: string; sessionToken: string; revisionId: string; answers: Array<{ stepId: string; value: unknown }>; currentStepId: string; invitationToken?: string }
+  | { state: 'open'; loadTime: string; flow: PublicFlow; sessionId: string; sessionToken: string; revisionId: string; answers: Array<{ stepId: string; value: unknown }>; currentStepId: string; invitationToken?: string; idempotencyKey?: string }
   | { state: 'completed'; flow: PublicFlow; completionStepId: string }
   | { state: 'unavailable'; startAgain: string; message: string }
+
+/** PAY-001: where Stripe Checkout's success or cancel link leaves the respondent. */
+export type PaymentReturnView =
+  | (Extract<SavedResponseState, { state: 'open' }> & { payment: { state: PaymentState } })
+  | { state: 'completed'; payment: { state: PaymentState }; flow: PublicFlow; answers: Array<{ stepId: string; value: unknown }>; completionStepId: string; redirectUrl: string | null }
 
 export type DashboardFlow = {
   id: string
@@ -156,7 +162,8 @@ export const api = {
     request<{ state: 'saved'; expiresAt: string }>(`/api/public/flows/${encodeURIComponent(slug)}/sessions/save`, { method: 'POST', body: JSON.stringify(input) }),
   resumeResponse: (slug: string, token: string) => request<SavedResponseState>(`/api/public/flows/${encodeURIComponent(slug)}/resume`, { method: 'POST', body: JSON.stringify({ token }) }),
   submitResponse: (slug: string, input: { sessionId: string; sessionToken: string; loadTime: string; idempotencyKey: string; answers: Array<{ stepId: string; value: unknown }>; honeypot?: string; invitationToken?: string; hidden?:Record<string,unknown> }) =>
-    request<{ responseId: string; idempotent: boolean; completionStepId: string; redirectUrl?: string | null; disposition: 'released' | 'quarantined' }>(`/api/public/flows/${encodeURIComponent(slug)}/responses`, { method: 'POST', body: JSON.stringify(input) }),
+    request<{ responseId: string; idempotent: boolean; completionStepId: string | null; redirectUrl?: string | null; disposition: 'released' | 'quarantined'; payment?: { state: PaymentState; checkoutUrl?: string } }>(`/api/public/flows/${encodeURIComponent(slug)}/responses`, { method: 'POST', body: JSON.stringify(input) }),
+  paymentReturn: (slug: string, input: { token: string; outcome: 'success' | 'cancel' }) => request<PaymentReturnView>(`/api/public/flows/${encodeURIComponent(slug)}/payments/return`, { method: 'POST', body: JSON.stringify(input) }),
   quarantinedResponses: (revisionId: string) => request<Array<{ id: string; quarantineReason: string | null; completedAt: string; answers: Array<{ stepId: string; value: unknown }> }>>(`/api/app/revisions/${encodeURIComponent(revisionId)}/quarantine`),
   releaseQuarantinedResponse: (responseId: string) => request<void>(`/api/app/responses/${encodeURIComponent(responseId)}/release`, { method: 'POST' }),
   deleteQuarantinedResponse: (responseId: string) => request<void>(`/api/app/responses/${encodeURIComponent(responseId)}/quarantine`, { method: 'DELETE' }),
@@ -173,7 +180,7 @@ export const api = {
 
 export type ExportFormat = 'json' | 'csv' | 'xlsx' | 'sav'
 export type LedgerFilter = { codeId?: string; workflowStatus?: string; workflowAssignee?: string; workflowTag?: string; search?: string; collectorId?: string; revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown' | 'imported'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
-export type LedgerResponse = { presentedOrder:import('../shared/presentationOrder').PresentationOrder|null;
+export type LedgerResponse = { payment?: import('../shared/payments').LedgerPayment; presentedOrder:import('../shared/presentationOrder').PresentationOrder|null;
   verifiedEmail?:string
   verifiedSubject?:string; calculations:Array<{id:string;name:string;type:'number'|'text';value:number|string|null}>; hiddenFields:Array<{id:string;name:string;type:import('../shared/hiddenFields').HiddenField['type'];value:string|number|boolean}>;identityMode:'anonymous'|'identified';discardedParameters:number; collector: { id: string; name: string; channel: string }; omittedQuestions: Array<{ stepId: string; label: string; position: number; questionType?: string }>; participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string | null; state: 'released' | 'quarantined'; quarantineReason: string | null; answers: Array<{ stepId: string; label: string; position: number; questionType: string; value: unknown; displayValue: string }> }
 export type Ledger = { flow: { id: string; title: string; slug: string }; cutoff: string; filter: LedgerFilter; revisions: Array<{ calculations:Array<Pick<import('../shared/calculations').Calculation,'id'|'name'|'type'>>; hiddenFields:Array<Pick<import('../shared/hiddenFields').HiddenField,'id'|'name'|'type'>>; id: string; number: number; isCurrent: number }>; total: number; responses: LedgerResponse[] }

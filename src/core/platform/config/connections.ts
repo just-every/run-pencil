@@ -15,9 +15,15 @@ export const analysisConnectionSchema = z.object({
   outputRate: z.number().finite().min(0).max(10000).optional(),
 }).strict()
 export const taskConnectionSchema = z.object({ url: address, apiKey: secret }).strict()
+// PAY-001: a Stripe restricted (rk_) or secret (sk_) key and the signing secret of the webhook endpoint the owner made.
+export const paymentConnectionSchema = z.object({
+  secretKey: z.string().trim().regex(/^(?:rk|sk)_(?:test|live)_[A-Za-z0-9]{8,240}$/, 'Use a Stripe restricted key (rk_test_ or rk_live_) or secret key.'),
+  webhookSecret: z.string().trim().regex(/^whsec_[A-Za-z0-9+/=_-]{8,240}$/, 'Use the webhook signing secret that starts with whsec_.'),
+}).strict()
 type AnalysisConnection = z.infer<typeof analysisConnectionSchema>
 type TaskConnection = z.infer<typeof taskConnectionSchema>
-type Kind = 'analysis' | 'task'
+export type PaymentConnection = z.infer<typeof paymentConnectionSchema>
+type Kind = 'analysis' | 'task' | 'payment'
 
 function validateAddress(value: string, local: boolean) {
   const url = new URL(value)
@@ -59,6 +65,15 @@ export class IntegrationConnections {
   async saveTask(input: TaskConnection) {
     validateAddress(input.url, this.platform.configuration.isLocalDevelopment)
     await this.save('task', input)
+  }
+  async savePayment(input: PaymentConnection) {
+    await this.save('payment', input)
+  }
+  /** The key is used only for Stripe calls; status reports its mode, never its value. */
+  async payment() { return this.read<PaymentConnection>('payment') }
+  async paymentStatus() {
+    const saved = await this.read<PaymentConnection>('payment')
+    return { saved: !!saved, mode: saved ? saved.secretKey.includes('_live_') ? 'live' as const : 'test' as const : null, restricted: saved ? saved.secretKey.startsWith('rk_') : null, webhookUrl: `${this.platform.configuration.appOrigin}/api/public/payments/stripe` }
   }
   async analysisStatus() {
     const saved = await this.read<AnalysisConnection>('analysis')

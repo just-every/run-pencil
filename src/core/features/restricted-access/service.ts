@@ -1,3 +1,4 @@
+import { admittedResponseSql } from '../payments/admission'
 import { z } from 'zod'
 import type { MailSender } from '../../../base/operator-auth/index.mjs'
 import type { FormSettings } from '../../shared/hiddenFields'
@@ -105,7 +106,7 @@ export class RestrictedAccess {
   async getRuleForRevision(slug: string, revisionId: string) {
     parse(id, slug); parse(id, revisionId)
     const row = await this.db.prepare(`SELECT r.*,f.slug,f.status,
-      (SELECT count(*) FROM responses WHERE revision_id=r.id AND state='released') AS completed
+      (SELECT count(*) FROM responses admitted WHERE admitted.revision_id=r.id AND ${admittedResponseSql('admitted')}) AS completed
       FROM flow_revisions r JOIN flows f ON f.id=r.flow_id WHERE f.slug=? AND r.id=? AND r.state='published'`)
       .bind(slug, revisionId).first<Revision>()
     if (!row || !['open', 'closed'].includes(row.status)) throw new NotFoundError('Form not found.')

@@ -1,7 +1,8 @@
+import { admittedResponseSql } from '../payments/admission'
 import { and, eq, getTableColumns, sql } from 'drizzle-orm'
 import type { AnySQLiteTable } from 'drizzle-orm/sqlite-core'
 import type { PencilDatabase } from '../../platform/db/repository'
-import { choiceOptions, flowBranchRules, flowRevisions, flowSteps, flows, responses } from '../../platform/db/schema'
+import { choiceOptions, flowBranchRules, flowRevisions, flowSteps, flows } from '../../platform/db/schema'
 
 function rowJson(table: AnySQLiteTable) {
   return sql`json_object(${sql.join(Object.entries(getTableColumns(table)).map(([name, column]) => sql`${name}, ${column}`), sql`, `)})`
@@ -15,8 +16,9 @@ const snapshotFields = {
     const revision = JSON.parse(value) as typeof flowRevisions.$inferSelect
     return { ...revision, isCurrent: Boolean(revision.isCurrent) }
   }),
+  // RESP-009: on a payment form only paid responses hold a place.
   completedResponses: sql<number>`CASE WHEN ${flowRevisions.targetCompletedResponses} IS NOT NULL THEN
-    (SELECT COUNT(*) FROM ${responses} WHERE ${responses.revisionId} = ${flowRevisions.id} AND ${responses.state} = 'released') ELSE 0 END`,
+    (SELECT COUNT(*) FROM responses admitted WHERE admitted.revision_id = ${flowRevisions.id} AND ${sql.raw(admittedResponseSql('admitted'))}) ELSE 0 END`,
   steps: sql`(SELECT json_group_array(json(item)) FROM (
     SELECT ${rowJson(flowSteps)} AS item FROM ${flowSteps}
     WHERE ${flowSteps.revisionId} = ${flowRevisions.id} ORDER BY ${flowSteps.position}

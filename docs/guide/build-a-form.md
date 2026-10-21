@@ -106,7 +106,32 @@ Try the values in **Preview draft**. Use a calculation in an answer-path conditi
 
 Calculated answer paths require Pencil to prove the possible routes. Numeric question inputs to that proof need explicit **Minimum** and **Maximum** values that are safe whole numbers, **Decimal places** set to `0`, and no more than 1,000 possible values. The proof also supports rating scales, boolean answers, single-choice and dropdown answers, and text equality, inequality and blank/answered checks. Unsupported input domains, including unbounded hidden numbers, text masks or patterns and possible Other answers, refuse publication when needed for a calculated path. These restrictions apply to calculated answer paths; general calculated values can use unbounded inputs, subject to the division check above.
 
-Calculated values are not yet available to alerts or payments.
+Calculated values are not yet available to alerts. A payment step can charge a numeric calculation; see [Take a payment](#take-a-payment).
+
+## Take a payment
+
+A payment step collects money through Stripe Checkout, Stripe’s own page. Your form never loads a card field, and Pencil never receives card or bank numbers.
+
+**Connect Stripe first.** The installation owner opens **Settings** and fills in **Payments**:
+
+1. In the Stripe Dashboard, create a restricted key with write access to Checkout Sessions. A key that starts `rk_test_` works in test mode; `rk_live_` takes real money.
+2. Add a webhook endpoint at `https://YOUR-PENCIL/api/public/payments/stripe` for the events `checkout.session.completed`, `checkout.session.expired`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `payment_intent.payment_failed` and `charge.refunded`.
+3. Paste the restricted key and the endpoint’s signing secret (`whsec_…`) and choose **Save Stripe connection**, then **Test connection**.
+
+Both values are encrypted, never shown again and excluded from backups. Only the owner can save, test or remove them.
+
+**Add the step.** Choose **Add payment step** in the builder. Price the order one of two ways, always in US dollars:
+
+- **Products and option prices**: fixed products with a price and either a fixed quantity or the answer to an earlier whole-number question, plus prices on the choices of earlier single-choice, multiple-choice or dropdown questions. A blank quantity or option adds nothing.
+- **Calculated amount**: a numeric calculation, read as dollars and rounded to the cent. Every question it reads must be required and asked on every path to the payment step, and it cannot read a hidden field, because a link value is something the respondent could change.
+
+Set a **Minimum charge** and **Maximum charge**. Publishing refuses a payment step, naming it, when it comes after a completion screen, when it does not lead straight to a completion screen, when a question that sets its amount comes after it, or when any possible total falls outside its limits. A path can reach only one payment step, so give each branch its own step if branches charge differently.
+
+**What respondents see.** The payment step shows the order and its total, recomputed by Pencil from the published form; an amount sent by the browser is refused. **Pay with Stripe** saves the response with its payment pending and opens Checkout. After paying, the respondent returns to the completion screen their path reached. **Back** on Checkout returns them to the payment step with every answer kept; Pencil cancels that checkout, and their next attempt replaces the cancelled one, so one respondent session keeps one response.
+
+**Payment states.** A response is **Paid** only after Stripe’s signed webhook says so for that checkout. **Payment failed**, **Checkout expired** (an abandoned checkout, after Stripe’s 24 hours) and **Refunded** also come from Stripe’s events; **Checkout cancelled** comes from the respondent. Each event is applied once. Results show every response with its payment; on a payment form only paid responses count toward a completion target, a collector’s response limit or an invitation’s one completion, and only paid responses send response emails and join daily digests.
+
+An embedded payment form asks your page to open Checkout in the whole window; the respondent returns to the form’s own page.
 
 ## Preview your flow
 

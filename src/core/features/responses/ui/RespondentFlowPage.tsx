@@ -1,4 +1,6 @@
 import { ReviewAnswers } from './ReviewAnswers'
+import { PaymentDisclosure, PaymentSummary, paymentQuoteFor } from '../../payments/ui'
+import { formatUsd, type PaymentState } from '../../../shared/payments'
 import { CompletionDisclosure } from './CompletionDisclosure'
 import { AnswerFieldset } from '../../../shared/ui/AnswerFieldset'
 import { useRespondentFocus } from '../../../shared/ui/useRespondentFocus'
@@ -38,13 +40,13 @@ function choicesForStep(choices: ChoiceOption[], stepId: string) {
   return choices.filter((choice) => choice.stepId === stepId).sort((left, right) => left.position - right.position)
 }
 
-export function RespondentFlowPage({ config, slug, embedded = false, landing = false, initialFlow, invitationToken, collectorKey, resume, onKioskComplete, accessToken, verifiedIdentity }: { config: PublicSeedConfig; slug: string; embedded?: boolean; landing?: boolean; initialFlow: PublicFlow; invitationToken?: string; collectorKey?:string; resume?: Extract<SavedResponseState, { state: 'open' }>; onKioskComplete?: () => void; accessToken?:string; verifiedIdentity?:string }) {
+export function RespondentFlowPage({ config, slug, embedded = false, landing = false, initialFlow, invitationToken, collectorKey, resume, onKioskComplete, accessToken, verifiedIdentity, restoredAnswers, payment }: { config: PublicSeedConfig; slug: string; embedded?: boolean; landing?: boolean; initialFlow: PublicFlow; invitationToken?: string; collectorKey?:string; resume?: Extract<SavedResponseState, { state: 'open' }>; onKioskComplete?: () => void; accessToken?:string; verifiedIdentity?:string; restoredAnswers?: Array<{ stepId: string; value: unknown }>; payment?: { state: PaymentState; notice?: string } }) {
   const [closedFlow, setClosedFlow] = useState<ClosedFlow>()
   const [unconfirmedClosedFlow, setUnconfirmedClosedFlow] = useState<ClosedFlow>()
   const [closedRestart, setClosedRestart] = useState(false)
   const [baseFlow, setFlow] = useState<PublicFlow>(initialFlow)
   const [hidden, setHidden] = useState<Record<string,unknown>>(() => Object.fromEntries((initialFlow.formSettings?.hiddenFields ?? []).flatMap(field => initialFlow.hiddenContext?.hidden[field.id] === undefined ? [] : [[field.name,initialFlow.hiddenContext.hidden[field.id]]])))
-  useEffect(() => { if (!resume) setHidden(Object.fromEntries([...new URLSearchParams(window.location.search)].filter(([name])=>!['collector','resume','source','challenge','kiosk'].includes(name)))) }, [])
+  useEffect(() => { if (!resume && !restoredAnswers) setHidden(Object.fromEntries([...new URLSearchParams(window.location.search)].filter(([name])=>!['collector','resume','source','challenge','kiosk','payment-return','payment-key'].includes(name)))) }, [])
   const hiddenContext = normalizeHidden(baseFlow.formSettings ?? {hiddenFields:[],identityMode:'anonymous'},hidden)
   const flow = {...baseFlow,hiddenContext}
   const view = useViewCounter({slug,revisionId:flow.revision.id,source:embedded?'embed':'direct',collectorKey,invitationToken,accessToken},!resume&&!initialFlow.completedStepId, resume?.loadTime)
@@ -55,13 +57,13 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
     responseContext.current += 1
     return () => { responseContext.current += 1 }
   }, [slug, embedded, initialFlow.flow.id])
-  const initialAnswers = Object.fromEntries((resume?.answers ?? []).map(answer => [answer.stepId, answer.value]))
+  const initialAnswers = Object.fromEntries((resume?.answers ?? restoredAnswers ?? []).map(answer => [answer.stepId, answer.value]))
   const initialPath = visiblePath({...initialFlow,hiddenContext}, initialAnswers)
   const initialIndex = resume ? Math.max(0, responseScreens(initialFlow.steps,initialPath,initialFlow.presentation).findIndex(screen => screen.id === resume.currentStepId || screen.steps.some(step=>step.id===resume.currentStepId))) : 0
   const [index, setIndex] = useState(initialIndex)
   const [reviewing, setReviewing] = useState(false)
   const [completedStepId, setCompletedStepId] = useState<string | undefined>(initialFlow.completedStepId ?? undefined)
-  useEmbedProtocol(embedded, !!completedStepId, config.embedHostOrigin)
+  const requestCheckout = useEmbedProtocol(embedded, !!completedStepId, config.embedHostOrigin)
   const [pendingFinal, setPendingFinal] = useState<PendingFinal>()
   const [answers, setAnswers] = useState<AnswerValues>(initialAnswers)
   const [skipped, setSkipped] = useState<Set<string>>(new Set(initialPath.slice(0,resume?initialPath.findIndex(step=>step.id===resume.currentStepId):0).filter(step => step.kind === 'question' && !step.required && isUnanswered(initialAnswers[step.id])).map(step => step.id)))
@@ -74,7 +76,9 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   const [honeypot, setHoneypot] = useState('')
   const sessionStart = useRef<Promise<SessionCredentials> | undefined>(resume ? Promise.resolve({ sessionId: resume.sessionId, sessionToken: resume.sessionToken, revisionId: resume.revisionId }) : undefined)
   const restartCandidate = useRef<Awaited<ReturnType<typeof api.startSession>> | undefined>(undefined)
-  const idempotencyKey = useRef(crypto.randomUUID())
+  // A payment's cancel return keeps the response's RESP-012 key, so the next attempt replaces the cancelled one.
+  const idempotencyKey = useRef(resume?.idempotencyKey ?? crypto.randomUUID())
+  const [leaving, setLeaving] = useState(false)
   const saveAttempt = useRef<{ fingerprint: string; commandKey: string } | undefined>(undefined)
 
 
@@ -137,6 +141,9 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   const currentChoices = choicesForStep(flow.choices, current.id).map(choice => ({ ...choice, label: recall(choice.label) }))
   const isCompletion = current.kind === 'completion'
   const isWelcome = current.kind === 'welcome'
+  const isPayment = current.kind === 'payment'
+  const quote = isPayment ? paymentQuoteFor(flow, current, answers) : undefined
+  const charge = quote && !('issue' in quote) ? quote.total : undefined
   const nextCandidate = screens[index + 1]?.steps[0]
   const questionScreens = screens.filter(entry => entry.steps[0]?.kind === 'question')
   const answered = (step: typeof questionSteps[number]) => (!step.required && skipped.has(step.id) && isUnanswered(answers[step.id])) || (!isUnanswered(answers[step.id]) && !answerIssue(step, choicesForStep(flow.choices, step.id).map(choice => choice.id), answers[step.id]))
@@ -149,6 +156,8 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
 
   const confirmFinal = async (attempt: PendingFinal) => {
     const receipt = await api.submitResponse(slug, attempt.input)
+    // PAY-001: the response is committed with payment pending; the respondent pays on Stripe's hosted Checkout page.
+    if (receipt.payment?.checkoutUrl) { setLeaving(true); if (embedded) requestCheckout(receipt.payment.checkoutUrl); else window.location.assign(receipt.payment.checkoutUrl); return }
     const completionStepId = receipt.completionStepId
     const completion = flow.steps.find((step) => step.id === completionStepId && step.kind === 'completion')
     if (!completion) throw new Error('The completion acknowledgement could not be read. Retry your submission.')
@@ -255,26 +264,29 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
     setIndex(target)
   }
   const needsAdmission = sessionUnavailable || formChanged
-  const primaryLabel = pendingFinal ? 'Retry submission' : formChanged ? 'Use current form' : sessionUnavailable ? 'Start again' : isWelcome ? 'Begin' : nextCandidate?.kind === 'completion' ? flow.reviewBeforeSubmit && !reviewing ? 'Review answers' : 'Submit response' : 'Continue'
+  const primaryLabel = pendingFinal ? 'Retry submission' : formChanged ? 'Use current form' : sessionUnavailable ? 'Start again' : isWelcome ? 'Begin' : nextCandidate?.kind === 'completion' ? flow.reviewBeforeSubmit && !reviewing ? 'Review answers' : isPayment && charge !== undefined ? `Pay ${formatUsd(charge)} with Stripe` : 'Submit response' : 'Continue'
 
   return (
     <main className="pencil-canvas respondent-shell brand-surface" data-hydrated={hydrated} data-embedded={embedded ? 'true' : undefined} data-landing={landing ? 'true' : undefined} style={configuredTheme}>
       {landing ? <header className="respondent-landing-header"><span className="eyebrow">{config.publicFlowBusinessName}</span><a className="secondary-button focus-ring" href="/signin">Operator sign in</a></header> : null}
       <article className="respondent-card respondent-note-sheet" aria-labelledby="respondent-title">
         <BrandIdentity config={config} />
-        {!isCompletion ? <><div className="respondent-top"><span>{reviewing ? 'Before you submit' : isWelcome ? 'Before you begin' : screen?.layout ? `${screen.layout.kind === 'page' ? 'Page' : 'Group'} ${screens.filter(entry=>entry.steps[0]?.kind==='question').findIndex(entry=>entry.id===screen.id)+1} of ${screens.filter(entry=>entry.steps[0]?.kind==='question').length} · ${screen.steps.length} question${screen.steps.length===1?'':'s'}` : `Question ${questionPosition + 1} of ${questionSteps.length}`}</span><span>{reviewing ? `${questionSteps.length} question${questionSteps.length === 1 ? '' : 's'}` : isWelcome ? `${questionSteps.length} question${questionSteps.length === 1 ? '' : 's'} ahead` : `${Math.max(0, progressTotal - progressDone)} remaining`}</span></div><div aria-label="Response progress" aria-valuemax={100} aria-valuemin={0} aria-valuenow={Math.round(progress)} className="progress-track" role="progressbar"><span style={{ width: `${progress}%` }} />{!isWelcome && current.kind === 'question' ? <span className="progress-track__here" style={{ left: `${progressPosition / Math.max(1, progressTotal) * 100}%`, width: `${(screen ? units(screen) : 1)*100 / Math.max(1, progressTotal)}%` }} /> : null}</div></> : null}
+        {!isCompletion ? <><div className="respondent-top"><span>{reviewing ? 'Before you submit' : isWelcome ? 'Before you begin' : isPayment ? 'Payment' : screen?.layout ? `${screen.layout.kind === 'page' ? 'Page' : 'Group'} ${screens.filter(entry=>entry.steps[0]?.kind==='question').findIndex(entry=>entry.id===screen.id)+1} of ${screens.filter(entry=>entry.steps[0]?.kind==='question').length} · ${screen.steps.length} question${screen.steps.length===1?'':'s'}` : `Question ${questionPosition + 1} of ${questionSteps.length}`}</span><span>{reviewing ? `${questionSteps.length} question${questionSteps.length === 1 ? '' : 's'}` : isWelcome ? `${questionSteps.length} question${questionSteps.length === 1 ? '' : 's'} ahead` : isPayment ? 'Last step' : `${Math.max(0, progressTotal - progressDone)} remaining`}</span></div><div aria-label="Response progress" aria-valuemax={100} aria-valuemin={0} aria-valuenow={Math.round(progress)} className="progress-track" role="progressbar"><span style={{ width: `${progress}%` }} />{!isWelcome && current.kind === 'question' ? <span className="progress-track__here" style={{ left: `${progressPosition / Math.max(1, progressTotal) * 100}%`, width: `${(screen ? units(screen) : 1)*100 / Math.max(1, progressTotal)}%` }} /> : null}</div></> : null}
         <h1 className="display" id="respondent-title" tabIndex={-1}>{reviewing ? 'Review your answers' : screen?.layout && !isCompletion ? screen.layout.title : displayedStep.prompt}</h1>
         {reviewing ? null : screen?.layout && !isCompletion ? screen.layout.description ? <p className="respondent-helper">{screen.layout.description}</p> : null : current.helperText ? <p className="respondent-helper">{displayedStep.helperText}</p> : null}
-        {!reviewing && (isWelcome || (!path.some((step) => step.kind === 'welcome') && current.kind === 'question' && index === 0)) ? <aside className="privacy-card"><LockKeyhole aria-hidden="true" size={22} strokeWidth={1.6} /><span><strong>Before you share</strong><br />{config.publicFlowPurpose} Your response is {(verifiedIdentity??initialFlow.hiddenContext?.verifiedEmail??initialFlow.hiddenContext?.verifiedSubject) ? `identified as ${verifiedIdentity??initialFlow.hiddenContext?.verifiedEmail??initialFlow.hiddenContext?.verifiedSubject} through verified form access` : initialFlow.identity === 'identified' ? 'identified through your invitation' : hiddenContext.identityMode === 'identified' ? 'identified; values supplied by this link are unverified, and forwarding the link forwards those values' : 'anonymous'}. At {config.publicFlowBusinessName}, operators can see the answers you submit. Identifying details you choose to type, such as an email address, identify you to those operators. Your answers are received and stored by this feedback service.{config.answersMayReachAi ? <> <span data-disclosure="ai-analysis">If {config.publicFlowBusinessName} analyses feedback, your written answers may be sent to the AI service it chose. Separate contact, invitation and session identity is excluded. Names, emails or other identifying details you type in selected text answers are sent with those answers.</span></> : null}<CompletionDisclosure flow={flow}/></span></aside> : null}
+        {!reviewing && (isWelcome || (!path.some((step) => step.kind === 'welcome') && current.kind === 'question' && index === 0)) ? <aside className="privacy-card"><LockKeyhole aria-hidden="true" size={22} strokeWidth={1.6} /><span><strong>Before you share</strong><br />{config.publicFlowPurpose} Your response is {(verifiedIdentity??initialFlow.hiddenContext?.verifiedEmail??initialFlow.hiddenContext?.verifiedSubject) ? `identified as ${verifiedIdentity??initialFlow.hiddenContext?.verifiedEmail??initialFlow.hiddenContext?.verifiedSubject} through verified form access` : initialFlow.identity === 'identified' ? 'identified through your invitation' : hiddenContext.identityMode === 'identified' ? 'identified; values supplied by this link are unverified, and forwarding the link forwards those values' : 'anonymous'}. At {config.publicFlowBusinessName}, operators can see the answers you submit. Identifying details you choose to type, such as an email address, identify you to those operators. Your answers are received and stored by this feedback service.{config.answersMayReachAi ? <> <span data-disclosure="ai-analysis">If {config.publicFlowBusinessName} analyses feedback, your written answers may be sent to the AI service it chose. Separate contact, invitation and session identity is excluded. Names, emails or other identifying details you type in selected text answers are sent with those answers.</span></> : null}<CompletionDisclosure flow={flow}/><PaymentDisclosure flow={flow}/></span></aside> : null}
         {!isCompletion && hiddenContext.identityMode === 'identified' && Object.entries(hiddenContext.hidden).some(([id])=>flow.formSettings?.hiddenFields.some(field=>field.id===id&&field.category==='identifying')) ? <aside className="privacy-card"><span>Answering as {flow.formSettings?.hiddenFields.filter(field=>field.category==='identifying'&&hiddenContext.hidden[field.id]!==undefined).map(field=>String(hiddenContext.hidden[field.id])).join(', ')}. These link-supplied values are unverified. <button type="button" className="quiet-button" disabled={submitting||!!pendingFinal} onClick={()=>setHidden(previous=>Object.fromEntries(Object.entries(previous).filter(([name])=>!flow.formSettings?.hiddenFields.some(field=>field.name===name&&field.category==='identifying'))))}>This isn’t me</button></span></aside> : null}
         {!reviewing && !screen?.layout && current.kind === 'question' && current.required ? <p className="respondent-required">Required</p> : null}
         {reviewing ? <ReviewAnswers flow={flow} steps={questionSteps} answers={answers} disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onEdit={id=>backTo(screens.findIndex(entry=>entry.steps.some(step=>step.id===id)))} /> : current.kind === 'question' && screen?.layout ? <ScreenQuestions steps={screen.steps} choices={flow.choices} answers={answers} errors={fieldErrors} disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} recall={(text,id)=>interpolateAnswerRecall(text,flow,answers,id)} onChange={changeAnswer}/> : current.kind === 'question' ? <AnswerFieldset id={current.id} disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} labelledBy="respondent-title" error={fieldErrors[current.id]}><QuestionInput key={`${flow.revision.id}-${current.id}`} choices={currentChoices} onChange={(value) => changeAnswer(current.id, value)} step={displayedStep} value={answers[current.id]} /></AnswerFieldset> : null}
-        {isCompletion ? <p className="privacy-card"><Check aria-hidden="true" color="var(--green)" size={22} /><span>Thank you. {invitationToken ? 'This invitation link' : 'This public link'} cannot edit a completed response.</span></p> : null}
+        {isPayment && payment?.notice ? <p className="status-note" role="status">{payment.notice}</p> : null}
+        {!reviewing && isPayment && quote ? <><PaymentSummary quote={quote} /><p className="payment-note">You pay on Stripe’s secure checkout page. Stripe receives the items and amounts above; {config.publicFlowBusinessName} and this form never receive your card or bank details.</p></> : null}
+        {!reviewing && isPayment && payment?.notice ? <ReviewAnswers flow={flow} steps={questionSteps} answers={answers} disabled={!hydrated || submitting || leaving} onEdit={id=>backTo(screens.findIndex(entry=>entry.steps.some(step=>step.id===id)))} /> : null}
+        {isCompletion ? <p className="privacy-card"><Check aria-hidden="true" color="var(--green)" size={22} /><span>Thank you. {invitationToken ? 'This invitation link' : 'This public link'} cannot edit a completed response.{payment ? payment.state === 'paid' ? ' Your payment is received.' : payment.state === 'refunded' ? ' Your payment was refunded.' : ' Stripe is confirming your payment; the business sees it once Stripe confirms.' : ''}</span></p> : null}
         <label className="respondent-honeypot" aria-hidden="true">Company website<input autoComplete="off" name="company-website" onChange={(event) => setHoneypot(event.target.value)} tabIndex={-1} value={honeypot} /></label>
         {pendingFinal && !submitting ? <p className="status-note">Retry to confirm the answers already submitted.</p> : null}
         {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
-        {!isCompletion ? <footer className="respondent-actions">{index > 0 || reviewing ? <button className="secondary-button focus-ring" disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onClick={() => backTo(reviewing ? index : Math.max(0, index - 1))} type="button"><ArrowLeft aria-hidden="true" size={17} /> Back</button> : null}<button className="primary-button focus-ring" disabled={!hydrated || submitting} onClick={needsAdmission && !pendingFinal ? restart : next} type="button">{submitting ? (needsAdmission ? 'Starting again…' : pendingFinal || nextCandidate?.kind === 'completion' ? 'Submitting…' : 'Continuing…') : primaryLabel} <ArrowRight aria-hidden="true" size={17} /></button></footer> : null}
-        {!isCompletion && !onKioskComplete ? <SaveResponse disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onSave={saveForLater} /> : null}
+        {!isCompletion ? <footer className="respondent-actions">{index > 0 || reviewing ? <button className="secondary-button focus-ring" disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onClick={() => backTo(reviewing ? index : Math.max(0, index - 1))} type="button"><ArrowLeft aria-hidden="true" size={17} /> Back</button> : null}<button className="primary-button focus-ring" disabled={!hydrated || submitting || leaving || (isPayment && !reviewing && charge === undefined)} onClick={needsAdmission && !pendingFinal ? restart : next} type="button">{leaving ? 'Opening Stripe Checkout…' : submitting ? (needsAdmission ? 'Starting again…' : pendingFinal || nextCandidate?.kind === 'completion' ? 'Submitting…' : 'Continuing…') : primaryLabel} <ArrowRight aria-hidden="true" size={17} /></button></footer> : null}
+        {!isCompletion && !isPayment && !onKioskComplete ? <SaveResponse disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onSave={saveForLater} /> : null}
       </article>
       {landing && config.showPoweredByCredit ? <footer className="respondent-landing-credit">Powered by {config.productName} · <a href="https://runeditrun.com">runeditrun.com</a></footer> : null}
     </main>

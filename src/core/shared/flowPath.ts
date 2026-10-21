@@ -7,7 +7,7 @@ import { matchesBranch } from './branching'
 type AnswerValues = Record<string, unknown>
 
 export function visiblePath(flow: Pick<PublicFlow, 'steps' | 'branchRules' | 'branchSelection' | 'hiddenContext' | 'formSettings'> & Partial<Pick<PublicFlow,'choices'>>, answers: AnswerValues) {
-  const steps = flow.steps.filter((step) => step.kind === 'welcome' || step.kind === 'question' || step.kind === 'completion').sort((left, right) => left.position - right.position)
+  const steps = flow.steps.filter((step) => step.kind === 'welcome' || step.kind === 'question' || step.kind === 'payment' || step.kind === 'completion').sort((left, right) => left.position - right.position)
   const byId = new Map(steps.map((step) => [step.id, step]))
   const rulesBySource = new Map<string, BranchRule[]>()
   for (const rule of flow.branchRules.slice().sort((left, right) => left.position - right.position)) rulesBySource.set(rule.sourceStepId, [...(rulesBySource.get(rule.sourceStepId) ?? []), rule])

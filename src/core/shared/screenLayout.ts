@@ -2,6 +2,7 @@ import type { FlowStep } from '../app/api'
 import type { Condition } from './conditions'
 import { remapCondition } from './conditions'
 import { conditionShape } from './conditionValidation'
+import { remapPaymentSettings, type PaymentSettings } from './payments'
 
 export type ScreenLayout = { kind: 'page' | 'group'; title: string; description?: string; randomize?: boolean; questionIds: string[] }
 export type ResponseScreen = { id: string; layout?: ScreenLayout; steps: FlowStep[] }
@@ -51,5 +52,6 @@ export function remapLayoutSettings(json: string | null, steps: Map<string,strin
     settings.redirect = {...redirect,parameters:redirect.parameters.map(item=>({...item,operand:steps.get(item.operand) ?? item.operand}))}
   }
   if (settings.showWhen) settings.showWhen = remapCondition(settings.showWhen as Condition,steps,choices)
+  if (settings.payment) settings.payment = remapPaymentSettings(settings.payment as PaymentSettings,steps,choices)
   return JSON.stringify(settings)
 }

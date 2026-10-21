@@ -1,3 +1,4 @@
+import { admittedResponseSql } from '../payments/admission'
 import { invitationCollectorAdmissionSql } from '../collectors'
 import { participantInvitation } from './message'
 import { readNotificationBrand } from '../notifications'
@@ -20,7 +21,7 @@ export class MailDeliveries {
       (c.id IS NOT NULL AND c.opted_out_at IS NULL AND p.token IS NOT NULL AND f.status IN ('open', 'closed') AND r.admission_closed_at IS NULL
         AND (r.deadline_at IS NULL OR r.deadline_at > ?)
         AND ${collectorOpen.sql}
-        AND (r.target_completed_responses IS NULL OR (SELECT count(*) FROM responses WHERE revision_id = r.id AND state = 'released') < r.target_completed_responses)
+        AND (r.target_completed_responses IS NULL OR (SELECT count(*) FROM responses admitted WHERE admitted.revision_id = r.id AND ${admittedResponseSql('admitted')}) < r.target_completed_responses)
         AND p.delivery_status != 'bounced' AND (d.kind = 'invitation' OR (p.delivery_status = 'sent' AND p.response_status != 'completed'))) AS eligible
       FROM mail_deliveries d JOIN invitation_participants p ON p.id = d.participant_id JOIN invitation_launches l ON l.id = p.launch_id JOIN workspaces w ON w.id = p.workspace_id
       JOIN flow_revisions r ON r.id = p.revision_id JOIN flows f ON f.id = r.flow_id
@@ -77,7 +78,7 @@ export class MailDeliveries {
           AND c.opted_out_at IS NULL AND p.token IS NOT NULL AND f.status IN ('open', 'closed') AND r.admission_closed_at IS NULL
           AND (r.deadline_at IS NULL OR r.deadline_at > ?)
           AND ${collectorOpen.sql}
-          AND (r.target_completed_responses IS NULL OR (SELECT count(*) FROM responses WHERE revision_id = r.id AND state = 'released') < r.target_completed_responses) AND p.delivery_status != 'bounced'
+          AND (r.target_completed_responses IS NULL OR (SELECT count(*) FROM responses admitted WHERE admitted.revision_id = r.id AND ${admittedResponseSql('admitted')}) < r.target_completed_responses) AND p.delivery_status != 'bounced'
           AND (mail_deliveries.kind = 'invitation' OR (p.delivery_status = 'sent' AND p.response_status != 'completed')))`)
         .bind(now, now, now, now, id, delivery.attempts, now, now, now, ...collectorOpen.params),
       this.db.prepare(`INSERT INTO mail_delivery_attempts (id, delivery_id, ordinal, event, created_at)

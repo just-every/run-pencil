@@ -17,6 +17,8 @@ import { ulid } from 'ulid'
 import { publicSteps, publicChoices, publicRules, questionSettings, resolveNextStep, type FlowRepository, type StoredBranchRule, type StoredChoice, type StoredStep } from '../flows'
 import { FlowClosedError, NotFoundError, RateLimitError, SessionUnavailableError, ValidationError } from '../../shared/errors'
 import type { ResponseRepository } from './repository'
+import { validatePathAnswers } from './path'
+import type { PaymentResponses } from './payment-responses'
 
 type DeviceClass = 'mobile' | 'tablet' | 'desktop'
 type PublicSource = 'direct' | 'embed'
@@ -24,7 +26,6 @@ type AnswerInput = { stepId: string; value: unknown }
 
 const sessionRetentionMilliseconds = manifest.limits.respondentSessions.retentionDays * 24 * 60 * 60 * 1000
 const minimumFillMilliseconds = manifest.limits.abuse.minimumSecondsFromFormLoadToSubmit * 1000
-function normalizeOptional(value: unknown) { return isUnanswered(value) ? undefined : value }
 
 export class ResponseService {
   constructor(
@@ -33,6 +34,7 @@ export class ResponseService {
     private readonly collectors: CollectorService,
     private readonly loadTimeSecret: string,
     private readonly access:RestrictedAccess,
+    readonly payments: PaymentResponses,
   ) {}
 
   async ensureSampleResponses(input: {
@@ -181,26 +183,14 @@ export class ResponseService {
     await this.enforcePublicRequestRateLimit({ clientAddress: input.clientAddress, scope: 'submission' })
     if (!input.sessionToken) throw new SessionUnavailableError()
     const tokenHash = await this.hash(input.sessionToken)
-    const replay = async (response: { id: string; revisionId: string; state: 'released' | 'quarantined'; contextJson?:string }) => {
-      const [{ steps, choices, rules }, answers, revision] = await Promise.all([
-        this.flowRepository.getRevisionGraph(response.revisionId),
-        this.repository.getRetainedResponseAnswers(response.id),
-        this.flowRepository.findRevisionById(response.revisionId),
-      ])
-      if (!answers || !revision) throw new NotFoundError('This completed response is no longer available.')
-      // A retry is the original committed path, regardless of newer submitted
-      // values. The immutable graph and retained answers also cover old rows.
-      const completionStepId = this.retainedCompletion(steps, rules, {...hiddenAnswers(JSON.parse(response.contextJson ?? '{}') as ResponseContext),...variableAnswers((JSON.parse(response.contextJson ?? '{}') as ResponseContext).calculations),...Object.fromEntries(answers.map((answer) => [answer.stepId, runtimeAnswerValue(steps.find(step => step.stableId === answer.stepId), JSON.parse(answer.valueJson))]))}, revisionBranchSelection(revision.policySnapshotJson))
-      const retainedContext = JSON.parse(response.contextJson ?? '{}') as ResponseContext
-      const redirectUrl = completionRedirect({steps:publicSteps(steps),choices:publicChoices(steps,choices),branchRules:publicRules(rules),formSettings:formSettings(revision.formSettingsJson),hiddenContext:retainedContext},completionStepId,Object.fromEntries(answers.map(answer=>[answer.stepId,runtimeAnswerValue(steps.find(step=>step.stableId===answer.stepId),JSON.parse(answer.valueJson))])))
-      return { responseId: response.id, idempotent: true, disposition: response.state, completionStepId, redirectUrl: response.state === 'released' ? redirectUrl : null }
-    }
+    // PAY-001: a retry of a payment response resumes its checkout, or replaces a cancelled or expired attempt.
+    const settle = (response: NonNullable<Awaited<ReturnType<ResponseRepository['findResponseBySession']>>>) => this.payments.settle(response, input)
     const receipt = async () => {
       const retained = await this.repository.findResponseBySessionToken(input.sessionId, tokenHash)
       if (!retained) return undefined
       const retainedFlow = await this.flowRepository.findFlow(retained.flowId)
       if (!retainedFlow || retainedFlow.slug !== input.slug) throw new NotFoundError('This response does not belong to the requested flow.')
-      if (retained.idempotencyKey === input.idempotencyKey) return replay(retained)
+      if (retained.idempotencyKey === input.idempotencyKey) return settle(retained)
       throw new ValidationError('This response session has already been completed.')
     }
     const retained = await receipt()
@@ -217,9 +207,13 @@ export class ResponseService {
     if (session.source === 'invitation' && (!invitation || invitation.revisionId !== revision.id)) throw new SessionUnavailableError()
     const existing = await this.repository.findResponseBySession(session.id)
     if (existing) {
-      if (existing.idempotencyKey === input.idempotencyKey) return replay(existing)
+      if (existing.idempotencyKey === input.idempotencyKey) return settle(existing)
       throw new ValidationError('This response session has already been completed.')
     }
+    // RESP-008 on a payment form: an invitation admits one paid response, so its unpaid response is replaced, not duplicated.
+    const invited = invitation && await this.repository.findResponseByParticipant(invitation.id)
+    const invitedPayment = invited && await this.payments.payments.forResponse(invited.id)
+    if (invited && invitedPayment && invitedPayment.state !== 'paid' && invitedPayment.state !== 'refunded') return this.payments.replace(invited, invitedPayment, input, { sessionId: session.id, sessionTokenHash: tokenHash })
 
     try {
       const collector = await this.collectors.requireSessionOpen(flow.id, session.id, session.source)
@@ -242,13 +236,14 @@ export class ResponseService {
     if(accessIdentity?.email){hiddenContext.verifiedEmail=accessIdentity.email;hiddenContext.identityMode='identified'}
     if(accessIdentity?.subject){hiddenContext.verifiedSubject=accessIdentity.subject;hiddenContext.identityMode='identified'}
     if(invitation) hiddenContext.identityMode='identified'
-    const { accepted: acceptedAnswers, completionStepId, reachedStepIds } = this.validatePathAnswers(steps, choices, rules, input.answers, revisionBranchSelection(revision.policySnapshotJson),hiddenAnswers(hiddenContext),settings)
+    const { accepted: acceptedAnswers, completionStepId, reachedStepIds, paymentStepId } = validatePathAnswers(steps, choices, rules, input.answers, revisionBranchSelection(revision.policySnapshotJson),hiddenAnswers(hiddenContext),settings)
     if(settings.calculations?.length) hiddenContext.calculations=evaluateCalculations(settings.calculations ?? [],Object.fromEntries(acceptedAnswers.map(answer=>[answer.stepId,answer.value])),hiddenContext.hidden)
     const order=JSON.parse(session.presentationJson) as Partial<PresentationOrder>
     const presentedOrder=retainedPresentation({choices:order.choices ?? {},blocks:order.blocks ?? {}},reachedStepIds)
     if(Object.keys(presentedOrder.choices).length || Object.keys(presentedOrder.blocks).length) hiddenContext.presentedOrder=presentedOrder
     const now = new Date().toISOString()
     const responseId = ulid()
+    const payment = paymentStepId ? await this.payments.attempt(responseId, 1, steps, choices, { paymentStepId, completionStepId, accepted: acceptedAnswers }, hiddenContext.calculations ?? {}) : undefined
     const elapsed = Math.max(0, Date.now() - loadedAt)
     const quarantineReason = input.honeypot?.trim() ? 'honeypot' : elapsed < minimumFillMilliseconds ? 'minimum-fill-time' : null
     const state = quarantineReason ? 'quarantined' as const : 'released' as const
@@ -278,10 +273,11 @@ export class ResponseService {
       completionMilliseconds: elapsed,
       reachedStepIds,
       completionStepId,
+      payment,
     })
     if (!created) {
       const concurrent = await this.repository.findResponseBySession(session.id)
-      if (concurrent?.idempotencyKey === input.idempotencyKey) return replay(concurrent)
+      if (concurrent?.idempotencyKey === input.idempotencyKey) return settle(concurrent)
       const [latestFlow, latestRevision] = await Promise.all([this.flowRepository.findFlow(flow.id), this.flowRepository.findRevisionById(revision.id)])
       const expired = latestRevision?.deadlineAt && Date.parse(latestRevision.deadlineAt) <= Date.now()
       if (expired) await this.flowRepository.closeExpiredRevision(revision.id, new Date().toISOString())
@@ -292,6 +288,8 @@ export class ResponseService {
         .catch(error => collectorFlowFailure(error, { title: revision.title, slug: flow.slug }))
       throw new ValidationError('This response session has already completed or cannot accept this submission.')
     }
+    // PAY-001: the response is committed with payment pending; the respondent now pays on Stripe Checkout.
+    if (payment) return this.payments.checkoutReceipt({ id: responseId, state }, flow.slug, false)
     const redirectUrl = completionRedirect({steps:publicSteps(steps),choices:publicChoices(steps,choices),branchRules:publicRules(rules),formSettings:settings,hiddenContext},completionStepId,Object.fromEntries(acceptedAnswers.map(answer=>[answer.stepId,answer.value])))
     return { responseId, idempotent: false, disposition: state, completionStepId, redirectUrl: state === 'released' ? redirectUrl : null }
   }
@@ -316,7 +314,7 @@ export class ResponseService {
   }
 
   private async targetReached(revision: { id: string; targetCompletedResponses: number | null }) {
-    return revision.targetCompletedResponses !== null && await this.repository.countReleasedResponses(revision.id) >= revision.targetCompletedResponses
+    return revision.targetCompletedResponses !== null && await this.repository.countAdmittedResponses(revision.id) >= revision.targetCompletedResponses
   }
 
   private async currentPublicRevision(slug: string) {
@@ -329,67 +327,6 @@ export class ResponseService {
     if (expired) await this.flowRepository.closeExpiredRevision(revision.id, new Date().toISOString())
     if (flow.status !== 'open' || revision.admissionClosedAt || expired || (revision.targetCompletedResponses !== null && resolved.completedResponses >= revision.targetCompletedResponses)) throw new FlowClosedError({ title: revision.title, slug: flow.slug })
     return { flow, revision, steps: resolved.steps, choices: resolved.choices, rules: resolved.rules }
-  }
-
-  private retainedCompletion(steps: StoredStep[], rules: StoredBranchRule[], answers: Record<string, unknown>, selection: BranchSelection) {
-    // This evidence already passed the admission rules in force at commitment.
-    // Trace its pinned graph; never reject or rewrite it under newer validation.
-    const byStableId = new Map(steps.map((step) => [step.stableId, step]))
-    const visited = new Set<string>()
-    let current: StoredStep | undefined = steps[0]
-    while (current && !visited.has(current.stableId)) {
-      visited.add(current.stableId)
-      if (current.kind === 'completion') return current.stableId
-      const step: StoredStep = current
-      const next = resolveNextStep({ selection, step, rules: rules.filter((rule) => rule.sourceStepStableId === step.stableId), answers })
-      current = next.nextStepId ? byStableId.get(next.nextStepId) : undefined
-    }
-    throw new ValidationError('The retained completion could not be read. This response has not been resubmitted.')
-  }
-
-  private validatePathAnswers(steps: StoredStep[], choices: StoredChoice[], rules: StoredBranchRule[], answers: AnswerInput[], selection: BranchSelection, context:Record<string,unknown> = {}, settings?:import('../../shared/hiddenFields').FormSettings) {
-    const submitted = new Map<string, unknown>()
-    for (const answer of answers) {
-      if (submitted.has(answer.stepId)) throw new ValidationError('Each question can be answered once per submission.')
-      submitted.set(answer.stepId, answer.value)
-    }
-    const choicesByStep = new Map<string, StoredChoice[]>()
-    for (const choice of choices) choicesByStep.set(choice.stepId, [...(choicesByStep.get(choice.stepId) ?? []), choice])
-    const byStableId = new Map(steps.map((step) => [step.stableId, step]))
-    const first = steps[0]
-    if (!first) throw new ValidationError('This published flow has no first screen.')
-    const accepted: AnswerInput[] = []
-    const values=()=>formAnswerContext(settings,Object.fromEntries(accepted.map(answer=>[answer.stepId,answer.value])),{hidden:Object.fromEntries(Object.entries(context).filter(([id])=>id.startsWith('hidden:')).map(([id,value])=>[id.slice(7),value])) as ResponseContext['hidden']})
-    const reached = new Set<string>()
-    const visited = new Set<string>()
-    let current: StoredStep | undefined = first
-    while (current && !visited.has(current.stableId)) {
-      visited.add(current.stableId)
-      const visible: boolean = !visibilityCondition(publicSteps([current])[0]) || evaluateCondition(visibilityCondition(publicSteps([current])[0])!, values()).matched
-      if(visible) reached.add(current.stableId)
-      if (current.kind === 'question' && visible) {
-        const value = normalizeOptional(submitted.get(current.stableId))
-        if (value === undefined) {
-          if (current.required) throw new ValidationError(`A response is required for “${current.prompt}”.`)
-        } else {
-          this.validateQuestionValue(current, choicesByStep.get(current.id) ?? [], value)
-          accepted.push({ stepId: current.stableId, value })
-        }
-      }
-      if (current.kind === 'completion') break
-      const answerRecord = values()
-      const next: {nextStepId:string|null} = resolveNextStep({ selection, step: current, rules: rules.filter((rule) => rule.sourceStepStableId === current!.stableId), answers: answerRecord })
-      current = next.nextStepId ? byStableId.get(next.nextStepId) : undefined
-    }
-    if (!current || current.kind !== 'completion') throw new ValidationError('The selected respondent path does not reach a completion screen.')
-    const unknown = [...submitted.keys()].filter((stepId) => !byStableId.has(stepId))
-    if (unknown.length > 0) throw new ValidationError('A submitted answer does not belong to this published flow.')
-    return { accepted, completionStepId: current.stableId, reachedStepIds: [...reached] }
-  }
-
-  private validateQuestionValue(step: StoredStep, choices: StoredChoice[], value: unknown) {
-    const issue = answerIssue({ ...step, questionSettings: questionSettings(step, choices).value }, choices.map((choice) => choice.stableId), value)
-    if (issue) throw new ValidationError(`“${step.prompt}”: ${issue}`, [{ stepId: step.stableId, reason: issue }])
   }
 
   private async hash(value: string) {

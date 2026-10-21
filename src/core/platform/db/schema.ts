@@ -143,7 +143,7 @@ export const flowSteps = sqliteTable(
       .references(() => flowRevisions.id),
     position: integer('position').notNull(),
     stableId: text('stable_id').notNull(),
-    kind: text('kind', { enum: ['welcome', 'question', 'completion'] }).notNull(),
+    kind: text('kind', { enum: ['welcome', 'question', 'payment', 'completion'] }).notNull(),
     questionType: text('question_type', { enum: questionTypes }),
     prompt: text('prompt').notNull(),
     helperText: text('helper_text'),

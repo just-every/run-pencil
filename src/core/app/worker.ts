@@ -1,3 +1,4 @@
+import { registerPaymentConnectionRoutes, registerPaymentRoutes } from '../features/payments'
 import { registerRetentionRoutes } from '../features/retention/routes'
 import { registerResumeRoutes } from '../features/resuming'
 import { registerAuditRoutes } from '../features/audit'
@@ -147,6 +148,8 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
   registerDistributionRoutes(app, context => context.get('services'))
   registerNotificationRoutes(app, context => context.get('services'))
   registerActionRoutes(app, context => context.get('services'))
+  registerPaymentConnectionRoutes(app)
+  registerPaymentRoutes(app)
   registerAnalysisRoutes(app, context => context.get('services'))
 
   app.onError((error, context) => {

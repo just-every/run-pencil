@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react'
 import { challengePattern, isEmbedInit, type EmbedEvent } from './messages'
 
-/** The server admits the parent origin; an opaque child only answers that parent. */
+/** The server admits the parent origin; an opaque child only answers that parent. The returned function asks the host
+ * page to open a Stripe Checkout page at top level (PAY-001); it does nothing until the host admitted this frame. */
 export function useEmbedProtocol(embedded: boolean, completed: boolean, hostOrigin?: string) {
   const complete = useRef(completed)
   const notify = useRef<(() => void) | undefined>(undefined)
+  const checkout = useRef<((url: string) => void) | undefined>(undefined)
   useEffect(() => { complete.current = completed; notify.current?.() }, [completed])
   useEffect(() => {
     if (!embedded || !hostOrigin || window.parent === window) return
@@ -25,11 +27,13 @@ export function useEmbedProtocol(embedded: boolean, completed: boolean, hostOrig
       admitted = true; measure()
     }
     notify.current = measure
+    checkout.current = url => { if (admitted) send({ type: 'pencil:checkout', challenge, url }) }
     window.addEventListener('message', receive)
     send({ type: 'pencil:loaded', challenge })
     const observer = new ResizeObserver(measure)
     const main = document.querySelector('main[data-embedded="true"]')
     if (main) observer.observe(main)
-    return () => { observer.disconnect(); window.removeEventListener('message', receive); notify.current = undefined }
+    return () => { observer.disconnect(); window.removeEventListener('message', receive); notify.current = undefined; checkout.current = undefined }
   }, [embedded, hostOrigin])
+  return (url: string) => checkout.current?.(url)
 }

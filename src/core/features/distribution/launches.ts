@@ -1,3 +1,4 @@
+import { admittedResponseSql } from '../payments/admission'
 import { bindInvitationCollectorSql, collectorAdmissionSql, invitationCollectorAdmissionSql, collectorId as collectorIdSchema, throwCollectorAdmissionFailure, type CollectorService } from '../collectors'
 import { ulid } from 'ulid'
 import { audienceEligibility, defaultDistributionPolicies, reminderDelayHours, type DistributionPolicies } from '../../shared/distributionPolicies'
@@ -33,7 +34,7 @@ export class InvitationLaunches {
       const ids=input.segmentId?await new DistributionSegments(this.db).ids(input.workspaceId,input.segmentId):input.contactIds??[]
       if(ids.length>contactLimits.participantsPerRevision||new Set(ids).size!==ids.length) throw new ValidationError('Choose 1–25000 distinct contacts.')
       const now=new Date().toISOString(),id=ulid(),audience=audienceEligibility(this.policies)
-      const revision=await this.db.prepare(`SELECT r.id FROM flow_revisions r JOIN flows f ON f.id=r.flow_id WHERE f.workspace_id=? AND f.id=? AND f.status='open' AND r.is_current=1 AND r.state='published' AND r.admission_closed_at IS NULL AND (r.deadline_at IS NULL OR r.deadline_at>?) AND (r.target_completed_responses IS NULL OR (SELECT count(*) FROM responses WHERE revision_id=r.id AND state='released')<r.target_completed_responses)`).bind(input.workspaceId,input.flowId,now).first<{id:string}>()
+      const revision=await this.db.prepare(`SELECT r.id FROM flow_revisions r JOIN flows f ON f.id=r.flow_id WHERE f.workspace_id=? AND f.id=? AND f.status='open' AND r.is_current=1 AND r.state='published' AND r.admission_closed_at IS NULL AND (r.deadline_at IS NULL OR r.deadline_at>?) AND (r.target_completed_responses IS NULL OR (SELECT count(*) FROM responses admitted WHERE admitted.revision_id=r.id AND ${admittedResponseSql('admitted')})<r.target_completed_responses)`).bind(input.workspaceId,input.flowId,now).first<{id:string}>()
       if(!revision) throw new NotFoundError('This flow has no open published revision.')
       const collector=input.collectorId===undefined
         ? await this.collectors.requireOpen(input.flowId,'invitation')

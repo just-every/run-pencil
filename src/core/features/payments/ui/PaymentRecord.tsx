@@ -1,0 +1,20 @@
+import { formatUsd, paymentStateLabels, type LedgerPayment } from '../../../shared/payments'
+import './payments.css'
+
+export function PaymentBadge({ payment }: { payment: LedgerPayment }) {
+  return <span className="payment-state" data-state={payment.state}>{paymentStateLabels[payment.state]} · {formatUsd(payment.amount)}</span>
+}
+
+/** The operator's view of a response's payment: its state, Pencil's amount and Stripe's IDs. Card or bank numbers are never stored. */
+export function PaymentRecord({ payment, time }: { payment: LedgerPayment; time: (value: string) => string }) {
+  const rows: Array<[string, React.ReactNode]> = [
+    ['State', <PaymentBadge payment={payment} />],
+    ['Charged by Stripe', payment.providerAmount === null ? 'Not yet' : formatUsd(payment.providerAmount)],
+    ['Checkout Session', <code>{payment.checkoutSessionId ?? 'Not opened'}</code>],
+    ['Payment intent', <code>{payment.paymentIntentId ?? 'None yet'}</code>],
+    ['Last change', `${time(payment.stateChangedAt)}${payment.attempt > 1 ? ` · attempt ${payment.attempt}` : ''}`],
+  ]
+  return <section aria-label="Payment"><p className="muted">Payment</p><dl>{rows.map(([label, value]) => <div className="ledger-answer" key={label}>
+    <dt><strong>{label}</strong></dt><dd style={{ overflowWrap: 'anywhere' }}>{value}</dd>
+  </div>)}</dl></section>
+}

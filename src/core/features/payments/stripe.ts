@@ -1,0 +1,57 @@
+import type { PaymentLine } from '../../shared/payments'
+
+/** The Stripe API version Pencil reads and writes; event payloads keep the fields it uses across versions. */
+export const stripeApiVersion = '2024-06-20'
+export const stripeSignatureToleranceSeconds = 300
+
+export class StripeRequestError extends Error {
+  constructor(readonly status: number, readonly code: string | undefined, message: string) { super(message) }
+}
+
+export type CheckoutSession = { id: string; url: string | null; amount_total: number | null; expires_at: number; livemode: boolean; status: string | null; payment_status: string; payment_intent: string | null }
+
+/** Only the hosted Checkout page takes card or bank details; this client never sees them. */
+export function stripeClient(origin: string, secretKey: string) {
+  const call = async <T>(method: 'GET' | 'POST', path: string, form?: URLSearchParams, idempotencyKey?: string): Promise<T> => {
+    const response = await fetch(`${origin}${path}`, {
+      method, redirect: 'manual', signal: AbortSignal.timeout(15_000),
+      headers: { Authorization: `Bearer ${secretKey}`, 'Stripe-Version': stripeApiVersion, ...(form ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}), ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) },
+      ...(form ? { body: form.toString() } : {}),
+    })
+    const body = await response.json().catch(() => ({})) as { error?: { code?: string; message?: string } }
+    if (!response.ok) throw new StripeRequestError(response.status, body.error?.code, body.error?.message ?? `Stripe answered ${response.status}.`)
+    return body as T
+  }
+  return {
+    createCheckoutSession(input: { lines: PaymentLine[]; successUrl: string; cancelUrl: string; responseId: string; attempt: number; idempotencyKey: string }) {
+      const form = new URLSearchParams({ mode: 'payment', success_url: input.successUrl, cancel_url: input.cancelUrl, client_reference_id: input.responseId,
+        'metadata[pencil_response]': input.responseId, 'metadata[pencil_attempt]': String(input.attempt),
+        'payment_intent_data[metadata][pencil_response]': input.responseId, 'payment_intent_data[metadata][pencil_attempt]': String(input.attempt) })
+      input.lines.forEach((line, index) => {
+        form.set(`line_items[${index}][price_data][currency]`, 'usd')
+        form.set(`line_items[${index}][price_data][unit_amount]`, String(line.unitAmount))
+        form.set(`line_items[${index}][price_data][product_data][name]`, line.name)
+        form.set(`line_items[${index}][quantity]`, String(line.quantity))
+      })
+      return call<CheckoutSession>('POST', '/v1/checkout/sessions', form, input.idempotencyKey)
+    },
+    expireCheckoutSession: (id: string) => call<CheckoutSession>('POST', `/v1/checkout/sessions/${encodeURIComponent(id)}/expire`, new URLSearchParams()),
+    retrieveCheckoutSession: (id: string) => call<CheckoutSession>('GET', `/v1/checkout/sessions/${encodeURIComponent(id)}`),
+    listCheckoutSessions: () => call<{ data: CheckoutSession[] }>('GET', '/v1/checkout/sessions?limit=1'),
+  }
+}
+
+const hex = (bytes: ArrayBuffer) => Array.from(new Uint8Array(bytes), byte => byte.toString(16).padStart(2, '0')).join('')
+
+/** Stripe-Signature `t=<seconds>,v1=<hex>`: HMAC-SHA256 of `<t>.<raw body>` keyed by the endpoint's signing secret.
+ * A forged signature or a timestamp outside the tolerance is refused before the body is read. */
+export async function stripeSignatureValid(payload: string, header: string | undefined, secret: string, nowSeconds: number) {
+  const parts = (header ?? '').split(',').map(part => part.trim().split('=') as [string, string | undefined])
+  const timestamp = Number(parts.find(([name]) => name === 't')?.[1])
+  const signatures = parts.filter(([name, value]) => name === 'v1' && /^[a-f0-9]{64}$/.test(value ?? '')).map(([, value]) => value!)
+  if (!Number.isInteger(timestamp) || !signatures.length || Math.abs(nowSeconds - timestamp) > stripeSignatureToleranceSeconds) return false
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
+  const expected = hex(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`${timestamp}.${payload}`)))
+  // Compare every candidate in full so timing does not reveal a matching prefix.
+  return signatures.map(signature => [...signature].reduce((difference, character, index) => difference | (character.charCodeAt(0) ^ expected.charCodeAt(index)), 0)).some(difference => difference === 0)
+}

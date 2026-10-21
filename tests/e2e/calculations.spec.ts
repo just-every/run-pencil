@@ -3,10 +3,14 @@ import { parseCsv } from '../../src/core/features/importing/csv'
 import { contract } from './contract'
 import { expect, test } from './fixtures'
 import { signInEmptyWorkspace } from './authoring-helpers'
+import { startStripeReceiver, stripeFixture } from './stripe-receiver'
 
-contract(['LOGIC-003', 'LOGIC-006'], 'builds a conditional total, previews calculated routing and retains both published totals', async ({ page }, info) => {
-  test.setTimeout(120_000)
+contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals', async ({ page }, info) => {
+  test.setTimeout(240_000)
   page.setDefaultTimeout(15_000)
+  const pencil = new URL(process.env.PENCIL_E2E_BASE_URL!).origin
+  const stripe = await startStripeReceiver(pencil)
+  try {
   await signInEmptyWorkspace(page)
   const slug = `calculated-order-${info.project.name}-${Date.now()}`
   const call = async <T,>(path: string, method = 'GET', data?: unknown) => {
@@ -19,9 +23,20 @@ contract(['LOGIC-003', 'LOGIC-006'], 'builds a conditional total, previews calcu
     const path = info.outputPath(`calculations-${state}-${info.project.name}.png`)
     if(state==='ledger') await page.getByRole('region',{name:'Response ledger',exact:true}).screenshot({path})
     else if(state==='builder') await page.locator('details.calculation-settings').screenshot({path})
+    else if(state==='payment-builder') await page.locator('.builder-grid').screenshot({path})
+    else if(state==='payment-ledger') await page.locator('.ledger-row--open').screenshot({path})
     else await page.screenshot({ path, fullPage: true })
     await info.attach(`Calculations ${state} · ${info.project.name}`, { path, contentType: 'image/png' })
   }
+  // PAY-001: the owner connects Stripe (here the loopback stand-in) with a restricted key and a signing secret.
+  await page.goto('/app/settings')
+  const payments = page.getByRole('region', { name: 'Payments', exact: true })
+  await payments.getByLabel('Stripe restricted key', { exact: true }).fill(stripeFixture.secretKey)
+  await payments.getByLabel('Webhook signing secret', { exact: true }).fill(stripeFixture.webhookSecret)
+  await payments.getByRole('button', { name: 'Save Stripe connection', exact: true }).click()
+  await expect(payments.getByText(/Stripe is connected in test mode with a restricted key/)).toBeVisible()
+  await payments.getByRole('button', { name: 'Test connection', exact: true }).click()
+  await expect(payments.getByText('Stripe accepted the restricted key in test mode.', { exact: true })).toBeVisible()
   const flow = await call<{ id: string }>('/api/app/flows', 'POST', { title: 'Calculated order', slug })
   const base = `/api/app/flows/${flow.id}`
   const read = () => call<BuilderDraft>(`${base}/draft`)
@@ -67,9 +82,28 @@ contract(['LOGIC-003', 'LOGIC-006'], 'builds a conditional total, previews calcu
   for (const [step, title] of [[normal, 'Standard order'], [high, 'Large order']] as const) {
     await call(`${base}/draft`, 'PUT', { expectedVersion: (await read()).flow.draftVersion, stepId: step.id, prompt: `${title} · Total {{variable:${totalId}}}`, required: false })
   }
+  // Each branch pays the calculated total on its own payment step, authored in the builder, before its completion screen.
+  await page.reload()
+  for (const [label, completion] of [['Pay for the standard order', normal], ['Pay for the large order', high]] as const) {
+    await page.getByRole('button', { name: 'Add payment step', exact: true }).click()
+    await expect(page.getByRole('region', { name: 'Payment pricing', exact: true })).toBeVisible()
+    await page.getByLabel('Prompt', { exact: true }).fill(label)
+    await page.getByRole('radio', { name: 'Calculated amount', exact: true }).check()
+    await expect(page.getByLabel('Calculation charged', { exact: true })).toHaveValue(totalId)
+    await page.getByLabel('Minimum charge (USD)', { exact: true }).fill('16')
+    await page.getByLabel('Maximum charge (USD)', { exact: true }).fill('2000')
+    await page.getByRole('combobox', { name: /^Default next screen/ }).selectOption(completion.id)
+    if (completion === high) await screenshot('payment-builder')
+    await page.getByRole('button', { name: 'Save', exact: true }).click()
+    await expect(page.getByText('Saved.', { exact: true })).toBeVisible()
+  }
+  const priced = await read()
+  const [standardPay, largePay] = ['Pay for the standard order', 'Pay for the large order'].map(prompt => priced.steps.find(step => step.prompt === prompt)!)
+  expect(standardPay.questionSettings?.payment).toEqual({ products: [], options: [], calculationId: totalId, minimum: 1600, maximum: 200_000 })
+  await call(`${base}/draft`, 'PUT', { expectedVersion: priced.flow.draftVersion, stepId: discount.id, prompt: discount.prompt, required: true, nextStepId: standardPay.id })
   await call(`${base}/draft/branches`, 'PUT', {
     expectedVersion: (await read()).flow.draftVersion,
-    rules: [{ sourceStepId: discount.id, predicateKind: 'greater_than_or_equal', expectedValue: 100, destinationStepId: high.id, position: 0, condition: { kind: 'test', stepId: `variable:${totalId}`, operator: 'greater_than_or_equal', value: 100 } }],
+    rules: [{ sourceStepId: discount.id, predicateKind: 'greater_than_or_equal', expectedValue: 100, destinationStepId: largePay.id, position: 0, condition: { kind: 'test', stepId: `variable:${totalId}`, operator: 'greater_than_or_equal', value: 100 } }],
   })
   await page.reload()
   await page.getByRole('button', { name: 'Preview draft', exact: true }).click()
@@ -83,30 +117,67 @@ contract(['LOGIC-003', 'LOGIC-006'], 'builds a conditional total, previews calcu
   await expect(trace).toContainText('is at least → true')
   await screenshot('preview')
   await preview.getByRole('button', { name: 'Continue preview', exact: true }).click()
+  await expect(preview.getByRole('heading', { name: 'Pay for the large order', exact: true })).toBeVisible()
+  await expect(preview.getByRole('definition').filter({ hasText: '$128.00' }).last()).toBeVisible()
+  await preview.getByRole('button', { name: 'Continue preview', exact: true }).click()
   await expect(preview.getByRole('heading', { name: 'Large order · Total 128', exact: true })).toBeVisible()
   await preview.getByRole('button', { name: 'Close preview', exact: true }).click()
   await page.getByRole('button', { name: 'Publish', exact: true }).click()
   await expect(page.getByRole('region', { name: 'Share this flow', exact: true })).toBeVisible()
 
-  for (const [count, heading] of [[4, 'Standard order · Total 64'], [8, 'Large order · Total 128']] as const) {
+  // The standard order cancels on Checkout first and pays on its second attempt; the large order pays at once.
+  for (const [count, heading, total, cancelFirst] of [[4, 'Standard order · Total 64', '$64.00', true], [8, 'Large order · Total 128', '$128.00', false]] as const) {
+    const thirdParty: string[] = []
+    const watch = (request: import('@playwright/test').Request) => { if (new URL(request.url()).origin !== pencil && !request.url().startsWith('data:')) thirdParty.push(request.url()) }
+    page.on('request', watch)
     await page.goto(`/f/${slug}`)
     await page.getByRole('spinbutton', { name: quantity.prompt, exact: true }).fill(String(count))
     await page.getByRole('button', { name: 'Continue', exact: true }).click()
     await page.getByRole('radio', { name: 'Yes', exact: true }).check()
     await page.waitForTimeout(3200)
-    await page.getByRole('button', { name: 'Submit response', exact: true }).click()
+    await page.getByRole('button', { name: 'Continue', exact: true }).click()
+    const pay = page.getByRole('button', { name: `Pay ${total} with Stripe`, exact: true })
+    await expect(pay).toBeVisible()
+    await expect(page.getByRole('definition').filter({ hasText: total }).last()).toBeVisible()
+    if (cancelFirst) await screenshot('payment-step')
+    // BASE-PUBLIC-001: the respondent page itself loaded nothing from another origin.
+    page.off('request', watch)
+    expect(thirdParty).toEqual([])
+    await pay.click()
+    await expect(page).toHaveURL(new RegExp(`^${stripe.origin}/pay/cs_test_`))
+    if (cancelFirst) {
+      await page.getByRole('link', { name: 'Back', exact: true }).click()
+      await expect(page.getByText('Payment cancelled. Your answers are kept: go back to change them, or pay again.', { exact: true })).toBeVisible()
+      const answers = page.getByRole('region', { name: 'Your answers', exact: true })
+      await expect(answers.getByText(String(count), { exact: true })).toBeVisible()
+      await expect(answers.getByText('Yes', { exact: true })).toBeVisible()
+      await screenshot('cancel-return')
+      await page.getByRole('button', { name: `Pay ${total} with Stripe`, exact: true }).click()
+      await expect(page).toHaveURL(new RegExp(`^${stripe.origin}/pay/cs_test_`))
+    }
+    await page.getByRole('button', { name: `Pay ${total}`, exact: true }).click()
     await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible()
+    await expect(page.getByText(/Your payment is received\./)).toBeVisible()
     await screenshot(`completed-${count}`)
+    // One respondent session keeps one response, however many checkout attempts it took.
+    expect((await call<Ledger>(`${base}/ledger`)).responses.filter(response => response.calculations.find(value => value.id === totalId)?.value === (count === 4 ? 64 : 128))).toHaveLength(1)
   }
+  expect([...stripe.sessions.values()].map(session => [session.amount_total, session.status]).sort()).toEqual([[12800, 'complete'], [6400, 'complete'], [6400, 'expired']].sort())
+  expect(stripe.webhooks.map(webhook => [webhook.status, JSON.parse(webhook.body).outcome])).toEqual([[200, 'applied'], [200, 'applied']])
   await page.goto(`/app/flows/${flow.id}/results`)
   const ledgerRegion = page.getByRole('region', { name: 'Response ledger', exact: true })
   await ledgerRegion.getByRole('button', { name: 'View answers', exact: true }).first().click()
   await expect(ledgerRegion.getByText('Calculated values', { exact: true })).toBeVisible()
   await expect(ledgerRegion.getByText('total', { exact: true })).toBeVisible()
   await expect(ledgerRegion.getByText('128', { exact: true })).toBeVisible()
+  const record = ledgerRegion.getByRole('region', { name: 'Payment', exact: true }).first()
+  await expect(record.getByText('Paid ·', { exact: false })).toBeVisible()
+  await expect(record.getByText(/^cs_test_/)).toBeVisible()
+  await screenshot('payment-ledger')
   await screenshot('ledger')
   const ledger = await call<Ledger>(`${base}/ledger`)
   expect(ledger.total).toBe(2)
+  expect(ledger.responses.map(response => [response.payment?.state, response.payment?.amount]).sort()).toEqual([['paid', 12800], ['paid', 6400]].sort())
   expect(ledger.responses.map(response => response.calculations.find(value => value.id === totalId)?.value).sort((a, b) => Number(a) - Number(b))).toEqual([64, 128])
   const start = await call<{ token: string }>(`${base}/responses/export/start?format=csv`)
   const exported = await page.request.get(`${base}/responses/export?token=${encodeURIComponent(start.token)}`)
@@ -118,6 +189,7 @@ contract(['LOGIC-003', 'LOGIC-006'], 'builds a conditional total, previews calcu
   expect(records).toHaveLength(2)
   const exportedTotals = records.map(record => (JSON.parse(record.calculations_json) as Ledger['responses'][number]['calculations']).find(value => value.id === totalId)?.value)
   expect(exportedTotals.sort((a, b) => Number(a) - Number(b))).toEqual([64, 128])
+  } finally { await stripe.close() }
 })
 
 contract('LOGIC-003', 'a BMI from two decimal answers gates a branch and publishes', async ({ page }, info) => {

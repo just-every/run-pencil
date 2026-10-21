@@ -33,6 +33,9 @@ const submitResponseSchema = sessionCredentials.extend({
   invitationToken: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   honeypot: z.string().max(500).optional(),
   loadTime: z.string().max(84).optional(),
+  // PAY-001: never trusted. Pencil recomputes every amount from the published revision; a supplied one is refused.
+  amount: z.unknown().optional(),
+  payment: z.unknown().optional(),
 })
 
 function failure(context: Context<WorkerEnvironment>, error: unknown) {
@@ -74,7 +77,8 @@ export function registerResponseRoutes(app: Hono<WorkerEnvironment>, services: R
 
   app.post('/api/public/flows/:slug/responses', zValidator('param', z.object({ slug: flowSlug })), zValidator('json', submitResponseSchema), async (context) => {
     try {
-      const input = context.req.valid('json')
+      const { amount, payment, ...input } = context.req.valid('json')
+      if (amount !== undefined || payment !== undefined) throw new ValidationError('Pencil calculates the payment amount from the published form. A submitted amount is refused.')
       return context.json(await services(context).responses.submitPublicResponse({ slug: context.req.param('slug'), clientAddress: context.req.header('CF-Connecting-IP'), ...input, sessionToken: input.sessionToken ?? '' }), 201)
     } catch (error) {
       return failure(context, error)
