@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "7cd9d8475c90d8c523c8cf7f6e2d467a1c90b65b56b7b439522cc726640b16ac",
+      "sha256": "0ab8b49113ac01a6af26a509518ebeba20fa4941bea8058395153e5e93aa3865",
       "executable": false
     },
     "DEMO.md": {
@@ -933,11 +933,11 @@
       "executable": false
     },
     "docs/evidence/pay001-builder-1440.png": {
-      "sha256": "8069d8f211a686ec357132b1305e1641f795cea02cc78685227105508ff8531c",
+      "sha256": "cda13c5df2fab55cd93f1dd12ab26600e33e8bc267550c09865bb1ff4af0956d",
       "executable": false
     },
     "docs/evidence/pay001-builder-390.png": {
-      "sha256": "5633a1aa1aaff9a7777119d331470cb99555269b3ef5f639094ef6a099630a22",
+      "sha256": "b959f1f67c056fb36342af4a42a61f59e1fcad7778c21f3e1a7893e9993bf097",
       "executable": false
     },
     "docs/evidence/pay001-cancel-return-1440.png": {
@@ -4693,7 +4693,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/FlowBuilderPage.tsx": {
-      "sha256": "1942f5bb93c847e97cf5127fcd2a0ad843d8dd6a17c3b272e82599047d86be30",
+      "sha256": "8e07dfcbf56c6707cc13f2937e08d07a9862070fa907422ad13ec7a38b9d59ea",
       "executable": false
     },
     "src/core/features/flows/ui/FlowSharePanel.tsx": {
@@ -5341,11 +5341,11 @@
       "executable": false
     },
     "src/core/features/payments/service.ts": {
-      "sha256": "c5abf32fbd8a8b41047e1e8a9708d00d55991fa72779d40d9637f2c914534844",
+      "sha256": "e6857a78edf339ba1a0ead3714bbb0e628c6ce09710789874acd59d238eeddf3",
       "executable": false
     },
     "src/core/features/payments/stripe.ts": {
-      "sha256": "dc9dbdd33c92c46cde5c665e2192cd68806affbd904ecf81a161138347575fb9",
+      "sha256": "72d754e06434ae8da615fb06d4cbaafe1832b3187e838ef1ae7267adbec08906",
       "executable": false
     },
     "src/core/features/payments/ui/index.ts": {
@@ -5353,7 +5353,7 @@
       "executable": false
     },
     "src/core/features/payments/ui/PaymentConnection.tsx": {
-      "sha256": "bd3fcc767a485051108e16b5cc12240ce1b7fd6d74099c8d21c08968aa2de2b6",
+      "sha256": "6d15fd5adab36a8d8762f4c7bf5bab8d949dfa164171cca980729fce1a45fedf",
       "executable": false
     },
     "src/core/features/payments/ui/PaymentDisclosure.tsx": {
@@ -5361,7 +5361,7 @@
       "executable": false
     },
     "src/core/features/payments/ui/PaymentRecord.tsx": {
-      "sha256": "1d9134039de8c257a1cc90369bf14e9aa229f10eafa00ad59a96b1e2beb02f29",
+      "sha256": "3e15adce8c5873136d7bf239e24a36257903ba4aee0ca1baa20420a0c938ad88",
       "executable": false
     },
     "src/core/features/payments/ui/payments.css": {
