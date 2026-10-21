@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d247fc1024755cb3ff523750b1f0139a4dbfb9b13c9581f7775add7b1b43f2c7",
+      "sha256": "7cd9d8475c90d8c523c8cf7f6e2d467a1c90b65b56b7b439522cc726640b16ac",
       "executable": false
     },
     "DEMO.md": {
@@ -6857,7 +6857,7 @@
       "executable": false
     },
     "tests/e2e/stripe-receiver.ts": {
-      "sha256": "2223f88e5f553c60b3935fdac57bb7fab608d0439df455ee4726008f6b2366e3",
+      "sha256": "158c8f588b1600527e2eb45c1e6cd506c164836379334bb5127f3fff1646ee8f",
       "executable": false
     },
     "tests/e2e/task-receiver.ts": {
@@ -7193,7 +7193,7 @@
       "executable": false
     },
     "tests/runtime/calculations.worker.test.ts": {
-      "sha256": "ddf459b00d163a4f00e3fd2ebdf88943d5816dac39e7ec99d7859d2b22b35c76",
+      "sha256": "a72631e9ca861ba5112cb67706b377615dd85f323e79b1cb568753cab0b6d2a0",
       "executable": false
     },
     "tests/runtime/coding.worker.test.ts": {
@@ -7365,7 +7365,7 @@
       "executable": false
     },
     "tests/runtime/payment-fixture.ts": {
-      "sha256": "ca90e2c895fcfe6db83c5513c79d63d3e0b04fafabe83795e4c1653ec083b90f",
+      "sha256": "e75f30d729d07f3df8878f0717dd4d5bafbe6cf004f513e3883d9076c0fb96dc",
       "executable": false
     },
     "tests/runtime/policy-snapshot.worker.test.ts": {

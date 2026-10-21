@@ -538,7 +538,7 @@ are data, compiled into the owned source and applied by one local runtime.
 
 ## Status
 
-Judged from the code and tests at commit `08b41a7cd28020519f10cf28d65a8c6015eea66f` (20 October 2026). Subsequent target completions are maintained alongside their cited clause-tagged tests. Release 0.7.0 was cut before these completions: on top of 0.6.0 it adds FIELD-006 and GOV-003 and fixes backup and restore on a database installed by Run Edit Run Platform (CHANGELOG.md). Each done row's evidence is its tagged tests, which `rer verify` runs.
+Judged from the code and tests at commit `c1dd986136d9cedeff430ee90c5a052b9d3b74e0` (21 October 2026). Subsequent target completions are maintained alongside their cited clause-tagged tests. Release 0.7.0 was cut before these completions: on top of 0.6.0 it adds FIELD-006 and GOV-003 and fixes backup and restore on a database installed by Run Edit Run Platform (CHANGELOG.md). Each done row's evidence is its tagged tests, which `rer verify` runs.
 
 FIELD-006 includes this round’s choice/block presentation implementation and tagged native/browser journeys cited below.
 
