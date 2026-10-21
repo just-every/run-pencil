@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "50a914571eefd2f0ddd7e785658e15b605284aaf53f5caebc607c17ca2d2faa4",
+      "sha256": "f5e93c95d1eb928c2b46fa485a4c2110395ed09ae908def0b1bf9a0cf19f347d",
       "executable": false
     },
     "DEMO.md": {
@@ -1041,7 +1041,7 @@
       "executable": false
     },
     "docs/guide/overview.md": {
-      "sha256": "c3491cf7081219227e420191070021a93d158c5ef5cafb3843358ad6135abdb3",
+      "sha256": "174f280c579eb3900e7287576572d4617296c1862d11f68358351988806afa03",
       "executable": false
     },
     "docs/guide/privacy.md": {

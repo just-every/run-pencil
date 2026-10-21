@@ -18,7 +18,6 @@ Pencil is a self-hosted form builder for one business. You build short forms tha
 - **Your own branding.** Your business name, supporting line, accent colour and logo on your public forms.
 - **A way in from another form builder.** Import a Typeform form and its responses, or start with a Google Forms response CSV and an optional form-definition JSON, into an editable draft. See [Moving in](moving-in.md).
 - **Backup and restore.** Export product data, excluding credentials, sessions and private settings, and restore into an empty database. `rer export`/`rer import` are local; hosted D1 recovery uses a separate script, requires all writers stopped and an independently provisioned migration-only target. See [Backup and restore](backup.md).
-
 - **Paid forms.** Not in release 0.7.0. The current, unreleased source adds one-time USD Stripe Checkout payments, including calculated amounts, through a restricted key only the owner connects; Connect OAuth is not built and PAY-001 is partial. Proved only against a loopback Stripe stand-in in CI; the real Stripe test-mode run was local and is not committed; no live charge, tax or legal acceptance is claimed. Subscriptions, invoicing and other providers are not built.
 
 ## Who it is for
