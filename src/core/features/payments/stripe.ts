@@ -4,8 +4,9 @@ import type { PaymentLine } from '../../shared/payments'
 export const stripeApiVersion = '2024-06-20'
 export const stripeSignatureToleranceSeconds = 300
 
+/** Keeps only Stripe's status and error code: its message text can quote part of the key or the account id. */
 export class StripeRequestError extends Error {
-  constructor(readonly status: number, readonly code: string | undefined, message: string) { super(message) }
+  constructor(readonly status: number, readonly code: string | undefined) { super(`Stripe answered ${status}${code ? ` (${code})` : ''}.`) }
 }
 
 export type CheckoutSession = { id: string; url: string | null; amount_total: number | null; expires_at: number; livemode: boolean; status: string | null; payment_status: string; payment_intent: string | null }
@@ -18,8 +19,8 @@ export function stripeClient(origin: string, secretKey: string) {
       headers: { Authorization: `Bearer ${secretKey}`, 'Stripe-Version': stripeApiVersion, ...(form ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}), ...(idempotencyKey ? { 'Idempotency-Key': idempotencyKey } : {}) },
       ...(form ? { body: form.toString() } : {}),
     })
-    const body = await response.json().catch(() => ({})) as { error?: { code?: string; message?: string } }
-    if (!response.ok) throw new StripeRequestError(response.status, body.error?.code, body.error?.message ?? `Stripe answered ${response.status}.`)
+    const body = await response.json().catch(() => ({})) as { error?: { code?: string } }
+    if (!response.ok) throw new StripeRequestError(response.status, body.error?.code)
     return body as T
   }
   return {

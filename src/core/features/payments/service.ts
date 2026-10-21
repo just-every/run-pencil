@@ -62,7 +62,7 @@ export class PaymentService {
     try {
       session = await stripeClient(this.options.apiOrigin, connection.secretKey).createCheckoutSession({ lines: JSON.parse(payment.linesJson), successUrl: back('success'), cancelUrl: back('cancel'), responseId: payment.responseId, attempt: payment.attempt, idempotencyKey: `pencil-checkout:${payment.responseId}:${payment.attempt}` })
     } catch (error) {
-      if (error instanceof StripeRequestError) throw new ValidationError(`Stripe could not open checkout (${error.message}). Your answers are saved; retry to continue to payment.`)
+      if (error instanceof StripeRequestError) throw new ValidationError('Stripe could not open checkout. Your answers are saved; retry to continue to payment.')
       throw new ValidationError('Stripe could not be reached. Your answers are saved; retry to continue to payment.')
     }
     if (!session.url) throw new ValidationError('Stripe returned no checkout page. Retry to continue to payment.')
@@ -117,7 +117,8 @@ export class PaymentService {
     const connection = await this.connections.payment()
     if (!connection) throw new ValidationError('Save a Stripe key and webhook signing secret first.')
     try { await stripeClient(this.options.apiOrigin, connection.secretKey).listCheckoutSessions() } catch (error) {
-      throw new ValidationError(error instanceof StripeRequestError ? `Stripe refused the key: ${error.message} Give the restricted key write access to Checkout Sessions.` : 'Stripe could not be reached. Try again.')
+      throw new ValidationError(!(error instanceof StripeRequestError) ? 'Stripe could not be reached. Try again.' : error.status === 401 ? 'Stripe refused the key. Check that it is complete and still active.'
+        : `Stripe refused the key (${error.status}${error.code ? `, ${error.code}` : ''}). Give the restricted key write access to Checkout Sessions.`)
     }
     return { message: `Stripe accepted the ${connection.secretKey.startsWith('rk_') ? 'restricted' : 'secret'} key in ${connection.secretKey.includes('_live_') ? 'live' : 'test'} mode.` }
   }

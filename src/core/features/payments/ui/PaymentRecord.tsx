@@ -7,11 +7,13 @@ export function PaymentBadge({ payment }: { payment: LedgerPayment }) {
 
 /** The operator's view of a response's payment: its state, Pencil's amount and Stripe's IDs. Card or bank numbers are never stored. */
 export function PaymentRecord({ payment, time }: { payment: LedgerPayment; time: (value: string) => string }) {
+  // An expired or cancelled checkout can no longer be charged; a failed one can still be paid on the same page.
+  const ended = payment.state === 'expired' || payment.state === 'cancelled'
   const rows: Array<[string, React.ReactNode]> = [
     ['State', <PaymentBadge payment={payment} />],
-    ['Charged by Stripe', payment.providerAmount === null ? 'Not yet' : formatUsd(payment.providerAmount)],
+    ['Charged by Stripe', payment.providerAmount === null ? ended ? 'Not charged' : 'Not yet' : formatUsd(payment.providerAmount)],
     ['Checkout Session', <code>{payment.checkoutSessionId ?? 'Not opened'}</code>],
-    ['Payment intent', <code>{payment.paymentIntentId ?? 'None yet'}</code>],
+    ['Payment intent', <code>{payment.paymentIntentId ?? (ended ? 'None' : 'None yet')}</code>],
     ['Last change', `${time(payment.stateChangedAt)}${payment.attempt > 1 ? ` · attempt ${payment.attempt}` : ''}`],
   ]
   return <section aria-label="Payment"><p className="muted">Payment</p><dl>{rows.map(([label, value]) => <div className="ledger-answer" key={label}>

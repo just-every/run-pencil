@@ -253,8 +253,9 @@ export function FlowBuilderPage() {
           {!draft.steps.length ? <p className="muted builder-start-guidance">Start with a question, then add a completion screen.</p> : null}
           <div className="builder-add">
             <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={addQuestion} type="button"><Plus aria-hidden="true" size={15} /> Add question</button>
-            <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={addPayment} type="button"><CreditCard aria-hidden="true" size={15} /> Add payment step</button>
             <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={addCompletion} type="button"><Plus aria-hidden="true" size={15} /> Add completion screen</button>
+            {/* After the completion button: on a phone it shares the second row with Add welcome screen instead of adding a row. */}
+            <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={addPayment} type="button"><CreditCard aria-hidden="true" size={15} /> Add payment step</button>
           {!draft.steps.some((step) => step.kind === 'welcome') ? <button className="secondary-button focus-ring" disabled={saving || dirty} type="button" onClick={() => reloadAfterMutation(() => api.addDraftStep(flowId, { expectedVersion: draft.flow.draftVersion, step: { kind: 'welcome', questionType: null, prompt: 'Before you begin', helperText: 'Share a few answers to help us improve.', nextStepId: draft.steps.find((step) => step.kind === 'question')?.id ?? null } }))}><Plus aria-hidden="true" size={15} /> Add welcome screen</button> : null}
           </div>
           <div className="step-list">
