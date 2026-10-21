@@ -1,12 +1,13 @@
+import { unpaidResponseSql } from '../payments/admission'
 import { ulid } from 'ulid'
 import { collectorLimits, type CollectorRow, type CollectorSettings } from './model'
 
 const selection = `SELECT c.id,c.flow_id AS flowId,c.name,c.channel,c.public_key AS publicKey,c.system_source AS systemSource,
  c.deadline_at AS deadlineAt,c.deadline_time_zone AS deadlineTimeZone,c.response_limit AS responseLimit,c.closed_at AS closedAt,
  c.created_at AS createdAt,c.updated_at AS updatedAt,
- (SELECT count(*) FROM response_collector rc WHERE rc.collector_id=c.id) AS retained,
+ (SELECT count(*) FROM response_collector rc WHERE rc.collector_id=c.id AND NOT ${unpaidResponseSql('rc.response_id')}) AS retained,
  (SELECT count(*) FROM response_collector rc JOIN responses r ON r.id=rc.response_id
-  WHERE rc.collector_id=c.id AND r.flow_id=c.flow_id AND r.workspace_id=f.workspace_id AND r.state='released'
+  WHERE rc.collector_id=c.id AND r.flow_id=c.flow_id AND r.workspace_id=f.workspace_id AND r.state='released' AND NOT ${unpaidResponseSql('r.id')}
   AND r.completed_at<=? AND r.released_at<=?
   AND (r.source!='imported' OR EXISTS(SELECT 1 FROM form_import_targets t WHERE t.target_id=r.id AND t.kind='response'
     AND t.workspace_id=r.workspace_id AND t.committed_at<=?))) AS released

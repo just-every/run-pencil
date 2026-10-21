@@ -28,7 +28,8 @@ Pencil is built for one business with one shared workspace. Everyone who signs i
 Check this list before you plan around Pencil. These things are not built yet, so you will not find them hidden in a setting.
 
 - **Named task-system integrations.** External tasks go to a webhook you run; there is no built-in Jira, Linear, Asana or similar connection.
-- **Roles, several workspaces, payments, scheduling, file-upload questions, native mobile apps and single sign-on.** These are out of scope.
+- **Roles, several workspaces, scheduling, file-upload questions, native mobile apps and single sign-on.** These are out of scope.
+- **Paid forms.** The current source supports one-time USD Stripe Checkout payments through an owner-only restricted-key connection, including calculated amounts. Publish validates payment placement and amount bounds; unpaid responses wait before response mail and do not consume collector places. PAY-001 remains partial pending independent re-audit, and Connect OAuth is unbuilt. Proved only against a loopback Stripe stand-in in CI; the real Stripe test-mode run was local and is not committed; no live charge, tax or legal acceptance is claimed. Subscriptions, invoicing and additional providers are outside this proof.
 - **Other kinds of embed.** The Share panel offers the public link, a script embed and a plain iframe, and nothing else.
 
 The dashboard line **Ask → Signal → Act** describes the whole loop: build a form, read results or request an analysis, then accept or write an action and decide whether it worked.

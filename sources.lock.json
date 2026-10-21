@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "a8f2e0a947274067b9970cde9b7cb7cb60a1985b057cd41b483f9e3596fca4a4",
+      "sha256": "ca0e430508cfc9498f57fd09bf982262a6ac3eb03df67ffbe2a4051d9b1274e7",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "7b444854cc6f5a4ec1014360aa052503364b341f5f275e0dcc5e554bb72ad7f6",
+      "sha256": "c75769166ca44e045ad79db4bd73b31215bf8a08c8da1b295d96dbf8079d5cbf",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "5b1a07cdd121e8f6102e621835447d247aae0e96c999894f452204c620bb48b9",
+      "sha256": "c07cfb577377dcf60698712e55c043e2eaf097df649e00c691148b10da7fa478",
       "executable": false
     },
     "DEMO.md": {
@@ -898,6 +898,10 @@
     },
     "docs/contract-changes-20261012.json": {
       "sha256": "907af6ec833ad744769c17f9b18df59b39cddf9b1098f359c26279937f3a5a4b",
+      "executable": false
+    },
+    "docs/contract-changes-20261021.json": {
+      "sha256": "343266bb4c7b18634fdc86667e3bbd4e200f64e99af24502d097d5acf4ddfe6d",
       "executable": false
     },
     "docs/data-ownership.md": {
@@ -1037,7 +1041,7 @@
       "executable": false
     },
     "docs/guide/overview.md": {
-      "sha256": "ec2a9ca277e7df578b3d27690ab7410c7e8307ad66819ba515d03884d6111289",
+      "sha256": "876414d31b2b8617b1a9f319393a2c6d4916a6f3c734c3a886867625dee01378",
       "executable": false
     },
     "docs/guide/privacy.md": {
@@ -1314,6 +1318,10 @@
     },
     "migrations/core/0055_payments.sql": {
       "sha256": "2bcab6c2dd1db6781a0dcf5eb0a3a10aeb73bc1ca2a344968724c34e0dd14765",
+      "executable": false
+    },
+    "migrations/core/0056_paid_collector_admission.sql": {
+      "sha256": "de80e0340200b5e2aaf8299e0a9eb4dc9c67a8b1ebb099c7a0fdfe9ac23cb0f9",
       "executable": false
     },
     "migrations/released-rewrites.json": {
@@ -1825,7 +1833,7 @@
       "executable": false
     },
     "scripts/local/portability.mjs": {
-      "sha256": "c03f60b580243195a0b127104128d77049f4dd29e456c24f9b3107da0aa07d39",
+      "sha256": "a88f2675aa304f86c1158530c313554f607837c1e29e540df295da8ca34c8ede",
       "executable": false
     },
     "scripts/local/state.mjs": {
@@ -4277,7 +4285,7 @@
       "executable": false
     },
     "src/core/features/collectors/repository.ts": {
-      "sha256": "caa917a0a35a69fec9435c0cd4a9381d56fe0ec76fe91225af9a4f35df2d37a9",
+      "sha256": "8edb6677290a8acc3d8ea72d8e4bba8a09e3814a34c5f2b65a59e1016983cba4",
       "executable": false
     },
     "src/core/features/collectors/routes.ts": {
@@ -6585,7 +6593,7 @@
       "executable": false
     },
     "tests/e2e/calculations.spec.ts": {
-      "sha256": "18d268bcd9eea753beb580b8a9775a601b7ccc7fa4e6d45597ab2a39c5e13880",
+      "sha256": "5f10e2a375e29de6ffe2efa6d830fb3684f9fdd698a031c9f2f1fd8b50614be7",
       "executable": false
     },
     "tests/e2e/client-secrets.spec.ts": {
@@ -6629,7 +6637,7 @@
       "executable": false
     },
     "tests/e2e/docs-site.spec.ts": {
-      "sha256": "a34317081e546add52eee25bfeab71581de96a977da16971ae42b9d6d85756f3",
+      "sha256": "eb4f8665f6501ea699d8c43555236e64a251bfff2c676a9ffbd3081f7739e2ad",
       "executable": false
     },
     "tests/e2e/embed-security-foundation.spec.ts": {
@@ -6857,7 +6865,7 @@
       "executable": false
     },
     "tests/e2e/stripe-receiver.ts": {
-      "sha256": "158c8f588b1600527e2eb45c1e6cd506c164836379334bb5127f3fff1646ee8f",
+      "sha256": "a61deb00e6a422e15649cdf5d19d19eace6802a08851cd21f58a074ae6640f4d",
       "executable": false
     },
     "tests/e2e/task-receiver.ts": {
@@ -7193,7 +7201,7 @@
       "executable": false
     },
     "tests/runtime/calculations.worker.test.ts": {
-      "sha256": "a72631e9ca861ba5112cb67706b377615dd85f323e79b1cb568753cab0b6d2a0",
+      "sha256": "f64074aea647408bc8ddd9015ea6bc14edfac717cb55ae0691608a135406d303",
       "executable": false
     },
     "tests/runtime/coding.worker.test.ts": {

@@ -10,6 +10,7 @@ type Session = { id: string; object: 'checkout.session'; url: string; amount_tot
 export async function startStripeReceiver(pencilOrigin: string) {
   const port = Number(process.env.PENCIL_E2E_STRIPE_PORT ?? Number(process.env.PENCIL_E2E_PORT ?? '4173') + 4)
   const origin = `http://127.0.0.1:${port}`, sessions = new Map<string, Session>(), keys = new Map<string, string>(), webhooks: Array<{ status: number; body: string }> = []
+  let checkoutOrigin = origin
   const html = (value: string) => value.replace(/[&<>"']/g, character => `&#${character.charCodeAt(0)};`)
   const server = createServer((request, response) => {
     let body = ''
@@ -50,7 +51,7 @@ export async function startStripeReceiver(pencilOrigin: string) {
       const lines: Session['lines'] = []
       for (let index = 0; form[`line_items[${index}][quantity]`] !== undefined; index++) lines.push({ name: form[`line_items[${index}][price_data][product_data][name]`], amount: Number(form[`line_items[${index}][price_data][unit_amount]`]), quantity: Number(form[`line_items[${index}][quantity]`]) })
       const id = `cs_test_${sessions.size + 1}${Math.random().toString(36).slice(2, 8)}`
-      const session: Session = { id, object: 'checkout.session', url: `${origin}/pay/${id}`, amount_total: lines.reduce((sum, line) => sum + line.amount * line.quantity, 0), currency: 'usd', status: 'open', payment_status: 'unpaid', payment_intent: null,
+      const session: Session = { id, object: 'checkout.session', url: `${checkoutOrigin}/pay/${id}`, amount_total: lines.reduce((sum, line) => sum + line.amount * line.quantity, 0), currency: 'usd', status: 'open', payment_status: 'unpaid', payment_intent: null,
         expires_at: Math.floor(Date.now() / 1000) + 86_400, livemode: false, client_reference_id: form.client_reference_id ?? null, metadata: { pencil_response: form['metadata[pencil_response]'], pencil_attempt: form['metadata[pencil_attempt]'] }, success_url: form.success_url, cancel_url: form.cancel_url, lines }
       sessions.set(id, session)
       if (key) keys.set(key, id)
@@ -58,5 +59,5 @@ export async function startStripeReceiver(pencilOrigin: string) {
     })
   })
   await new Promise<void>(resolve => server.listen(port, '127.0.0.1', resolve))
-  return { origin, sessions, webhooks, close: () => new Promise<void>(resolve => { server.closeAllConnections(); server.close(() => resolve()) }) }
+  return { origin, sessions, webhooks, useStripeCheckoutOrigin() { checkoutOrigin = 'https://checkout.stripe.com' }, close: () => new Promise<void>(resolve => { server.closeAllConnections(); server.close(() => resolve()) }) }
 }

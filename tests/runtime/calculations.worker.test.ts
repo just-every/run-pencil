@@ -1,5 +1,7 @@
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
-import { beforeAll, expect } from 'vitest'
+import { beforeAll, expect, vi } from 'vitest'
+import { createScheduledController } from 'cloudflare:test'
+import worker from '../../src/core/app/worker'
 import { contract } from '../../src/test/contract'
 import { googleHttp } from './google-import-http'
 import { httpExport } from '../helpers/report-download'
@@ -116,7 +118,7 @@ contract('LOGIC-003', 'agrees across preview, collection, recall and exports for
   assertValues((await f.ledger()).responses)
 }, 60_000)
 
-contract(['LOGIC-003', 'PAY-001'], 'refuses cyclic, deleted, mistyped and zero-denominator calculations, and misplaced or out-of-range payment steps, without publishing the draft', async () => {
+contract(['LOGIC-003', 'PAY-001', 'FLOW-006'], 'refuses cyclic, deleted, mistyped and zero-denominator calculations, and misplaced or out-of-range payment steps, without publishing the draft', async () => {
   const f = await fixture(), draftId = (await f.read()).revision.id
   const invalid: Array<{ calculations: Calculation[]; reason: RegExp }> = [
     { calculations: [{ ...f.calculation, expression: { kind: 'variable', variableId: 'other' } }, { id: 'other', name: 'Other total', type: 'number', expression: { kind: 'variable', variableId: 'total' } }], reason: /cycle/i },
@@ -135,6 +137,30 @@ contract(['LOGIC-003', 'PAY-001'], 'refuses cyclic, deleted, mistyped and zero-d
   }
   await f.save([f.calculation]); await accepted(await f.publish(), 201)
 
+  // PAY-001(a): a real reachable branch skips an amount operand. No revision is created.
+  const skippedAmount = await fixture(true)
+  const skipPay = (await accepted<{ step: { id: string } }>(await skippedAmount.call(`${skippedAmount.base}/draft/steps`, {
+    expectedVersion: (await skippedAmount.read()).flow.draftVersion,
+    step: { kind: 'payment', questionType: null, prompt: 'Pay skipped quantity', nextStepId: skippedAmount.ordinary.id,
+      questionSettings: { payment: { products: [{ id: 'item', name: 'Item', unitAmount: 100, quantityStepId: skippedAmount.quantity.id }], options: [], minimum: 50, maximum: 10000 } } },
+  }), 201)).step.id
+  const route = async (skip: boolean) => accepted(await skippedAmount.call(`${skippedAmount.base}/draft/branches`, {
+    expectedVersion: (await skippedAmount.read()).flow.draftVersion,
+    rules: [...(skip ? [{ sourceStepId: skippedAmount.gate!.id, predicateKind: 'equals', expectedValue: false, destinationStepId: skipPay, position: 0 }] : []), { sourceStepId: skippedAmount.discount.id, predicateKind: 'equals', expectedValue: true, destinationStepId: skippedAmount.high.id, position: 0 }],
+  }, { method: 'PUT' }))
+  await accepted(await skippedAmount.call(`${skippedAmount.base}/draft`, { expectedVersion: (await skippedAmount.read()).flow.draftVersion, stepId: skippedAmount.discount.id, prompt: skippedAmount.discount.prompt, required: true, nextStepId: skipPay }, { method: 'PUT' }))
+  await route(true)
+  const beforeSkip = await skippedAmount.read()
+  const revisions = async () => (await env.DB.prepare('SELECT id FROM flow_revisions WHERE flow_id=? ORDER BY id').bind(beforeSkip.flow.id).all()).results
+  const beforeRevisions = await revisions()
+  const skipRefusal = await skippedAmount.publish()
+  expect(skipRefusal.status, await skipRefusal.clone().text()).toBe(400)
+  expect((await skipRefusal.json() as { details: Array<{ stepId: string }> }).details).toContainEqual(expect.objectContaining({ stepId: skipPay }))
+  expect(await revisions()).toEqual(beforeRevisions)
+  expect((await skippedAmount.read()).revision.id).toBe(beforeSkip.revision.id)
+  await route(false)
+  await accepted(await skippedAmount.publish(), 201)
+
   // PAY-001 under FLOW-006: each refusal names the payment step and leaves the published revision in place.
   const live = async () => (await accepted<PublicFlow>(await f.call(`/api/public/flows/${f.slug}`, undefined, { auth: false }))).revision.id
   const pricing = { products: [], options: [], calculationId: 'total', minimum: 1600, maximum: 200_000 }
@@ -143,16 +169,27 @@ contract(['LOGIC-003', 'PAY-001'], 'refuses cyclic, deleted, mistyped and zero-d
   const pay = await step({ kind: 'payment', questionType: null, prompt: 'Pay for the order', nextStepId: f.ordinary.id, questionSettings: { payment: pricing } })
   await edit(f.discount.id, { nextStepId: pay })
   await accepted(await f.publish(), 201)
-  const current = await live()
+  let current = await live()
   const unchanged = async (reason: RegExp) => {
+    const draftBefore = await f.read()
+    const revisionRows = async () => (await env.DB.prepare('SELECT id FROM flow_revisions WHERE flow_id=? ORDER BY id').bind(draftBefore.flow.id).all()).results
+    const before = await revisionRows()
     const refused = await f.publish()
     expect(refused.status, await refused.clone().text()).toBe(400)
     expect((await refused.json() as { details: Array<{ stepId: string; reason: string }> }).details).toContainEqual({ stepId: pay, reason: expect.stringMatching(reason) })
     expect(await live()).toBe(current)
+    expect(await revisionRows()).toEqual(before)
+    expect((await f.read()).revision.id).toBe(draftBefore.revision.id)
   }
   // A calculated amount that can exceed the maximum: quantity 100 at $20 is $2,000.
   await edit(pay, { questionSettings: { payment: { ...pricing, maximum: 100_000 } } })
   await unchanged(/\$2,000\.00.*maximum \$1,000\.00/)
+  // PAY-001(b): the reachable discounted $16 total falls below a $20 minimum.
+  await edit(pay, { questionSettings: { payment: { ...pricing, minimum: 2000 } } })
+  await unchanged(/minimum/i)
+  await edit(pay, { questionSettings: { payment: pricing } })
+  await accepted(await f.publish(), 201)
+  current = await live()
   // An amount read from a link value the respondent controls.
   await accepted(await f.call(`${f.base}/draft/settings`, { expectedVersion: (await f.read()).flow.draftVersion, settings: { hiddenFields: [{ id: 'coupon', name: 'coupon', type: 'number', category: 'plain' }], identityMode: 'anonymous', calculations: [f.calculation, { id: 'linked', name: 'Linked price', type: 'number', expression: { kind: 'hidden', fieldId: 'coupon' } }] } }, { method: 'PUT' }))
   await edit(pay, { questionSettings: { payment: { ...pricing, calculationId: 'linked' } } })
@@ -170,7 +207,7 @@ contract(['LOGIC-003', 'PAY-001'], 'refuses cyclic, deleted, mistyped and zero-d
   await unchanged(/after a completion screen/)
 }, 60_000)
 
-contract(['LOGIC-003', 'PAY-001'], 'excludes off-path and forged operands, completes a private saved quote, and charges only the server-computed total through Stripe Checkout', async () => {
+contract(['LOGIC-003', 'PAY-001', 'NOTIFY-003', 'DIST-017', 'GOV-003'], 'excludes off-path and forged operands, completes a private saved quote, and charges only the server-computed total through Stripe Checkout', async () => {
   const f = await fixture(true), gate = f.gate!
   await accepted(await f.publish(), 201)
   const skipped = await f.submit([{ stepId: gate.id, value: false }, { stepId: f.quantity.id, value: 100 }, { stepId: f.discount.id, value: false }], undefined, { calculations: { total: 2000 } })
@@ -300,6 +337,121 @@ contract(['LOGIC-003', 'PAY-001'], 'excludes off-path and forged operands, compl
   expect(await payment(abandoned.receipt.responseId)).toBeNull()
   expect((await env.DB.prepare('SELECT count(*) AS n FROM payment_events WHERE response_id=?').bind(abandoned.receipt.responseId).first<{ n: number }>())!.n).toBe(0)
   expect(await payment(bulk.receipt.responseId)).toMatchObject({ state: 'paid', session: paidSession.id, intent: paidSession.payment_intent })
+
+
+  // PAY-001(c-f,h): the real app, webhook and scheduler doors share persisted payment state.
+  vi.useFakeTimers({ toFake: ['Date'] })
+  try {
+    vi.setSystemTime(new Date('2026-10-01T08:00:00.000Z'))
+    const q = await fixture(), qid = (await q.read()).flow.id
+    await env.DB.prepare("UPDATE oa_operators SET role='owner' WHERE id=?").bind(q.operatorId).run()
+    await env.DB.prepare('UPDATE oa_sessions SET operator_version=(SELECT version FROM oa_operators WHERE id=operator_id),expires_at=? WHERE operator_id=?').bind(Date.parse('2099-01-01'), q.operatorId).run()
+    await accepted(await q.call('/api/app/connections/payment', connection, { method: 'PUT' }))
+    const qpay = (await accepted<{ step: { id: string } }>(await q.call(`${q.base}/draft/steps`, {
+      expectedVersion: (await q.read()).flow.draftVersion,
+      step: { kind: 'payment', questionType: null, prompt: 'Pay order', nextStepId: q.ordinary.id, questionSettings: { payment: pricing } },
+    }), 201)).step
+    await accepted(await q.call(`${q.base}/draft`, { expectedVersion: (await q.read()).flow.draftVersion, stepId: q.discount.id, prompt: q.discount.prompt, required: true, nextStepId: qpay.id }, { method: 'PUT' }))
+    await accepted(await q.publish(), 201)
+    await accepted(await q.call(`${q.base}/notifications`, { mode: 'daily' }, { method: 'PUT' }))
+    const collector = await accepted<{ id: string; publicKey: string }>(await q.call(`${q.base}/collectors`, { name: 'Paid seats', channel: 'web', responseLimit: 2 }), 201)
+    const admission = () => q.call(`/api/public/flows/${q.slug}/sessions`, { deviceClass: 'desktop', source: 'direct', collectorKey: collector.publicKey }, { auth: false })
+    const place = async (collected = true) => {
+      const session = collected ? await accepted<Session>(await admission(), 201) : await q.start()
+      return q.submit([{ stepId: q.quantity.id, value: 2 }, { stepId: q.discount.id, value: false }], session, collected ? { collectorKey: collector.publicKey } : {})
+    }
+    const orders = await Promise.all([place(), place(), place(), place()])
+    const publicPayment = async (id: string) => (await q.ledger()).responses.find(row => row.id === id)!.payment!
+    const sessionFor = async (id: string) => (await stripe.state()).sessions[(await payment(id))!.session]
+    const fail = await stripeEvent('checkout.session.async_payment_failed', await sessionFor(orders[0].receipt.responseId))
+    expect(await deliver(fail)).toMatchObject({ status: 200, outcome: 'applied' })
+    expect(await deliver(fail)).toMatchObject({ status: 200, outcome: 'duplicate' })
+    expect(await publicPayment(orders[0].receipt.responseId)).toMatchObject({ state: 'failed' })
+    expect((await q.ledger()).total).toBe(4)
+    expect(await notified(orders[0].receipt.responseId)).toBe(0)
+    expect((await admission()).status).toBe(201)
+    const collectorView = async () => (await accepted<Array<{ id: string; state: string; released: number }>>(await q.call(`${q.base}/collectors`))).find(row => row.id === collector.id)!
+    expect(await collectorView()).toMatchObject({ state: 'open', released: 0 })
+
+    const mail: Array<Record<string, any>> = []
+    const network = globalThis.fetch
+    const capture = vi.spyOn(globalThis, 'fetch').mockImplementation(async (url, options) => {
+      if (String(url) !== 'https://api.sendgrid.com/v3/mail/send') return network(url, options)
+      mail.push(JSON.parse(String(options!.body)))
+      return new Response(null, { status: 202 })
+    })
+    const tick = async (at: string) => {
+      vi.setSystemTime(new Date(at))
+      await worker.scheduled(createScheduledController({ scheduledTime: Date.now(), cron: '15 * * * *' }), {
+        ...env, PENCIL_LOCAL_DEVELOPMENT: 'false', SEED_SAMPLE_DATA: 'false', APP_ORIGIN: 'https://forms.example.test',
+        SEED_ADMIN_EMAIL: 'owner@example.test', MAIL_PROVIDER: 'sendgrid', MAIL_API_KEY: 'synthetic-mail-edge-key', MAIL_FROM: 'no-reply@example.test', AI_ENABLED: 'false',
+      })
+    }
+    const ownMail = () => mail.filter(message => JSON.stringify(message.personalizations).includes(`${q.operatorId}@example.test`))
+    const cohorts = async () => (await env.DB.prepare('SELECT m.response_id FROM digest_members m JOIN digest_deliveries d ON d.id=m.delivery_id WHERE d.flow_id=? AND d.operator_id=? ORDER BY m.response_id').bind(qid, q.operatorId).all<{ response_id: string }>()).results.map(row => row.response_id)
+    try {
+      await tick('2026-10-01T09:00:00.000Z')
+      expect(ownMail()).toEqual([])
+      expect(await cohorts()).toEqual([])
+      expect(await env.DB.prepare('SELECT cutoff FROM digest_preferences WHERE flow_id=? AND operator_id=?').bind(qid, q.operatorId).first()).toEqual({ cutoff: '2026-10-01T09:00:00.000Z' })
+      // This pending response predates the consumed opening; payment must not lose it behind the cursor.
+      vi.setSystemTime(new Date('2026-10-01T10:00:00.000Z'))
+      const paidOne = await stripe.settle('complete', (await sessionFor(orders[1].receipt.responseId)).id)
+      const settled = await stripeEvent('checkout.session.completed', paidOne)
+      expect(await deliver(settled)).toMatchObject({ outcome: 'applied' })
+      expect(await deliver(settled)).toMatchObject({ outcome: 'duplicate' })
+      expect(await publicPayment(orders[1].receipt.responseId)).toMatchObject({ state: 'paid' })
+      expect(await collectorView()).toMatchObject({ state: 'open', released: 1 })
+      expect((await admission()).status).toBe(201)
+      await tick('2026-10-02T09:00:00.000Z')
+      await tick('2026-10-02T09:00:00.000Z')
+      expect(await cohorts()).toEqual([orders[1].receipt.responseId])
+      expect(ownMail()).toHaveLength(1)
+      expect(ownMail()[0].headers['X-Pencil-Digest-Count']).toBe('1')
+      expect(JSON.stringify(ownMail())).not.toContain(orders[0].receipt.responseId)
+      const paidTwo = await stripe.settle('complete', (await sessionFor(orders[2].receipt.responseId)).id)
+      expect(await deliver(await stripeEvent('checkout.session.completed', paidTwo))).toMatchObject({ outcome: 'applied' })
+      expect(await collectorView()).toMatchObject({ state: 'full', released: 2 })
+      expect((await admission()).status).toBe(409)
+      // PAY-001(d) only: webhook refund state, not the unbuilt refund UI/API.
+      const refund = await stripeEvent('charge.refunded', { id: 'ch_test_refund_example', object: 'charge', refunded: true, payment_intent: paidOne.payment_intent })
+      expect(await deliver(refund)).toMatchObject({ outcome: 'applied' })
+      expect(await deliver(refund)).toMatchObject({ outcome: 'duplicate' })
+      expect(await publicPayment(orders[1].receipt.responseId)).toMatchObject({ state: 'refunded' })
+      expect((await q.ledger()).total).toBe(4)
+      expect(ownMail()).toHaveLength(1)
+      expect(await notified(orders[1].receipt.responseId)).toBe(0)
+    } finally { capture.mockRestore() }
+
+    // Retention is configured through its settings door after old data has aged.
+    vi.setSystemTime(new Date('2026-11-03T10:00:00.000Z'))
+    const control = await place(false)
+    const controlSession = await stripe.settle('complete', (await sessionFor(control.receipt.responseId)).id)
+    expect(await deliver(await stripeEvent('checkout.session.completed', controlSession))).toMatchObject({ outcome: 'applied' })
+    const expiredId = orders[2].receipt.responseId, expired = (await payment(expiredId))!
+    expect(expired).toMatchObject({ state: 'paid', session: expect.stringMatching(/^cs_test_/), intent: expect.stringMatching(/^pi_test_/) })
+    const policy = await accepted<{ version: number }>(await q.call(`${q.base}/retention`))
+    const enabled = await accepted<{ notices: { responses: number } }>(await q.call(`${q.base}/retention`, { days: 30, legalHold: false, version: policy.version, confirmAutomaticDeletion: true }, { method: 'PUT' }))
+    expect(enabled.notices.responses).toBe(4)
+    const archive = async () => accepted<{ payload: unknown }>(await q.call('/api/app/backup/export', {}))
+    const beforeArchive = JSON.stringify(await archive())
+    for (const value of [expiredId, expired.session, expired.intent!, control.receipt.responseId, controlSession.id, controlSession.payment_intent!]) expect(beforeArchive).toContain(value)
+    const exported = async () => httpExport<{ responses: Ledger['responses'] }>(path => q.call(path), `${q.base}/responses/export`)
+    expect((await exported()).responses.map(row => row.id)).toContain(expiredId)
+    await worker.scheduled(createScheduledController({ scheduledTime: Date.parse('2026-11-10T10:00:00.000Z'), cron: '15 * * * *' }), env)
+    const afterArchive = JSON.stringify(await archive()), afterExport = JSON.stringify(await exported())
+    for (const value of [expiredId, expired.session, expired.intent!]) {
+      expect(afterArchive).not.toContain(value)
+      expect(afterExport).not.toContain(value)
+      expect(JSON.stringify(await q.ledger())).not.toContain(value)
+    }
+    expect((await q.ledger()).responses.map(row => row.id)).toEqual([control.receipt.responseId])
+    expect(await payment(expiredId)).toBeNull()
+    expect(await env.DB.prepare('SELECT id FROM responses WHERE id=?').bind(expiredId).first()).toBeNull()
+    expect((await env.DB.prepare('SELECT id FROM payment_events WHERE response_id=?').bind(expiredId).all()).results).toEqual([])
+    expect(await payment(control.receipt.responseId)).toMatchObject({ state: 'paid', session: controlSession.id, intent: controlSession.payment_intent })
+    expect(afterArchive).toContain(controlSession.payment_intent!)
+  } finally { vi.useRealTimers() }
 }, 90_000)
 
 contract('LOGIC-003', 'calculates typed hidden inputs, arithmetic, calendar differences and dependent blanks after duplication', async () => {

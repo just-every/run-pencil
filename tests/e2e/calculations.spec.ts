@@ -3,9 +3,10 @@ import { parseCsv } from '../../src/core/features/importing/csv'
 import { contract } from './contract'
 import { expect, test } from './fixtures'
 import { signInEmptyWorkspace } from './authoring-helpers'
+import { nativeHost } from './brand-helpers'
 import { startStripeReceiver, stripeFixture } from './stripe-receiver'
 
-contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals', async ({ page }, info) => {
+contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals', async ({ page, browser }, info) => {
   test.setTimeout(240_000)
   page.setDefaultTimeout(15_000)
   const pencil = new URL(process.env.PENCIL_E2E_BASE_URL!).origin
@@ -162,11 +163,46 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
     // One respondent session keeps one response, however many checkout attempts it took.
     expect((await call<Ledger>(`${base}/ledger`)).responses.filter(response => response.calculations.find(value => value.id === totalId)?.value === (count === 4 ? 64 : 128))).toHaveLength(1)
   }
-  expect([...stripe.sessions.values()].map(session => [session.amount_total, session.status]).sort()).toEqual([[12800, 'complete'], [6400, 'complete'], [6400, 'expired']].sort())
-  expect(stripe.webhooks.map(webhook => [webhook.status, JSON.parse(webhook.body).outcome])).toEqual([[200, 'applied'], [200, 'applied']])
+  // PAY-001(g): the real script embed must navigate the top-level host to Checkout.
+  const host = await nativeHost(`<script async src="${pencil}/embed.js?flow=${slug}"></script>`)
+  const workspace = await call<Record<string, unknown>>('/api/app/workspace')
+  await call('/api/app/workspace', 'PUT', { ...workspace, embedAllowedOrigins: [host.origin] })
+  const visitorContext = await browser.newContext({ extraHTTPHeaders: {}, viewport: info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 } })
+  try {
+    // Replace only the hosted paid network edge. The production origin guard still runs.
+    stripe.useStripeCheckoutOrigin()
+    await visitorContext.route('https://checkout.stripe.com/**', route => route.fulfill({ status: 302, headers: { location: `${stripe.origin}${new URL(route.request().url()).pathname}` } }))
+    const visitor = await visitorContext.newPage()
+    await visitor.goto(host.origin)
+    const frame = visitor.frameLocator('iframe')
+    await expect(visitor.locator('iframe')).toHaveAttribute('sandbox', 'allow-scripts allow-forms')
+    await frame.getByRole('spinbutton', { name: quantity.prompt, exact: true }).fill('3')
+    await frame.getByRole('button', { name: 'Continue', exact: true }).click()
+    await frame.getByRole('radio', { name: 'Yes', exact: true }).check()
+    await visitor.waitForTimeout(3200)
+    await frame.getByRole('button', { name: 'Continue', exact: true }).click()
+    const proof = async (name: string) => {
+      const path = info.outputPath(`embed-${name}-${info.project.name}.png`)
+      await visitor.screenshot({ path, fullPage: true })
+      await info.attach(`Embed ${name}`, { path, contentType: 'image/png' })
+    }
+    await expect(frame.getByRole('button', { name: 'Pay $48.00 with Stripe', exact: true })).toBeVisible()
+    await proof('payment')
+    await frame.getByRole('button', { name: 'Pay $48.00 with Stripe', exact: true }).click()
+    await expect(visitor).toHaveURL(new RegExp(`^${stripe.origin}/pay/cs_test_`))
+    expect(visitor.mainFrame().url()).toBe(visitor.url())
+    expect(visitor.frames()).toHaveLength(1)
+    await proof('checkout-top-level')
+    await visitor.getByRole('button', { name: 'Pay $48.00', exact: true }).click()
+    await expect(visitor.getByRole('heading', { name: 'Standard order · Total 48', exact: true })).toBeVisible()
+    await expect(visitor.getByText(/Your payment is received\./)).toBeVisible()
+    await proof('success-return')
+  } finally { await visitorContext.close(); await host.close() }
+  expect([...stripe.sessions.values()].map(session => [session.amount_total, session.status]).sort()).toEqual([[12800, 'complete'], [6400, 'complete'], [6400, 'expired'], [4800, 'complete']].sort())
+  expect(stripe.webhooks.map(webhook => [webhook.status, JSON.parse(webhook.body).outcome])).toEqual([[200, 'applied'], [200, 'applied'], [200, 'applied']])
   await page.goto(`/app/flows/${flow.id}/results`)
   const ledgerRegion = page.getByRole('region', { name: 'Response ledger', exact: true })
-  await ledgerRegion.getByRole('button', { name: 'View answers', exact: true }).first().click()
+  await ledgerRegion.getByRole('button', { name: 'View answers', exact: true }).nth(1).click()
   await expect(ledgerRegion.getByText('Calculated values', { exact: true })).toBeVisible()
   await expect(ledgerRegion.getByText('total', { exact: true })).toBeVisible()
   await expect(ledgerRegion.getByText('128', { exact: true })).toBeVisible()
@@ -176,9 +212,9 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
   await screenshot('payment-ledger')
   await screenshot('ledger')
   const ledger = await call<Ledger>(`${base}/ledger`)
-  expect(ledger.total).toBe(2)
-  expect(ledger.responses.map(response => [response.payment?.state, response.payment?.amount]).sort()).toEqual([['paid', 12800], ['paid', 6400]].sort())
-  expect(ledger.responses.map(response => response.calculations.find(value => value.id === totalId)?.value).sort((a, b) => Number(a) - Number(b))).toEqual([64, 128])
+  expect(ledger.total).toBe(3)
+  expect(ledger.responses.map(response => [response.payment?.state, response.payment?.amount]).sort()).toEqual([['paid', 12800], ['paid', 6400], ['paid', 4800]].sort())
+  expect(ledger.responses.map(response => response.calculations.find(value => value.id === totalId)?.value).sort((a, b) => Number(a) - Number(b))).toEqual([48, 64, 128])
   const start = await call<{ token: string }>(`${base}/responses/export/start?format=csv`)
   const exported = await page.request.get(`${base}/responses/export?token=${encodeURIComponent(start.token)}`)
   expect(exported.status(), await exported.text()).toBe(200)
@@ -186,9 +222,9 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
   expect(parsed.errors).toEqual([])
   const [header, ...rows] = parsed.rows
   const records = rows.map(row => Object.fromEntries(header.map((column, index) => [column, row[index]])))
-  expect(records).toHaveLength(2)
+  expect(records).toHaveLength(3)
   const exportedTotals = records.map(record => (JSON.parse(record.calculations_json) as Ledger['responses'][number]['calculations']).find(value => value.id === totalId)?.value)
-  expect(exportedTotals.sort((a, b) => Number(a) - Number(b))).toEqual([64, 128])
+  expect(exportedTotals.sort((a, b) => Number(a) - Number(b))).toEqual([48, 64, 128])
   } finally { await stripe.close() }
 })
 

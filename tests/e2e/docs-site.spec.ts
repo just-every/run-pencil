@@ -1,7 +1,7 @@
 import { expect } from './fixtures'
 import { contract } from './contract'
 
-contract('DOCS-001', 'the documentation renders with navigation and contents, answers an unknown page with 404, and sets no cookies or third-party requests', async ({ page, context, baseURL }) => {
+contract('DOCS-001', 'the documentation renders with navigation and contents, answers an unknown page with 404, and sets no cookies or third-party requests', async ({ page, context, baseURL }, info) => {
   const origin = new URL(baseURL!).origin
   const foreign: string[] = []
   page.on('request', request => { if (/^https?:/.test(request.url()) && new URL(request.url()).origin !== origin) foreign.push(request.url()) })
@@ -13,6 +13,9 @@ contract('DOCS-001', 'the documentation renders with navigation and contents, an
   await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1)
   await expect(page).toHaveTitle(/Pencil docs/)
   await expect(page.locator('meta[name=description]')).toHaveAttribute('content', /.{20}/)
+  const overview = info.outputPath(`overview-${info.project.name}.png`)
+  await page.screenshot({ path: overview, fullPage: true })
+  await info.attach('Overview payment boundaries', { path: overview, contentType: 'image/png' })
 
   const guide = await page.goto('/docs/build-a-form')
   expect(guide?.status()).toBe(200)

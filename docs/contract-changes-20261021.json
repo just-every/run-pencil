@@ -1,0 +1,22 @@
+{
+  "contractChanges": {
+    "FLOW-006": {
+      "change": "changed",
+      "summary": "Some formerly publishable payment layouts now refuse with their stable payment-step IDs; no audience or data expansion.",
+      "was": "**FLOW-006 — Publish validation.** Publishing runs every FLOW-012 through FLOW-014 validation and is rejected with all offending stable step IDs and reasons; rejection creates no revision and leaves the draft editable.",
+      "now": "**FLOW-006 — Publish validation.** Publishing runs every FLOW-012 through FLOW-014 validation and is rejected with all offending stable step IDs and reasons; rejection creates no revision and leaves the draft editable. This clause inherits PAY-001: publishing refuses misplaced PAY-001 payment steps by step ID."
+    },
+    "NOTIFY-002": {
+      "change": "changed",
+      "summary": "Payment forms wait for verified payment before immediate response mail; no audience or data expansion.",
+      "was": "**NOTIFY-002 — New-response mail.** Each operator sets, per flow, whether completed responses are mailed to them immediately, grouped daily under NOTIFY-003, or not mailed. Publication starts its publisher on Immediately only when no preference exists; every other operator defaults Off. Existing unrepublished flows default Off. A message uses the saved business identity under BRAND-001, names the flow and submission time in the workspace zone, and links to the authenticated results ledger; it never carries answer text, respondent identity, or a link that grants access without signing in. A committed, released response queues one delivery per opted-in operator, with durable attempts, bounded retries and explicit unknown-outcome confirmation. Daily uses NOTIFY-003 and keeps its recipient snapshot separate from immediate mail.",
+      "now": "**NOTIFY-002 — New-response mail.** Each operator sets, per flow, whether completed responses are mailed to them immediately, grouped daily under NOTIFY-003, or not mailed. Publication starts its publisher on Immediately only when no preference exists; every other operator defaults Off. Existing unrepublished flows default Off. A message uses the saved business identity under BRAND-001, names the flow and submission time in the workspace zone, and links to the authenticated results ledger; it never carries answer text, respondent identity, or a link that grants access without signing in. A committed, released response queues one delivery per opted-in operator, with durable attempts, bounded retries and explicit unknown-outcome confirmation. Daily uses NOTIFY-003 and keeps its recipient snapshot separate from immediate mail. This clause inherits PAY-001: on payment forms it waits for PAY-001 payment."
+    },
+    "NOTIFY-003": {
+      "change": "changed",
+      "summary": "Payment forms wait for verified payment before Daily mail, including pending responses crossing an opening; no audience or data expansion.",
+      "was": "**NOTIFY-003 — Digest.** A digest is one message per operator per flow per day, sent at the WS-002 window's opening hour in the WS-001 zone, covering the completed responses committed since the previous digest. A day with no new completed responses sends no message, and a digest that fails to send is retried under DIST-006 rather than merging into the next day's.",
+      "now": "**NOTIFY-003 — Digest.** A digest is one message per operator per flow per day, sent at the WS-002 window's opening hour in the WS-001 zone, covering the completed responses committed since the previous digest. A day with no new completed responses sends no message, and a digest that fails to send is retried under DIST-006 rather than merging into the next day's. This clause inherits PAY-001: on payment forms it waits for PAY-001 payment."
+    }
+  }
+}
