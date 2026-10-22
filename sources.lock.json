@@ -7081,7 +7081,7 @@
       "executable": false
     },
     "tests/helpers/emitted-worker.mjs": {
-      "sha256": "7071a9ec018af7bf225e9db2d7a06944d94e1d6d3f1e4c3d674bba40243050af",
+      "sha256": "56023867596174462d42c44a5965e8204e318d0771b8889c2c051870b667c145",
       "executable": false
     },
     "tests/helpers/legacy-auth-repository.ts": {
@@ -7161,7 +7161,7 @@
       "executable": false
     },
     "tests/managed-mail.test.ts": {
-      "sha256": "95071372914aa369e5b3a83b2105c24442241506403f3dac59d95f6ac2356060",
+      "sha256": "17336727db0cafac567e77221d96467b6b27f7595752ae64962e99e2ac5c8137",
       "executable": false
     },
     "tests/native/closure-recovery.mjs": {

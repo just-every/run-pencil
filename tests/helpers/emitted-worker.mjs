@@ -23,9 +23,18 @@ export async function emittedWorker(bindings, outbound) {
       redirects.push(init?.redirect ?? null);
       return realFetch(input, init);
     };
-    export default { ...worker, fetch(request, env, execution) {
+    export default { ...worker, async fetch(request, env, execution) {
       if (new URL(request.url).pathname === '/__test/fetch-options') return Response.json(redirects);
-      return worker.fetch(request, env, execution);
+      // Let each request's real background dispatch finish before the caller
+      // changes the relay response for the next scenario.
+      const pending = [];
+      const response = await worker.fetch(request, env, {
+        waitUntil(promise) { pending.push(promise); execution.waitUntil(promise); },
+        passThroughOnException() { execution.passThroughOnException(); },
+        props: execution.props,
+      });
+      await Promise.all(pending);
+      return response;
     } };
   ` }
   const state = await mkdtemp(join(tmpdir(), 'pencil-managed-mail-'))

@@ -70,9 +70,9 @@ contract(['OPER-003', 'NOTIFY-002', 'NOTIFY-003', 'NOTIFY-004', 'BASE-SECRET-001
     const state = () => json<{ mode: string; senderError: string | null; daily?: { nextOpening: string }; deliveries: Array<{ id: string; status: string; attempts: number; availableAt: string; reason: string | null; day?: string }> }>(`${path}/notifications`)
     expect(await state()).toMatchObject({ mode: 'immediately', senderError: null })
     const tick = (time: number) => worker.scheduled({ scheduledTime: time })
-    await submit()
     sends.length = 0
     relayStatus = 429
+    await submit()
     const start = Date.now()
     await tick(start)
     expect(sends).toHaveLength(1)
@@ -93,8 +93,8 @@ contract(['OPER-003', 'NOTIFY-002', 'NOTIFY-003', 'NOTIFY-004', 'BASE-SECRET-001
       expect(payload.to).toBe(bindings.SEED_ADMIN_EMAIL)
       expect(sent.body).not.toContain('PRIVATE-ANSWER-NEVER-MAILED')
     }
-    await submit()
     relayStatus = 401
+    await submit()
     await tick(Date.now())
     const visible = await state()
     expect(visible.deliveries).toContainEqual(expect.objectContaining({ status: 'failed', attempts: 1,
@@ -102,9 +102,9 @@ contract(['OPER-003', 'NOTIFY-002', 'NOTIFY-003', 'NOTIFY-004', 'BASE-SECRET-001
     expect(JSON.stringify(visible)).toContain('rer: provider_rejected')
     expect(JSON.stringify(visible)).not.toMatch(/private provider detail|synthetic-relay-credential/)
     expect((await request('/health')).status).toBe(200)
-    await submit()
     relayStatus = 302
     const beforeRedirect = sends.length
+    await submit()
     await tick(Date.now())
     expect(sends).toHaveLength(beforeRedirect + 1)
     expect(sends.every(sent => sent.url === relay)).toBe(true)
