@@ -1,4 +1,4 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { BuilderDraft } from '../../../app/api'
 import type { PublicSeedConfig } from '../../../shared/config'
 import { hiddenSettingsIssue, type FormSettings } from '../../../shared/hiddenFields'
@@ -22,7 +22,6 @@ export function FlowLinkPreview({ draft, publicUrl, disabled, onDirtyChange, onS
   const [brandError, setBrandError] = useState<string>()
   const [error, setError] = useState<string>()
   const [reading, setReading] = useState(false)
-  const id = useId()
   const dirty = JSON.stringify(value) !== JSON.stringify(settings.linkPreview ?? {})
   const nextSettings = { ...settings, linkPreview: value }
   const issue = hiddenSettingsIssue(nextSettings)
@@ -58,8 +57,9 @@ export function FlowLinkPreview({ draft, publicUrl, disabled, onDirtyChange, onS
     finally { setReading(false) }
   }
 
-  return <div className="flow-link-preview">
-    <div className="flow-link-preview-heading"><h3 id={`${id}-title`}>Link preview</h3><span className="muted">Draft · publish to apply</span></div>
+  return <details className="flow-link-preview">
+    <summary className="focus-ring">Link preview</summary>
+    <p className="muted">Draft · publish to apply</p>
     <article className="quiet-panel flow-link-preview-card" aria-label="Link preview card">
       {image ? <div className="flow-link-preview-image" style={{ background: brand?.publicFlowTheme.background }}><img src={image} alt={alt} data-custom={!!value.image} /></div> : null}
       <div className="flow-link-preview-copy"><p className="eyebrow">{publicUrl ? new URL(publicUrl).host : 'Public form'}</p><h4>{previewText(preview.title)}</h4>{preview.description ? <p>{previewText(preview.description)}</p> : null}</div>
@@ -85,5 +85,5 @@ export function FlowLinkPreview({ draft, publicUrl, disabled, onDirtyChange, onS
         {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
       </form>
     </details>
-  </div>
+  </details>
 }

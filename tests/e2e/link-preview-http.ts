@@ -25,6 +25,11 @@ export async function publishedPreviewJourney(page: Page, request: APIRequestCon
     const head=await page.evaluate(html=>{const document=new DOMParser().parseFromString(html,'text/html');return {title:document.title,meta:Object.fromEntries([...document.head.querySelectorAll('meta')].map(m=>[m.getAttribute('property')??m.getAttribute('name'),m.getAttribute('content')]))}},html)
     return {...head,html,status:response.status(),robots:response.headers()['x-robots-tag']}
   }
+  const home=await inspect('/')
+  expect(home.status).toBe(200)
+  expect(home.robots).toBe('noindex')
+  expect(home.meta).toMatchObject({'og:url':new URL('/f/aurora-coffee-post-visit',origin).href,robots:'noindex, nofollow','twitter:card':'summary_large_image'})
+  expect((await request.get(home.meta['og:image']!)).ok()).toBe(true)
   const initial=await inspect(canonical)
   expect(initial.status).toBe(200)
   expect(initial).toMatchObject({title:'Harbour Studio feedback',robots:'noindex',meta:{'og:title':'Harbour Studio feedback','og:description':'Help shape our studio Your feedback makes a difference.','og:url':canonical,'twitter:card':'summary_large_image',robots:'noindex, nofollow'}})

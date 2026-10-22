@@ -147,6 +147,7 @@ export function snapshot(database) {
 export function validate(archive) {
   const parsed = archiveSchema.parse(archive);
   const objects = new Map();
+  if (parsed.payload.objects !== undefined && !parsed.payload.objects.length) throw failure('CONTENT_MISMATCH', 'An empty attachment inventory must be omitted.');
   for (const object of parsed.payload.objects ?? []) {
     if (objects.has(object.key) || !object.key.endsWith('/' + createHash('sha256').update(object.mime + '\0').update(objectBytes(object)).digest('hex'))) throw failure('CONTENT_MISMATCH', 'Archive attachment checksum or inventory mismatch.');
     objects.set(object.key,object);

@@ -11,6 +11,8 @@ import { exportData, importData, initialize, snapshot, migrations, readTable } f
 import { getPlatformProxy } from 'wrangler';
 import { exportWithObjects, restoreWithObjects } from './deployment-data-object-transfer.mjs';
 import { testRestore } from './deployment-data-restore-test.mjs';
+import { recoveryCommand } from './deployment-data-cli.mjs';
+import { providerFetch, providerEnv } from './deployment-data-hosted-test-helpers.mjs';
 
 const stamp = '2026-10-02T00:00:00.000Z';
 function fixture() {
@@ -83,6 +85,22 @@ test('complete archive restores R2 bytes and ownership metadata with D1, re-expo
     assert.equal(proof.reexportSha256,exported.sha256);
     assert.deepEqual(readFileSync(join(proof.attachmentDirectory,key)),bytes);
     assert.deepEqual(JSON.parse(readFileSync(join(proof.attachmentDirectory,key+'.json'),'utf8')).customMetadata,customMetadata);
+    await proxy.env.TARGET.delete(key);
+    const concurrent=join(f.directory,'concurrent.sqlite'),empty=new DatabaseSync(concurrent);initialize(empty);empty.close();
+    const raced={list:options=>proxy.env.TARGET.list(options),async put(key,bytes,options){await proxy.env.TARGET.put(key,bytes,options);return null;},delete:key=>proxy.env.TARGET.delete(key),head:key=>proxy.env.TARGET.head(key)};
+    await assert.rejects(restoreWithObjects(f.archive,concurrent,raced),{recoveryCode:'NONEMPTY_TARGET'});
+    assert.deepEqual(Buffer.from(await (await proxy.env.TARGET.get(key)).arrayBuffer()),bytes,'refused conditional put never owns or deletes a concurrent attachment');
+    await proxy.env.TARGET.delete(key);
+    const remoteSource=new DatabaseSync(f.source),remoteTarget=new DatabaseSync(join(f.directory,'remote.sqlite'));initialize(remoteTarget);
+    try {
+      const sourceEdge=providerFetch(remoteSource),targetEdge=providerFetch(remoteTarget),env={...providerEnv,CLOUDFLARE_FORM_ASSETS_BUCKET:'synthetic-pencil-assets'};
+      const edge=(transport,bucket)=>({env,fetch:transport.fetch,openObjects:async()=>({bucket,close:async()=>{}})});
+      const remoteArchive=join(f.directory,'remote.rer'),remoteAfter=join(f.directory,'remote-after.rer');
+      assert.deepEqual(await recoveryCommand(['export','--output',remoteArchive,'--writers-stopped'],edge(sourceEdge,proxy.env.SOURCE)),exported);
+      assert.deepEqual(await recoveryCommand(['import','--input',remoteArchive,'--writers-stopped','--yes'],edge(targetEdge,proxy.env.TARGET)),exported);
+      assert.deepEqual(await recoveryCommand(['export','--output',remoteAfter,'--writers-stopped'],edge(targetEdge,proxy.env.TARGET)),exported);
+      assert.equal(readFileSync(remoteAfter,'utf8'),readFileSync(f.archive,'utf8'));
+    } finally {remoteSource.close();remoteTarget.close();}
     const broken=JSON.parse(readFileSync(f.archive,'utf8'));broken.payload.objects[0].data=Buffer.from('damaged').toString('base64');broken.sha256=createHash('sha256').update(JSON.stringify(broken.payload)).digest('hex');
     const invalid=join(f.directory,'invalid.rer');writeFileSync(invalid,JSON.stringify(broken));
     assert.throws(()=>testRestore(['--input',invalid,'--output',join(f.directory,'never.sqlite')]));assert.equal(existsSync(join(f.directory,'never.sqlite')),false);

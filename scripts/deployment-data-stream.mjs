@@ -166,6 +166,7 @@ export function readStore(path) {
       store.addObject(object); previousObject = object.key;
     }));
     store.payload = parsed.payload; store.sha256 = parsed.sha256;
+    if (store.payload.objects !== undefined && !store.db.prepare('SELECT count(*) n FROM objects').get().n) throw failure('CONTENT_MISMATCH', 'An empty attachment inventory must be omitted.');
     store.db.exec('COMMIT');
     if (storeDigest(store) !== store.sha256) throw failure('CONTENT_MISMATCH', 'Archive content digest mismatch.');
     store.validated = validateStore(store);

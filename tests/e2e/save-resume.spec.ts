@@ -72,7 +72,10 @@ contract(['PART-002','RSLT-013'], 'a respondent saves two answers, resumes priva
     // A later publication must not reinterpret the saved answers.
     await call(`${path}/publish`, { expectedVersion: (await draft()).flow.draftVersion })
     const resumed = await otherContext.newPage()
-    await resumed.goto(target).catch(() => { throw new Error('The private emailed resume link could not load.') })
+    const resumeDocument = await resumed.goto(target).catch(() => { throw new Error('The private emailed resume link could not load.') })
+    expect(resumeDocument!.headers()['x-robots-tag']).toBe('noindex')
+    await expect(resumed.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow')
+    expect(await resumed.locator('head').textContent()).not.toContain('jo@harbour.example')
     await expect(resumed.getByRole('heading', { name: 'Tell us about your project.' })).toBeVisible()
     await resumed.getByRole('button', { name: 'Back', exact: true }).click()
     await expect(resumed.getByRole('textbox', { name: 'What is your work email?' })).toHaveValue('jo@harbour.example')

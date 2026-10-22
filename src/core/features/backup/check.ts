@@ -11,6 +11,7 @@ export async function checkBackup(value: unknown) {
   const archive = parsed.data, { payload } = archive
   try {
     const objects = new Map((payload.objects ?? []).map(object => [object.key,object]))
+    if (payload.objects !== undefined && !objects.size) refuse('The backup has an empty attachment inventory.')
     if (objects.size !== (payload.objects?.length ?? 0)) refuse('The backup contains duplicate attachments.')
     let previous = ''
     for (const object of payload.objects ?? []) {

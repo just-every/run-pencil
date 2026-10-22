@@ -1,7 +1,4 @@
-.flow-link-preview { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); }
-.flow-link-preview-heading { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 16px; margin-bottom: 10px; }
-.flow-link-preview-heading h3 { margin: 0; font-size: 18px; font-weight: 500; }
-.flow-link-preview-heading > span { font-size: 13px; }
+.flow-link-preview > summary { min-height: 44px; padding: 10px 0; font-weight: 500; }
 .flow-link-preview-card { display: flex; overflow: hidden; max-width: 640px; margin: 0; padding: 0; }
 .flow-link-preview-image { display: grid; place-items: center; flex: 0 0 34%; min-width: 0; background: var(--paper); }
 .flow-link-preview-image img { width: 100%; max-height: 180px; padding: 18px; object-fit: contain; }
