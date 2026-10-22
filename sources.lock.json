@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "bd2c85c5c7a1c4b787d03d20d0f9781fc0e97794f07d1aeb35ac984f684608a7",
+      "sha256": "365d0e7c9849c38f5a5f260c486e8bae0b88dc18c9b01bfc602360e0f595add9",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "18a165f9e5b333bccd025a2db9eaf7349d4742dab05740f97b39ff4c5f4c6655",
+      "sha256": "7ac24b728d50f2aafcbf6282e1c95c7c742f23b4e6a09492480c629631a6a88e",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "f5e93c95d1eb928c2b46fa485a4c2110395ed09ae908def0b1bf9a0cf19f347d",
+      "sha256": "6df7c81ec13a2bb93ce9e4b5f964a16fa1ab7065219c2056bb2102aaec44b082",
       "executable": false
     },
     "DEMO.md": {
@@ -6597,7 +6597,7 @@
       "executable": false
     },
     "test-budget.json": {
-      "sha256": "1514abfff4767422ce3cdb43cb1dfc3a8979fe78575e58f79c5504c0e822a826",
+      "sha256": "b07454b927a1001a617d49bc8ab0abc2e87ce3580fa0a6703433eca62c54e31e",
       "executable": false
     },
     "tests/admission/management-edge.mjs": {
@@ -6838,6 +6838,10 @@
     },
     "tests/e2e/pages.spec.ts": {
       "sha256": "c780e748bae1149203256282afce8bc05db02968a09969d4f8c2e23e4330dd91",
+      "executable": false
+    },
+    "tests/e2e/preview-backup-journey.ts": {
+      "sha256": "ebdbf98cb4429b59ee1b2fa5014db73a44962d5825fb8d235583090767eff33b",
       "executable": false
     },
     "tests/e2e/public-flow.spec.ts": {
