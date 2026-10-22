@@ -99,8 +99,10 @@ jobs:
               sudo sed -i -E "s@^(URIs:[[:space:]]*)(mirror\+file:/etc/apt/apt-mirrors\.txt|https?://(([a-z0-9.-]+\.)?archive\.ubuntu\.com|security\.ubuntu\.com|mirrors\.edge\.kernel\.org)/ubuntu/?)@\1${mirror}/@" /etc/apt/sources.list.d/ubuntu.sources
             fi
             printf 'Chromium apt: attempt %s/3 (90s deadline; mirror %s; sources %s)\n' "$attempt" "$mirror" "$(grep -h '^URIs:' /etc/apt/sources.list.d/ubuntu.sources | sort -u | tr '\n' ' ')"
-            if timeout --kill-after=5s 90s bash -ec '
-              sudo dpkg --configure -a
+            # Root owns the timeout so a stalled apt, dpkg and their locks die
+            # with the attempt instead of blocking the next mirror.
+            if sudo env "PATH=$PATH" HOME=/root timeout --kill-after=5s 90s bash -ec '
+              dpkg --configure -a
               pnpm exec playwright install-deps chromium
             '; then
               printf 'Chromium apt: complete (attempts=%s mirror=%s seconds=%s)\n' "$attempt" "$mirror" "$((SECONDS - started))"
@@ -150,8 +152,10 @@ jobs:
               sudo sed -i -E "s@^(URIs:[[:space:]]*)(mirror\+file:/etc/apt/apt-mirrors\.txt|https?://(([a-z0-9.-]+\.)?archive\.ubuntu\.com|security\.ubuntu\.com|mirrors\.edge\.kernel\.org)/ubuntu/?)@\1${mirror}/@" /etc/apt/sources.list.d/ubuntu.sources
             fi
             printf 'Chromium apt: attempt %s/3 (90s deadline; mirror %s; sources %s)\n' "$attempt" "$mirror" "$(grep -h '^URIs:' /etc/apt/sources.list.d/ubuntu.sources | sort -u | tr '\n' ' ')"
-            if timeout --kill-after=5s 90s bash -ec '
-              sudo dpkg --configure -a
+            # Root owns the timeout so a stalled apt, dpkg and their locks die
+            # with the attempt instead of blocking the next mirror.
+            if sudo env "PATH=$PATH" HOME=/root timeout --kill-after=5s 90s bash -ec '
+              dpkg --configure -a
               pnpm exec playwright install-deps chromium
             '; then
               printf 'Chromium apt: complete (attempts=%s mirror=%s seconds=%s)\n' "$attempt" "$mirror" "$((SECONDS - started))"
@@ -193,8 +197,10 @@ jobs:
               sudo sed -i -E "s@^(URIs:[[:space:]]*)(mirror\+file:/etc/apt/apt-mirrors\.txt|https?://(([a-z0-9.-]+\.)?archive\.ubuntu\.com|security\.ubuntu\.com|mirrors\.edge\.kernel\.org)/ubuntu/?)@\1${mirror}/@" /etc/apt/sources.list.d/ubuntu.sources
             fi
             printf 'Chromium apt: attempt %s/3 (90s deadline; mirror %s; sources %s)\n' "$attempt" "$mirror" "$(grep -h '^URIs:' /etc/apt/sources.list.d/ubuntu.sources | sort -u | tr '\n' ' ')"
-            if timeout --kill-after=5s 90s bash -ec '
-              sudo dpkg --configure -a
+            # Root owns the timeout so a stalled apt, dpkg and their locks die
+            # with the attempt instead of blocking the next mirror.
+            if sudo env "PATH=$PATH" HOME=/root timeout --kill-after=5s 90s bash -ec '
+              dpkg --configure -a
               pnpm exec playwright install-deps chromium
             '; then
               printf 'Chromium apt: complete (attempts=%s mirror=%s seconds=%s)\n' "$attempt" "$mirror" "$((SECONDS - started))"
@@ -240,8 +246,10 @@ jobs:
               sudo sed -i -E "s@^(URIs:[[:space:]]*)(mirror\+file:/etc/apt/apt-mirrors\.txt|https?://(([a-z0-9.-]+\.)?archive\.ubuntu\.com|security\.ubuntu\.com|mirrors\.edge\.kernel\.org)/ubuntu/?)@\1${mirror}/@" /etc/apt/sources.list.d/ubuntu.sources
             fi
             printf 'Chromium apt: attempt %s/3 (90s deadline; mirror %s; sources %s)\n' "$attempt" "$mirror" "$(grep -h '^URIs:' /etc/apt/sources.list.d/ubuntu.sources | sort -u | tr '\n' ' ')"
-            if timeout --kill-after=5s 90s bash -ec '
-              sudo dpkg --configure -a
+            # Root owns the timeout so a stalled apt, dpkg and their locks die
+            # with the attempt instead of blocking the next mirror.
+            if sudo env "PATH=$PATH" HOME=/root timeout --kill-after=5s 90s bash -ec '
+              dpkg --configure -a
               pnpm exec playwright install-deps chromium
             '; then
               printf 'Chromium apt: complete (attempts=%s mirror=%s seconds=%s)\n' "$attempt" "$mirror" "$((SECONDS - started))"
