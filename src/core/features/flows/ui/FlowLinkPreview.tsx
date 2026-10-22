@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import type { BuilderDraft } from '../../../app/api'
 import type { PublicSeedConfig } from '../../../shared/config'
 import { hiddenSettingsIssue, type FormSettings } from '../../../shared/hiddenFields'
@@ -22,6 +22,7 @@ export function FlowLinkPreview({ draft, publicUrl, disabled, onDirtyChange, onS
   const [brandError, setBrandError] = useState<string>()
   const [error, setError] = useState<string>()
   const [reading, setReading] = useState(false)
+  const id = useId()
   const dirty = JSON.stringify(value) !== JSON.stringify(settings.linkPreview ?? {})
   const nextSettings = { ...settings, linkPreview: value }
   const issue = hiddenSettingsIssue(nextSettings)
@@ -72,7 +73,7 @@ export function FlowLinkPreview({ draft, publicUrl, disabled, onDirtyChange, onS
         <fieldset className="plain-fieldset" disabled={disabled || reading}>
           <legend className="sr-only">Link preview settings</legend>
           <label className="inspector-field">Share title<input className="text-input" value={value.title ?? ''} placeholder={previewText(draft.flow.title)} maxLength={linkPreviewLimits.titleCharacters} onChange={event => { setError(undefined); setValue({ ...value, title: event.target.value || undefined }) }} /></label>
-          <label className="inspector-field">Share description<textarea className="text-area" rows={3} value={value.description ?? ''} placeholder={resolveLinkPreview(settings, draft.flow.title, draft.steps).description} maxLength={linkPreviewLimits.descriptionCharacters} onChange={event => { setError(undefined); setValue({ ...value, description: event.target.value }) }} /></label>
+          <div className="inspector-field"><label htmlFor={`${id}-description`}>Share description</label><textarea id={`${id}-description`} className="text-area" rows={3} value={value.description ?? ''} placeholder={resolveLinkPreview(settings, draft.flow.title, draft.steps).description} maxLength={linkPreviewLimits.descriptionCharacters} onChange={event => { setError(undefined); setValue({ ...value, description: event.target.value }) }} /></div>
           <p className="muted">The form title and welcome text are used until you customize them. Answers and recalled values are never included.</p>
           <label className="inspector-field">Share image<input type="file" accept="image/png,image/jpeg,image/webp" onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; if (file) void upload(file) }} /></label>
           <p className="muted">PNG, JPEG or WebP, up to {linkPreviewLimits.imageBytes / 1024} KB. Your business logo is used by default.</p>

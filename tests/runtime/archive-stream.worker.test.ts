@@ -1,6 +1,6 @@
 
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
-import { beforeAll, expect } from 'vitest'
+import { beforeAll, beforeEach, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
 import { archiveFixture, restoreFixture } from './archive-fixture'
 import { stagingPlan, destinationGuards, stageRows, cleanupStage } from '../../scripts/deployment-data-staging.mjs'
@@ -11,7 +11,9 @@ import { previewFixture, previewImage } from './link-preview-fixture'
 import { digest, type BackupArchive } from '../../src/core/features/backup/model'
 
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
-beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
+let pristine: Awaited<ReturnType<typeof archiveFixture>>
+beforeAll(async () => { await applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__); pristine = await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__) })
+beforeEach(() => restoreFixture(env.DB, pristine))
 type Statement = { sql: string; params?: unknown[] }
 const query = (batch: Statement[]) => env.DB.batch(batch.map(({ sql, params = [] }) => env.DB.prepare(sql).bind(...params)))
 

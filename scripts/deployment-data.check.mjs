@@ -72,7 +72,7 @@ test('complete archive restores R2 bytes and ownership metadata with D1, re-expo
     proxy=await getPlatformProxy({configPath:config,persist:{path:join(f.directory,'state')},remoteBindings:false});
     await proxy.env.SOURCE.put(key,bytes,{httpMetadata:{contentType:mime},customMetadata});
     const source=new DatabaseSync(f.source);
-    source.prepare('UPDATE flows SET form_settings_json=? WHERE id=?').run(JSON.stringify({linkPreview:{image:{key,mime,alt:'Synthetic image'}}}),'flow');source.close();
+    source.prepare('UPDATE flow_revisions SET form_settings_json=? WHERE flow_id=?').run(JSON.stringify({linkPreview:{image:{key,mime,alt:'Synthetic image'}}}),'flow');source.close();
     const exported=await exportWithObjects(f.source,f.archive,proxy.env.SOURCE);
     const target=new DatabaseSync(f.restored);initialize(target);target.close();
     assert.deepEqual(await restoreWithObjects(f.archive,f.restored,proxy.env.TARGET),exported);

@@ -1324,6 +1324,10 @@
       "sha256": "de80e0340200b5e2aaf8299e0a9eb4dc9c67a8b1ebb099c7a0fdfe9ac23cb0f9",
       "executable": false
     },
+    "migrations/core/0057_link_preview_snapshots.sql": {
+      "sha256": "65732f1d6d4aae579a43d32aab1188c357c347a56077dd9e6be434cd09d95bc7",
+      "executable": false
+    },
     "migrations/released-rewrites.json": {
       "sha256": "e958b230b03bb5e3d203d5c2fc8ecf3cc513389bfdfe99d9d4ed4ebc64e84d80",
       "executable": false
@@ -1757,7 +1761,7 @@
       "executable": false
     },
     "scripts/deployment-data.check.mjs": {
-      "sha256": "78efed8676feffb49484d13cffd8a7196d77bd262bc99adc7714641f17f6259b",
+      "sha256": "1abde7e70390271a9efb9487fb03672d81cd9bb29403e04d5e6f7af0fdf88904",
       "executable": false
     },
     "scripts/deployment-data.mjs": {
@@ -4725,7 +4729,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/FlowLinkPreview.tsx": {
-      "sha256": "ccfee841d37cbe5b66d9d35fc4daef4c7940065b5c06862dc628c6105321e88d",
+      "sha256": "964c9aafe8d30284e6d135bdd5cd6b2235c57f1510eaf63c2352bd0308b1c497",
       "executable": false
     },
     "src/core/features/flows/ui/FlowSharePanel.tsx": {
@@ -4741,7 +4745,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/link-preview.css": {
-      "sha256": "1cf18949383dde5303cdc319d6421b15b62033cebf95ea606a98fb479df64286",
+      "sha256": "2378b69320aaf54436af6fd654675ef76d3177823ec7e745dda8d8c79e846b97",
       "executable": false
     },
     "src/core/features/flows/ui/RatingSettings.tsx": {
@@ -7245,7 +7249,7 @@
       "executable": false
     },
     "tests/runtime/archive-stream.worker.test.ts": {
-      "sha256": "c5667120b58cda97b48e0ae09a956726b343dc0c53e4a07523582bb556cb0312",
+      "sha256": "7816dd622dcdb56fb68b682e8cd9310a2d374ce51e5dbe174a7e4c360902d030",
       "executable": false
     },
     "tests/runtime/audience-fixture.ts": {
@@ -7521,7 +7525,7 @@
       "executable": false
     },
     "tests/runtime/typeform-definition.worker.test.ts": {
-      "sha256": "d205171e7c96089e7e77a4a6d916f8ac23632ca76210d9cc6186e39b74c597e3",
+      "sha256": "026a27f313d8c008cfcf270530ca631ef9f9748f093fe0eb11297df7d75f7f17",
       "executable": false
     },
     "tests/runtime/upgrades.worker.test.ts": {

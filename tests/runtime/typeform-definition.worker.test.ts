@@ -60,6 +60,10 @@ test('the authenticated Typeform retrieval feeds the real reviewed import withou
   expect(JSON.parse(revisions[0].form_settings_json)).toEqual(JSON.parse(revisions[1].form_settings_json))
   expect(JSON.parse(revisions[0].form_settings_json)).toMatchObject({ ...report.settings, linkPreview: { ...report.settings?.linkPreview, image: { mime: image.mime, alt: image.alt } } })
   expect(revisions[0].form_settings_json).not.toContain(image.base64)
+  const migration = __PENCIL_CORE_MIGRATIONS__.find(item => item.name.includes('link_preview_snapshots'))!
+  const importedBefore = await env.DB.prepare('SELECT policy_snapshot_json AS policy FROM flow_revisions WHERE flow_id=? ORDER BY number').bind(report.flowId).all()
+  await env.DB.batch(migration.queries.map(query => env.DB.prepare(query)))
+  expect((await env.DB.prepare('SELECT policy_snapshot_json AS policy FROM flow_revisions WHERE flow_id=? ORDER BY number').bind(report.flowId).all()).results).toEqual(importedBefore.results)
   const storedImage = report.settings!.linkPreview!.image!
   expect(storedImage).toEqual({ mime: image.mime, alt: image.alt, key: expect.any(String) })
   const servedImage = await f.call(`/api/app/flows/${report.flowId}/preview-image?key=${encodeURIComponent((storedImage as { key: string }).key)}`)
@@ -71,6 +75,14 @@ test('the authenticated Typeform retrieval feeds the real reviewed import withou
   const stored = (await env.DB.prepare('SELECT plan_json FROM ik_jobs WHERE id=?').bind(job.id).first<{ plan_json: string }>())!.plan_json
   expect(stored).not.toContain(token)
   expect(stored).not.toContain(image.base64)
+  const importedDraft = await (await f.call(`/api/app/flows/${report.flowId}/draft`)).json() as {flow:{draftVersion:number}}
+  const published = await f.call(`/api/app/flows/${report.flowId}/publish`,{expectedVersion:importedDraft.flow.draftVersion})
+  expect(published.status,await published.clone().text()).toBe(201)
+  const {revision} = await published.json() as {revision:{id:string}}
+  const publicImage = await f.call(`/api/public/previews/${revision.id}/image`,undefined,{auth:false})
+  expect(publicImage.status).toBe(200)
+  expect(new Uint8Array(await publicImage.arrayBuffer())).toEqual(decodeLogo(image.base64))
+  expect(edge).toHaveBeenCalledTimes(2)
   // File imports use the same mapping, including explicit false and empty description.
   const disabled = await f.review({ source: 'typeform', csv: '', definition: JSON.stringify({ ...definition, settings: { meta: { title: '  Exact source whitespace  ', description: '', allow_indexing: false } } }) })
   expect(disabled.settings?.linkPreview).toEqual({ title: '  Exact source whitespace  ', description: '', allowIndexing: false })
