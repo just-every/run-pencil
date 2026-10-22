@@ -3,6 +3,8 @@ import { Copy } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type FocusEvent } from 'react'
 import { Link } from '@tanstack/react-router'
 import type { BuilderDraft } from '../../../app/api'
+import type { FormSettings } from '../../../shared/hiddenFields'
+import { FlowLinkPreview } from './FlowLinkPreview'
 
 export function flowShareLinks(origin: string, slug: string) {
   return {
@@ -40,7 +42,8 @@ function CopyField({ label, value, multiline = false }: { label: string; value: 
   </div>
 }
 
-export function FlowSharePanel({ flow }: { flow: BuilderDraft['flow'] }) {
+export function FlowSharePanel({ draft, disabled, onDirtyChange, onSave }: { draft: BuilderDraft; disabled: boolean; onDirtyChange: (dirty: boolean) => void; onSave: (settings: FormSettings) => Promise<void> }) {
+  const { flow } = draft
   const [origin, setOrigin] = useState<string>()
   useEffect(() => { setOrigin(window.location.origin) }, [])
   const available = flow.status === 'open' || flow.status === 'closed'
@@ -52,5 +55,6 @@ export function FlowSharePanel({ flow }: { flow: BuilderDraft['flow'] }) {
       {links ? <><CopyField key={links.publicUrl} label="Public link" value={links.publicUrl} /><QrKioskControls flowId={flow.id} publicPath={new URL(links.publicUrl).pathname} label="Public link" /><CopyField key={links.scriptCode} label="Script embed" value={links.scriptCode} multiline /><CopyField key={links.embedCode} label="Embed code" value={links.embedCode} multiline /></> : <p className="muted" role="status">Loading sharing links…</p>}
       <p className="muted">Embedding works only on hosts allowed in <Link className="focus-ring" to="/app/settings">Settings</Link>. An empty host list blocks embedding.</p>
     </>}
+    <FlowLinkPreview key={flow.draftVersion} draft={draft} publicUrl={origin ? flowShareLinks(origin, flow.slug).publicUrl : undefined} disabled={disabled} onDirtyChange={onDirtyChange} onSave={onSave} />
   </section>
 }

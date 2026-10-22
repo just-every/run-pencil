@@ -3,6 +3,7 @@ import { backupBytes, backupRows, digest, type BackupArchive, type BackupCell } 
 import { checkBackup } from './check'
 import { assertLedgerShape, canonicalSchema, platformLedger, quote, rowExpression, rowsNeverTravel, sanitize, schemaQuery } from '../../../../scripts/deployment-data-browser-shared.mjs'
 import { ValidationError } from '../../shared/errors'
+import { bucketObjects } from '../../../../scripts/deployment-data-objects.mjs'
 
 function readCells(json: string): BackupCell[] {
   return (JSON.parse(json) as Array<BackupCell | {type: 'blob'; hex: string}>).map(cell => {
@@ -23,7 +24,7 @@ function sumTerms(terms: string[]): string {
 const ledgerShapeSQL = "SELECT name FROM sqlite_schema WHERE type='table' AND name IN ('d1_migrations','_rer_deploy_migrations','rer_migrations') ORDER BY name"
 const shapes: Record<string, string[]> = { d1_migrations: ['id','name','applied_at'], _rer_deploy_migrations: ['name','sha256','state'], rer_migrations: ['name','sha256','applied_at'] }
 
-export async function exportBackup(db: D1Database) {
+export async function exportBackup(db: D1Database, bucket: R2Bucket) {
   // Discovery selects only a controller name, never product data. The actual
   // schema, controller columns, history and all rows are read in ONE atomic
   // D1 batch below. Any intervening schema change fails closed.
@@ -64,6 +65,16 @@ export async function exportBackup(db: D1Database) {
     d1Migrations: {...ledger, rows: rows(3)},
     tables: manifest.tables.map((table,index) => sanitize({...table, rows: rows(index+4)})),
   }
+  // Immutable keys let us copy attachment bytes after the atomic D1 snapshot.
+  // Missing objects fail checkBackup below; no incomplete archive is returned.
+  let size = new TextEncoder().encode(JSON.stringify(payload)).length
+  const objects: NonNullable<BackupArchive['payload']['objects']> = []
+  for await (const object of bucketObjects(bucket)) {
+    size += new TextEncoder().encode(JSON.stringify(object)).length + 1
+    if (size > backupBytes - 256) throw new ValidationError('This archive exceeds the browser backup size limit. Use the large-workspace export instructions in Backup and restore.')
+    objects.push(object)
+  }
+  if (objects.length) payload.objects = objects.sort((a,b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0)
   const archive = {payload, sha256: await digest(payload)}
   const { summary } = await checkBackup(archive)
   const body = JSON.stringify(archive) + '\n'

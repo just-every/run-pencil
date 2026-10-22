@@ -5,7 +5,7 @@ import { failure } from './deployment-data-core.mjs';
 
 // Consume JSON a token at a time. Only one table row is materialized; the caller
 // stores rows on disk. UTF-8 characters and escaped strings may cross reads.
-export function readArchiveJSON(path, consumeRow, limits) {
+export function readArchiveJSON(path, consumeRow, limits, consumeObject) {
   const fd = openSync(path, 'r'), buffer = Buffer.alloc(64 * 1024), decoder = new StringDecoder('utf8');
   let text = '', position = 0, ended = false;
   const invalid = () => { throw failure('INVALID_ARCHIVE', 'Archive format is invalid.'); };
@@ -51,9 +51,10 @@ export function readArchiveJSON(path, consumeRow, limits) {
     if (first === '[') {
       take(); const result = []; let index = 0; space();
       const streamed = path.length === 4 && path[0] === 'payload' && path[1] === 'tables' && path[3] === 'rows';
+      const objects = path.length === 2 && path[0] === 'payload' && path[1] === 'objects' && consumeObject;
       if (peek() === ']') { take(); return result; }
       for (;;) {
-        if (!streamed && limits) {
+        if (!streamed && !objects && limits) {
           let maximum;
           if (path.join('.') === 'payload.migrations' || path.join('.') === 'payload.d1Migrations.rows') maximum = limits.migrations;
           else if (path.join('.') === 'payload.tables') maximum = limits.columns.length;
@@ -65,7 +66,7 @@ export function readArchiveJSON(path, consumeRow, limits) {
           }
         }
         const item = value([...path, index], depth + 1);
-        if (streamed) consumeRow(path[2], index, item); else result.push(item);
+        if (streamed) consumeRow(path[2], index, item); else if (objects) consumeObject(item); else result.push(item);
         index++; space(); const separator = take();
         if (separator === ']') return result; if (separator !== ',') invalid();
       }

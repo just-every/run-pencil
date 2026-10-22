@@ -171,3 +171,9 @@ contract(['HOME-001'], 'public HTML follows changed D1 rather than build-time or
     }
   } finally { db.close() }
 })
+
+contract('DIST-020', 'emitted Worker serves revision previews and canonical-only indexing without weakening respondent admission', async ({page,request}, info) => {
+  test.setTimeout(120_000)
+  const {publishedPreviewJourney}=await import('./link-preview-http')
+  await publishedPreviewJourney(page,request,await login(request),info.project.name)
+})

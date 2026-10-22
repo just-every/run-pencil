@@ -1,3 +1,4 @@
+import { useCompletionPrivacy } from '../../link-preview'
 import { ReviewAnswers } from './ReviewAnswers'
 import { PaymentDisclosure, PaymentSummary, paymentQuoteFor } from '../../payments/ui'
 import { formatUsd, type PaymentState } from '../../../shared/payments'
@@ -63,6 +64,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   const [index, setIndex] = useState(initialIndex)
   const [reviewing, setReviewing] = useState(false)
   const [completedStepId, setCompletedStepId] = useState<string | undefined>(initialFlow.completedStepId ?? undefined)
+  useCompletionPrivacy(!!completedStepId)
   const requestCheckout = useEmbedProtocol(embedded, !!completedStepId, config.embedHostOrigin)
   const [pendingFinal, setPendingFinal] = useState<PendingFinal>()
   const [answers, setAnswers] = useState<AnswerValues>(initialAnswers)

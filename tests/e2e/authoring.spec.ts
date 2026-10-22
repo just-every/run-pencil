@@ -1,13 +1,14 @@
 import { appHeaders } from './api-headers'
 import { expect, test } from './fixtures'
 import { checkAuthoringLayout, signInEmptyWorkspace } from './authoring-helpers'
+import { browserLogo } from './brand-helpers'
 
 test('labels, one Save, real controls, reorder, branching, Share and a current dashboard', async ({ page, context }, info) => {
   test.setTimeout(120_000)
   await signInEmptyWorkspace(page)
   await checkAuthoringLayout(page)
   await page.getByRole('button', { name: 'Blank flow', exact: true }).click()
-  const title = `Synthetic authoring ${info.project.name}`
+  const title = `Harbour Studio feedback ${info.project.name}`
   await page.getByLabel('Flow name').fill(title)
   await page.getByRole('button', { name: 'Create draft flow' }).click()
   await expect(page.getByRole('heading', { name: title })).toBeVisible()
@@ -94,6 +95,60 @@ test('labels, one Save, real controls, reorder, branching, Share and a current d
     expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(value)
   }
   await page.screenshot({ path: `test-results/${info.project.name}-authoring-share.png`, fullPage: true })
+  const thirdPartyPreviewRequests: string[] = []
+  const recordPreviewRequest = (request: import('@playwright/test').Request) => {
+    const url = new URL(request.url())
+    if (url.protocol.startsWith('http') && url.origin !== new URL(page.url()).origin) thirdPartyPreviewRequests.push(url.origin)
+  }
+  page.on('request', recordPreviewRequest)
+  const linkPreview = share.getByRole('article', { name: 'Link preview card' })
+  await expect(linkPreview.getByRole('heading', { name: title, exact: true })).toBeVisible()
+  await share.getByText('Edit link preview', { exact: true }).click()
+  await expect(share.getByLabel('Allow search engines to index this form')).not.toBeChecked()
+  const shareTitle = `Your next visit to Harbour Studio`
+  await share.getByLabel('Share title', { exact: true }).fill(shareTitle)
+  await share.getByLabel('Share description', { exact: true }).fill('Tell us about your visit.')
+  await expect(page.getByRole('button', { name: 'Publish', exact: true })).toBeDisabled()
+  const shareImage = await browserLogo(page)
+  await share.getByLabel('Share image', { exact: true }).setInputFiles({ name: 'share.png', mimeType: 'image/png', buffer: shareImage })
+  await expect(share.getByLabel('Share image alt text')).toBeVisible()
+  await expect(share.getByRole('button', { name: 'Save link preview', exact: true })).toBeDisabled()
+  await share.getByLabel('Share image alt text').fill('A blue and gold business mark')
+  await share.getByLabel('Allow search engines to index this form').check()
+  await expect(linkPreview.getByRole('heading', { name: shareTitle, exact: true })).toBeVisible()
+  await expect(linkPreview.getByRole('img', { name: 'A blue and gold business mark' })).toBeVisible()
+  await expect(linkPreview.getByRole('img', { name: 'A blue and gold business mark' })).toHaveAttribute('src', /^data:image\/png;base64,/)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  await page.screenshot({ path: `test-results/${info.project.name}-authoring-link-preview-editor.png`, fullPage: true })
+  await share.getByRole('button', { name: 'Save link preview', exact: true }).click()
+  await expect(page.getByText('Link preview saved to the draft. Publish to apply it.', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Publish', exact: true })).toBeEnabled()
+  await expect(page.getByText('Unpublished changes', { exact: false })).toBeVisible()
+  expect(unrelatedRouteLoads).toBe(0)
+  await page.reload()
+  await page.getByRole('button', { name: 'Share', exact: true }).click()
+  unrelatedRouteLoads = 0
+  await expect(share.getByLabel('Share title', { exact: true })).toHaveValue(shareTitle)
+  await expect(share.getByLabel('Share description', { exact: true })).toHaveValue('Tell us about your visit.')
+  await expect(share.getByLabel('Share image alt text')).toHaveValue('A blue and gold business mark')
+  await expect(share.getByLabel('Allow search engines to index this form')).toBeChecked()
+  const storedImage = linkPreview.getByRole('img', { name: 'A blue and gold business mark' })
+  await expect(storedImage).toHaveAttribute('src', new RegExp(`^/api/app/flows/${flowId}/preview-image\\?key=`))
+  await expect.poll(() => storedImage.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true)
+  const storedImageResponse = await page.request.get((await storedImage.getAttribute('src'))!)
+  expect(storedImageResponse.headers()['content-type']).toBe('image/png')
+  expect(await storedImageResponse.body()).toEqual(shareImage)
+  await page.getByRole('button', { name: 'Publish', exact: true }).click()
+  await expect(page.getByText('Published. New visitors see this version.', { exact: true })).toBeVisible()
+  await expect(page.getByText('Unpublished changes', { exact: false })).toHaveCount(0)
+  await expect(linkPreview.getByRole('heading', { name: shareTitle, exact: true })).toBeVisible()
+  await expect(linkPreview.getByText('Tell us about your visit.', { exact: true })).toBeVisible()
+  await expect(storedImage).toHaveAttribute('src', new RegExp(`^/api/app/flows/${flowId}/preview-image\\?key=`))
+  await expect.poll(() => storedImage.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true)
+  await checkAuthoringLayout(page)
+  await page.screenshot({ path: `test-results/${info.project.name}-authoring-link-preview-published.png`, fullPage: true })
+  page.off('request', recordPreviewRequest)
+  expect(thirdPartyPreviewRequests).toEqual([])
   const publicUrl = await share.getByLabel('Public link', { exact: true }).inputValue()
   const embedCode = await share.getByLabel('Embed code').inputValue()
   expect((await page.request.get(publicUrl)).status()).toBe(200)

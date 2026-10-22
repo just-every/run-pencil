@@ -22,6 +22,7 @@ export function importData(archivePath, target) {
   const store = readStore(archivePath);
   let staging;
   try {
+    if (store.payload.objects !== undefined) throw Error('This archive includes FORM_ASSETS. Use rer import to restore the database and attachments together.');
     // The verified private database is published exclusively. A concurrent
     // creator is never replaced, and a malformed archive never opens target.
     staging = mkdtempSync(join(dirname(target), '.pencil-restore-'));
@@ -37,6 +38,7 @@ export function restoreData(archivePath, target, journalPath) {
   const store = readStore(archivePath);
   let database;
   try {
+    if (store.payload.objects !== undefined) throw Error('This archive includes FORM_ASSETS. Use rer import to restore the database and attachments together.');
     if (journalPath) { const later = readStore(journalPath); try { erasureFence(store, later); } finally { later.close(); } }
     lstatSync(target);
     database = new DatabaseSync(target);

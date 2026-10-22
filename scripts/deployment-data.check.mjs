@@ -8,6 +8,9 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { exportData, importData, initialize, snapshot, migrations, readTable } from './deployment-data.mjs';
+import { getPlatformProxy } from 'wrangler';
+import { exportWithObjects, restoreWithObjects } from './deployment-data-object-transfer.mjs';
+import { testRestore } from './deployment-data-restore-test.mjs';
 
 const stamp = '2026-10-02T00:00:00.000Z';
 function fixture() {
@@ -56,6 +59,38 @@ function rewritten(path, mutate) {
   archive.sha256 = createHash('sha256').update(JSON.stringify(archive.payload)).digest('hex');
   writeFileSync(path, JSON.stringify(archive));
 }
+
+test('complete archive restores R2 bytes and ownership metadata with D1, re-exports identically, and standalone proof keeps actual attachment custody', async () => {
+  const f = fixture(); let proxy;
+  const config = join(f.directory,'wrangler.json');
+  writeFileSync(config,JSON.stringify({name:'synthetic-pencil-archive',compatibility_date:'2026-09-08',r2_buckets:[{binding:'SOURCE',bucket_name:'synthetic-pencil-source'},{binding:'TARGET',bucket_name:'synthetic-pencil-target'}]}));
+  const mime='image/png', data='iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jU1sAAAAASUVORK5CYII=', bytes=Buffer.from(data,'base64');
+  const hash=createHash('sha256').update(mime+'\0').update(bytes).digest('hex'),key=`previews/workspace/flow/${hash}`,customMetadata={workspaceId:'workspace',flowId:'flow',mime};
+  try {
+    proxy=await getPlatformProxy({configPath:config,persist:{path:join(f.directory,'state')},remoteBindings:false});
+    await proxy.env.SOURCE.put(key,bytes,{httpMetadata:{contentType:mime},customMetadata});
+    const source=new DatabaseSync(f.source);
+    source.prepare('UPDATE flows SET form_settings_json=? WHERE id=?').run(JSON.stringify({linkPreview:{image:{key,mime,alt:'Synthetic image'}}}),'flow');source.close();
+    const exported=await exportWithObjects(f.source,f.archive,proxy.env.SOURCE);
+    const target=new DatabaseSync(f.restored);initialize(target);target.close();
+    assert.deepEqual(await restoreWithObjects(f.archive,f.restored,proxy.env.TARGET),exported);
+    const image=await proxy.env.TARGET.get(key);
+    assert.deepEqual(Buffer.from(await image.arrayBuffer()),bytes);assert.deepEqual(image.customMetadata,customMetadata);assert.equal(image.httpMetadata.contentType,mime);
+    const after=join(f.directory,'after.rer');assert.deepEqual(await exportWithObjects(f.restored,after,proxy.env.TARGET),exported);
+    assert.equal(readFileSync(after,'utf8'),readFileSync(f.archive,'utf8'));
+    await assert.rejects(restoreWithObjects(f.archive,f.restored,proxy.env.TARGET),{recoveryCode:'NONEMPTY_TARGET'});
+    const proof=testRestore(['--input',f.archive,'--output',join(f.directory,'proof.sqlite')]);
+    assert.equal(proof.reexportSha256,exported.sha256);
+    assert.deepEqual(readFileSync(join(proof.attachmentDirectory,key)),bytes);
+    assert.deepEqual(JSON.parse(readFileSync(join(proof.attachmentDirectory,key+'.json'),'utf8')).customMetadata,customMetadata);
+    const broken=JSON.parse(readFileSync(f.archive,'utf8'));broken.payload.objects[0].data=Buffer.from('damaged').toString('base64');broken.sha256=createHash('sha256').update(JSON.stringify(broken.payload)).digest('hex');
+    const invalid=join(f.directory,'invalid.rer');writeFileSync(invalid,JSON.stringify(broken));
+    assert.throws(()=>testRestore(['--input',invalid,'--output',join(f.directory,'never.sqlite')]));assert.equal(existsSync(join(f.directory,'never.sqlite')),false);
+    await proxy.env.SOURCE.delete(key);
+    await assert.rejects(exportWithObjects(f.source,join(f.directory,'missing.rer'),proxy.env.SOURCE),{recoveryCode:'ATTACHMENT_REQUIRED'});
+    assert.equal(existsSync(join(f.directory,'missing.rer')),false);
+  } finally {await proxy?.dispose();rmSync(f.directory,{recursive:true});}
+});
 
 test('full current-data roundtrip preserves stable revisions, quarantine, receipts, historical actors, auth, effects, exact text and int64', () => {
   const f = fixture();

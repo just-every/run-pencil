@@ -3,6 +3,7 @@ import type { ImportForm, ImportStep, QuestionType, ReportItem } from './model'
 import { forbiddenSource, sourceNames } from './source-privacy'
 import { ValidationError } from '../../shared/errors'
 import { mapQuestionGroup } from './typeform-groups'
+import { mapTypeformSettings } from './typeform-meta'
 export const stableId = (scope: string, id: string) => `i_${sha256(scope + ':' + id).slice(0, 28)}`
 export function object(value: unknown): Record<string, any> { return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, any> : {} }
 export function mapFields(definition: Record<string, any>, scope: string, forbidden: Set<string>): ImportForm {
@@ -87,6 +88,7 @@ export function mapFields(definition: Record<string, any>, scope: string, forbid
     report.push({ location: '/thankyou_screens', label: 'Thank you', sourceType: 'missing', state: 'changed', change: 'Completion added', reason: 'A native flow requires a completion screen.' })
   }
   steps.forEach((step, i) => { if (step.kind !== 'completion') step.next = steps[i + 1]?.id ?? null })
-  for (const key of Object.keys(definition)) if (!['id', 'title', 'fields', 'welcome_screens', 'thankyou_screens', 'logic'].includes(key)) report.push({ location: `/${key}`, label: key, sourceType: 'form property', state: 'unsupported', change: 'Omitted', reason: ['hidden', 'variables'].includes(key) ? 'Hidden fields, variables and scoring are never imported.' : 'Settings, styling, integrations and other form properties are not reproduced.' })
-  return { title: String(definition.title ?? ''), steps, rules: [], report }
+  const settings = mapTypeformSettings(definition.settings, report)
+  for (const key of Object.keys(definition)) if (!['id', 'title', 'fields', 'welcome_screens', 'thankyou_screens', 'logic', 'settings'].includes(key)) report.push({ location: `/${key}`, label: key, sourceType: 'form property', state: 'unsupported', change: 'Omitted', reason: ['hidden', 'variables'].includes(key) ? 'Hidden fields, variables and scoring are never imported.' : 'Settings, styling, integrations and other form properties are not reproduced.' })
+  return { title: String(definition.title ?? ''), steps, rules: [], report, ...(settings ? { settings } : {}) }
 }

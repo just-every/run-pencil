@@ -1,3 +1,4 @@
+import { registerPreviewRoutes } from '../features/link-preview/routes'
 import { registerPaymentConnectionRoutes, registerPaymentRoutes } from '../features/payments'
 import { registerRetentionRoutes } from '../features/retention/routes'
 import { registerResumeRoutes } from '../features/resuming'
@@ -131,6 +132,7 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
   registerManagementRoutes(app)
   registerAuthRoutes(app, context => context.get('services'), context => context.get('platform').configuration)
   registerEmbeddingRoutes(app, context => context.get('services'))
+  registerPreviewRoutes(app)
   registerBrandRoutes(app, context => context.get('services'))
   registerWorkspaceRoutes(app, context => context.get('services'))
   registerSetupRoutes(app)

@@ -114,3 +114,14 @@ export const loadInvitation = createServerFn({ method: 'GET' })
       throw error
     }
   })
+
+/** Metadata is selected only from the published revision, independent of answer-bearing transports. */
+export const loadDocumentPreview = createServerFn({ method: 'GET' })
+  .inputValidator(z.object({path:z.string().max(2048),search:z.string().max(8192)}))
+  .handler(async ({data}) => {
+    const { requestServices } = await import('../platform/request.server')
+    const { services } = await requestServices()
+    const match = /^\/(?:f|embed)\/([^/]+)$/.exec(data.path)
+    const slug = match ? decodePublicSlug(match[1]) : data.path === '/' ? (await services.brand.get()).publicFlowSlug : undefined
+    return slug ? await services.previews.document(slug,data.path,data.search) : undefined
+  })

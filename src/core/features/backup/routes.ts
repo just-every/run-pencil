@@ -34,7 +34,7 @@ export function registerBackupRoutes(app: Hono<WorkerEnvironment>) {
     await next()
   })
   app.post('/api/app/backup/export', async c => {
-    const result = await exportBackup(c.get('platform').databaseBinding)
+    const result = await exportBackup(c.get('platform').databaseBinding, c.get('platform').formAssets)
     return new Response(result.body, {headers: {...privateHeaders, 'content-type': 'application/json; charset=utf-8',
       'content-disposition': 'attachment; filename="pencil-backup.rer"', 'x-pencil-backup-sha256': result.summary.sha256}})
   })

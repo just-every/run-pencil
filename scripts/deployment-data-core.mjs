@@ -11,6 +11,7 @@ import { checkedLedger, ledger, kitLedger, kitLedgerSQL, hashedLedger, hashedLed
 import { failure } from './deployment-data-errors.mjs';
 import { canonicalSchema } from './deployment-data-schema.mjs';
 import { tableRows } from './deployment-data-values.mjs';
+import { archiveObject, objectBytes, requireObjectReferences } from './deployment-data-objects.mjs';
 export { failure } from './deployment-data-errors.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -30,6 +31,7 @@ const payloadSchema = z.object({
   schema: z.string(),
   d1Migrations: tableSchema,
   tables: z.array(tableSchema),
+  objects: z.array(archiveObject).optional(),
 }).strict();
 export const archiveSchema = z.object({ payload: payloadSchema, sha256: z.string().regex(/^[a-f0-9]{64}$/) }).strict();
 
@@ -144,6 +146,12 @@ export function snapshot(database) {
 
 export function validate(archive) {
   const parsed = archiveSchema.parse(archive);
+  const objects = new Map();
+  for (const object of parsed.payload.objects ?? []) {
+    if (objects.has(object.key) || !object.key.endsWith('/' + createHash('sha256').update(object.mime + '\0').update(objectBytes(object)).digest('hex'))) throw failure('CONTENT_MISMATCH', 'Archive attachment checksum or inventory mismatch.');
+    objects.set(object.key,object);
+  }
+  requireObjectReferences(parsed.payload.tables,objects);
   if (hash(JSON.stringify(parsed.payload)) !== parsed.sha256) throw failure('CONTENT_MISMATCH', 'Archive content digest mismatch.');
   if (JSON.stringify(parsed.payload.migrations) !== JSON.stringify(metadata())) throw failure('MIGRATION_MISMATCH', 'Archive requires a different committed migration history.');
   const expected = new DatabaseSync(':memory:');
@@ -159,7 +167,9 @@ export function validate(archive) {
     }
     parsed.payload.tables.forEach(table => { classify(table); refuseAuthorization(table, table.rows); refuseDevRows(table, table.rows); if (JSON.stringify(sanitize(table)) !== JSON.stringify(table)) throw failure('PRIVATE_CREDENTIAL', 'Archive contains excluded plaintext credentials.'); });
     populate(expected, parsed);
-    if (snapshot(expected).sha256 !== parsed.sha256) throw failure('CONTENT_MISMATCH', 'Archive values do not round-trip through the committed schema.');
+    const restored = snapshot(expected).payload;
+    if (parsed.payload.objects !== undefined) restored.objects = parsed.payload.objects;
+    if (hash(JSON.stringify(restored)) !== parsed.sha256) throw failure('CONTENT_MISMATCH', 'Archive values do not round-trip through the committed schema.');
     return parsed;
   } finally { expected.close(); }
 }

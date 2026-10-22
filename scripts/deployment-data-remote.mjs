@@ -79,6 +79,7 @@ export async function importRemote(archivePath, query = cloudflareClient(), jour
   const store = readStore(archivePath), expected = committed(store.payload.d1Migrations);
   let plan, prepared = false, published = false;
   try {
+    if (store.payload.objects !== undefined) throw failure('ATTACHMENT_REQUIRED', 'This archive includes FORM_ASSETS. Use rer import for local restoration; hosted replacement requires a maintainer to restore and verify the database and bucket together. No provider writes were made.');
     if (journalPath) { privateArchivePath(journalPath); const later = readStore(journalPath); try { erasureFence(store, later); } finally { later.close(); } }
     // One read-only preflight preserves the no-write refusal. Preparation
     // repeats all guards atomically before creating any inert staging schema.

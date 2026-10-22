@@ -10,7 +10,7 @@ import type { ImportInput } from './model'
 import { importFiles as files, sourceInputIssue } from './input-schema'
 import { retrieveTypeformDefinition, typeformRequest } from './typeform-definition'
 export function registerImportRoutes(app: Hono<WorkerEnvironment>) {
-  const service = (context: any) => new FormImports(context.get('platform').databaseBinding, context.get('operatorSession'))
+  const service = (context: any) => new FormImports(context.get('platform').databaseBinding, context.get('operatorSession'), context.get('services').previewAssets)
   // This value is owned by one decoded HTTP request. Release its consumed
   // uploads only after normalization; reusable service inputs stay untouched.
   const releaseUpload = (input: ImportInput) => () => { input.definition = ''; input.csv = '' }

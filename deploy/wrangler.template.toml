@@ -9,6 +9,10 @@ database_name = "pencil-local"
 database_id = "00000000-0000-0000-0000-000000000000"
 migrations_dir = "migrations/core"
 
+[[r2_buckets]]
+binding = "FORM_ASSETS"
+bucket_name = "pencil-local-form-assets"
+
 [assets]
 binding = "ASSETS"
 run_worker_first = true

@@ -8,6 +8,7 @@ import { readAiProvider, type AiProvider } from './ai/provider'
 
 export type PencilPlatform = {
   readonly database: PencilDatabase
+  readonly formAssets: R2Bucket
   readonly databaseBinding: D1Database
   readonly databaseBatch: D1BatchExecutor
   readonly configuration: RuntimeConfiguration
@@ -24,6 +25,7 @@ export function createPencilPlatform(requestUrl: string, environment: WorkerBind
   return {
     database: createDatabase(environment.DB),
     databaseBinding: environment.DB,
+    formAssets: environment.FORM_ASSETS,
     databaseBatch: createD1BatchExecutor(environment.DB),
     configuration,
     management: readManagementConfiguration(environment),

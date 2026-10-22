@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { archiveObject } from '../../../../scripts/deployment-data-objects.mjs'
 
 export const backupBytes = 8 * 1024 * 1024
 export const backupRows = 20_000
@@ -14,7 +15,7 @@ export const backupArchive = z.object({
   payload: z.object({
     format: z.literal('runeditrun/pencil-local-data.v1'),
     migrations: z.array(z.object({ name: z.string(), sha256: z.string() }).strict()),
-    schema: z.string(), d1Migrations: table, tables: z.array(table),
+    schema: z.string(), d1Migrations: table, tables: z.array(table), objects: z.array(archiveObject).optional(),
   }).strict(), sha256: z.string().regex(/^[a-f0-9]{64}$/),
 }).strict()
 export type BackupCell = z.infer<typeof cell>

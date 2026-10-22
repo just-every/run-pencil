@@ -1,3 +1,5 @@
+import { previewFixture, previewImage } from './link-preview-fixture'
+import { linkPreviewLimits, type LinkPreviewReference } from '../../src/core/shared/linkPreview'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -48,4 +50,119 @@ contract(['BRAND-001', 'HOME-001', 'BASE-ACCESS-004', 'BASE-INPUT-001'], 'produc
   expect((await restored.brand.get()).logoVersion).toBeNull()
   const workspace = await raw('/api/app/workspace', { headers }).then(r => r.json()) as { timeZone: string; sendingWindowStart: string; sendingWindowEnd: string }
   expect(workspace).toMatchObject({ name: brand.name, timeZone: 'UTC', sendingWindowStart: '09:00', sendingWindowEnd: '17:00' })
+})
+
+contract('DIST-020', 'settings API preserves preview overrides and publication freezes defaults and images across later edits', async () => {
+  const f = await previewFixture()
+  await env.DB.prepare('UPDATE workspaces SET name=?,brand_configured=1,brand_logo_base64=?,brand_logo_mime=?,brand_logo_version=? WHERE id=?').bind('Synthetic studio', previewImage.base64, previewImage.mime, crypto.randomUUID(), f.workspace).run()
+  const initial = await f.publish()
+  expect(initial.status, await initial.clone().text()).toBe(201)
+  const first = await initial.json() as { revision: { id: string } }
+  const original = await f.snapshot(first.revision.id)
+  expect(original).toMatchObject({ title: 'Customer feedback', description: 'Welcome  Tell us about your visit.', image: { mime: previewImage.mime, base64: previewImage.base64, alt: 'Synthetic studio' }, allowIndexing: false })
+  expect(original.description).not.toContain('{{')
+  await f.publicImage(first.revision.id, previewImage.base64)
+  expect((await f.read()).flow.hasUnpublishedChanges).toBe(false)
+  const custom = { ...f.settings, linkPreview: { title: 'Plan your next visit', description: 'Help shape our next season.', image: previewImage, allowIndexing: true } }
+  expect((await f.save(custom)).status).toBe(200)
+  const stored = (await f.read()).formSettings!
+  const storedImage = stored.linkPreview!.image as LinkPreviewReference
+  expect(storedImage).toMatchObject({ key: expect.any(String), mime: previewImage.mime, alt: previewImage.alt })
+  expect(storedImage).not.toHaveProperty('base64')
+  expect(stored).toMatchObject({ ...custom, linkPreview: { ...custom.linkPreview, image: storedImage } })
+  expect((await f.read()).flow.hasUnpublishedChanges).toBe(true)
+  expect((await f.call('/api/app/brand/logo', undefined, { method: 'DELETE' })).status).toBe(200)
+  const republished = await f.publish()
+  expect(republished.status, await republished.clone().text()).toBe(201)
+  const second = await republished.json() as { revision: { id: string } }
+  expect(await f.snapshot(second.revision.id)).toMatchObject({ ...custom.linkPreview, image: storedImage })
+  expect(await f.snapshot(first.revision.id)).toEqual(original)
+  await f.publicImage(first.revision.id, previewImage.base64)
+  await f.publicImage(second.revision.id, previewImage.base64)
+  const publicFlow = await f.call(`/api/public/flows/${f.slug}`, undefined, { auth: false })
+  expect(publicFlow.status).toBe(200)
+  expect(await publicFlow.json()).toMatchObject({ formSettings: stored })
+  expect((await f.read()).flow.hasUnpublishedChanges).toBe(false)
+  const other = await previewFixture()
+  expect((await other.save({ ...other.settings, linkPreview: { image: storedImage } })).status).toBe(400)
+  expect((await other.call(other.base + '/preview-image?key=' + encodeURIComponent(storedImage.key))).status).toBe(400)
+  expect((await f.save({ ...stored, linkPreview: { ...stored.linkPreview, image: { ...storedImage, mime: 'image/jpeg' } } })).status).toBe(400)
+  const replacement = { ...previewImage, base64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', alt: 'Our updated studio mark' }
+  expect((await f.save({ ...stored, linkPreview: { ...stored.linkPreview, image: replacement } })).status).toBe(200)
+  const replacementPublication = await f.publish()
+  expect(replacementPublication.status).toBe(201)
+  const third = await replacementPublication.json() as { revision: { id: string } }
+  await f.publicImage(third.revision.id, replacement.base64)
+  await f.publicImage(second.revision.id, previewImage.base64)
+  await f.publicImage(first.revision.id, previewImage.base64)
+})
+
+contract('DIST-020', 'duplicates and team templates retain share images under their own form custody', async () => {
+  const f = await previewFixture()
+  expect((await f.save({ ...f.settings, linkPreview: { image: previewImage } })).status).toBe(200)
+  const sourceImage = (await f.read()).formSettings!.linkPreview!.image as LinkPreviewReference
+  const copiedResponse = await f.call(f.base + '/duplicate', { title: 'Copied preview', slug: `copy-${f.slug}` })
+  expect(copiedResponse.status).toBe(201)
+  const copied = await copiedResponse.json() as { id: string }
+  const templateResponse = await f.call(f.base + '/templates', { name: 'Preview template', source: 'draft', expectedVersion: (await f.read()).flow.draftVersion })
+  expect(templateResponse.status).toBe(201)
+  const template = await templateResponse.json() as { id: string }
+  const fromTemplate = await f.call(`/api/app/templates/${template.id}/flows`, { title: 'Templated preview', slug: `template-${f.slug}` })
+  expect(fromTemplate.status).toBe(201)
+  const templated = await fromTemplate.json() as { id: string }
+  for (const flowId of [copied.id, templated.id]) {
+    const base = `/api/app/flows/${flowId}`
+    const draft = await (await f.call(base + '/draft')).json() as import('../../src/core/app/api').BuilderDraft
+    const settings = draft.formSettings!, image = settings.linkPreview!.image as LinkPreviewReference
+    expect(image).toMatchObject({ mime: previewImage.mime, alt: previewImage.alt })
+    expect(image.key).not.toBe(sourceImage.key)
+    expect(image).not.toHaveProperty('base64')
+    const imageResponse = await f.call(base + '/preview-image?key=' + encodeURIComponent(image.key))
+    expect(imageResponse.status).toBe(200)
+    expect(new Uint8Array(await imageResponse.arrayBuffer())).toEqual(decodeLogo(previewImage.base64))
+    expect((await f.call(base + '/draft/settings', { expectedVersion: draft.flow.draftVersion, settings }, { method: 'PUT' })).status).toBe(200)
+    const publish = await f.call(base + '/publish', { expectedVersion: draft.flow.draftVersion + 1 })
+    expect(publish.status).toBe(201)
+    const result = await publish.json() as { revision: { id: string } }
+    await f.publicImage(result.revision.id, previewImage.base64)
+  }
+})
+
+contract('DIST-020', 'settings API rejects recalled preview text and invalid, oversized or unlabelled image uploads without mutating the draft', async () => {
+  const f = await previewFixture(), before = await f.read()
+  const invalid = [
+    { title: '{{hidden:campaign}}' }, { description: '{{variable:score}}' }, { title: '*|EMAIL|*' }, { description: '%%answer%%' },
+    { title: 'x'.repeat(linkPreviewLimits.titleCharacters + 1) }, { description: 'x'.repeat(linkPreviewLimits.descriptionCharacters + 1) },
+    { image: { ...previewImage, alt: '' } }, { image: { ...previewImage, alt: '{{hidden:campaign}}' } },
+    { image: { ...previewImage, mime: 'image/jpeg' } }, { image: { ...previewImage, mime: 'image/svg+xml' } },
+    { image: { ...previewImage, base64: 'invalid!' } },
+    { image: { ...previewImage, base64: btoa('x'.repeat(linkPreviewLimits.imageBytes + 1)) } },
+    { allowIndexing: 'true' }, { unknownSetting: true },
+  ]
+  for (const linkPreview of invalid) expect((await f.save({ ...f.settings, linkPreview })).status).toBe(400)
+  expect((await f.read()).flow.draftVersion).toBe(before.flow.draftVersion)
+  expect((await f.read()).formSettings).toEqual(before.formSettings)
+  expect((await f.save({ ...f.settings, linkPreview: { title: '', description: '', image: previewImage } })).status).toBe(200)
+  expect((await f.publish()).status).toBe(201)
+})
+
+contract('DIST-020', 'publication rejects indexing on restricted and identified forms while preserving their existing admission rules', async () => {
+  const f = await previewFixture()
+  expect((await f.call(f.base + '/access', { expectedVersion: (await f.read()).flow.draftVersion, rule: { mode: 'password', password: 'synthetic-survey-password' } }, { method: 'PUT' })).status).toBe(200)
+  const restricted = (await f.read()).formSettings!
+  expect((await f.save({ ...restricted, linkPreview: { allowIndexing: true } })).status).toBe(200)
+  const refused = await f.publish()
+  expect(refused.status).toBe(400)
+  expect(await refused.text()).toContain('indexing')
+  expect((await f.read()).formSettings!.access).toEqual(restricted.access)
+  expect((await f.save({ ...restricted, linkPreview: { allowIndexing: false } })).status).toBe(200)
+  expect((await f.publish()).status).toBe(201)
+  const gate = await f.call(`/api/public/flows/${f.slug}`, undefined, { auth: false })
+  expect(gate.status).toBe(403)
+  expect(await gate.json()).toMatchObject({ restriction: { mode: 'password' } })
+  const identified = await previewFixture()
+  expect((await identified.save({ ...identified.settings, identityMode: 'identified', linkPreview: { allowIndexing: true } })).status).toBe(200)
+  expect((await identified.publish()).status).toBe(400)
+  expect((await identified.save({ ...identified.settings, identityMode: 'identified', linkPreview: { allowIndexing: false } })).status).toBe(200)
+  expect((await identified.publish()).status).toBe(201)
 })

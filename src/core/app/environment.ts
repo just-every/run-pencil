@@ -16,6 +16,7 @@ export interface WorkerBindings {
   /** Managed delivery binds the release digest and active Worker version. */
   readonly RER_RELEASE_DIGEST?: string
   readonly RER_VERSION_METADATA?: { id: string }
+  readonly FORM_ASSETS: R2Bucket
   readonly DB: D1Database
   readonly APP_ORIGIN?: string
   readonly SEED_ADMIN_EMAIL?: string

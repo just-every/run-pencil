@@ -1,5 +1,7 @@
 import { z } from 'zod'
 import { ValidationError } from '../../shared/errors'
+import { retrieveTypeformImage } from './typeform-image'
+import { decodeLogo } from '../brand'
 
 const identifier = /^[a-zA-Z0-9_-]{1,128}$/
 export function typeformId(value: string): string {
@@ -39,7 +41,7 @@ async function readDefinition(response: Response): Promise<string> {
   return new TextDecoder().decode(bytes)
 }
 
-/** One read-only request. The credential never enters import plans, settings or logs. */
+/** Operator-requested definition and optional share image. Only the API receives the token. */
 export async function retrieveTypeformDefinition(input: z.infer<typeof typeformRequest>) {
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 15_000)
@@ -59,13 +61,24 @@ export async function retrieveTypeformDefinition(input: z.infer<typeof typeformR
         : 'Typeform could not return the form. Try again later; no import was created.'
       throw new ValidationError(message)
     }
-    const definition = await readDefinition(response)
+    let definition = await readDefinition(response)
     // Do not return even a successful provider body if it echoes the credential.
     if (definition.includes(input.token)) throw new ValidationError('Typeform returned an unsafe definition. No definition was loaded; generate a new token before trying again.')
     let value: unknown
     try { value = JSON.parse(definition) } catch { throw new ValidationError('Typeform did not return a readable form definition. Try again later.') }
     const parsed = z.object({ id: z.literal(id), title: z.string().min(1), fields: z.array(z.unknown()) }).safeParse(value)
     if (!parsed.success) throw new ValidationError('Typeform returned an incomplete or different form definition. Check the form link and try again.')
+    const source = value as { settings?: { meta?: { title?: unknown; image?: { href?: unknown; pencilImage?: unknown } } } }
+    const meta = source.settings?.meta
+    if (meta?.image !== undefined) {
+      const alt = typeof meta.title === 'string' && meta.title.trim() ? meta.title : parsed.data.title
+      const image = await retrieveTypeformImage(meta.image?.href, alt, controller.signal)
+      // Binary metadata must not smuggle an echoed API credential into the retained image.
+      if (new TextDecoder().decode(decodeLogo(image.base64)).includes(input.token)) throw new ValidationError('Typeform returned an unsafe share image. No definition was loaded; generate a new token before trying again.')
+      meta.image = { href: meta.image!.href, pencilImage: image }
+      definition = JSON.stringify(value)
+      if (new TextEncoder().encode(definition).byteLength > maxBytes) throw new ValidationError('The Typeform definition and embedded share image exceed the 8 MiB import limit.')
+    }
     return { definition, title: parsed.data.title, formId: id }
   } catch (error) {
     if (error instanceof ValidationError) throw error

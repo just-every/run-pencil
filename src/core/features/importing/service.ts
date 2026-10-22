@@ -1,3 +1,4 @@
+import type { LinkPreviewAssets } from '../link-preview'
 import { planD1ImportStream, prepareD1ImportStream, publishD1ImportPreparation, readD1ImportPreparation, resumeD1ImportStream, readD1ImportStream, undoD1ImportStream, upgradeD1ImportErasureIndex, resumeD1Import, undoD1Import, rollbackD1Import, readD1ImportJob, cancelD1NativeStaging, cancelD1ErasureStaging, d1RequestContext, type D1ImportContext } from '../../../base/import-kit/src/d1/index'
 import { ValidationError } from '../../shared/errors'
 import manifest from '../../../../seed.json'
@@ -18,7 +19,7 @@ async function requireReviewedPlan(prepared: ReturnType<typeof prepareImport>, c
   // The plan belongs only to this check; do not retain its pages beside preparation.
 }
 export class FormImports {
-  constructor(private readonly database: D1Database, private readonly actor: ImportActor) {}
+  constructor(private readonly database: D1Database, private readonly actor: ImportActor, private readonly assets?: LinkPreviewAssets) {}
   private async prepared(input: ImportInput, releaseUpload?: () => void) {
     const payloadHasher = createCanonicalHasher()
     let prepared: ReturnType<typeof prepareImport>, context: ReturnType<typeof d1RequestContext>, plan
@@ -32,14 +33,14 @@ export class FormImports {
     const existing = await this.existing(prepared.namespace, context)
     const count = await context.storage.database.prepare('SELECT COUNT(*) AS count FROM flows WHERE workspace_id = ?').bind(this.actor.workspaceId).first<{ count: number }>()
     if (!existing && Number(count?.count) >= manifest.limits.flows.total) throw new ValidationError('Workspace flow limit reached. Nothing was written.')
-    const { source: _source, mapping: _mapping, effects: _effects, ...review } = prepared
+    const { source: _source, mapping: _mapping, effects: _effects, previewUpload: _previewUpload, ...review } = prepared
     return { ...review, context, plan, existing }
   }
   async review(input: ImportInput, releaseUpload?: () => void): Promise<ImportReview> {
     const p = await this.prepared(input, releaseUpload)
     const authority = p.context.authorization.predicate('read', this.actor.workspaceId)
     const pending = await p.context.storage.database.prepare(`SELECT fingerprint FROM ik_d1_staging WHERE destination=? AND principal_id=? AND namespace=? AND (${authority.sql}) UNION SELECT s.fingerprint FROM ik_d1_native_staging n JOIN ik_d1_stream_pages p ON p.job_id=n.job_id JOIN ik_d1_streams s ON s.id=p.stream_id WHERE n.destination=? AND n.principal_id=? AND s.namespace=? AND (${authority.sql}) LIMIT 1`).bind(this.actor.workspaceId, this.actor.operatorId, p.namespace, ...authority.params ?? [], this.actor.workspaceId, this.actor.operatorId, p.namespace, ...authority.params ?? []).first<{ fingerprint: string }>()
-    return { ...(p.sourceName ? { source: p.sourceName, google: p.google } : {}), plannedAt: p.plannedAt, fingerprint: p.plan.fingerprint, flowId: p.flowId, title: p.form.title, report: p.form.report, headers: p.headers, forbiddenColumns: p.forbiddenColumns, columns: p.columns, questions: p.form.steps.filter(s => s.kind === 'question'), rowErrors: p.rowErrors, responseCount: p.responseCount, lossRequired: p.form.report.some(i => i.state !== 'imported'), alreadyImported: p.existing?.state === 'completed', heldByOtherOperator: !!p.existing && p.existing.principal_id !== this.actor.operatorId, ...(p.existing && p.existing.principal_id === this.actor.operatorId ? { jobId: p.existing.id, jobState: p.existing.state } : {}), ...(pending ? { pendingCustody: pending.fingerprint } : {}) }
+    return { ...(p.sourceName ? { source: p.sourceName, google: p.google } : {}), plannedAt: p.plannedAt, fingerprint: p.plan.fingerprint, flowId: p.flowId, title: p.form.title, ...(p.form.settings ? { settings: p.form.settings } : {}), report: p.form.report, headers: p.headers, forbiddenColumns: p.forbiddenColumns, columns: p.columns, questions: p.form.steps.filter(s => s.kind === 'question'), rowErrors: p.rowErrors, responseCount: p.responseCount, lossRequired: p.form.report.some(i => i.state !== 'imported'), alreadyImported: p.existing?.state === 'completed', heldByOtherOperator: !!p.existing && p.existing.principal_id !== this.actor.operatorId, ...(p.existing && p.existing.principal_id === this.actor.operatorId ? { jobId: p.existing.id, jobState: p.existing.state } : {}), ...(pending ? { pendingCustody: pending.fingerprint } : {}) }
   }
   async commit(input: ImportInput, fingerprint: string, acknowledged: boolean, releaseUpload?: () => void) {
     if (!acknowledged) throw new ValidationError('Acknowledge the reported changes and losses before importing.')
@@ -60,6 +61,10 @@ export class FormImports {
       await requireReviewedPlan(p, context, fingerprint)
       const count = await context.storage.database.prepare('SELECT COUNT(*) AS count FROM flows WHERE workspace_id = ?').bind(this.actor.workspaceId).first<{ count: number }>()
       if (!existing && Number(count?.count) >= manifest.limits.flows.total) throw new ValidationError('Workspace flow limit reached. Nothing was written.')
+      if(p.previewUpload){
+        if(!this.assets)throw new ValidationError('Share image storage is unavailable.')
+        await this.assets.save(this.actor.workspaceId,p.flowId,{hiddenFields:[],identityMode:'anonymous',linkPreview:{image:p.previewUpload}})
+      }
       return await prepareD1ImportStream(p.source, p.mapping, { ...this.creationContext(context), reviewedFingerprint: fingerprint, operationKey: p.namespace })
     } catch (error) { if (error instanceof Error && /CREDENTIAL_IN_DURABLE/.test(error.message)) throw new ValidationError('Credential-bearing input cannot be retained. Remove credentials from the source files before review.'); throw error }
     finally { payloadHasher.clear() }

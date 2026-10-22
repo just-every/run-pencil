@@ -1,4 +1,5 @@
 import type { RestrictedAccess } from '../restricted-access'
+import { linkPreviewPublicationIssues, resolveLinkPreview, type LinkPreviewDefaults, type LinkPreviewAssetStore } from '../../shared/linkPreview'
 import { formAnswerContext } from '../../shared/calculationContext'
 import { remapCalculations } from '../../shared/calculationRemap'
 import { formSettings, hiddenSettingsIssue, hiddenPublicationIssues, normalizeHidden, hiddenAnswers, type FormSettings } from '../../shared/hiddenFields'
@@ -58,6 +59,8 @@ export class FlowService {
     private readonly responseRepository: ResponseRepository,
     private readonly policyConfiguration: FlowPolicies = defaultFlowPolicies,
     private readonly access?:RestrictedAccess,
+    private readonly previewDefaults?: (workspaceId: string) => Promise<LinkPreviewDefaults>,
+    private readonly previewAssets?: LinkPreviewAssetStore,
   ) {}
 
   async ensureSampleFlow(input: {
@@ -155,7 +158,11 @@ export class FlowService {
     const now = new Date().toISOString()
     const flowId = ulid()
     const revisionId = ulid()
-    const copiedSettings = formSettings(sourceRevision.formSettingsJson)
+    let copiedSettings = formSettings(sourceRevision.formSettingsJson)
+    if (copiedSettings.linkPreview?.image) {
+      if (!this.previewAssets) throw new ValidationError('Share image storage is not configured.')
+      copiedSettings = await this.previewAssets.copyOwned(input.workspaceId, sourceFlow.id, flowId, copiedSettings)
+    }
     const variableIds = new Map((copiedSettings.calculations ?? []).map(value=>[value.id,ulid()]))
     const fieldIds = new Map(copiedSettings.hiddenFields.map(field => [field.id,ulid()]))
     const stableIdByOldStableId = new Map([...sourceSteps.map((step) => [step.stableId, ulid()] as [string,string]), ...[...fieldIds].map(([old,id]) => [`hidden:${old}`,`hidden:${id}`] as [string,string]), ...[...variableIds].map(([old,id])=>[`variable:${old}`,`variable:${id}`] as [string,string])])
@@ -218,7 +225,9 @@ export class FlowService {
     if (flow.status === 'archived') throw new ValidationError('Duplicate an archived flow before editing.')
     const issue = hiddenSettingsIssue(input.settings)
     if (issue) throw new ValidationError(issue)
-    if (!await this.repository.updateFormSettings({...input,revisionId:revision.id,json:JSON.stringify(input.settings),now:new Date().toISOString()})) return draftConflict((await this.requireWorkspaceFlow(input.workspaceId,input.flowId)).draftVersion)
+    if (input.settings.linkPreview?.image && !this.previewAssets) throw new ValidationError('Share image storage is not configured.')
+    const settings = this.previewAssets ? await this.previewAssets.save(input.workspaceId, input.flowId, input.settings) : input.settings
+    if (!await this.repository.updateFormSettings({...input,revisionId:revision.id,json:JSON.stringify(settings),now:new Date().toISOString()})) return draftConflict((await this.requireWorkspaceFlow(input.workspaceId,input.flowId)).draftVersion)
     return {kind:'updated' as const,draftVersion:input.expectedVersion+1}
   }
 
@@ -436,6 +445,7 @@ export class FlowService {
     const { steps: rawSteps, choices: rawChoices, rules: rawRules } = snapshot
     const issues = validateRevisionGraph(rawSteps, rawChoices, rawRules, evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'], formSettings(snapshot.revision.formSettingsJson))
     issues.push(...hiddenPublicationIssues(formSettings(snapshot.revision.formSettingsJson)))
+    issues.push(...linkPreviewPublicationIssues(draft.formSettings))
     if (issues.length > 0) throw new ValidationError('This draft cannot be published until every listed issue is resolved.', issues)
     if (input.targetCompletedResponses !== undefined && input.targetCompletedResponses !== null && (!Number.isInteger(input.targetCompletedResponses) || input.targetCompletedResponses <= 0)) throw new ValidationError('A completion target must be a positive whole number.')
     if (input.deadlineAt && Number.isNaN(Date.parse(input.deadlineAt))) throw new ValidationError('A revision deadline must be an ISO timestamp.')
@@ -444,13 +454,15 @@ export class FlowService {
     const newStepIdByOldId = new Map(rawSteps.map((step) => [step.id, ulid()]))
     const newDraft = { formSettingsJson: snapshot.revision.formSettingsJson, id: nextDraftId, flowId: input.flowId, number: draft.revision.number + 1, state: 'draft' as const, title: draft.flow.title, publishedAt: null, isCurrent: false, admissionClosedAt: null, admissionCloseReason: null, deadlineAt: null, deadlineTimeZone: null, targetCompletedResponses: null, policySnapshotJson: null, createdAt: now, updatedAt: now }
     const timeZone = await this.repository.getWorkspaceTimeZone(input.workspaceId)
+    const previewDefaults = await this.previewDefaults?.(input.workspaceId)
+    const linkPreview = resolveLinkPreview(draft.formSettings, draft.flow.title, rawSteps, previewDefaults?.image, previewDefaults?.background)
     const published = await this.repository.publishDraft({ operatorId: input.operatorId,
       flowId: input.flowId, revisionId: draft.revision.id, expectedVersion: input.expectedVersion, now, currentRevisionId: draft.revision.id,
       newDraft,
       newSteps: rawSteps.map((step) => ({ ...step, id: newStepIdByOldId.get(step.id)!, revisionId: nextDraftId, createdAt: now, updatedAt: now })),
       newChoices: rawChoices.map((choice) => ({ ...choice, id: ulid(), stepId: newStepIdByOldId.get(choice.stepId)!, createdAt: now, updatedAt: now })),
       newRules: rawRules.map((rule) => ({ ...rule, id: ulid(), revisionId: nextDraftId, createdAt: now, updatedAt: now })),
-      policySnapshotJson: JSON.stringify(evaluateFlowPolicies({...this.policyConfiguration,'response.review.v1':draft.formSettings.reviewBeforeSubmit === true,'response.identity.v1':(draft.formSettings.identityMode==='identified'||draft.formSettings.access?.mode==='email'||draft.formSettings.access?.mode==='signed')?'identified-public-link':'anonymous-public-link'})), deadlineAt: input.deadlineAt ?? null, deadlineTimeZone: input.deadlineAt ? timeZone ?? 'UTC' : null, targetCompletedResponses: input.targetCompletedResponses ?? null,
+      policySnapshotJson: JSON.stringify({...evaluateFlowPolicies({...this.policyConfiguration,'response.review.v1':draft.formSettings.reviewBeforeSubmit === true,'response.identity.v1':(draft.formSettings.identityMode==='identified'||draft.formSettings.access?.mode==='email'||draft.formSettings.access?.mode==='signed')?'identified-public-link':'anonymous-public-link'}), linkPreview}), deadlineAt: input.deadlineAt ?? null, deadlineTimeZone: input.deadlineAt ? timeZone ?? 'UTC' : null, targetCompletedResponses: input.targetCompletedResponses ?? null,
     })
     if (!published) return draftConflict((await this.requireWorkspaceFlow(input.workspaceId, input.flowId)).draftVersion)
     return { kind: 'published' as const, revision: { id: draft.revision.id, number: draft.revision.number }, draftVersion: input.expectedVersion + 1 }

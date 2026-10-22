@@ -1,3 +1,4 @@
+import { isFormDocument } from './core/features/link-preview/head'
 // Demo mode (Base modules/demo) first, so it guards fetch before any other module loads; without RER_DEMO=1 it changes nothing.
 import { withDemo } from './base/demo/index.mjs'
 import { seedDemo } from './demo'
@@ -36,9 +37,15 @@ function assetResponse(path: string, asset: Response): Response {
 const worker = {
   scheduled: runScheduledMaintenance,
   async fetch(request: Request, bindings: WorkerBindings, execution: ExecutionContext): Promise<Response> {
-    const response = await fetchPencil(request, bindings, execution)
+    const result = await fetchPencil(request, bindings, execution)
+    const path = new URL(request.url).pathname
+    // Fail closed even for denied, malformed and missing form documents.
+    const response = isFormDocument(path) && !result.headers.has('X-Pencil-Indexable')
+      ? new Response(result.body,{status:result.status,headers:new Headers([...result.headers,['X-Robots-Tag','noindex']])}) : result
+    const safeHeaders = new Headers(response.headers)
+    safeHeaders.delete('X-Pencil-Indexable')
     if (response.status < 500) continueNotifications(request, bindings, execution)
-    return response
+    return new Response(response.body,{status:response.status,headers:safeHeaders})
   },
 } satisfies ExportedHandler<WorkerBindings>
 
@@ -108,7 +115,10 @@ async function fetchPencil(request: Request, bindings: WorkerBindings, execution
     if (path === '/app' || path.startsWith('/app/')) headers.set('Content-Security-Policy', editorPolicy(headers.get('Content-Security-Policy') ?? '', bindings))
     // no-transform: no proxy rewrites the document React hydrates (Cloudflare's email address obfuscation included).
     headers.set('Cache-Control', 'no-store, no-transform')
-    if (/^\/f\//.test(path) && (new URL(request.url).searchParams.has('resume') || new URL(request.url).searchParams.has('payment-key'))) headers.set('X-Robots-Tag', 'noindex, nofollow')
+    if (/^\/f\//.test(path) && response.status === 200) {
+      const slug = decodePublicSlug(path.slice(3))
+      if (slug && (await services.previews.document(slug,path,new URL(request.url).search))?.indexable) headers.set('X-Pencil-Indexable','true')
+    }
     // /setup's native forms POST to this origin, whose exact Origin check needs the browser to send it; no-referrer would send Origin: null.
     headers.set('Referrer-Policy', path === '/setup' ? 'same-origin' : 'no-referrer')
     headers.set('X-Content-Type-Options', 'nosniff')

@@ -4,9 +4,17 @@ import type { BackupArchive } from './model'
 import { digest } from './model'
 import { canonicalSchema, hashedLedgerSQL, kitLedgerSQL, ledgerDefinition, platformLedger, platformLedgerSQL, schemaQuery } from '../../../../scripts/deployment-data-browser-shared.mjs'
 import { insertRows, readRows } from './sqlite-values'
+import { checkObject, type ArchiveObject } from '../../../../scripts/deployment-data-objects.mjs'
 
 type SchemaEntry = {type: string; name: string; tbl_name: string; sql: string}
 export async function restoreInDatabase(db: Database, archive: BackupArchive) {
+  // The restore test owns a new attachment store alongside its new SQLite DB.
+  // Copy and verify bytes, then reconstruct the archive from both restored stores.
+  const restoredObjects = new Map<string, { metadata: Omit<ArchiveObject,'data'>; bytes: Uint8Array }>()
+  for (const object of archive.payload.objects ?? []) {
+    const {data: _data,...metadata} = object
+    restoredObjects.set(object.key,{metadata,bytes:(await checkObject(object)).slice()})
+  }
   const schema = JSON.parse(manifest.schema) as SchemaEntry[]
   const ledger = ledgerDefinition(archive.payload.d1Migrations).table
   // Only the application's build-time schema is executed. Uploaded archive
@@ -33,6 +41,10 @@ export async function restoreInDatabase(db: Database, archive: BackupArchive) {
     format: archive.payload.format, migrations: manifest.migrations, schema: manifest.schema,
     d1Migrations: readRows(db,ledger), tables: manifest.tables.map(table => readRows(db,table)),
   }
+  if (archive.payload.objects !== undefined) payload.objects = [...restoredObjects.values()].map(({metadata,bytes}) => {
+    let binary = ''; for (const byte of bytes) binary += String.fromCharCode(byte)
+    return {...metadata,data:btoa(binary)}
+  })
   const reexportSha256 = await digest(payload)
   if (reexportSha256 !== archive.sha256) throw new Error('The restored database did not re-export with the original checksum. Keep the original deployment and archive.')
   return reexportSha256

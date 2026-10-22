@@ -1,3 +1,4 @@
+import { bodyLimit } from 'hono/body-limit'
 import { AccessRequiredError } from '../restricted-access'
 import { hiddenSettingsIssue, type FormSettings } from '../../shared/hiddenFields'
 import { conditionShape } from '../../shared/conditionValidation'
@@ -150,7 +151,7 @@ export function registerFlowRoutes(app: Hono<WorkerEnvironment>, services: Reque
     }
   })
 
-  app.put('/api/app/flows/:flowId/draft/settings', zValidator('param',z.object({flowId:resourceId})), zValidator('json',z.object({expectedVersion:z.number().int().nonnegative(),settings:z.custom<FormSettings>(value=>!hiddenSettingsIssue(value))})), async context => {
+  app.put('/api/app/flows/:flowId/draft/settings', bodyLimit({maxSize:512*1024,onError:c=>c.json({error:'VALIDATION_ERROR',message:'Form settings exceed the upload limit.'},413)}), zValidator('param',z.object({flowId:resourceId})), zValidator('json',z.object({expectedVersion:z.number().int().nonnegative(),settings:z.custom<FormSettings>(value=>!hiddenSettingsIssue(value))})), async context => {
     try { requireSameOriginRequest(context.req.raw); return context.json(await services(context).flows.updateFormSettings({...context.req.valid('json'),flowId:context.req.param('flowId'),...context.get('operatorSession')})) } catch(error) {return failure(context,error)}
   })
 

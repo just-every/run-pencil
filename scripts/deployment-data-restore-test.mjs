@@ -7,6 +7,7 @@ import { readStore } from './deployment-data-stream.mjs';
 import { privateArchivePath } from './deployment-data-paths.mjs';
 import { erasureFence } from './deployment-data-journal.mjs';
 import { failure } from './deployment-data-errors.mjs';
+import { restoreObjectTest } from './deployment-data-object-restore-test.mjs';
 
 // Hosted and local archives intentionally keep their own migration controller.
 // importData creates a brand-new SQLite database from the validated archive's
@@ -20,6 +21,10 @@ export function testRestore(args) {
     try { later = readStore(privateArchivePath(resolve(values.journal))); erasureFence(original,later); }
     finally { original.close(); later?.close(); }
   }
+  const store = readStore(input);
+  try {
+    if (store.payload.objects !== undefined) return {ok:true,restored:true,...restoreObjectTest(store,output),database:output,hostedDeploymentReplaced:false};
+  } finally { store.close(); }
   const restored = importData(input,output);
   const directory = mkdtempSync(join(dirname(output),'.pencil-restore-test-'));
   try {

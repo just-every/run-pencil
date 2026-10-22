@@ -1,3 +1,5 @@
+import { LinkPreviewAssets } from '../features/link-preview/assets'
+import { LinkPreviews } from '../features/link-preview/service'
 import { ActionReminderDispatcher } from '../features/notifications/action-reminder-dispatcher'
 import { RetentionService } from '../features/retention/service'
 import { RestrictedAccess } from '../features/restricted-access/service'
@@ -67,17 +69,24 @@ export function createPencilServices(platform: PencilPlatform) {
   const from = platform.configuration.mail.kind === 'local-development' ? 'no-reply@pencil.test' : platform.configuration.mail.from
   const mailProvider = platform.configuration.mail.kind
   const access = new RestrictedAccess(platform.databaseBinding,platform.configuration.sessionSecret,sender,{from,local:mailProvider==='local-development'})
-  const flows = new FlowService(flowRepository,responseRepository,extensions.flowPolicies,access)
-  const brand = new BrandService(new BrandRepository(database),slug=>flows.getPublicFlow(slug))
+  const previewAssets = new LinkPreviewAssets(platform.formAssets)
+  const brandRepository = new BrandRepository(database)
+  const flows = new FlowService(flowRepository,responseRepository,extensions.flowPolicies,access,async workspaceId => {
+    const row = await brandRepository.get(workspaceId)
+    return { background: '#fbfaf6', ...(row?.brandLogoBase64 && row.brandLogoMime ? {image:{base64:row.brandLogoBase64,mime:row.brandLogoMime,alt:row.name}} : {}) }
+  },previewAssets)
+  const brand = new BrandService(brandRepository,slug=>flows.getPublicFlow(slug))
   const connections = new IntegrationConnections(platform)
   const payments = new PaymentService(new PaymentRepository(platform.databaseBinding), connections, { appOrigin: platform.configuration.appOrigin, apiOrigin: platform.configuration.paymentApiOrigin, secret: platform.configuration.sessionSecret })
   const responses = new ResponseService(flowRepository, responseRepository, collectors, platform.configuration.sessionSecret, access, new PaymentResponses(flowRepository, responseRepository, payments, platform.configuration.sessionSecret))
   return {
     access,
+    previewAssets,
+    previews: new LinkPreviews(platform.databaseBinding, platform.configuration.appOrigin, previewAssets),
     retention: new RetentionService(platform.databaseBinding),
     resuming: new ResumeService(new ResumeRepository(platform.databaseBinding), responseRepository, flowRepository, collectors, responses, sender, {origin:platform.configuration.appOrigin,from,secret:platform.configuration.sessionSecret,local:platform.configuration.mail.kind==='local-development'}),
     traffic: new TrafficService(platform.databaseBinding,flows,responses,collectors,platform.configuration.sessionSecret),
-    templates: new TeamTemplates(platform.databaseBinding, flowRepository),
+    templates: new TeamTemplates(platform.databaseBinding, flowRepository, previewAssets),
     collectors,
     connections,
     payments,

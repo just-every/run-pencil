@@ -8,6 +8,7 @@ import type { FlowRepository } from './repository'
 import type { FlowStructure } from './structure'
 import { remapAnswerRecall } from '../../shared/answerRecall'
 import { remapChoiceSettings } from '../../shared/otherChoices'
+import type { LinkPreviewAssetStore } from '../../shared/linkPreview'
 
 type Content = Pick<FlowStructure, 'steps' | 'choices' | 'rules'> & {formSettings?:FormSettings}
 
@@ -36,7 +37,7 @@ function copyContent(source: Content, revisionId: string, now: string): Content 
 }
 
 export class TeamTemplates {
-  constructor(private readonly db: D1Database, private readonly flows: FlowRepository) {}
+  constructor(private readonly db: D1Database, private readonly flows: FlowRepository, private readonly previewAssets?: LinkPreviewAssetStore) {}
   async list(workspaceId: string) {
     return (await this.db.prepare(`SELECT t.id,t.name,t.created_at AS createdAt,o.display_name AS createdBy FROM team_templates t LEFT JOIN operators o ON o.id=t.created_by WHERE t.workspace_id=? AND t.retired_at IS NULL ORDER BY t.name,t.id`).bind(workspaceId).all<{id:string;name:string;createdAt:string;createdBy:string|null}>()).results
   }
@@ -48,6 +49,10 @@ export class TeamTemplates {
     const steps = await this.flows.getSteps(revision.id), choices = await this.flows.getChoices(steps.map(s => s.id)), rules = await this.flows.getBranchRules(revision.id)
     const id = ulid(), now = new Date().toISOString()
     const content = copyContent({steps,choices,rules,formSettings:formSettings(revision.formSettingsJson)},ulid(),now)
+    if (content.formSettings?.linkPreview?.image) {
+      if (!this.previewAssets) throw new ValidationError('Share image storage is not configured.')
+      content.formSettings = await this.previewAssets.copyOwned(input.workspaceId, flow.id, id, content.formSettings)
+    }
     const saved = await this.db.prepare(`INSERT INTO team_templates (id,workspace_id,name,structure_json,created_by,created_at) SELECT ?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM flows WHERE id=? AND workspace_id=? AND draft_version=?) RETURNING id`).bind(id,input.workspaceId,input.name,JSON.stringify(content),input.operatorId,now,flow.id,input.workspaceId,input.expectedVersion).first()
     if (!saved) throw new ValidationError('The flow changed. Reload it before saving a template.')
     return {id,name:input.name}
@@ -63,6 +68,10 @@ export class TeamTemplates {
     if (!title || title.length>200 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || slug.length>120) throw new ValidationError('Enter a flow name and a valid public link.')
     const id=ulid(), revisionId=ulid(), now=new Date().toISOString()
     const content=copyContent(JSON.parse(template.content) as Content,revisionId,now)
+    if (content.formSettings?.linkPreview?.image) {
+      if (!this.previewAssets) throw new ValidationError('Share image storage is not configured.')
+      content.formSettings = await this.previewAssets.copyOwned(input.workspaceId, input.templateId, id, content.formSettings)
+    }
     const created=await this.flows.createStructure({
       flow:{id,workspaceId:input.workspaceId,title,slug,status:'draft',draftVersion:0,lastActivityAt:now,createdAt:now,updatedAt:now},
       revision:{formSettingsJson:JSON.stringify(content.formSettings),id:revisionId,flowId:id,number:1,state:'draft',title,publishedAt:null,isCurrent:false,createdAt:now,updatedAt:now},

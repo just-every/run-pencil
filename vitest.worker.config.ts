@@ -31,6 +31,7 @@ export default defineConfig({
       main: './tests/helpers/mail-worker.ts',
       miniflare: {
         d1Databases: ['DB', 'IMPORT_SECOND'],
+        r2Buckets: ['FORM_ASSETS'],
         bindings: {
           // The loopback task receiver from the global setup; tests opt in to task delivery with their own bindings.
           TASK_RECEIVER_ORIGIN: inject('taskReceiverOrigin'),

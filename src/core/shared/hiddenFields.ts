@@ -4,21 +4,23 @@ import type { Calculation } from './calculations'
 import manifest from '../../../seed.json' with { type: 'json' }
 import { calendarDate } from './questionTypes'
 import type { FlowStep } from '../app/api'
+import { linkPreviewIssue, type LinkPreviewSettings } from './linkPreview'
 
 export type HiddenField = { id: string; name: string; type: 'text' | 'number' | 'email' | 'date' | 'boolean'; category: 'plain' | 'campaign' | 'identifying' | 'click_id' }
-export type FormSettings = { reviewBeforeSubmit?: boolean; access?: {id:string;mode:'password'|'email'|'signed'}; redirectOrigins?: string[]; calculations?: Calculation[]; hiddenFields: HiddenField[]; identityMode: 'anonymous' | 'identified' }
+export type FormSettings = { linkPreview?: LinkPreviewSettings; reviewBeforeSubmit?: boolean; access?: {id:string;mode:'password'|'email'|'signed'}; redirectOrigins?: string[]; calculations?: Calculation[]; hiddenFields: HiddenField[]; identityMode: 'anonymous' | 'identified' }
 export type ResponseContext = { presentedOrder?: import('./presentationOrder').PresentationOrder; verifiedEmail?:string; verifiedSubject?:string; calculations?: Record<string,number|string|null>; hidden: Record<string, string | number | boolean>; discarded: number; identityMode: 'anonymous' | 'identified' }
 const reserved = new Set(['collector','resume','source','challenge','kiosk','__proto__','constructor','prototype'])
 export const hiddenFieldLimits = manifest.limits.hiddenFields
 
 export function formSettings(json?: string | null): FormSettings {
   const value = JSON.parse(json ?? '{}') as Partial<FormSettings>
-  return { ...(value.reviewBeforeSubmit !== undefined ? {reviewBeforeSubmit:value.reviewBeforeSubmit} : {}), ...(value.access ? {access:value.access} : {}), ...(value.redirectOrigins ? {redirectOrigins:value.redirectOrigins} : {}), calculations:value.calculations ?? [], hiddenFields: value.hiddenFields ?? [], identityMode: value.identityMode ?? 'anonymous' }
+  return { ...(value.linkPreview !== undefined ? {linkPreview:value.linkPreview} : {}), ...(value.reviewBeforeSubmit !== undefined ? {reviewBeforeSubmit:value.reviewBeforeSubmit} : {}), ...(value.access ? {access:value.access} : {}), ...(value.redirectOrigins ? {redirectOrigins:value.redirectOrigins} : {}), calculations:value.calculations ?? [], hiddenFields: value.hiddenFields ?? [], identityMode: value.identityMode ?? 'anonymous' }
 }
 export function hiddenSettingsIssue(value: unknown): string | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return 'Choose valid hidden-field settings.'
-  if (Object.keys(value).some(key=>!['hiddenFields','identityMode','calculations','redirectOrigins','access','reviewBeforeSubmit'].includes(key))) return 'Unknown form setting.'
+  if (Object.keys(value).some(key=>!['hiddenFields','identityMode','calculations','redirectOrigins','access','reviewBeforeSubmit','linkPreview'].includes(key))) return 'Unknown form setting.'
   const settings = value as FormSettings
+  if (settings.linkPreview !== undefined) { const issue = linkPreviewIssue(settings.linkPreview); if (issue) return issue }
   if (settings.reviewBeforeSubmit !== undefined && typeof settings.reviewBeforeSubmit !== 'boolean') return 'Choose whether respondents review before submitting.'
   if(settings.access !== undefined && (!settings.access || Object.keys(settings.access).sort().join(',')!=='id,mode' || !/^[A-Za-z0-9_-]{1,256}$/.test(settings.access.id) || !['password','email','signed'].includes(settings.access.mode)))return 'Choose a valid access requirement.'
   if (settings.redirectOrigins !== undefined && (!Array.isArray(settings.redirectOrigins) || settings.redirectOrigins.length > 20 || settings.redirectOrigins.some(origin => typeof origin !== 'string' || !approvedOrigin(origin)) || new Set(settings.redirectOrigins).size !== settings.redirectOrigins.length)) return 'Approve at most 20 distinct HTTPS origins, without paths or credentials.'

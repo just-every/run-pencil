@@ -10,6 +10,7 @@ import { checkedLedger, keepsHistory, validateLedger } from './deployment-data-l
 import { classify, sanitize, rowsNeverTravel, refuseAuthorization } from './deployment-data-policy.mjs';
 import { refuseDevRows } from './deployment-data-dev.mjs';
 import { readArchiveJSON } from './deployment-data-json.mjs';
+import { objectBytes, objectReferences } from './deployment-data-objects.mjs';
 
 export function privateDatabase(path) {
   closeSync(openSync(path, 'wx', 0o600));
@@ -23,6 +24,7 @@ export function createStore(parent) {
   try {
     db = privateDatabase(join(directory, 'rows.sqlite'));
     db.exec('CREATE TABLE rows(table_number INTEGER NOT NULL, ordinal INTEGER NOT NULL, cells TEXT NOT NULL, sort_key BLOB NOT NULL, PRIMARY KEY(table_number,sort_key,ordinal)) WITHOUT ROWID');
+    db.exec('CREATE TABLE objects(key TEXT PRIMARY KEY, value TEXT NOT NULL) WITHOUT ROWID');
     const insert = db.prepare('INSERT INTO rows VALUES(?,?,?,?)');
     return {
       directory, db,
@@ -34,6 +36,14 @@ export function createStore(parent) {
         for (const row of db.prepare('SELECT cells FROM rows WHERE table_number=? ORDER BY sort_key,ordinal').iterate(table)) yield row.cells;
       },
       *rows(table) { for (const value of this.strings(table)) yield JSON.parse(value); },
+      addObject(object) {
+        const bytes = objectBytes(object);
+        if (!object.key.endsWith('/' + createHash('sha256').update(object.mime + '\0').update(bytes).digest('hex'))) throw failure('CONTENT_MISMATCH', 'Archive attachment checksum mismatch.');
+        // Canonical field order is shared by the Worker and local exporter.
+        const canonical = {bucket:object.bucket,key:object.key,mime:object.mime,customMetadata:{workspaceId:object.customMetadata.workspaceId,flowId:object.customMetadata.flowId,mime:object.mime},data:object.data};
+        db.prepare('INSERT INTO objects VALUES(?,?)').run(object.key, JSON.stringify(canonical));
+      },
+      *objects() { for (const row of db.prepare('SELECT value FROM objects ORDER BY key').iterate()) yield JSON.parse(row.value); },
       close() { db.close(); rmSync(directory, { recursive: true }); },
     };
   } catch (error) { db?.close(); rmSync(directory, { recursive: true }); throw error; }
@@ -48,7 +58,13 @@ export function payloadParts(store, emit) {
   const p = store.payload;
   emit(`{"format":${JSON.stringify(p.format)},"migrations":${JSON.stringify(p.migrations)},"schema":${JSON.stringify(p.schema)},"d1Migrations":${JSON.stringify(p.d1Migrations)},"tables":[`);
   p.tables.forEach((table, index) => { if (index) emit(','); tableParts(table, store.strings(index), emit); });
-  emit(']}');
+  emit(']');
+  if (p.objects !== undefined) {
+    emit(',"objects":['); let first = true;
+    for (const object of store.objects()) { if (!first) emit(','); emit(JSON.stringify(object)); first = false; }
+    emit(']');
+  }
+  emit('}');
 }
 export function storeDigest(store) {
   const digest = createHash('sha256'); payloadParts(store, part => digest.update(part)); return digest.digest('hex');
@@ -122,6 +138,7 @@ export function populateStore(database, store) {
 export function validateStore(store) {
   const path = join(store.directory, 'validated.sqlite'), database = privateDatabase(path);
   try {
+    requireStoreObjects(store);
     initialize(database, store.payload.d1Migrations); checkHeader(store, database);
     database.exec('PRAGMA foreign_keys=OFF; BEGIN IMMEDIATE');
     populateStore(database, store); database.exec('COMMIT');
@@ -138,16 +155,27 @@ export function readStore(path) {
     let limits;
     try { initialize(shape); limits = {migrations:metadata().length,columns:inventory(shape).map(table=>table.columns.length)}; } finally {shape.close();}
     let previousTable = -1, previousRow;
+    let previousObject;
     const parsed = archiveSchema.parse(readArchiveJSON(path, (table, ordinal, row) => {
       if (!Array.isArray(row)) throw failure('INVALID_ROW', 'Archive row must be an array.');
       const checked = row.map(value => cell.parse(value)), serialized = JSON.stringify(checked);
       if (previousTable === table && previousRow > serialized) throw failure('CONTENT_MISMATCH', 'Archive rows are not in canonical order.');
       previousTable = table; previousRow = serialized; store.add(table, ordinal, checked, serialized);
-    }, limits));
+    }, limits, object => {
+      if (previousObject !== undefined && previousObject >= object.key) throw failure('CONTENT_MISMATCH', 'Archive attachments are not in canonical order.');
+      store.addObject(object); previousObject = object.key;
+    }));
     store.payload = parsed.payload; store.sha256 = parsed.sha256;
     store.db.exec('COMMIT');
     if (storeDigest(store) !== store.sha256) throw failure('CONTENT_MISMATCH', 'Archive content digest mismatch.');
     store.validated = validateStore(store);
     return store;
   } catch (error) { store.close(); throw error; }
+}
+
+export function requireStoreObjects(store) {
+  for (const [index,table] of store.payload.tables.entries()) for (const reference of objectReferences(table, store.rows(index))) {
+    const found = store.db.prepare('SELECT value FROM objects WHERE key=?').get(reference.key);
+    if (!found || JSON.parse(found.value).mime !== reference.mime) throw failure('ATTACHMENT_REQUIRED', 'Backup is missing a referenced form image. Export with FORM_ASSETS before removing the deployment.');
+  }
 }

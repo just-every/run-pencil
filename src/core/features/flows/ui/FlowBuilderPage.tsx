@@ -44,6 +44,7 @@ export function FlowBuilderPage() {
   const router = useRouter()
   const { flowId } = useParams({ from: '/app/flows/$flowId/builder' })
   const [draft, setDraft] = useState<AuthoringDraft>()
+  const [shareDirty, setShareDirty] = useState(false)
   const [redirectDirty,setRedirectDirty]=useState(false)
   const [calculationDirty,setCalculationDirty]=useState(false)
   const [settingsDirty,setSettingsDirty]=useState(false)
@@ -110,7 +111,7 @@ export function FlowBuilderPage() {
 
   const stepDirty = !!selected && (prompt !== selected.prompt || helperText !== (selected.helperText ?? '') || required !== selected.required || nextStepId !== selected.nextStepId || questionType !== selected.questionType || settingsText !== (selected.questionSettings ? JSON.stringify(selected.questionSettings, null, 2) : '') || JSON.stringify(choices) !== JSON.stringify((draft?.choices ?? []).filter((choice) => choice.stepId === selected.id).map((choice) => ({ id: choice.id, value: choice.value, label: choice.label }))))
   const branchDirty = !!selected && JSON.stringify(rules.map((rule, position) => ({ ...rule, position }))) !== JSON.stringify(stepRules(draft!, selected.id))
-  const dirty = stepDirty || branchDirty || settingsDirty || calculationDirty || redirectDirty
+  const dirty = stepDirty || branchDirty || settingsDirty || calculationDirty || redirectDirty || shareDirty
   useProtectUnsavedChanges(dirty || !!deadline || !!target)
   const updateSetting = (name: string, value: string) => { const settings = settingsText ? JSON.parse(settingsText) : {}; if (value === '') delete settings[name]; else settings[name] = Number(value); setSettingsText(Object.keys(settings).length ? JSON.stringify(settings, null, 2) : '') }
   const settings = settingsText ? JSON.parse(settingsText) as Record<string, unknown> : {}
@@ -232,14 +233,14 @@ export function FlowBuilderPage() {
         </div>
         <div className="builder-actions">
           {draft.flow.status === 'open' || draft.flow.status === 'closed' ? <><a className="secondary-button focus-ring" href={`/f/${draft.flow.slug}`} target="_blank" rel="noopener">View public flow</a><Link className="secondary-button focus-ring" to="/app/flows/$flowId/results" params={{ flowId }}>Results</Link></> : null}
-          <button className="secondary-button focus-ring flow-share-toggle" aria-expanded={sharing} aria-controls="flow-share-panel" onClick={() => setSharing(current => !current)} type="button">{sharing ? 'Edit steps' : 'Share'}</button>
+          <button className="secondary-button focus-ring flow-share-toggle" disabled={saving || shareDirty} aria-expanded={sharing} aria-controls="flow-share-panel" onClick={() => setSharing(current => !current)} type="button">{sharing ? 'Edit steps' : 'Share'}</button>
           <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={preview} type="button"><Eye aria-hidden="true" size={16} /> Preview draft</button>
           <button className="primary-button focus-ring" disabled={saving || dirty || !timeZone || draft.flow.status === 'archived'} onClick={publish} type="button"><Send aria-hidden="true" size={16} /> Publish</button>
         </div>
       </header>
       {notice && (notice.tone !== 'success' || !dirty) ? <p className="status-note" data-tone={notice.tone} role={notice.tone === 'error' ? 'alert' : 'status'}>{notice.message}</p> : null}
-      {sharing ? <><FlowSharePanel key={draft.flow.id} flow={draft.flow} /><details className="retention-settings"><summary className="focus-ring">Retention and legal hold</summary><RetentionPanel key={`retention-${draft.flow.id}`} flowId={flowId} /></details><AccessSettings key={`access-${draft.flow.id}`} draft={draft} disabled={saving||stepDirty||branchDirty||settingsDirty||calculationDirty||redirectDirty||draft.flow.status==='archived'} onSaved={load}/>{['open', 'closed'].includes(draft.flow.status) ? <>{timeZone ? <details className="named-collectors-disclosure"><summary>Manage named collectors</summary><CollectorsPanel flowId={draft.flow.id} timeZone={timeZone} /></details> : null}<DistributionPanel flowId={draft.flow.id} /></> : null}</> : null}
-      {dirty ? <p className="status-note" role="status">{calculationDirty ? 'Unsaved calculation changes.' : settingsDirty ? 'Unsaved hidden-field changes.' : stepDirty ? 'Unsaved step changes.' : 'Unsaved answer-path changes.'} Save or discard before switching steps, changing structure, previewing or publishing. <button className="quiet-button" disabled={saving} type="button" onClick={() => void load()}>Discard changes</button></p> : null}
+      {sharing ? <><FlowSharePanel key={`share-${draftRead}`} draft={draft} disabled={saving || stepDirty || branchDirty || settingsDirty || calculationDirty || redirectDirty || draft.flow.status === 'archived'} onDirtyChange={setShareDirty} onSave={async settings => { setSaving(true); try { const result = await api.saveFormSettings(flowId, settings, draft.flow.draftVersion); if (result.kind === 'conflict') throw new Error('Another operator saved first. Reload before saving the link preview.'); await load(); setNotice({ tone: 'success', message: 'Link preview saved to the draft. Publish to apply it.' }) } finally { setSaving(false) } }} /><details className="retention-settings"><summary className="focus-ring">Retention and legal hold</summary><RetentionPanel key={`retention-${draft.flow.id}`} flowId={flowId} /></details><AccessSettings key={`access-${draft.flow.id}`} draft={draft} disabled={saving||stepDirty||branchDirty||settingsDirty||calculationDirty||redirectDirty||shareDirty||draft.flow.status==='archived'} onSaved={load}/>{['open', 'closed'].includes(draft.flow.status) ? <>{timeZone ? <details className="named-collectors-disclosure"><summary>Manage named collectors</summary><CollectorsPanel flowId={draft.flow.id} timeZone={timeZone} /></details> : null}<DistributionPanel flowId={draft.flow.id} /></> : null}</> : null}
+      {dirty ? <p className="status-note" role="status">{shareDirty ? 'Unsaved link-preview changes.' : calculationDirty ? 'Unsaved calculation changes.' : settingsDirty ? 'Unsaved hidden-field changes.' : stepDirty ? 'Unsaved step changes.' : 'Unsaved answer-path changes.'} Save or discard before switching steps, changing structure, previewing or publishing. <button className="quiet-button" disabled={saving} type="button" onClick={() => void load()}>Discard changes</button></p> : null}
 
       {!timeZone ? <p className="status-note" data-tone={timeZoneError ? 'error' : undefined} role={timeZoneError ? 'alert' : 'status'}>{timeZoneError ?? 'Loading workspace time zone…'}{timeZoneError ? <button className="quiet-button focus-ring" type="button" onClick={() => void loadTimeZone()}>Retry workspace settings</button> : null}</p> : null}
       {previewing ? <DraftPreview key={draft.flow.draftVersion} draft={draft} onClose={() => setPreviewing(false)} reloadDisabled={saving} onReload={() => {

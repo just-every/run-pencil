@@ -1,3 +1,5 @@
+import { decodeLogo } from '../brand'
+import type { LinkPreviewUpload } from '../../shared/linkPreview'
 import { choiceLimit, structureLimitIssue } from '../../shared/formLimits'
 import { Buffer } from 'node:buffer'
 import { canonicalJson, sha256, type SourceBundle, type TargetEffect, type Json, type SourceRecord } from '../../../base/import-kit/src/d1/index'
@@ -88,6 +90,12 @@ export function prepareImport(input: ImportInput, workspaceId: string, hashPaylo
   form.report.push({ location: '/responses/identity', label: 'Response identity', sourceType: 'CSV rows', state: 'changed', change: 'Anonymous imported responses', reason: 'File digest and row position recognize exact repeat files. Different exports are not deduplicated across files; no contacts, sessions or effects are created.' })
   const source: SourceBundle = { records: [], artifacts: [{ name: 'form.json', sha256: formHash, size: definitionBytes, original: { status: 'unavailable', reason: 'not-supplied' } }, ...(csvBytes ? [{ name: 'responses.csv', sha256: csvHash, size: csvBytes, original: { status: 'unavailable' as const, reason: 'not-supplied' as const } }] : [])], diagnostics: [] }
   const encodeValue = nativeValueStrings(), consentSteps = new Set(form.steps.filter(step => step.questionType === 'consent').map(step => step.id))
+  const previewUpload = form.settings?.linkPreview?.image && 'base64' in form.settings.linkPreview.image ? form.settings.linkPreview.image as LinkPreviewUpload : undefined
+  if (previewUpload) {
+    const bytes=decodeLogo(previewUpload.base64), prefix=new TextEncoder().encode(previewUpload.mime+'\0'), fingerprint=new Uint8Array(prefix.length+bytes.length)
+    fingerprint.set(prefix);fingerprint.set(bytes,prefix.length)
+    form.settings={...form.settings!,linkPreview:{...form.settings!.linkPreview,image:{mime:previewUpload.mime,alt:previewUpload.alt,key:`previews/${workspaceId}/${flowId}/${sha256(fingerprint)}`}}}
+  }
   const formTarget = formEffect(form, flowId, workspaceId, digest, plannedAt)
   const effectFor = (r: Pick<SourceRecord, 'kind' | 'payload'>): TargetEffect[] => r.kind === 'form' ? [formTarget] : r.kind === 'response' ? [responseEffect(r.payload as unknown as ParsedResponse, flowId, workspaceId, encodeValue, consentSteps)] : []
   // Native response tables are expanded only for the record currently planned.
@@ -97,5 +105,5 @@ export function prepareImport(input: ImportInput, workspaceId: string, hashPaylo
   // Invalid rows retain locations and diagnostics, never unreviewed or skipped values.
   const { rejected, rowErrors } = errors.finish()
   source.records = sourceRecords(formRecord,responses,rejected,csvHash,hashPayload)
-  return { ...(googleParsed ? { sourceName: 'google-forms' as const, google: googleParsed.review } : {}), plannedAt, form, flowId, namespace, digest, source, effects, headers, columns, forbiddenColumns, rowErrors, responseCount: responses.length, mapping: { version: mappingVersion, map: (r: SourceRecord) => ({ effects: effectFor(r), unmapped: r.kind === 'form' ? form.report.filter(i => i.state !== 'imported').map(i => ({ field: i.location, reason: i.reason })) : [], ...(r.kind === 'rejected-row' ? { rejection: 'CSV row is invalid; inspect every listed row error.' } : {}) }) } }
+  return { ...(googleParsed ? { sourceName: 'google-forms' as const, google: googleParsed.review } : {}), plannedAt, form, previewUpload, flowId, namespace, digest, source, effects, headers, columns, forbiddenColumns, rowErrors, responseCount: responses.length, mapping: { version: mappingVersion, map: (r: SourceRecord) => ({ effects: effectFor(r), unmapped: r.kind === 'form' ? form.report.filter(i => i.state !== 'imported').map(i => ({ field: i.location, reason: i.reason })) : [], ...(r.kind === 'rejected-row' ? { rejection: 'CSV row is invalid; inspect every listed row error.' } : {}) }) } }
 }

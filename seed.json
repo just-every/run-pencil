@@ -320,10 +320,11 @@
     {
       "id": "typeform",
       "required": false,
-      "why": "Fetching a form definition at the owner’s request needs Typeform’s forms.read API. The personal token is used for this request only and is never stored.",
+      "why": "Fetching a form definition and its share image at the owner’s request needs Typeform’s forms.read API and images.typeform.com image endpoint. Only the API receives the personal token; the image request has no authorization or cookies. Redirects are refused and the token is never stored.",
       "data": [
         "Typeform form identifier",
-        "owner-entered Typeform personal access token (Bearer authorization only)"
+        "owner-entered Typeform personal access token (Bearer authorization to api.typeform.com only)",
+        "source share-image identifier (HTTPS images.typeform.com/images/ path only)"
       ],
       "adapters": [
         "typeform.forms.read.v1"
