@@ -1,5 +1,5 @@
 import { jpegStructure } from './jpeg'
-import manifest from '../../../../seed.json'
+import manifest from '../../../../seed.json' with { type: 'json' }
 import { ValidationError } from '../../shared/errors'
 
 export const logoByteLimit = manifest.limits.brand.logoBytes

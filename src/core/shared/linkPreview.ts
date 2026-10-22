@@ -63,8 +63,7 @@ export function resolveLinkPreview(settings: FormSettings, title: string, steps:
 }
 
 /** Missing snapshots belong only to publications made before link previews. */
-export function readPublishedPreview(policySnapshotJson: string | null): PublishedLinkPreview | undefined {
-  if (policySnapshotJson === null) return undefined
-  const snapshot = JSON.parse(policySnapshotJson) as { linkPreview?: PublishedLinkPreview }
-  return snapshot.linkPreview
+export function readPublishedPreview(policySnapshotJson: string | null, legacyPreviewJson?: string | null): PublishedLinkPreview | undefined {
+  const snapshot = JSON.parse(policySnapshotJson ?? '{}') as { linkPreview?: PublishedLinkPreview }
+  return snapshot.linkPreview ?? (legacyPreviewJson ? JSON.parse(legacyPreviewJson) as PublishedLinkPreview : undefined)
 }

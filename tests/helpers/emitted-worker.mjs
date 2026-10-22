@@ -34,7 +34,7 @@ export async function emittedWorker(bindings, outbound) {
       compatibilityFlags: config.compatibility_flags,
       manifest: { mainModule: 'mail-observer.mjs', modulesRoot: root, modules },
       env: { ...Object.fromEntries(Object.entries(bindings).map(([name, value]) => [name, { type: 'text', value }])),
-        DB: { type: 'd1', id: 'pencil-managed-mail' }, FORM_ASSETS: { type: 'r2', id: 'pencil-managed-form-assets' }, ASSETS: { type: 'assets' } },
+        DB: { type: 'd1', id: 'pencil-managed-mail' }, FORM_ASSETS: { type: 'r2', name: 'pencil-managed-form-assets' }, ASSETS: { type: 'assets' } },
       assets: { directory: resolve('dist/client'), runWorkerFirst: true, hasUserWorker: true },
     },
     dev: { outboundService: { type: 'fetcher', handler: outbound } },

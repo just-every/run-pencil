@@ -7,20 +7,21 @@ import { NotFoundError } from '../../shared/errors'
 export type DocumentPreview = {
   title: string; description: string; imageUrl: string; imageAlt: string; canonicalUrl: string; indexable: boolean
 }
-type Revision = { id: string; title: string; slug: string; status: string; policy: string | null; settings: string | null }
+type Revision = { id: string; title: string; slug: string; status: string; policy: string | null; legacy: string | null; settings: string | null }
 
 /** Reads only deliberately public revision metadata, never response/session/invitation data. */
 export class LinkPreviews {
   constructor(private readonly db: D1Database, private readonly origin: string, private readonly assets: LinkPreviewAssets) {}
   private async revision(value: string, byId = false) {
-    return this.db.prepare(`SELECT r.id,r.title,f.slug,f.status,r.policy_snapshot_json AS policy,r.form_settings_json AS settings
+    return this.db.prepare(`SELECT r.id,r.title,f.slug,f.status,r.policy_snapshot_json AS policy,p.preview_json AS legacy,r.form_settings_json AS settings
       FROM flow_revisions r JOIN flows f ON f.id=r.flow_id
+      LEFT JOIN revision_link_previews p ON p.revision_id=r.id
       WHERE ${byId ? 'r.id=?' : 'f.slug=? AND r.is_current=1'} AND r.state='published' AND f.status IN ('open','closed') LIMIT 1`).bind(value).first<Revision>()
   }
   private async metadata(row: Revision): Promise<PublishedLinkPreview> {
-    const snapshot = readPublishedPreview(row.policy)
+    const snapshot = readPublishedPreview(row.policy, row.legacy)
     if (snapshot) return snapshot
-    // Pre-preview publications have no image custody. Their own saved title/welcome are the defaults.
+    // Revisions without either snapshot use only their own saved title and welcome.
     const steps = await this.db.prepare("SELECT kind,prompt,helper_text AS helperText FROM flow_steps WHERE revision_id=? AND kind='welcome' ORDER BY position LIMIT 1").bind(row.id).all<{ kind: string; prompt: string; helperText: string | null }>()
     return resolveLinkPreview(formSettings(row.settings), row.title, steps.results)
   }

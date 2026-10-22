@@ -53,6 +53,9 @@ jobs:
       - name: Build the production Worker for native Managed mail proof
         if: matrix.lane == 'unit'
         run: pnpm build:delivery
+      - name: Prove complete archive and attachment custody
+        if: matrix.lane == 'unit'
+        run: node --test --test-concurrency=2 scripts/deployment-data.check.mjs
       - name: Prove all released migration cases
         if: matrix.lane == 'worker-1'
         run: pnpm verify:migrations

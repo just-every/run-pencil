@@ -1,12 +1,12 @@
--- Freeze the defaults that pre-preview published revisions would serve on
--- upgrade. Later business-logo edits must not rewrite a published preview.
--- Only operator-authored revision content is read; no respondent data enters
--- this snapshot. The preview renderer removes recall tokens without resolving
--- them, just as it does for newly published preview defaults.
-UPDATE flow_revisions
-SET policy_snapshot_json = json_set(
-  COALESCE(policy_snapshot_json, '{}'),
-  '$.linkPreview', json_object(
+-- Freeze upgrade-time preview defaults separately. Released revision rows,
+-- including their serialized admission policy, remain byte-identical.
+CREATE TABLE IF NOT EXISTS revision_link_previews (
+  revision_id TEXT PRIMARY KEY REFERENCES flow_revisions(id) ON DELETE CASCADE,
+  preview_json TEXT NOT NULL CHECK (json_valid(preview_json))
+);
+
+INSERT OR IGNORE INTO revision_link_previews (revision_id, preview_json)
+SELECT id, json_object(
     'title', title,
     'description', COALESCE((
       SELECT trim(prompt || CASE WHEN helper_text IS NOT NULL AND helper_text <> '' THEN ' ' || helper_text ELSE '' END)
@@ -30,7 +30,7 @@ SET policy_snapshot_json = json_set(
     'allowIndexing', json('false'),
     'background', '#fbfaf6'
   )
-)
+FROM flow_revisions
 WHERE state = 'published'
   -- Imported historical revisions remain private until the operator publishes
   -- the form; leave their reviewed import/undo custody byte-identical.

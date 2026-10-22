@@ -36,6 +36,7 @@ function fixture() {
   insert('flows', { id: 'flow', workspace_id: 'workspace', slug: 'recovery-review', title: 'Synthetic recovery', status: 'closed', draft_version: 3, last_activity_at: stamp, created_at: stamp, updated_at: stamp });
   for (const [id, number, current] of [['old-revision', 1, 0], ['revision', 2, 1]]) {
     insert('flow_revisions', { id, flow_id: 'flow', number, state: 'published', title: `Revision ${number}`, published_at: stamp, created_at: stamp, updated_at: stamp, is_current: current, admission_closed_at: stamp, admission_close_reason: 'manual', policy_snapshot_json: '{"rule":"synthetic"}' });
+    insert('revision_link_previews', { revision_id: id, preview_json: JSON.stringify({title: `Revision ${number}`, description: '', image: null, allowIndexing: false, background: '#fbfaf6'}) });
     insert('flow_steps', { id: `${id}-question`, revision_id: id, position: 0, kind: 'question', question_type: 'long_text', prompt: `Question ${number}`, required: 1, stable_id: 'stable-question', created_at: stamp, updated_at: stamp });
     insert('flow_steps', { id: `${id}-end`, revision_id: id, position: 1, kind: 'completion', prompt: 'Recorded', required: 0, stable_id: 'stable-end', created_at: stamp, updated_at: stamp });
   }

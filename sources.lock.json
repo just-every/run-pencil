@@ -809,7 +809,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "b871dc2b412c2c95dca3fa1c56610a9fefe156ff296ec170f0289fe012971a43",
+      "sha256": "2aa49455ceb5fa4ddf95606cd5c33e368af1556595806a3b3b00d3b1176837fd",
       "executable": false
     },
     ".gitignore": {
@@ -1325,7 +1325,7 @@
       "executable": false
     },
     "migrations/core/0057_link_preview_snapshots.sql": {
-      "sha256": "65732f1d6d4aae579a43d32aab1188c357c347a56077dd9e6be434cd09d95bc7",
+      "sha256": "a92aa808ead722d536f829edf204ca4d7d4807b11c7758edcf3d5752f6b72c60",
       "executable": false
     },
     "migrations/released-rewrites.json": {
@@ -1713,7 +1713,7 @@
       "executable": false
     },
     "scripts/deployment-data-policy.mjs": {
-      "sha256": "05ebd5836675aad4945b452439ea67fad1df514915aa3dbbd192fedbd54da269",
+      "sha256": "67604bd9f7b5421f43ac49e1a75fdf5b9cbbe59397203ff908e0ea9e2dfb555c",
       "executable": false
     },
     "scripts/deployment-data-provider.mjs": {
@@ -1761,7 +1761,7 @@
       "executable": false
     },
     "scripts/deployment-data.check.mjs": {
-      "sha256": "1abde7e70390271a9efb9487fb03672d81cd9bb29403e04d5e6f7af0fdf88904",
+      "sha256": "d729ac40bfd74d0ebaef7d723adfb6dba6595de25bbab4e757eca8a20a57cc25",
       "executable": false
     },
     "scripts/deployment-data.mjs": {
@@ -1953,7 +1953,7 @@
       "executable": false
     },
     "scripts/verify-contract-coverage.mjs": {
-      "sha256": "39dbfc8f757dace8fb4aec9a58d0d422ce9be95322a9c953bbcb6f6f27dea84a",
+      "sha256": "2237b91c18313f6116c464fee00a00ae9ce6b84df3a19a1c2766070403230549",
       "executable": false
     },
     "scripts/verify-hosted-output.mjs": {
@@ -4205,7 +4205,7 @@
       "executable": false
     },
     "src/core/features/brand/logo.ts": {
-      "sha256": "ec6dfc668dd8965c2bf5828b3dda503eb82243983a9941943cc9202589151138",
+      "sha256": "7e61f6454e0449313daaede6661fca55c1bfc8be04d8eb405d655a6e0321eedf",
       "executable": false
     },
     "src/core/features/brand/repository.ts": {
@@ -5305,7 +5305,7 @@
       "executable": false
     },
     "src/core/features/link-preview/service.ts": {
-      "sha256": "ac6d3d4ca8c1bfac577e09bba63d57d629818e0c7b05d9a0ddb7b6a3c3d51d71",
+      "sha256": "f2b52c8ee448e5377d01922ff71caf0e191c8f04d36ab25ef67f6c403a40a065",
       "executable": false
     },
     "src/core/features/link-preview/useCompletionPrivacy.ts": {
@@ -6249,7 +6249,7 @@
       "executable": false
     },
     "src/core/shared/linkPreview.ts": {
-      "sha256": "de29fb0255a527b2f796201565a29ba1d89c7881341b28d87d61c0346bf5c6bb",
+      "sha256": "c22a5fb7732bf180dccdb98f157bc4ce746804decf13dad7c33361b24470fb3d",
       "executable": false
     },
     "src/core/shared/otherChoices.ts": {
@@ -7081,7 +7081,7 @@
       "executable": false
     },
     "tests/helpers/emitted-worker.mjs": {
-      "sha256": "fbd426a74dc8a25cd152638304fd3e656e3fa81321850ebd743dea48b5ae1f94",
+      "sha256": "7071a9ec018af7bf225e9db2d7a06944d94e1d6d3f1e4c3d674bba40243050af",
       "executable": false
     },
     "tests/helpers/legacy-auth-repository.ts": {
@@ -7277,7 +7277,7 @@
       "executable": false
     },
     "tests/runtime/brand.worker.test.ts": {
-      "sha256": "c50b0fdf151672a0d4213349cb5b6de971bd731ae89989eb3f3eb60c4e83d97c",
+      "sha256": "c9102894a86933524b189467f3d3688645d35f72d73a19033c53c40c017a79fd",
       "executable": false
     },
     "tests/runtime/calculations.worker.test.ts": {
@@ -7401,7 +7401,7 @@
       "executable": false
     },
     "tests/runtime/link-preview-fixture.ts": {
-      "sha256": "94b1a1b4d440d94a3464900e795958192d40d558c715f86af2fa1e9cfd79664e",
+      "sha256": "ad7cb2733db8c004e0683f27f33b4a014bc4aee6d41049d068b21b90332f6935",
       "executable": false
     },
     "tests/runtime/load-time-fixture.ts": {
@@ -7461,7 +7461,7 @@
       "executable": false
     },
     "tests/runtime/policy-snapshot.worker.test.ts": {
-      "sha256": "5e44bca5891edfa265ae7df91b826abef1e7316c925509f04a6c92e1fb590d90",
+      "sha256": "7f2dd34912fda4cfba1c81edd634a135e8d09fb37f6f2defd51c572045788c31",
       "executable": false
     },
     "tests/runtime/private-auth-freshness.worker.test.ts": {

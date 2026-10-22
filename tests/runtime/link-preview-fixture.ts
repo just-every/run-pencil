@@ -24,8 +24,8 @@ export async function previewFixture() {
   expect((await save(settings)).status).toBe(200)
   const publish = async () => f.call(base + '/publish', { expectedVersion: (await read()).flow.draftVersion })
   const snapshot = async (revisionId: string) => {
-    const row = await env.DB.prepare('SELECT policy_snapshot_json AS policy FROM flow_revisions WHERE id=?').bind(revisionId).first<{ policy: string }>()
-    return readPublishedPreview(row!.policy)!
+    const row = await env.DB.prepare('SELECT r.policy_snapshot_json AS policy,p.preview_json AS legacy FROM flow_revisions r LEFT JOIN revision_link_previews p ON p.revision_id=r.id WHERE r.id=?').bind(revisionId).first<{ policy: string; legacy: string | null }>()
+    return readPublishedPreview(row!.policy, row!.legacy)!
   }
   const publicImage = async (revisionId: string, base64: string) => {
     const response = await f.call(`/api/public/previews/${revisionId}/image`, undefined, { auth: false })

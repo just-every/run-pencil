@@ -56,6 +56,12 @@ for (const run of runtime) {
 }
 for (const passed of browserRuntime?.passed ?? []) passedTests.add(passed)
 
+// Print only authored identities, never assertion values or respondent data.
+for (const passed of [...passedTests].sort()) {
+  const [file, title] = passed.split('\u0000')
+  console.log(`Passing test: ${file.slice(root.length + 1)} — ${title}`)
+}
+
 const missing = []
 const todo = []
 const partial = []
