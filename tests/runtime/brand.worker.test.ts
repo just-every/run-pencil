@@ -166,3 +166,25 @@ contract('DIST-020', 'publication rejects indexing on restricted and identified 
   expect((await identified.save({ ...identified.settings, identityMode: 'identified', linkPreview: { allowIndexing: false } })).status).toBe(200)
   expect((await identified.publish()).status).toBe(201)
 })
+
+contract('DIST-020', 'upgrading existing publications freezes their logo preview without changing admission policy', async () => {
+  const f = await previewFixture()
+  await env.DB.prepare('UPDATE workspaces SET name=?,brand_configured=1,brand_logo_base64=?,brand_logo_mime=? WHERE id=?').bind('Harbour Studio',previewImage.base64,previewImage.mime,f.workspace).run()
+  const publication = await f.publish()
+  expect(publication.status).toBe(201)
+  const {revision} = await publication.json() as {revision:{id:string}}
+  await env.DB.prepare("UPDATE flow_revisions SET policy_snapshot_json=json_remove(policy_snapshot_json,'$.linkPreview') WHERE id=?").bind(revision.id).run()
+  const policyBefore = await env.DB.prepare('SELECT policy_snapshot_json AS policy FROM flow_revisions WHERE id=?').bind(revision.id).first<{policy:string}>()
+  const migration = __PENCIL_CORE_MIGRATIONS__.find(item => item.name.includes('link_preview_snapshots'))!
+  await env.DB.batch(migration.queries.map(query => env.DB.prepare(query)))
+  const frozen = await f.snapshot(revision.id)
+  expect(frozen).toMatchObject({title:'Customer feedback',allowIndexing:false,image:{base64:previewImage.base64,mime:previewImage.mime,alt:'Harbour Studio'}})
+  const policyAfter = await env.DB.prepare('SELECT policy_snapshot_json AS policy FROM flow_revisions WHERE id=?').bind(revision.id).first<{policy:string}>()
+  const {linkPreview: _preview,...unchanged} = JSON.parse(policyAfter!.policy)
+  expect(unchanged).toEqual(JSON.parse(policyBefore!.policy))
+  await f.publicImage(revision.id,previewImage.base64)
+  expect((await f.call('/api/app/brand/logo',undefined,{method:'DELETE'})).status).toBe(200)
+  await env.DB.batch(migration.queries.map(query => env.DB.prepare(query)))
+  expect(await f.snapshot(revision.id)).toEqual(frozen)
+  await f.publicImage(revision.id,previewImage.base64)
+})

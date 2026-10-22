@@ -19,6 +19,7 @@ The archive contains these product records, with the exclusions below:
 - Analysis runs, evidence links, draft rewrite sources and decisions, and AI usage.
 - Actions, measurements, external task deliveries and their attempts.
 - Import results, custody and erasure history.
+- Custom share images, including their immutable keys, bytes, image types and ownership metadata.
 
 Some things are left out or changed on purpose:
 
@@ -89,6 +90,8 @@ node scripts/deployment-data-restore-test.mjs --input exports/pencil-backup.rer 
 ```
 
 This creates a new local database, restores all records, checks database constraints and exports it again. Success prints `"ok":true`, `"restored":true` and identical `sha256` and `reexportSha256` values. It never sends mail. It refuses an existing output; use a new filename for each test.
+
+If the archive contains custom share images, the command also creates `exports/restore-test.sqlite.objects/` with the restored image files and metadata. It re-reads these files when checking the checksum. Keep that directory beside the SQLite file when inspecting the restoration.
 
 This test accepts hosted archives without changing their database history. Its SQLite output is for the test; it does not start a local Pencil server or replace your hosted deployment. The browser’s **Test restoration** performs the same kind of real restoration and comparison in a disposable browser database.
 

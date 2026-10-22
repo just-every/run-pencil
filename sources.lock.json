@@ -1013,7 +1013,7 @@
       "executable": false
     },
     "docs/guide/backup.md": {
-      "sha256": "a61e2390d3bd5317af740348d1a0625c801a27e05e512dc4cd204f93d24af0cb",
+      "sha256": "3041cffdb10e0d9c9cf64d9b352ffd79a84ca6291f69cf54c19808a8f7da5022",
       "executable": false
     },
     "docs/guide/branching.md": {
@@ -1057,7 +1057,7 @@
       "executable": false
     },
     "docs/HOSTING.md": {
-      "sha256": "4abe24d38fb3596d54f109283f579e52d245bf39e0b3a50fe153ea6d7dba0cef",
+      "sha256": "d40e0d31c9f669436b35ecc3b26b48be26e9e6d7bd949f83457ac9796f71bd75",
       "executable": false
     },
     "docs/IMMUTABLE-MIGRATIONS.json": {
@@ -1714,6 +1714,10 @@
     },
     "scripts/deployment-data-provider.mjs": {
       "sha256": "7a6cef034a5de3a1a9d02a8320f67e1f2b566f214a1c429691bc9909d69f1d1e",
+      "executable": false
+    },
+    "scripts/deployment-data-remote-objects.mjs": {
+      "sha256": "89d1ee3d28ae3e303a67013d60dab17de781863d185528b8fcd699be1621217d",
       "executable": false
     },
     "scripts/deployment-data-remote.mjs": {
@@ -6545,7 +6549,7 @@
       "executable": false
     },
     "src/server.ts": {
-      "sha256": "cdecd2c004710b32f0baeabfbab65e4aa4670e26a17075b55e4927c6409d42b4",
+      "sha256": "775fc79538316f9ab2fb2ffd66bd64b7d0e81f41df66b7f367010d5326d1a151",
       "executable": false
     },
     "src/site/client-plugin.ts": {
@@ -6645,7 +6649,7 @@
       "executable": false
     },
     "tests/e2e/authoring.spec.ts": {
-      "sha256": "fba11b2886d71ec9d4ab95c1bd55a706d437ff48ee26e2e7b88a5e33bd97351f",
+      "sha256": "0556208db30c03b47ddb45d07f8e495cac0ca96a134cdc5f20df21d95c1a30ff",
       "executable": false
     },
     "tests/e2e/brand-helpers.ts": {
@@ -7265,7 +7269,7 @@
       "executable": false
     },
     "tests/runtime/brand.worker.test.ts": {
-      "sha256": "ced69a92efe21c76e5c81dc050e05a1f88e986cc693a95164c74e4149c8d6791",
+      "sha256": "e5381b0c7ef5f82dccbfe31044435b018501ba729761c4625021b02a00571948",
       "executable": false
     },
     "tests/runtime/calculations.worker.test.ts": {
@@ -7389,7 +7393,7 @@
       "executable": false
     },
     "tests/runtime/link-preview-fixture.ts": {
-      "sha256": "5a7a364ccaf793997d85a3634f68480155bd0cfc528247e5b3eb616238508a2b",
+      "sha256": "94b1a1b4d440d94a3464900e795958192d40d558c715f86af2fa1e9cfd79664e",
       "executable": false
     },
     "tests/runtime/load-time-fixture.ts": {

@@ -29,7 +29,7 @@ export async function previewFixture() {
   }
   const publicImage = async (revisionId: string, base64: string) => {
     const response = await f.call(`/api/public/previews/${revisionId}/image`, undefined, { auth: false })
-    expect(response.status, await response.clone().text()).toBe(200)
+    expect(response.status, response.ok ? undefined : await response.clone().text()).toBe(200)
     expect(response.headers.get('content-type')).toBe('image/png')
     expect(response.headers.get('x-content-type-options')).toBe('nosniff')
     expect(new Uint8Array(await response.arrayBuffer())).toEqual(decodeLogo(base64))

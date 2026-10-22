@@ -19,5 +19,8 @@ export async function openRemoteObjects(env = process.env) {
     await writeFile(configPath,JSON.stringify({name:'pencil-recovery-assets',account_id:env.CLOUDFLARE_ACCOUNT_ID,compatibility_date:'2026-09-08',r2_buckets:[{binding:'FORM_ASSETS',bucket_name:bucket,remote:true}]}),{mode:0o600});
     proxy = await getPlatformProxy({configPath,envFiles:[],persist:false,remoteBindings:true});
     return {bucket:proxy.env.FORM_ASSETS,async close(){try{await proxy.dispose();}finally{await rm(directory,{recursive:true});}}};
-  } catch (error) { await proxy?.dispose(); await rm(directory,{recursive:true}); throw error; }
+  } catch (error) {
+    try { await proxy?.dispose(); } finally { await rm(directory,{recursive:true}); }
+    throw error;
+  }
 }

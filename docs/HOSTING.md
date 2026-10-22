@@ -30,11 +30,15 @@ The matching-version command below validates all database constraints, creates a
 node scripts/deployment-data-restore-test.mjs --input exports/pencil-backup.rer --output exports/restore-test.sqlite
 ```
 
+Custom share images travel in the archive with their immutable keys, bytes, MIME types and ownership metadata. The browser restoration test copies them into a separate temporary attachment store and includes them in its re-export checksum. The command above keeps restored images and metadata in the private `exports/restore-test.sqlite.objects/` directory beside the SQLite file; retain both when inspecting that test restoration.
+
 This is a restore test, not an active hosted replacement and not a local `rer dev` installation. The restored SQLite file intentionally retains the original controller. Do not substitute ledgers to make `rer dev` accept it. An optional `--journal exports/later.rer` refuses a backup predating a later erasure.
 
 ## Large-workspace export
 
 Browser export uses a conservative 8 MiB JSON size budget and a row-count guard. The archive is never truncated. Oversized workspaces require the streaming maintainer CLI. Set `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_DATABASE_ID` (the actual D1 ID in the private deployment receipt), and `CLOUDFLARE_API_TOKEN` in the private environment. Use the source version that matches the live database. Stop routes, schedules and all other writers while preserving D1, wait for in-flight work, then run:
+
+Also set `CLOUDFLARE_FORM_ASSETS_BUCKET` to the existing R2 bucket attached as `FORM_ASSETS`, using the actual name from the deployment receipt. Keep `CLOUDFLARE_API_TOKEN` in the command environment: the R2 transfer uses that same authorization through Wrangler's temporary remote binding proxy, which preserves custom metadata. It closes the proxy on completion or failure and does not deploy a persistent Worker. Missing images or missing bucket configuration cause refusal; no incomplete archive is published.
 
 ```sh
 node scripts/deployment-data-cli.mjs export --output exports/deployed.rer --writers-stopped
@@ -47,7 +51,7 @@ Unlike the page’s single-transaction export, the streaming CLI uses paginated 
 
 The current product does not provision or attach a restored hosted target from the Backup page. A normal owner-claimed `rer deploy` is not an empty restore target. Do not delete owner records to bypass the empty-target guard. Keep the original deployment until an installation-specific recovery procedure has provisioned a matching-source migration-only D1 database, restored it, re-exported matching contents and attached it through the supported deployment workflow. The page’s real browser restore test and the optional local restore-test command give concrete archive acceptance checks; they do not activate a hosted replacement.
 
-For an already provisioned, stopped, empty D1 target with the same migration controller, point `CLOUDFLARE_DATABASE_ID` at that target and run:
+For an already provisioned, stopped, empty D1 target with the same migration controller, point `CLOUDFLARE_DATABASE_ID` at that target and `CLOUDFLARE_FORM_ASSETS_BUCKET` at its empty destination R2 bucket, then run:
 
 ```sh
 node scripts/deployment-data-cli.mjs import --input exports/deployed.rer --yes --writers-stopped
@@ -55,6 +59,8 @@ node scripts/deployment-data-cli.mjs export --output exports/deployed-restored.r
 ```
 
 Require identical `sha256` values. Staging is inert and publication is atomic; recovery never sends mail. For `RESTORE_STATE_UNCONFIRMED`, keep the target stopped and inspect it. `cleanup --input exports/deployed.rer --yes --writers-stopped` removes only the archive’s recognized inert stage. For `RESTORE_VERIFICATION_UNCONFIRMED`, publication already occurred; re-export and compare before retrying.
+
+Image bytes and ownership metadata are verified before database publication, and the final re-export checks both D1 and R2. A populated destination bucket is refused. If publication cannot be confirmed, images remain available for inspection; keep all writers stopped and inspect both resources before retrying. Cleanup requires the same destination bucket setting and verifies attachment custody before removing recognized staging.
 
 ## Deployment ownership recovery
 
