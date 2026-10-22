@@ -84,7 +84,35 @@ jobs:
           node-version: 22.20.0
       - run: npm install --global pnpm@10.12.4
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - name: Install Chromium with apt mirror fallback
+        run: |
+          # The runner's default Azure mirror can serve package indexes while
+          # its package downloads hang, so retrying the same host does not
+          # help: attempts 2 and 3 use other mirrors of the same Ubuntu-signed
+          # archive (apt still verifies every Release signature). Same mirror
+          # order and attempt budget as Base's verify workflow.
+          mirrors=(runner-default http://mirrors.edge.kernel.org/ubuntu http://us-east-1.ec2.archive.ubuntu.com/ubuntu)
+          started=$SECONDS
+          for attempt in 1 2 3; do
+            mirror=${mirrors[attempt - 1]}
+            if [[ $mirror != runner-default ]]; then
+              sudo sed -i -E "s@^(URIs:[[:space:]]*)(mirror\+file:/etc/apt/apt-mirrors\.txt|https?://(([a-z0-9.-]+\.)?archive\.ubuntu\.com|security\.ubuntu\.com|mirrors\.edge\.kernel\.org)/ubuntu/?)@\1${mirror}/@" /etc/apt/sources.list.d/ubuntu.sources
+            fi
+            printf 'Chromium apt: attempt %s/3 (90s deadline; mirror %s; sources %s)\n' "$attempt" "$mirror" "$(grep -h '^URIs:' /etc/apt/sources.list.d/ubuntu.sources | sort -u | tr '\n' ' ')"
+            if timeout --kill-after=5s 90s bash -ec '
+              sudo dpkg --configure -a
+              pnpm exec playwright install-deps chromium
+            '; then
+              printf 'Chromium apt: complete (attempts=%s mirror=%s seconds=%s)\n' "$attempt" "$mirror" "$((SECONDS - started))"
+              break
+            else
+              status=$?
+              printf 'Chromium apt: attempt %s/3 failed (mirror %s, exit %s, seconds=%s)\n' "$attempt" "$mirror" "$status" "$((SECONDS - started))" >&2
+            fi
+            if (( attempt == 3 )); then exit "$status"; fi
+            sleep "$((attempt * 2))"
+          done
+          pnpm exec playwright install chromium
       # Each shard still owns fresh migrated runtimes and the original rate limits.
       - run: node scripts/run-contract-lane.mjs "${{ matrix.lane }}" "$RUNNER_TEMP/contract-evidence"
       - uses: actions/upload-artifact@v4
@@ -107,7 +135,35 @@ jobs:
           node-version: 22.20.0
       - run: npm install --global pnpm@10.12.4
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - name: Install Chromium with apt mirror fallback
+        run: |
+          # The runner's default Azure mirror can serve package indexes while
+          # its package downloads hang, so retrying the same host does not
+          # help: attempts 2 and 3 use other mirrors of the same Ubuntu-signed
+          # archive (apt still verifies every Release signature). Same mirror
+          # order and attempt budget as Base's verify workflow.
+          mirrors=(runner-default http://mirrors.edge.kernel.org/ubuntu http://us-east-1.ec2.archive.ubuntu.com/ubuntu)
+          started=$SECONDS
+          for attempt in 1 2 3; do
+            mirror=${mirrors[attempt - 1]}
+            if [[ $mirror != runner-default ]]; then
+              sudo sed -i -E "s@^(URIs:[[:space:]]*)(mirror\+file:/etc/apt/apt-mirrors\.txt|https?://(([a-z0-9.-]+\.)?archive\.ubuntu\.com|security\.ubuntu\.com|mirrors\.edge\.kernel\.org)/ubuntu/?)@\1${mirror}/@" /etc/apt/sources.list.d/ubuntu.sources
+            fi
+            printf 'Chromium apt: attempt %s/3 (90s deadline; mirror %s; sources %s)\n' "$attempt" "$mirror" "$(grep -h '^URIs:' /etc/apt/sources.list.d/ubuntu.sources | sort -u | tr '\n' ' ')"
+            if timeout --kill-after=5s 90s bash -ec '
+              sudo dpkg --configure -a
+              pnpm exec playwright install-deps chromium
+            '; then
+              printf 'Chromium apt: complete (attempts=%s mirror=%s seconds=%s)\n' "$attempt" "$mirror" "$((SECONDS - started))"
+              break
+            else
+              status=$?
+              printf 'Chromium apt: attempt %s/3 failed (mirror %s, exit %s, seconds=%s)\n' "$attempt" "$mirror" "$status" "$((SECONDS - started))" >&2
+            fi
+            if (( attempt == 3 )); then exit "$status"; fi
+            sleep "$((attempt * 2))"
+          done
+          pnpm exec playwright install chromium
       - run: pnpm verify:admission
 
   hosted:
@@ -122,7 +178,35 @@ jobs:
           node-version: 22.20.0
       - run: npm install --global pnpm@10.12.4
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - name: Install Chromium with apt mirror fallback
+        run: |
+          # The runner's default Azure mirror can serve package indexes while
+          # its package downloads hang, so retrying the same host does not
+          # help: attempts 2 and 3 use other mirrors of the same Ubuntu-signed
+          # archive (apt still verifies every Release signature). Same mirror
+          # order and attempt budget as Base's verify workflow.
+          mirrors=(runner-default http://mirrors.edge.kernel.org/ubuntu http://us-east-1.ec2.archive.ubuntu.com/ubuntu)
+          started=$SECONDS
+          for attempt in 1 2 3; do
+            mirror=${mirrors[attempt - 1]}
+            if [[ $mirror != runner-default ]]; then
+              sudo sed -i -E "s@^(URIs:[[:space:]]*)(mirror\+file:/etc/apt/apt-mirrors\.txt|https?://(([a-z0-9.-]+\.)?archive\.ubuntu\.com|security\.ubuntu\.com|mirrors\.edge\.kernel\.org)/ubuntu/?)@\1${mirror}/@" /etc/apt/sources.list.d/ubuntu.sources
+            fi
+            printf 'Chromium apt: attempt %s/3 (90s deadline; mirror %s; sources %s)\n' "$attempt" "$mirror" "$(grep -h '^URIs:' /etc/apt/sources.list.d/ubuntu.sources | sort -u | tr '\n' ' ')"
+            if timeout --kill-after=5s 90s bash -ec '
+              sudo dpkg --configure -a
+              pnpm exec playwright install-deps chromium
+            '; then
+              printf 'Chromium apt: complete (attempts=%s mirror=%s seconds=%s)\n' "$attempt" "$mirror" "$((SECONDS - started))"
+              break
+            else
+              status=$?
+              printf 'Chromium apt: attempt %s/3 failed (mirror %s, exit %s, seconds=%s)\n' "$attempt" "$mirror" "$status" "$((SECONDS - started))" >&2
+            fi
+            if (( attempt == 3 )); then exit "$status"; fi
+            sleep "$((attempt * 2))"
+          done
+          pnpm exec playwright install chromium
       - run: pnpm build:app
       - run: node scripts/verify-hosted-output.mjs
 
@@ -141,7 +225,35 @@ jobs:
           node-version: 22.20.0
       - run: npm install --global pnpm@10.12.4
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - name: Install Chromium with apt mirror fallback
+        run: |
+          # The runner's default Azure mirror can serve package indexes while
+          # its package downloads hang, so retrying the same host does not
+          # help: attempts 2 and 3 use other mirrors of the same Ubuntu-signed
+          # archive (apt still verifies every Release signature). Same mirror
+          # order and attempt budget as Base's verify workflow.
+          mirrors=(runner-default http://mirrors.edge.kernel.org/ubuntu http://us-east-1.ec2.archive.ubuntu.com/ubuntu)
+          started=$SECONDS
+          for attempt in 1 2 3; do
+            mirror=${mirrors[attempt - 1]}
+            if [[ $mirror != runner-default ]]; then
+              sudo sed -i -E "s@^(URIs:[[:space:]]*)(mirror\+file:/etc/apt/apt-mirrors\.txt|https?://(([a-z0-9.-]+\.)?archive\.ubuntu\.com|security\.ubuntu\.com|mirrors\.edge\.kernel\.org)/ubuntu/?)@\1${mirror}/@" /etc/apt/sources.list.d/ubuntu.sources
+            fi
+            printf 'Chromium apt: attempt %s/3 (90s deadline; mirror %s; sources %s)\n' "$attempt" "$mirror" "$(grep -h '^URIs:' /etc/apt/sources.list.d/ubuntu.sources | sort -u | tr '\n' ' ')"
+            if timeout --kill-after=5s 90s bash -ec '
+              sudo dpkg --configure -a
+              pnpm exec playwright install-deps chromium
+            '; then
+              printf 'Chromium apt: complete (attempts=%s mirror=%s seconds=%s)\n' "$attempt" "$mirror" "$((SECONDS - started))"
+              break
+            else
+              status=$?
+              printf 'Chromium apt: attempt %s/3 failed (mirror %s, exit %s, seconds=%s)\n' "$attempt" "$mirror" "$status" "$((SECONDS - started))" >&2
+            fi
+            if (( attempt == 3 )); then exit "$status"; fi
+            sleep "$((attempt * 2))"
+          done
+          pnpm exec playwright install chromium
       - name: Reclaim unused SDK space for real local runtimes
         run: |
           df -h . /tmp
