@@ -27,7 +27,7 @@ contract(['FLOW-016','RESP-024'], 'publication freezes branch and review policie
   expect(original.flow.reviewBeforeSubmit).toBe(false)
   expect(visiblePath(original.flow, { [question.id]: 2 }).at(-1)!.id).toBe(last.id)
   const originalRow = await env.DB.prepare('SELECT policy_snapshot_json FROM flow_revisions WHERE id = ?').bind(original.revisionId).first<{ policy_snapshot_json: string }>()
-  expect(JSON.parse(originalRow!.policy_snapshot_json)).toEqual({ ...defaultFlowPolicies, linkPreview: { title: original.flow.title, description: '', image: null, allowIndexing: false, background: '#fbfaf6' } })
+  expect(JSON.parse(originalRow!.policy_snapshot_json)).toEqual({ ...defaultFlowPolicies, linkPreview: { title: original.flow.flow.title, description: '', image: null, allowIndexing: false, background: '#fbfaf6' } })
   const platform = createPencilPlatform('http://localhost', env)
   const changedPolicy = { ...defaultFlowPolicies, 'flow.branch-selection.v1': 'last-matching-rule' as const }
   const changed = new FlowService(new FlowRepository(platform.database, env.DB), new ResponseRepository(platform.database, env.DB, eraseResponseAndImportCustody), changedPolicy)

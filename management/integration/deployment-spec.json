@@ -4,6 +4,10 @@
     {
       "kind": "d1",
       "binding": "DB"
+    },
+    {
+      "kind": "r2",
+      "binding": "FORM_ASSETS"
     }
   ],
   "migrations": [
@@ -348,6 +352,12 @@
       "name": "0056_paid_collector_admission.sql",
       "sha256": "de80e0340200b5e2aaf8299e0a9eb4dc9c67a8b1ebb099c7a0fdfe9ac23cb0f9",
       "sql": "-- Pending and failed Checkouts do not consume collector places. Keep ownership, closure\n-- and deadline guards; replace the trigger additively without changing applied SQL.\nDROP TRIGGER collector_response_owner_insert;\nCREATE TRIGGER collector_response_owner_insert BEFORE INSERT ON response_collector BEGIN\n SELECT RAISE(ABORT,'COLLECTOR_RESPONSE_OWNERSHIP') WHERE NOT EXISTS(\n SELECT 1 FROM responses r JOIN collectors c ON c.flow_id=r.flow_id JOIN flows f ON f.id=r.flow_id\n WHERE r.id=NEW.response_id AND c.id=NEW.collector_id AND f.workspace_id=r.workspace_id\n AND (c.system_source IS NULL OR c.system_source=r.source));\n SELECT RAISE(ABORT,'COLLECTOR_CLOSED') WHERE EXISTS(\n SELECT 1 FROM collectors c JOIN responses r ON r.id=NEW.response_id WHERE c.id=NEW.collector_id\n AND (c.closed_at IS NOT NULL OR (c.deadline_at IS NOT NULL AND c.deadline_at<=r.completed_at)\n OR (c.response_limit IS NOT NULL AND (SELECT count(*) FROM response_collector held WHERE held.collector_id=c.id\n AND NOT EXISTS (SELECT 1 FROM response_payments unpaid WHERE unpaid.response_id=held.response_id AND unpaid.state!='paid'))>=c.response_limit)));\nEND;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0057_link_preview_snapshots.sql",
+      "sha256": "a92aa808ead722d536f829edf204ca4d7d4807b11c7758edcf3d5752f6b72c60",
+      "sql": "-- Freeze upgrade-time preview defaults separately. Released revision rows,\n-- including their serialized admission policy, remain byte-identical.\nCREATE TABLE IF NOT EXISTS revision_link_previews (\n  revision_id TEXT PRIMARY KEY REFERENCES flow_revisions(id) ON DELETE CASCADE,\n  preview_json TEXT NOT NULL CHECK (json_valid(preview_json))\n);\n\nINSERT OR IGNORE INTO revision_link_previews (revision_id, preview_json)\nSELECT id, json_object(\n    'title', title,\n    'description', COALESCE((\n      SELECT trim(prompt || CASE WHEN helper_text IS NOT NULL AND helper_text <> '' THEN ' ' || helper_text ELSE '' END)\n      FROM flow_steps\n      WHERE revision_id = flow_revisions.id AND kind = 'welcome'\n      ORDER BY position, id LIMIT 1\n    ), ''),\n    'image', json((\n      SELECT CASE\n        WHEN w.brand_logo_base64 IS NOT NULL AND w.brand_logo_base64 <> '' AND w.brand_logo_mime IS NOT NULL\n        THEN json_object(\n          'mime', w.brand_logo_mime,\n          'base64', w.brand_logo_base64,\n          'alt', CASE WHEN w.brand_configured = 1 THEN w.name ELSE 'Your business' END\n        )\n        ELSE 'null'\n      END\n      FROM workspaces w JOIN flows f ON f.workspace_id = w.id\n      WHERE f.id = flow_revisions.flow_id\n    )),\n    'allowIndexing', json('false'),\n    'background', '#fbfaf6'\n  )\nFROM flow_revisions\nWHERE state = 'published'\n  -- Imported historical revisions remain private until the operator publishes\n  -- the form; leave their reviewed import/undo custody byte-identical.\n  AND EXISTS (SELECT 1 FROM flows f WHERE f.id = flow_revisions.flow_id AND f.status <> 'draft')\n  AND (json_type(policy_snapshot_json, '$.linkPreview') IS NULL\n    OR json_type(policy_snapshot_json, '$.linkPreview') = 'null');\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

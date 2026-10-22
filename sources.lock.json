@@ -1093,7 +1093,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "ea1cdc6dfa2e442f37e59dc8e722fd1b935d625f25f21b981d6b238264041d22",
+      "sha256": "17e34fc51c21bbdc76c9d3b6b26013a29208c3403953e7f8d7c0a309b289a47f",
       "executable": false
     },
     "migrations/core/0000_seeded_flowly_data_spine.sql": {
@@ -7461,7 +7461,7 @@
       "executable": false
     },
     "tests/runtime/policy-snapshot.worker.test.ts": {
-      "sha256": "7f2dd34912fda4cfba1c81edd634a135e8d09fb37f6f2defd51c572045788c31",
+      "sha256": "b3097d0c9fc2434b2f0f14abda0ceb64f6879d288d09bb091d1bb4ec8828cfc2",
       "executable": false
     },
     "tests/runtime/private-auth-freshness.worker.test.ts": {
