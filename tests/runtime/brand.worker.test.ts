@@ -1,3 +1,4 @@
+import { digest, type BackupArchive } from '../../src/core/features/backup/model'
 import { previewFixture, previewImage } from './link-preview-fixture'
 import { linkPreviewLimits, type LinkPreviewReference } from '../../src/core/shared/linkPreview'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
@@ -188,3 +189,30 @@ contract('DIST-020', 'upgrading existing publications freezes their logo preview
   expect(await f.snapshot(revision.id)).toEqual(frozen)
   await f.publicImage(revision.id,previewImage.base64)
 })
+
+contract(['BASE-DATA-001','DATA-001','DIST-020'], 'owner backup carries immutable R2 share images, checks their bytes and refuses missing attachment custody', async () => {
+  const f = await previewFixture()
+  expect((await f.save({...f.settings,linkPreview:{image:previewImage}})).status).toBe(200)
+  expect((await f.publish()).status).toBe(201)
+  const saved = (await f.read()).formSettings!.linkPreview!.image!
+  if (!('key' in saved)) throw Error('Expected an R2 image reference')
+  const response = await f.call('/api/app/backup/export',{})
+  expect(response.status,await response.clone().text()).toBe(200)
+  const archive = await response.json() as BackupArchive
+  const image = archive.payload.objects!.find(object => object.key === saved.key)!
+  expect(image).toEqual({bucket:'FORM_ASSETS',key:saved.key,mime:previewImage.mime,customMetadata:{workspaceId:f.workspace,flowId:f.id,mime:previewImage.mime},data:previewImage.base64})
+  const checked = await f.call('/api/app/backup/check',archive)
+  expect(checked.status,await checked.clone().text()).toBe(200)
+  const invalid = structuredClone(archive)
+  invalid.payload.objects!.find(object => object.key === saved.key)!.data = btoa('damaged image')
+  invalid.sha256 = await digest(invalid.payload)
+  expect((await f.call('/api/app/backup/check',invalid)).status).toBe(400)
+  const bucket = env.FORM_ASSETS
+  try {
+    await bucket.delete(saved.key)
+    expect((await f.call('/api/app/backup/export',{})).status).toBe(400)
+  } finally {
+    await bucket.put(image.key,Uint8Array.from(atob(image.data),character=>character.charCodeAt(0)),{httpMetadata:{contentType:image.mime},customMetadata:image.customMetadata})
+  }
+})
+

@@ -1,19 +1,15 @@
 
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
-import { beforeAll, beforeEach, expect } from 'vitest'
+import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
 import { archiveFixture, restoreFixture } from './archive-fixture'
 import { stagingPlan, destinationGuards, stageRows, cleanupStage } from '../../scripts/deployment-data-staging.mjs'
 import { pageStatement } from '../../scripts/deployment-data-page.mjs'
 import { canonicalSchema } from '../../scripts/deployment-data-schema.mjs'
 import { schemaQuery, quote, insertStatement } from '../../scripts/deployment-data-sql.mjs'
-import { previewFixture, previewImage } from './link-preview-fixture'
-import { digest, type BackupArchive } from '../../src/core/features/backup/model'
 
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
-let pristine: Awaited<ReturnType<typeof archiveFixture>>
-beforeAll(async () => { await applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__); pristine = await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__) })
-beforeEach(() => restoreFixture(env.DB, pristine))
+beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 type Statement = { sql: string; params?: unknown[] }
 const query = (batch: Statement[]) => env.DB.batch(batch.map(({ sql, params = [] }) => env.DB.prepare(sql).bind(...params)))
 
@@ -82,30 +78,3 @@ contract(['DATA-001','BASE-DATA-001','BASE-OPS-003','PAY-001'], 'native D1 stage
   expect((await env.DB.prepare("SELECT name FROM sqlite_schema WHERE name GLOB '_pencil_restore_*'").all()).results).toEqual([])
   await expect(env.DB.prepare('INSERT INTO response_answers SELECT * FROM response_answers LIMIT 1').run()).rejects.toThrow()
 })
-
-contract(['BASE-DATA-001','DATA-001','DIST-020'], 'owner backup carries immutable R2 share images, checks their bytes and refuses missing attachment custody', async () => {
-  const f = await previewFixture()
-  expect((await f.save({...f.settings,linkPreview:{image:previewImage}})).status).toBe(200)
-  expect((await f.publish()).status).toBe(201)
-  const saved = (await f.read()).formSettings!.linkPreview!.image!
-  if (!('key' in saved)) throw Error('Expected an R2 image reference')
-  const response = await f.call('/api/app/backup/export',{})
-  expect(response.status,await response.clone().text()).toBe(200)
-  const archive = await response.json() as BackupArchive
-  const image = archive.payload.objects!.find(object => object.key === saved.key)!
-  expect(image).toEqual({bucket:'FORM_ASSETS',key:saved.key,mime:previewImage.mime,customMetadata:{workspaceId:f.workspace,flowId:f.id,mime:previewImage.mime},data:previewImage.base64})
-  const checked = await f.call('/api/app/backup/check',archive)
-  expect(checked.status,await checked.clone().text()).toBe(200)
-  const invalid = structuredClone(archive)
-  invalid.payload.objects!.find(object => object.key === saved.key)!.data = btoa('damaged image')
-  invalid.sha256 = await digest(invalid.payload)
-  expect((await f.call('/api/app/backup/check',invalid)).status).toBe(400)
-  const bucket = env.FORM_ASSETS
-  try {
-    await bucket.delete(saved.key)
-    expect((await f.call('/api/app/backup/export',{})).status).toBe(400)
-  } finally {
-    await bucket.put(image.key,Uint8Array.from(atob(image.data),character=>character.charCodeAt(0)),{httpMetadata:{contentType:image.mime},customMetadata:image.customMetadata})
-  }
-})
-

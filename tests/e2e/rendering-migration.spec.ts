@@ -177,3 +177,9 @@ contract('DIST-020', 'emitted Worker serves revision previews and canonical-only
   const {publishedPreviewJourney}=await import('./link-preview-http')
   await publishedPreviewJourney(page,request,await login(request),info.project.name)
 })
+
+contract(['DIST-020','BASE-DATA-001'], 'owner browser backup restores preview image bytes with the same archive checksum', async ({page,request},info) => {
+  test.setTimeout(120_000)
+  const {previewBackupJourney}=await import('./preview-backup-journey')
+  await previewBackupJourney(page,request,await login(request),info.project.name)
+})
