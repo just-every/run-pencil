@@ -20,10 +20,22 @@ export function revisionBranchSelection(snapshot: string | null): BranchSelectio
   // Pre-policy revisions used the documented first-match semantics. No current
   // configuration is consulted when interpreting immutable historical graphs.
   if (snapshot === null) return 'first-matching-rule'
-  return evaluateFlowPolicies(JSON.parse(snapshot) as FlowPolicies)['flow.branch-selection.v1']
+  return revisionPolicies(snapshot)['flow.branch-selection.v1']
+}
+
+/** Decode the retained predecessor policy format without rewriting released rows. */
+function revisionPolicies(snapshot: string): FlowPolicies {
+  const value = JSON.parse(snapshot)
+  if (value && Object.keys(value).sort().join(',') === 'branchSelection,identity,responseAdmission'
+    && value.branchSelection?.kind === 'first-match' && Object.keys(value.branchSelection).length === 1
+    && value.identity?.direct === 'anonymous' && value.identity?.invitation === 'identified' && Object.keys(value.identity).length === 2
+    && value.responseAdmission?.invitationCompletions === 1 && Object.keys(value.responseAdmission).length === 1) {
+    return defaultFlowPolicies
+  }
+  return evaluateFlowPolicies(value as FlowPolicies)
 }
 
 /** A missing key, including pre-policy revisions, never enables review. */
 export function revisionReviewEnabled(snapshot: string | null): boolean {
-  return snapshot !== null && evaluateFlowPolicies(JSON.parse(snapshot) as FlowPolicies)['response.review.v1'] === true
+  return snapshot !== null && revisionPolicies(snapshot)['response.review.v1'] === true
 }
