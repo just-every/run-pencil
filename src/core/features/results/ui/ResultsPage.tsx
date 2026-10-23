@@ -83,12 +83,12 @@ export function ResultsPage() {
       <ResultMetrics results={results} />
       </> : null}
       <p className="muted">Traffic panel: revision {results.revision.number}. Its view-based rates are unfiltered by response filters.</p>
-      <TrafficPanel key={results.revision.id} flowId={flowId} revisionId={results.revision.id} />
+      <TrafficPanel key={`traffic:${results.revision.id}`} flowId={flowId} revisionId={results.revision.id} />
       <CollectorComparison flowId={flowId} />
-      {revisions.find(revision => revision.id === results.revision.id) ? <CrosstabPanel key={results.revision.id} flowId={flowId} revision={revisions.find(revision => revision.id === results.revision.id)!} questions={questions.filter(question=>question.revisionId===results.revision.id)} /> : null}
-      <TrendsPanel key={results.revision.id} flowId={flowId} questions={questions.filter(question=>question.revisionId===results.revision.id)} timeZone={timeZone} revisionId={results.revision.id} />
+      {revisions.find(revision => revision.id === results.revision.id) ? <CrosstabPanel key={`crosstab:${results.revision.id}`} flowId={flowId} revision={revisions.find(revision => revision.id === results.revision.id)!} questions={questions.filter(question=>question.revisionId===results.revision.id)} /> : null}
+      <TrendsPanel key={`trends:${results.revision.id}`} flowId={flowId} questions={questions.filter(question=>question.revisionId===results.revision.id)} timeZone={timeZone} revisionId={results.revision.id} />
       <ResponseLedger key={`${results.revision.id}:${refresh}`} flowId={flowId} timeZone={timeZone} questions={questions} filter={filter} onFilterChange={setResponseFilter} onChanged={() => setRefresh((value) => value + 1)} exportSlot={exportSlot} />
-      <QuarantineReview key={results.revision.id} revisionId={results.revision.id} timeZone={timeZone} questions={questions} onChanged={() => setRefresh((value) => value + 1)} />
+      <QuarantineReview key={`quarantine:${results.revision.id}`} revisionId={results.revision.id} timeZone={timeZone} questions={questions} onChanged={() => setRefresh((value) => value + 1)} />
       <div className="results-notifications"><NotificationsPanel flowId={flowId} timeZone={timeZone} /></div>
       </> : null}
     </section>

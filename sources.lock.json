@@ -5813,7 +5813,7 @@
       "executable": false
     },
     "src/core/features/results/ui/ResultsPage.tsx": {
-      "sha256": "09cfde364f3035cd0d50e0ab2a3cad24357d1a3e3aba1eb783a2272d7115c53d",
+      "sha256": "f488c2288960658714fc58aee02a9e871643d717b26b04cec1d8e506f554a288",
       "executable": false
     },
     "src/core/features/results/ui/RevisionComparison.tsx": {
