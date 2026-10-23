@@ -52,10 +52,10 @@ contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released co
   expect(plain).not.toContain('2026-07-04');expect(plain).not.toContain('/app/');expect(plain).not.toContain('/response')
   await final(f,completed.session,[{stepId:email.id,value:'synthetic-pencil-receipt@example.test'},{stepId:text.id,value:'<script>alert(1)</script> {{hidden:campaign}}'},{stepId:date.id,value:'2026-07-04'},{stepId:number.id,value:3}]);await dispatcher.run()
   expect(sent).toHaveLength(2)
-  for(const options of [{immature:true},{honeypot:'scanner'}]){
-   const held=await submit(options);expect(held.row!.state).toBe('quarantined');await dispatcher.run();expect(sent).toHaveLength(2)
+  for(const [options,before,after] of [[{immature:true},2,3],[{honeypot:'scanner'},3,4]] as const){
+   const held=await submit(options);expect(held.row!.state).toBe('quarantined');await dispatcher.run();expect(sent).toHaveLength(before)
    expect(await env.DB.prepare('SELECT id FROM confirmation_deliveries WHERE response_id=?').bind(held.row!.id).first()).toBeNull()
-   await f.services.responses.releaseQuarantinedResponse({...f.scope,responseId:held.row!.id,operatorId:f.operatorId});await dispatcher.run();expect(sent).toHaveLength(options.immature?3:4)
+   await f.services.responses.releaseQuarantinedResponse({...f.scope,responseId:held.row!.id,operatorId:f.operatorId});await dispatcher.run();expect(sent).toHaveLength(after)
   }
   const noQuestion=await foundationFixture('synthetic-pencil-no-confirmation-address')
   await noQuestion.add({kind:'question',questionType:'short_text',prompt:'Feedback',required:true});await noQuestion.add({kind:'completion',questionType:null,prompt:'Recorded'})
