@@ -3,6 +3,7 @@ import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
 import { foundationFixture } from './foundation-fixture'
+import { respondentString } from '../../src/core/shared/respondentText'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 
@@ -21,6 +22,38 @@ contract('FLOW-006', 'rejects all publication problems by stable ID without crea
   expect(await rows()).toEqual(revisions)
   expect(await f.draft()).toEqual(before)
   expect(await f.services.flows.updateBuilderDraft({ ...f.flow, stepId: before.steps[0].id, expectedVersion: before.flow.draftVersion, prompt: 'Still editable', required: false })).toMatchObject({ kind: 'updated' })
+
+  // LANG-002: respondent text overrides are part of the published revision; a whitespace-only button label is refused at publish with its field named.
+  const t = await foundationFixture('foundation-respondent-text')
+  await t.add({ kind: 'question', questionType: 'short_text', prompt: 'Anything to add?', required: true })
+  await t.add({ kind: 'completion', questionType: null, prompt: 'Done' })
+  const saveText = async (text: Record<string, string>) => { const draft = await t.draft(); await t.services.flows.updateFormSettings({ ...t.flow, expectedVersion: draft.flow.draftVersion, settings: { ...draft.formSettings!, text } }) }
+  await saveText({ submitLabel: '   ' })
+  const textRevisions = (await env.DB.prepare('SELECT count(*) AS n FROM flow_revisions WHERE flow_id = ?').bind(t.flow.flowId).first<{ n: number }>())!.n
+  await expect(t.publish()).rejects.toMatchObject({ details: [expect.objectContaining({ stepId: 'text:submitLabel' })] })
+  expect((await env.DB.prepare('SELECT count(*) AS n FROM flow_revisions WHERE flow_id = ?').bind(t.flow.flowId).first<{ n: number }>())!.n).toBe(textRevisions)
+  await expect(saveText({ closedMessage: 'x'.repeat(301) })).rejects.toThrow('300')
+  await expect(saveText({ startLabel: '<b>Go</b>' })).rejects.toThrow('plain text')
+  await saveText({ submitLabel: 'Send it', nextLabel: '', closedMessage: 'We are done for now.', limitMessage: 'All places are taken.', progressText: '{remaining} left' })
+  const draft = await t.draft()
+  expect(await t.services.flows.publishDraft({ ...t.flow, expectedVersion: draft.flow.draftVersion, targetCompletedResponses: 1 })).toMatchObject({ kind: 'published' })
+  await saveText({ submitLabel: 'Changed after publishing' })
+  const published = await t.services.flows.getPublicFlow(t.slug)
+  expect(published.formSettings?.text).toMatchObject({ submitLabel: 'Send it', closedMessage: 'We are done for now.' })
+  expect(respondentString(published.formSettings?.text, 'submitLabel')).toBe('Send it')
+  expect(respondentString(published.formSettings?.text, 'nextLabel')).toBe('Continue')
+  expect(respondentString(undefined, 'startLabel')).toBe('Begin')
+  const session = await t.start(); await t.mature(session.sessionId)
+  await t.final(session, [{ stepId: published.steps[0].id, value: 'Fine' }])
+  await expect(t.services.flows.getPublicFlow(t.slug)).rejects.toMatchObject({ flow: { message: 'All places are taken.' } })
+  const c = await foundationFixture('foundation-respondent-text-closed')
+  await c.add({ kind: 'question', questionType: 'short_text', prompt: 'Anything to add?', required: false })
+  await c.add({ kind: 'completion', questionType: null, prompt: 'Done' })
+  const closedDraft = await c.draft()
+  await c.services.flows.updateFormSettings({ ...c.flow, expectedVersion: closedDraft.flow.draftVersion, settings: { ...closedDraft.formSettings!, text: { closedMessage: 'We are done for now.' } } })
+  await c.publish()
+  await c.services.flows.closeFlow(c.scope.workspaceId, c.flow.flowId, c.operatorId)
+  await expect(c.services.flows.getPublicFlow(c.slug)).rejects.toMatchObject({ flow: { message: 'We are done for now.' } })
 }, 60_000)
 
 contract(['RESP-006', 'RESP-010', 'FLOW-019'], 'retains no abandoned answers or identity, preserves deliberately entered email exactly and compares it without case sensitivity', async () => {
