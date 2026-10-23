@@ -1057,7 +1057,7 @@
       "executable": false
     },
     "docs/guide/results.md": {
-      "sha256": "5cdac262b2e7f6568b2f219d055de16cb1106262a104a94ed24cc1056ea4bd64",
+      "sha256": "e733a111d4f1c3e00826a8aa19e9fc8cb115f14e68d14e48fc8a9643bdd4fb48",
       "executable": false
     },
     "docs/HOSTING.md": {
@@ -5801,11 +5801,11 @@
       "executable": false
     },
     "src/core/features/results/ui/ResponseLedger.tsx": {
-      "sha256": "f25c1cec85734bdc072f9a8b6e5a2c1dad366a04399dd7a871b336751fc861a0",
+      "sha256": "61e594d1ee4a1f7c39e50c89f99b6a20021e4f6b22d1d82d4fcd75e4e34bc370",
       "executable": false
     },
     "src/core/features/results/ui/ResultMetrics.tsx": {
-      "sha256": "513027d9a0344c342bbffd61c911675fcec7b311f75258a85d3e5f2a45995304",
+      "sha256": "1e58fc6315bfc9fc1d7d09f4e980637c69a2b2ee8b5e0498770f680b0abe7aa8",
       "executable": false
     },
     "src/core/features/results/ui/results.css": {
@@ -5845,7 +5845,7 @@
       "executable": false
     },
     "src/core/features/results/ui/TrendsPanel.tsx": {
-      "sha256": "4c16e10e0ab28efef4cf17c568f1be9df5fd0a9dc9475ea52cb0ce79f9e6362e",
+      "sha256": "52fd701818e33d01a80044205f0e0d9a84d2ec9465b88a8960a48b8b6bca9c1f",
       "executable": false
     },
     "src/core/features/resuming/answers.ts": {

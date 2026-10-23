@@ -17,7 +17,7 @@ Under each question, **How we count** explains the numbers. Every percentage nam
 
 To act on what a question shows, choose **Turn this into an action** under it, or **Turn these results into an action** for the whole revision. The action keeps a copy of these counts. See [Actions and follow-up](actions.md).
 
-Use **Published revision** at the top to look at an older revision. When a flow has more than one revision, **Compare revisions** shows each question side by side. It never treats a question added later as unanswered by people who answered an earlier revision.
+Use **Published revision** at the top to look at the current revision, an older revision or **All published revisions**. This selector combines with the response filters below and applies to the summary cards, answer summaries, device split, ledger and exports. Each published question version keeps its own answers and labels. When a flow has more than one revision, **Compare revisions** shows each question side by side. It never treats a question added later as unanswered by people who answered an earlier revision.
 
 ## Starts, completion and drop-off
 
@@ -26,8 +26,8 @@ Below the answers are four cards:
 | Card | What it counts |
 |---|---|
 | **Responses** | Completed responses that have been released into results, split into live and imported. |
-| **Starts** | Visits where someone first interacted with the form (**recorded starts**). Just opening the page is not a start. |
-| **Completion rate** | Live completed responses divided by starts, with both numbers shown. |
+| **Starts** | Recorded first interactions with the form in the revision and date selection; just opening the page is not a start. With a response-only filter, this counts matching native responses, including retained quarantine, instead. |
+| **Completion rate** | Native completed responses divided by views in the revision and date selection. With a response-only filter, this becomes started-to-completed among matching native responses, including retained quarantine in the denominator. Both counts are shown; a zero denominator shows **No rate**. |
 | **Average time** | How long live responses took to complete. |
 
 Imported responses (see [Moving in](moving-in.md)) count in the answers and the ledger. They do not count towards starts, completion rate or average time.
@@ -48,7 +48,7 @@ Bot checks run only when a response is submitted. A signed form-load timestamp m
 
 **Response ledger** lists every completed, released response. Choose **View answers** on one to see its revision, when it started and was submitted, who it came from (an invited person or an anonymous response), and each answer beside its question. Questions that person skipped are shown as **Not answered · skipped or optional**. Answers stay linked to the question and revision that asked them, even after you edit or delete the question.
 
-Narrow the list with these filters. They apply to the ledger and to exports, not to the cards above:
+Narrow the list with these filters. They combine with **Published revision** and apply to the summary cards, answer summaries, device split, ledger and exports. Traffic, crosstabs and trends have their own controls:
 
 - **Response revision** and **Source**: **Direct link**, **Embed**, **Invitation** or **Imported**. Responses recorded by an earlier runtime may show **Historical source unavailable**.
 - **Participant status**: **Eligible** or **Opted out**, for responses from invited people. The list also offers **Bounced**, but it always shows nothing in this release, because Pencil receives no bounce reports from your mail provider.
