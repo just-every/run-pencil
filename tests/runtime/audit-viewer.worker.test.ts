@@ -4,6 +4,7 @@ import { contract } from '../../src/test/contract'
 import type { AuditPage, AuditOptions } from '../../src/core/features/audit'
 import { developmentInbox } from '../helpers/mail-capture.mjs'
 import { devKeyHeaders } from '../helpers/dev-key.mjs'
+import { matureLoad } from './load-time-fixture'
 
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 let serial = 0
@@ -101,6 +102,44 @@ contract(['GOV-005', 'BASE-ACCESS-002', 'BASE-ACCESS-004', 'BASE-DATA-003'], 'na
   const erased = await ok<AuditPage>('/api/app/audit?kind=contact.consent-changed', cookie)
   expect(erased.rows[0]).toMatchObject({ id: consent.rows[0].id, form: null, details: {} })
 
+  // GOV-005 event families: a publish, connection changes, exports and an erasure appear in the viewer, its filters and the snapshot CSV with allowlisted details only.
+  const connectionSecret = 'synthetic-pencil-connection-secret-sentinel'
+  const events = await ok<{ id: string; slug: string }>('/api/app/flows', cookie, { title: 'Audit event families', slug: 'audit-event-families' })
+  const eventDraft = async () => (await ok<{ flow: { draftVersion: number }; steps: Array<{ id: string }> }>(`/api/app/flows/${events.id}/draft`, cookie))
+  await ok(`/api/app/flows/${events.id}/draft/steps`, cookie, { expectedVersion: (await eventDraft()).flow.draftVersion, step: { kind: 'question', questionType: 'long_text', prompt: 'Event proof question', required: false } })
+  await ok(`/api/app/flows/${events.id}/draft/steps`, cookie, { expectedVersion: (await eventDraft()).flow.draftVersion, step: { kind: 'completion', questionType: null, prompt: 'Recorded' } })
+  await ok(`/api/app/flows/${events.id}/publish`, cookie, { expectedVersion: (await eventDraft()).flow.draftVersion })
+  await ok('/api/app/connections/task', cookie, { url: 'https://receiver.example.test/tasks', apiKey: connectionSecret }, 'PUT')
+  await ok('/api/app/connections/task', cookie, undefined, 'DELETE')
+  const hook = await ok<{ endpoint: { id: string }; secret: string }>('/api/app/webhooks', cookie, { url: 'https://receiver.example.test/pencil' })
+  await ok(`/api/app/webhooks/${hook.endpoint.id}`, cookie, undefined, 'DELETE')
+  await ok(`/api/app/flows/${events.id}/responses/export/start?format=csv`, cookie)
+  await ok('/api/app/backup/export', cookie, {}, 'POST')
+  const eventSession = await ok<{ sessionId: string; sessionToken: string; loadTime: string; flow: { steps: Array<{ id: string; kind: string }> } }>(`/api/public/flows/${events.slug}/sessions`, '', { deviceClass: 'desktop', source: 'direct' })
+  await matureLoad(eventSession)
+  const submitted = await ok<{ responseId: string }>(`/api/public/flows/${events.slug}/responses`, '', { sessionId: eventSession.sessionId, sessionToken: eventSession.sessionToken, loadTime: eventSession.loadTime, idempotencyKey: crypto.randomUUID(), answers: [{ stepId: eventSession.flow.steps.find(step => step.kind === 'question')!.id, value: sentinel }], honeypot: '' })
+  await ok(`/api/app/responses/${submitted.responseId}`, cookie, undefined, 'DELETE')
+  const families = await ok<AuditPage>('/api/app/audit?limit=100', cookie)
+  const rows = (kind: string) => families.rows.filter(row => row.kind === kind)
+  expect(rows('flow.published')).toMatchObject([{ form: { id: events.id }, details: { revision: 1 }, actor: { id: owner!.id } }])
+  expect(rows('connection.saved').map(row => row.details.connection).sort()).toEqual(['task', 'webhook'])
+  expect(rows('connection.removed').map(row => row.details.connection).sort()).toEqual(['task', 'webhook'])
+  expect(rows('export.created').map(row => row.details.export).sort()).toEqual(['backup', 'responses'])
+  expect(rows('response.erased')).toHaveLength(1)
+  expect(rows('contact.erased')[0].details).toMatchObject({ contacts: 1 })
+  for (const text of [connectionSecret, hook.secret, sentinel]) expect(JSON.stringify(families)).not.toContain(text)
+  expect((await ok<AuditPage>(`/api/app/audit?kind=export.created&flowId=${events.id}`, cookie)).rows).toHaveLength(1)
+  const exports = await ok<AuditPage>('/api/app/audit?kind=export.created', cookie)
+  const snapshot = await request(`/api/app/audit/export?kind=export.created&cursor=${encodeURIComponent(exports.snapshotCursor)}`, cookie)
+  expect(snapshot.status).toBe(200)
+  const eventsCsv = await snapshot.text()
+  expect(eventsCsv.trim().split('\r\n')).toHaveLength(3)
+  expect(eventsCsv).toContain('export.created')
+  for (const text of [connectionSecret, hook.secret, sentinel, owner!.email]) expect(eventsCsv).not.toContain(text)
+  // No door writes or deletes audit entries.
+  for (const method of ['POST', 'PUT', 'PATCH', 'DELETE']) expect((await request('/api/app/audit', cookie, {}, method)).status, method).toBeGreaterThanOrEqual(400)
+  expect((await env.DB.prepare("SELECT count(*) AS n FROM audit_entries WHERE kind IN ('flow.published','connection.saved','export.created')").first<{ n: number }>())!.n).toBe(5)
+
   const now = new Date().toISOString(), foreignWorkspace = crypto.randomUUID(), foreignActor = crypto.randomUUID()
   const { id: peer } = await ok<{id:string}>('/api/app/operators', cookie, {email:'peer-audit@example.test',displayName:'Removed private actor'})
   await env.DB.batch([
@@ -111,6 +150,7 @@ contract(['GOV-005', 'BASE-ACCESS-002', 'BASE-ACCESS-004', 'BASE-DATA-003'], 'na
   const foreignFlow = await ok<{ id: string }>('/api/app/flows', foreignCookie, { title: 'Foreign audit form', slug: 'foreign-audit-proof' })
   await addStep(foreignCookie, foreignFlow.id, 'Foreign audit event')
   expect((await ok<AuditPage>(`/api/app/audit?flowId=${foreignFlow.id}`, foreignCookie)).rows).toHaveLength(1)
+  for (const kind of ['flow.published', 'connection.saved', 'export.created']) expect((await ok<AuditPage>(`/api/app/audit?kind=${kind}`, foreignCookie)).rows).toEqual([])
   for (const query of [`actorId=${foreignActor}`, `flowId=${foreignFlow.id}`, 'actorId=missing-audit-actor', 'flowId=missing-audit-form', `workspaceId=${foreignWorkspace}`]) {
     for (const path of ['/api/app/audit', '/api/app/audit/export']) expect((await request(`${path}?${query}`, cookie)).status).toBe(400)
   }

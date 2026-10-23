@@ -68,6 +68,17 @@ contract(['INTEG-010', 'INTEG-015'], 'an owner adds a response webhook, sees its
     await page.reload(); await ledger.getByLabel('Show').selectOption('confirmed'); await expect(ledger.locator('ul.webhook-deliveries > li')).toHaveCount(5)
     expect(db.prepare(`SELECT count(*) AS n FROM response_event_deliveries WHERE ${mine} AND status = 'confirmed'`).get()).toEqual({ n: 5 })
     await page.screenshot({ path: info.outputPath(`webhook-ledger-repaired-${info.project.name}.png`), fullPage: true })
+    // GOV-005: the connection events are in the audit log, without the secret, at both widths.
+    await page.goto('/app/audit'); await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
+    const recorded = page.getByRole('region', { name: 'Recorded activity' })
+    await expect(recorded.getByText('connection · saved').first()).toBeVisible(); await expect(recorded.getByText('connection · tested').first()).toBeVisible()
+    expect(await page.content()).not.toContain(shown)
+    for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+      await page.setViewportSize(viewport)
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+      const axe = await new AxeBuilder({ page }).analyze(); expect(axe.violations).toEqual([])
+      await page.screenshot({ path: info.outputPath(`audit-events-${viewport.width}.png`), fullPage: true })
+    }
     expect(flow.id).toBeTruthy()
   } finally { db.close(); await new Promise<void>(resolve => { receiver.closeAllConnections(); receiver.close(() => resolve()) }) }
 })
