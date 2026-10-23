@@ -1,3 +1,4 @@
+import { consentQuestionPurposeValid } from './marketingConsent'
 import { randomizableChoices } from './presentationOrder'
 import { layoutSettingsValid } from './screenLayout'
 import { choiceSettingsValid } from './otherChoices'
@@ -32,6 +33,6 @@ export function typeSettingsValid(type: string | null, settings: Record<string, 
   if (type === 'nps') return ['lowLabel', 'highLabel'].every(key => settings[key] === undefined || text(settings[key]))
   if (type === 'number') return ['min', 'max'].every(key => settings[key] === undefined || (typeof settings[key] === 'number' && Number.isFinite(settings[key]))) && (settings.min === undefined || settings.max === undefined || (settings.min as number) <= (settings.max as number)) && (settings.decimalPlaces === undefined || (Number.isInteger(settings.decimalPlaces) && (settings.decimalPlaces as number) >= 0 && (settings.decimalPlaces as number) <= 15))
   if (type === 'date') return dateDisplaySettingsValid(settings) && ['earliest', 'latest'].every(key => settings[key] === undefined || calendarDate(settings[key])) && (settings.earliest === undefined || settings.latest === undefined || (settings.earliest as string) <= (settings.latest as string))
-  if (type === 'consent') return text(settings.statement)
+  if (type === 'consent') return text(settings.statement) && consentQuestionPurposeValid(settings.purpose) && Object.keys(settings).every(key => ['statement', 'purpose'].includes(key))
   return true
 }

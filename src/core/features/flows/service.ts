@@ -1,5 +1,6 @@
 import type { LedgerFilter } from '../reporting'
 import { closedFlowFor } from '../responses/closed'
+import { marketingPublicationIssues } from '../../shared/marketingConsent'
 import { respondentTextPublicationIssues } from '../../shared/respondentText'
 import { confirmationPublicationIssues, remapConfirmationSettings } from '../../shared/confirmationSettings'
 import { prefillPublicationIssues } from '../../shared/knownDataPrefill'
@@ -434,6 +435,7 @@ export class FlowService {
     const { steps: rawSteps, choices: rawChoices, rules: rawRules } = snapshot
     const issues = validateRevisionGraph(rawSteps, rawChoices, rawRules, evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'], formSettings(snapshot.revision.formSettingsJson))
     issues.push(...respondentTextPublicationIssues(draft.formSettings.text))
+    issues.push(...marketingPublicationIssues(draft.formSettings.marketing,draft.steps))
     issues.push(...confirmationPublicationIssues(draft.formSettings.confirmation,draft))
     issues.push(...prefillPublicationIssues(draft.formSettings.prefill ?? [],draft.steps))
     issues.push(...hiddenPublicationIssues(formSettings(snapshot.revision.formSettingsJson)))

@@ -85,3 +85,4 @@
 .screen-questions { display:grid; gap:2rem; margin:1.5rem 0; }
 .screen-question { min-width:0; padding-top:1.5rem; border-top:1px solid var(--line, #ddd8cd); }
 .screen-question h2 { font-size:clamp(1.4rem, 3vw, 1.9rem); margin:0 0 1rem; }
+.respondent-marketing { margin: 0 0 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; font-size: 15px; line-height: 1.45; overflow-wrap: anywhere; }
