@@ -17,7 +17,7 @@ async function login(request: APIRequestContext) {
   expect((await request.post('/auth/confirm', { headers: { Origin: new URL(process.env.PENCIL_E2E_BASE_URL!).origin }, data: { token: inbox.messages[0].magicLinkToken },  maxRedirects: 0 })).status()).toBe(303)
 }
 
-async function form(request: APIRequestContext, slug: string, target?: number) {
+async function form(request: APIRequestContext, slug: string, target?: number, text?: Record<string, string>) {
   const title = `Synthetic closed review ${slug}`
   const create = await request.post('/api/app/flows', { headers: mutationHeaders, data: { title, slug } })
   expect(create.status()).toBe(201)
@@ -29,6 +29,7 @@ async function form(request: APIRequestContext, slug: string, target?: number) {
   }
   const current = await draft()
   expect((await request.put(`${path}/draft`, { headers: mutationHeaders, data: { stepId: current.steps[0].id, prompt: 'Your feedback', required: true, nextStepId: current.steps[1].id, expectedVersion: current.flow.draftVersion } })).status()).toBe(200)
+  if (text) { const base = await draft(); expect((await request.put(`${path}/draft/settings`, { headers: mutationHeaders, data: { expectedVersion: base.flow.draftVersion, settings: { ...base.formSettings, text } } })).status()).toBe(200) }
   const unpublished = await request.get(`/f/${slug}`)
   expect(unpublished.status()).toBe(404)
   expect((await request.post(`${path}/publish`, { headers: mutationHeaders, data: { expectedVersion: (await draft()).flow.draftVersion, ...(target ? { targetCompletedResponses: target } : {}) } })).status()).toBe(201)
@@ -43,7 +44,9 @@ contract('RESP-009', 'a respondent losing manual or final target admission sees 
   page.on('pageerror', (error) => errors.push(error.message))
   for (const reason of ['manual', 'target'] as const) {
     const slug = `closed-${reason}-${info.project.name}-${Date.now()}`
-    const f = await form(page.request, slug, reason === 'target' ? 1 : undefined)
+    // LANG-002: this form's published Submit label and closed or response-limit message replace Pencil's wording.
+    const label = `Send my ${reason} feedback`, message = reason === 'target' ? 'All places for this survey are taken.' : 'We have paused this survey.'
+    const f = await form(page.request, slug, reason === 'target' ? 1 : undefined, { submitLabel: label, ...(reason === 'target' ? { limitMessage: message } : { closedMessage: message }) })
     const contender = reason === 'target' ? await (await page.request.post(`/api/public/flows/${slug}/sessions`, { headers: mutationHeaders, data: { deviceClass: 'desktop', source: 'direct' } })).json() : undefined
     await page.goto(`/f/${slug}`)
     await expect(page.locator('[data-hydrated=true]')).toBeVisible()
@@ -58,15 +61,17 @@ contract('RESP-009', 'a respondent losing manual or final target admission sees 
       expect(await winner.json()).toMatchObject({ disposition: 'released' })
     } else expect((await page.request.post(`${f.path}/close`, { headers: mutationHeaders })).status()).toBe(204)
     const admission = page.waitForResponse((response) => response.url().endsWith(`/flows/${slug}/responses`))
-    await page.getByRole('button', { name: 'Submit response' }).click()
+    await expect(page.getByRole('button', { name: 'Submit response' })).toHaveCount(0)
+    await page.getByRole('button', { name: label, exact: true }).click()
     expect((await admission).status()).toBe(409)
     await expect(page.locator('[data-state=closed]')).toBeVisible()
     await expect(page.getByRole('heading', { name: 'This feedback flow is closed.' })).toBeVisible()
     await expect(page.getByText(f.title, { exact: true })).toBeVisible()
+    await expect(page.getByText(message, { exact: true })).toBeVisible()
     const brand = await (await page.request.get('/api/app/brand')).json()
     await expect(page.getByText(brand.name, { exact: true }).first()).toBeVisible()
     await expect(page.getByRole('textbox')).toHaveCount(0)
-    await expect(page.getByRole('button', { name: 'Submit response' })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: label })).toHaveCount(0)
     const ledger = await (await page.request.get(`${f.path}/ledger`)).json()
     expect(ledger.total).toBe(reason === 'target' ? 1 : 0)
     expect(JSON.stringify(ledger)).not.toContain('Unsaved synthetic answer')
