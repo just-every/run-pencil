@@ -43,7 +43,8 @@ export function auditDetails(kind: string, json: string): AuditRow['details'] {
   const countKeys: Record<string, string[]> = {
     'action.created': ['actions'], 'action.edited': ['fields'],
     'action.state_changed': ['actions'], 'action.verdict_recorded': ['actions'],
-    'action.measurement_recorded': ['measurements'], 'segment.deleted': ['segments'],
+    'action.measurement_recorded': ['measurements'], 'segment.deleted': ['segments'], 'flow.published': ['revision'],
+    'contact.erased': ['contacts', 'participants', 'responses', 'answers', 'deliveries', 'attempts', 'consentEvents', 'localMessages'],
     'submission.status_changed': ['fields'], 'submission.assignment_changed': ['fields'],
     'submission.tags_changed': ['fields'], 'submission.note_added': ['fields'],
     'submission.status_created': ['fields'],
@@ -52,6 +53,8 @@ export function auditDetails(kind: string, json: string): AuditRow['details'] {
     'notification.delivery': { status: ['sent', 'pending', 'failed', 'unknown'] },
     'digest.delivery': { status: ['sent', 'pending', 'failed', 'unknown'] },
     'contact.consent-changed': { consent: ['renewed', 'opted-out'] },
+    ...Object.fromEntries(['saved', 'tested', 'removed', 'rotated', 'paused', 'resumed'].map(change => [`connection.${change}`, { connection: ['analysis', 'task', 'payment', 'webhook'] }])),
+    'export.created': { export: ['responses', 'backup'] },
   }
   const counts = Object.hasOwn(countKeys, kind) ? countKeys[kind] : []
   const statuses = Object.hasOwn(statusKeys, kind) ? statusKeys[kind] : {}

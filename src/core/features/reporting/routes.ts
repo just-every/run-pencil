@@ -1,3 +1,6 @@
+import { recordOperatorAudit } from '../audit'
+import { calculationLimits } from '../../shared/calculations'
+import { workflowTag } from '../submissions'
 import { reportTrends } from './trends'
 import { ValidationError } from '../../shared/errors'
 import downloadWorker from './download-worker.js?raw'
@@ -59,12 +62,16 @@ export function registerReportingRoutes(app: Hono<WorkerEnvironment>, services: 
   app.get('/api/app/flows/:flowId/responses/export/start', zValidator('param', z.object({flowId:resourceId})), zValidator('query',filter.extend({format:z.enum(exportFormats),includeAutomatedExclusions:z.enum(['true','false']).transform(value=>value==='true').default(false)})), async context => {
     const session = context.get('operatorSession')
     const {format,includeAutomatedExclusions,...selected} = context.req.valid('query')
-    return context.json(await startExport(context.get('platform').databaseBinding,context.get('platform').configuration.sessionSecret,{workspaceId:session.workspaceId,sessionId:session.id,flowId:context.req.param('flowId')},selected,format,context.req.raw.signal,includeAutomatedExclusions))
+    const started = await startExport(context.get('platform').databaseBinding,context.get('platform').configuration.sessionSecret,{workspaceId:session.workspaceId,sessionId:session.id,flowId:context.req.param('flowId')},selected,format,context.req.raw.signal,includeAutomatedExclusions)
+    await recordOperatorAudit(context,'export.created',{type:'flow',id:context.req.param('flowId')},{export:'responses'})
+    return context.json(started)
   })
   app.post('/api/app/flows/:flowId/responses/export/start', zValidator('param', z.object({flowId:resourceId})), zValidator('json',filter.extend({format:z.enum(exportFormats),includeAutomatedExclusions:z.boolean().default(false)})), async context => {
     const session = context.get('operatorSession')
     const {format,includeAutomatedExclusions,...selected} = context.req.valid('json')
-    return context.json(await startExport(context.get('platform').databaseBinding,context.get('platform').configuration.sessionSecret,{workspaceId:session.workspaceId,sessionId:session.id,flowId:context.req.param('flowId')},selected,format,context.req.raw.signal,includeAutomatedExclusions))
+    const started = await startExport(context.get('platform').databaseBinding,context.get('platform').configuration.sessionSecret,{workspaceId:session.workspaceId,sessionId:session.id,flowId:context.req.param('flowId')},selected,format,context.req.raw.signal,includeAutomatedExclusions)
+    await recordOperatorAudit(context,'export.created',{type:'flow',id:context.req.param('flowId')},{export:'responses'})
+    return context.json(started)
   })
   app.get('/api/app/flows/:flowId/responses/export', zValidator('param', z.object({flowId:resourceId})), zValidator('query',z.object({token:z.string().min(1).max(65536)})), async context => {
     const session = context.get('operatorSession')

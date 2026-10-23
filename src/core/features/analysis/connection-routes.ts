@@ -5,6 +5,7 @@ import { requireConnectionOwner } from '../../app/connection-owner'
 import { analysisConnectionSchema } from '../../platform/config/connections'
 import { emptyMutationBody, validateInput } from '../../shared/validation'
 import { ValidationError } from '../../shared/errors'
+import { recordOperatorAudit } from '../audit'
 import { AnalysisFailure } from './model'
 import { callProvider, type CallUsage } from './provider-call'
 
@@ -14,10 +15,12 @@ export function registerAnalysisConnectionRoutes(app: Hono<WorkerEnvironment>) {
   app.put(path, validateInput('json', analysisConnectionSchema), async c => {
     await requireConnectionOwner(c)
     await c.get('services').connections.saveAnalysis(c.req.valid('json'))
+    await recordOperatorAudit(c, 'connection.saved', { type: 'connection' }, { connection: 'analysis' })
     return c.json({ message: 'Provider saved. Test the connection before requesting analysis.' })
   })
   app.delete(path, emptyMutationBody, async c => {
     await requireConnectionOwner(c); await c.get('services').connections.remove('analysis')
+    await recordOperatorAudit(c, 'connection.removed', { type: 'connection' }, { connection: 'analysis' })
     return c.json({ message: 'Using deployment settings.' })
   })
   app.post(`${path}/test`, emptyMutationBody, async c => {
@@ -40,6 +43,7 @@ export function registerAnalysisConnectionRoutes(app: Hono<WorkerEnvironment>) {
     }
     await c.get('platform').databaseBinding.prepare(`INSERT INTO analysis_calls (id, workspace_id, run_id, feature, provider, provider_origin, model, attempt, outcome, error_code, input_tokens, output_tokens, cost_microusd, cost_source, receipt_id, day, created_at)
       VALUES (?, ?, ?, 'connection-test', ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).bind(id, workspaceId, `connection-test-${id}`, provider.transport, provider.origin, provider.model, failure ? 'failed' : 'answered', failure ?? null, usage?.inputTokens ?? null, usage?.outputTokens ?? null, usage?.costMicrousd ?? null, usage?.costSource ?? 'not-reported', usage?.receiptId ?? null, at.slice(0, 10), at).run()
+    await recordOperatorAudit(c, 'connection.tested', { type: 'connection' }, { connection: 'analysis' })
     if (failure) throw new ValidationError(failure === 'upstream_auth' ? 'The provider refused the key. Create an API key with Responses access and check the provider account billing.' : `Connection test failed (${failure}). Check the API address, model access, billing and structured Responses API support; then test again.`)
     return c.json({ message: 'Connection passed: the model returned the required structured answer. No respondent data was sent. Usage is recorded below.' })
   })

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import type { WorkerEnvironment } from '../../app/environment'
 import { requireConnectionOwner } from '../../app/connection-owner'
 import { emptyMutationBody, resourceId, validateInput } from '../../shared/validation'
+import { recordOperatorAudit } from '../audit'
 import { createEndpointSchema } from './model'
 
 const endpointParam = validateInput('param', z.object({ endpointId: resourceId }))
@@ -28,21 +29,28 @@ export function registerWebhookRoutes(app: Hono<WorkerEnvironment>) {
   app.post('/api/app/webhooks', validateInput('json', createEndpointSchema), async c => {
     await requireConnectionOwner(c)
     const { workspaceId, operatorId } = c.get('operatorSession')
-    return c.json(await webhooks(c).endpoints.create(workspaceId, operatorId, c.req.valid('json')), 201)
+    const created = await webhooks(c).endpoints.create(workspaceId, operatorId, c.req.valid('json'))
+    await recordOperatorAudit(c, 'connection.saved', { type: 'connection' }, { connection: 'webhook' })
+    return c.json(created, 201)
   })
   app.post('/api/app/webhooks/:endpointId/rotate', endpointParam, emptyMutationBody, async c => {
     await requireConnectionOwner(c)
-    return c.json(await webhooks(c).endpoints.rotate(c.get('operatorSession').workspaceId, c.req.valid('param').endpointId))
+    const rotated = await webhooks(c).endpoints.rotate(c.get('operatorSession').workspaceId, c.req.valid('param').endpointId)
+    await recordOperatorAudit(c, 'connection.rotated', { type: 'connection' }, { connection: 'webhook' })
+    return c.json(rotated)
   })
   for (const [action, active] of [['pause', false], ['resume', true]] as const) {
     app.post(`/api/app/webhooks/:endpointId/${action}`, endpointParam, emptyMutationBody, async c => {
       await requireConnectionOwner(c)
-      return c.json({ endpoint: await webhooks(c).endpoints.setActive(c.get('operatorSession').workspaceId, c.req.valid('param').endpointId, active) })
+      const endpoint = await webhooks(c).endpoints.setActive(c.get('operatorSession').workspaceId, c.req.valid('param').endpointId, active)
+      await recordOperatorAudit(c, active ? 'connection.resumed' : 'connection.paused', { type: 'connection' }, { connection: 'webhook' })
+      return c.json({ endpoint })
     })
   }
   app.delete('/api/app/webhooks/:endpointId', endpointParam, emptyMutationBody, async c => {
     await requireConnectionOwner(c)
     await webhooks(c).endpoints.remove(c.get('operatorSession').workspaceId, c.req.valid('param').endpointId)
+    await recordOperatorAudit(c, 'connection.removed', { type: 'connection' }, { connection: 'webhook' })
     return c.body(null, 204)
   })
   app.post('/api/app/webhooks/:endpointId/test', endpointParam, emptyMutationBody, async c => {
@@ -52,6 +60,7 @@ export function registerWebhookRoutes(app: Hono<WorkerEnvironment>) {
     if (endpoint.state !== 'active') return c.json({ message: 'Resume the endpoint before sending a test event.' }, 409)
     const id = await deliveries.queueTest(workspaceId, endpointId)
     await dispatcher.sendNow(id)
+    await recordOperatorAudit(c, 'connection.tested', { type: 'connection' }, { connection: 'webhook' })
     return c.json({ delivery: (await deliveries.list(workspaceId, { endpointId }, id))[0] })
   })
   app.post('/api/app/webhooks/deliveries/:deliveryId/replay', deliveryParam, emptyMutationBody, async c => {
