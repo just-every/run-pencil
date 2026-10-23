@@ -173,7 +173,7 @@ contract(['RESP-020','DIST-014','LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-
   const confirmations=async()=>{
     const response=await request.get('/__test/mail',{headers:audienceOutboxHeaders()})
     expect(response.status()).toBe(200)
-    return (await response.json()).messages.filter((message:{deliveryId:string})=>message.deliveryId.startsWith('confirmation:'))
+    return (await response.json()).messages.filter((message:{deliveryId:string;to:string[]})=>message.deliveryId.startsWith('confirmation:')&&message.to.includes(recipient))
   }
   await expect.poll(async()=>(await confirmations()).length).toBe(1)
   const receipt=(await confirmations())[0]
