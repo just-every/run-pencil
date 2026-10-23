@@ -4725,7 +4725,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/ConfirmationSettings.tsx": {
-      "sha256": "5493c18683bb66d4180c6e261f111156accb5decaada3e37196ac23d776388be",
+      "sha256": "6d76ce876c75107507864540eaf616c96265b7619d849b67e0ef276070771a66",
       "executable": false
     },
     "src/core/features/flows/ui/DraftPreview.tsx": {
