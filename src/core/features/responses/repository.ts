@@ -475,6 +475,11 @@ export class ResponseRepository {
     return counts!
   }
 
+  async getDashboardCounts(revisionId: string) {
+    return this.binding.prepare(`SELECT COALESCE((SELECT starts FROM revision_metric_counters WHERE revision_id=?),0) AS starts,
+      (SELECT COUNT(*) FROM responses WHERE revision_id=? AND state='released') AS completedResponses`).bind(revisionId,revisionId).first<{starts:number;completedResponses:number}>()
+  }
+
   getResults(input: {workspaceId:string;flowId:string;filter:LedgerFilter}) {
     return resultSummary(this.binding,input)
   }

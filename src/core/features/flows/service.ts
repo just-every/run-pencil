@@ -112,7 +112,7 @@ export class FlowService {
     const dashboardFlows = await this.repository.listDashboardFlows(workspaceId, status)
     return Promise.all(dashboardFlows.map(async (flow) => {
       const publishedRevision = await this.repository.findCurrentPublishedRevision(flow.id)
-      const result = publishedRevision ? await this.responseRepository.getResults(publishedRevision.id) : undefined
+      const result = publishedRevision ? await this.responseRepository.getDashboardCounts(publishedRevision.id) : undefined
       return {
         id: flow.id,
         slug: flow.slug,
@@ -123,7 +123,7 @@ export class FlowService {
         lastActivityAt: flow.lastActivityAt,
         analysis: await this.repository.latestAnalysis(workspaceId, flow.id),
         completedResponses: result?.completedResponses ?? 0,
-        starts: result?.counter?.starts ?? 0,
+        starts: result?.starts ?? 0,
         audience: publishedRevision ? await this.responseRepository.audience(publishedRevision.id) : { launchedParticipants: 0, eligibleParticipants: 0, completedParticipants: 0 },
       }
     }))
