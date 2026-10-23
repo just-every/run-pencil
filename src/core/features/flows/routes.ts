@@ -1,5 +1,6 @@
 import { bodyLimit } from 'hono/body-limit'
 import { AccessRequiredError } from '../restricted-access'
+import { recordOperatorAudit } from '../audit'
 import { hiddenSettingsIssue, type FormSettings } from '../../shared/hiddenFields'
 import { conditionShape } from '../../shared/conditionValidation'
 import type { Condition } from '../../shared/conditions'
@@ -189,7 +190,9 @@ export function registerFlowRoutes(app: Hono<WorkerEnvironment>, services: Reque
   app.post('/api/app/flows/:flowId/publish', zValidator('param', z.object({ flowId: resourceId })), zValidator('json', z.object({ expectedVersion: z.number().int().nonnegative(), deadlineAt: z.string().datetime().nullable().optional(), targetCompletedResponses: z.number().int().positive().nullable().optional() })), async (context) => {
     try {
       requireSameOriginRequest(context.req.raw)
-      return context.json(await services(context).flows.publishDraft({ operatorId: context.get('operatorSession').operatorId, workspaceId: context.get('operatorSession').workspaceId, flowId: context.req.param('flowId'), ...context.req.valid('json') }), 201)
+      const published = await services(context).flows.publishDraft({ operatorId: context.get('operatorSession').operatorId, workspaceId: context.get('operatorSession').workspaceId, flowId: context.req.param('flowId'), ...context.req.valid('json') })
+      if (published.kind === 'published') await recordOperatorAudit(context, 'flow.published', { type: 'flow', id: context.req.param('flowId') }, { revision: published.revision.number })
+      return context.json(published, 201)
     } catch (error) {
       return failure(context, error)
     }

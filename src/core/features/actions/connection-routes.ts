@@ -4,6 +4,7 @@ import { requireConnectionOwner } from '../../app/connection-owner'
 import { IntegrationConnections, taskConnectionSchema } from '../../platform/config/connections'
 import { emptyMutationBody, validateInput } from '../../shared/validation'
 import { ValidationError } from '../../shared/errors'
+import { recordOperatorAudit } from '../audit'
 import { taskDestination } from './destination'
 import { isTodoist } from './task-request'
 
@@ -12,10 +13,12 @@ export function registerTaskConnectionRoutes(app: Hono<WorkerEnvironment>) {
   app.get(path, async c => c.json(await c.get('services').connections.taskStatus()))
   app.put(path, validateInput('json', taskConnectionSchema), async c => {
     await requireConnectionOwner(c); await c.get('services').connections.saveTask(c.req.valid('json'))
+    await recordOperatorAudit(c, 'connection.saved', { type: 'connection' }, { connection: 'task' })
     return c.json(await c.get('services').connections.taskStatus())
   })
   app.delete(path, emptyMutationBody, async c => {
     await requireConnectionOwner(c); await c.get('services').connections.remove('task')
+    await recordOperatorAudit(c, 'connection.removed', { type: 'connection' }, { connection: 'task' })
     return c.json(await new IntegrationConnections(c.get('platform')).taskStatus())
   })
   app.post(`${path}/test`, emptyMutationBody, async c => {
@@ -31,6 +34,7 @@ export function registerTaskConnectionRoutes(app: Hono<WorkerEnvironment>) {
       metric: { name: 'Connection check', unit: 'checks', direction: 'increase', baseline: { value: 0, source: 'Connection test', observedAt: '2026-01-01T00:00:00.000Z' } },
       reviewDate: '2026-01-01', reportLink: `${connections.configuration.appOrigin}/app/actions`,
     } })
+    await recordOperatorAudit(c, 'connection.tested', { type: 'connection' }, { connection: 'task' })
     if (result.outcome !== 'confirmed') throw new ValidationError(isTodoist(task.url) ? `Todoist did not confirm the task (${result.outcomeClass}). Check your Todoist API token and account access. A task may already exist in Inbox; testing again uses the same command, without adding a duplicate.` : `The receiver did not confirm a task (${result.outcomeClass}). Check its address, bearer key and JSON response. A task may already exist; testing again uses the same key.`)
     return c.json({ message: isTodoist(task.url) ? 'Todoist confirmed the test task. Open your Inbox to check it. Repeating the test uses the same command.' : 'Test task confirmed. Repeating the test uses the same key.', taskId: result.remoteTaskId, ...(isTodoist(task.url) ? { taskUrl: `https://app.todoist.com/app/task/${encodeURIComponent(result.remoteTaskId)}` } : {}) })
   })

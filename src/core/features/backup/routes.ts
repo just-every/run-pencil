@@ -2,6 +2,7 @@ import type { Hono } from 'hono'
 import type { WorkerEnvironment } from '../../app/environment'
 import { requireSameOriginRequest } from '../auth'
 import { ForbiddenError, ValidationError } from '../../shared/errors'
+import { recordOperatorAudit } from '../audit'
 import { backupBytes } from './model'
 import { exportBackup } from './export'
 import { checkBackup } from './check'
@@ -35,6 +36,7 @@ export function registerBackupRoutes(app: Hono<WorkerEnvironment>) {
   })
   app.post('/api/app/backup/export', async c => {
     const result = await exportBackup(c.get('platform').databaseBinding, c.get('platform').formAssets)
+    await recordOperatorAudit(c, 'export.created', { type: 'backup' }, { export: 'backup' })
     return new Response(result.body, {headers: {...privateHeaders, 'content-type': 'application/json; charset=utf-8',
       'content-disposition': 'attachment; filename="pencil-backup.rer"', 'x-pencil-backup-sha256': result.summary.sha256}})
   })
