@@ -221,3 +221,4 @@
 .builder-inspector .step-content-heading:has(> details[open]) { display:block; }
 
 .known-data-settings .toggle-row { min-height:44px; align-items:center; }
+.known-data-settings[open] { margin-bottom:12px; }

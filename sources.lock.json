@@ -4681,7 +4681,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/authoring.css": {
-      "sha256": "bc7aca1d462bafcdc9b251b16bfb997e4f8e54f75afd7355e463aa02961c5370",
+      "sha256": "0009c041f06f92e4c93fac4e7bfbf88c0539fdb4c91c015e4db02761a73e289f",
       "executable": false
     },
     "src/core/features/flows/ui/BranchEditor.tsx": {
