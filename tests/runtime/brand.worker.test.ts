@@ -129,45 +129,45 @@ contract('DIST-020', 'duplicates and team templates retain share images under th
   }
 })
 
-contract('DIST-020', 'settings API rejects recalled preview text and invalid, oversized or unlabelled image uploads without mutating the draft', async () => {
-  const f = await previewFixture(), before = await f.read()
-  const invalid = [
-    { title: '{{hidden:campaign}}' }, { description: '{{variable:score}}' }, { title: '*|EMAIL|*' }, { description: '%%answer%%' },
-    { title: 'x'.repeat(linkPreviewLimits.titleCharacters + 1) }, { description: 'x'.repeat(linkPreviewLimits.descriptionCharacters + 1) },
-    { image: { ...previewImage, alt: '' } }, { image: { ...previewImage, alt: '{{hidden:campaign}}' } },
-    { image: { ...previewImage, mime: 'image/jpeg' } }, { image: { ...previewImage, mime: 'image/svg+xml' } },
-    { image: { ...previewImage, base64: 'invalid!' } },
-    { image: { ...previewImage, base64: btoa('x'.repeat(linkPreviewLimits.imageBytes + 1)) } },
-    { allowIndexing: 'true' }, { unknownSetting: true },
-  ]
-  for (const linkPreview of invalid) expect((await f.save({ ...f.settings, linkPreview })).status).toBe(400)
-  expect((await f.read()).flow.draftVersion).toBe(before.flow.draftVersion)
-  expect((await f.read()).formSettings).toEqual(before.formSettings)
-  expect((await f.save({ ...f.settings, linkPreview: { title: '', description: '', image: previewImage } })).status).toBe(200)
-  expect((await f.publish()).status).toBe(201)
+contract('DIST-020', 'settings API rejects recalled preview text and invalid, oversized or unlabelled image uploads without mutating the draft, and publication rejects indexing on restricted and identified forms while preserving their existing admission rules', async () => {
+  {
+    const f = await previewFixture(), before = await f.read()
+    const invalid = [
+      { title: '{{hidden:campaign}}' }, { description: '{{variable:score}}' }, { title: '*|EMAIL|*' }, { description: '%%answer%%' },
+      { title: 'x'.repeat(linkPreviewLimits.titleCharacters + 1) }, { description: 'x'.repeat(linkPreviewLimits.descriptionCharacters + 1) },
+      { image: { ...previewImage, alt: '' } }, { image: { ...previewImage, alt: '{{hidden:campaign}}' } },
+      { image: { ...previewImage, mime: 'image/jpeg' } }, { image: { ...previewImage, mime: 'image/svg+xml' } },
+      { image: { ...previewImage, base64: 'invalid!' } },
+      { image: { ...previewImage, base64: btoa('x'.repeat(linkPreviewLimits.imageBytes + 1)) } },
+      { allowIndexing: 'true' }, { unknownSetting: true },
+    ]
+    for (const linkPreview of invalid) expect((await f.save({ ...f.settings, linkPreview })).status).toBe(400)
+    expect((await f.read()).flow.draftVersion).toBe(before.flow.draftVersion)
+    expect((await f.read()).formSettings).toEqual(before.formSettings)
+    expect((await f.save({ ...f.settings, linkPreview: { title: '', description: '', image: previewImage } })).status).toBe(200)
+    expect((await f.publish()).status).toBe(201)
+  }
+  {
+    const f = await previewFixture()
+    expect((await f.call(f.base + '/access', { expectedVersion: (await f.read()).flow.draftVersion, rule: { mode: 'password', password: 'synthetic-survey-password' } }, { method: 'PUT' })).status).toBe(200)
+    const restricted = (await f.read()).formSettings!
+    expect((await f.save({ ...restricted, linkPreview: { allowIndexing: true } })).status).toBe(200)
+    const refused = await f.publish()
+    expect(refused.status).toBe(400)
+    expect(await refused.text()).toContain('indexing')
+    expect((await f.read()).formSettings!.access).toEqual(restricted.access)
+    expect((await f.save({ ...restricted, linkPreview: { allowIndexing: false } })).status).toBe(200)
+    expect((await f.publish()).status).toBe(201)
+    const gate = await f.call(`/api/public/flows/${f.slug}`, undefined, { auth: false })
+    expect(gate.status).toBe(403)
+    expect(await gate.json()).toMatchObject({ restriction: { mode: 'password' } })
+    const identified = await previewFixture()
+    expect((await identified.save({ ...identified.settings, identityMode: 'identified', linkPreview: { allowIndexing: true } })).status).toBe(200)
+    expect((await identified.publish()).status).toBe(400)
+    expect((await identified.save({ ...identified.settings, identityMode: 'identified', linkPreview: { allowIndexing: false } })).status).toBe(200)
+    expect((await identified.publish()).status).toBe(201)
+  }
 })
-
-contract('DIST-020', 'publication rejects indexing on restricted and identified forms while preserving their existing admission rules', async () => {
-  const f = await previewFixture()
-  expect((await f.call(f.base + '/access', { expectedVersion: (await f.read()).flow.draftVersion, rule: { mode: 'password', password: 'synthetic-survey-password' } }, { method: 'PUT' })).status).toBe(200)
-  const restricted = (await f.read()).formSettings!
-  expect((await f.save({ ...restricted, linkPreview: { allowIndexing: true } })).status).toBe(200)
-  const refused = await f.publish()
-  expect(refused.status).toBe(400)
-  expect(await refused.text()).toContain('indexing')
-  expect((await f.read()).formSettings!.access).toEqual(restricted.access)
-  expect((await f.save({ ...restricted, linkPreview: { allowIndexing: false } })).status).toBe(200)
-  expect((await f.publish()).status).toBe(201)
-  const gate = await f.call(`/api/public/flows/${f.slug}`, undefined, { auth: false })
-  expect(gate.status).toBe(403)
-  expect(await gate.json()).toMatchObject({ restriction: { mode: 'password' } })
-  const identified = await previewFixture()
-  expect((await identified.save({ ...identified.settings, identityMode: 'identified', linkPreview: { allowIndexing: true } })).status).toBe(200)
-  expect((await identified.publish()).status).toBe(400)
-  expect((await identified.save({ ...identified.settings, identityMode: 'identified', linkPreview: { allowIndexing: false } })).status).toBe(200)
-  expect((await identified.publish()).status).toBe(201)
-})
-
 contract('DIST-020', 'upgrading existing publications freezes their logo preview without changing admission policy', async () => {
   const f = await previewFixture()
   await env.DB.prepare('UPDATE workspaces SET name=?,brand_configured=1,brand_logo_base64=?,brand_logo_mime=? WHERE id=?').bind('Harbour Studio',previewImage.base64,previewImage.mime,f.workspace).run()

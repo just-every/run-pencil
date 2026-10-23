@@ -90,70 +90,71 @@ contract(['ANLY-014'], 'instructions planted in answers change nothing: a tool c
   expect((await (await f.call('/api/app/analysis')).json() as any).policies).toEqual(policies.policies)
 })
 
-contract(['ANLY-008'], 'an unconfigured or failing provider fails the request with its error and a retry action, sends nothing invented, and collection, results and exports keep working', async () => {
-  const off = await analysisHttp({ AI_ENABLED: 'false' })
-  await fiveAbout(i => `Unanalysed ${i}`, off)
-  const status = await (await off.call('/api/app/analysis')).json() as any
-  expect(status.provider.state).toBe('off')
-  const run = await off.request()
-  expect(run).toMatchObject({ state: 'failed', errorCode: 'ai_disabled', themes: [], recommendation: null, calls: [] })
-  expect(await ai.requests()).toEqual([])
-  await off.respond('Still collecting')
-  expect((await off.call(`/api/app/flows/${off.flowId}/results`)).status).toBe(200)
-  expect((await off.call(`/api/app/flows/${off.flowId}/ledger`)).status).toBe(200)
-  expect((await off.call(`/api/app/flows/${off.flowId}/responses/export/start?format=csv`)).status).toBe(200)
-  // A provider that refuses (an auth failure is terminal) fails with its fixed error; the operator retries once it is fixed.
-  const failing = await analysisHttp()
-  const ids = await fiveAbout(i => `Retry me ${i}`, failing)
-  await ai.script({ status: 401, body: { error: { message: 'invalid key sk-should-never-show' } } })
-  const refused = await failing.request()
-  expect(refused).toMatchObject({ state: 'failed', errorCode: 'upstream_auth' })
-  expect(JSON.stringify(refused)).not.toContain('sk-should-never-show')
-  await ai.script(answer({ outcome: 'findings', reason: '', themes: [theme('Retry me', ids)], recommendations: [] }))
-  const retried = await (await failing.call(`/api/app/analysis/${refused.id}/retry`, undefined, 'POST')).json() as any
-  expect(retried).toMatchObject({ id: refused.id, state: 'completed' })
-})
-
-contract(['ANLY-016'], 'a transient transport failure is retried at most three times within ten minutes with the same request; a schema failure is never retried', async () => {
-  const f = await analysisHttp()
-  const ids = await fiveAbout(i => `Transient ${i}`, f)
-  const start = Date.now()
-  const run = await f.request()
-  expect(run).toMatchObject({ state: 'queued', attempts: 1, errorCode: 'upstream_unavailable' })
-  const due = (detail: any) => Date.parse(detail.nextAttemptAt)
-  let detail = run
-  for (let attempt = 2; attempt <= 4; attempt++) {
-    if (attempt === 4) await ai.script(answer({ outcome: 'findings', reason: '', themes: [theme('Transient', ids)], recommendations: [] }))
-    await tick(due(detail) - 1)
-    expect((await f.detail(run.id)).attempts).toBe(attempt - 1)
-    await tick(due(detail))
-    detail = await f.detail(run.id)
-    expect(detail.attempts).toBe(attempt)
+contract(['ANLY-008', 'ANLY-016'], 'an unconfigured or failing provider fails the request with its error and a retry action while collection keeps working; a transient transport failure is retried at most three times within ten minutes with the same request and a schema failure is never retried', async () => {
+  {
+    const off = await analysisHttp({ AI_ENABLED: 'false' })
+    await fiveAbout(i => `Unanalysed ${i}`, off)
+    const status = await (await off.call('/api/app/analysis')).json() as any
+    expect(status.provider.state).toBe('off')
+    const run = await off.request()
+    expect(run).toMatchObject({ state: 'failed', errorCode: 'ai_disabled', themes: [], recommendation: null, calls: [] })
+    expect(await ai.requests()).toEqual([])
+    await off.respond('Still collecting')
+    expect((await off.call(`/api/app/flows/${off.flowId}/results`)).status).toBe(200)
+    expect((await off.call(`/api/app/flows/${off.flowId}/ledger`)).status).toBe(200)
+    expect((await off.call(`/api/app/flows/${off.flowId}/responses/export/start?format=csv`)).status).toBe(200)
+    // A provider that refuses (an auth failure is terminal) fails with its fixed error; the operator retries once it is fixed.
+    const failing = await analysisHttp()
+    const ids = await fiveAbout(i => `Retry me ${i}`, failing)
+    await ai.script({ status: 401, body: { error: { message: 'invalid key sk-should-never-show' } } })
+    const refused = await failing.request()
+    expect(refused).toMatchObject({ state: 'failed', errorCode: 'upstream_auth' })
+    expect(JSON.stringify(refused)).not.toContain('sk-should-never-show')
+    await ai.script(answer({ outcome: 'findings', reason: '', themes: [theme('Retry me', ids)], recommendations: [] }))
+    const retried = await (await failing.call(`/api/app/analysis/${refused.id}/retry`, undefined, 'POST')).json() as any
+    expect(retried).toMatchObject({ id: refused.id, state: 'completed' })
   }
-  expect(detail.state).toBe('completed')
-  expect(Date.parse(detail.finishedAt) - start).toBeLessThanOrEqual(10 * 60_000)
-  const bodies = (await ai.requests()).map(request => request.body)
-  expect(bodies).toHaveLength(4)
-  expect(new Set(bodies).size).toBe(1)
-  // Four transient failures leave a failed run with its retry action; nothing beyond the fourth attempt is sent.
-  const exhausted = await analysisHttp()
-  await fiveAbout(i => `Exhausted ${i}`, exhausted)
   await ai.reset()
-  let failing = await exhausted.request()
-  while (failing.state === 'queued') { await tick(due(failing)); failing = await exhausted.detail(failing.id) }
-  expect(failing).toMatchObject({ state: 'failed', attempts: 4 })
-  expect(await ai.requests()).toHaveLength(4)
-  // A schema-invalid answer is terminal.
-  const invalid = await analysisHttp()
-  await fiveAbout(i => `Invalid ${i}`, invalid)
-  await ai.reset([answer({ outcome: 'findings' })])
-  const terminal = await invalid.request()
-  expect(terminal).toMatchObject({ state: 'failed', errorCode: 'schema_invalid', attempts: 1 })
-  await tick(Date.now() + 11 * 60_000)
-  expect(await ai.requests()).toHaveLength(1)
-  expect((await invalid.detail(terminal.id)).state).toBe('failed')
+  {
+    const f = await analysisHttp()
+    const ids = await fiveAbout(i => `Transient ${i}`, f)
+    const start = Date.now()
+    const run = await f.request()
+    expect(run).toMatchObject({ state: 'queued', attempts: 1, errorCode: 'upstream_unavailable' })
+    const due = (detail: any) => Date.parse(detail.nextAttemptAt)
+    let detail = run
+    for (let attempt = 2; attempt <= 4; attempt++) {
+      if (attempt === 4) await ai.script(answer({ outcome: 'findings', reason: '', themes: [theme('Transient', ids)], recommendations: [] }))
+      await tick(due(detail) - 1)
+      expect((await f.detail(run.id)).attempts).toBe(attempt - 1)
+      await tick(due(detail))
+      detail = await f.detail(run.id)
+      expect(detail.attempts).toBe(attempt)
+    }
+    expect(detail.state).toBe('completed')
+    expect(Date.parse(detail.finishedAt) - start).toBeLessThanOrEqual(10 * 60_000)
+    const bodies = (await ai.requests()).map(request => request.body)
+    expect(bodies).toHaveLength(4)
+    expect(new Set(bodies).size).toBe(1)
+    // Four transient failures leave a failed run with its retry action; nothing beyond the fourth attempt is sent.
+    const exhausted = await analysisHttp()
+    await fiveAbout(i => `Exhausted ${i}`, exhausted)
+    await ai.reset()
+    let failing = await exhausted.request()
+    while (failing.state === 'queued') { await tick(due(failing)); failing = await exhausted.detail(failing.id) }
+    expect(failing).toMatchObject({ state: 'failed', attempts: 4 })
+    expect(await ai.requests()).toHaveLength(4)
+    // A schema-invalid answer is terminal.
+    const invalid = await analysisHttp()
+    await fiveAbout(i => `Invalid ${i}`, invalid)
+    await ai.reset([answer({ outcome: 'findings' })])
+    const terminal = await invalid.request()
+    expect(terminal).toMatchObject({ state: 'failed', errorCode: 'schema_invalid', attempts: 1 })
+    await tick(Date.now() + 11 * 60_000)
+    expect(await ai.requests()).toHaveLength(1)
+    expect((await invalid.detail(terminal.id)).state).toBe('failed')
+  }
 })
-
 contract(['DATA-002', 'DATA-001'], 'erasing a response removes it from every analysis, quote and evidence list, and a restored run never calls the provider by itself', async () => {
   const f = await analysisHttp()
   const canary = 'erasure-canary-5b1d private story'

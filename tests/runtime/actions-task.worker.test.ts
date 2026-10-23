@@ -26,18 +26,29 @@ async function configured(key = `TASK-KEY-CANARY-${crypto.randomUUID()}`) {
   return { f, key, action, preview, confirm, retry }
 }
 
-contract(['ACT-003', 'ACT-004', 'ACT-007'], 'a 500 fails visibly, keeps the local action and a retry on the same key creates one task', async () => {
-  await reset('fail-once-500')
-  const t = await configured()
-  const failed = await t.confirm()
-  expect(failed.body.delivery).toMatchObject({ state: 'failed', remoteTaskId: null })
-  expect(failed.body.delivery!.attempts).toEqual([expect.objectContaining({ outcome: 'failed', outcomeClass: '5xx', httpStatus: 500 })])
-  expect(await (await t.f.call(`/api/app/actions/${t.action.id}`)).json()).toMatchObject({ id: t.action.id, state: 'planned' })
-  const retried = await t.retry()
-  expect(retried.body.delivery).toMatchObject({ state: 'confirmed', remoteTaskId: 'task-1' })
-  const state = await received()
-  expect(Object.keys(state.tasks)).toHaveLength(1)
-  expect(state.requests.map(request => request.idempotencyKey)).toEqual([`pencil-action-${t.action.id}`, `pencil-action-${t.action.id}`])
+contract(['ACT-003', 'ACT-004', 'ACT-007'], 'a 500 fails visibly and a dropped connection is unknown; both keep the local action and a retry on the same key creates one task', async () => {
+  for (const mode of ['fail-once-500', 'store-then-drop-once'] as const) {
+    await reset(mode)
+    const t = await configured()
+    const first = await t.confirm()
+    if (mode === 'fail-once-500') {
+      expect(first.body.delivery).toMatchObject({ state: 'failed', remoteTaskId: null })
+      expect(first.body.delivery!.attempts).toEqual([expect.objectContaining({ outcome: 'failed', outcomeClass: '5xx', httpStatus: 500 })])
+      expect(await (await t.f.call(`/api/app/actions/${t.action.id}`)).json()).toMatchObject({ id: t.action.id, state: 'planned' })
+    } else {
+      // The receiver stored the task before the connection dropped.
+      expect(first.body.delivery).toMatchObject({ state: 'unknown', remoteTaskId: null })
+      expect(first.body.delivery!.attempts).toEqual([expect.objectContaining({ outcome: 'unknown', outcomeClass: 'network' })])
+      expect(Object.keys((await received()).tasks)).toHaveLength(1)
+    }
+    const retried = await t.retry()
+    expect(retried.body.delivery).toMatchObject({ state: 'confirmed', remoteTaskId: 'task-1' })
+    const state = await received()
+    expect(Object.keys(state.tasks)).toHaveLength(1)
+    expect(state.tasks).toEqual({ [`pencil-action-${t.action.id}`]: 'task-1' })
+    expect(state.requests.map(request => request.idempotencyKey)).toEqual([`pencil-action-${t.action.id}`, `pencil-action-${t.action.id}`])
+    if (mode === 'store-then-drop-once') expect(state.requests.map(request => request.body)).toEqual([state.requests[0].body, state.requests[0].body])
+  }
   // The self-serve Todoist path confirms the same displayed command and uses
   // its UUID again when the paid/network edge reports a temporary failure.
   const todo = await actionsHttp({TASK_PROVIDER:'webhook',TASK_WEBHOOK_URL:'https://api.todoist.com/api/v1/sync',TASK_API_KEY:'synthetic-todoist-network-edge-only'} as Partial<WorkerBindings>)
@@ -59,22 +70,6 @@ contract(['ACT-003', 'ACT-004', 'ACT-007'], 'a 500 fails visibly, keeps the loca
     expect(requests[0]).toBe(requests[1])
     expect(JSON.parse(requests[0])).toEqual((preview as Status & {request:{commands:unknown}}).request.commands)
   } finally {edge.mockRestore()}
-
-})
-
-contract(['ACT-003', 'ACT-007'], 'a connection dropped after the receiver stored the task is unknown; retry on the same key returns the existing task', async () => {
-  await reset('store-then-drop-once')
-  const t = await configured()
-  const unknown = await t.confirm()
-  expect(unknown.body.delivery).toMatchObject({ state: 'unknown', remoteTaskId: null })
-  expect(unknown.body.delivery!.attempts).toEqual([expect.objectContaining({ outcome: 'unknown', outcomeClass: 'network' })])
-  expect(Object.keys((await received()).tasks)).toHaveLength(1)
-  const retried = await t.retry()
-  expect(retried.body.delivery).toMatchObject({ state: 'confirmed', remoteTaskId: 'task-1' })
-  const state = await received()
-  expect(state.tasks).toEqual({ [`pencil-action-${t.action.id}`]: 'task-1' })
-  expect(new Set(state.requests.map(request => request.idempotencyKey))).toEqual(new Set([`pencil-action-${t.action.id}`]))
-  expect(state.requests.map(request => request.body)).toEqual([state.requests[0].body, state.requests[0].body])
 })
 
 contract(['ACT-006'], 'only the confirmed action fields and report link leave: no answer or respondent-visible text, and a changed action must be confirmed again', async () => {
@@ -99,19 +94,14 @@ contract(['ACT-006'], 'only the confirmed action fields and report link leave: n
   for (const canary of ['ANSWER-CANARY', 'Private Person', 'VISIBLE-CANARY', 'How was the wait', 'Too long']) expect(request.body).not.toContain(canary)
 })
 
-contract(['ACT-004'], 'with no adapter configured the external task is unavailable with setup guidance and no request is made, while the action works', async () => {
+contract(['ACT-004', 'ACT-007'], 'with no adapter configured the external task is unavailable and the action works; redirects are not followed and a plain http URL is refused outside the dev and test runtimes', async () => {
   await reset('ok')
-  const f = await actionsHttp()
-  const action = await f.create()
-  const status = await (await f.call(`/api/app/actions/${action.id}/task`)).json() as Status
-  expect(status).toMatchObject({ available: false, delivery: null })
-  const refused = await f.call(`/api/app/actions/${action.id}/task/confirm`, { payloadSha256: 'a'.repeat(64) })
-  expect(refused.status).toBe(409)
-  expect((await f.call(`/api/app/actions/${action.id}/transitions`, { to: 'in_progress' })).status).toBe(200)
+  const bare = await actionsHttp()
+  const bareAction = await bare.create()
+  expect(await (await bare.call(`/api/app/actions/${bareAction.id}/task`)).json() as Status).toMatchObject({ available: false, delivery: null })
+  expect((await bare.call(`/api/app/actions/${bareAction.id}/task/confirm`, { payloadSha256: 'a'.repeat(64) })).status).toBe(409)
+  expect((await bare.call(`/api/app/actions/${bareAction.id}/transitions`, { to: 'in_progress' })).status).toBe(200)
   expect((await received()).requests).toEqual([])
-})
-
-contract(['ACT-004', 'ACT-007'], 'redirects are not followed and a plain http URL is refused outside the dev and test runtimes', async () => {
   await reset('redirect')
   const t = await configured()
   const redirected = await t.confirm()

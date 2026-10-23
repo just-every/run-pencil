@@ -4,6 +4,6 @@
   "reason": "DIST-020 round, 22 October 2026: Pencil already contains 265 actual registrations, not the historic 215/234 wrapper-site counts. Preserve all existing business assertions. This bounded rider allows the preview custody, upload validation, indexing admission and emitted-Worker document behaviors plus archive custody, while keeping the suite in the low hundreds. No assertion is deleted or weakened to meet the cap.",
   "baselineRegistrations": 265,
   "baselineProjectExpandedCases": 363,
-  "currentRegistrations": 276,
-  "currentProjectExpandedCases": 376
+  "currentRegistrations": 270,
+  "currentProjectExpandedCases": 370
 }
