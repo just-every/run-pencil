@@ -77,6 +77,8 @@ contract(['RESP-020','DIST-014','LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-
   await page.getByLabel('short text',{exact:true}).check()
   await page.getByRole('button',{name:'Save confirmation settings',exact:true}).click()
   await expect(page.getByRole('status')).toContainText('Confirmation settings saved to the draft')
+  await page.getByText('Respondent confirmation email',{exact:true}).click()
+  await expect(page.getByLabel('Send a confirmation after completion',{exact:true})).toBeVisible()
   await expect(page.getByLabel('Send a confirmation after completion',{exact:true})).toBeChecked()
   await audienceScreen(page,info,'confirmation-builder')
   await call(`${path}/publish`, { expectedVersion: (await call(`${path}/draft`)).flow.draftVersion })
