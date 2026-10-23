@@ -9,6 +9,9 @@ import AxeBuilder from '@axe-core/playwright'
 import { collectAnswerScenario, type ScenarioCall } from '../results-scenario'
 contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006', 'LEDG-001', 'DATA-002', 'BASE-PUBLIC-003'], 'answers first across every type, an RSLT-006 crosstab states shares and suppression, comparison replaces results and ledger confirms erasure', async ({ page }, info) => {
   test.setTimeout(180000)
+  const hydrationErrors:string[]=[]
+  page.on('pageerror',error=>{if(/hydrat/i.test(error.message))hydrationErrors.push(error.message)})
+  page.on('console',message=>{if(message.type()==='error' && /hydrat/i.test(message.text()))hydrationErrors.push(message.text())})
   const capture = async (name: string) => {
     if (!process.env.PENCIL_CAPTURE_DIR) return
     await mkdir(process.env.PENCIL_CAPTURE_DIR, { recursive: true })
@@ -69,8 +72,12 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
   await expect(page.locator('.device-card').locator('.device-row').filter({hasText:'mobile'})).toContainText('6 / 6 · 100%')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   expect((await new AxeBuilder({page}).include('.operator-content').analyze()).violations.filter(violation=>violation.impact==='serious'||violation.impact==='critical')).toEqual([])
+  expect(hydrationErrors).toEqual([])
   await capture('device-filtered')
-  if(process.env.PENCIL_CAPTURE_DIR) await page.locator('.device-card').screenshot({path:join(process.env.PENCIL_CAPTURE_DIR,`${info.project.name}-device-filtered.png`)})
+  if(process.env.PENCIL_CAPTURE_DIR) {
+    await page.locator('.device-card').screenshot({path:join(process.env.PENCIL_CAPTURE_DIR,`${info.project.name}-device-filtered.png`)})
+    await responseFilters.screenshot({path:join(process.env.PENCIL_CAPTURE_DIR,`${info.project.name}-ledger-device-filtered.png`)})
+  }
   await responseFilters.getByRole('combobox',{name:'Question, hidden field or calculation',exact:true}).selectOption('')
   await expect(page.locator('.device-card').getByRole('heading',{name:'Starts by device class'})).toBeVisible()
   await expect(page.locator('.device-card')).toContainText('12 recorded starts')
