@@ -219,3 +219,5 @@
 .builder-inspector .step-content-heading > details { margin-top:0; min-width:0; font-size:14px; font-weight:400; letter-spacing:normal; text-transform:none; }
 .builder-inspector .step-content-heading > details > summary { padding:0; font-size:12px; line-height:1.5; }
 .builder-inspector .step-content-heading:has(> details[open]) { display:block; }
+
+.known-data-settings .toggle-row { min-height:44px; align-items:center; }

@@ -4681,7 +4681,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/authoring.css": {
-      "sha256": "a5a12a60a057c9bba14c7deabefe2c1fb482913918f98779b2b7ebde589f5260",
+      "sha256": "bc7aca1d462bafcdc9b251b16bfb997e4f8e54f75afd7355e463aa02961c5370",
       "executable": false
     },
     "src/core/features/flows/ui/BranchEditor.tsx": {
@@ -4749,7 +4749,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/PrefillSettings.tsx": {
-      "sha256": "6ea6af48b749b9d00235f1f1e1de9899516ee45c77e11c44b07c0a6fa72e5297",
+      "sha256": "9076abfbaaf303696582e7f4c739908ce6c0beecb025da1a8c7d84f85b05f400",
       "executable": false
     },
     "src/core/features/flows/ui/RatingSettings.tsx": {
@@ -6721,7 +6721,7 @@
       "executable": false
     },
     "tests/e2e/distribution-foundation.spec.ts": {
-      "sha256": "4ff61185cb75381c4934dee379a5d5b363f0cf5fe46b55a20bf61aea37062151",
+      "sha256": "1100dff3aa3f7a6074d23cfa0f2300a363fc27583e36aee64e45198deff5662a",
       "executable": false
     },
     "tests/e2e/distribution-helpers.ts": {
