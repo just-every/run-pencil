@@ -1,14 +1,10 @@
 import type { AuditRow, AuditSnapshot } from './model'
 import { readAuditRows } from './reader-query'
+import { csvCell } from '../../shared/csvCell'
 
 const bytes = new TextEncoder()
-function cell(value: string) {
-  // Quoting alone does not stop spreadsheet formulas in operator-written names.
-  const safe = /^[\s\u0000-\u001f]*[=+@-]/.test(value) || /^[\t\r\n]/.test(value) ? `'${value}` : value
-  return `"${safe.replaceAll('"', '""')}"`
-}
 function line(row: AuditRow) {
-  return [row.id, row.createdAt, row.kind, row.actor?.id ?? '', row.actor?.name ?? '', row.form?.id ?? '', row.form?.name ?? '', JSON.stringify(row.details)].map(cell).join(',') + '\r\n'
+  return [row.id, row.createdAt, row.kind, row.actor?.id ?? '', row.actor?.name ?? '', row.form?.id ?? '', row.form?.name ?? '', JSON.stringify(row.details)].map(csvCell).join(',') + '\r\n'
 }
 
 export function auditCsvStream(db: D1Database, initial: AuditSnapshot, signal?: AbortSignal) {

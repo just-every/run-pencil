@@ -1,6 +1,7 @@
 import { deflateRawSync, inflateRawSync } from 'node:zlib'
 import { Buffer } from 'node:buffer'
 import { NotFoundError, ValidationError } from '../../shared/errors'
+import { csvCell } from '../../shared/csvCell'
 import { checkGeneration, generation, openCursor, sealCursor, type EvidenceScope } from './cursor'
 import { ReportingRepository, type LedgerFilter, type LedgerResponse } from './repository'
 import { responseScope, type ResponseSelection } from './scope'
@@ -40,14 +41,13 @@ export async function startExport(db: D1Database, secret: string, identity: Expo
   if (token.length > 62000) throw new ValidationError('This export exceeds the report cursor size limit. Narrow the selected responses and export again.')
   return { token, cutoff: scope.cutoff, total: cursor.total, includedQuarantined, includeAutomatedExclusions, excludedQuarantined: cursor.excludedQuarantined, filename: `pencil-responses-${scope.cutoff.replaceAll(':','-')}.${format}`, format }
 }
-const csv = (value: unknown) => `"${String(value ?? '').replaceAll('"','""')}"`
 export const csvHeader = 'response_id,revision_id,revision_number,source,started_at,completed_at,released_at,participant_json,answers_json,cutoff,excluded_quarantined,omitted_questions_json,collector_id,collector_name,collector_channel,response_state,exclusion_reason,hidden_fields_json,identity_mode,discarded_parameters,calculations_json,verified_email,verified_subject,presented_order_json'
 /** The CSV's values in column order; XLSX sheet one holds the same values. */
 export function exportValues(row: LedgerResponse, cursor: Pick<ExportCursor,'cutoff'|'excludedQuarantined'|'contactInventory'>, columns = contactColumns(cursor.contactInventory)): Array<string | number | null | undefined> {
   return [row.id,row.revisionId,row.revisionNumber,row.source,row.startedAt,row.completedAt,row.releasedAt,row.participant ? JSON.stringify(row.participant) : '',JSON.stringify(row.answers),cursor.cutoff,cursor.excludedQuarantined,JSON.stringify(row.omittedQuestions),row.collector.id,row.collector.name,row.collector.channel,row.state,row.quarantineReason,JSON.stringify(row.hiddenFields),row.identityMode,row.discardedParameters,JSON.stringify(row.calculations),row.verifiedEmail,row.verifiedSubject,JSON.stringify(row.presentedOrder),...contactRecord(row, columns)]
 }
 export function csvRecord(row: LedgerResponse, cursor: Pick<ExportCursor,'cutoff'|'excludedQuarantined'|'contactInventory'>, columns = contactColumns(cursor.contactInventory)) {
-  return '\r\n'+exportValues(row,cursor,columns).map(csv).join(',')
+  return '\r\n'+exportValues(row,cursor,columns).map(csvCell).join(',')
 }
 export async function exportPart(db: D1Database, secret: string, identity: ExportIdentity, token: string, signal: AbortSignal) {
   const cursor = await openCursor<ExportCursor>(token,secret)
@@ -89,7 +89,7 @@ export async function exportPart(db: D1Database, secret: string, identity: Expor
   const nextToken = complete ? undefined : await sealCursor(next,secret)
   async function* body(): AsyncGenerator<Uint8Array> {
     if (encoded) { yield* encoded; return }
-    if (cursor.written === 0) yield encoder.encode(cursor.format === 'csv' ? csvHeader + columns.map(column => ',' + csv(column)).join('') : JSON.stringify({ cutoff: cursor.cutoff, filter: { ...cursor.filter, deviceClass: undefined }, excludedQuarantined: cursor.excludedQuarantined, includedQuarantined: cursor.includedQuarantined, includeAutomatedExclusions: cursor.includeAutomatedExclusions }).slice(0,-1)+',"responses":[')
+    if (cursor.written === 0) yield encoder.encode(cursor.format === 'csv' ? csvHeader + columns.map(column => ',' + csvCell(column)).join('') : JSON.stringify({ cutoff: cursor.cutoff, filter: { ...cursor.filter, deviceClass: undefined }, excludedQuarantined: cursor.excludedQuarantined, includedQuarantined: cursor.includedQuarantined, includeAutomatedExclusions: cursor.includeAutomatedExclusions }).slice(0,-1)+',"responses":[')
     for (const [position, row] of page.responses.entries()) yield encoder.encode(cursor.format === 'csv' ? csvRecord(row,cursor,columns) : (cursor.written+position > 0 ? ',' : '')+JSON.stringify(row))
   }
   async function* closing(): AsyncGenerator<Uint8Array> {

@@ -4049,7 +4049,7 @@
       "executable": false
     },
     "src/core/features/audit/csv.ts": {
-      "sha256": "6d6ae44ab4d4cb82552731419264dd13f797f065b9f234c1376e4a32bde280e7",
+      "sha256": "cef4930cfe322fdad8fcd3482b399233edb7d694094639a90f35f39e0ba6fd54",
       "executable": false
     },
     "src/core/features/audit/cursor.ts": {
@@ -5541,7 +5541,7 @@
       "executable": false
     },
     "src/core/features/reporting/export.ts": {
-      "sha256": "b204a64ccb22dcde62bcd5e8bd90a9b6748bbad3b5a0108c2e39b5708c697ee8",
+      "sha256": "c192fc0c7b7c0194f1f684f3f183a7108e61f6e20c3ec839b4e0b9eae267fe4b",
       "executable": false
     },
     "src/core/features/reporting/exportInventory.ts": {
@@ -6284,6 +6284,10 @@
       "sha256": "e3fc5773149fcc05453be253f2d081534b95b7d3d6682dab854745d06abcc60f",
       "executable": false
     },
+    "src/core/shared/csvCell.ts": {
+      "sha256": "2aab5a3e655ecec4975e1d1197431f3736ad60969d790e98c1a3a640b5c953ca",
+      "executable": false
+    },
     "src/core/shared/dateFormat.ts": {
       "sha256": "aad15aaf148b0592256212343f4076baa48cbb77a05b8f8da5611070a16a12b5",
       "executable": false
@@ -6685,7 +6689,7 @@
       "executable": false
     },
     "test-budget.json": {
-      "sha256": "a48c7dfc66b4308b8b2c30792a4326f31af886dfba3ea4850d2e87ff0dd565bb",
+      "sha256": "ededad4e9e9cd5bf502bfe59f2586b18d0d9a9660eed1f61b366e4662a53a893",
       "executable": false
     },
     "tests/admission/management-edge.mjs": {
@@ -7489,7 +7493,7 @@
       "executable": false
     },
     "tests/runtime/ledger-filters.worker.test.ts": {
-      "sha256": "98203ce65a1cb3fb7dd2584b9b03f7a5ef21ad4a9d9973decf3e23df5ba1d145",
+      "sha256": "ca971d01ccde44857255fece848038d6de1cd5a1ec8a1fce20979dd8d0aede3c",
       "executable": false
     },
     "tests/runtime/ledger-search-upgrade.worker.test.ts": {
@@ -7545,7 +7549,7 @@
       "executable": false
     },
     "tests/runtime/other-choices.worker.test.ts": {
-      "sha256": "ad874e82e5420e02129499d7eac307a9e6a7311d2ba4419188c01b69a361c081",
+      "sha256": "07edd76f0ea1ad610593bc61ef4755c8653cc15705c5ba4cb8b6d97da5c14807",
       "executable": false
     },
     "tests/runtime/pages.worker.test.ts": {

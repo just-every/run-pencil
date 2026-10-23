@@ -115,14 +115,16 @@ contract(['LEDG-006', 'LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019'
     expect(workbook.sheets.map(sheet => sheet.name)).toEqual(['Responses', 'Questions'])
     const [responses, questions] = workbook.sheets
     // Each export fixes its own cutoff; every other cell is the CSV's, and text never arrives as a formula object.
+    // Only the CSV marks the formula-like collector name as text, with a leading apostrophe.
+    const unmarked = (cell: string) => cell === "'=1+2" ? '=1+2' : cell
     const cutoff = header.indexOf('cutoff'), withoutCutoff = (rows: string[][]) => rows.map((row, i) => row.map((cell, j) => i && j === cutoff ? 'cutoff' : cell))
-    expect(withoutCutoff(responses.rows.map(row => row.map(cell => cell === null ? '' : typeof cell === 'object' ? JSON.stringify(cell) : String(cell))))).toEqual(withoutCutoff(table))
+    expect(withoutCutoff(responses.rows.map(row => row.map(cell => cell === null ? '' : typeof cell === 'object' ? JSON.stringify(cell) : String(cell))))).toEqual(withoutCutoff(table.map(row => row.map(unmarked))))
     const metadata = questions.rows.slice(1).map(row => Object.fromEntries(questions.rows[0].map((key, index) => [String(key), row[index]])) as Record<string, string | number | null>)
     const sav = await read<Sav>('sav', await download('sav', extra))
     expect(sav.header).toMatchObject({ n_cases: records.length, encoding: 'UTF-8' })
     expect(sav.rows.map(row => row.response_id)).toEqual(records.map(row => row[0]))
     for (const [index, record] of records.entries()) {
-      const row = sav.rows[index], column = (name: string) => record[header.indexOf(name)]
+      const row = sav.rows[index], column = (name: string) => unmarked(record[header.indexOf(name)])
       for (const name of ['revision_id', 'source', 'completed_at', 'response_state', 'exclusion_reason', 'collector_name']) expect(row[name] ?? '').toBe(column(name))
       expect(row.revision_number).toBe(Number(column('revision_number')))
       for (const answer of JSON.parse(column('answers_json')) as Array<{ stepId: string; questionType: string; value: unknown }>) {
@@ -143,7 +145,7 @@ contract(['LEDG-006', 'LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019'
   }
   const everything = await compare({}, [...positive, ...negative, formulaResponse.responseId])
   const formula = everything.table.findIndex(row => row[0] === formulaResponse.responseId)
-  expect(everything.table[formula][everything.header.indexOf('collector_name')]).toBe('=1+2')
+  expect(everything.table[formula][everything.header.indexOf('collector_name')]).toBe("'=1+2")
   expect(everything.sav.rows.some(row => row.response_id === pending.responseId)).toBe(false)
   const included = await compare({ includeAutomatedExclusions: 'true' }, [...positive, ...negative, formulaResponse.responseId, pending.responseId])
   expect(included.table.find(row => row[0] === pending.responseId)![included.header.indexOf('response_state')]).toBe('quarantined')

@@ -1,14 +1,24 @@
-import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
-import { beforeAll, expect } from 'vitest'
+import { applyD1Migrations, env, SELF, type D1Migration } from 'cloudflare:test'
+import { beforeAll, expect, test } from 'vitest'
 import { contract } from '../../src/test/contract'
 import { foundationFixture } from './foundation-fixture'
 import { startExport, exportPart } from '../../src/core/features/reporting/export'
 import { fixtureExport } from '../helpers/report-download'
 import { analysableQuestions, evidenceResponses } from '../../src/core/features/analysis/evidence'
 import { FormImports, type ImportActor } from '../../src/core/features/importing/service'
+import { csvRows } from '../e2e/export-helpers'
+import { developmentInbox } from '../helpers/development-outbox'
+import { devKeyHeaders } from '../helpers/dev-key.mjs'
 
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
+let serial = 0
+const request = (path: string, cookie = '', body?: unknown) => SELF.fetch(`http://localhost${path}`, { method: body === undefined ? 'GET' : 'POST', redirect: 'manual', headers: { Host: 'localhost', Origin: 'http://localhost', cookie, 'Content-Type': 'application/json', 'CF-Connecting-IP': `198.18.245.${++serial}` }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) })
+async function login(email: string) {
+  expect((await request('/auth/magic-link', '', { email })).status).toBe(202)
+  const inbox = await developmentInbox(path => SELF.fetch(`http://localhost${path}`, { headers: { Host: 'localhost', ...devKeyHeaders } }), email)
+  return (await request('/auth/confirm', '', { token: inbox.messages[0].magicLinkToken })).headers.get('set-cookie')!.split(';')[0]
+}
 contract('FIELD-010', 'Other write-ins and exclusive None survive native collection, branches, reports, search, exports and reviewed imports', async () => {
   const f = await foundationFixture('other-choices')
   for (const type of ['multiple_choice', 'single_choice', 'dropdown'] as const) await f.add({ kind: 'question', questionType: type, prompt: type, required: true, choices: [{ value:'a',label:'Alpha' },{value:'b',label:'Beta'},{value:'other',label:'Other'},...(type === 'multiple_choice' ? [{value:'none',label:'None of the above'}] : [])] })
@@ -68,4 +78,26 @@ contract('FIELD-010', 'Other write-ins and exclusive None survive native collect
     const answer=await env.DB.prepare('SELECT a.value_json FROM response_answers a JOIN responses r ON r.id=a.response_id WHERE r.flow_id=?').bind(review.flowId).first<{value_json:string}>()
     expect(JSON.parse(answer!.value_json)).toEqual({choiceIds:[review.questions.find(q=>q.kind==='question')!.settings.otherChoiceId],otherText:source==='typeform'?'false':'Evening service'})
   }
+})
+test('CSV exports write respondent Other and contact answers as text, never as spreadsheet formulas', async () => {
+  const f = await foundationFixture('formula-answers')
+  await f.add({ kind: 'question', questionType: 'single_choice', prompt: 'Service', required: true, choices: [{ value: 'a', label: 'Alpha' }, { value: 'other', label: 'Other' }] })
+  await f.add({ kind: 'question', questionType: 'full_name', prompt: 'Name', required: true })
+  await f.add({ kind: 'question', questionType: 'currency', prompt: 'Refund', required: true })
+  await f.add({ kind: 'completion', questionType: null, prompt: 'Thank you' })
+  const d = await f.draft(), [pick, name, refund] = d.steps, other = d.choices.filter(choice => choice.stepId === pick.id)[1].id
+  await f.services.flows.updateBuilderDraft({ ...f.flow, expectedVersion: d.flow.draftVersion, stepId: pick.id, prompt: pick.prompt, required: true, questionSettings: { otherChoiceId: other } })
+  await f.publish()
+  const session = await f.start(); await f.mature(session.sessionId)
+  const formula = '=CONCAT("Evening","service")'
+  const receipt = await request(`/api/public/flows/${f.slug}/responses`, '', { ...session, loadTime: await f.loadTime(session), idempotencyKey: `key-${session.sessionId}`, answers: [{ stepId: pick.id, value: { choiceIds: [other], otherText: formula } }, { stepId: name.id, value: { given: '@SUM(1+1)', family: '-2+3' } }, { stepId: refund.id, value: '-0.01' }] })
+  expect(receipt.status, await receipt.clone().text()).toBe(201)
+  const cookie = await login('owner@aurora-coffee.test')
+  const start = await request(`/api/app/flows/${f.flow.flowId}/responses/export/start?format=csv`, cookie); expect(start.status).toBe(200)
+  const part = await request(`/api/app/flows/${f.flow.flowId}/responses/export`, cookie, { token: (await start.json<{ token: string }>()).token }); expect(part.status).toBe(200)
+  const [head, row] = csvRows(new TextDecoder().decode(await part.arrayBuffer())), cell = (column: string) => row[head.indexOf(column)]
+  expect(cell(`${pick.id}.other_text`)).toBe(`'${formula}`)
+  expect([cell(`${name.id}.name.given`), cell(`${name.id}.name.family`), cell(`${name.id}.formatted`)]).toEqual(["'@SUM(1+1)", "'-2+3", "'@SUM(1+1) -2+3"])
+  // Numbers stay numeric cells.
+  expect(cell(`${refund.id}.currency.minorUnits`)).toBe('-1')
 })
