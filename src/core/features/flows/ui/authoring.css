@@ -214,3 +214,8 @@
 .retention-settings > summary { min-height: 28px; padding: 2px 4px; line-height: 24px; font-weight: 500; }
 
 .retention-settings > .panel { padding: 16px; }
+
+/* Question mappings share the existing compact content toolbar. */
+.builder-inspector .step-content-heading > details { margin-top:0; min-width:0; font-size:14px; font-weight:400; letter-spacing:normal; text-transform:none; }
+.builder-inspector .step-content-heading > details > summary { padding:0; font-size:12px; line-height:1.5; }
+.builder-inspector .step-content-heading:has(> details[open]) { display:block; }
