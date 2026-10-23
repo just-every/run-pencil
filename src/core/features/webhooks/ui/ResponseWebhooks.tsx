@@ -3,7 +3,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { api, type DashboardFlow } from '../../../app/api'
 import { eventTypes } from '../events'
 import { WebhookDeliveries } from './WebhookDeliveries'
-import { webhooksApi, type EndpointSummary } from './webhooksApi'
+import { webhooksApi, webhooksChanged, type EndpointSummary } from './webhooksApi'
 import './webhooks.css'
 
 /** INTEG-010: the owner's response-event endpoints. A secret is shown once at creation or rotation and never read back. */
@@ -18,7 +18,7 @@ export function ResponseWebhooks() {
     setBusy(name); setError(undefined); setNotice(undefined)
     try { await work() } catch (reason) { setError(reason instanceof Error ? reason.message : 'The webhook request failed.') } finally { setBusy(undefined) }
   }
-  const refresh = async () => { setEndpoints((await webhooksApi.list()).endpoints); setVersion(current => current + 1) }
+  const refresh = async () => { setEndpoints((await webhooksApi.list()).endpoints); setVersion(current => current + 1); window.dispatchEvent(new Event(webhooksChanged)) }
   useEffect(() => { void run('load', refresh); void api.dashboard().then(setForms).catch(() => undefined) }, [])
   const add = (event: FormEvent) => event.preventDefault() ?? void run('add', async () => {
     const created = await webhooksApi.create({ url: url.trim(), ...(flowId ? { flowId } : {}) })

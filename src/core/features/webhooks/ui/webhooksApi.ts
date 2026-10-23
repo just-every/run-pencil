@@ -10,6 +10,8 @@ async function call<T>(path: string, method = 'GET', body?: unknown): Promise<T>
   return data
 }
 
+/** Fired by the endpoints card so the operator banner refreshes at once. */
+export const webhooksChanged = 'pencil:webhooks-changed'
 const base = '/api/app/webhooks'
 export const webhooksApi = {
   list: () => call<{ endpoints: EndpointSummary[] }>(base),
