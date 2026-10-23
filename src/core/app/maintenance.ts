@@ -39,6 +39,7 @@ export async function runScheduledMaintenance(controller: ScheduledController, e
   await services.notifications.confirmations.run(new Date(controller.scheduledTime).toISOString())
   await services.notifications.actionReminders.run(new Date(controller.scheduledTime).toISOString())
   await services.notifications.digest.run(new Date(controller.scheduledTime).toISOString())
+  await services.webhooks.dispatcher.run(new Date(controller.scheduledTime).toISOString())
   await services.analysis.tick(new Date(controller.scheduledTime))
   console.log('Pencil retention maintenance', result)
 }

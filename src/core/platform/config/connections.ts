@@ -3,6 +3,7 @@ import { ValidationError } from '../../shared/errors'
 import { readAiProvider } from '../ai/provider'
 import type { PencilPlatform } from '../runtime'
 import { readTaskDestination } from './task-destination'
+import { sealValue, unsealValue } from './sealing'
 
 const secret = z.string().trim().min(1).max(4096).regex(/^\S+$/)
 const address = z.string().trim().url().max(2000)
@@ -37,24 +38,15 @@ function validateAddress(value: string, local: boolean) {
 // SESSION_SECRET stays outside D1. Rotating it requires reconnecting integrations.
 export class IntegrationConnections {
   constructor(private readonly platform: PencilPlatform) {}
-  private async key() {
-    const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`pencil-connections-v1:${this.platform.configuration.sessionSecret}`))
-    return crypto.subtle.importKey('raw', bytes, 'AES-GCM', false, ['encrypt', 'decrypt'])
-  }
   private async read<T>(kind: Kind): Promise<T | undefined> {
     const row = await this.platform.databaseBinding.prepare('SELECT sealed FROM integration_connections WHERE kind = ?').bind(kind).first<{ sealed: string }>()
     if (!row) return undefined
-    try {
-      const bytes = Uint8Array.from(atob(row.sealed), char => char.charCodeAt(0))
-      const plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: bytes.slice(0, 12), additionalData: new TextEncoder().encode(kind) }, await this.key(), bytes.slice(12))
-      return JSON.parse(new TextDecoder().decode(plain)) as T
-    } catch { throw new ValidationError('The saved connection cannot be unlocked. Restore the installation session secret or remove and reconnect this integration.') }
+    try { return await unsealValue<T>(this.platform.configuration.sessionSecret, kind, row.sealed) }
+    catch { throw new ValidationError('The saved connection cannot be unlocked. Restore the installation session secret or remove and reconnect this integration.') }
   }
   private async save(kind: Kind, value: unknown) {
-    const iv = crypto.getRandomValues(new Uint8Array(12))
-    const sealed = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv, additionalData: new TextEncoder().encode(kind) }, await this.key(), new TextEncoder().encode(JSON.stringify(value))))
-    const bytes = new Uint8Array(iv.length + sealed.length); bytes.set(iv); bytes.set(sealed, iv.length)
-    await this.platform.databaseBinding.prepare('INSERT INTO integration_connections (kind, sealed, updated_at) VALUES (?, ?, ?) ON CONFLICT(kind) DO UPDATE SET sealed=excluded.sealed, updated_at=excluded.updated_at').bind(kind, btoa(String.fromCharCode(...bytes)), new Date().toISOString()).run()
+    const sealed = await sealValue(this.platform.configuration.sessionSecret, kind, value)
+    await this.platform.databaseBinding.prepare('INSERT INTO integration_connections (kind, sealed, updated_at) VALUES (?, ?, ?) ON CONFLICT(kind) DO UPDATE SET sealed=excluded.sealed, updated_at=excluded.updated_at').bind(kind, sealed, new Date().toISOString()).run()
   }
   async remove(kind: Kind) { await this.platform.databaseBinding.prepare('DELETE FROM integration_connections WHERE kind = ?').bind(kind).run() }
   async saveAnalysis(input: AnalysisConnection) {

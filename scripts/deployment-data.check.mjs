@@ -47,6 +47,9 @@ function fixture() {
   }
   insert('confirmation_deliveries',{id:'confirmation:completed',response_id:'completed',recipient:'synthetic-pencil-receipt@example.test',message_json:JSON.stringify({subject:'Receipt',text:'Retained respondent answer',html:'<p>Retained respondent answer</p>'}),status:'pending',attempts:1,available_at:stamp,armed:1,created_at:stamp,updated_at:stamp});
   insert('confirmation_attempts',{id:'synthetic-pencil-confirmation-attempt',delivery_id:'confirmation:completed',ordinal:1,event:'transient',provider:'development',created_at:stamp});
+  insert('response_webhook_endpoints',{id:'synthetic-pencil-endpoint',workspace_id:'workspace',flow_id:'flow',url:'https://receiver.example.test/hook',sealed_secret:'synthetic-pencil-sealed-webhook-secret',secret_version:2,state:'active',failure_streak:3,created_at:stamp,updated_at:stamp});
+  insert('response_event_deliveries',{id:'synthetic-pencil-delivery',endpoint_id:'synthetic-pencil-endpoint',event_id:'evt_synthetic_pencil',event_type:'response.created',workspace_id:'workspace',flow_id:'flow',revision_id:'old-revision',response_id:'completed',occurred_at:stamp,status:'pending',attempts:1,available_at:stamp,reason:'The receiver answered 500.',created_at:stamp,updated_at:stamp});
+  insert('response_event_attempts',{id:'synthetic-pencil-delivery-attempt',delivery_id:'synthetic-pencil-delivery',ordinal:1,event:'failed',http_status:500,outcome_class:'5xx',created_at:stamp});
   for (const state of ['pending', 'dispatched', 'failed']) insert('response_outbox', { id: `effect-${state}`, workspace_id: 'workspace', response_id: 'completed', kind: `synthetic.effect.${state}`, idempotency_key: `effect-${state}`, payload_json: '{"responseId":"completed"}', status: state, available_at: stamp, dispatched_at: state === 'dispatched' ? stamp : null, failure_reason: state === 'failed' ? 'synthetic failure' : null, created_at: stamp, updated_at: stamp });
   insert('audit_entries', { id: 'removed-actor', workspace_id: 'workspace', kind: 'synthetic.audit', actor_operator_id: 'operator-removed-earlier', subject_type: 'flow', subject_id: 'flow', details_json: '{}', created_at: stamp });
   insert('revision_metric_counters', { id: 'metric', revision_id: 'revision', starts: 9223372036854775807n, completions: 0, total_completion_milliseconds: 0, mobile_starts: 0, tablet_starts: 0, desktop_starts: 0, created_at: stamp, updated_at: stamp });
@@ -113,7 +116,7 @@ test('complete archive restores R2 bytes and ownership metadata with D1, re-expo
   } finally {await proxy?.dispose();rmSync(f.directory,{recursive:true});}
 });
 
-test('full current-data roundtrip preserves prefill markers and disabled confirmation history, stable revisions, quarantine, receipts, historical actors, auth, effects, exact text and int64', () => {
+test('full current-data roundtrip preserves prefill markers, disabled confirmation history, webhook endpoints without their signing secret, stable revisions, quarantine, receipts, historical actors, auth, effects, exact text and int64', () => {
   const f = fixture();
   try {
     const exported = exportData(f.source, f.archive);
@@ -130,6 +133,9 @@ test('full current-data roundtrip preserves prefill markers and disabled confirm
     assert.equal(database.prepare("SELECT armed FROM confirmation_deliveries WHERE response_id='completed'").get().armed,0);
     assert.equal(JSON.parse(database.prepare("SELECT message_json FROM confirmation_deliveries WHERE response_id='completed'").get().message_json).text,'Retained respondent answer');
     assert.equal(database.prepare("SELECT count(*) AS n FROM confirmation_attempts WHERE delivery_id='confirmation:completed'").get().n,1);
+    assert.deepEqual({...database.prepare("SELECT sealed_secret AS secret, state, secret_version AS version, failure_streak AS streak FROM response_webhook_endpoints").get()},{secret:null,state:'active',version:2,streak:3});
+    assert.equal(database.prepare("SELECT count(*) AS n FROM response_event_attempts WHERE delivery_id='synthetic-pencil-delivery'").get().n,1);
+    assert.equal(readFileSync(f.archive,'utf8').includes('synthetic-pencil-sealed-webhook-secret'),false);
     assert.equal(database.prepare("SELECT count(*) AS n FROM respondent_sessions").get().n, 0);
     assert.equal(database.prepare("SELECT count(*) AS n FROM responses WHERE state='quarantined'").get().n, 1);
     assert.equal(database.prepare('SELECT COUNT(*) AS n FROM d1_migrations').get().n, migrations().length);
