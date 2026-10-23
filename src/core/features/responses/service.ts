@@ -1,3 +1,4 @@
+import { consentRecords } from '../../shared/marketingConsent'
 import { closedFlowFor } from './closed'
 import { issuePrefillProof, readPrefillProof } from './prefillProof'
 import { resolvePrefills, prefillMarkers } from '../../shared/knownDataPrefill'
@@ -253,6 +254,8 @@ export class ResponseService {
     const presentedOrder=retainedPresentation({choices:order.choices ?? {},blocks:order.blocks ?? {}},reachedStepIds)
     if(Object.keys(presentedOrder.choices).length || Object.keys(presentedOrder.blocks).length) hiddenContext.presentedOrder=presentedOrder
     const now = new Date().toISOString()
+    const consents = consentRecords(settings.marketing, steps.map(step => ({ id: step.stableId, questionType: step.questionType, questionSettings: step.questionSettingsJson ? JSON.parse(step.questionSettingsJson) : null })), acceptedAnswers, now)
+    if (consents.length) hiddenContext.consents = consents
     const responseId = ulid()
     const payment = paymentStepId ? await this.payments.attempt(responseId, 1, steps, choices, { paymentStepId, completionStepId, accepted: acceptedAnswers }, hiddenContext.calculations ?? {}) : undefined
     const elapsed = Math.max(0, Date.now() - loadedAt)
