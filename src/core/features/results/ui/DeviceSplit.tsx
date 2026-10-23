@@ -1,4 +1,4 @@
-import type { DeviceReport } from '../../reporting/devices'
+import type { DeviceReport } from '../../reporting'
 export function DeviceSplit({ report }: { report: DeviceReport }) {
   const unit = report.basis === 'sessions' ? 'recorded starts' : 'filtered native responses'
   return <article className="panel results-card device-card" aria-labelledby="device-title">

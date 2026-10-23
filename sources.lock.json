@@ -3733,7 +3733,7 @@
       "executable": false
     },
     "src/core/app/api.ts": {
-      "sha256": "14d391d212c714971357de1bcf90c80b1e6ceaaad0f858d93eb530c92901e4ad",
+      "sha256": "abd20ed7343d4bebc0ea53c72489e96ec58fff11af067542d6af517b814ffdd3",
       "executable": false
     },
     "src/core/app/capability-paths.ts": {
@@ -5557,7 +5557,7 @@
       "executable": false
     },
     "src/core/features/reporting/index.ts": {
-      "sha256": "d3886c3075987bdf35682213fc7efed2a22c38b757c6370316e7d9dbc8625928",
+      "sha256": "b6d1c9a59f2d28eb976ef1a9352609772fb748be81769bef4b9cd9fe2407d0e8",
       "executable": false
     },
     "src/core/features/reporting/questionReport.ts": {
@@ -5773,7 +5773,7 @@
       "executable": false
     },
     "src/core/features/results/ui/DeviceSplit.tsx": {
-      "sha256": "ac7100ec4180d11a027885e8db2c9099e219c20dc44686da21f169f7d309edd2",
+      "sha256": "16333c7624b8b299f14b70efcb0d8a44cd2ed4aed1787c21d7146a879bebff95",
       "executable": false
     },
     "src/core/features/results/ui/download.ts": {
@@ -5805,7 +5805,7 @@
       "executable": false
     },
     "src/core/features/results/ui/ResultsPage.tsx": {
-      "sha256": "9c4d2d44a42e97a692e1f38db5dc307a8fd244c7e4db025a8b468f184fd8d1b4",
+      "sha256": "6e90aebe84ce891d85c06a8c4ac3e467b82ada74b989f119a431eb674e2c7974",
       "executable": false
     },
     "src/core/features/results/ui/RevisionComparison.tsx": {

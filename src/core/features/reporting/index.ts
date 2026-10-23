@@ -4,3 +4,5 @@ export { searchPhrase } from './search'
 export { retainedTextValid } from './textValidity'
 export type { LedgerFilter } from './repository'
 export type { Crosstab } from './crosstab'
+
+export type { DeviceReport } from './devices'

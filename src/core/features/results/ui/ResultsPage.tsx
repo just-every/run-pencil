@@ -1,5 +1,5 @@
 import { DeviceSplit } from './DeviceSplit'
-import type { DeviceReport } from '../../reporting/devices'
+import type { DeviceReport } from '../../reporting'
 import { TrafficPanel } from './TrafficPanel'
 import { CollectorComparison } from '../../collectors'
 import { TrendsPanel } from './TrendsPanel'

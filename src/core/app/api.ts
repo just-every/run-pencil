@@ -192,7 +192,7 @@ function query(filter: LedgerFilter) { return new URLSearchParams(Object.entries
 export type RevisionComparison = { revisionCount?: number; offset?: number; nextOffset?: number; flow: { id: string; title: string; slug: string }; revisions: Array<{ id: string; number: number; isCurrent: number }>; questions: Array<{ id: string; answered: number; eligibleResponses: number; versions: Array<QuestionReport & { revisionId: string; eligibleResponses: number }> }> }
 
 export const reportingApi = {
-  devices: (flowId: string, filter: LedgerFilter) => request<import('../features/reporting/devices').DeviceReport>(`/api/app/flows/${encodeURIComponent(flowId)}/devices?${query(filter)}`),
+  devices: (flowId: string, filter: LedgerFilter) => request<import('../features/reporting').DeviceReport>(`/api/app/flows/${encodeURIComponent(flowId)}/devices?${query(filter)}`),
   compareRevisions: (flowId: string, offset = 0) => request<RevisionComparison>(`/api/app/flows/${encodeURIComponent(flowId)}/questions/compare?offset=${offset}`),
   ledger: (flowId: string, filter: LedgerFilter = {}) => request<Ledger>(`/api/app/flows/${encodeURIComponent(flowId)}/ledger?${query(filter)}`),
   questions: (flowId: string, revisionId: string) => request<QuestionReport[]>(`/api/app/flows/${encodeURIComponent(flowId)}/questions?revisionId=${encodeURIComponent(revisionId)}`),
