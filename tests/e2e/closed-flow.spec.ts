@@ -29,7 +29,7 @@ async function form(request: APIRequestContext, slug: string, target?: number, t
   }
   const current = await draft()
   expect((await request.put(`${path}/draft`, { headers: mutationHeaders, data: { stepId: current.steps[0].id, prompt: 'Your feedback', required: true, nextStepId: current.steps[1].id, expectedVersion: current.flow.draftVersion } })).status()).toBe(200)
-  if (text) { const base = await draft(); expect((await request.put(`${path}/draft/settings`, { headers: mutationHeaders, data: { expectedVersion: base.flow.draftVersion, settings: { ...base.formSettings, text } } })).status()).toBe(200) }
+  if (text) { const base = await draft(); expect((await request.put(`${path}/draft/settings`, { headers: mutationHeaders, data: { expectedVersion: base.flow.draftVersion, settings: { ...base.formSettings, text, marketing: { purpose: 'email_marketing', wording: 'By submitting you agree to receive our newsletter; unsubscribe any time.' } } } })).status()).toBe(200) }
   const unpublished = await request.get(`/f/${slug}`)
   expect(unpublished.status()).toBe(404)
   expect((await request.post(`${path}/publish`, { headers: mutationHeaders, data: { expectedVersion: (await draft()).flow.draftVersion, ...(target ? { targetCompletedResponses: target } : {}) } })).status()).toBe(201)
@@ -61,8 +61,13 @@ contract('RESP-009', 'a respondent losing manual or final target admission sees 
       expect(await winner.json()).toMatchObject({ disposition: 'released' })
     } else expect((await page.request.post(`${f.path}/close`, { headers: mutationHeaders })).status()).toBe(204)
     const admission = page.waitForResponse((response) => response.url().endsWith(`/flows/${slug}/responses`))
+    // GOV-007: the form's email-marketing opt-in wording sits directly above the submit button.
+    const optIn = page.getByTestId('marketing-opt-in'), submit = page.getByRole('button', { name: label, exact: true })
+    await expect(optIn).toHaveText('By submitting you agree to receive our newsletter; unsubscribe any time.')
+    expect((await optIn.boundingBox())!.y).toBeLessThan((await submit.boundingBox())!.y)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await expect(page.getByRole('button', { name: 'Submit response' })).toHaveCount(0)
-    await page.getByRole('button', { name: label, exact: true }).click()
+    await submit.click()
     expect((await admission).status()).toBe(409)
     await expect(page.locator('[data-state=closed]')).toBeVisible()
     await expect(page.getByRole('heading', { name: 'This feedback flow is closed.' })).toBeVisible()
