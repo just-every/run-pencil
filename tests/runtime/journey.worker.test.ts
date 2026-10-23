@@ -499,7 +499,7 @@ contract(['RSLT-001','RSLT-003','RSLT-004','DASH-002'], 'retains factual zero, q
   expect(await ok(`${devicePath}&deviceClass=unknown`)).toMatchObject({total:1,unknownResponses:1,counts:{unknown:1,mobile:0,desktop:0}})
   const exported = await ok<{responses:unknown[]}>(`${f.path}/responses/export?format=json&revisionId=${fast.revisionId}&deviceClass=unknown`)
   expect(exported.responses).toHaveLength(1)
-  expect(JSON.stringify(exported.responses)).not.toMatch(/deviceClass|device_class|user.agent|fingerprint|screen.width|raw.ip/i)
+  expect(JSON.stringify(exported)).not.toMatch(/deviceClass|device_class|user.agent|fingerprint|screen.width|raw.ip/i)
   const exportedCsv = await req(`${f.path}/responses/export/start`,{format:'csv',revisionId:fast.revisionId,deviceClass:'unknown'}).then(response=>response.json<{token:string}>())
   const csv = await req(`${f.path}/responses/export?token=${encodeURIComponent(exportedCsv.token)}`).then(response=>response.text())
   expect(csv).not.toMatch(/deviceClass|device_class|user.agent|fingerprint|screen.width|raw.ip/i)
