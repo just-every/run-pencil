@@ -1,4 +1,4 @@
-import { closedFlowFor } from './closed'
+import { closedFlowFor } from '../../shared/closedFlow'
 import { ulid } from 'ulid'
 import { evaluateCalculations } from '../../shared/calculations'
 import { completionRedirect } from '../../shared/completionRedirect'

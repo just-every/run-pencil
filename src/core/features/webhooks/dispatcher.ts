@@ -19,6 +19,8 @@ export class ResponseEventDispatcher {
   constructor(private readonly db: D1Database, private readonly sessionSecret: string, private readonly allowLoopbackHttp: boolean) {}
 
   async run(now = new Date().toISOString()) {
+    // Requests and Cron both call this: with nothing queued it costs one indexed read.
+    if (!await this.db.prepare("SELECT 1 FROM response_event_deliveries WHERE status IN ('pending','sending') LIMIT 1").first()) return { attempted: 0 }
     const stale = await this.db.prepare(`UPDATE response_event_deliveries SET status = 'pending', reason = 'The Worker stopped before the receiver answered; the event is sent again with the same event ID.', updated_at = ?
       WHERE id IN (SELECT id FROM response_event_deliveries WHERE status = 'sending' AND last_attempt_at <= ? LIMIT 50) RETURNING id, attempts`)
       .bind(now, new Date(Date.parse(now) - abandonedAfterMilliseconds).toISOString()).all<{ id: string; attempts: number }>()
@@ -26,7 +28,7 @@ export class ResponseEventDispatcher {
     const due = await this.db.prepare(`${this.selectDue} WHERE d.status = 'pending' AND d.available_at <= ? AND e.state = 'active' AND e.sealed_secret IS NOT NULL ORDER BY d.available_at, d.id LIMIT 50`).bind(now).all<Due>()
     let attempted = 0
     for (const row of due.results) if (await this.attempt(row, now)) attempted++
-    await this.disableFailing(now)
+    if (attempted) await this.disableFailing(now)
     return { attempted }
   }
 
