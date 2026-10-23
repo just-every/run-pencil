@@ -36,6 +36,7 @@ export async function runScheduledMaintenance(controller: ScheduledController, e
   const services = createPencilServices(await configuredIntegrationPlatform(createScheduledPencilPlatform(environment)))
   await services.distribution.dispatcher.run(new Date(controller.scheduledTime).toISOString())
   await services.notifications.dispatcher.run(new Date(controller.scheduledTime).toISOString())
+  await services.notifications.confirmations.run(new Date(controller.scheduledTime).toISOString())
   await services.notifications.actionReminders.run(new Date(controller.scheduledTime).toISOString())
   await services.notifications.digest.run(new Date(controller.scheduledTime).toISOString())
   await services.analysis.tick(new Date(controller.scheduledTime))

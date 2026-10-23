@@ -1,6 +1,9 @@
 export type NativeRow = Record<string, string | number | null>
 export type NativeValue = { flowId: string; tables: Record<string, NativeRow[]> }
 export const tables = {
+  confirmation_deliveries: { columns: ['id', 'response_id', 'recipient', 'message_json', 'status', 'attempts', 'first_attempt_at', 'last_attempt_at', 'available_at', 'provider_id', 'reason', 'created_at', 'updated_at', 'armed'], scope: 'response_id = ?' },
+  confirmation_attempts: { columns: ['id', 'delivery_id', 'ordinal', 'event', 'provider', 'provider_code', 'created_at'], scope: 'delivery_id IN (SELECT id FROM confirmation_deliveries WHERE response_id = ?)' },
+
   flows: { columns: ['id', 'workspace_id', 'slug', 'title', 'status', 'draft_version', 'last_activity_at', 'created_at', 'updated_at'], scope: 'id = ?' },
   flow_revisions: { columns: ['id', 'flow_id', 'number', 'state', 'title', 'published_at', 'is_current', 'admission_closed_at', 'admission_close_reason', 'deadline_at', 'deadline_time_zone', 'target_completed_responses', 'policy_snapshot_json', 'form_settings_json', 'created_at', 'updated_at'], scope: 'flow_id = ?' },
   flow_steps: { columns: ['id', 'revision_id', 'position', 'stable_id', 'kind', 'question_type', 'prompt', 'helper_text', 'required', 'next_step_stable_id', 'question_settings_json', 'created_at', 'updated_at'], scope: 'revision_id IN (SELECT id FROM flow_revisions WHERE flow_id = ?)' },
@@ -19,11 +22,11 @@ export const tables = {
   notification_attempts: { columns: ['id', 'delivery_id', 'ordinal', 'event', 'provider', 'provider_code', 'created_at'], scope: 'delivery_id IN (SELECT id FROM notification_deliveries WHERE response_id = ?)' },
 } as const
 export type TableName = keyof typeof tables
-export function tableNames(kind: string): TableName[] { if (kind === 'form') return ['flows', 'flow_revisions', 'flow_steps', 'choice_options', 'flow_branch_rules', 'form_import_revisions', 'notification_preferences', 'submission_statuses']; if (kind === 'response') return ['responses', 'response_answers', 'response_outbox', 'notification_deliveries', 'notification_attempts', 'submission_workflows', 'submission_tags', 'submission_notes']; throw new Error('Unknown import target.') }
+export function tableNames(kind: string): TableName[] { if (kind === 'form') return ['flows', 'flow_revisions', 'flow_steps', 'choice_options', 'flow_branch_rules', 'form_import_revisions', 'notification_preferences', 'submission_statuses']; if (kind === 'response') return ['responses', 'confirmation_deliveries', 'confirmation_attempts', 'response_answers', 'response_outbox', 'notification_deliveries', 'notification_attempts', 'submission_workflows', 'submission_tags', 'submission_notes']; throw new Error('Unknown import target.') }
 
 /** Newly inventoried empty sidecars were absent from older retained plan bytes.
  * Omit their empty images on reads so native hashes retain that exact meaning. */
-export const optionalNativeTables = new Set<TableName>(['submission_statuses', 'submission_workflows', 'submission_tags', 'submission_notes'])
+export const optionalNativeTables = new Set<TableName>(['confirmation_deliveries','confirmation_attempts','submission_statuses', 'submission_workflows', 'submission_tags', 'submission_notes'])
 
 /** Old retained plans predate the nullable condition column. Preserve their
  * canonical images until an actual tree changes that row. */

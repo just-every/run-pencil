@@ -1,3 +1,4 @@
+import { remapConfirmationSettings } from '../../shared/confirmationSettings'
 import { remapCalculations } from '../../shared/calculationRemap'
 import { formSettings, type FormSettings } from '../../shared/hiddenFields'
 import { remapLayoutSettings } from '../../shared/screenLayout'
@@ -26,7 +27,7 @@ function copyContent(source: Content, revisionId: string, now: string): Content 
     : Array.isArray(value) ? value.map(expected)
     : value && typeof value === 'object' && 'choiceId' in value ? { ...value, choiceId: choiceIds.get(String(value.choiceId)) ?? value.choiceId } : value
   return {
-    formSettings:{...settings,calculations:remapCalculations(settings.calculations ?? [],ids,fields,variables,choiceIds),hiddenFields:settings.hiddenFields.map(field=>({...field,id:fields.get(field.id)!}))},
+    formSettings:{...settings,...(settings.prefill?{prefill:settings.prefill.map(mapping=>({...mapping,stepId:ids.get(mapping.stepId)??mapping.stepId}))}:{}),...(settings.confirmation?{confirmation:remapConfirmationSettings(settings.confirmation,ids)}:{}),calculations:remapCalculations(settings.calculations ?? [],ids,fields,variables,choiceIds),hiddenFields:settings.hiddenFields.map(field=>({...field,id:fields.get(field.id)!}))},
     steps: steps.map(s => ({ id: rows.get(s.id)!, stableId: ids.get(s.stableId)!, revisionId, position: s.position, kind: s.kind, questionType: s.questionType,
       prompt: remapAnswerRecall(s.prompt, ids), helperText: s.helperText ? remapAnswerRecall(s.helperText, ids) : null, required: s.required,
       nextStepStableId: s.nextStepStableId ? ids.get(s.nextStepStableId)! : null, questionSettingsJson: remapLayoutSettings(remapChoiceSettings(s.questionSettingsJson ?? null, choiceIds), ids, choiceIds), createdAt: now, updatedAt: now })),

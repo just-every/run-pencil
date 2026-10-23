@@ -3,6 +3,9 @@ import { failure } from './deployment-data-errors.mjs';
 // Every persisted column is reviewed here. A migration cannot silently add data
 // to an archive: both new tables and new columns fail closed until classified.
 const retained = {
+  confirmation_deliveries: 'id response_id recipient message_json status attempts first_attempt_at last_attempt_at available_at provider_id reason created_at updated_at',
+  confirmation_attempts: 'id delivery_id ordinal event provider provider_code created_at',
+
   search_unicode_map: 'code value ccc',
   search_unicode_composition: 'first second composed',
   response_search_values: 'id response_id answer_id value',
@@ -195,6 +198,7 @@ const retained = {
 const nul = { type: 'null' };
 const captured = { local_mail_outbox: ['message_json'], rer_mail_development_outbox: ['message'], rer_ai_development_outbox: ['record'] };
 export const exclusions = {
+  confirmation_deliveries: { armed: { type: 'integer', value: '0' } },
   // Retain reminder history while refusing queued and future replay for restored actions.
   actions: { reminders_enabled: { type: 'integer', value: '0' } },
   form_access_rules: {password_verifier:nul},

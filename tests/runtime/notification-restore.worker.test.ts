@@ -1,3 +1,5 @@
+import { foundationFixture } from './foundation-fixture'
+import { materializeConfirmations } from '../../src/core/features/notifications/confirmation-queue'
 import { FormImports } from '../../src/core/features/importing/service'
 import { simpleJson, simpleCsv } from '../fixtures/form-import/fixture'
 import { freezeDigests } from '../../src/core/features/notifications/digest-cohorts'
@@ -27,7 +29,7 @@ async function refusesCapture(message: Parameters<ReturnType<typeof baseMailSend
   await expect(guardedDevelopmentOutbox(env.DB, notificationCaptureClaim).put(message)).rejects.toThrow('no longer eligible')
 }
 
-contract(['DATA-001','BASE-DATA-001','NOTIFY-002','NOTIFY-004','DIST-010','DATA-002'], 'restored failed and unknown mail can be explicitly retried with their original key while every other restored delivery remains unarmed', async () => {
+contract(['RESP-020','DATA-001','BASE-DATA-001','NOTIFY-002','NOTIFY-004','DIST-010','DATA-002'], 'restored failed and unknown mail can be explicitly retried with their original key while every other restored delivery remains unarmed', async () => {
   const f = await notificationFixture('restored-notifications'), now = new Date().toISOString()
   const other = crypto.randomUUID()
   await env.DB.prepare('INSERT INTO operators(id,workspace_id,email,display_name,created_at,updated_at) VALUES(?,?,?,?,?,?)').bind(other, f.scope.workspaceId, 'other@example.test', 'Other operator', now, now).run()
@@ -60,6 +62,14 @@ contract(['DATA-001','BASE-DATA-001','NOTIFY-002','NOTIFY-004','DIST-010','DATA-
   await freezeDigests(env.DB,opening)
   const digest=(await env.DB.prepare('SELECT id FROM digest_deliveries WHERE flow_id=?').bind(daily.flow.flowId).first<{id:string}>())!
   await env.DB.prepare("UPDATE digest_deliveries SET status='unknown',retry_authorized=1 WHERE id=?").bind(digest.id).run()
+  const confirmation=await foundationFixture('synthetic-pencil-restored-confirmation')
+  await confirmation.add({kind:'question',questionType:'email',prompt:'Receipt address',required:true});await confirmation.add({kind:'completion',questionType:null,prompt:'Received'})
+  const confirmationDraft=await confirmation.draft()
+  await confirmation.services.flows.updateFormSettings({...confirmation.flow,expectedVersion:confirmationDraft.flow.draftVersion,settings:{...confirmationDraft.formSettings!,confirmation:{enabled:true,includeAnswers:false,answerTypes:[],emailStepId:confirmationDraft.steps[0].id,subject:'Response received',body:'Thank you.'}}});await confirmation.publish()
+  const confirmationSession=await confirmation.start();await confirmation.mature(confirmationSession.sessionId);await confirmation.final(confirmationSession,[{stepId:confirmationDraft.steps[0].id,value:'synthetic-pencil-restore@example.test'}])
+  await materializeConfirmations(env.DB,now)
+  const confirmationBefore=await env.DB.prepare('SELECT id,message_json FROM confirmation_deliveries WHERE response_id=(SELECT id FROM responses WHERE session_id=?)').bind(confirmationSession.sessionId).first<{id:string;message_json:string}>()
+  expect(confirmationBefore).toMatchObject({id:expect.any(String),message_json:expect.stringContaining('Thank you.')})
   const archive = await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__)
   await restoreFixture(env.DB, archive)
   expect(await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__)).toEqual(archive)
@@ -69,6 +79,8 @@ contract(['DATA-001','BASE-DATA-001','NOTIFY-002','NOTIFY-004','DIST-010','DATA-
   const fetch = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('Unexpected external request'))
   try {
     expect(await f.services.notifications.dispatcher.run(now)).toMatchObject({ attempted: 0 })
+    expect(await confirmation.services.notifications.confirmations.run(now)).toEqual({attempted:0})
+    expect(await env.DB.prepare('SELECT armed,message_json FROM confirmation_deliveries WHERE id=?').bind(confirmationBefore!.id).first()).toEqual({armed:0,message_json:confirmationBefore!.message_json})
     expect(await rows()).toEqual(before)
     const digestBefore=await env.DB.prepare('SELECT * FROM digest_deliveries WHERE id=?').bind(digest.id).first()
     expect(digestBefore).toMatchObject({status:'unknown',replay_enabled:0,retry_authorized:0})

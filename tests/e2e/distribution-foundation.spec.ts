@@ -15,7 +15,7 @@ contract('BASE-PUBLIC-003', 'production invitation capability paths reject malfo
   }
   expect((await page.request.get('/i/' + '0'.repeat(64))).status()).toBe(404)
 })
-contract(['DIST-014','LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-005','RESP-008','DIST-005','LEDG-001','LEDG-003','RSLT-001','RSLT-003','RSLT-004','BASE-PUBLIC-003'], 'Audience CSV review, saved segment, email score 9, editable invitation prefill, identified ledger, cancellation, opt-out and erasure are keyboard accessible', async ({ page }, info) => {
+contract(['RESP-020','DIST-014','LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-005','RESP-008','DIST-005','LEDG-001','LEDG-003','RSLT-001','RSLT-003','RSLT-004','BASE-PUBLIC-003'], 'Audience CSV review, saved segment, email score 9, editable invitation prefill, confirmation receipt, identified ledger, cancellation, opt-out and erasure are keyboard accessible', async ({ page }, info) => {
   test.setTimeout(120000)
   page.setDefaultTimeout(15000)
   const request = page.request, headers = { Origin: new URL(info.project.use.baseURL!).origin }
@@ -45,7 +45,7 @@ contract(['DIST-014','LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-005','RESP-
   const slug = `distribution-browser-${info.project.name}-${Date.now()}`
   const flow = await call('/api/app/flows', { title: 'Synthetic invitation review', slug })
   const path = `/api/app/flows/${flow.id}`
-  for (const step of [{kind:'question',questionType:'nps',prompt:'How likely are you to recommend us?',required:true},{ kind: 'question', questionType: 'short_text', prompt: 'Your feedback', required: true }, { kind:'question',questionType:'short_text',prompt:'Your company',required:true }, { kind: 'completion', questionType: null, prompt: 'Invitation recorded' }]) {
+  for (const step of [{kind:'question',questionType:'nps',prompt:'How likely are you to recommend us?',required:true},{ kind: 'question', questionType: 'short_text', prompt: 'Your feedback', required: true }, { kind:'question',questionType:'short_text',prompt:'Your company',required:true }, {kind:'question',questionType:'email',prompt:'Confirmation address',required:true}, { kind: 'completion', questionType: null, prompt: 'Invitation recorded' }]) {
     const draft = await call(`${path}/draft`)
     await call(`${path}/draft/steps`, { expectedVersion: draft.flow.draftVersion, step })
   }
@@ -68,6 +68,15 @@ contract(['DIST-014','LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-005','RESP-
   await page.getByRole('button',{name:'Move down',exact:true}).focus()
   await expect(page.getByRole('tooltip',{name:'Move down',exact:true})).toBeVisible()
   await audienceScreen(page,info,'prefill-builder')
+  await page.locator('.step-button').filter({hasText:'Invitation recorded'}).click()
+  await page.getByText('Respondent confirmation email',{exact:true}).click()
+  await page.getByLabel('Send a confirmation after completion',{exact:true}).check()
+  await page.getByLabel('Confirmation recipient',{exact:true}).selectOption({label:'Confirmation address'})
+  await page.getByRole('button',{name:'Save confirmation settings',exact:true}).click()
+  await expect(page.getByRole('status')).toContainText('Confirmation settings saved to the draft')
+  await expect(page.getByLabel('Send a confirmation after completion',{exact:true})).toBeChecked()
+  await page.getByText('Respondent confirmation email',{exact:true}).click()
+  await audienceScreen(page,info,'confirmation-builder')
   await call(`${path}/publish`, { expectedVersion: (await call(`${path}/draft`)).flow.draftVersion })
   expect(await call(`/api/public/flows/${slug}`)).not.toHaveProperty('prefilledAnswers')
   const recipient = `${slug}@example.test`, other = `${slug}-other@example.test`, existing = `${slug}-existing@example.test`
@@ -150,6 +159,10 @@ contract(['DIST-014','LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-005','RESP-
   await expect(page.getByRole('textbox')).toBeDisabled()
   await expect(page.getByText('Prefilled · locked by the operator',{exact:true})).toBeVisible()
   await audienceScreen(page,info,'locked-prefill')
+  await page.getByRole('button',{name:'Continue',exact:true}).click()
+  await expect(page.getByText('Send my confirmation here',{exact:true})).toBeVisible()
+  await page.getByRole('textbox').fill(recipient)
+  await audienceScreen(page,info,'confirmation-address')
   await page.getByRole('button',{name:'Submit response',exact:true}).click()
   await expect(page.getByRole('heading', { name: 'Invitation recorded' })).toBeVisible()
   await page.reload()

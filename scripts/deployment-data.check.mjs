@@ -45,6 +45,8 @@ function fixture() {
     insert('responses', { id, workspace_id: 'workspace', flow_id: 'flow', revision_id: revision, session_id: `${id}-removed-session`, session_token_hash: `${id}-hash`, idempotency_key: `${id}-receipt`, state, quarantine_reason: state === 'quarantined' ? 'minimum-fill-time' : null, released_at: state === 'released' ? stamp : null, completed_at: stamp, created_at: stamp, updated_at: stamp, source: 'direct', started_at: stamp, response_context_json: JSON.stringify({prefill:{'stable-question':'edited'}}) });
     insert('response_answers', { id: `${id}-answer`, response_id: id, step_id: 'stable-question', value_json: JSON.stringify('  Exact 😀 line\n=literal,"quote"\u0000\t  '), created_at: stamp, updated_at: stamp });
   }
+  insert('confirmation_deliveries',{id:'confirmation:completed',response_id:'completed',recipient:'synthetic-pencil-receipt@example.test',message_json:JSON.stringify({subject:'Receipt',text:'Retained respondent answer',html:'<p>Retained respondent answer</p>'}),status:'pending',attempts:1,available_at:stamp,armed:1,created_at:stamp,updated_at:stamp});
+  insert('confirmation_attempts',{id:'synthetic-pencil-confirmation-attempt',delivery_id:'confirmation:completed',ordinal:1,event:'transient',provider:'development',created_at:stamp});
   for (const state of ['pending', 'dispatched', 'failed']) insert('response_outbox', { id: `effect-${state}`, workspace_id: 'workspace', response_id: 'completed', kind: `synthetic.effect.${state}`, idempotency_key: `effect-${state}`, payload_json: '{"responseId":"completed"}', status: state, available_at: stamp, dispatched_at: state === 'dispatched' ? stamp : null, failure_reason: state === 'failed' ? 'synthetic failure' : null, created_at: stamp, updated_at: stamp });
   insert('audit_entries', { id: 'removed-actor', workspace_id: 'workspace', kind: 'synthetic.audit', actor_operator_id: 'operator-removed-earlier', subject_type: 'flow', subject_id: 'flow', details_json: '{}', created_at: stamp });
   insert('revision_metric_counters', { id: 'metric', revision_id: 'revision', starts: 9223372036854775807n, completions: 0, total_completion_milliseconds: 0, mobile_starts: 0, tablet_starts: 0, desktop_starts: 0, created_at: stamp, updated_at: stamp });
@@ -111,7 +113,7 @@ test('complete archive restores R2 bytes and ownership metadata with D1, re-expo
   } finally {await proxy?.dispose();rmSync(f.directory,{recursive:true});}
 });
 
-test('full current-data roundtrip preserves prefill markers, stable revisions, quarantine, receipts, historical actors, auth, effects, exact text and int64', () => {
+test('full current-data roundtrip preserves prefill markers and disabled confirmation history, stable revisions, quarantine, receipts, historical actors, auth, effects, exact text and int64', () => {
   const f = fixture();
   try {
     const exported = exportData(f.source, f.archive);
@@ -124,6 +126,9 @@ test('full current-data roundtrip preserves prefill markers, stable revisions, q
     assert.equal(readFileSync(second, 'utf8'), readFileSync(f.archive, 'utf8'));
     const database = new DatabaseSync(f.restored, { readOnly: true });
     assert.deepEqual(JSON.parse(database.prepare("SELECT response_context_json AS context FROM responses WHERE id='completed'").get().context).prefill, {'stable-question':'edited'});
+    assert.equal(database.prepare("SELECT armed FROM confirmation_deliveries WHERE response_id='completed'").get().armed,0);
+    assert.equal(JSON.parse(database.prepare("SELECT message_json FROM confirmation_deliveries WHERE response_id='completed'").get().message_json).text,'Retained respondent answer');
+    assert.equal(database.prepare("SELECT count(*) AS n FROM confirmation_attempts WHERE delivery_id='confirmation:completed'").get().n,1);
     assert.equal(database.prepare("SELECT count(*) AS n FROM respondent_sessions").get().n, 0);
     assert.equal(database.prepare("SELECT count(*) AS n FROM responses WHERE state='quarantined'").get().n, 1);
     assert.equal(database.prepare('SELECT COUNT(*) AS n FROM d1_migrations').get().n, migrations().length);

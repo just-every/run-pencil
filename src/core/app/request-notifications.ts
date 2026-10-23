@@ -6,6 +6,7 @@ import type { WorkerBindings } from './environment'
 export async function deliverRequestNotifications(environment: WorkerBindings) {
   const services = createPencilServices(createScheduledPencilPlatform(environment))
   await services.notifications.dispatcher.run()
+  await services.notifications.confirmations.run()
 }
 
 export function continueNotifications(request: Request, environment: WorkerBindings, execution: ExecutionContext) {

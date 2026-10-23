@@ -1,3 +1,4 @@
+import { ConfirmationSettings } from './ConfirmationSettings'
 import { Tooltip } from '../../../shared/ui/Tooltip'
 import { PrefillSettings } from './PrefillSettings'
 import { RetentionPanel } from '../../retention'
@@ -304,7 +305,7 @@ export function FlowBuilderPage() {
             <SpecialChoicesEditor type={questionType} choices={choices} settings={settings} disabled={saving} onChoices={setChoices} onSettings={next => setSettingsText(JSON.stringify(next, null, 2))} />
             {selected.kind === 'payment' ? <PaymentStepSettings key={`${draftRead}-${selected.id}`} draft={draft} step={selected} value={settings.payment} disabled={saving} onChange={payment => setSettingsText(JSON.stringify({ ...settings, payment }, null, 2))} /> : null}
             {selected.kind==='completion'?<CompletionSettings draft={draft} stepId={selected.id} value={settings.redirect} disabled={saving} onChange={redirect=>{const next={...settings};if(redirect)next.redirect=redirect;else delete next.redirect;setSettingsText(JSON.stringify(next,null,2))}}/>:null}
-
+            {selected.kind==='completion'?<ConfirmationSettings key={`confirmation-${draftRead}-${selected.id}`} draft={draft} stepId={selected.id} disabled={saving||dirty} onSave={async confirmation=>{setNotice(undefined);const result=await api.saveFormSettings(flowId,{...draft.formSettings!,confirmation},draft.flow.draftVersion);if(result.kind==='conflict')throw new Error('Another operator saved first. Reload the draft.');await load();setNotice({tone:'success',message:'Confirmation settings saved to the draft. Publish to apply it.'})}}/>:null}
             <TypeSettings type={questionType} settings={settings} disabled={saving} onChange={(key, value) => { const next: Record<string, unknown> = { ...settings }; if (value === undefined) delete next[key]; else next[key] = value; setSettingsText(Object.keys(next).length ? JSON.stringify(next, null, 2) : '') }} />
             {selected.kind === 'question' && questionType === 'rating' ? <RatingSettings settings={settings} disabled={saving} onChangeSettings={next => setSettingsText(JSON.stringify(next, null, 2))} /> : null}
             {selected.kind === 'question' && questionType === 'multiple_choice' ? <div className="ledger-filters">{[['minSelections', 'Minimum selections', 1], ['maxSelections', 'Maximum selections', choices.length]].map(([key, label, fallback]) => <label className="inspector-field" key={key}>{label}<input disabled={saving} className="text-input" type="number" min={0} max={choices.length} value={settings[String(key)] as number ?? fallback} onChange={(event) => updateSetting(String(key), event.target.value)} /></label>)}</div> : null}

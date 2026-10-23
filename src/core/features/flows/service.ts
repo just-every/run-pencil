@@ -1,3 +1,4 @@
+import { confirmationPublicationIssues, remapConfirmationSettings } from '../../shared/confirmationSettings'
 import { prefillPublicationIssues } from '../../shared/knownDataPrefill'
 import type { RestrictedAccess } from '../restricted-access'
 import { linkPreviewPublicationIssues, resolveLinkPreview, type LinkPreviewDefaults, type LinkPreviewAssetStore } from '../../shared/linkPreview'
@@ -167,6 +168,7 @@ export class FlowService {
     const variableIds = new Map((copiedSettings.calculations ?? []).map(value=>[value.id,ulid()]))
     const fieldIds = new Map(copiedSettings.hiddenFields.map(field => [field.id,ulid()]))
     const stableIdByOldStableId = new Map([...sourceSteps.map((step) => [step.stableId, ulid()] as [string,string]), ...[...fieldIds].map(([old,id]) => [`hidden:${old}`,`hidden:${id}`] as [string,string]), ...[...variableIds].map(([old,id])=>[`variable:${old}`,`variable:${id}`] as [string,string])])
+    if(copiedSettings.confirmation)copiedSettings.confirmation=remapConfirmationSettings(copiedSettings.confirmation,stableIdByOldStableId)
     if (copiedSettings.prefill) copiedSettings.prefill = copiedSettings.prefill.map(mapping=>({...mapping,stepId:stableIdByOldStableId.get(mapping.stepId) ?? mapping.stepId}))
     copiedSettings.hiddenFields = copiedSettings.hiddenFields.map(field => ({...field,id:fieldIds.get(field.id)!}))
     const rowIdByOldRowId = new Map(sourceSteps.map((step) => [step.id, ulid()]))
@@ -446,6 +448,7 @@ export class FlowService {
     if (draft.flow.status === 'archived') throw new ValidationError('An archived flow cannot be published or reopened. Duplicate it to create a separate draft.')
     const { steps: rawSteps, choices: rawChoices, rules: rawRules } = snapshot
     const issues = validateRevisionGraph(rawSteps, rawChoices, rawRules, evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'], formSettings(snapshot.revision.formSettingsJson))
+    issues.push(...confirmationPublicationIssues(draft.formSettings.confirmation,draft))
     issues.push(...prefillPublicationIssues(draft.formSettings.prefill ?? [],draft.steps))
     issues.push(...hiddenPublicationIssues(formSettings(snapshot.revision.formSettingsJson)))
     issues.push(...linkPreviewPublicationIssues(draft.formSettings))

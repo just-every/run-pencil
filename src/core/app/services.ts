@@ -1,3 +1,4 @@
+import { RespondentConfirmationDispatcher } from '../features/notifications/confirmation-dispatcher'
 import { LinkPreviewAssets } from '../features/link-preview/assets'
 import { LinkPreviews } from '../features/link-preview/service'
 import { ActionReminderDispatcher } from '../features/notifications/action-reminder-dispatcher'
@@ -91,6 +92,7 @@ export function createPencilServices(platform: PencilPlatform) {
     connections,
     payments,
     notifications: {
+      confirmations: new RespondentConfirmationDispatcher(platform.databaseBinding,sender,from,senderFailure),
       actionReminders: new ActionReminderDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,senderFailure,mailProvider),
       digest: new DigestDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,undefined,senderFailure,mailProvider),
       preferences: new NotificationRepository(platform.databaseBinding, notificationSenderError(from,mailProvider) ?? senderFailure, mailProvider === 'local-development', platform.configuration.isHostedDemo),

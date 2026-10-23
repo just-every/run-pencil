@@ -15,6 +15,7 @@ export const contactErasureCascade = [
   { target:'submission_statuses.*,submission_write_assertions.*', action:'retained', reason:'Per-form operator configuration and an empty transaction guard contain no contact data.' },
   { target:'responses.*,response_answers.*,response_outbox.*', action:'delete', reason:'Remove identified answers, responses and downstream payloads.' },
   { target:'rer_mail_development_outbox.*,local_mail_outbox.*', action:'delete', reason:'Remove invitation, reminder and response notification copies by delivery key.' },
+  { target:'confirmation_deliveries.*,confirmation_attempts.*', action:'delete', reason:'Response cascade removes the receipt mailbox, rendered message and attempts; capture cleanup uses its delivery key.' },
   { target:'notification_deliveries.*,notification_attempts.*', action:'delete', reason:'Existing response trigger and foreign keys remove response-linked notifications and attempts.' },
   { target:'mail_deliveries.status,reason,provider_id', action:'anonymise', reason:'Cancel unsent work and remove free text/provider references; retain delivery facts.' },
   { target:'mail_delivery_attempts.reason,provider_id', action:'anonymise', reason:'Remove external references; retain append-only attempt kinds, times and ordinals.' },
@@ -43,7 +44,9 @@ export async function eraseContact(db:D1Database, workspaceId: string, contactId
       ((SELECT count(*) FROM rer_mail_development_outbox WHERE json_extract(message,'$.deliveryId') IN(
         SELECT d.idempotency_key FROM mail_deliveries d JOIN invitation_participants p ON p.id=d.participant_id WHERE p.contact_id=?1 AND p.workspace_id=?2
         UNION
-        SELECT d.idempotency_key FROM notification_deliveries d JOIN responses r ON r.id=d.response_id JOIN invitation_participants p ON p.id=r.participant_id WHERE p.contact_id=?1 AND p.workspace_id=?2))
+        SELECT d.idempotency_key FROM notification_deliveries d JOIN responses r ON r.id=d.response_id JOIN invitation_participants p ON p.id=r.participant_id WHERE p.contact_id=?1 AND p.workspace_id=?2
+        UNION
+        SELECT d.id FROM confirmation_deliveries d JOIN responses r ON r.id=d.response_id JOIN invitation_participants p ON p.id=r.participant_id WHERE p.contact_id=?1 AND p.workspace_id=?2))
        +(SELECT count(*) FROM local_mail_outbox WHERE delivery_id IN(SELECT d.idempotency_key FROM mail_deliveries d JOIN invitation_participants p ON p.id=d.participant_id WHERE p.contact_id=?1 AND p.workspace_id=?2))) AS localMessages
     `).bind(contactId,workspaceId).first())!
     const owned = `SELECT r.id FROM responses r JOIN invitation_participants p ON p.id = r.participant_id WHERE p.contact_id = ? AND p.workspace_id = ?`
