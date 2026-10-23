@@ -125,7 +125,7 @@ test('full current-data roundtrip preserves prefill markers and disabled confirm
     assert.deepEqual(exportData(f.restored, second), exported);
     assert.equal(readFileSync(second, 'utf8'), readFileSync(f.archive, 'utf8'));
     const database = new DatabaseSync(f.restored, { readOnly: true });
-    assert.deepEqual(database.prepare('SELECT id,device_class FROM responses ORDER BY id').all(), [{id:'completed',device_class:'mobile'},{id:'suspected',device_class:'tablet'}]);
+    assert.deepEqual(database.prepare('SELECT id,device_class FROM responses ORDER BY id').all().map(row=>[row.id,row.device_class]), [['completed','mobile'],['suspected','tablet']]);
     assert.deepEqual(JSON.parse(database.prepare("SELECT response_context_json AS context FROM responses WHERE id='completed'").get().context).prefill, {'stable-question':'edited'});
     assert.equal(database.prepare("SELECT armed FROM confirmation_deliveries WHERE response_id='completed'").get().armed,0);
     assert.equal(JSON.parse(database.prepare("SELECT message_json FROM confirmation_deliveries WHERE response_id='completed'").get().message_json).text,'Retained respondent answer');
