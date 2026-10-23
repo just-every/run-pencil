@@ -54,6 +54,41 @@ contract('FLOW-006', 'rejects all publication problems by stable ID without crea
   await c.publish()
   await c.services.flows.closeFlow(c.scope.workspaceId, c.flow.flowId, c.operatorId)
   await expect(c.services.flows.getPublicFlow(c.slug)).rejects.toMatchObject({ flow: { message: 'We are done for now.' } })
+
+  // GOV-007: consent questions bind to a purpose, a form may be the email-marketing opt-in but never the SMS one, and each response records its consents with the published wording and the time.
+  const m = await foundationFixture('foundation-marketing-consent')
+  await m.add({ kind: 'question', questionType: 'consent', prompt: 'Product news by email', required: false, questionSettings: { statement: 'Email me product news.', purpose: 'email_marketing' } })
+  await m.add({ kind: 'question', questionType: 'consent', prompt: 'Offers by text', required: false, questionSettings: { statement: 'Text me offers. Msg and data rates may apply. Reply STOP to opt out.', purpose: 'sms_marketing' } })
+  await m.add({ kind: 'completion', questionType: null, prompt: 'Thanks' })
+  const saveMarketing = async (marketing: { purpose: string; wording: string } | undefined) => { const draft = await m.draft(); const next = { ...draft.formSettings! } as Record<string, unknown>; if (marketing) next.marketing = marketing; else delete next.marketing; await m.services.flows.updateFormSettings({ ...m.flow, expectedVersion: draft.flow.draftVersion, settings: next as typeof draft.formSettings & object }) }
+  const marketingRevisions = async () => (await env.DB.prepare('SELECT count(*) AS n FROM flow_revisions WHERE flow_id = ?').bind(m.flow.flowId).first<{ n: number }>())!.n
+  await expect(m.services.flows.updateBuilderDraft({ ...m.flow, stepId: (await m.draft()).steps[0].id, expectedVersion: (await m.draft()).flow.draftVersion, prompt: 'Product news by email', required: false, questionSettings: { statement: 'Email me product news.', purpose: 'carrier_pigeon' } })).rejects.toThrow()
+  await saveMarketing({ purpose: 'sms_marketing', wording: 'By subscribing you agree to receive texts.' })
+  const marketingBefore = await marketingRevisions()
+  await expect(m.publish()).rejects.toMatchObject({ details: [expect.objectContaining({ stepId: 'marketing:purpose' })] })
+  expect(await marketingRevisions()).toBe(marketingBefore)
+  await saveMarketing({ purpose: 'email_marketing', wording: 'By submitting you agree to receive our newsletter; unsubscribe any time.' })
+  const smsStep = (await m.draft()).steps[1]
+  await m.services.flows.updateBuilderDraft({ ...m.flow, stepId: smsStep.id, expectedVersion: (await m.draft()).flow.draftVersion, prompt: smsStep.prompt, required: true, questionSettings: smsStep.questionSettings! })
+  await expect(m.publish()).rejects.toMatchObject({ details: [expect.objectContaining({ stepId: smsStep.id })] })
+  await m.services.flows.updateBuilderDraft({ ...m.flow, stepId: smsStep.id, expectedVersion: (await m.draft()).flow.draftVersion, prompt: smsStep.prompt, required: false, questionSettings: smsStep.questionSettings! })
+  expect(await m.publish()).toMatchObject({ kind: 'published' })
+  const live = await m.services.flows.getPublicFlow(m.slug)
+  await saveMarketing({ purpose: 'email_marketing', wording: 'Edited after publishing.' })
+  const submit = async (emailConsent: boolean, smsConsent: boolean) => {
+    const session = await m.start(); await m.mature(session.sessionId)
+    await m.final(session, [{ stepId: live.steps[0].id, value: emailConsent }, { stepId: live.steps[1].id, value: smsConsent }])
+    const row = (await env.DB.prepare('SELECT response_context_json AS context, completed_at AS at FROM responses WHERE session_id = ?').bind(session.sessionId).first<{ context: string; at: string }>())!
+    return (JSON.parse(row.context) as { consents: Array<{ purpose: string; given: boolean; wording: string; at: string; source: string }> }).consents
+  }
+  const accepted = await submit(true, false), declined = await submit(false, false)
+  expect(accepted).toEqual([
+    expect.objectContaining({ purpose: 'email_marketing', given: true, source: 'form', wording: 'By submitting you agree to receive our newsletter; unsubscribe any time.' }),
+    expect.objectContaining({ purpose: 'email_marketing', given: true, source: 'question', wording: 'Email me product news.' }),
+    expect.objectContaining({ purpose: 'sms_marketing', given: false, source: 'question' }),
+  ])
+  expect(declined.filter(record => record.source === 'question').map(record => record.given)).toEqual([false, false])
+  expect(Date.parse(accepted[0].at)).toBeGreaterThan(0)
 }, 60_000)
 
 contract(['RESP-006', 'RESP-010', 'FLOW-019'], 'retains no abandoned answers or identity, preserves deliberately entered email exactly and compares it without case sensitivity', async () => {
