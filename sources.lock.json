@@ -6969,7 +6969,7 @@
       "executable": false
     },
     "tests/e2e/reporting-counts.spec.ts": {
-      "sha256": "bdd1d0e6c18425eac61d0c9fb900900eb52c925efee8670262484ef93de71765",
+      "sha256": "89fbdf3dd5e1a63f3ad2da7578236a849cbe78fa2315816116bedf50e24bbbde",
       "executable": false
     },
     "tests/e2e/request-notifications.spec.ts": {
