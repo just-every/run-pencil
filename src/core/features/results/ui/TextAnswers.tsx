@@ -1,7 +1,7 @@
 import { Search } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { reportingApi } from '../../../app/api'
-export function TextAnswers({ flowId, revisionId, questionId }: {flowId:string;revisionId:string;questionId:string}) {
+import { reportingApi, type LedgerFilter } from '../../../app/api'
+export function TextAnswers({ flowId, revisionId, questionId, filter }: {flowId:string;revisionId:string;questionId:string;filter?:LedgerFilter}) {
   const [search,setSearch] = useState('')
   const [texts,setTexts] = useState<string[]>([])
   const [cursor,setCursor] = useState<string>()
@@ -15,7 +15,7 @@ export function TextAnswers({ flowId, revisionId, questionId }: {flowId:string;r
     try {
       let next: string | undefined = cursor
       do {
-        const result = await reportingApi.textPage(flowId,{revisionId,questionId,search,cursor:next,countOnly:true},abort.signal)
+        const result = await reportingApi.textPage(flowId,{revisionId,questionId,search,filter,cursor:next,countOnly:true},abort.signal)
         if (abort.signal.aborted) return
         next = result.countCursor
         if (!next) setMatching(result.matching)
@@ -33,7 +33,7 @@ export function TextAnswers({ flowId, revisionId, questionId }: {flowId:string;r
     let next = after
     try {
       do {
-        const result = await reportingApi.textPage(flowId,{revisionId,questionId,search,cursor:next},abort.signal)
+        const result = await reportingApi.textPage(flowId,{revisionId,questionId,search,filter,cursor:next},abort.signal)
         if (abort.signal.aborted) return
         if (result.countCursor) void countMatches(result.countCursor,countRequest.current!)
         if (result.matching !== undefined) setMatching(result.matching)
@@ -44,7 +44,7 @@ export function TextAnswers({ flowId, revisionId, questionId }: {flowId:string;r
     } catch (reason) { if (!abort.signal.aborted) { countRequest.current?.abort(); setMatching(undefined); setTexts([]); setError(reason instanceof Error ? reason.message : 'Answers could not load.'); setCursor(undefined) } }
     finally { if (!abort.signal.aborted) setBusy(false) }
   }
-  useEffect(() => { void load(); return () => { request.current?.abort(); countRequest.current?.abort() } },[flowId,revisionId,questionId,search])
+  useEffect(() => { void load(); return () => { request.current?.abort(); countRequest.current?.abort() } },[flowId,revisionId,questionId,search,JSON.stringify(filter)])
   return <>
     <label className="search-field"><span className="sr-only">Search answers</span><Search aria-hidden="true" size={18} strokeWidth={1.75} /><input className="text-input" type="search" placeholder="Search answers" maxLength={5000} value={search} onChange={event=>setSearch(event.target.value)} /></label>
     <p className="muted" aria-live="polite">{matching === undefined ? error ? 'Matching count unavailable.' : 'Counting all matching answers…' : `${matching} matching ${matching === 1 ? 'answer' : 'answers'} · latest first`}{busy ? ' Searching released answers…' : ` · ${texts.length} on this page`}</p>

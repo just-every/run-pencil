@@ -70,6 +70,8 @@ contract(['LEDG-006', 'LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019'
     expect((await call<{ responses: LedgerResponse[] }>(`${scenario.path}/responses/export?${params}`)).responses).toEqual([])
   }
   expect(await call<FlowResults>(`${scenario.path}/results?revisionId=${scenario.importedRevisionId}`)).toMatchObject({ completedResponses: 2, importedResponses: 2, starts: 0, liveCompletedResponses: 0, completionRate: 0 })
+  await call(`/api/public/flows/${scenario.current.flow.slug}/views`,{revisionId:scenario.nativeRevisionId,source:'direct'})
+  await call(`/api/public/flows/${scenario.current.flow.slug}/views`,{revisionId:scenario.nativeRevisionId,source:'direct'})
   expect(await call<FlowResults>(`${scenario.path}/results?revisionId=${scenario.nativeRevisionId}`)).toMatchObject({ completedResponses: 2, importedResponses: 0, starts: 2, liveCompletedResponses: 2, completionRate: 1 })
 
   const workspace = await call<{ id: string }>('/api/app/workspace')

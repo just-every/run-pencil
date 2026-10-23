@@ -473,6 +473,7 @@ contract(['RSLT-001','RSLT-003','RSLT-004','DASH-002'], 'retains factual zero, q
   const f = await fixture('summary-cohort-states')
   const results = () => ok<FlowResults>(`${f.path}/results?revisionId=${f.publicFlow.revision.id}`)
   expect(await results()).toMatchObject({ starts: 0, completedResponses: 0, completionRate: 0, averageCompletionMilliseconds: 0, deviceStarts: { mobile: 0, tablet: 0, desktop: 0 } })
+  await ok('/api/public/flows/summary-cohort-states/views',{revisionId:f.publicFlow.revision.id,source:'direct'})
   const fast = await f.start(true)
   const receipt = await (await f.submit(fast, [{ stepId: f.route.id, value: f.skip.id }], 'summary-quarantine-key')).json<{ responseId: string; disposition: string }>()
   expect(receipt.disposition).toBe('quarantined')
@@ -480,7 +481,7 @@ contract(['RSLT-001','RSLT-003','RSLT-004','DASH-002'], 'retains factual zero, q
   await ok(`/api/app/responses/${receipt.responseId}/release`, {})
   const stored = await env.DB.prepare('SELECT completion_milliseconds FROM responses WHERE id = ?').bind(receipt.responseId).first<{ completion_milliseconds: number }>()
   const released = await results()
-  expect(released).toMatchObject({ starts: 1, completedResponses: 1, completionRate: 1, averageCompletionMilliseconds: stored!.completion_milliseconds })
+  expect(released).toMatchObject({ starts: 1, completedResponses: 1, completionRate: 1, rateNumerator:1,rateDenominator:1,rateBasis:'views', averageCompletionMilliseconds: stored!.completion_milliseconds })
   expect(JSON.stringify(released)).not.toContain(receipt.responseId); expect(JSON.stringify(released)).not.toContain(fast.sessionToken)
 
   const storedResponse = await env.DB.prepare('SELECT * FROM responses WHERE id=?').bind(receipt.responseId).first()
@@ -489,6 +490,7 @@ contract(['RSLT-001','RSLT-003','RSLT-004','DASH-002'], 'retains factual zero, q
   expect(responseColumns.filter(name=>/device|user.agent|fingerprint|screen|raw.ip/i.test(name))).toEqual(['device_class'])
   const devicePath = `${f.path}/devices?revisionId=${fast.revisionId}`
   expect(await ok(devicePath)).toMatchObject({basis:'sessions',total:1,counts:{desktop:1,mobile:0,tablet:0,unknown:0},sessionsWithoutResponse:0})
+  await ok('/api/public/flows/summary-cohort-states/views',{revisionId:fast.revisionId,source:'direct'})
   const mobile = await f.start(false, 'direct', 'mobile')
   const mobileReceipt = await (await f.submit(mobile,[{stepId:f.route.id,value:f.more.id},{stepId:f.detail.id,value:'Mobile cohort'}],'synthetic-pencil-mobile')).json<{responseId:string}>()
   expect((await env.DB.prepare('SELECT id,device_class FROM responses WHERE revision_id=? ORDER BY id').bind(fast.revisionId).all()).results).toEqual(expect.arrayContaining([{id:receipt.responseId,device_class:'desktop'},{id:mobileReceipt.responseId,device_class:'mobile'}]))
@@ -496,6 +498,13 @@ contract(['RSLT-001','RSLT-003','RSLT-004','DASH-002'], 'retains factual zero, q
   expect(await ok(selected)).toMatchObject({basis:'responses',total:1,counts:{mobile:1,tablet:0,desktop:0,unknown:0},nativeResponses:1,sessionsWithoutResponse:0})
   expect(await ok(`${selected}&deviceClass=desktop`)).toMatchObject({total:0,counts:{mobile:0,desktop:0}})
   expect(await ok(selected)).toMatchObject({total:1,counts:{mobile:1}})
+  const summaryFilter = `revisionId=${fast.revisionId}&answerStepId=${f.route.id}&answerValue=${f.more.id}`
+  const mobileDuration = await env.DB.prepare('SELECT completion_milliseconds AS duration FROM responses WHERE id=?').bind(mobileReceipt.responseId).first<{duration:number}>()
+  expect(await ok(`${f.path}/results?${summaryFilter}`)).toMatchObject({completedResponses:1,liveCompletedResponses:1,starts:1,rateBasis:'responses',rateNumerator:1,rateDenominator:1,views:2,durationSamples:1,totalCompletionMilliseconds:mobileDuration!.duration,averageCompletionMilliseconds:mobileDuration!.duration})
+  expect(await ok(`${f.path}/results?${summaryFilter}&deviceClass=desktop`)).toMatchObject({completedResponses:0,starts:0,rateBasis:'responses',rateNumerator:0,rateDenominator:0,durationSamples:0})
+  expect(await ok(`${f.path}/results?revisionId=${fast.revisionId}`)).toMatchObject({completedResponses:2,starts:2,rateBasis:'views',rateNumerator:2,rateDenominator:2,durationSamples:2})
+  const day = new Date().toISOString().slice(0,10)
+  expect(await ok(`${f.path}/results?revisionId=${fast.revisionId}&from=${day}T00:00:00.000Z&to=${day}T23:59:59.999Z`)).toMatchObject({completedResponses:2,starts:2,rateBasis:'views',rateNumerator:2,rateDenominator:2})
   // A historical response's absent class is unknown, never inferred from its answers or source.
   await env.DB.prepare('UPDATE responses SET device_class=NULL WHERE id=?').bind(mobileReceipt.responseId).run()
   expect(await ok(`${devicePath}&deviceClass=unknown`)).toMatchObject({total:1,unknownResponses:1,counts:{unknown:1,mobile:0,desktop:0}})
@@ -520,4 +529,5 @@ contract(['RSLT-001','RSLT-003','RSLT-004','DASH-002'], 'retains factual zero, q
   expect(archivedResponses).not.toContain(mobileReceipt.responseId)
   const emptyRevision = await ok<{revision:{id:string}}>(`${f.path}/publish`,{expectedVersion:(await f.draft()).flow.draftVersion})
   expect(await ok(`${f.path}/devices?revisionId=${emptyRevision.revision.id}&deviceClass=mobile`)).toMatchObject({total:0})
+  expect(await ok(`${f.path}/results?revisionId=${emptyRevision.revision.id}&deviceClass=mobile`)).toMatchObject({completedResponses:0,starts:0,rateDenominator:0})
 })

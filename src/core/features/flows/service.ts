@@ -1,3 +1,4 @@
+import type { LedgerFilter } from '../reporting'
 import { confirmationPublicationIssues, remapConfirmationSettings } from '../../shared/confirmationSettings'
 import { prefillPublicationIssues } from '../../shared/knownDataPrefill'
 import type { RestrictedAccess } from '../restricted-access'
@@ -235,30 +236,12 @@ export class FlowService {
     return {kind:'updated' as const,draftVersion:input.expectedVersion+1}
   }
 
-  async getFlowResults(workspaceId: string, flowId: string, revisionId?: string) {
+  async getFlowResults(workspaceId: string, flowId: string, revisionId?: string, filter: LedgerFilter = {}, allRevisions = false) {
     const flow = await this.requireWorkspaceFlow(workspaceId, flowId)
     const revision = revisionId ? await this.repository.findRevisionById(revisionId) : await this.repository.findCurrentPublishedRevision(flow.id)
     if (!revision || revision.flowId !== flow.id || revision.state !== 'published') throw new NotFoundError('This flow has no matching published revision.')
-    const { counter, completedResponses, liveCompletedResponses, importedResponses } = await this.responseRepository.getResults(revision.id)
-    const metrics = counter ?? {
-      starts: 0,
-      completions: 0,
-      totalCompletionMilliseconds: 0,
-      mobileStarts: 0,
-      tabletStarts: 0,
-      desktopStarts: 0,
-    }
-    return {
-      flow: { id: flow.id, title: flow.title, slug: flow.slug, status: flow.status },
-      revision: this.publicRevision(revision),
-      starts: metrics.starts,
-      completedResponses,
-      liveCompletedResponses,
-      importedResponses,
-      completionRate: metrics.starts === 0 ? 0 : liveCompletedResponses / metrics.starts,
-      averageCompletionMilliseconds: liveCompletedResponses === 0 ? 0 : Math.round(metrics.totalCompletionMilliseconds / liveCompletedResponses),
-      deviceStarts: { mobile: metrics.mobileStarts, tablet: metrics.tabletStarts, desktop: metrics.desktopStarts },
-    }
+    const summary = await this.responseRepository.getResults({workspaceId,flowId,filter:{...filter,revisionId:allRevisions ? undefined : revision.id}})
+    return { flow:{id:flow.id,title:flow.title,slug:flow.slug,status:flow.status}, revision:this.publicRevision(revision), allRevisions, ...summary }
   }
 
   async updateBuilderDraft(input: { operatorId?: string; workspaceId: string; flowId: string; stepId: string; prompt: string; required: boolean; expectedVersion: number; helperText?: string | null; nextStepId?: string | null; questionSettings?: Record<string, unknown> | null; questionType?: QuestionType | null; choices?: Array<{ id?: string; newId?: string; value: string; label: string }>; rules?: BranchInput[] }) {

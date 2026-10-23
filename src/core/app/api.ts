@@ -75,6 +75,14 @@ export type FlowResults = {
   flow: { id: string; title: string; slug: string; status: DashboardFlow['status'] }
   revision: PublicFlow['revision']
   starts: number
+  allRevisions: boolean
+  cutoff: string
+  rateNumerator: number
+  rateDenominator: number
+  rateBasis: 'views' | 'responses'
+  views: number
+  durationSamples: number
+  totalCompletionMilliseconds: number
   completedResponses: number
   liveCompletedResponses: number
   importedResponses: number
@@ -155,7 +163,7 @@ export const api = {
   closeFlow: (flowId: string) => request<void>(`/api/app/flows/${encodeURIComponent(flowId)}/close`, { method: 'POST' }),
   reopenFlow: (flowId: string) => request<void>(`/api/app/flows/${encodeURIComponent(flowId)}/reopen`, { method: 'POST' }),
   archiveFlow: (flowId: string) => request<void>(`/api/app/flows/${encodeURIComponent(flowId)}/archive`, { method: 'POST' }),
-  results: (flowId: string, revisionId?: string) => request<FlowResults>(`/api/app/flows/${encodeURIComponent(flowId)}/results${revisionId ? `?revisionId=${encodeURIComponent(revisionId)}` : ''}`),
+  results: (flowId: string, revisionId?: string, filter: LedgerFilter = {}, allRevisions = false) => request<FlowResults>(`/api/app/flows/${encodeURIComponent(flowId)}/results?${query({...filter,revisionId})}${allRevisions ? '&allRevisions=true' : ''}`),
   publicFlow: (slug: string) => request<PublicFlow>(`/api/public/flows/${encodeURIComponent(slug)}`),
   startSession: (slug: string, deviceClass: 'mobile' | 'tablet' | 'desktop', source: 'direct' | 'embed', invitationToken?: string, collectorKey?: string, accessToken?:string, presentation?:import('../shared/presentationOrder').PresentationOrder) =>
     request<{ sessionId: string; sessionToken: string; revisionId: string; flowId: string; flow: PublicFlow }>(`/api/public/flows/${encodeURIComponent(slug)}/sessions`, { method: 'POST', body: JSON.stringify({ deviceClass, source, invitationToken, collectorKey, accessToken, presentation }) }),
@@ -195,8 +203,8 @@ export const reportingApi = {
   devices: (flowId: string, filter: LedgerFilter) => request<import('../features/reporting').DeviceReport>(`/api/app/flows/${encodeURIComponent(flowId)}/devices?${query(filter)}`),
   compareRevisions: (flowId: string, offset = 0) => request<RevisionComparison>(`/api/app/flows/${encodeURIComponent(flowId)}/questions/compare?offset=${offset}`),
   ledger: (flowId: string, filter: LedgerFilter = {}) => request<Ledger>(`/api/app/flows/${encodeURIComponent(flowId)}/ledger?${query(filter)}`),
-  questions: (flowId: string, revisionId: string) => request<QuestionReport[]>(`/api/app/flows/${encodeURIComponent(flowId)}/questions?revisionId=${encodeURIComponent(revisionId)}`),
-  textPage: (flowId: string, input: { revisionId:string;questionId:string;search:string;cursor?:string;countOnly?:boolean }, signal?: AbortSignal) => request<{texts:string[];cursor?:string;scanning:boolean;countCursor?:string;matching?:number}>(`/api/app/flows/${encodeURIComponent(flowId)}/questions/text`,{method:'POST',body:JSON.stringify(input),signal}),
+  questions: (flowId: string, revisionId?: string, filter: LedgerFilter = {}) => request<QuestionReport[]>(`/api/app/flows/${encodeURIComponent(flowId)}/questions?${query({...filter,revisionId})}`),
+  textPage: (flowId: string, input: { revisionId:string;questionId:string;search:string;filter?:LedgerFilter;cursor?:string;countOnly?:boolean }, signal?: AbortSignal) => request<{texts:string[];cursor?:string;scanning:boolean;countCursor?:string;matching?:number}>(`/api/app/flows/${encodeURIComponent(flowId)}/questions/text`,{method:'POST',body:JSON.stringify(input),signal}),
   crosstab: (flowId: string, input: { revisionId: string; rows: string; columns: string } & LedgerFilter) => request<import('../features/reporting').Crosstab>(`/api/app/flows/${encodeURIComponent(flowId)}/crosstab?${query(input)}`),
   startExport: (flowId: string, filter: LedgerFilter, format: ExportFormat, includeAutomatedExclusions = false) => request<{token:string;cutoff:string;total:number;excludedQuarantined:number;includedQuarantined:number;filename:string;format:ExportFormat}>(`/api/app/flows/${encodeURIComponent(flowId)}/responses/export/start`,{method:'POST',body:JSON.stringify({...filter,format,includeAutomatedExclusions})}),
 }

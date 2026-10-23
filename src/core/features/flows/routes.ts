@@ -1,3 +1,4 @@
+import { ledgerFilterSchema } from '../reporting'
 import { bodyLimit } from 'hono/body-limit'
 import { AccessRequiredError } from '../restricted-access'
 import { hiddenSettingsIssue, type FormSettings } from '../../shared/hiddenFields'
@@ -107,9 +108,10 @@ export function registerFlowRoutes(app: Hono<WorkerEnvironment>, services: Reque
     }
   })
 
-  app.get('/api/app/flows/:flowId/results', zValidator('param', z.object({ flowId: resourceId })), zValidator('query', z.object({ revisionId: resourceId.optional() })), async (context) => {
+  app.get('/api/app/flows/:flowId/results', zValidator('param', z.object({ flowId: resourceId })), zValidator('query', ledgerFilterSchema.extend({allRevisions:z.enum(['true','false']).transform(value=>value==='true').default(false)})), async (context) => {
     try {
-      return context.json(await services(context).flows.getFlowResults(context.get('operatorSession').workspaceId, context.req.param('flowId'), context.req.valid('query').revisionId))
+      const {allRevisions,...filter}=context.req.valid('query')
+      return context.json(await services(context).flows.getFlowResults(context.get('operatorSession').workspaceId, context.req.param('flowId'), filter.revisionId, filter, allRevisions))
     } catch (error) {
       return failure(context, error)
     }

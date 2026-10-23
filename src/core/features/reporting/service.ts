@@ -1,4 +1,4 @@
-import { NotFoundError } from '../../shared/errors'
+import { NotFoundError, ValidationError } from '../../shared/errors'
 import { ReportingRepository, type LedgerFilter } from './repository'
 export class ReportingService {
   constructor(private readonly repository: ReportingRepository) {}
@@ -12,10 +12,16 @@ export class ReportingService {
     const cutoff = new Date().toISOString()
     return { flow, cutoff, filter, revisions: await this.repository.revisions(flowId), ...await this.repository.ledger(workspaceId, flowId, filter, cutoff) }
   }
-  async questions(workspaceId: string, flowId: string, revisionId: string) {
+  async questions(workspaceId: string, flowId: string, revisionId?: string, filter: LedgerFilter = {}) {
     await this.requireFlow(workspaceId, flowId)
-    if (!(await this.repository.revisions(flowId)).some((revision) => revision.id === revisionId)) throw new NotFoundError('This published revision is not part of the selected flow.')
-    return this.repository.questionReport(revisionId)
+    if (revisionId && filter.revisionId && revisionId !== filter.revisionId) throw new ValidationError('Choose the same published revision in the report and its filter.')
+    const selectedRevision = revisionId ?? filter.revisionId
+    const revisions = await this.repository.revisions(flowId)
+    if (selectedRevision && !revisions.some((revision) => revision.id === selectedRevision)) throw new NotFoundError('This published revision is not part of the selected flow.')
+    const cutoff = new Date().toISOString()
+    const selected = revisions.filter(revision => !selectedRevision || revision.id === selectedRevision)
+    const reports = await Promise.all(selected.map(revision => this.repository.questionReport(revision.id, filter, cutoff)))
+    return reports.flat()
   }
   async compareRevisions(workspaceId: string, flowId: string, offset = 0) {
     const flow = await this.requireFlow(workspaceId, flowId)

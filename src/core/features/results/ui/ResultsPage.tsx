@@ -1,3 +1,4 @@
+import { ResultMetrics } from './ResultMetrics'
 import { DeviceSplit } from './DeviceSplit'
 import type { DeviceReport } from '../../reporting'
 import { TrafficPanel } from './TrafficPanel'
@@ -7,23 +8,13 @@ import { CrosstabPanel } from './CrosstabPanel'
 import { NotificationsPanel } from '../../notifications'
 import { ArrowLeft, PencilLine } from 'lucide-react'
 import { Link, useParams } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { QuestionResults } from './QuestionResults'
 import { RevisionComparison } from './RevisionComparison'
 import { ResponseLedger } from './ResponseLedger'
 import { QuarantineReview } from './QuarantineReview'
 import { api, reportingApi, type QuestionReport, type FlowResults, type LedgerFilter, type Ledger } from '../../../app/api'
 import { LoadProblem } from '../../../app/ui/LoadProblem'
-
-function percent(value: number) {
-  return `${Math.round(value * 100)}%`
-}
-
-function duration(milliseconds: number) {
-  if (milliseconds < 60000) return `${Math.round(milliseconds / 1000)}s`
-  const minutes = Math.round(milliseconds / 60000)
-  return minutes >= 60 ? `${Math.floor(minutes / 60)}h ${minutes % 60}m` : `${minutes}m`
-}
 
 export function ResultsPage() {
   const { flowId } = useParams({ from: '/app/flows/$flowId/results' })
@@ -36,23 +27,29 @@ export function ResultsPage() {
   const [revisions, setRevisions] = useState<Ledger['revisions']>([])
   const [timeZone, setTimeZone] = useState<string>()
   const [refresh, setRefresh] = useState(0)
+  const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string>()
   const [exportSlot, setExportSlot] = useState<HTMLDivElement | null>(null)
 
+  const selectionKey = JSON.stringify({...responseFilter,offset:undefined})
   useEffect(() => {
     let active = true
-    setError(undefined)
-    setResults(undefined); setQuestions([])
-    const metadata = Promise.all([api.workspace(), reportingApi.ledger(flowId, {})])
-      .then(([workspace, ledger]) => { if (active) { setTimeZone(workspace.timeZone); setRevisions(ledger.revisions) } })
-    const report = api.results(flowId, selectedRevision === 'all' ? undefined : selectedRevision)
-      .then(async (result) => ({ result, questions: await reportingApi.questions(flowId, result.revision.id) }))
-      .then((report) => { if (active) { setResults(report.result); setQuestions(report.questions) } })
-    Promise.all([metadata, report]).catch((reason: unknown) => { if (active) setError(reason instanceof Error ? reason.message : 'Results could not load.') })
-    return () => { active = false }
-  }, [flowId, refresh, selectedRevision])
+    void Promise.all([api.workspace(), reportingApi.ledger(flowId,{})]).then(([workspace,ledger])=>{if(active){setTimeZone(workspace.timeZone);setRevisions(ledger.revisions)}}).catch(reason=>{if(active)setError(reason instanceof Error?reason.message:'Results metadata could not load.')})
+    return ()=>{active=false}
+  },[flowId,refresh])
+  useEffect(() => {
+    let active = true
+    setError(undefined); setBusy(true)
+    const all = selectedRevision === 'all'
+    void api.results(flowId,all?undefined:selectedRevision,responseFilter,all)
+      .then(async result=>({result,questions:await reportingApi.questions(flowId,all?undefined:result.revision.id,responseFilter)}))
+      .then(report=>{if(active){setResults(report.result);setQuestions(report.questions)}})
+      .catch(reason=>{if(active)setError(reason instanceof Error?reason.message:'Results could not load.')})
+      .finally(()=>{if(active)setBusy(false)})
+    return ()=>{active=false}
+  },[flowId,refresh,selectedRevision,selectionKey])
 
-  const filter = { ...responseFilter, revisionId: selectedRevision === 'all' ? undefined : selectedRevision ?? results?.revision.id }
+  const filter = useMemo(() => ({ ...responseFilter, revisionId: selectedRevision === 'all' ? undefined : selectedRevision ?? results?.revision.id }),[responseFilter,selectedRevision,results?.revision.id])
   const filterKey = JSON.stringify({ ...filter, offset: undefined })
   useEffect(() => {
     if (!results) return
@@ -62,7 +59,7 @@ export function ResultsPage() {
   }, [flowId, filterKey, refresh, results?.revision.id])
 
   return (
-    <section className="results" aria-labelledby="results-title">
+    <section className="results" aria-labelledby="results-title" aria-busy={busy}>
       <header className="results-heading">
         <div className="results-heading__nav"><Link className="quiet-button focus-ring" to="/app"><ArrowLeft aria-hidden="true" size={16} /> All flows</Link><Link className="secondary-button focus-ring" to="/app/flows/$flowId/builder" params={{ flowId }}><PencilLine aria-hidden="true" size={15} /> Builder</Link></div>
         <Link className="secondary-button focus-ring" to="/app/flows/$flowId/inbox" params={{ flowId }}>Submission inbox</Link>
@@ -76,23 +73,20 @@ export function ResultsPage() {
       {comparing ? <RevisionComparison key={`${flowId}:${refresh}`} flowId={flowId} onClose={() => setComparing(false)} /> : null}
       {error ? <LoadProblem heading="h2" message={error} retryLabel="Retry results" onRetry={() => setRefresh((value) => value + 1)} /> : null}
       {!results && !error ? <p className="status-note">Loading results…</p> : null}
-      {results && timeZone && !error && !comparing ? <>
-      <QuestionResults questions={questions} flowId={flowId}>
+      {results && timeZone && !comparing ? <>
+      {busy ? <p role="status">Updating the combined results selection…</p> : null}
+      {!busy && !error ? <>
+      <QuestionResults questions={questions} flowId={flowId} filter={filter} revisions={selectedRevision === 'all' ? revisions : undefined}>
         {devices ? <DeviceSplit report={devices} /> : <p role="status">Loading device split…</p>}
       </QuestionResults>
       <p><Link className="quiet-button focus-ring" to="/app/actions/new" search={{ flowId, revisionId: results.revision.id }}>Turn these results into an action</Link></p>
-      <p className="eyebrow results-metrics-label">Session metrics</p>
-      <div className="results-grid">
-        <article className="panel metric-card"><span className="muted">Responses</span><strong>{results.completedResponses}</strong><span className="muted">{results.liveCompletedResponses} live · {results.importedResponses} imported</span></article>
-        <article className="panel metric-card"><span className="muted">Starts</span><strong>{results.starts}</strong><span className="muted">recorded starts</span></article>
-        <article className="panel metric-card"><span className="muted">Completion rate</span><strong>{percent(results.completionRate)}</strong><span className="muted">{results.liveCompletedResponses} live completions / {results.starts} starts</span></article>
-        <article className="panel metric-card"><span className="muted">Average time</span><strong>{duration(results.averageCompletionMilliseconds)}</strong><span className="muted">{results.liveCompletedResponses} live completed responses</span></article>
-      </div>
-      <details className="results-scope"><summary>How we count</summary><p className="muted">Summary scope: revision {results.revision.number}, all its recorded starts and released responses. Imported responses contribute to answers and the ledger; they do not count toward starts, completion rate, average time or devices. Response filters below select the device split and response ledger; this summary still covers its revision.</p></details>
+      <ResultMetrics results={results} />
+      </> : null}
+      <p className="muted">Traffic panel: revision {results.revision.number}. Its view-based rates are unfiltered by response filters.</p>
       <TrafficPanel key={results.revision.id} flowId={flowId} revisionId={results.revision.id} />
       <CollectorComparison flowId={flowId} />
-      {revisions.find(revision => revision.id === results.revision.id) ? <CrosstabPanel key={results.revision.id} flowId={flowId} revision={revisions.find(revision => revision.id === results.revision.id)!} questions={questions} /> : null}
-      <TrendsPanel key={results.revision.id} flowId={flowId} questions={questions} timeZone={timeZone} revisionId={results.revision.id} />
+      {revisions.find(revision => revision.id === results.revision.id) ? <CrosstabPanel key={results.revision.id} flowId={flowId} revision={revisions.find(revision => revision.id === results.revision.id)!} questions={questions.filter(question=>question.revisionId===results.revision.id)} /> : null}
+      <TrendsPanel key={results.revision.id} flowId={flowId} questions={questions.filter(question=>question.revisionId===results.revision.id)} timeZone={timeZone} revisionId={results.revision.id} />
       <ResponseLedger key={`${results.revision.id}:${refresh}`} flowId={flowId} timeZone={timeZone} questions={questions} filter={filter} onFilterChange={setResponseFilter} onChanged={() => setRefresh((value) => value + 1)} exportSlot={exportSlot} />
       <QuarantineReview key={results.revision.id} revisionId={results.revision.id} timeZone={timeZone} questions={questions} onChanged={() => setRefresh((value) => value + 1)} />
       <div className="results-notifications"><NotificationsPanel flowId={flowId} timeZone={timeZone} /></div>

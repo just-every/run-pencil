@@ -4,6 +4,10 @@ import { contract } from '../../src/test/contract'
 import { foundationFixture } from './foundation-fixture'
 import { startExport, exportPart } from '../../src/core/features/reporting/export'
 import { textPage } from '../../src/core/features/reporting/textPage'
+import { analysisHttp } from './analysis-fixture'
+import { matureLoad } from './load-time-fixture'
+import type { QuestionReport } from '../../src/core/app/api'
+import type { TextPage } from '../../src/core/features/reporting/textPage'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 const secret='synthetic-bounded-report-key-not-a-real-credential'
 beforeAll(()=>applyD1Migrations(env.DB,__PENCIL_CORE_MIGRATIONS__))
@@ -45,6 +49,51 @@ contract(['RSLT-001','BASE-ACCESS-002','BASE-INPUT-001'], 'text cursors search a
   values=[];cursor=undefined
   do {const page=await textPage(env.DB,secret,f.identity,{...input,search:`é%_'"${'x'.repeat(500)}`,cursor});values.push(...page.texts);cursor=page.cursor}while(cursor)
   expect(values).toEqual([f.values[1]])
+  const scoped=await analysisHttp({AI_ENABLED:'false'})
+  const submit=async(index:number)=>{
+    const started=await scoped.call(`/api/public/flows/${scoped.slug}/sessions`,{deviceClass:index===8||index===9?'desktop':'mobile',source:'direct'})
+    expect(started.status).toBe(201)
+    const session=await started.json() as {sessionId:string;sessionToken:string;revisionId:string;loadTime:string}
+    await matureLoad(session)
+    const response=await scoped.call(`/api/public/flows/${scoped.slug}/responses`,{...session,idempotencyKey:crypto.randomUUID(),answers:[
+      {stepId:scoped.questions.improve,value:index===6||index===7?`Other comment ${index}`:`Needle comment ${index}`},
+      {stepId:scoped.questions.name,value:index===10||index===11?'Different cohort':'Cohort matching'},
+    ]})
+    expect(response.status,await response.clone().text()).toBe(201)
+  }
+  for(let index=0;index<12;index++)await submit(index)
+  const selected={deviceClass:'mobile',source:'direct',search:'Cohort matching'}
+  const path=`/api/app/flows/${scoped.flowId}/questions`
+  const summaries=await scoped.call(`${path}?${new URLSearchParams({...selected,revisionId:scoped.revisionId})}`)
+  expect(summaries.status).toBe(200)
+  expect((await summaries.json() as QuestionReport[]).find(question=>question.id===scoped.questions.improve)).toMatchObject({revisionId:scoped.revisionId,answered:8})
+  const selection={revisionId:scoped.revisionId,questionId:scoped.questions.improve,search:'needle',filter:selected}
+  const filtered=await scoped.call(`${path}/text`,selection)
+  expect(filtered.status).toBe(200)
+  const filteredPage=await filtered.json() as TextPage
+  expect(filteredPage.texts).toHaveLength(5)
+  expect(filteredPage.cursor).toBeTruthy()
+  const next=await scoped.call(`${path}/text?${new URLSearchParams({revisionId:selection.revisionId,questionId:selection.questionId,search:selection.search,filter:JSON.stringify({...selected,offset:99}),cursor:filteredPage.cursor!})}`)
+  expect(next.status).toBe(200)
+  expect([...filteredPage.texts,...(await next.json() as TextPage).texts].sort()).toEqual(Array.from({length:6},(_,index)=>`Needle comment ${index}`).sort())
+  const counted=await scoped.call(`${path}/text`,{...selection,countOnly:true,cursor:filteredPage.countCursor})
+  expect(counted.status).toBe(200)
+  expect(await counted.json()).toMatchObject({matching:6,scanning:false})
+  for(const changed of [{...selected,deviceClass:'desktop'},{...selected,search:'Different cohort'}]) {
+    for(const continuation of [{cursor:filteredPage.cursor},{countOnly:true,cursor:filteredPage.countCursor}]) {
+      const refused=await scoped.call(`${path}/text`,{...selection,filter:changed,...continuation})
+      expect(refused.status).toBe(400)
+      expect(await refused.json()).toMatchObject({message:'This answer cursor belongs to a different report.'})
+    }
+  }
+  const draft=await scoped.services.flows.getBuilderDraft(scoped.workspaceId,scoped.flowId)
+  const republished=await scoped.services.flows.publishDraft({workspaceId:scoped.workspaceId,flowId:scoped.flowId,expectedVersion:draft.flow.draftVersion})
+  await submit(12)
+  const versions=await scoped.call(`${path}?${new URLSearchParams(selected)}`)
+  expect(versions.status).toBe(200)
+  expect((await versions.json() as QuestionReport[]).filter(question=>question.id===scoped.questions.improve).map(question=>({revisionId:question.revisionId,answered:question.answered}))).toEqual([
+    {revisionId:republished.revision.id,answered:1},{revisionId:scoped.revisionId,answered:8},
+  ])
   await env.DB.prepare('UPDATE response_answers SET value_json=? WHERE response_id=?').bind('"Same count replacement"',f.receipt.responseId).run()
   await expect(textPage(env.DB,secret,f.identity,{...input,cursor:first.cursor})).rejects.toThrow(/changed/)
 },60000)

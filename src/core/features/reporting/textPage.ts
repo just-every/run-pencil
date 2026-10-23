@@ -3,13 +3,19 @@ import { NotFoundError, ValidationError } from '../../shared/errors'
 import { checkGeneration, generation, openCursor, sealCursor, type EvidenceScope } from './cursor'
 import { responseScope } from './scope'
 import { retainedTextValid } from './textValidity'
+import { ledgerFilterSchema } from './filter'
+import type { LedgerFilter } from '../../shared/reportFilters'
 type TextCursor = EvidenceScope & { kind: 'text' | 'text-count'; matched?: number; revisionId: string; questionId: string; searchHash: string; after?: { time: string; id: string } }
 export type TextPage = { texts: string[]; cursor?: string; scanning: boolean; countCursor?: string; matching?: number }
 // Unicode case folding deliberately matches the established browser behavior.
 // SQLite lower()/LIKE only fold ASCII. Scan bounded, indexed pages instead.
-export async function textPage(db: D1Database, secret: string, identity: { workspaceId: string; sessionId: string; flowId: string }, input: { revisionId: string; questionId: string; search: string; cursor?: string; countOnly?: boolean }, signal?: AbortSignal): Promise<TextPage> {
+export async function textPage(db: D1Database, secret: string, identity: { workspaceId: string; sessionId: string; flowId: string }, input: { revisionId: string; questionId: string; search: string; filter?: LedgerFilter; cursor?: string; countOnly?: boolean }, signal?: AbortSignal): Promise<TextPage> {
   signal?.throwIfAborted()
-  const searchHash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify(input.search)))), byte=>byte.toString(16).padStart(2,'0')).join('')
+  const { offset: _offset, ...selected } = ledgerFilterSchema.parse(input.filter ?? {})
+  if (selected.revisionId && selected.revisionId !== input.revisionId) throw new ValidationError('Choose the same published revision in the text report and its filter.')
+  const filter = { ...selected, revisionId: input.revisionId }
+  const normalized = Object.entries(filter).filter(([, value]) => value !== undefined && value !== '').sort(([a], [b]) => a.localeCompare(b))
+  const searchHash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(JSON.stringify([input.search, normalized])))), byte=>byte.toString(16).padStart(2,'0')).join('')
   const cursor: TextCursor = input.cursor ? await openCursor(input.cursor,secret) : { kind: 'text', ...identity, revisionId: input.revisionId, questionId: input.questionId, searchHash, cutoff: new Date().toISOString(), generation: await generation(db,identity.workspaceId) }
   if (!cursor || cursor.kind !== (input.countOnly ? 'text-count' : 'text')) throw new ValidationError('Invalid answer cursor. Start again.')
   if (Object.entries(identity).some(([key,value]) => cursor[key as keyof TextCursor] !== value) || cursor.revisionId !== input.revisionId || cursor.questionId !== input.questionId || cursor.searchHash !== searchHash) throw new ValidationError('This answer cursor belongs to a different report.')
@@ -24,7 +30,7 @@ export async function textPage(db: D1Database, secret: string, identity: { works
   // Including scope and consistency checks leaves ample room under 1,000 queries.
   for (let batch=0;batch<512;batch++) {
     signal?.throwIfAborted()
-    const { where, bindings } = responseScope(identity.workspaceId,identity.flowId,{ revisionId: input.revisionId },cursor.cutoff)
+    const { where, bindings } = responseScope(identity.workspaceId,identity.flowId,filter,cursor.cutoff)
     const after = cursor.after ? ' AND (r.completed_at < ? OR (r.completed_at = ? AND r.id < ?))' : ''
     if (cursor.after) bindings.push(cursor.after.time,cursor.after.time,cursor.after.id)
     const rows = (await db.prepare(`SELECT r.id, r.completed_at AS time, CASE WHEN length(CAST(a.value_json AS BLOB)) <= 30002 THEN a.value_json ELSE 'null' END AS value FROM responses r JOIN response_answers a ON a.response_id = r.id AND a.step_id = ? WHERE ${where}${after} ORDER BY r.completed_at DESC,r.id DESC LIMIT 32`).bind(input.questionId,...bindings).all<{id:string;time:string;value:string}>()).results

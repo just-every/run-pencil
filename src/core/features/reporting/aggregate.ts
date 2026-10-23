@@ -7,12 +7,12 @@ import { contactValidity } from './contactValidity'
 import type { AnswerSummary } from './answerSummary'
 import type { ReportStep, ReportChoice } from './questionReport'
 import { finiteMidpoint } from './finiteMidpoint'
+import { responseScope } from './scope'
+import type { LedgerFilter } from '../../shared/reportFilters'
 export { finiteMidpoint }
 
 // Each statement returns at most questions or published options, never answers.
-const evidence = `FROM response_answers a JOIN responses r ON r.id = a.response_id
- LEFT JOIN flow_steps s ON s.revision_id = r.revision_id AND s.stable_id = a.step_id
- WHERE r.revision_id = ? AND r.state = 'released' AND EXISTS (SELECT 1 FROM flow_revisions v JOIN flows f ON f.id=v.flow_id WHERE v.id=r.revision_id AND f.id=r.flow_id AND f.workspace_id=r.workspace_id)`
+const retainedRevision = 'EXISTS (SELECT 1 FROM flow_revisions v JOIN flows f ON f.id=v.flow_id WHERE v.id=r.revision_id AND f.id=r.flow_id AND f.workspace_id=r.workspace_id)'
 const value = "json_extract(a.value_json, '$')"
 const kind = 'json_type(a.value_json)'
 const settings = "COALESCE(s.question_settings_json, '{}')"
@@ -40,7 +40,11 @@ const valid = `CASE s.question_type
 type Aggregate = { stepId: string; answered: number; imported: number; invalid: number; average: number; minimum: number; maximum: number; earliest: string; latest: string; promoters: number; detractors: number; satisfied: number; effortTotal: number }
 type Bucket = { stepId: string; value: string | number; count: number; average: number; first: number }
 
-export async function aggregateRevision(db: D1Database, revisionId: string, steps: ReportStep[], choices: ReportChoice[]) {
+export async function aggregateRevision(db: D1Database, selection: { workspaceId: string; flowId: string; filter: LedgerFilter; cutoff: string }, steps: ReportStep[], choices: ReportChoice[]) {
+  const scope = responseScope(selection.workspaceId, selection.flowId, selection.filter, selection.cutoff)
+  const evidence = `FROM response_answers a JOIN responses r ON r.id = a.response_id
+    LEFT JOIN flow_steps s ON s.revision_id = r.revision_id AND s.stable_id = a.step_id
+    WHERE ${scope.where} AND ${retainedRevision}`
   const [counts, buckets, medians] = await db.batch([
     db.prepare(`SELECT s.stable_id AS stepId, COUNT(*) AS answered, SUM(r.source = 'imported') AS imported,
       SUM(CASE WHEN (${valid}) THEN 0 ELSE 1 END) AS invalid,
@@ -53,17 +57,17 @@ export async function aggregateRevision(db: D1Database, revisionId: string, step
       SUM(s.question_type = 'nps' AND ${value} <= 6) AS detractors,
       SUM(s.question_type = 'csat' AND ${value} >= 4) AS satisfied,
       SUM(CASE WHEN s.question_type = 'ces' THEN ${value} ELSE 0 END) AS effortTotal
-      ${evidence} GROUP BY s.stable_id`).bind(revisionId),
+      ${evidence} GROUP BY s.stable_id`).bind(...scope.bindings),
     db.prepare(`SELECT s.stable_id AS stepId, j.value AS value, COUNT(*) AS count, SUM(j.key = 0) AS first, AVG(CAST(j.key AS INTEGER)+1) AS average
       FROM response_answers a JOIN responses r ON r.id = a.response_id
       LEFT JOIN flow_steps s ON s.revision_id = r.revision_id AND s.stable_id = a.step_id,
       json_each(CASE WHEN s.question_type = 'consent' THEN json_extract(a.value_json, '$.accepted') WHEN s.question_type IN ('single_choice','multiple_choice','dropdown') THEN ${choiceIdsSql('a.value_json')} ELSE a.value_json END) j
-      WHERE r.revision_id = ? AND r.state = 'released' AND EXISTS (SELECT 1 FROM flow_revisions v JOIN flows f ON f.id=v.flow_id WHERE v.id=r.revision_id AND f.id=r.flow_id AND f.workspace_id=r.workspace_id) AND s.question_type IN ('single_choice','dropdown','multiple_choice','priority','rating','nps','yes_no','consent','csat','ces','emoji_rating','thumbs_rating')
-      AND (${valid}) GROUP BY s.stable_id, j.value`).bind(revisionId),
+      WHERE ${scope.where} AND ${retainedRevision} AND s.question_type IN ('single_choice','dropdown','multiple_choice','priority','rating','nps','yes_no','consent','csat','ces','emoji_rating','thumbs_rating')
+      AND (${valid}) GROUP BY s.stable_id, j.value`).bind(...scope.bindings),
     db.prepare(`WITH ranked AS (SELECT s.stable_id AS stepId, ${value} AS value,
       ROW_NUMBER() OVER (PARTITION BY s.stable_id ORDER BY ${value}) AS n,
       COUNT(*) OVER (PARTITION BY s.stable_id) AS total ${evidence} AND s.question_type = 'number')
-      SELECT stepId, value AS middle FROM ranked WHERE n IN ((total+1)/2, (total+2)/2) ORDER BY stepId,n`).bind(revisionId),
+      SELECT stepId, value AS middle FROM ranked WHERE n IN ((total+1)/2, (total+2)/2) ORDER BY stepId,n`).bind(...scope.bindings),
   ])
   const stats = new Map((counts.results as Aggregate[]).map(row => [row.stepId, row]))
   const median = new Map<string,number>()

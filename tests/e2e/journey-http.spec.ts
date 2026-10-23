@@ -50,6 +50,7 @@ test('native creation, branch publication, final retry, quarantine and reports r
   const publicHTML = await (await request.get(`/f/${slug}`, { headers })).text()
   expect(publicHTML).toContain('Which path?')
   expect(publicHTML.match(/Before you share/g)).toHaveLength(1)
+  await ok(`/api/public/flows/${slug}/views`,{revisionId:publicFlow.revision.id,source:'direct'})
   const session = await ok<{ sessionId: string; sessionToken: string; revisionId: string; loadTime: string }>(`/api/public/flows/${slug}/sessions`, { deviceClass: 'desktop', source: 'direct' })
   const payload = { ...session, idempotencyKey: `${slug}-receipt`, answers: [{ stepId: route.id, value: more.id }, { stepId: detail.id, value: 'Original native path A' }] }
   const final = await ok<{ responseId: string; disposition: string; idempotent: boolean }>(`/api/public/flows/${slug}/responses`, payload)

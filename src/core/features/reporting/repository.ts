@@ -3,6 +3,7 @@ import { formSettings, hiddenValue, type HiddenField, type ResponseContext } fro
 import { choiceIdsSql, isOtherAnswer } from '../../shared/otherChoices'
 import { displayCalendarDate } from '../../shared/dateFormat'
 import { retainedAnswer } from './retainedAnswer'
+import { NotFoundError } from '../../shared/errors'
 import { aggregateRevision } from './aggregate'
 import { booleanAnswer } from './answerSummary'
 import { displayContactAnswer } from '../../shared/contactAnswers'
@@ -138,7 +139,9 @@ export class ReportingRepository {
       FROM response_payments WHERE response_id IN (${rows.map(() => '?').join(',')})`).bind(...rows.map(row => row.id)).all<LedgerPayment & { responseId: string }>()).results : []
     return { total: total?.count ?? 0, responses: rows.map(({ contextJson, settingsJson, participantId, ...row }) => ({ ...row, ...retainedContext(contextJson, settingsJson, participantId), ...(payments.some(payment => payment.responseId === row.id) ? { payment: (({ responseId: _response, ...payment }) => payment)(payments.find(payment => payment.responseId === row.id)!) } : {}), collector: (()=>{const {responseId:_id,...collector}=attribution.find(item=>item.responseId===row.id)!;return collector})(), omittedQuestions: questionRows.filter(question => question.revisionId === row.revisionId && !answers.some(answer => answer.responseId === row.id && answer.stepId === question.stepId)).map(({ stepId, label, position, questionType }) => ({ stepId, label, position, questionType })), ...(participants.some(p => p.responseId === row.id) ? { participant: (() => { const { responseId: _responseId, ...p } = participants.find(p => p.responseId === row.id)!; return p })() } : {}), answers: answers.filter((answer) => answer.responseId === row.id).map(({ stepId, label, position, questionType, settingsJson, required, valueJson }) => { const value: unknown = JSON.parse(valueJson); retainedAnswer(questionType,value,optionIds.get(`${row.revisionId}\0${stepId}`) ?? [],JSON.parse(settingsJson ?? '{}'),Boolean(required)); const prefill = (JSON.parse(contextJson) as ResponseContext).prefill?.[stepId]; return ({ ...(prefill ? {prefill} : {}), stepId, label, position, questionType, value: exportValue(value, stepId, row.revisionId, questionType), displayValue: display(value, stepId, row.revisionId, questionType, JSON.parse(settingsJson ?? '{}')) }) }) })) }
   }
-  async questionReport(revisionId: string) {
+  async questionReport(revisionId: string, filter: LedgerFilter = {}, cutoff = new Date().toISOString()) {
+    const revision = await this.binding.prepare(`SELECT f.workspace_id AS workspaceId,f.id AS flowId FROM flow_revisions v JOIN flows f ON f.id=v.flow_id WHERE v.id=? AND v.state='published'`).bind(revisionId).first<{workspaceId:string;flowId:string}>()
+    if (!revision) throw new NotFoundError('This published revision is unavailable.')
     const [steps, choices] = await this.binding.batch([
       this.binding.prepare(`SELECT s.revision_id AS revisionId, s.stable_id AS id, s.prompt, s.question_type AS questionType, s.question_settings_json AS settingsJson, s.position,
         COALESCE(m.reached,0) AS reached, COALESCE(m.dropped,0) AS dropped FROM flow_steps s
@@ -146,7 +149,7 @@ export class ReportingRepository {
         WHERE s.revision_id = ? ORDER BY s.position`).bind(revisionId),
       this.binding.prepare(`SELECT s.revision_id AS revisionId, c.stable_id AS id, c.label, s.stable_id AS stepId FROM choice_options c JOIN flow_steps s ON s.id = c.step_id WHERE s.revision_id = ? ORDER BY c.position`).bind(revisionId),
     ])
-    return aggregateRevision(this.binding, revisionId, steps.results as ReportStep[], choices.results as ReportChoice[])
+    return aggregateRevision(this.binding, { ...revision, filter: { ...filter, revisionId, offset: undefined }, cutoff }, steps.results as ReportStep[], choices.results as ReportChoice[])
   }
 
   async revisionComparison(workspaceId: string, flowId: string, offset = 0) {

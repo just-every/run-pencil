@@ -12,6 +12,11 @@ import type { WorkerEnvironment } from '../../app/environment'
 import type { RequestServices } from '../../app/request-context'
 import { ledgerFilterSchema as filter } from './filter'
 import { deviceReport } from './devices'
+const textInput = z.object({ revisionId: resourceId, questionId: resourceId, search: z.string().max(5000).default(''), cursor: z.string().max(16000).optional() })
+const encodedFilter = z.string().max(100000).transform((value, context) => {
+  try { return JSON.parse(value) as unknown }
+  catch { context.addIssue({ code: 'custom', message: 'Choose a valid response filter.' }); return z.NEVER }
+}).pipe(filter)
 export function registerReportingRoutes(app: Hono<WorkerEnvironment>, services: RequestServices) {
   app.get('/api/app/flows/:flowId/devices', zValidator('param', z.object({ flowId: resourceId })), zValidator('query', filter), async context => context.json(await deviceReport(context.get('platform').databaseBinding, context.get('operatorSession').workspaceId, context.req.param('flowId'), context.req.valid('query'))))
   app.get('/api/app/flows/:flowId/trends', zValidator('param', z.object({flowId:resourceId})), zValidator('query', z.object({
@@ -35,17 +40,18 @@ export function registerReportingRoutes(app: Hono<WorkerEnvironment>, services: 
   app.get('/api/app/flows/:flowId/ledger', zValidator('param', z.object({ flowId: resourceId })), zValidator('query', filter), async (context) => {
     return context.json(await services(context).reporting.ledger(context.get('operatorSession').workspaceId, context.req.param('flowId'), context.req.valid('query')))
   })
-  app.get('/api/app/flows/:flowId/questions', zValidator('param', z.object({ flowId: resourceId })), zValidator('query', z.object({ revisionId: resourceId })), async (context) => {
-    return context.json(await services(context).reporting.questions(context.get('operatorSession').workspaceId, context.req.param('flowId'), context.req.valid('query').revisionId))
+  app.get('/api/app/flows/:flowId/questions', zValidator('param', z.object({ flowId: resourceId })), zValidator('query', filter), async (context) => {
+    const selected = context.req.valid('query')
+    return context.json(await services(context).reporting.questions(context.get('operatorSession').workspaceId, context.req.param('flowId'), selected.revisionId, selected))
   })
   app.get('/api/app/flows/:flowId/questions/compare', zValidator('param', z.object({ flowId: resourceId })), zValidator('query',z.object({offset:z.coerce.number().int().min(0).max(99).default(0)})), async (context) => {
     return context.json(await services(context).reporting.compareRevisions(context.get('operatorSession').workspaceId, context.req.param('flowId'),context.req.valid('query').offset))
   })
-  app.get('/api/app/flows/:flowId/questions/text', zValidator('param', z.object({ flowId: resourceId })), zValidator('query', z.object({ revisionId: resourceId, questionId: resourceId, search: z.string().max(5000).default(''), countOnly: z.enum(['true','false']).transform(value=>value === 'true').optional(), cursor: z.string().max(16000).optional() })), async context => {
+  app.get('/api/app/flows/:flowId/questions/text', zValidator('param', z.object({ flowId: resourceId })), zValidator('query', textInput.extend({ filter: encodedFilter.optional(), countOnly: z.enum(['true','false']).transform(value=>value === 'true').optional() })), async context => {
     const session = context.get('operatorSession')
     return context.json(await textPage(context.get('platform').databaseBinding,context.get('platform').configuration.sessionSecret,{workspaceId:session.workspaceId,sessionId:session.id,flowId:context.req.param('flowId')},context.req.valid('query'),context.req.raw.signal))
   })
-  app.post('/api/app/flows/:flowId/questions/text', zValidator('param', z.object({ flowId: resourceId })), zValidator('json', z.object({ revisionId: resourceId, questionId: resourceId, search: z.string().max(5000).default(''), countOnly: z.boolean().optional(), cursor: z.string().max(16000).optional() })), async context => {
+  app.post('/api/app/flows/:flowId/questions/text', zValidator('param', z.object({ flowId: resourceId })), zValidator('json', textInput.extend({ filter: filter.optional(), countOnly: z.boolean().optional() })), async context => {
     const session = context.get('operatorSession')
     return context.json(await textPage(context.get('platform').databaseBinding,context.get('platform').configuration.sessionSecret,{workspaceId:session.workspaceId,sessionId:session.id,flowId:context.req.param('flowId')},context.req.valid('json'),context.req.raw.signal))
   })

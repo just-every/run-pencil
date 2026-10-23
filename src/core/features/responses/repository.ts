@@ -1,3 +1,4 @@
+import { resultSummary, type LedgerFilter } from '../reporting'
 import { responseErasureStatements } from './erasure'
 import { ungovernedSaveSql } from '../retention'
 import { ValidationError } from '../../shared/errors'
@@ -474,13 +475,8 @@ export class ResponseRepository {
     return counts!
   }
 
-  async getResults(revisionId: string) {
-    const [[counter], [completed]] = await this.database.batch([
-      this.database.select().from(revisionMetricCounters).where(eq(revisionMetricCounters.revisionId, revisionId)).limit(1),
-      this.database.select({ total: count(), imported: sql<number>`count(case when ${responses.source} = 'imported' then 1 end)`.mapWith(Number), live: sql<number>`count(case when ${responses.source} != 'imported' then 1 end)`.mapWith(Number) }).from(responses).where(and(eq(responses.revisionId, revisionId), eq(responses.state, 'released'))),
-    ])
-    if (!completed) throw new Error('Response result counts could not be read')
-    return { counter, completedResponses: completed.total, importedResponses: completed.imported, liveCompletedResponses: completed.live }
+  getResults(input: {workspaceId:string;flowId:string;filter:LedgerFilter}) {
+    return resultSummary(this.binding,input)
   }
 
   async listQuarantined(workspaceId: string, revisionId: string) {
