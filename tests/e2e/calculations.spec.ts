@@ -1,4 +1,4 @@
-import manifest from '../../seed.json'
+import manifest from '../../seed.json' with { type: 'json' }
 import type { Page, Response } from '@playwright/test'
 import type { BuilderDraft, Ledger } from '../../src/core/app/api'
 import { parseCsv } from '../../src/core/features/importing/csv'
