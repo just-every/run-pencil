@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright'
 import manifest from '../../seed.json' with { type: 'json' }
 import type { Page, Response } from '@playwright/test'
 import type { BuilderDraft, Ledger } from '../../src/core/app/api'
@@ -20,6 +21,12 @@ async function submissionWindow(load: Promise<Response>) {
 contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals', async ({ page, browser }, info) => {
   test.setTimeout(240_000)
   page.setDefaultTimeout(15_000)
+  const hydrationErrors:string[]=[]
+  const observePage=(view:Page)=>{
+    view.on('pageerror',error=>{if(/hydrat/i.test(error.message))hydrationErrors.push(error.message)})
+    view.on('console',message=>{if(message.type()==='error'&&/hydrat/i.test(message.text()))hydrationErrors.push(message.text())})
+  }
+  observePage(page)
   const pencil = new URL(process.env.PENCIL_E2E_BASE_URL!).origin
   const stripe = await startStripeReceiver(pencil)
   try {
@@ -180,6 +187,7 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
   const workspace = await call<Record<string, unknown>>('/api/app/workspace')
   await call('/api/app/workspace', 'PUT', { ...workspace, embedAllowedOrigins: [host.origin] })
   const visitorContext = await browser.newContext({ extraHTTPHeaders: {}, viewport: info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 } })
+  visitorContext.on('page',observePage)
   const checkoutMessages: Array<{ targetOrigin: string; payload: { type: string; challenge: string; url: string; sessionId: string } }> = []
   const checkoutHandoffs: Array<{ url: string; sessionId: string }> = []
   await visitorContext.exposeBinding('observeCheckoutMessage', (_source, value) => { checkoutMessages.push(value) })
@@ -225,6 +233,8 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
     await submissionWindow(loaded)
     await frame.getByRole('button', { name: 'Continue', exact: true }).click()
     const proof = async (name: string) => {
+      expect(await visitor.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
+      expect((await new AxeBuilder({page:visitor}).analyze()).violations.filter(violation=>violation.impact==='serious'||violation.impact==='critical')).toEqual([])
       const path = info.outputPath(`embed-${name}-${info.project.name}.png`)
       await visitor.screenshot({ path, fullPage: true })
       await info.attach(`Embed ${name}`, { path, contentType: 'image/png' })
@@ -287,6 +297,7 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
     for (const checkoutOrigin of ['https://checkout.stripe.com.hostile.invalid', 'http://checkout.stripe.com']) {
       stripe.setCheckoutOrigin(checkoutOrigin)
       const invalidContext = await browser.newContext({ extraHTTPHeaders: {}, viewport: info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 } })
+  invalidContext.on('page',observePage)
       try {
         const invalid = await invalidContext.newPage()
         const outside: string[] = []
@@ -304,6 +315,8 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
         expect(invalid.url()).toBe(`${invalidHost.origin}/`)
         expect(await invalid.evaluate(() => (window as unknown as { messages: Array<{ type?: string }> }).messages.filter(message => message.type === 'pencil:checkout'))).toEqual([])
         expect(outside).toEqual([])
+        expect(await invalid.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
+        expect((await new AxeBuilder({page:invalid}).analyze()).violations.filter(violation=>violation.impact==='serious'||violation.impact==='critical')).toEqual([])
         const rejected = [...stripe.sessions.values()].find(session => session.url.startsWith(`${checkoutOrigin}/`))!
         expect(rejected).toBeDefined()
         expect((await invalid.request.post(`${stripe.origin}/v1/checkout/sessions/${rejected.id}/expire`, { headers: { Authorization: `Bearer ${stripeFixture.secretKey}` } })).status()).toBe(200)
@@ -316,6 +329,7 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
   const fallbackChallenge = crypto.randomUUID().replaceAll('-', '')
   const fallbackHost = await nativeHost(`<iframe title="Feedback form" sandbox="allow-scripts allow-forms allow-top-navigation-by-user-activation" referrerpolicy="origin" style="width:100%;height:900px;border:0" src="${pencil}/embed/${slug}#pencil-embed=${fallbackChallenge}"></iframe>`)
   const fallbackContext = await browser.newContext({ extraHTTPHeaders: {}, viewport: info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 } })
+  fallbackContext.on('page',observePage)
   let fallbackResponseId: string | undefined
   try {
     await call('/api/app/workspace', 'PUT', { ...workspace, embedAllowedOrigins: [fallbackHost.origin] })
@@ -340,6 +354,8 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
     await expect(continuation).toHaveAttribute('href', fallbackCheckout!.url)
     expect(fallback.url()).toBe(`${fallbackHost.origin}/`)
     expect(await fallback.evaluate(() => (window as unknown as { messages: Array<{ type?: string }> }).messages.filter(message => message.type === 'pencil:checkout'))).toEqual([])
+    expect(await fallback.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
+    expect((await new AxeBuilder({page:fallback}).analyze()).violations.filter(violation=>violation.impact==='serious'||violation.impact==='critical')).toEqual([])
     const fallbackPath = info.outputPath(`embed-missing-ack-${info.project.name}.png`)
     await fallback.screenshot({ path: fallbackPath, fullPage: true })
     await info.attach(`Embed missing acknowledgement · ${info.project.name}`, { path: fallbackPath, contentType: 'image/png' })
@@ -355,6 +371,7 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
     if (fallbackResponseId) expect((await page.request.delete(`/api/app/responses/${fallbackResponseId}`)).status()).toBe(204)
     await fallbackContext.close(); await fallbackHost.close(); await call('/api/app/workspace', 'PUT', workspace)
   }
+  expect(hydrationErrors).toEqual([])
   } finally { await stripe.close() }
 })
 
