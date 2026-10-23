@@ -59,5 +59,5 @@ export async function startStripeReceiver(pencilOrigin: string) {
     })
   })
   await new Promise<void>(resolve => server.listen(port, '127.0.0.1', resolve))
-  return { origin, sessions, webhooks, useStripeCheckoutOrigin() { checkoutOrigin = 'https://checkout.stripe.com' }, close: () => new Promise<void>(resolve => { server.closeAllConnections(); server.close(() => resolve()) }) }
+  return { origin, sessions, webhooks, useStripeCheckoutOrigin() { checkoutOrigin = 'https://checkout.stripe.com' }, setCheckoutOrigin(value: string) { checkoutOrigin = value }, close: () => new Promise<void>(resolve => { server.closeAllConnections(); server.close(() => resolve()) }) }
 }

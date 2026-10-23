@@ -6,7 +6,7 @@ import type { EventMatch, PaymentAttempt, PaymentRepository, PaymentRow } from '
 import { StripeRequestError, stripeClient, stripeSignatureValid, type CheckoutSession } from './stripe'
 
 type StripeEvent = { id: string; type: string; created: number; livemode: boolean; data: { object: Record<string, unknown> } }
-export type PaymentReceipt = { state: PaymentState; checkoutUrl?: string }
+export type PaymentReceipt = { state: PaymentState; checkoutUrl?: string; checkoutSessionId?: string }
 const hex = (bytes: ArrayBuffer) => Array.from(new Uint8Array(bytes), byte => byte.toString(16).padStart(2, '0')).join('')
 const sha256 = async (value: string) => hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)))
 const unavailable = 'This form takes payment through Stripe, and the business has not finished connecting it. Your answers have not been sent; try again later.'
@@ -54,7 +54,7 @@ export class PaymentService {
 
   /** Creates (or, after a lost answer, re-reads under the same idempotency key) the attempt's Checkout Session. */
   async checkout(payment: PaymentRow, slug: string): Promise<PaymentReceipt> {
-    if (payment.checkoutSessionId && payment.checkoutUrl && payment.checkoutExpiresAt && payment.checkoutExpiresAt > new Date().toISOString()) return { state: payment.state, checkoutUrl: payment.checkoutUrl }
+    if (payment.checkoutSessionId && payment.checkoutUrl && payment.checkoutExpiresAt && payment.checkoutExpiresAt > new Date().toISOString()) return { state: payment.state, checkoutUrl: payment.checkoutUrl, checkoutSessionId: payment.checkoutSessionId }
     const connection = await this.connection()
     const { token } = await this.returnToken(payment.responseId, payment.attempt)
     const back = (outcome: 'success' | 'cancel') => `${this.options.appOrigin}/f/${encodeURIComponent(slug)}?payment-return=${outcome}&payment-key=${token}`
@@ -67,7 +67,7 @@ export class PaymentService {
     }
     if (!session.url) throw new ValidationError('Stripe returned no checkout page. Retry to continue to payment.')
     await this.repository.recordCheckout(payment.responseId, payment.attempt, { id: session.id, url: session.url, expiresAt: new Date(session.expires_at * 1000).toISOString() }, new Date().toISOString())
-    return { state: 'pending', checkoutUrl: session.url }
+    return { state: 'pending', checkoutUrl: session.url, checkoutSessionId: session.id }
   }
 
   /** Cancel ends the session at Stripe first, so the old checkout can never be paid after it is replaced.

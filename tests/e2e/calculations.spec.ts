@@ -1,3 +1,5 @@
+import manifest from '../../seed.json'
+import type { Page, Response } from '@playwright/test'
 import type { BuilderDraft, Ledger } from '../../src/core/app/api'
 import { parseCsv } from '../../src/core/features/importing/csv'
 import { contract } from './contract'
@@ -5,6 +7,15 @@ import { expect, test } from './fixtures'
 import { signInEmptyWorkspace } from './authoring-helpers'
 import { nativeHost } from './brand-helpers'
 import { startStripeReceiver, stripeFixture } from './stripe-receiver'
+
+// Submission admission uses the signed public form-load timestamp.
+const formLoad = (page: Page) => page.waitForResponse(response => new URL(response.url()).pathname.endsWith('/views') && response.request().method() === 'POST' && response.ok())
+async function submissionWindow(load: Promise<Response>) {
+  const {loadTime} = await (await load).json() as {loadTime:string}
+  const at = Number(loadTime.split('.')[1])
+  expect(Number.isSafeInteger(at)).toBe(true)
+  await expect.poll(()=>Date.now()-at).toBeGreaterThanOrEqual(manifest.limits.abuse.minimumSecondsFromFormLoadToSubmit*1000)
+}
 
 contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals', async ({ page, browser }, info) => {
   test.setTimeout(240_000)
@@ -131,11 +142,12 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
     const thirdParty: string[] = []
     const watch = (request: import('@playwright/test').Request) => { if (new URL(request.url()).origin !== pencil && !request.url().startsWith('data:')) thirdParty.push(request.url()) }
     page.on('request', watch)
+    const loaded = formLoad(page)
     await page.goto(`/f/${slug}`)
     await page.getByRole('spinbutton', { name: quantity.prompt, exact: true }).fill(String(count))
     await page.getByRole('button', { name: 'Continue', exact: true }).click()
     await page.getByRole('radio', { name: 'Yes', exact: true }).check()
-    await page.waitForTimeout(3200)
+    await submissionWindow(loaded)
     await page.getByRole('button', { name: 'Continue', exact: true }).click()
     const pay = page.getByRole('button', { name: `Pay ${total} with Stripe`, exact: true })
     await expect(pay).toBeVisible()
@@ -168,18 +180,49 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
   const workspace = await call<Record<string, unknown>>('/api/app/workspace')
   await call('/api/app/workspace', 'PUT', { ...workspace, embedAllowedOrigins: [host.origin] })
   const visitorContext = await browser.newContext({ extraHTTPHeaders: {}, viewport: info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 } })
+  const checkoutMessages: Array<{ targetOrigin: string; payload: { type: string; challenge: string; url: string; sessionId: string } }> = []
+  const checkoutHandoffs: Array<{ url: string; sessionId: string }> = []
+  await visitorContext.exposeBinding('observeCheckoutMessage', (_source, value) => { checkoutMessages.push(value) })
+  await visitorContext.exposeBinding('observeCheckoutHandoff', (_source, value) => { checkoutHandoffs.push(value) })
+  await visitorContext.addInitScript(() => {
+    if (window.parent !== window) return
+    const observed = window as unknown as { observeCheckoutMessage(value: unknown): Promise<void>; observeCheckoutHandoff(value: unknown): Promise<void> }
+    const original = window.postMessage
+    // Observe the actual child's postMessage arguments and forward them unchanged.
+    window.postMessage = ((...args: unknown[]) => {
+      const data = args[0] as { type?: unknown } | null
+      if (data?.type === 'pencil:checkout') void observed.observeCheckoutMessage({ payload: data, targetOrigin: args[1] })
+      return Reflect.apply(original, window, args)
+    }) as typeof window.postMessage
+    let replayed = false
+    document.addEventListener('pencil:checkout', event => {
+      const detail = (event as CustomEvent).detail as { url: string; sessionId: string }
+      void observed.observeCheckoutHandoff(detail)
+      if (replayed) return
+      replayed = true
+      const frame = document.querySelector('iframe')!
+      const challenge = new URLSearchParams(new URL(frame.src).hash.slice(1)).get('pencil-embed')!
+      // Replay the exact transport before navigation can discard the iframe.
+      for (let index = 0; index < 2; index++) window.dispatchEvent(new MessageEvent('message', {
+        source: frame.contentWindow, origin: 'null', data: { type: 'pencil:checkout', challenge, ...detail },
+      }))
+    })
+  })
   try {
     // Replace only the hosted paid network edge. The production origin guard still runs.
     stripe.useStripeCheckoutOrigin()
     await visitorContext.route('https://checkout.stripe.com/**', route => route.fulfill({ status: 302, headers: { location: `${stripe.origin}${new URL(route.request().url()).pathname}` } }))
     const visitor = await visitorContext.newPage()
+    const checkoutRequests: string[] = []
+    visitor.on('request', request => { if (new URL(request.url()).origin === 'https://checkout.stripe.com') checkoutRequests.push(request.url()) })
+    const loaded = formLoad(visitor)
     await visitor.goto(host.origin)
     const frame = visitor.frameLocator('iframe')
-    await expect(visitor.locator('iframe')).toHaveAttribute('sandbox', 'allow-scripts allow-forms')
+    await expect(visitor.locator('iframe')).toHaveAttribute('sandbox', 'allow-scripts allow-forms allow-top-navigation-by-user-activation')
     await frame.getByRole('spinbutton', { name: quantity.prompt, exact: true }).fill('3')
     await frame.getByRole('button', { name: 'Continue', exact: true }).click()
     await frame.getByRole('radio', { name: 'Yes', exact: true }).check()
-    await visitor.waitForTimeout(3200)
+    await submissionWindow(loaded)
     await frame.getByRole('button', { name: 'Continue', exact: true }).click()
     const proof = async (name: string) => {
       const path = info.outputPath(`embed-${name}-${info.project.name}.png`)
@@ -187,9 +230,20 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
       await info.attach(`Embed ${name}`, { path, contentType: 'image/png' })
     }
     await expect(frame.getByRole('button', { name: 'Pay $48.00 with Stripe', exact: true })).toBeVisible()
+    const challenge = new URLSearchParams(new URL((await visitor.locator('iframe').getAttribute('src'))!).hash.slice(1)).get('pencil-embed')!
     await proof('payment')
-    await frame.getByRole('button', { name: 'Pay $48.00 with Stripe', exact: true }).click()
+    await frame.getByRole('button', { name: 'Pay $48.00 with Stripe', exact: true }).evaluate((button: HTMLButtonElement) => { button.click(); button.click() })
     await expect(visitor).toHaveURL(new RegExp(`^${stripe.origin}/pay/cs_test_`))
+    const embeddedCheckout = [...stripe.sessions.values()].find(session => session.amount_total === 4800)!
+    expect(embeddedCheckout).toBeDefined()
+    await expect.poll(() => checkoutMessages.length).toBe(1)
+    expect(checkoutMessages).toEqual([{ targetOrigin: host.origin, payload: {
+      type: 'pencil:checkout', challenge, url: embeddedCheckout.url, sessionId: embeddedCheckout.id,
+    } }])
+    await expect.poll(() => checkoutHandoffs.length).toBe(1)
+    expect(checkoutHandoffs).toEqual([{ url: embeddedCheckout.url, sessionId: embeddedCheckout.id }])
+    expect(checkoutRequests).toEqual([embeddedCheckout.url])
+    expect([...stripe.sessions.values()].filter(session => session.amount_total === 4800)).toHaveLength(1)
     expect(visitor.mainFrame().url()).toBe(visitor.url())
     expect(visitor.frames()).toHaveLength(1)
     await proof('checkout-top-level')
@@ -225,6 +279,82 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
   expect(records).toHaveLength(3)
   const exportedTotals = records.map(record => (JSON.parse(record.calculations_json) as Ledger['responses'][number]['calculations']).find(value => value.id === totalId)?.value)
   expect(exportedTotals.sort((a, b) => Number(a) - Number(b))).toEqual([48, 64, 128])
+  // Malformed destinations originate only at the paid provider edge. Pencil's real
+  // receipt and child validation run unchanged; no application route is replaced.
+  const invalidHost = await nativeHost(`<script async src="${pencil}/embed.js?flow=${slug}"></script>`)
+  await call('/api/app/workspace', 'PUT', { ...workspace, embedAllowedOrigins: [host.origin, invalidHost.origin] })
+  try {
+    for (const checkoutOrigin of ['https://checkout.stripe.com.hostile.invalid', 'http://checkout.stripe.com']) {
+      stripe.setCheckoutOrigin(checkoutOrigin)
+      const invalidContext = await browser.newContext({ extraHTTPHeaders: {}, viewport: info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 } })
+      try {
+        const invalid = await invalidContext.newPage()
+        const outside: string[] = []
+        invalid.on('request', request => { if (![pencil, invalidHost.origin].includes(new URL(request.url()).origin)) outside.push(request.url()) })
+        const loaded = formLoad(invalid)
+        await invalid.goto(invalidHost.origin)
+        const child = invalid.frameLocator('iframe')
+        await child.getByRole('spinbutton', { name: quantity.prompt, exact: true }).fill('3')
+        await child.getByRole('button', { name: 'Continue', exact: true }).click()
+        await child.getByRole('radio', { name: 'Yes', exact: true }).check()
+        await submissionWindow(loaded)
+        await child.getByRole('button', { name: 'Continue', exact: true }).click()
+        await child.getByRole('button', { name: 'Pay $48.00 with Stripe', exact: true }).click()
+        await expect(child.getByRole('alert')).toHaveText('Stripe Checkout details could not be verified. Your saved answers remain pending payment.')
+        expect(invalid.url()).toBe(`${invalidHost.origin}/`)
+        expect(await invalid.evaluate(() => (window as unknown as { messages: Array<{ type?: string }> }).messages.filter(message => message.type === 'pencil:checkout'))).toEqual([])
+        expect(outside).toEqual([])
+        const rejected = [...stripe.sessions.values()].find(session => session.url.startsWith(`${checkoutOrigin}/`))!
+        expect(rejected).toBeDefined()
+        expect((await invalid.request.post(`${stripe.origin}/v1/checkout/sessions/${rejected.id}/expire`, { headers: { Authorization: `Bearer ${stripeFixture.secretKey}` } })).status()).toBe(200)
+        expect((await page.request.delete(`/api/app/responses/${rejected.metadata.pencil_response}`)).status()).toBe(204)
+      } finally { await invalidContext.close() }
+    }
+  } finally { stripe.useStripeCheckoutOrigin(); await invalidHost.close(); await call('/api/app/workspace', 'PUT', workspace) }
+  // An allowed host can omit the script acknowledgement. Its opaque frame must
+  // offer a user-activated top-level continuation instead of silently stranding payment.
+  const fallbackChallenge = crypto.randomUUID().replaceAll('-', '')
+  const fallbackHost = await nativeHost(`<iframe title="Feedback form" sandbox="allow-scripts allow-forms allow-top-navigation-by-user-activation" referrerpolicy="origin" style="width:100%;height:900px;border:0" src="${pencil}/embed/${slug}#pencil-embed=${fallbackChallenge}"></iframe>`)
+  const fallbackContext = await browser.newContext({ extraHTTPHeaders: {}, viewport: info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 } })
+  let fallbackResponseId: string | undefined
+  try {
+    await call('/api/app/workspace', 'PUT', { ...workspace, embedAllowedOrigins: [fallbackHost.origin] })
+    await fallbackContext.route('https://checkout.stripe.com/**', route => route.fulfill({ status: 302, headers: { location: `${stripe.origin}${new URL(route.request().url()).pathname}` } }))
+    const fallback = await fallbackContext.newPage()
+    const loaded = formLoad(fallback)
+    await fallback.goto(fallbackHost.origin)
+    const child = fallback.frameLocator('iframe')
+    await child.getByRole('spinbutton', { name: quantity.prompt, exact: true }).fill('3')
+    await child.getByRole('button', { name: 'Continue', exact: true }).click()
+    await child.getByRole('radio', { name: 'Yes', exact: true }).check()
+    await submissionWindow(loaded)
+    await child.getByRole('button', { name: 'Continue', exact: true }).click()
+    const previousSessions = new Set(stripe.sessions.keys())
+    await child.getByRole('button', { name: 'Pay $48.00 with Stripe', exact: true }).click()
+    const continuation = child.getByRole('link', { name: 'Continue to Stripe Checkout', exact: true })
+    await expect(continuation).toBeVisible()
+    await expect(continuation).toHaveAttribute('target', '_top')
+    const fallbackCheckout = [...stripe.sessions.values()].find(session => !previousSessions.has(session.id))
+    expect(fallbackCheckout).toBeDefined()
+    fallbackResponseId = fallbackCheckout!.metadata.pencil_response
+    await expect(continuation).toHaveAttribute('href', fallbackCheckout!.url)
+    expect(fallback.url()).toBe(`${fallbackHost.origin}/`)
+    expect(await fallback.evaluate(() => (window as unknown as { messages: Array<{ type?: string }> }).messages.filter(message => message.type === 'pencil:checkout'))).toEqual([])
+    const fallbackPath = info.outputPath(`embed-missing-ack-${info.project.name}.png`)
+    await fallback.screenshot({ path: fallbackPath, fullPage: true })
+    await info.attach(`Embed missing acknowledgement · ${info.project.name}`, { path: fallbackPath, contentType: 'image/png' })
+    await continuation.click()
+    await expect(fallback).toHaveURL(`${stripe.origin}/pay/${fallbackCheckout!.id}`)
+    expect(fallback.frames()).toHaveLength(1)
+    expect(fallbackContext.pages()).toHaveLength(1)
+    await fallback.getByRole('button', { name: 'Pay $48.00', exact: true }).click()
+    await expect(fallback.getByRole('heading', { name: 'Standard order · Total 48', exact: true })).toBeVisible()
+    await expect(fallback.getByText(/Your payment is received\./)).toBeVisible()
+    expect(fallbackCheckout!.status).toBe('complete')
+  } finally {
+    if (fallbackResponseId) expect((await page.request.delete(`/api/app/responses/${fallbackResponseId}`)).status()).toBe(204)
+    await fallbackContext.close(); await fallbackHost.close(); await call('/api/app/workspace', 'PUT', workspace)
+  }
   } finally { await stripe.close() }
 })
 
@@ -296,13 +426,14 @@ contract('LOGIC-003', 'a BMI from two decimal answers gates a branch and publish
   await expect(page.getByRole('region', { name: 'Share this flow', exact: true })).toBeVisible()
 
   for (const [kilograms, heading, state] of [['70.5', 'Healthy range · BMI 23', 'healthy'], ['95.2', 'Follow-up · BMI 31.1', 'follow-up']] as const) {
+    const loaded = formLoad(page)
     await page.goto(`/f/${slug}`)
     await page.getByRole('spinbutton', { name: weight.prompt, exact: true }).fill(kilograms)
     await page.getByRole('button', { name: 'Continue', exact: true }).click()
     await page.getByRole('spinbutton', { name: height.prompt, exact: true }).fill('1.75')
     await page.getByRole('button', { name: 'Continue', exact: true }).click()
     await page.getByRole('radio', { name: 'No', exact: true }).check()
-    await page.waitForTimeout(3200)
+    await submissionWindow(loaded)
     await page.getByRole('button', { name: 'Submit response', exact: true }).click()
     await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible()
     await screenshot(`completed-${state}`)

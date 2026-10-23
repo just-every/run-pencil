@@ -111,7 +111,7 @@ async function fetchPencil(request: Request, bindings: WorkerBindings, execution
     }
     const response = await start.fetch(request)
     const headers = new Headers(response.headers)
-    headers.set('Content-Security-Policy', embedOrigins ? `frame-ancestors ${embedOrigins.length ? embedOrigins.join(' ') : "'none'"}; sandbox allow-scripts allow-forms` : "frame-ancestors 'none'")
+    headers.set('Content-Security-Policy', embedOrigins ? `frame-ancestors ${embedOrigins.length ? embedOrigins.join(' ') : "'none'"}; sandbox allow-scripts allow-forms allow-top-navigation-by-user-activation` : "frame-ancestors 'none'")
     if (path === '/app' || path.startsWith('/app/')) headers.set('Content-Security-Policy', editorPolicy(headers.get('Content-Security-Policy') ?? '', bindings))
     // no-transform: no proxy rewrites the document React hydrates (Cloudflare's email address obfuscation included).
     headers.set('Cache-Control', 'no-store, no-transform')

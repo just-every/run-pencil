@@ -13,7 +13,7 @@ import { interpolateAnswerRecall } from '../../../shared/answerRecall'
 import { SaveResponse } from './SaveResponse'
 import { BrandIdentity } from '../../brand'
 import { brandStyle } from '../../brand'
-import { useEmbedProtocol } from '../../embedding'
+import { useEmbedProtocol, checkoutFallbackAvailable } from '../../embedding'
 import { ArrowLeft, ArrowRight, Check, LockKeyhole } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { answerIssue, isUnanswered } from '../../../shared/answers'
@@ -90,6 +90,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   // A payment's cancel return keeps the response's RESP-012 key, so the next attempt replaces the cancelled one.
   const idempotencyKey = useRef(resume?.idempotencyKey ?? crypto.randomUUID())
   const [leaving, setLeaving] = useState(false)
+  const [checkoutFallback, setCheckoutFallback] = useState<string>()
   const saveAttempt = useRef<{ fingerprint: string; commandKey: string } | undefined>(undefined)
 
 
@@ -170,7 +171,18 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   const confirmFinal = async (attempt: PendingFinal) => {
     const receipt = await api.submitResponse(slug, attempt.input)
     // PAY-001: the response is committed with payment pending; the respondent pays on Stripe's hosted Checkout page.
-    if (receipt.payment?.checkoutUrl) { setLeaving(true); if (embedded) requestCheckout(receipt.payment.checkoutUrl); else window.location.assign(receipt.payment.checkoutUrl); return }
+    if (receipt.payment?.checkoutUrl) {
+      if (embedded) {
+        const outcome = requestCheckout(receipt.payment)
+        if (outcome === 'invalid') throw new Error('Stripe Checkout details could not be verified. Your saved answers remain pending payment.')
+        if (outcome === 'unavailable') {
+          if (!checkoutFallbackAvailable()) throw new Error('Payment checkout needs the script embed or the form’s direct link. Your saved answers remain pending payment.')
+          setCheckoutFallback(receipt.payment.checkoutUrl); return
+        }
+        setCheckoutFallback(undefined); setLeaving(true)
+      } else { setLeaving(true); window.location.assign(receipt.payment.checkoutUrl) }
+      return
+    }
     const completionStepId = receipt.completionStepId
     const completion = flow.steps.find((step) => step.id === completionStepId && step.kind === 'completion')
     if (!completion) throw new Error('The completion acknowledgement could not be read. Retry your submission.')
@@ -304,9 +316,10 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
         {!reviewing && isPayment && payment?.notice ? <ReviewAnswers flow={flow} steps={questionSteps} answers={answers} disabled={!hydrated || submitting || leaving} onEdit={id=>backTo(screens.findIndex(entry=>entry.steps.some(step=>step.id===id)))} /> : null}
         {isCompletion ? <p className="privacy-card"><Check aria-hidden="true" color="var(--green)" size={22} /><span>Thank you. {invitationToken ? 'This invitation link' : 'This public link'} cannot edit a completed response.{payment ? payment.state === 'paid' ? ' Your payment is received.' : payment.state === 'refunded' ? ' Your payment was refunded.' : ' Stripe is confirming your payment; the business sees it once Stripe confirms.' : ''}</span></p> : null}
         <label className="respondent-honeypot" aria-hidden="true">Company website<input autoComplete="off" name="company-website" onChange={(event) => setHoneypot(event.target.value)} tabIndex={-1} value={honeypot} /></label>
-        {pendingFinal && !submitting ? <p className="status-note">Retry to confirm the answers already submitted.</p> : null}
+        {checkoutFallback ? <p className="status-note">The embedding host could not open checkout. <a className="primary-button focus-ring" href={checkoutFallback} target="_top" onClick={()=>setLeaving(true)}>Continue to Stripe Checkout</a> opens this payment in the same tab.</p> : null}
+        {pendingFinal && !submitting && !checkoutFallback ? <p className="status-note">Retry to confirm the answers already submitted.</p> : null}
         {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
-        {!isCompletion ? <footer className="respondent-actions">{index > 0 || reviewing ? <button className="secondary-button focus-ring" disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onClick={() => backTo(reviewing ? index : Math.max(0, index - 1))} type="button"><ArrowLeft aria-hidden="true" size={17} /> Back</button> : null}<button className="primary-button focus-ring" disabled={!hydrated || submitting || leaving || (isPayment && !reviewing && charge === undefined)} onClick={needsAdmission && !pendingFinal ? restart : next} type="button">{leaving ? 'Opening Stripe Checkout…' : submitting ? (needsAdmission ? 'Starting again…' : pendingFinal || nextCandidate?.kind === 'completion' ? 'Submitting…' : 'Continuing…') : primaryLabel} <ArrowRight aria-hidden="true" size={17} /></button></footer> : null}
+        {!isCompletion ? <footer className="respondent-actions">{index > 0 || reviewing ? <button className="secondary-button focus-ring" disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onClick={() => backTo(reviewing ? index : Math.max(0, index - 1))} type="button"><ArrowLeft aria-hidden="true" size={17} /> Back</button> : null}<button className="primary-button focus-ring" disabled={!hydrated || submitting || leaving || !!checkoutFallback || (isPayment && !reviewing && charge === undefined)} onClick={needsAdmission && !pendingFinal ? restart : next} type="button">{leaving ? 'Opening Stripe Checkout…' : submitting ? (needsAdmission ? 'Starting again…' : pendingFinal || nextCandidate?.kind === 'completion' ? 'Submitting…' : 'Continuing…') : primaryLabel} <ArrowRight aria-hidden="true" size={17} /></button></footer> : null}
         {!isCompletion && !isPayment && !onKioskComplete && !(invitationToken && flow.formSettings?.prefill?.length) ? <SaveResponse disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onSave={saveForLater} /> : null}
       </article>
       {landing && config.showPoweredByCredit ? <footer className="respondent-landing-credit">Powered by {config.productName} · <a href="https://runeditrun.com">runeditrun.com</a></footer> : null}

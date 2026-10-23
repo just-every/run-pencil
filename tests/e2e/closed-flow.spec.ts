@@ -101,7 +101,7 @@ test('closed documents render their business and flow without JavaScript, honor 
     const allowed = await page.request.get(`/embed/${slug}`, { headers: { 'Sec-Fetch-Dest': 'iframe', Referer: `${origin}/closed-host` } })
     expect(allowed.status()).toBe(200)
     expect(await allowed.text()).toContain(f.title)
-    expect(allowed.headers()['content-security-policy']).toBe(`frame-ancestors ${origin}; sandbox allow-scripts allow-forms`)
+    expect(allowed.headers()['content-security-policy']).toBe(`frame-ancestors ${origin}; sandbox allow-scripts allow-forms allow-top-navigation-by-user-activation`)
     const blocked = await page.request.get(`/embed/${slug}`, { headers: { 'Sec-Fetch-Dest': 'iframe', Referer: 'https://unapproved.invalid/' } })
     expect(blocked.status()).toBe(403)
     expect(await blocked.text()).not.toContain(f.title)

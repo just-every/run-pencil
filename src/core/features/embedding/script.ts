@@ -14,19 +14,21 @@ const script=document.currentScript;
 if (!script || new URL(script.src).origin !== install || location.origin !== host) return;
 const challenge=Array.from(crypto.getRandomValues(new Uint8Array(16)), n=>n.toString(16).padStart(2,'0')).join('');
 const frame=document.createElement('iframe');
-frame.title='Feedback form'; frame.setAttribute('sandbox','allow-scripts allow-forms');
+frame.title='Feedback form'; frame.setAttribute('sandbox','allow-scripts allow-forms allow-top-navigation-by-user-activation');
 frame.referrerPolicy='origin'; frame.style.cssText='display:block;border:0;width:100%;height:700px';
 frame.src=install+'/embed/'+encodeURIComponent(slug)+(collector?'?collector='+encodeURIComponent(collector):'')+'#pencil-embed='+challenge;
 let completed=false, loaded=false;
+const checkoutSessions=new Set();
+const validCheckout=(value)=>{try{const url=new URL(value);return typeof value==='string' && url.origin==='${checkoutOrigin}' && !url.username && !url.password;}catch{return false;}};
 const receive=(event)=>{
  if(event.source!==frame.contentWindow || event.origin!=='null') return;
  const data=event.data;
  if(!data || typeof data!=='object' || Array.isArray(data) || data.challenge!==challenge) return;
  const keys=Object.keys(data);
  if(data.type==='pencil:height' && keys.length===3 && Number.isInteger(data.height) && data.height>0 && data.height<=100000 && loaded) { frame.style.height=data.height+'px'; frame.dispatchEvent(new CustomEvent('pencil:height',{detail:{height:data.height},bubbles:true})); }
- else if(data.type==='pencil:loaded' && keys.length===2) { if(!loaded) { loaded=true; frame.dispatchEvent(new CustomEvent('pencil:loaded',{bubbles:true})); } frame.contentWindow.postMessage({type:'pencil:init',challenge},'*'); }
+ else if(data.type==='pencil:loaded' && keys.length===2) { if(!loaded) { loaded=true; frame.dispatchEvent(new CustomEvent('pencil:loaded',{bubbles:true})); } frame.contentWindow.postMessage({type:'pencil:loaded',challenge},'*'); }
  else if(data.type==='pencil:completed' && keys.length===2 && loaded && !completed) { completed=true; frame.dispatchEvent(new CustomEvent('pencil:completed',{bubbles:true})); }
- else if(data.type==='pencil:checkout' && keys.length===3 && loaded && typeof data.url==='string' && data.url.startsWith('${checkoutOrigin}/')) { location.assign(data.url); }
+ else if(data.type==='pencil:checkout' && keys.length===4 && loaded && validCheckout(data.url) && typeof data.sessionId==='string' && /^[A-Za-z0-9_-]{1,255}$/.test(data.sessionId) && !checkoutSessions.has(data.sessionId)) { checkoutSessions.add(data.sessionId); frame.dispatchEvent(new CustomEvent('pencil:checkout',{detail:{url:data.url,sessionId:data.sessionId},bubbles:true})); location.assign(data.url); }
 };
 addEventListener('message',receive);
 script.insertAdjacentElement('afterend',frame);

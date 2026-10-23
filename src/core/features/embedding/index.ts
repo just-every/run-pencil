@@ -1,2 +1,2 @@
-export { useEmbedProtocol } from './protocol'
-export { isEmbedEvent, isEmbedInit } from './messages'
+export { useEmbedProtocol, checkoutFallbackAvailable } from './protocol'
+export { isEmbedEvent, isEmbedAcknowledgement } from './messages'

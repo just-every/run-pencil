@@ -3,6 +3,8 @@ import { contract } from './contract'
 import { nativeHost, signInBrand } from './brand-helpers'
 import type { BrowserContext, Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+import { mkdir } from 'node:fs/promises'
+import { join } from 'node:path'
 
 contract(['DIST-002', 'DIST-009', 'BASE-PUBLIC-001', 'BASE-PUBLIC-002'], 'copied async script mounts an opaque allowed-host iframe, resizes, emits only permitted events and rejects malicious messages', async ({ page, context, browser }, info) => {
   test.setTimeout(120_000)
@@ -33,6 +35,11 @@ contract(['DIST-002', 'DIST-009', 'BASE-PUBLIC-001', 'BASE-PUBLIC-002'], 'copied
     // A real host browser has no operator test headers or cookies. In particular,
     // custom identity headers would trigger preflights in the opaque child.
     visitorContext = await browser.newContext({ extraHTTPHeaders: {} })
+    const checkoutAttempts:string[]=[]
+    await visitorContext.route('https://checkout.stripe.com/**',route=>{
+      checkoutAttempts.push(route.request().url())
+      return route.abort('aborted')
+    })
     visitor = await visitorContext.newPage()
     await visitor.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
     // The browser supplies public API Origin=null from the opaque child.
@@ -42,7 +49,7 @@ contract(['DIST-002', 'DIST-009', 'BASE-PUBLIC-001', 'BASE-PUBLIC-002'], 'copied
     visitor.on('request', request => requested.push(new URL(request.url()).origin))
     await visitor.goto(host.origin)
     const iframe = visitor.locator('iframe')
-    await expect(iframe).toHaveAttribute('sandbox', 'allow-scripts allow-forms')
+    await expect(iframe).toHaveAttribute('sandbox', 'allow-scripts allow-forms allow-top-navigation-by-user-activation')
     const frame = visitor.frameLocator('iframe')
     await expect(frame.getByRole('radio', { name: 'Great', exact: true })).toBeVisible()
     await expect.poll(() => visitor!.evaluate(() => (window as unknown as { events: { type: string }[] }).events.some(e => e.type === 'pencil:loaded'))).toBe(true)
@@ -58,27 +65,50 @@ contract(['DIST-002', 'DIST-009', 'BASE-PUBLIC-001', 'BASE-PUBLIC-002'], 'copied
       return actual
     }
     const firstHeight = await assertHeight()
+    await child.evaluate(()=>{
+      const observed=window as unknown as {acknowledgements:unknown[]}
+      observed.acknowledgements=[]
+      addEventListener('message',event=>observed.acknowledgements.push(event.data))
+      parent.postMessage({type:'pencil:loaded',challenge:new URLSearchParams(location.hash.slice(1)).get('pencil-embed')},'*')
+    })
+    await expect.poll(()=>child.evaluate(()=>(window as unknown as {acknowledgements:{type:string}[]}).acknowledgements.some(message=>message.type==='pencil:loaded'))).toBe(true)
+    const acknowledgements=await child.evaluate(()=>(window as unknown as {acknowledgements:unknown[]}).acknowledgements)
+    expect(acknowledgements).toEqual([{type:'pencil:loaded',challenge:new URLSearchParams(new URL((await iframe.getAttribute('src'))!).hash.slice(1)).get('pencil-embed')}])
+    expect(await visitor.evaluate(()=>(window as unknown as {events:{type:string}[]}).events.filter(event=>event.type==='pencil:loaded'))).toHaveLength(1)
+    if(process.env.PENCIL_CAPTURE_DIR) {
+      await mkdir(process.env.PENCIL_CAPTURE_DIR,{recursive:true})
+      await visitor.screenshot({path:join(process.env.PENCIL_CAPTURE_DIR,`${info.project.name}-script-embed-public.png`),fullPage:true})
+    }
     const before = await visitor.evaluate(() => JSON.stringify((window as unknown as { events: unknown[] }).events))
     await visitor.evaluate(() => {
       const frame = document.querySelector('iframe')!
       const challenge = new URLSearchParams(new URL(frame.src).hash.slice(1)).get('pencil-embed')!
       window.postMessage({ type: 'pencil:height', challenge, height: 1 }, '*')
+      window.postMessage({ type: 'pencil:checkout', challenge, url:'https://checkout.stripe.com/c/pay/synthetic-pencil-1',sessionId:'synthetic-pencil-1' }, '*')
       frame.contentWindow!.postMessage({ type: 'pencil:init', challenge, answers: 'must-be-refused' }, '*')
     })
-    await child.evaluate(() => {
+    const barrier=crypto.randomUUID()
+    await child.evaluate(barrier => {
       const challenge = new URLSearchParams(location.hash.slice(1)).get('pencil-embed')!
       for (const data of [{ type: 'pencil:completed', challenge, responseId: 'must-be-refused' }, { type: 'pencil:height', challenge, height: 1, answers: [] }, { type: 'pencil:height', challenge: '00'.repeat(16), height: 1 }, { type: 'pencil:height', challenge, height: -1 }]) parent.postMessage(data, '*')
-    })
-    await visitor.waitForTimeout(100)
+      const checkout={type:'pencil:checkout',challenge,url:'https://checkout.stripe.com/c/pay/synthetic-pencil-2',sessionId:'synthetic-pencil-2'}
+      for(const url of ['http://checkout.stripe.com/c/pay/synthetic-pencil-3','https://checkout.stripe.com.hostile.invalid/pay','https://checkout.stripe.com@hostile.invalid/pay','https://private@checkout.stripe.com/pay','https://checkout.stripe.com:444/pay','https://checkout.stripe.com./pay','javascript:alert(1)'])parent.postMessage({...checkout,url},'*')
+      for(const sessionId of ['', 'x'.repeat(1000), 'synthetic-pencil-4\ninvalid', 'synthetic-pencil-5😀', 7])parent.postMessage({...checkout,sessionId},'*')
+      for(const data of [{type:'pencil:checkout',challenge,url:checkout.url},{...checkout,challenge:'00'.repeat(16)},{...checkout,responseId:'must-be-refused'},{...checkout,payment:{state:'pending'}},{...checkout,type:'pencil:loaded'}])parent.postMessage(data,'*')
+      parent.postMessage({type:'test:message-barrier',barrier},'*')
+    },barrier)
+    await expect.poll(()=>visitor!.evaluate(barrier=>(window as unknown as {messages:{type?:string;barrier?:string}[]}).messages.some(message=>message.type==='test:message-barrier'&&message.barrier===barrier),barrier)).toBe(true)
     expect(await visitor.evaluate(() => JSON.stringify((window as unknown as { events: unknown[] }).events))).toBe(before)
+    expect(checkoutAttempts).toEqual([])
+    expect(visitor.url()).toBe(`${host.origin}/`)
     await frame.getByRole('radio', { name: 'Great', exact: true }).click()
     await frame.getByRole('button', { name: 'Continue', exact: true }).click()
     await frame.getByRole('textbox', { name: 'What could we do better?' }).fill('Private answer never sent to the host.')
     await assertHeight()
-    await visitor.waitForTimeout(3100)
     await frame.getByRole('button', { name: 'Submit response', exact: true }).click()
     await expect(frame.getByRole('heading', { name: 'Thank you. Your response has been received.' })).toBeVisible()
     const finalHeight = await assertHeight()
+    if(process.env.PENCIL_CAPTURE_DIR)await visitor.screenshot({path:join(process.env.PENCIL_CAPTURE_DIR,`${info.project.name}-script-embed-completed.png`),fullPage:true})
     expect(finalHeight).not.toBe(firstHeight)
     await expect.poll(() => visitor!.evaluate(() => (window as unknown as { events: { type: string }[] }).events.filter(e => e.type === 'pencil:completed').length)).toBe(1)
     const hostDom = await visitor.locator('body').innerText()
@@ -98,6 +128,26 @@ contract(['DIST-002', 'DIST-009', 'BASE-PUBLIC-001', 'BASE-PUBLIC-002'], 'copied
     expect(events).not.toMatch(/answer|responseId|token|contact|Private/)
     expect([...new Set(requested)].sort()).toEqual([host.origin, origin].sort())
     expect(errors).toEqual([])
+    // The network edge cancels top-level navigation, keeping the real host alive
+    // so a replay can be sent through the same postMessage listener.
+    const checkout={url:'https://checkout.stripe.com/c/pay/synthetic-pencil-2',sessionId:'synthetic-pencil-2'}
+    await child.evaluate(checkout=>{
+      const challenge=new URLSearchParams(location.hash.slice(1)).get('pencil-embed')!
+      parent.postMessage({type:'pencil:checkout',challenge,...checkout},'*')
+    },checkout)
+    await expect.poll(()=>checkoutAttempts.length).toBe(1)
+    await expect.poll(()=>visitor!.evaluate(()=>(window as unknown as {events:{type:string}[]}).events.filter(event=>event.type==='pencil:checkout').length)).toBe(1)
+    const replayBarrier=crypto.randomUUID()
+    await child.evaluate(({checkout,barrier})=>{
+      const challenge=new URLSearchParams(location.hash.slice(1)).get('pencil-embed')!
+      for(const url of [checkout.url,checkout.url+'?replayed=1'])parent.postMessage({type:'pencil:checkout',challenge,url,sessionId:checkout.sessionId},'*')
+      parent.postMessage({type:'test:message-barrier',barrier},'*')
+    },{checkout,barrier:replayBarrier})
+    await expect.poll(()=>visitor!.evaluate(barrier=>(window as unknown as {messages:{type?:string;barrier?:string}[]}).messages.some(message=>message.type==='test:message-barrier'&&message.barrier===barrier),replayBarrier)).toBe(true)
+    expect(checkoutAttempts).toEqual([checkout.url])
+    expect(await visitor.evaluate(()=>(window as unknown as {events:{type:string;detail:unknown}[]}).events.filter(event=>event.type==='pencil:checkout'))).toEqual([{type:'pencil:checkout',detail:checkout}])
+    expect(visitor.url()).toBe(`${host.origin}/`)
+    expect(await visitor.locator('body').innerText()).not.toContain('Private answer')
     for (const referer of ['https://hostile.invalid/page', `${host.origin}.hostile.invalid/page`, '']) {
       const refused = await page.request.get(`/embed.js?flow=${flow.slug}`, { headers: { Referer: referer } })
       expect(refused.status()).toBe(403)

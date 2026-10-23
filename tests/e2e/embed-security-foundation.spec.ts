@@ -3,9 +3,12 @@ import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { operatorEmail } from './auth-identity'
 import { contract } from './contract'
 import { expect, test } from './fixtures'
+import { mkdir } from 'node:fs/promises'
+import { join } from 'node:path'
 // Isolate this new journey's API traffic; actual per-address rate limits stay enabled.
 test.use({ extraHTTPHeaders: { 'CF-Connecting-IP': '198.18.240.12' } })
 contract(['DIST-009', 'BASE-PUBLIC-002', 'BASE-PUBLIC-001'], 'even an allowed same-origin host cannot read embedded answers, credentials or completion receipts', async ({ page, request }, info) => {
+  await page.setViewportSize(info.project.name==='mobile'?{width:390,height:844}:{width:1440,height:900})
   const origin = new URL(info.project.use.baseURL!).origin
   await request.post('/auth/magic-link', { headers: { Origin: origin }, data: { email: operatorEmail() } })
   const inbox = await developmentInbox(path => request.get(path, { headers: devKeyHeaders }), operatorEmail())
@@ -20,12 +23,22 @@ contract(['DIST-009', 'BASE-PUBLIC-002', 'BASE-PUBLIC-001'], 'even an allowed sa
   await expect(frame.getByRole('button', { name: 'Begin', exact: true })).toBeVisible()
   expect(await page.evaluate(() => document.querySelector('iframe')!.contentDocument)).toBeNull()
   expect(await page.evaluate(() => { try { void document.querySelector('iframe')!.contentWindow!.document.body; return false } catch { return true } })).toBe(true)
+  // A plain iframe has no script-issued challenge and never admits a forged handshake.
+  await page.evaluate(()=>{
+    const child=document.querySelector('iframe')!.contentWindow!
+    for(const type of ['pencil:init','pencil:loaded'])child.postMessage({type,challenge:'00'.repeat(16)},'*')
+  })
+  if(process.env.PENCIL_CAPTURE_DIR) {
+    await mkdir(process.env.PENCIL_CAPTURE_DIR,{recursive:true})
+    await page.screenshot({path:join(process.env.PENCIL_CAPTURE_DIR,`${info.project.name}-plain-embed-public.png`),fullPage:true})
+  }
   await frame.getByRole('button', { name: 'Begin', exact: true }).click()
   await frame.getByRole('radio', { name: '5 out of 5' }).click()
   await frame.getByRole('button', { name: 'Continue', exact: true }).click()
   await frame.getByRole('radio', { name: 'The coffee', exact: true }).click()
   await frame.getByRole('button', { name: 'Submit response', exact: true }).click()
   await expect(frame.getByRole('heading', { name: 'Thank you for your feedback.' })).toBeVisible()
+  if(process.env.PENCIL_CAPTURE_DIR)await page.screenshot({path:join(process.env.PENCIL_CAPTURE_DIR,`${info.project.name}-plain-embed-completed.png`),fullPage:true})
   expect(await page.evaluate(() => (window as unknown as { messages: unknown[] }).messages)).toEqual([])
   expect(page.url()).toBe(`${origin}/foundation-embed-host`)
   expect(await page.locator('iframe').getAttribute('src')).toBe(`${origin}/embed/aurora-coffee-post-visit`)
