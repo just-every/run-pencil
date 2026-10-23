@@ -6,6 +6,7 @@ import { BrandMark } from '../../../app/ui/BrandMark'
 import type { PublicSeedConfig } from '../../../shared/config'
 import { useUnsavedChanges } from '../../../shared/ui/UnsavedChanges'
 import { api } from '../../../app/api'
+import { WebhookAlerts } from '../../webhooks/ui'
 
 export function OperatorShellPage({ config, editorEnabled }: { config: PublicSeedConfig; editorEnabled: boolean }) {
   const [hydrated, setHydrated] = useState(false)
@@ -46,6 +47,7 @@ export function OperatorShellPage({ config, editorEnabled }: { config: PublicSee
       <button className="secondary-button operator-signout focus-ring" disabled={signingOut} onClick={() => void signOut()} type="button">{signingOut ? 'Signing out…' : 'Sign out'}</button>
     </header>
     {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
+    <WebhookAlerts />
     <div className="operator-content" id="workspace"><Outlet /></div>
   </main>
 }

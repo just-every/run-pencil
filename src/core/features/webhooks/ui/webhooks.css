@@ -1,0 +1,8 @@
+.response-webhooks .webhook-endpoints, .response-webhooks .webhook-deliveries, .response-webhooks .webhook-attempts { display: grid; gap: 12px; margin: 12px 0 0; padding: 0; list-style: none; min-width: 0; }
+.response-webhooks .webhook-attempts { gap: 2px; padding-left: 16px; list-style: decimal; }
+.response-webhooks .webhook-endpoints > li { display: grid; gap: 8px; min-width: 0; border: 1px solid var(--line); border-radius: 10px; padding: 14px; overflow-wrap: anywhere; }
+.response-webhooks .webhook-deliveries > li { min-width: 0; border-top: 1px solid var(--line); padding-top: 10px; overflow-wrap: anywhere; }
+.response-webhooks .webhook-deliveries > li[data-status='failed'] { color: var(--danger); }
+.response-webhooks code { overflow-wrap: anywhere; }
+.response-webhooks .webhook-ledger h3 { margin: 8px 0 0; font-size: 18px; }
+.webhook-alerts { display: grid; gap: 8px; margin-bottom: 16px; }
