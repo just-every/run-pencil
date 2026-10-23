@@ -497,7 +497,7 @@ contract(['RSLT-001','RSLT-003','RSLT-004','DASH-002'], 'retains factual zero, q
   // A historical response's absent class is unknown, never inferred from its answers or source.
   await env.DB.prepare('UPDATE responses SET device_class=NULL WHERE id=?').bind(mobileReceipt.responseId).run()
   expect(await ok(`${devicePath}&deviceClass=unknown`)).toMatchObject({total:1,unknownResponses:1,counts:{unknown:1,mobile:0,desktop:0}})
-  const exported = await ok<{responses:unknown[]}>(`${f.path}/responses/export?format=json&revisionId=${fast.revisionId}&deviceClass=unknown`)
+  const exported = await ok<{responses:unknown[]}>(`${f.path}/responses/export?revisionId=${fast.revisionId}&deviceClass=unknown`)
   expect(exported.responses).toEqual([expect.objectContaining({id:mobileReceipt.responseId})])
   expect(JSON.stringify(exported)).not.toMatch(/deviceClass|device_class|user.agent|fingerprint|screen.width|raw.ip/i)
   const exportedCsv = await req(`${f.path}/responses/export/start`,{format:'csv',revisionId:fast.revisionId,deviceClass:'unknown'}).then(response=>response.json<{token:string}>())
