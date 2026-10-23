@@ -65,7 +65,12 @@ export function missingLandingSelection() {
 
 /** Observe the real send call. Cross-origin WindowProxy calls bypass a parent's JavaScript method override. */
 export async function observeEmbedMessages(context: import('@playwright/test').BrowserContext, page: import('@playwright/test').Page, receive: (message: {payload:unknown;targetOrigin:string})=>void) {
-  const session = await context.newCDPSession(page)
+  const parentSession = await context.newCDPSession(page)
+  const child=page.frames().find(frame=>frame.url().includes('/embed/'))!
+  const {targetInfos}=await parentSession.send('Target.getTargets')
+  const separate=targetInfos.some(target=>target.type==='iframe'&&target.url===child.url())
+  const session=separate?await context.newCDPSession(child):parentSession
+  if(separate)await parentSession.detach()
   const scripts: Array<{scriptId:string;url:string}> = [], errors:string[]=[]
   const expressions = new Map<string,string>()
   session.on('Debugger.scriptParsed',script=>scripts.push(script))
@@ -83,6 +88,8 @@ export async function observeEmbedMessages(context: import('@playwright/test').B
     })().catch(error=>errors.push(String(error)))
   })
   await session.send('Debugger.enable')
+  await session.send('Runtime.evaluate',{expression:'document.readyState',returnByValue:true})
+  await expect.poll(()=>scripts.filter(script=>script.url.includes('/assets/')).length).toBeGreaterThan(0)
   let installed=0
   for(const script of scripts.filter(script=>script.url.includes('/assets/'))) {
     const {scriptSource}=await session.send('Debugger.getScriptSource',{scriptId:script.scriptId})
