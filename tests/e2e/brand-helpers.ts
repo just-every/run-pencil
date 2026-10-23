@@ -62,3 +62,37 @@ export function missingLandingSelection() {
     database.prepare('UPDATE workspaces SET public_flow_slug = ?').run(`missing-${crypto.randomUUID()}`)
   } finally { database.close() }
 }
+
+/** Observe the real send call. Cross-origin WindowProxy calls bypass a parent's JavaScript method override. */
+export async function observeEmbedMessages(context: import('@playwright/test').BrowserContext, frame: import('@playwright/test').Frame, receive: (message: {payload:unknown;targetOrigin:string})=>void) {
+  const session = await context.newCDPSession(frame)
+  const scripts: Array<{scriptId:string;url:string}> = [], errors:string[]=[]
+  const expressions = new Map<string,string>()
+  session.on('Debugger.scriptParsed',script=>scripts.push(script))
+  session.on('Debugger.paused',event=>{
+    void (async()=>{
+      try {
+        const expression=event.hitBreakpoints?.map(id=>expressions.get(id)).find(Boolean)
+        if(expression) {
+          const result=await session.send('Debugger.evaluateOnCallFrame',{callFrameId:event.callFrames[0].callFrameId,expression,returnByValue:true})
+          if(result.exceptionDetails) throw new Error('The embed send arguments could not be observed.')
+          const value=result.result.value as {payload:{type?:string};targetOrigin:string}
+          if(value.payload?.type==='pencil:checkout')receive(value)
+        }
+      } finally { await session.send('Debugger.resume') }
+    })().catch(error=>errors.push(String(error)))
+  })
+  await session.send('Debugger.enable')
+  let installed=0
+  for(const script of scripts.filter(script=>script.url.includes('/assets/'))) {
+    const {scriptSource}=await session.send('Debugger.getScriptSource',{scriptId:script.scriptId})
+    for(const match of scriptSource.matchAll(/window\.parent\.postMessage\(([^,;]+),\s*([^);]+)\)/g)) {
+      const before=scriptSource.slice(0,match.index), lines=before.split('\n')
+      const {breakpointId}=await session.send('Debugger.setBreakpoint',{location:{scriptId:script.scriptId,lineNumber:lines.length-1,columnNumber:lines.at(-1)!.length}})
+      expressions.set(breakpointId,`({payload:(${match[1]}),targetOrigin:(${match[2]})})`)
+      installed++
+    }
+  }
+  expect(installed,'a real embed send call is observable').toBeGreaterThan(0)
+  return errors
+}

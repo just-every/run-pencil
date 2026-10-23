@@ -6,7 +6,7 @@ import { parseCsv } from '../../src/core/features/importing/csv'
 import { contract } from './contract'
 import { expect, test } from './fixtures'
 import { signInEmptyWorkspace } from './authoring-helpers'
-import { nativeHost } from './brand-helpers'
+import { nativeHost, observeEmbedMessages } from './brand-helpers'
 import { startStripeReceiver, stripeFixture } from './stripe-receiver'
 
 // Submission admission uses the signed public form-load timestamp.
@@ -190,18 +190,10 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
   visitorContext.on('page',observePage)
   const checkoutMessages: Array<{ targetOrigin: string; payload: { type: string; challenge: string; url: string; sessionId: string } }> = []
   const checkoutHandoffs: Array<{ url: string; sessionId: string }> = []
-  await visitorContext.exposeBinding('observeCheckoutMessage', (_source, value) => { checkoutMessages.push(value) })
   await visitorContext.exposeBinding('observeCheckoutHandoff', (_source, value) => { checkoutHandoffs.push(value) })
   await visitorContext.addInitScript(() => {
     if (window.parent !== window) return
-    const observed = window as unknown as { observeCheckoutMessage(value: unknown): Promise<void>; observeCheckoutHandoff(value: unknown): Promise<void> }
-    const original = window.postMessage
-    // Observe the actual child's postMessage arguments and forward them unchanged.
-    window.postMessage = ((...args: unknown[]) => {
-      const data = args[0] as { type?: unknown } | null
-      if (data?.type === 'pencil:checkout') void observed.observeCheckoutMessage({ payload: data, targetOrigin: args[1] })
-      return Reflect.apply(original, window, args)
-    }) as typeof window.postMessage
+    const observed = window as unknown as { observeCheckoutHandoff(value: unknown): Promise<void> }
     let replayed = false
     document.addEventListener('pencil:checkout', event => {
       const detail = (event as CustomEvent).detail as { url: string; sessionId: string }
@@ -226,6 +218,8 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
     const loaded = formLoad(visitor)
     await visitor.goto(host.origin)
     const frame = visitor.frameLocator('iframe')
+    await expect(frame.getByRole('spinbutton',{name:quantity.prompt,exact:true})).toBeVisible()
+    const observationErrors=await observeEmbedMessages(visitorContext,visitor.frames().find(frame=>frame.url().includes('/embed/'))!,value=>checkoutMessages.push(value as typeof checkoutMessages[number]))
     await expect(visitor.locator('iframe')).toHaveAttribute('sandbox', 'allow-scripts allow-forms allow-top-navigation-by-user-activation')
     await frame.getByRole('spinbutton', { name: quantity.prompt, exact: true }).fill('3')
     await frame.getByRole('button', { name: 'Continue', exact: true }).click()
@@ -253,6 +247,7 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
     await expect.poll(() => checkoutHandoffs.length).toBe(1)
     expect(checkoutHandoffs).toEqual([{ url: embeddedCheckout.url, sessionId: embeddedCheckout.id }])
     expect(checkoutRequests).toEqual([embeddedCheckout.url])
+    expect(observationErrors).toEqual([])
     expect([...stripe.sessions.values()].filter(session => session.amount_total === 4800)).toHaveLength(1)
     expect(visitor.mainFrame().url()).toBe(visitor.url())
     expect(visitor.frames()).toHaveLength(1)

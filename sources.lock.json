@@ -6745,7 +6745,7 @@
       "executable": false
     },
     "tests/e2e/brand-helpers.ts": {
-      "sha256": "4e8ca8afc86c3f2a4dbc969f6c147666d2344e4754e791da81b439d57ca7420b",
+      "sha256": "912424f3b6064366c32276d640a485bb793b50c242b03edb1b48d16d41db6d1f",
       "executable": false
     },
     "tests/e2e/business-brand.spec.ts": {
@@ -6753,7 +6753,7 @@
       "executable": false
     },
     "tests/e2e/calculations.spec.ts": {
-      "sha256": "154ccfbd629c3618bdb971b5d4ee57d542388c5aa632917962454a08e8c8b0e9",
+      "sha256": "bf98ccb230478c7678b2ffa4a5f291d00e6205eaca4fc2d9895953f75f844dfe",
       "executable": false
     },
     "tests/e2e/client-secrets.spec.ts": {
