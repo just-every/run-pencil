@@ -41,6 +41,10 @@ export function registerAnalysisRoutes(app: Hono<WorkerEnvironment>, services: R
     await analysis.setPolicies(workspaceId, operatorId, c.req.valid('json'))
     return c.json(await analysis.records.policies(workspaceId))
   })
+  app.post('/api/app/analysis/:runId/findings/:findingId/decision',validateInput('param',z.object({runId:resourceId,findingId:resourceId})),validateInput('json',z.object({decision:z.enum(['accepted','dismissed'])}).strict()),async c=>{
+    const {workspaceId,operatorId}=c.get('operatorSession'),{runId,findingId}=c.req.valid('param')
+    return c.json(await services(c).analysis.records.decide(workspaceId,operatorId,runId,findingId,c.req.valid('json').decision))
+  })
   app.get('/api/app/analysis/:runId', runParam, async c => c.json(await services(c).analysis.records.detail(c.get('operatorSession').workspaceId, c.req.valid('param').runId)))
   app.get('/api/app/analysis/:runId/themes/:themeId/responses', validateInput('param', z.object({ runId: resourceId, themeId: resourceId })), async c => {
     const { runId, themeId } = c.req.valid('param')

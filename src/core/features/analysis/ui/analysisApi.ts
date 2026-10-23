@@ -18,6 +18,7 @@ export const analysisApi = {
   overview: () => request<{ timeZone: string; provider: ProviderStatus; policies: Policies; runs: RunSummary[]; usage: UsageRow[] }>('/api/app/analysis'),
   options: (flowId: string) => request<AnalysisOptions>(`/api/app/analysis/options?flowId=${encodeURIComponent(flowId)}`),
   request: (input: { flowId: string; revisionId: string; questionIds: string[] }) => request<RunDetail>('/api/app/analysis', input),
+  decide: (id:string,findingId:string,decision:'accepted'|'dismissed') => request<RunDetail>(`/api/app/analysis/${encodeURIComponent(id)}/findings/${encodeURIComponent(findingId)}/decision`,{decision}),
   get: (id: string) => request<RunDetail>(`/api/app/analysis/${encodeURIComponent(id)}`),
   retry: (id: string) => request<RunDetail>(`/api/app/analysis/${encodeURIComponent(id)}/retry`, undefined, 'POST'),
   themeResponses: (id: string, themeId: string) => request<ThemeResponses>(`/api/app/analysis/${encodeURIComponent(id)}/themes/${encodeURIComponent(themeId)}/responses`),

@@ -67,6 +67,8 @@ const retained = {
   analysis_policies: 'workspace_id autorun_enabled autorun_minimum disclosure_threshold selection updated_by_operator_id updated_at',
   analysis_runs: 'id workspace_id flow_id revision_id trigger requested_by_operator_id state question_ids_json policy_json evidence_count evidence_cutoff request_sha256 provider_origin model attempts first_attempt_at error_code error_message insufficient_reason summary redacted_at created_at started_at finished_at updated_at',
   analysis_evidence: 'run_id response_id position',
+  analysis_contradictions: 'id run_id position payload_json',
+  analysis_finding_decisions: 'run_id finding_id decision operator_id decided_at',
   analysis_themes: 'id run_id rank title summary is_primary',
   analysis_theme_members: 'theme_id run_id response_id',
   analysis_quotes: 'id theme_id run_id response_id question_id start_offset end_offset excerpt',

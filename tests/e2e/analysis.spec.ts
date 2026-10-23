@@ -15,6 +15,8 @@ async function axe(page: Page) {
 
 contract(['ANLY-001', 'ANLY-003', 'ANLY-004', 'ANLY-005', 'ANLY-006', 'ANLY-008', 'ANLY-011'], 'an operator requests analysis, reads a quoted finding back to its response, sees a small theme withheld, turns the recommendation into an action and retries a failed run', async ({ page }, info) => {
   test.setTimeout(180_000)
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setCPUThrottlingRate',{rate:4})
   const viewport = info.project.name === 'mobile' ? 'mobile' : 'desktop'
   const capture = async (step: string) => {
     if (!process.env.PENCIL_CAPTURE_DIR) return
@@ -78,7 +80,7 @@ contract(['ANLY-001', 'ANLY-003', 'ANLY-004', 'ANLY-005', 'ANLY-006', 'ANLY-008'
     provider.script.push(answer({ outcome: 'findings', reason: '', themes: [
       { title: 'Long waits at the lunch counter', summary: 'Most visitors describe a slow lunch queue with one till open.', responseIds: ids.slice(0, 5), count: 5, quotes: [{ responseId: ids[1], questionId, start: 0, end: 21, text: 'Waited twenty minutes' }, { responseId: ids[3], questionId, start: 0, end: 31, text: 'Long queue, only one till open.' }] },
       { title: 'Prices', summary: 'Two visitors mention prices.', responseIds: ids.slice(5), count: 2, quotes: [] },
-    ], recommendations: [{ title: 'Open a second till from 11:30 to 14:00', rationale: 'The slow queue is the most common subject.', themeIndexes: [0], confidence: 'medium', expectedImpact: 'high', effort: 'low' }] }))
+    ], contradictions:[{kind:'within_response',summary:'Queue and staffing descriptions need review together.',sides:[{cohort:'Queue descriptions',responseIds:ids.slice(0,5),quotes:[{responseId:ids[1],questionId,start:0,end:21,text:'Waited twenty minutes'}]},{cohort:'Staffing descriptions',responseIds:ids.slice(0,5),quotes:[{responseId:ids[3],questionId,start:0,end:31,text:'Long queue, only one till open.'}]}]}], recommendations: [{ title: 'Open a second till from 11:30 to 14:00', rationale: 'The slow queue is the most common subject.', themeIndexes: [0], confidence: 'medium', expectedImpact: 'high', effort: 'low' }] }))
 
     // Request: the screen says what leaves and to which origin.
     await page.goto('/app/analysis')
@@ -98,9 +100,17 @@ contract(['ANLY-001', 'ANLY-003', 'ANLY-004', 'ANLY-005', 'ANLY-006', 'ANLY-008'
     await expect(page.getByRole('heading', { name: 'What 7 responses say' })).toBeVisible()
     await expect(page.getByRole('heading', { name: 'Long waits at the lunch counter' })).toBeVisible()
     await expect(page.getByText('5 of 7 responses · 71.4%')).toBeVisible()
-    await expect(page.getByText('“Long queue, only one till open.”')).toBeVisible()
+    await expect(page.getByText('“Long queue, only one till open.”', {exact:true})).toBeVisible()
     await expect(page.getByText('Theme 2 withheld: fewer than 5 responses (disclosure threshold 5)')).toBeVisible()
     await expect(page.getByText('Prices', { exact: true })).toHaveCount(0)
+    const contradictions = page.getByRole('region',{name:'Contradictions',exact:true})
+    await expect(contradictions).toContainText('Queue and staffing descriptions need review together.')
+    await contradictions.getByRole('button',{name:'Accept finding',exact:true}).click()
+    await expect(contradictions).toContainText('Decision: accepted')
+    await page.reload()
+    await expect(contradictions).toContainText('Decision: accepted')
+    await contradictions.getByRole('button',{name:'Dismiss finding',exact:true}).click()
+    await expect(contradictions).toContainText('Decision: dismissed')
     await capture('findings')
     await axe(page)
     await page.getByRole('button', { name: /^Response / }).last().click()

@@ -33,7 +33,7 @@ export function RequestAnalysisPage({ search }: { search: RequestSearch }) {
     <header className="page-heading">
       <div className="builder-actions"><Link className="quiet-button focus-ring" to="/app/analysis"><ArrowLeft aria-hidden="true" size={15} /> All analyses</Link></div>
       <p className="eyebrow">Analysis</p><h1 className="display" id="request-title">Request analysis</h1>
-      <p className="muted">Choose a published revision and the text questions to read. The run fixes the completed responses it reads now; later responses mark it stale and never change it.</p>
+      <p className="muted">Choose a published revision and the text or score questions to read. The run fixes the completed responses it reads now; later responses mark it stale and never change it.</p>
     </header>
     {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
     <div className="analysis-grid">
@@ -42,8 +42,8 @@ export function RequestAnalysisPage({ search }: { search: RequestSearch }) {
         <label className="inspector-field">Flow<select className="text-input" value={flowId ?? ''} onChange={event => { setFlowId(event.target.value || undefined); setRevisionId(undefined) }}><option value="">Choose a flow</option>{flows.map(flow => <option key={flow.id} value={flow.id}>{flow.title}</option>)}</select></label>
         <label className="inspector-field">Published revision<select className="text-input" value={revisionId ?? ''} disabled={!options?.revisions.length} onChange={event => setRevisionId(event.target.value || undefined)}>{options?.revisions.map(item => <option key={item.id} value={item.id}>Revision {item.number}{item.isCurrent ? ' · current' : ''} · {item.completed} completed</option>)}</select></label>
         {revision ? <fieldset className="analysis-questions" style={{ border: 0, padding: 0 }}><legend className="muted" style={{ fontSize: '.84rem' }}>Questions to read</legend>
-          {revision.questions.length ? revision.questions.map(question => <label key={question.id}><input type="checkbox" checked={selected.includes(question.id)} onChange={event => setSelected(current => event.target.checked ? [...current, question.id] : current.filter(id => id !== question.id))} /> <span>{question.prompt} <span className="muted">({question.questionType === 'long_text' ? 'long text' : 'short text'})</span></span></label>)
-            : <p className="muted">This revision has no short or long text question to analyse.</p>}
+          {revision.questions.length ? revision.questions.map(question => <label key={question.id}><input type="checkbox" checked={selected.includes(question.id)} onChange={event => setSelected(current => event.target.checked ? [...current, question.id] : current.filter(id => id !== question.id))} /> <span>{question.prompt} <span className="muted">({question.questionType.replaceAll('_',' ')})</span></span></label>)
+            : <p className="muted">This revision has no text or score question to analyse.</p>}
         </fieldset> : null}
         {revision && !revision.completed ? <p className="status-note" style={{ marginTop: '1rem' }}>This revision has no completed responses yet.</p> : null}
       </section>

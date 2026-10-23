@@ -1,12 +1,12 @@
 import type { EvidenceResponse } from './evidence'
-import { AnalysisFailure, providerOutputSchema, type Level, type ProviderOutput } from './model'
+import { AnalysisFailure, providerOutputSchema, type Contradiction, type Level, type ProviderOutput } from './model'
 
 export type ValidatedQuote = { responseId: string; questionId: string; start: number; end: number; text: string }
 export type ValidatedTheme = { rank: number; title: string; summary: string; members: string[]; quotes: ValidatedQuote[]; eligible: boolean; primary: boolean }
 export type ValidatedRecommendation = { title: string; rationale: string; themeRanks: number[]; confidence: Level; expectedImpact: Level; effort: Level }
 export type ValidatedResult =
   | { outcome: 'insufficient_evidence'; reason: string }
-  | { outcome: 'completed'; themes: ValidatedTheme[]; recommendation: ValidatedRecommendation | null }
+  | { outcome: 'completed'; themes: ValidatedTheme[]; contradictions?: Array<Contradiction | null>; recommendation: ValidatedRecommendation | null }
 
 const fail = (code: string, message: string) => { throw new AnalysisFailure(code, message) }
 
@@ -17,10 +17,23 @@ export function validateOutput(raw: unknown, evidence: EvidenceResponse[], quest
   if (!parsed.success) fail('schema_invalid', 'The provider did not answer with the required analysis schema.')
   const output = parsed.data as ProviderOutput
   if (output.outcome === 'insufficient_evidence') {
-    if (output.themes.length || output.recommendations.length) fail('schema_invalid', 'An insufficient-evidence answer cannot carry themes or recommendations.')
+    if (output.themes.length || output.recommendations.length || output.contradictions?.length) fail('schema_invalid', 'An insufficient-evidence answer cannot carry themes or recommendations.')
     return { outcome: 'insufficient_evidence', reason: 'The provider found that this evidence cannot support a finding.' }
   }
   const byId = new Map(evidence.map(response => [response.id, response])), questions = new Set(questionIds)
+  const contradictions = output.contradictions?.map(contradiction => {
+    for (const side of contradiction.sides) {
+      if (new Set(side.responseIds).size !== side.responseIds.length) fail('count_mismatch', 'A contradiction cites a response twice on one side.')
+      if (side.responseIds.some(id => !byId.has(id))) fail('unknown_response', 'A contradiction cites a response outside this analysis evidence set.')
+      for (const quote of side.quotes) {
+        if (!side.responseIds.includes(quote.responseId)) fail('quote_provenance', 'A contradiction excerpt must cite a response on its own side.')
+        const answer = questions.has(quote.questionId) ? byId.get(quote.responseId)?.answers[quote.questionId] : undefined
+        if (answer === undefined || quote.start >= quote.end || quote.end > answer.length || answer.slice(quote.start,quote.end) !== quote.text) fail('quote_mismatch', 'A contradiction excerpt does not match its retained answer.')
+      }
+    }
+    // Withhold the entire finding, including prose describing a small cohort.
+    return contradiction.sides.some(side => side.responseIds.length < threshold) ? null : contradiction
+  })
   const themes = output.themes.map((theme, index) => {
     const members = [...new Set(theme.responseIds)]
     if (!members.length) fail('count_mismatch', 'A theme cites no responses.')
@@ -39,7 +52,7 @@ export function validateOutput(raw: unknown, evidence: EvidenceResponse[], quest
   const ranked = [...themes].sort((left, right) => right.members.length - left.members.length || left.index - right.index)
   const rankOf = new Map(ranked.map((theme, rank) => [theme.index, rank + 1]))
   const eligible = ranked.filter(theme => theme.members.length >= threshold)
-  if (!eligible.length) return { outcome: 'insufficient_evidence', reason: `No theme is supported by at least ${threshold} responses, the disclosure threshold.` }
+  if (!eligible.length && !contradictions?.length) return { outcome: 'insufficient_evidence', reason: `No theme is supported by at least ${threshold} responses, the disclosure threshold.` }
   // recommendation.selection.v1 (highest-impact): the action linked to the highest-ranked eligible finding.
   let recommendation: ValidatedRecommendation | null = null
   for (const theme of eligible) {
@@ -52,6 +65,7 @@ export function validateOutput(raw: unknown, evidence: EvidenceResponse[], quest
   return {
     outcome: 'completed',
     themes: ranked.map((theme, i) => ({ rank: i + 1, title: theme.title, summary: theme.summary, members: theme.members, quotes: theme.quotes, eligible: theme.members.length >= threshold, primary: theme === eligible[0] })),
+    ...(contradictions === undefined ? {} : { contradictions }),
     recommendation,
   }
 }

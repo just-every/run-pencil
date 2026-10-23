@@ -21,7 +21,7 @@ contract(['BASE-ACCESS-001', 'BASE-SECRET-001', 'DASH-001', 'OPER-002'], 'local 
   const result = await request('/auth/bootstrap', { token: bindings.SETUP_TOKEN, displayName: 'Owner' })
   expect(result.status).toBe(303)
   expect(await services.auth.needsBootstrap()).toBe(false)
-  expect(await env.DB.prepare('SELECT email,is_setup_operator FROM operators').first()).toEqual({ email: bindings.SEED_ADMIN_EMAIL, is_setup_operator: 1 })
+  expect(await env.DB.prepare('SELECT email,display_name,is_setup_operator FROM operators').first()).toEqual({ email: bindings.SEED_ADMIN_EMAIL, display_name: 'Owner', is_setup_operator: 1 })
   expect(await env.DB.prepare('SELECT count(*) n FROM flows').first()).toEqual({ n: 0 })
   expect((await request('/auth/bootstrap', { token: bindings.SETUP_TOKEN, displayName: 'Replacement' })).status).toBe(409)
   const known = await request('/auth/magic-link', { email: bindings.SEED_ADMIN_EMAIL })

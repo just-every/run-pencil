@@ -40,8 +40,8 @@ export class AnalysisService {
     const analysable = await analysableQuestions(this.db, input.revisionId)
     // By default only long text answers leave; a short text answer is often a name, so an operator chooses it explicitly.
     const questionIds = input.questionIds ?? analysable.filter(question => question.questionType === 'long_text').map(question => question.id)
-    if (!questionIds.length) throw new ValidationError('Choose the short or long text questions to analyse.')
-    if (questionIds.some(id => !analysable.some(question => question.id === id))) throw new ValidationError('Choose short or long text questions of this revision.')
+    if (!questionIds.length) throw new ValidationError('Choose the text or score questions to analyse.')
+    if (questionIds.some(id => !analysable.some(question => question.id === id))) throw new ValidationError('Choose text or score questions of this revision.')
     const evidence = await releasedResponseIds(this.db, workspaceId, input.revisionId)
     if (!evidence.length) throw new ValidationError('This revision has no completed responses to analyse.')
     const id = ulid(), at = now.toISOString(), policies = await this.records.policies(workspaceId)

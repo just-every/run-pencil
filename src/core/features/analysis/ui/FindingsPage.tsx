@@ -6,6 +6,10 @@ import { analysisApi, costLabel, shortId, stateLabels, transportLabel, when, typ
 
 type Shown = Extract<ThemeView, { withheld: false }>
 
+function FindingDecision({decision,busy,onDecide}:{decision?:'accepted'|'dismissed';busy:boolean;onDecide:(decision:'accepted'|'dismissed')=>void}) {
+  return <div className="builder-actions" aria-label="Finding decision"><span>{decision ? `Decision: ${decision}` : 'Awaiting your review'}</span><button type="button" className="secondary-button focus-ring" disabled={busy} onClick={()=>onDecide('accepted')}>Accept finding</button><button type="button" className="quiet-button focus-ring" disabled={busy} onClick={()=>onDecide('dismissed')}>Dismiss finding</button></div>
+}
+
 /** ANLY-011: the retained responses behind a finding, with the answers the run read. */
 function Responses({ runId, theme, focus }: { runId: string; theme: Shown; focus?: string }) {
   const [responses, setResponses] = useState<ThemeResponses>(), [error, setError] = useState<string>()
@@ -46,6 +50,7 @@ export function FindingsPage({ runId }: { runId: string }) {
     return () => clearTimeout(timer)
   }, [run, runId])
   const retry = () => { setBusy(true); setError(undefined); analysisApi.retry(runId).then(setRun).catch(reason => setError(reason instanceof Error ? reason.message : 'The retry failed.')).finally(() => setBusy(false)) }
+  const decide = async (id:string,decision:'accepted'|'dismissed') => { setBusy(true); setError(undefined); try {setRun(await analysisApi.decide(runId,id,decision))} catch(error) {setError(error instanceof Error ? error.message : 'Decision could not save.')} finally {setBusy(false)} }
   if (!run) return <section>{error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : <p className="status-note" role="status">Loading analysis…</p>}</section>
   const shown = run.themes.filter((theme): theme is Shown => !theme.withheld)
   const primary = shown.find(theme => theme.primary), others = run.themes.filter(theme => theme !== primary)
@@ -81,6 +86,7 @@ export function FindingsPage({ runId }: { runId: string }) {
       {primary ? <section className="panel analysis-card" data-primary="true" aria-labelledby="primary-title">
         <p className="eyebrow">Primary finding</p>
         <div className="analysis-theme-heading"><span className="analysis-rank">{primary.rank}</span><div><h2 id="primary-title" style={{ marginTop: 0 }}>{primary.title}</h2><p className="analysis-figure">{primary.count} of {run.evidenceCount} responses · {primary.percentage}%</p></div></div>
+        <FindingDecision decision={run.decisions?.[primary.id]} busy={busy} onDecide={decision=>{void decide(primary.id,decision)}} />
         <ThemeBody runId={run.id} theme={primary} open={open?.theme === primary.id} focus={open?.focus} onOpen={toggle(primary)} />
       </section> : null}
       {run.recommendation ? <section className="panel analysis-card" aria-labelledby="recommendation-title">
@@ -100,9 +106,11 @@ export function FindingsPage({ runId }: { runId: string }) {
         {others.length ? <ul className="analysis-themes">{others.map(theme => <li key={theme.id}>
           {theme.withheld ? <p className="analysis-withheld" style={{ margin: 0 }}><span className="analysis-rank">{theme.rank}</span>Theme {theme.rank} withheld: fewer than {run.policy.disclosure.threshold} responses (disclosure threshold {run.policy.disclosure.threshold})</p>
             : <><button className="analysis-theme-row focus-ring" type="button" aria-expanded={open?.theme === theme.id} onClick={() => toggle(theme)()}><span className="analysis-rank">{theme.rank}</span><span>{theme.title}</span><span className="analysis-figure">{theme.count} of {run.evidenceCount} · {theme.percentage}%</span></button>
+              <FindingDecision decision={run.decisions?.[theme.id]} busy={busy} onDecide={decision=>{void decide(theme.id,decision)}} />
               {open?.theme === theme.id ? <ThemeBody runId={run.id} theme={theme} open focus={open.focus} onOpen={toggle(theme)} /> : null}</>}
         </li>)}</ul> : <p className="muted">No other theme.</p>}
       </section>
+      {run.contradictions ? <section className="panel analysis-card" aria-label="Contradictions"><h2>Contradictions</h2><p>Analysis to review against the cited evidence.</p>{run.contradictions.map(item=><article key={item.id} aria-label={item.summary}><h3>{item.summary}</h3>{item.sides.map((side,index)=><section key={index}><h4>{side.cohort} · {side.responseIds.length} responses</h4>{side.quotes.map((quote,index)=><blockquote key={index}>{quote.text}<p className="analysis-figure">Response {quote.responseId}</p></blockquote>)}</section>)}<FindingDecision decision={item.decision} busy={busy} onDecide={decision=>{void decide(item.id,decision)}} /></article>)}{run.suppressedContradictions ? <p>{run.suppressedContradictions} contradictions withheld below the disclosure threshold.</p> : null}</section> : null}
       <RunFacts run={run} />
     </div> : <div style={{ marginTop: '1.25rem' }}><RunFacts run={run} /></div>}
   </section>

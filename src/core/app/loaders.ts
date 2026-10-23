@@ -61,9 +61,14 @@ export const requireOperator = createServerFn({ method: 'GET' }).handler(async (
 
 export const loadSignIn = createServerFn({ method: 'GET' }).handler(async () => {
   const { requestServices } = await import('../platform/request.server')
-  const { services, platform } = await requestServices()
+  const { services, platform, request } = await requestServices()
   const { mountServerExtensions } = await import('./mountExtensions.server')
   if (await services.auth.needsBootstrap()) throw redirect({ to: '/setup' })
+  const session = await services.auth.getSession(request)
+  if (session) {
+    const { unfinishedOwnerSetup } = await import('../features/workspace/setup')
+    throw redirect({ to: await unfinishedOwnerSetup(services, request) ? '/setup' : '/app' })
+  }
   // Never read an operator's email here: the form is prefilled only from a link's login_hint (routes/signin.tsx).
   return { config: mountServerExtensions().publicSeedConfig, local: platform.configuration.isLocalDevelopment }
 })

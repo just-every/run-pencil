@@ -1,10 +1,13 @@
 import { openStateDatabase, stateDatabaseFile } from './state-database'
 import { expect, test } from './fixtures'
+import { signInEmptyWorkspace } from './authoring-helpers'
 import { mkdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 // A visitor without a cookie learns no operator's address from /signin; only a link's login_hint fills the field.
 test('sign-in reveals no operator email and prefills only from login_hint', async ({ page, request }) => {
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
   const db = openStateDatabase(stateDatabaseFile(process.env.PENCIL_MIGRATION_STATE!))
   let emails: string[]
   try {
@@ -30,4 +33,16 @@ test('sign-in reveals no operator email and prefills only from login_hint', asyn
   }
   await page.goto('/signin?login_hint=invalid')
   await expect(page.getByLabel('Operator email')).toHaveValue('')
+  await signInEmptyWorkspace(page)
+  await page.goto('/signin?login_hint=another@example.test')
+  await expect(page).toHaveURL(/\/app$/)
+  await expect(page.getByRole('heading', { name: 'Your flows' })).toBeVisible()
+  const session = await (await page.request.get('/api/app/workspace')).json()
+  const setupDb = openStateDatabase(stateDatabaseFile(process.env.PENCIL_MIGRATION_STATE!))
+  try {
+    setupDb.prepare('UPDATE workspaces SET first_run_completed_at = NULL WHERE id = ?').run(session.id)
+  } finally { setupDb.close() }
+  await page.goto('/signin?login_hint=another@example.test')
+  await expect(page).toHaveURL(/\/setup$/)
+  await expect(page.getByRole('button', { name: 'Finish setup', exact: true })).toBeVisible()
 })

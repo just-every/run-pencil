@@ -98,6 +98,8 @@ export class AnalysisRunner {
         SELECT json_extract(value, '$.id'), ?, ?, json_extract(value, '$.responseId'), json_extract(value, '$.questionId'), json_extract(value, '$.start'), json_extract(value, '$.end'), json_extract(value, '$.text') FROM json_each(?) WHERE ${owned}`)
         .bind(themeIds[i], run.id, JSON.stringify(theme.quotes.map(quote => ({ ...quote, id: ulid() }))), run.id, at))
     })
+    result.contradictions?.forEach((contradiction, position) => statements.push(this.db.prepare(`INSERT INTO analysis_contradictions(id,run_id,position,payload_json) SELECT ?,?,?,? WHERE ${owned}`)
+      .bind(ulid(),run.id,position,contradiction ? JSON.stringify(contradiction) : null,run.id,at)))
     if (result.recommendation) {
       const recommendation = result.recommendation, linked = recommendation.themeRanks.map(rank => themeIds[rank - 1])
       statements.push(this.db.prepare(`INSERT INTO analysis_recommendations (run_id, title, rationale, theme_ids_json, confidence, expected_impact, effort) SELECT ?, ?, ?, ?, ?, ?, ? WHERE ${owned}`)

@@ -1,7 +1,7 @@
 import { isOtherAnswer } from '../../shared/otherChoices'
 import { civilOpening, civilParts, nextDay } from '../../shared/civilTime'
 import { NotFoundError } from '../../shared/errors'
-import { defaultPolicies, type Level, type Policies, type PolicySnapshot, type RunState } from './model'
+import { defaultPolicies, type Contradiction, type Level, type Policies, type PolicySnapshot, type RunState } from './model'
 
 export type RunSummary = {
   id: string; flowId: string; flowTitle: string; revisionId: string; revisionNumber: number; state: RunState; trigger: 'operator' | 'autorun'
@@ -15,6 +15,7 @@ export type RunDetail = RunSummary & {
   questions: Array<{ id: string; prompt: string }>; policy: PolicySnapshot; providerOrigin: string | null; model: string | null
   insufficientReason: string | null; redacted: boolean; themes: ThemeView[]
   recommendation: { title: string; rationale: string | null; themes: number[]; confidence: Level; expectedImpact: Level; effort: Level; responseIds: string[]; actionIds: string[] } | null
+  contradictions?: Array<Contradiction & {id:string;decision?:'accepted'|'dismissed'}>; suppressedContradictions?: number; decisions?: Record<string,'accepted'|'dismissed'>
   calls: Array<{ attempt: number; outcome: string; errorCode: string | null; provider: string; model: string; inputTokens: number | null; outputTokens: number | null; costMicrousd: number | null; costSource: string; createdAt: string }>
 }
 
@@ -86,7 +87,13 @@ export class AnalysisRepository {
     })
     const rec = (recommendation.results as Array<{ title: string; rationale: string | null; themeIds: string; confidence: Level; expectedImpact: Level; effort: Level }>)[0]
     const linked = rec ? (JSON.parse(rec.themeIds) as string[]).map(id => themeViews.find(theme => theme.id === id)).filter((theme): theme is Extract<ThemeView, { withheld: false }> => !!theme && !theme.withheld) : []
+    const contradictionRows = await this.db.prepare('SELECT id,payload_json AS payload FROM analysis_contradictions WHERE run_id=? ORDER BY position').bind(runId).all<{id:string;payload:string|null}>()
+    const decisionRows = await this.db.prepare('SELECT finding_id AS id,decision FROM analysis_finding_decisions WHERE run_id=?').bind(runId).all<{id:string;decision:'accepted'|'dismissed'}>()
+    const decisions = Object.fromEntries(decisionRows.results.map(item => [item.id,item.decision]))
+    const contradictions = contradictionRows.results.filter(item => item.payload !== null).map(item => ({...JSON.parse(item.payload!) as Contradiction,id:item.id,...(decisions[item.id] ? {decision:decisions[item.id]} : {})}))
     return {
+      ...(contradictionRows.results.length ? {contradictions, suppressedContradictions:contradictionRows.results.filter(item=>!item.payload).length} : {}),
+      ...(decisionRows.results.length ? {decisions} : {}),
       ...summary(row), questions: questionIds.filter(id => prompts.has(id)).map(id => ({ id, prompt: prompts.get(id)! })), policy, providerOrigin: row.providerOrigin, model: row.model,
       insufficientReason: row.insufficientReason, redacted: row.redactedAt !== null, themes: themeViews,
       // A recommendation stands only on findings an operator may see.
@@ -94,6 +101,14 @@ export class AnalysisRepository {
         responseIds: [...new Set(linked.flatMap(theme => theme.responseIds))], actionIds: (actions.results as Array<{ id: string }>).map(action => action.id) } : null,
       calls: calls.results as RunDetail['calls'],
     }
+  }
+
+  async decide(workspaceId:string, operatorId:string, runId:string, findingId:string, decision:'accepted'|'dismissed') {
+    const detail = await this.detail(workspaceId,runId)
+    if (!detail.themes.some(theme=>theme.id===findingId && !theme.withheld) && !detail.contradictions?.some(item=>item.id===findingId)) throw new NotFoundError('This finding is not shown for this analysis.')
+    await this.db.prepare(`INSERT INTO analysis_finding_decisions(run_id,finding_id,decision,operator_id,decided_at) VALUES(?,?,?,?,?) ON CONFLICT(run_id,finding_id) DO UPDATE SET decision=excluded.decision,operator_id=excluded.operator_id,decided_at=excluded.decided_at`)
+      .bind(runId,findingId,decision,operatorId,new Date().toISOString()).run()
+    return this.detail(workspaceId,runId)
   }
 
   /** ANLY-011: the retained responses behind a visible theme, with the run's selected answers. */

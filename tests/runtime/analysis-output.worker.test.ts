@@ -1,7 +1,7 @@
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, beforeEach, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
-import { ai, analysisHttp, answer, recommend, theme } from './analysis-fixture'
+import { ai, aiBindings, analysisHttp, answer, recommend, theme } from './analysis-fixture'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 beforeEach(() => ai.reset())
@@ -9,19 +9,20 @@ beforeEach(() => ai.reset())
 const stored = async (runId: string) => Object.fromEntries(await Promise.all(['analysis_themes', 'analysis_theme_members', 'analysis_quotes', 'analysis_recommendations'].map(async table => [table, (await env.DB.prepare(`SELECT COUNT(*) AS n FROM ${table} WHERE run_id = ?`).bind(runId).first<{ n: number }>())!.n])))
 
 async function nineResponses() {
-  const f = await analysisHttp(), queue: string[] = [], prices: string[] = []
+  const f = await analysisHttp(aiBindings,undefined,true), queue: string[] = [], prices: string[] = []
   for (let i = 0; i < 5; i++) queue.push(await f.respond(`The queue at lunch was far too long, visit ${i}.`))
   for (let i = 0; i < 4; i++) prices.push(await f.respond(`Coffee prices went up again, visit ${i}.`))
   return { f, queue, prices }
 }
 
-contract(['ANLY-003', 'ANLY-004', 'ANLY-005', 'ANLY-011', 'ANLY-012'], 'findings rank themes by recomputed support, quote exact stored excerpts, link every figure to its responses and withhold a theme below the disclosure threshold', async () => {
+contract(['ANLY-003', 'ANLY-004', 'ANLY-005', 'ANLY-011', 'ANLY-012', 'AGENT-002'], 'findings rank themes by recomputed support, quote exact stored excerpts, link every figure to its responses and withhold a theme below the disclosure threshold', async () => {
   const { f, queue, prices } = await nineResponses()
   const excerpt = { responseId: queue[2], questionId: f.questions.improve, start: 4, end: 9, text: 'queue' }
   // The provider lists the smaller theme first; Pencil ranks by the responses each theme cites.
   await ai.script(answer({ outcome: 'findings', reason: '', themes: [theme('Prices', prices, [{ responseId: prices[0], questionId: f.questions.improve, start: 0, end: 6, text: 'Coffee' }]), theme('Lunch queue', queue, [excerpt])], recommendations: [recommend('Raise prices again', [0]), recommend('Open a second till at lunch', [1])] }))
   const run = await f.request()
   expect(run.state).toBe('completed')
+  expect(run).not.toHaveProperty('contradictions')
   const [first, second] = run.themes
   expect(first).toMatchObject({ rank: 1, withheld: false, primary: true, title: 'Lunch queue', count: 5, percentage: 55.6, quotes: [expect.objectContaining({ responseId: queue[2], excerpt: 'queue', questionPrompt: 'What could we improve?' })] })
   expect(new Set(first.responseIds)).toEqual(new Set(queue))
@@ -44,6 +45,47 @@ contract(['ANLY-003', 'ANLY-004', 'ANLY-005', 'ANLY-011', 'ANLY-012'], 'findings
   await ai.script(answer({ outcome: 'findings', reason: '', themes: [theme('Lunch queue', queue), theme('Prices', prices)], recommendations: [] }))
   const lower = await f.request()
   expect(lower.themes[1]).toMatchObject({ withheld: false, title: 'Prices', count: 4 })
+  // Contradictions share the fixed evidence and disclosure policy with themes.
+  const promoters:string[] = [], detractors:string[] = []
+  for (let index=0;index<5;index++) promoters.push(await f.respond('I recommend this shop, but the price is too high.',{score:9}))
+  for (let index=0;index<5;index++) detractors.push(await f.respond('I would not recommend this shop because of the price.',{score:2}))
+  const contradiction = {kind:'score_text',summary:'Recommendation and price feedback disagree.',sides:[
+    {cohort:'Promoters with price complaints',responseIds:promoters,quotes:[{responseId:promoters[0],questionId:f.questions.improve,start:0,end:49,text:'I recommend this shop, but the price is too high.'}]},
+    {cohort:'Detractors with price complaints',responseIds:detractors,quotes:[{responseId:detractors[0],questionId:f.questions.improve,start:0,end:53,text:'I would not recommend this shop because of the price.'}]},
+  ]}
+  const findings = (contradictions:unknown[]) => ({outcome:'findings',reason:'',themes:[theme('Lunch queue',queue)],recommendations:[],contradictions})
+  await ai.script(answer(findings([contradiction])))
+  const conflict = await f.request({questionIds:[f.questions.improve,f.questions.score!]})
+  expect(conflict.state).toBe('completed')
+  const sent = JSON.parse(JSON.parse((await ai.requests()).at(-1)!.body).input[1].content[0].text)
+  expect(sent.responses.find((response:any)=>response.id===promoters[0]).answers[f.questions.score!]).toBe('9')
+  expect(conflict.contradictions).toEqual([expect.objectContaining(contradiction)])
+  const id=conflict.contradictions[0].id
+  for (const decision of ['accepted','dismissed']) {
+    expect((await f.call(`/api/app/analysis/${conflict.id}/findings/${id}/decision`,{decision})).status).toBe(200)
+    expect((await f.detail(conflict.id)).contradictions[0].decision).toBe(decision)
+  }
+  const small = {...contradiction,sides:[{...contradiction.sides[0],cohort:'Secret small cohort',responseIds:promoters.slice(0,3)},contradiction.sides[1]]}
+  await ai.script(answer(findings([small])))
+  const suppressed = await f.request()
+  expect(suppressed.contradictions).toEqual([])
+  expect(suppressed.suppressedContradictions).toBe(1)
+  await ai.script(answer({...findings([small]),themes:[]}))
+  const onlyWithheld=await f.request()
+  expect(onlyWithheld).toMatchObject({state:'completed',contradictions:[],suppressedContradictions:1})
+  expect(JSON.stringify(suppressed)).not.toMatch(/Secret small cohort|Recommendation and price feedback disagree/)
+  expect((await env.DB.prepare('SELECT payload_json FROM analysis_contradictions WHERE run_id=?').bind(suppressed.id).first())).toEqual({payload_json:null})
+  for (const [code,change] of [['quote_mismatch',{quotes:[{...contradiction.sides[0].quotes[0],text:'Invented words'}]}],['unknown_response',{responseIds:['synthetic-pencil-999']}]] as const) {
+    await ai.script(answer(findings([{...contradiction,sides:[{...contradiction.sides[0],...change},contradiction.sides[1]]}])))
+    const rejected=await f.request()
+    expect(rejected).toMatchObject({state:'failed',errorCode:code})
+    expect(await env.DB.prepare('SELECT count(*) n FROM analysis_contradictions WHERE run_id=?').bind(rejected.id).first()).toEqual({n:0})
+  }
+  expect((await f.call(`/api/app/responses/${promoters[0]}`,undefined,'DELETE')).status).toBe(204)
+  expect(await env.DB.prepare('SELECT count(*) n FROM analysis_contradictions WHERE run_id=?').bind(conflict.id).first()).toEqual({n:0})
+  expect(await env.DB.prepare('SELECT count(*) n FROM analysis_finding_decisions WHERE run_id=?').bind(conflict.id).first()).toEqual({n:0})
+
+
 })
 
 contract(['ANLY-012'], 'a schema-invalid answer, an unknown response, a mismatched quote or a wrong count fails the run with nothing shown', async () => {
