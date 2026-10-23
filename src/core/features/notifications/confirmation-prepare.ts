@@ -37,6 +37,10 @@ export async function prepareConfirmation(db:D1Database,row:ConfirmationCandidat
  }
  const mailbox=z.email().safeParse(recipient)
  if(!mailbox.success) return null
+ const suppressed=await db.prepare(`SELECT 1 FROM distribution_contacts WHERE workspace_id=? AND lower(email)=lower(?) AND opted_out_at IS NOT NULL
+ UNION ALL SELECT 1 FROM invitation_participants WHERE workspace_id=? AND lower(email_snapshot)=lower(?) AND delivery_status='bounced' LIMIT 1`)
+  .bind(row.workspaceId,mailbox.data,row.workspaceId,mailbox.data).first()
+ if(suppressed)return null
  const accepted=Object.fromEntries(path.filter(step=>step.kind==='question' && Object.hasOwn(values,step.id) && !answerIssue(step,flow.choices.filter(choice=>choice.stepId===step.id).map(choice=>choice.id),values[step.id])).map(step=>[step.id,values[step.id]]))
  const message=composeRespondentConfirmation({brand,flow,answers:accepted,completionStepId:completion.id,settings:confirmation})
  return {recipient:mailbox.data,messageJson:serializeConfirmation(message)}

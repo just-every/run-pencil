@@ -75,7 +75,7 @@ contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released co
   await f.services.distribution.contacts.optOut(suppressedInvite.token)
   const blocked=await submit({mailbox:'SYNTHETIC-PENCIL-SUPPRESSED@example.test'});await dispatcher.run()
   expect(sent).toHaveLength(5)
-  expect(await env.DB.prepare("SELECT id FROM confirmation_deliveries WHERE response_id=? AND status='sent'").bind(blocked.row!.id).first()).toBeNull()
+  expect(await env.DB.prepare('SELECT status FROM confirmation_deliveries WHERE response_id=?').bind(blocked.row!.id).first()).toEqual({status:'cancelled'})
   await f.services.responses.eraseReleasedResponse({...f.scope,responseId:completed.row!.id,operatorId:f.operatorId})
   expect(await env.DB.prepare('SELECT id FROM confirmation_deliveries WHERE response_id=?').bind(completed.row!.id).first()).toBeNull()
   expect((await env.DB.prepare("SELECT id FROM confirmation_attempts WHERE delivery_id=?").bind('confirmation:'+completed.row!.id).all()).results).toHaveLength(0)

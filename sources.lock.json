@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "c2cf594177a37b94acdaaf2f388e3d96f42fa99a1adbe70390848c5deb9490bc",
+      "sha256": "984425a71acf3c43c87a5a11ba2a236027a0b3c9e0b4170c81d5cacf789abe35",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "e82c0561762cd6cccd273d23a0bd3c00a60b00eb6d8448d3de97078de8d55f30",
+      "sha256": "e3e5a0557ccdb330148e870e8a5f0958a4b5fe42097ced239892c49a9f1dc12f",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "8e4886b4919a3e1e65946ebbfbfbeb4c2a68a589bde52bf27005eb9a6eaff169",
+      "sha256": "9669a87c5ce4be423c0d8dde56202b3dab528019c447e0443c750449cfe4e4b3",
       "executable": false
     },
     "DEMO.md": {
@@ -5369,7 +5369,7 @@
       "executable": false
     },
     "src/core/features/notifications/confirmation-prepare.ts": {
-      "sha256": "0bea2439659e3eecd32f34e15927f89a37e3e8e4f7333b56865999e6488fad4c",
+      "sha256": "19fae4b0afb56a0489755f6adc7099e277ecc0e6400343905faa5305087000ff",
       "executable": false
     },
     "src/core/features/notifications/confirmation-queue.ts": {
@@ -7553,7 +7553,7 @@
       "executable": false
     },
     "tests/runtime/respondent-confirmations.worker.test.ts": {
-      "sha256": "c5f236bc306facecd95c4587fb1da8f7718e4059554517f3f4fdbd2e397f9df2",
+      "sha256": "3acd3ac175913708953fe922c203e2779450293df112c366065e4aa619ceefbc",
       "executable": false
     },
     "tests/runtime/restricted-access.worker.test.ts": {
