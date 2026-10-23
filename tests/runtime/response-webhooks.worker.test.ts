@@ -43,6 +43,7 @@ contract(['INTEG-010', 'INTEG-015', 'DATA-002'], 'signed response events verify,
     return (await env.DB.prepare('SELECT id, state FROM responses WHERE session_id=?').bind(session.sessionId).first<{ id: string; state: string }>())!
   }
   const deliveries = async (endpointId: string) => (await accepted<{ deliveries: Array<{ id: string; eventId: string; eventType: string; responseId: string | null; status: string; attempts: number; reason: string | null; attemptLog: Array<{ event: string; httpStatus: number | null; outcomeClass: string | null }> }> }>(await f.call(`/api/app/webhooks/deliveries?endpointId=${endpointId}`))).deliveries
+  const ledger = async (state?: string) => (await accepted<{ deliveries: Array<{ kind: string; subject: string; state: string; idempotencyKey: string; responseId: string | null; attempts: Array<{ outcome: string | null; httpStatus: number | null; reason: string | null }> }> }>(await f.call(`/api/app/integration-deliveries${state ? `?state=${state}` : ''}`))).deliveries
   const dispatcher = f.services.webhooks.dispatcher
 
   // The owner registers an endpoint for this form; only the owner may, the address must be safe, and the secret is shown once.
@@ -135,6 +136,15 @@ contract(['INTEG-010', 'INTEG-015', 'DATA-002'], 'signed response events verify,
   expect(failed.find(item => item.responseId === lost[0].id)!.attempts).toBe(11)
   const endpoint = (await accepted<{ endpoints: Array<{ id: string; state: string; disabledReason: string; failed: number }> }>(await f.call('/api/app/webhooks'))).endpoints.find(item => item.id === endpointId)!
   expect(endpoint).toMatchObject({ state: 'disabled', failed: 5 })
+  // INTEG-015: the one ledger lists the five failed deliveries by response ID, each with its own idempotency key and every attempt's reason.
+  const broken = (await ledger('failed')).filter(item => item.kind === 'webhook' && lost.some(row => row.id === item.responseId))
+  expect(broken).toHaveLength(5)
+  expect(new Set(broken.map(item => item.idempotencyKey)).size).toBe(5)
+  for (const item of broken) {
+    expect(item.subject).toBe('response.created')
+    expect(item.attempts.filter(attempt => attempt.outcome === 'failed')).toHaveLength(11)
+    expect(item.attempts.at(-1)).toMatchObject({ httpStatus: 503, reason: expect.stringContaining('503') })
+  }
   expect(endpoint.disabledReason).toMatch(/24 hours/)
   expect((await accepted<{ alerts: Array<{ kind: string; message: string }> }>(await f.call('/api/app/webhooks/alerts'))).alerts).toEqual([expect.objectContaining({ kind: 'disabled', message: expect.stringContaining('disabled') })])
   const afterDisable = received.length
@@ -152,6 +162,9 @@ contract(['INTEG-010', 'INTEG-015', 'DATA-002'], 'signed response events verify,
   const resent = received.slice(before).filter(item => item.eventType === 'response.created')
   expect(resent.map(item => JSON.parse(item.body).responseId).sort()).toEqual(lost.map(row => row.id).sort())
   expect(new Set(resent.map(item => item.eventId)).size).toBe(5)
+  const repaired = (await ledger('confirmed')).filter(item => lost.some(row => row.id === item.responseId))
+  expect(repaired.map(item => item.idempotencyKey).sort()).toEqual(broken.map(item => item.idempotencyKey).sort())
+  expect((await env.DB.prepare("SELECT count(*) AS n FROM response_event_deliveries WHERE event_type = 'response.created' AND response_id IN (?,?,?,?,?)").bind(...lost.map(row => row.id)).first<{ n: number }>())!.n).toBe(5)
   expect((await accepted<{ responses: unknown[] }>(await f.call(`/api/app/webhooks/${endpointId}/undelivered`))).responses.map(item => JSON.stringify(item))).toEqual([JSON.stringify({ responseId: unsent.id, status: 'pending' })])
   await dispatcher.run(new Date(Date.now() + minute).toISOString())
   expect((await deliveries(endpointId)).filter(item => item.eventType === 'response.created' && item.status === 'confirmed')).toHaveLength(8)

@@ -35,6 +35,10 @@ contract(['ACT-003', 'ACT-004', 'ACT-007'], 'a 500 fails visibly and a dropped c
       expect(first.body.delivery).toMatchObject({ state: 'failed', remoteTaskId: null })
       expect(first.body.delivery!.attempts).toEqual([expect.objectContaining({ outcome: 'failed', outcomeClass: '5xx', httpStatus: 500 })])
       expect(await (await t.f.call(`/api/app/actions/${t.action.id}`)).json()).toMatchObject({ id: t.action.id, state: 'planned' })
+      // INTEG-015: the failed task is in the delivery ledger with its key and attempt reason, and raises an alert.
+      const failedLedger = await (await t.f.call('/api/app/integration-deliveries?state=failed')).json() as { deliveries: unknown[] }
+      expect(failedLedger.deliveries).toEqual([expect.objectContaining({ kind: 'task', state: 'failed', idempotencyKey: `pencil-action-${t.action.id}`, actionId: t.action.id, attempts: [expect.objectContaining({ outcome: 'failed', httpStatus: 500, reason: '5xx' })] })])
+      expect(JSON.stringify(await (await t.f.call('/api/app/webhooks/alerts')).json())).toContain('external task')
     } else {
       // The receiver stored the task before the connection dropped.
       expect(first.body.delivery).toMatchObject({ state: 'unknown', remoteTaskId: null })
@@ -43,6 +47,10 @@ contract(['ACT-003', 'ACT-004', 'ACT-007'], 'a 500 fails visibly and a dropped c
     }
     const retried = await t.retry()
     expect(retried.body.delivery).toMatchObject({ state: 'confirmed', remoteTaskId: 'task-1' })
+    const settled = await (await t.f.call('/api/app/integration-deliveries')).json() as { deliveries: Array<{ actionId: string | null; state: string; attempts: Array<{ outcome: string | null }> }> }
+    expect(settled.deliveries.find(item => item.actionId === t.action.id)).toMatchObject({ state: 'confirmed' })
+    expect(settled.deliveries.find(item => item.actionId === t.action.id)!.attempts.map(attempt => attempt.outcome).at(-1)).toBe('confirmed')
+    expect(await (await t.f.call('/api/app/webhooks/alerts')).json()).toEqual({ alerts: [] })
     const state = await received()
     expect(Object.keys(state.tasks)).toHaveLength(1)
     expect(state.tasks).toEqual({ [`pencil-action-${t.action.id}`]: 'task-1' })
