@@ -16,7 +16,7 @@ declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 let cookie = ''
 let serial = 0
 async function req(path: string, body?: unknown, method = body === undefined ? 'GET' : 'POST') {
-  const response = await SELF.fetch(`http://localhost${path}`, { method, headers: { Host: 'localhost', cookie, origin: 'http://localhost', 'content-type': 'application/json', 'CF-Connecting-IP': `192.0.2.${++serial}` }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) })
+  const response = await SELF.fetch(`http://localhost${path}`, { method, headers: { Host: 'localhost', cookie, 'User-Agent': 'synthetic-pencil-user-agent-1', origin: 'http://localhost', 'content-type': 'application/json', 'CF-Connecting-IP': `192.0.2.${++serial}` }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) })
   return response
 }
 async function ok<T>(path: string, body?: unknown, method?: string): Promise<T> {
@@ -483,6 +483,10 @@ contract(['RSLT-001','RSLT-003','RSLT-004','DASH-002'], 'retains factual zero, q
   expect(released).toMatchObject({ starts: 1, completedResponses: 1, completionRate: 1, averageCompletionMilliseconds: stored!.completion_milliseconds })
   expect(JSON.stringify(released)).not.toContain(receipt.responseId); expect(JSON.stringify(released)).not.toContain(fast.sessionToken)
 
+  const storedResponse = await env.DB.prepare('SELECT * FROM responses WHERE id=?').bind(receipt.responseId).first()
+  expect(JSON.stringify(storedResponse)).not.toContain('synthetic-pencil-user-agent-1')
+  const responseColumns = (await env.DB.prepare('PRAGMA table_info(responses)').all<{name:string}>()).results.map(column=>column.name)
+  expect(responseColumns.filter(name=>/device|user.agent|fingerprint|screen|raw.ip/i.test(name))).toEqual(['device_class'])
   const devicePath = `${f.path}/devices?revisionId=${fast.revisionId}`
   expect(await ok(devicePath)).toMatchObject({basis:'sessions',total:1,counts:{desktop:1,mobile:0,tablet:0,unknown:0},sessionsWithoutResponse:0})
   const mobile = await f.start(false, 'direct', 'mobile')
@@ -510,6 +514,10 @@ contract(['RSLT-001','RSLT-003','RSLT-004','DASH-002'], 'retains factual zero, q
   await ok(`/api/app/responses/${receipt.responseId}`, undefined, 'DELETE')
   expect(await results()).toMatchObject({ starts: 2, completedResponses: 0, completionRate: 0, averageCompletionMilliseconds: 0, deviceStarts: { mobile: 1, tablet: 0, desktop: 1 } })
   expect(await ok('/api/app/dashboard?status=open')).toEqual(expect.arrayContaining([expect.objectContaining({ id: f.flow.id, starts: 2, completedResponses: 0 })]))
+  const laterArchive = await ok<{payload:{tables:Array<{name:string;rows:unknown[]}>}}>('/api/app/backup/export',{})
+  const archivedResponses = JSON.stringify(laterArchive.payload.tables.find(table=>table.name==='responses')!.rows)
+  expect(archivedResponses).not.toContain(receipt.responseId)
+  expect(archivedResponses).not.toContain(mobileReceipt.responseId)
   const emptyRevision = await ok<{revision:{id:string}}>(`${f.path}/publish`,{expectedVersion:(await f.draft()).flow.draftVersion})
   expect(await ok(`${f.path}/devices?revisionId=${emptyRevision.revision.id}&deviceClass=mobile`)).toMatchObject({total:0})
 })

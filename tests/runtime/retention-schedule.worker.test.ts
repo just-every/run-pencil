@@ -94,6 +94,12 @@ contract(['GOV-003','DATA-002','PART-002','BASE-DATA-002'],'owner opt-in gives o
     expect(await env.DB.prepare('SELECT session_id FROM respondent_saves WHERE session_id=?').bind(saved.sessionId).first()).toBeNull()
     expect(await env.DB.prepare('SELECT id FROM respondent_sessions WHERE id=?').bind(saved.sessionId).first()).toBeNull()
     expect(await env.DB.prepare('SELECT id FROM responses WHERE id=?').bind(kept).first()).not.toBeNull()
+    const laterBackup = await f.call('/api/app/backup/export',{})
+    expect(laterBackup.status).toBe(200)
+    const laterArchive = await laterBackup.json() as {payload:{tables:Array<{name:string;rows:unknown[]}>}}
+    const archivedResponses = JSON.stringify(laterArchive.payload.tables.find(table=>table.name==='responses')!.rows)
+    for(const id of ids)expect(archivedResponses).not.toContain(id)
+    expect(archivedResponses).toContain(kept)
     expect(await f.detail(analysis.id)).toMatchObject({redacted:true,stale:true,evidenceCount:0})
     expect(await env.DB.prepare('SELECT summary FROM analysis_runs WHERE id=?').bind(analysis.id).first()).toEqual({summary:null})
     for(const table of ['analysis_evidence','analysis_quotes','analysis_theme_members'])expect(await env.DB.prepare(`SELECT count(*) n FROM ${table} WHERE response_id IN (SELECT value FROM json_each(?))`).bind(JSON.stringify(ids)).first()).toEqual({n:0})
