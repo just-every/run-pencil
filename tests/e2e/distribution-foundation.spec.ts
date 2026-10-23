@@ -179,8 +179,12 @@ contract(['RESP-020','DIST-014','LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-
   const receipt=(await confirmations())[0]
   expect(receipt.to).toEqual([recipient])
   expect(receipt.text).toContain('Synthetic identified answer')
+  expect(receipt.html).not.toContain(recipient)
   expect(receipt.headers).not.toHaveProperty('Reply-To')
   expect(receipt.text).not.toContain('/app/')
+  await page.goto('about:blank')
+  await page.setContent(receipt.html)
+  await audienceScreen(page,info,'confirmation-email')
   const completed = await call(`${path}/distribution`)
   expect(completed.participants.find((item: { email: string; kind: string }) => item.email === recipient && item.kind === 'reminder').status).toBe('cancelled')
   await page.goto(`/app/flows/${flow.id}/builder`)
