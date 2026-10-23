@@ -39,6 +39,7 @@ contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019', 'IMPORT-00
     expect(violations.filter(violation => violation.impact === 'serious' || violation.impact === 'critical')).toEqual([])
   }
   for (const source of ['direct', 'imported'] as const) {
+    await ledger.getByRole('button',{name:'Clear response filters',exact:true}).click()
     const revisionId = source === 'direct' ? scenario.nativeRevisionId : scenario.importedRevisionId
     await page.getByLabel('Published revision').selectOption(revisionId)
     await expect(ledger.getByRole('button', { name: 'View answers', exact: true })).toHaveCount(2)

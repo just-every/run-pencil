@@ -5773,7 +5773,7 @@
       "executable": false
     },
     "src/core/features/results/ui/DeviceSplit.tsx": {
-      "sha256": "16333c7624b8b299f14b70efcb0d8a44cd2ed4aed1787c21d7146a879bebff95",
+      "sha256": "bbfc08186d33db38a646442112d40bae81caf7cffa98d5f83c8f244897e43083",
       "executable": false
     },
     "src/core/features/results/ui/download.ts": {
@@ -5797,7 +5797,7 @@
       "executable": false
     },
     "src/core/features/results/ui/ResponseLedger.tsx": {
-      "sha256": "ae2b333cfba57941741c4cebb8defd2341d6dfbbf46842fb71ed56e98be02d94",
+      "sha256": "bc174db17e81cdf0b04bc97eb08fc6f63d8630e131ee3df4846f4862e1fb419f",
       "executable": false
     },
     "src/core/features/results/ui/results.css": {
@@ -5805,7 +5805,7 @@
       "executable": false
     },
     "src/core/features/results/ui/ResultsPage.tsx": {
-      "sha256": "6e90aebe84ce891d85c06a8c4ac3e467b82ada74b989f119a431eb674e2c7974",
+      "sha256": "485d723ee46ad753578cb62cfad144f3ab946001a12f94c65052f51932995571",
       "executable": false
     },
     "src/core/features/results/ui/RevisionComparison.tsx": {
@@ -6881,7 +6881,7 @@
       "executable": false
     },
     "tests/e2e/ledger-filters.spec.ts": {
-      "sha256": "a5d1e74101ca2bdd2b03496c8adc8d3e013310497a0fd59b3c4a288e3fd0293b",
+      "sha256": "8c7e7bbe59d0eb9dd0c07ca8906c1d6bde9e2af48e98bc35172ea5ad7b816611",
       "executable": false
     },
     "tests/e2e/link-preview-http.ts": {

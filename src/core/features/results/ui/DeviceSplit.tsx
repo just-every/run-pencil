@@ -6,7 +6,7 @@ export function DeviceSplit({ report }: { report: DeviceReport }) {
     <p className="muted">{report.total} {unit} · each share uses this denominator</p>
     <div className="device-list">{(['mobile','tablet','desktop','unknown'] as const).filter(device => device !== 'unknown' || report.basis === 'responses').map(device => {
       const count = report.counts[device]
-      return <div className="device-row" key={device}><span className="device-name">{device}</span><strong>{count} / {report.total} · {report.total ? Math.round(count / report.total * 100) : 0}%</strong><span className="device-bar"><span style={{width:`${report.total ? count / report.total * 100 : 0}%`}} /></span></div>
+      return <div className="device-row" key={device}><span className="device-name">{device}</span><strong>{count} / {report.total} · {report.total ? `${Math.round(count / report.total * 100)}%` : 'no share'}</strong><span className="device-bar"><span style={{width:`${report.total ? count / report.total * 100 : 0}%`}} /></span></div>
     })}</div>
     <p className="muted">{report.unknownResponses} native responses have unknown device class; earlier responses are never guessed. {report.importedResponses} imported responses have no native session and are excluded from device shares.</p>
     <p className="muted">{report.sessionsWithoutResponse} sessions have not produced a response (open or recorded as abandoned), across the selected revision scope. These unlinked sessions are separate from filtered responses; answer and device filters cannot select them.</p>

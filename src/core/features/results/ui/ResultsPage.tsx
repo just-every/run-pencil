@@ -93,7 +93,7 @@ export function ResultsPage() {
       <CollectorComparison flowId={flowId} />
       {revisions.find(revision => revision.id === results.revision.id) ? <CrosstabPanel key={results.revision.id} flowId={flowId} revision={revisions.find(revision => revision.id === results.revision.id)!} questions={questions} /> : null}
       <TrendsPanel key={results.revision.id} flowId={flowId} questions={questions} timeZone={timeZone} revisionId={results.revision.id} />
-      <ResponseLedger key={`${results.revision.id}:${refresh}`} flowId={flowId} revisionId={results.revision.id} timeZone={timeZone} questions={questions} filter={filter} onFilterChange={setResponseFilter} onChanged={() => setRefresh((value) => value + 1)} exportSlot={exportSlot} />
+      <ResponseLedger key={`${results.revision.id}:${refresh}`} flowId={flowId} timeZone={timeZone} questions={questions} filter={filter} onFilterChange={setResponseFilter} onChanged={() => setRefresh((value) => value + 1)} exportSlot={exportSlot} />
       <QuarantineReview key={results.revision.id} revisionId={results.revision.id} timeZone={timeZone} questions={questions} onChanged={() => setRefresh((value) => value + 1)} />
       <div className="results-notifications"><NotificationsPanel flowId={flowId} timeZone={timeZone} /></div>
       </> : null}
