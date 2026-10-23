@@ -5,7 +5,9 @@ export const confirmationLive=`r.state='released' AND r.notification_eligible=1 
  AND (r.participant_id IS NULL OR EXISTS(SELECT 1 FROM invitation_participants p JOIN distribution_contacts c ON c.id=p.contact_id
   WHERE p.id=r.participant_id AND p.workspace_id=r.workspace_id AND p.revision_id=r.revision_id AND c.workspace_id=r.workspace_id AND c.opted_out_at IS NULL))`
 /** Recheck the selected mailbox; no hidden, verified-public or arbitrary answer fallback. */
-export const confirmationRecipient=`CASE WHEN json_extract(v.form_settings_json,'$.confirmation.emailStepId') IS NOT NULL THEN EXISTS(
+export const confirmationRecipient=`NOT EXISTS(SELECT 1 FROM distribution_contacts c WHERE c.workspace_id=r.workspace_id AND lower(c.email)=lower(d.recipient) AND c.opted_out_at IS NOT NULL)
+ AND NOT EXISTS(SELECT 1 FROM invitation_participants p WHERE p.workspace_id=r.workspace_id AND lower(p.email_snapshot)=lower(d.recipient) AND p.delivery_status='bounced')
+ AND CASE WHEN json_extract(v.form_settings_json,'$.confirmation.emailStepId') IS NOT NULL THEN EXISTS(
  SELECT 1 FROM response_answers a JOIN flow_steps s ON s.revision_id=r.revision_id AND s.stable_id=a.step_id
  WHERE a.response_id=r.id AND s.kind='question' AND s.question_type='email' AND a.step_id=json_extract(v.form_settings_json,'$.confirmation.emailStepId')
  AND json_type(a.value_json)='text' AND json_extract(a.value_json,'$')=d.recipient)

@@ -19,10 +19,10 @@ contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released co
  const settings={...draft.formSettings!,hiddenFields:[{id:'campaign',name:'campaign',type:'text' as const,category:'plain' as const}],calculations:[{id:'double',name:'Double',type:'number' as const,expression:{kind:'multiply' as const,left:{kind:'answer' as const,stepId:number.id},right:{kind:'literal' as const,value:2}}}],confirmation:{enabled:true,includeAnswers:true,answerTypes:['short_text','date','number'],emailStepId:email.id,subject:`Received {{${text.id}}}`,body:`Answer {{${text.id}}}; hidden {{hidden:campaign}}; calculated {{variable:double}}; skipped [{{${skipped.id}}}]`}}
  await f.services.flows.updateFormSettings({...f.flow,expectedVersion:draft.flow.draftVersion,settings})
  expect(await f.publish()).toMatchObject({kind:'published'})
- const submit=async(options:{immature?:boolean;honeypot?:string;token?:string}={})=>{
+ const submit=async(options:{immature?:boolean;honeypot?:string;token?:string;mailbox?:string}={})=>{
   const session=await f.services.responses.startPublicSession({slug:f.slug,deviceClass:'desktop',source:'direct',clientAddress:'synthetic-pencil-confirmation',...(options.token?{invitationToken:options.token}:{})})
   if(!options.immature)await f.mature(session.sessionId)
-  await f.services.responses.submitPublicResponse({slug:f.slug,sessionId:session.sessionId,sessionToken:session.sessionToken,loadTime:await f.loadTime(session),idempotencyKey:'key-'+session.sessionId,clientAddress:'synthetic-pencil-confirmation',hidden:{campaign:'Synthetic <campaign>'},answers:[{stepId:email.id,value:'synthetic-pencil-receipt@example.test'},{stepId:text.id,value:'<script>alert(1)</script> {{hidden:campaign}}'},{stepId:date.id,value:'2026-07-04'},{stepId:number.id,value:3}],honeypot:options.honeypot??'',invitationToken:options.token})
+  await f.services.responses.submitPublicResponse({slug:f.slug,sessionId:session.sessionId,sessionToken:session.sessionToken,loadTime:await f.loadTime(session),idempotencyKey:'key-'+session.sessionId,clientAddress:'synthetic-pencil-confirmation',hidden:{campaign:'Synthetic <campaign>'},answers:[{stepId:email.id,value:options.mailbox??'synthetic-pencil-receipt@example.test'},{stepId:text.id,value:'<script>alert(1)</script> {{hidden:campaign}}'},{stepId:date.id,value:'2026-07-04'},{stepId:number.id,value:3}],honeypot:options.honeypot??'',invitationToken:options.token})
   return {session,row:await env.DB.prepare('SELECT id,state FROM responses WHERE session_id=?').bind(session.sessionId).first<{id:string;state:string}>()}
  }
  const sent:Array<any>=[]
@@ -69,6 +69,13 @@ contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released co
   await noQuestion.services.distribution.contacts.optOut(optedInvite.optOutToken)
   await dispatcher.run();expect(sent).toHaveLength(5)
 
+  const suppressed=await f.services.distribution.contacts.save(f.scope.workspaceId,{name:'Synthetic suppressed recipient',email:'synthetic-pencil-suppressed@example.test'}) as {id:string}
+  await f.services.distribution.launches.launch({...f.flow,operatorId:f.operatorId,contactIds:[suppressed.id],commandKey:'synthetic-pencil-suppressed-confirmation'})
+  const suppressedInvite=(await env.DB.prepare('SELECT opt_out_token AS token FROM invitation_participants WHERE contact_id=?').bind(suppressed.id).first<{token:string}>())!
+  await f.services.distribution.contacts.optOut(suppressedInvite.token)
+  const blocked=await submit({mailbox:'SYNTHETIC-PENCIL-SUPPRESSED@example.test'});await dispatcher.run()
+  expect(sent).toHaveLength(5)
+  expect(await env.DB.prepare("SELECT id FROM confirmation_deliveries WHERE response_id=? AND status='sent'").bind(blocked.row!.id).first()).toBeNull()
   await f.services.responses.eraseReleasedResponse({...f.scope,responseId:completed.row!.id,operatorId:f.operatorId})
   expect(await env.DB.prepare('SELECT id FROM confirmation_deliveries WHERE response_id=?').bind(completed.row!.id).first()).toBeNull()
   expect((await env.DB.prepare("SELECT id FROM confirmation_attempts WHERE delivery_id=?").bind('confirmation:'+completed.row!.id).all()).results).toHaveLength(0)

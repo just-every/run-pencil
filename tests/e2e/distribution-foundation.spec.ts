@@ -161,6 +161,7 @@ contract(['RESP-020','DIST-014','LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-
   await audienceScreen(page,info,'locked-prefill')
   await page.getByRole('button',{name:'Continue',exact:true}).click()
   await expect(page.getByText('Send my confirmation here',{exact:true})).toBeVisible()
+  await expect(page.getByText(/After you submit, a confirmation will be emailed/)).toBeVisible()
   await page.getByRole('textbox').fill(recipient)
   await audienceScreen(page,info,'confirmation-address')
   await page.getByRole('button',{name:'Submit response',exact:true}).click()
