@@ -10,7 +10,8 @@ import { isContactType } from './contactReports'
 import type { WorkflowFilter } from '../submissions'
 import { responseScope, type ResponseSelection } from './scope'
 import { type ReportStep, type ReportChoice } from './questionReport'
-export type LedgerFilter = WorkflowFilter & { codeId?: string; search?: string; collectorId?: string; revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown' | 'imported'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
+import type { LedgerFilter } from '../../shared/reportFilters'
+export type { LedgerFilter } from '../../shared/reportFilters'
 export type LedgerHiddenField = Pick<HiddenField, 'id' | 'name' | 'type'> & { value: string | number | boolean }
 export type LedgerCalculation = Pick<Calculation, 'id' | 'name' | 'type'> & { value: CalculationValue }
 import type { LedgerPayment } from '../../shared/payments'

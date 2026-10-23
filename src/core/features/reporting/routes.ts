@@ -1,5 +1,3 @@
-import { calculationLimits } from '../../shared/calculations'
-import { workflowTag } from '../submissions'
 import { reportTrends } from './trends'
 import { ValidationError } from '../../shared/errors'
 import downloadWorker from './download-worker.js?raw'
@@ -8,13 +6,14 @@ import { startExport, exportPart, exportFormats } from './export'
 import { crosstab } from './crosstab'
 import { dimensionPattern } from './crosstabDimensions'
 import { z } from 'zod'
-import { searchPhrase } from './search'
 import { validateInput as zValidator, resourceId } from '../../shared/validation'
 import type { Hono } from 'hono'
 import type { WorkerEnvironment } from '../../app/environment'
 import type { RequestServices } from '../../app/request-context'
-const filter = z.object({ codeId: resourceId.optional(), search: searchPhrase.optional(), workflowStatus: resourceId.optional(), workflowAssignee: resourceId.optional(), workflowTag: workflowTag.optional(), collectorId: resourceId.optional(), revisionId: resourceId.optional(), source: z.enum(['direct', 'embed', 'invitation', 'unknown', 'imported']).optional(), participantStatus: z.enum(['eligible', 'opted-out', 'bounced']).optional(), from: z.string().datetime().optional(), to: z.string().datetime().optional(), answerStepId: resourceId.optional(), answerValue: z.string().max(calculationLimits.textCharacters * 6 + 2).optional(), offset: z.coerce.number().int().min(0).max(Number.MAX_SAFE_INTEGER).default(0) })
+import { ledgerFilterSchema as filter } from './filter'
+import { deviceReport } from './devices'
 export function registerReportingRoutes(app: Hono<WorkerEnvironment>, services: RequestServices) {
+  app.get('/api/app/flows/:flowId/devices', zValidator('param', z.object({ flowId: resourceId })), zValidator('query', filter), async context => context.json(await deviceReport(context.get('platform').databaseBinding, context.get('operatorSession').workspaceId, context.req.param('flowId'), context.req.valid('query'))))
   app.get('/api/app/flows/:flowId/trends', zValidator('param', z.object({flowId:resourceId})), zValidator('query', z.object({
     stepId: resourceId, metric:z.enum(['score','share']), unit:z.enum(['day','week','month','quarter']), minimum:z.coerce.number().int().min(1).max(1000000).default(5),
     from:z.string().regex(/^\d{4}-\d{2}-\d{2}$/), to:z.string().regex(/^\d{4}-\d{2}-\d{2}$/), shareValue:z.string().max(15000).optional(), collectorId:resourceId.optional(),revisionId:resourceId.optional(),

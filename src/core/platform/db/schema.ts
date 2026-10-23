@@ -262,6 +262,7 @@ export const responses = sqliteTable(
       .notNull()
       .references(() => flowRevisions.id),
     source: text('source', { enum: ['direct', 'embed', 'invitation', 'unknown', 'imported'] }).notNull().default('unknown'),
+    deviceClass: text('device_class', { enum: ['mobile', 'tablet', 'desktop'] }),
     startedAt: text('started_at'),
     sessionId: text('session_id')
       .notNull(),

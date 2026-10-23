@@ -288,9 +288,9 @@ export class ResponseRepository {
       this.binding.prepare(`
         INSERT INTO responses (
           id, workspace_id, flow_id, revision_id, session_id, session_token_hash, idempotency_key, state, quarantine_reason,
-          released_at, released_by_operator_id, completion_milliseconds, completed_at, created_at, updated_at, source, started_at, participant_id, notification_eligible, response_context_json
+          released_at, released_by_operator_id, completion_milliseconds, completed_at, created_at, updated_at, source, started_at, participant_id, notification_eligible, response_context_json, device_class
         )
-        SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, s.source, s.created_at, ?, 1, ?
+        SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, s.source, s.created_at, ?, 1, ?, s.device_class
         FROM respondent_sessions s
         JOIN flow_revisions r ON r.id = s.revision_id
         JOIN flows f ON f.id = r.flow_id

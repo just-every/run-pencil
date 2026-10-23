@@ -57,6 +57,7 @@ contract(['FLOW-008', 'FLOW-009', 'FLOW-017', 'RESP-008', 'DIST-004', 'RESP-007'
   const outcomes = await Promise.allSettled([f.final(a, answers, '', f.p.token), f.final(b, answers, '', f.p.token)])
   expect(outcomes.filter(o => o.status === 'fulfilled')).toHaveLength(1)
   expect((await env.DB.prepare('SELECT source, participant_id FROM responses WHERE participant_id = ?').bind(f.p.id).all()).results).toEqual([{ source: 'invitation', participant_id: f.p.id }])
+  expect(await env.DB.prepare('SELECT device_class FROM responses WHERE participant_id=?').bind(f.p.id).first()).toEqual({device_class:'desktop'})
   const ledger=await f.services.reporting.ledger(f.scope.workspaceId,f.flow.flowId,{search:'Synthetic response'})
   expect(ledger.responses[0].answers[0]).toMatchObject({value:'Synthetic response',prefill:'edited'})
   expect(JSON.parse((await env.DB.prepare('SELECT response_context_json AS context FROM responses WHERE participant_id=?').bind(f.p.id).first<{context:string}>())!.context).prefill).toEqual({[firstQuestion.id]:'edited'})
@@ -68,8 +69,12 @@ contract(['FLOW-008', 'FLOW-009', 'FLOW-017', 'RESP-008', 'DIST-004', 'RESP-007'
   const lockedQuestion=lockedStart.flow.steps.find(s=>s.kind==='question')!
   await expect(locked.final(lockedStart,[{stepId:lockedQuestion.id,value:'Changed'}],'',locked.p.token)).rejects.toThrow('locked')
   await locked.final(lockedStart,[{stepId:lockedQuestion.id,value:'Synthetic company'}],'',locked.p.token)
+  const lockedResponse=(await env.DB.prepare('SELECT id,device_class FROM responses WHERE participant_id=?').bind(locked.p.id).first<{id:string;device_class:string}>())!
+  expect(lockedResponse.device_class).toBe('desktop')
+  expect(await env.DB.prepare('SELECT id FROM respondent_sessions WHERE id=?').bind(lockedStart.sessionId).first()).toBeNull()
   expect((await locked.services.reporting.ledger(locked.scope.workspaceId,locked.flow.flowId,{})).responses[0].answers[0].prefill).toBe('locked')
   await locked.services.distribution.contacts.erase(locked.scope.workspaceId,locked.contact.id,locked.operatorId)
+  expect(await env.DB.prepare('SELECT device_class FROM responses WHERE id=?').bind(lockedResponse.id).first()).toBeNull()
   expect((await locked.services.reporting.ledger(locked.scope.workspaceId,locked.flow.flowId,{})).total).toBe(0)
   expect((await env.DB.prepare("SELECT status FROM mail_deliveries WHERE participant_id = ? AND kind = 'reminder'").bind(f.p.id).first())).toEqual({ status: 'cancelled' })
   expect((await f.services.responses.invitationFlow(f.p.token)).publicFlow.completedStepId).toBe(a.flow.steps.find(s => s.kind === 'completion')!.id)

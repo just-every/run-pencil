@@ -130,7 +130,7 @@ const retained = {
   reporting_changes: 'workspace_id flow_id eligible_at generation',
   response_answers: 'id response_id step_id value_json created_at updated_at',
   response_outbox: 'id workspace_id response_id kind idempotency_key payload_json status available_at dispatched_at failure_reason created_at updated_at',
-  responses: 'response_context_json id workspace_id flow_id revision_id session_id session_token_hash idempotency_key state quarantine_reason released_at released_by_operator_id completion_milliseconds completed_at created_at updated_at source started_at participant_id',
+  responses: 'response_context_json id workspace_id flow_id revision_id session_id session_token_hash idempotency_key state quarantine_reason released_at released_by_operator_id completion_milliseconds completed_at created_at updated_at source started_at participant_id device_class',
   // PAY-001 payment state and Stripe IDs travel with their response. No card or bank detail exists to travel;
   // the Stripe key and signing secret stay sealed in integration_connections, whose rows never travel.
   response_payments: 'response_id step_id completion_step_id provider livemode state attempt amount currency lines_json checkout_session_id checkout_url checkout_expires_at payment_intent_id provider_amount return_token_hash state_changed_at created_at updated_at',

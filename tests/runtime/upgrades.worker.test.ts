@@ -14,6 +14,7 @@ declare const __PENCIL_UPGRADE_FIXTURE_QUERIES__: string[]
 declare const __PENCIL_UPGRADE_CHECKS__: UpgradeCheck[]
 
 let priorAudience:unknown,priorLaunches:unknown,priorConsent:unknown
+let priorResponses: Array<{ id: string; source: string; started_at: string | null; session_id: string; completed_at: string }>
 const hasUpgradeInput = __PENCIL_PREVIOUS_CORE_MIGRATIONS__.length > 0 && __PENCIL_UPGRADE_FIXTURE_QUERIES__.length > 0
 
 async function verifyRetainedRows() {
@@ -33,6 +34,7 @@ describe.skipIf(!hasUpgradeInput)('declared release migration in a Workers D1 ru
     priorAudience=(await env.DB.prepare('SELECT id,name,email,opted_out_at FROM distribution_contacts ORDER BY id').all()).results
     priorLaunches=(await env.DB.prepare('SELECT id,revision_id,command_key,policy_json FROM invitation_launches ORDER BY id').all()).results
     priorConsent=(await env.DB.prepare('SELECT * FROM contact_consent_events ORDER BY id').all()).results
+    priorResponses=(await env.DB.prepare('SELECT id,source,started_at,session_id,completed_at FROM responses ORDER BY id').all<typeof priorResponses[number]>()).results
     await applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__)
   })
 
@@ -41,6 +43,8 @@ describe.skipIf(!hasUpgradeInput)('declared release migration in a Workers D1 ru
     const launches=(await env.DB.prepare('SELECT id,revision_id,command_key,policy_json FROM invitation_launches ORDER BY id').all()).results
     const consent=(await env.DB.prepare('SELECT * FROM contact_consent_events ORDER BY id').all()).results
     expect(contacts).toEqual(priorAudience);expect(launches).toEqual(priorLaunches);expect(consent).toEqual(priorConsent)
+    expect(priorResponses.length).toBeGreaterThan(0)
+    expect((await env.DB.prepare('SELECT id,source,started_at,session_id,completed_at,device_class FROM responses ORDER BY id').all()).results).toEqual(priorResponses.map(response => ({ ...response, device_class: null })))
     expect(await env.DB.prepare("SELECT id FROM distribution_contacts WHERE id='erased-before-upgrade'").first()).toBeNull()
     expect((await env.DB.prepare('SELECT fields_json FROM distribution_contacts').all()).results.every(c=>JSON.stringify(JSON.parse(c.fields_json as string))==='{}')).toBe(true)
     console.log('Audience predecessor preservation:',JSON.stringify({contactsBefore:(priorAudience as unknown[]).length,contactsAfter:contacts.length,launchesBefore:(priorLaunches as unknown[]).length,launchesAfter:launches.length,consentBefore:(priorConsent as unknown[]).length,consentAfter:consent.length,erasedBefore:0,erasedAfter:0}))

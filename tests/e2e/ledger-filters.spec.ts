@@ -44,6 +44,12 @@ contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019', 'IMPORT-00
     await expect(ledger.getByRole('button', { name: 'View answers', exact: true })).toHaveCount(2)
     await ledger.getByLabel('Source', { exact: true }).selectOption(source)
     if (source === 'imported') await expect(page.getByText('0 live · 2 imported', { exact: true })).toBeVisible()
+    await ledger.getByLabel('Device class',{exact:true}).selectOption(source === 'direct' ? 'desktop' : 'unknown')
+    await expect(ledger.getByRole('button',{name:'View answers',exact:true})).toHaveCount(2)
+    await expect(page.locator('.device-card')).toContainText(source === 'direct' ? '2 filtered native responses' : '0 filtered native responses')
+    if(source === 'imported') await expect(page.locator('.device-card')).toContainText('2 imported responses have no native session')
+    await ledger.getByLabel('Device class',{exact:true}).selectOption('')
+
     const choice = scenario.current.choices.find(choice => choice.stepId === scenario.stepId('dropdown'))!
     const cases = [['yes_no', 'true', 'Yes'], ['yes_no', 'false', 'No'], ['consent', 'true', 'Accepted'], ['consent', 'false', 'Declined'], ['number', '11.0', null], ['nps', '0', null], ['rating', '5', null], ['date', '2024-02-29', null], ['dropdown', choice.id, 'Coffee']] as const
     for (const [type, value, label] of cases) {
@@ -69,6 +75,7 @@ contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019', 'IMPORT-00
           expect(snapshot.filter).toMatchObject({ revisionId, source, answerStepId: scenario.stepId(type), answerValue: value })
           expect(snapshot.responses.map((response: LedgerResponse) => response.id)).toEqual([expectedId])
           expect(snapshot.excludedQuarantined).toBe(0)
+          expect(JSON.stringify(snapshot.responses)).not.toMatch(/deviceClass|device_class|user.agent|fingerprint|screen.width|raw.ip/i)
           downloaded = snapshot.responses[0]
           expect(downloaded!.revisionId).toBe(revisionId)
           expect(downloaded!.source).toBe(source)

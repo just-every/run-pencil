@@ -181,7 +181,8 @@ export const api = {
 }
 
 export type ExportFormat = 'json' | 'csv' | 'xlsx' | 'sav'
-export type LedgerFilter = { codeId?: string; workflowStatus?: string; workflowAssignee?: string; workflowTag?: string; search?: string; collectorId?: string; revisionId?: string; source?: 'direct' | 'embed' | 'invitation' | 'unknown' | 'imported'; participantStatus?: 'eligible' | 'opted-out' | 'bounced'; from?: string; to?: string; answerStepId?: string; answerValue?: string; offset?: number }
+import type { LedgerFilter } from '../shared/reportFilters'
+export type { LedgerFilter } from '../shared/reportFilters'
 export type LedgerResponse = { payment?: import('../shared/payments').LedgerPayment; presentedOrder:import('../shared/presentationOrder').PresentationOrder|null;
   verifiedEmail?:string
   verifiedSubject?:string; calculations:Array<{id:string;name:string;type:'number'|'text';value:number|string|null}>; hiddenFields:Array<{id:string;name:string;type:import('../shared/hiddenFields').HiddenField['type'];value:string|number|boolean}>;identityMode:'anonymous'|'identified';discardedParameters:number; collector: { id: string; name: string; channel: string }; omittedQuestions: Array<{ stepId: string; label: string; position: number; questionType?: string }>; participant?: { id: string; name: string | null; email: string | null }; id: string; revisionId: string; revisionNumber: number; source: string; startedAt: string | null; completedAt: string; releasedAt: string | null; state: 'released' | 'quarantined'; quarantineReason: string | null; answers: Array<{ prefill?: import('../shared/knownDataPrefill').PrefillMarker; stepId: string; label: string; position: number; questionType: string; value: unknown; displayValue: string }> }
@@ -191,6 +192,7 @@ function query(filter: LedgerFilter) { return new URLSearchParams(Object.entries
 export type RevisionComparison = { revisionCount?: number; offset?: number; nextOffset?: number; flow: { id: string; title: string; slug: string }; revisions: Array<{ id: string; number: number; isCurrent: number }>; questions: Array<{ id: string; answered: number; eligibleResponses: number; versions: Array<QuestionReport & { revisionId: string; eligibleResponses: number }> }> }
 
 export const reportingApi = {
+  devices: (flowId: string, filter: LedgerFilter) => request<import('../features/reporting/devices').DeviceReport>(`/api/app/flows/${encodeURIComponent(flowId)}/devices?${query(filter)}`),
   compareRevisions: (flowId: string, offset = 0) => request<RevisionComparison>(`/api/app/flows/${encodeURIComponent(flowId)}/questions/compare?offset=${offset}`),
   ledger: (flowId: string, filter: LedgerFilter = {}) => request<Ledger>(`/api/app/flows/${encodeURIComponent(flowId)}/ledger?${query(filter)}`),
   questions: (flowId: string, revisionId: string) => request<QuestionReport[]>(`/api/app/flows/${encodeURIComponent(flowId)}/questions?revisionId=${encodeURIComponent(revisionId)}`),

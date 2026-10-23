@@ -87,8 +87,8 @@ async function fixture(slug: string, target?: number) {
   const publish = () => ok(`${path}/publish`, { expectedVersion: current.flow.draftVersion, ...(target ? { targetCompletedResponses: target } : {}) })
   await publish()
   const publicFlow = await ok<PublicFlow>(`/api/public/flows/${slug}`)
-  const start = async (fast = false, source = 'direct') => {
-    const session = await ok<{ sessionId: string; sessionToken: string; loadTime: string; revisionId: string; flow: PublicFlow }>(`/api/public/flows/${slug}/sessions`, { deviceClass: 'desktop', source })
+  const start = async (fast = false, source = 'direct', deviceClass: 'mobile' | 'tablet' | 'desktop' = 'desktop') => {
+    const session = await ok<{ sessionId: string; sessionToken: string; loadTime: string; revisionId: string; flow: PublicFlow }>(`/api/public/flows/${slug}/sessions`, { deviceClass, source })
     expect(session.flow.revision.id).toBe(session.revisionId)
     if (!fast) await matureLoad(session, 5000)
     return session
@@ -471,7 +471,7 @@ contract(['RESP-015'], 'names unavailable sessions without partial effects, dist
 
 contract(['RSLT-001','RSLT-003','RSLT-004','DASH-002'], 'retains factual zero, quarantine, release and erasure summaries and matching dashboard counts', async () => {
   const f = await fixture('summary-cohort-states')
-  const results = () => ok<FlowResults>(`${f.path}/results`)
+  const results = () => ok<FlowResults>(`${f.path}/results?revisionId=${f.publicFlow.revision.id}`)
   expect(await results()).toMatchObject({ starts: 0, completedResponses: 0, completionRate: 0, averageCompletionMilliseconds: 0, deviceStarts: { mobile: 0, tablet: 0, desktop: 0 } })
   const fast = await f.start(true)
   const receipt = await (await f.submit(fast, [{ stepId: f.route.id, value: f.skip.id }], 'summary-quarantine-key')).json<{ responseId: string; disposition: string }>()
@@ -482,8 +482,33 @@ contract(['RSLT-001','RSLT-003','RSLT-004','DASH-002'], 'retains factual zero, q
   const released = await results()
   expect(released).toMatchObject({ starts: 1, completedResponses: 1, completionRate: 1, averageCompletionMilliseconds: stored!.completion_milliseconds })
   expect(JSON.stringify(released)).not.toContain(receipt.responseId); expect(JSON.stringify(released)).not.toContain(fast.sessionToken)
-  expect(await ok('/api/app/dashboard?status=open')).toEqual(expect.arrayContaining([expect.objectContaining({ id: f.flow.id, starts: 1, completedResponses: 1 })]))
+
+  const devicePath = `${f.path}/devices?revisionId=${fast.revisionId}`
+  expect(await ok(devicePath)).toMatchObject({basis:'sessions',total:1,counts:{desktop:1,mobile:0,tablet:0,unknown:0},sessionsWithoutResponse:0})
+  const mobile = await f.start(false, 'direct', 'mobile')
+  const mobileReceipt = await (await f.submit(mobile,[{stepId:f.route.id,value:f.more.id},{stepId:f.detail.id,value:'Mobile cohort'}],'synthetic-pencil-mobile')).json<{responseId:string}>()
+  expect((await env.DB.prepare('SELECT id,device_class FROM responses WHERE revision_id=? ORDER BY id').bind(fast.revisionId).all()).results).toEqual(expect.arrayContaining([{id:receipt.responseId,device_class:'desktop'},{id:mobileReceipt.responseId,device_class:'mobile'}]))
+  const selected = `${devicePath}&answerStepId=${f.route.id}&answerValue=${f.more.id}`
+  expect(await ok(selected)).toMatchObject({basis:'responses',total:1,counts:{mobile:1,tablet:0,desktop:0,unknown:0},nativeResponses:1,sessionsWithoutResponse:0})
+  expect(await ok(`${selected}&deviceClass=desktop`)).toMatchObject({total:0,counts:{mobile:0,desktop:0}})
+  const emptyRevision = await ok<{revision:{id:string}}>(`${f.path}/publish`,{expectedVersion:(await f.draft()).flow.draftVersion})
+  expect(await ok(`${f.path}/devices?revisionId=${emptyRevision.revision.id}&deviceClass=mobile`)).toMatchObject({total:0})
+  expect(await ok(selected)).toMatchObject({total:1,counts:{mobile:1}})
+  // A historical response's absent class is unknown, never inferred from its answers or source.
+  await env.DB.prepare('UPDATE responses SET device_class=NULL WHERE id=?').bind(mobileReceipt.responseId).run()
+  expect(await ok(`${devicePath}&deviceClass=unknown`)).toMatchObject({total:1,unknownResponses:1,counts:{unknown:1,mobile:0,desktop:0}})
+  const exported = await ok<{responses:unknown[]}>(`${f.path}/responses/export?format=json&revisionId=${fast.revisionId}&deviceClass=unknown`)
+  expect(exported.responses).toHaveLength(1)
+  expect(JSON.stringify(exported.responses)).not.toMatch(/deviceClass|device_class|user.agent|fingerprint|screen.width|raw.ip/i)
+  const exportedCsv = await req(`${f.path}/responses/export/start`,{format:'csv',revisionId:fast.revisionId,deviceClass:'unknown'}).then(response=>response.json<{token:string}>())
+  const csv = await req(`${f.path}/responses/export?token=${encodeURIComponent(exportedCsv.token)}`).then(response=>response.text())
+  expect(csv).not.toMatch(/deviceClass|device_class|user.agent|fingerprint|screen.width|raw.ip/i)
+  await ok(`/api/app/responses/${mobileReceipt.responseId}`,undefined,'DELETE')
+  expect(await env.DB.prepare('SELECT device_class FROM responses WHERE id=?').bind(mobileReceipt.responseId).first()).toBeNull()
+  expect(await ok(`${devicePath}&deviceClass=unknown`)).toMatchObject({total:0,unknownResponses:0})
+
+  expect(await ok('/api/app/dashboard?status=open')).toEqual(expect.arrayContaining([expect.objectContaining({ id: f.flow.id, starts: 2, completedResponses: 1 })]))
   await ok(`/api/app/responses/${receipt.responseId}`, undefined, 'DELETE')
-  expect(await results()).toMatchObject({ starts: 1, completedResponses: 0, completionRate: 0, averageCompletionMilliseconds: 0, deviceStarts: { mobile: 0, tablet: 0, desktop: 1 } })
-  expect(await ok('/api/app/dashboard?status=open')).toEqual(expect.arrayContaining([expect.objectContaining({ id: f.flow.id, starts: 1, completedResponses: 0 })]))
+  expect(await results()).toMatchObject({ starts: 2, completedResponses: 0, completionRate: 0, averageCompletionMilliseconds: 0, deviceStarts: { mobile: 1, tablet: 0, desktop: 1 } })
+  expect(await ok('/api/app/dashboard?status=open')).toEqual(expect.arrayContaining([expect.objectContaining({ id: f.flow.id, starts: 2, completedResponses: 0 })]))
 })
