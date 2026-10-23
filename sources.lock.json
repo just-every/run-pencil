@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "89131430ae065b0f4048f2b9864414c6f4764a7fb8ab2aab3505168d4f1d502c",
+      "sha256": "c700dc21459d4f8dc780d4c9f8e2e658714a7455def899a2a76774c90562e3d4",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "b32bf16b48e96e923b313d54c36a98e2687af8531e0511d87b54f2f911e58c0c",
+      "sha256": "ec68d9c6f263fc4b4378d4b30efd1cf606d2af1a6c45945ce4ab0072cebdbdd8",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "c78b338619a790bf95d071d155bc632e84bf1b13037b4f3f6230bd08f2956ef3",
+      "sha256": "d4a219c74b6eb3dfabbd52a53222bd73ed8bd445c169e805af39ff31500a9cc0",
       "executable": false
     },
     "DEMO.md": {
@@ -1989,7 +1989,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "97563ab384ad6c674f753a5941e70dbdcfee9ac05976a656a0edee1e607de2a9",
+      "sha256": "c1ca0c8e7f7e39435f20d01dddfb2195cbcdf31dd36ab3c186afcbb1ffb877d1",
       "executable": false
     },
     "src/base/ai/client.mjs": {
@@ -3733,7 +3733,7 @@
       "executable": false
     },
     "src/core/app/api.ts": {
-      "sha256": "45eebf0c7463a72b3a180fa52b695f77646684769cda863f5cf44d17c3557fd5",
+      "sha256": "8243d183e08adb6ffa685a41f5f62732577f3cfb648fb1cd06f0810c52b696d5",
       "executable": false
     },
     "src/core/app/capability-paths.ts": {
@@ -4681,7 +4681,7 @@
       "executable": false
     },
     "src/core/features/flows/service.ts": {
-      "sha256": "b5988d00a72ddeddd17f729dc3236e0c549c79a64a735c3916368a0bc50ce7fb",
+      "sha256": "948ecd194150332854e301aeab42111fafe308d2034ddb76d652c9abbf97b1c3",
       "executable": false
     },
     "src/core/features/flows/structure.ts": {
@@ -4745,7 +4745,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/FlowBuilderPage.tsx": {
-      "sha256": "8cf9543e85da21e1ce93a9d83a125b5cbfb5a6d224a6a223a289c64e03af855b",
+      "sha256": "f28f84bda7cdfb17f568495c57ba76c8c90192fa146b8fba1fb8103995482e6f",
       "executable": false
     },
     "src/core/features/flows/ui/FlowLinkPreview.tsx": {
@@ -4782,6 +4782,10 @@
     },
     "src/core/features/flows/ui/RedirectOriginsSettings.tsx": {
       "sha256": "aac8d8f68c594b55e87be7d1d6e87c7742a3283fdb24f051051910e1cd49e563",
+      "executable": false
+    },
+    "src/core/features/flows/ui/RespondentTextSettings.tsx": {
+      "sha256": "1b6ba503b3490a720634022cc8eeb10952cd42a1bdae4dde8cab40467e201eb6",
       "executable": false
     },
     "src/core/features/flows/ui/SaveTeamTemplate.tsx": {
@@ -5624,6 +5628,10 @@
       "sha256": "4f76a75c0f9f0a55f2c6c3fc28421496ebe4947743c9f2f29cb9a4adc782dadd",
       "executable": false
     },
+    "src/core/features/responses/closed.ts": {
+      "sha256": "aec0e677b278ca4399f327840b96a8fbfdeb5f3e86aacd81856657805eadb918",
+      "executable": false
+    },
     "src/core/features/responses/collectorFailure.ts": {
       "sha256": "dcf2c5be5550ce76506cf41177855c6d055a26becf6e95122f52e8854c9df8c1",
       "executable": false
@@ -5645,7 +5653,7 @@
       "executable": false
     },
     "src/core/features/responses/payment-responses.ts": {
-      "sha256": "9db134e398f65cbc031ef1365459a6c1ec6d66f1eab51ab57eb72b3215468210",
+      "sha256": "c91158f013185b71cec1e2e233956bf8d72191ff0092b8d7ed6e69bc3e0b86e4",
       "executable": false
     },
     "src/core/features/responses/prefillProof.ts": {
@@ -5665,7 +5673,7 @@
       "executable": false
     },
     "src/core/features/responses/service.ts": {
-      "sha256": "1d21a574841ec6883759d085ef59cf33a6ef03e96155ebe02795063ee725ac6d",
+      "sha256": "7c810c88a109929092739126066a1cd3105f9c66ded81e2d1f4fcfd57da43822",
       "executable": false
     },
     "src/core/features/responses/ui/CompletionDisclosure.tsx": {
@@ -5685,7 +5693,7 @@
       "executable": false
     },
     "src/core/features/responses/ui/PublicClosedPage.tsx": {
-      "sha256": "870b5f4c860f87009d0dde885f9c3ca5f961b3a3a840d3b94045a758b26f4edc",
+      "sha256": "4ca54340f2da67232b973ddab58ed3945860c8efbe3cac1db555ff2f0b2f8831",
       "executable": false
     },
     "src/core/features/responses/ui/PublicDocument.tsx": {
@@ -5697,7 +5705,7 @@
       "executable": false
     },
     "src/core/features/responses/ui/RespondentFlowPage.tsx": {
-      "sha256": "34929b920f9abb1b82b9c7347cd04a282f5aa89f4ddd797c780a041f1cf5f542",
+      "sha256": "d44cbaa12bf342fbfbae19064d954768e642fbd2f9ab339fad54e3395f54ac2a",
       "executable": false
     },
     "src/core/features/responses/ui/ResumeFlowPage.tsx": {
@@ -6353,7 +6361,7 @@
       "executable": false
     },
     "src/core/shared/errors.ts": {
-      "sha256": "b0afcd1cae6e10b4c7984bd0407c51661b81b3452222af909ff0fd9b14bb1c90",
+      "sha256": "46f3db4b89e5a63c68eefe8d0a65177eb2d57f05d3f48e81da55b5f01a338e63",
       "executable": false
     },
     "src/core/shared/flowPath.ts": {
@@ -6369,7 +6377,7 @@
       "executable": false
     },
     "src/core/shared/hiddenFields.ts": {
-      "sha256": "af94f21bc9d809e570f0fb2666af595f5a34b22a99082e84e93595cc3b8071b8",
+      "sha256": "b65e02c2c29b5641fc52953a10c8c68f707a2c725afa9b36cce45bcabda3a025",
       "executable": false
     },
     "src/core/shared/ianaTimeZone.ts": {
@@ -6406,6 +6414,10 @@
     },
     "src/core/shared/ratingScale.ts": {
       "sha256": "a59ff14ab45f7593c9324b4fbef9e92145a76e346e28ce2ebc4e3369c3bc7ef7",
+      "executable": false
+    },
+    "src/core/shared/respondentText.ts": {
+      "sha256": "dc693d5d9c7e6fc0d23d501fb51a399e4cb79c8761c7af37375118b8b07a1077",
       "executable": false
     },
     "src/core/shared/scoreQuestions.ts": {
@@ -6813,7 +6825,7 @@
       "executable": false
     },
     "tests/e2e/closed-flow.spec.ts": {
-      "sha256": "11cf49fc2c6de2f553bdbe930914260d0328e5f9519bea291700ed2d7580e5c4",
+      "sha256": "c5cbbfc4f8f162cd454d059f8781ff4e1d592aac836d3557c952e48e23f6fcb0",
       "executable": false
     },
     "tests/e2e/coding.spec.ts": {
@@ -7493,7 +7505,7 @@
       "executable": false
     },
     "tests/runtime/foundation.worker.test.ts": {
-      "sha256": "2db4a6327c9d594d47662d195b4f7a04abd1ab515d487d8cfa37e36a894c5425",
+      "sha256": "c1045a0834bdb8104c6a34c1987f64b4793cbc03ba7e5765d6dc7b4993abd4b2",
       "executable": false
     },
     "tests/runtime/google-form-import.worker.test.ts": {
