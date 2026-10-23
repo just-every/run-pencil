@@ -102,7 +102,7 @@ export type Operator = {
   createdAt: string
 }
 
-export type ClosedFlow = { title: string; slug: string; collectionClosed?: boolean }
+export type ClosedFlow = { title: string; slug: string; collectionClosed?: boolean; message?: string }
 
 export class ApiError extends Error {
   constructor(readonly code: string, message: string, readonly status: number, readonly details?: Array<{ stepId: string; reason: string }>, readonly closedFlow?: ClosedFlow) {

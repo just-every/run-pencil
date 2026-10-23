@@ -1,3 +1,4 @@
+import { closedFlowFor } from './closed'
 import { issuePrefillProof, readPrefillProof } from './prefillProof'
 import { resolvePrefills, prefillMarkers } from '../../shared/knownDataPrefill'
 import { presentationOrder, presentFlow, retainedPresentation, type PresentationOrder } from '../../shared/presentationOrder'
@@ -114,7 +115,7 @@ export class ResponseService {
     if (!flow || !revision || flow.status === 'archived') throw new NotFoundError('This invitation is no longer available.')
     const expired = revision.deadlineAt && Date.parse(revision.deadlineAt) <= Date.now()
     if (expired) await this.flowRepository.closeExpiredRevision(revision.id, new Date().toISOString())
-    if (flow.status === 'draft' || revision.admissionClosedAt || expired || await this.targetReached(revision)) throw new FlowClosedError({ title: revision.title, slug: flow.slug })
+    if (flow.status === 'draft' || revision.admissionClosedAt || expired || await this.targetReached(revision)) throw new FlowClosedError(closedFlowFor(revision, flow.slug))
     const collector = await this.collectors.requireInvitationOpen(flow.id, token)
       .catch(error => collectorFlowFailure(error, { title: revision.title, slug: flow.slug }))
     await this.access.require(formSettings(revision.formSettingsJson),revision.id,revision.title,flow.slug,accessToken)
@@ -291,7 +292,7 @@ export class ResponseService {
       const [latestFlow, latestRevision] = await Promise.all([this.flowRepository.findFlow(flow.id), this.flowRepository.findRevisionById(revision.id)])
       const expired = latestRevision?.deadlineAt && Date.parse(latestRevision.deadlineAt) <= Date.now()
       if (expired) await this.flowRepository.closeExpiredRevision(revision.id, new Date().toISOString())
-      if (!latestFlow || !['open', 'closed'].includes(latestFlow.status) || latestRevision?.admissionClosedAt || expired || (latestRevision && await this.targetReached(latestRevision))) throw new FlowClosedError({ title: revision.title, slug: flow.slug })
+      if (!latestFlow || !['open', 'closed'].includes(latestFlow.status) || latestRevision?.admissionClosedAt || expired || (latestRevision && await this.targetReached(latestRevision))) throw new FlowClosedError(closedFlowFor(revision, flow.slug))
       const remaining = await this.repository.findSubmissionContext(session.id, tokenHash)
       if (!remaining || remaining.session.expiresAt <= new Date().toISOString()) throw new SessionUnavailableError()
       await this.collectors.requireSessionOpen(flow.id, session.id, session.source)
@@ -335,7 +336,7 @@ export class ResponseService {
     if (!revision) throw new NotFoundError('This flow has no published revision.')
     const expired = revision.deadlineAt && Date.parse(revision.deadlineAt) <= Date.now()
     if (expired) await this.flowRepository.closeExpiredRevision(revision.id, new Date().toISOString())
-    if (flow.status !== 'open' || revision.admissionClosedAt || expired || (revision.targetCompletedResponses !== null && resolved.completedResponses >= revision.targetCompletedResponses)) throw new FlowClosedError({ title: revision.title, slug: flow.slug })
+    if (flow.status !== 'open' || revision.admissionClosedAt || expired || (revision.targetCompletedResponses !== null && resolved.completedResponses >= revision.targetCompletedResponses)) throw new FlowClosedError(closedFlowFor(revision, flow.slug))
     return { flow, revision, steps: resolved.steps, choices: resolved.choices, rules: resolved.rules }
   }
 

@@ -1,3 +1,4 @@
+import { closedFlowFor } from './closed'
 import { ulid } from 'ulid'
 import { evaluateCalculations } from '../../shared/calculations'
 import { completionRedirect } from '../../shared/completionRedirect'
@@ -72,7 +73,7 @@ export class PaymentResponses {
     if (!replaced) {
       const latestFlow = await this.flows.findFlow(flow.id), latestRevision = await this.flows.findRevisionById(revision.id)
       if (!latestFlow || !['open', 'closed'].includes(latestFlow.status) || latestRevision?.admissionClosedAt || (latestRevision?.deadlineAt && Date.parse(latestRevision.deadlineAt) <= Date.now())
-        || (latestRevision?.targetCompletedResponses != null && await this.responses.countAdmittedResponses(revision.id) >= latestRevision.targetCompletedResponses)) throw new FlowClosedError({ title: revision.title, slug: flow.slug })
+        || (latestRevision?.targetCompletedResponses != null && await this.responses.countAdmittedResponses(revision.id) >= latestRevision.targetCompletedResponses)) throw new FlowClosedError(closedFlowFor(revision, flow.slug))
       throw new ValidationError('This response changed while it was being sent. Retry with the same answers.')
     }
     if (next) return this.checkoutReceipt(response, flow.slug, false)

@@ -540,6 +540,7 @@
   "limits": {
     "calculations": { "perRevision": 50, "expressionDepth": 12, "expressionNodes": 128, "textCharacters": 10000, "decimalPlaces": 15 },
     "hiddenFields": { "perRevision": 20, "textCharacters": 1000 },
+    "respondentText": { "messageCharacters": 300, "labelCharacters": 40 },
     "status": "estimated",
     "mustBeReplacedByLoadTest": true,
     "flows": {
