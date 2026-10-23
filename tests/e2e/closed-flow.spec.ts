@@ -47,6 +47,26 @@ contract('RESP-009', 'a respondent losing manual or final target admission sees 
     // LANG-002: this form's published Submit label and closed or response-limit message replace Pencil's wording.
     const label = `Send my ${reason} feedback`, message = reason === 'target' ? 'All places for this survey are taken.' : 'We have paused this survey.'
     const f = await form(page.request, slug, reason === 'target' ? 1 : undefined, { submitLabel: label, ...(reason === 'target' ? { limitMessage: message } : { closedMessage: message }) })
+    if (reason === 'manual') {
+      // LANG-002 and GOV-007: the builder's respondent text and marketing opt-in settings save to the draft; the live form keeps its published wording.
+      await page.goto(`/app/flows/${f.id}/builder`)
+      await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
+      await page.locator('.step-button').last().click()
+      await page.getByText('Respondent text', { exact: true }).click()
+      await page.getByLabel('Start button label').fill('Go')
+      await page.getByRole('button', { name: 'Save respondent text' }).click()
+      await expect(page.getByText('Respondent text saved to the draft. Publish to apply it.')).toBeVisible()
+      await page.getByText('Email marketing opt-in', { exact: true }).click()
+      await page.getByLabel('This form is an email-marketing opt-in').check()
+      await page.getByRole('button', { name: 'Save marketing opt-in' }).click()
+      await expect(page.getByText('Marketing opt-in saved to the draft. Publish to apply it.')).toBeVisible()
+      for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+        await page.setViewportSize(viewport)
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+        await expect(new AxeBuilder({ page }).analyze().then((result) => result.violations)).resolves.toEqual([])
+      }
+      await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
+    }
     const contender = reason === 'target' ? await (await page.request.post(`/api/public/flows/${slug}/sessions`, { headers: mutationHeaders, data: { deviceClass: 'desktop', source: 'direct' } })).json() : undefined
     await page.goto(`/f/${slug}`)
     await expect(page.locator('[data-hydrated=true]')).toBeVisible()
