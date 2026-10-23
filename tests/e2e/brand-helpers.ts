@@ -71,6 +71,7 @@ export async function observeEmbedMessages(context: import('@playwright/test').B
   const separate=targetInfos.some(target=>target.type==='iframe'&&target.url===child.url())
   const session=separate?await context.newCDPSession(child):parentSession
   if(separate)await parentSession.detach()
+  if(process.env.PENCIL_PROOF_CPU_RATE==='4')await session.send('Emulation.setCPUThrottlingRate',{rate:4})
   const scripts: Array<{scriptId:string;url:string}> = [], errors:string[]=[]
   const expressions = new Map<string,string>()
   session.on('Debugger.scriptParsed',script=>scripts.push(script))
