@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "809ccbb8ec77ab6983b3e3fd2afaf8543c8522e440abea02d91ea341cbddc558",
+      "sha256": "f4ef61e5dc514b661972ad86ac00c025c533d29a579c7ff6f53d34f357032688",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "5511a259d1f857f464790aa6ffb11f9b7b1c868cd1f7a8f468a819438f705148",
+      "sha256": "dfa0c54151ca5164ecbe43ec991266f93748ea755b58535f2041a09958a321f8",
       "executable": false
     },
     "DEMO.md": {
@@ -5837,7 +5837,7 @@
       "executable": false
     },
     "src/core/features/results/ui/TrendChart.tsx": {
-      "sha256": "c891856a533e65195d09442116e707e01c681270cbaad06ba70898deab597a98",
+      "sha256": "24437b9b0e97856e10460dc6797a379cec18af76073aa32c478c63b93a02ef85",
       "executable": false
     },
     "src/core/features/results/ui/trends.css": {
