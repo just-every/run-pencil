@@ -4265,7 +4265,7 @@
       "executable": false
     },
     "src/core/features/coding/routes.ts": {
-      "sha256": "f5f4e5d452dd4a7a130cc6cfeb8e039141d6d0e1ed0a8a5313648aeb013160b3",
+      "sha256": "dbf27d556257bd1a39b130c381b22816f5a6303aa04ed8d40654696ff0a0227d",
       "executable": false
     },
     "src/core/features/coding/suggestions.ts": {
