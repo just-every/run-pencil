@@ -45,7 +45,7 @@ import { AnalysisService } from '../features/analysis'
 import { IntegrationConnections } from '../platform/config/connections'
 import { PaymentRepository, PaymentService } from '../features/payments'
 import { PaymentResponses } from '../features/responses/payment-responses'
-import { ResponseEventDeliveries, ResponseEventDispatcher, ResponseWebhooks } from '../features/webhooks'
+import { IntegrationLedger, ResponseEventDeliveries, ResponseEventDispatcher, ResponseWebhooks } from '../features/webhooks'
 
 export function createPencilServices(platform: PencilPlatform) {
   const { database } = platform
@@ -92,7 +92,7 @@ export function createPencilServices(platform: PencilPlatform) {
     collectors,
     connections,
     payments,
-    webhooks: { endpoints: new ResponseWebhooks(platform.databaseBinding, platform.configuration.sessionSecret, platform.configuration.isLocalDevelopment), deliveries: new ResponseEventDeliveries(platform.databaseBinding), dispatcher: new ResponseEventDispatcher(platform.databaseBinding, platform.configuration.sessionSecret, platform.configuration.isLocalDevelopment) },
+    webhooks: { endpoints: new ResponseWebhooks(platform.databaseBinding, platform.configuration.sessionSecret, platform.configuration.isLocalDevelopment), deliveries: new ResponseEventDeliveries(platform.databaseBinding), ledger: new IntegrationLedger(platform.databaseBinding), dispatcher: new ResponseEventDispatcher(platform.databaseBinding, platform.configuration.sessionSecret, platform.configuration.isLocalDevelopment) },
     notifications: {
       confirmations: new RespondentConfirmationDispatcher(platform.databaseBinding,sender,from,senderFailure),
       actionReminders: new ActionReminderDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,senderFailure,mailProvider),

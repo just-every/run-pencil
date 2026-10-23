@@ -1,7 +1,8 @@
 import type { DeliverySummary, EndpointSummary } from '../model'
 import type { WebhookAlert } from '../endpoints'
+import type { LedgerDelivery } from '../ledger'
 
-export type { DeliverySummary, EndpointSummary, WebhookAlert }
+export type { DeliverySummary, EndpointSummary, LedgerDelivery, WebhookAlert }
 
 async function call<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
   const response = await fetch(path, { method, credentials: 'same-origin', ...(body === undefined ? {} : { headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }) })
@@ -18,6 +19,7 @@ export const webhooksApi = {
   alerts: () => call<{ alerts: WebhookAlert[] }>(`${base}/alerts`),
   deliveries: (endpointId: string) => call<{ deliveries: DeliverySummary[] }>(`${base}/deliveries?endpointId=${encodeURIComponent(endpointId)}`),
   undelivered: (endpointId: string) => call<{ responses: Array<{ responseId: string; status: string }> }>(`${base}/${encodeURIComponent(endpointId)}/undelivered`),
+  ledger: (state?: LedgerDelivery['state']) => call<{ deliveries: LedgerDelivery[] }>(`/api/app/integration-deliveries${state ? `?state=${state}` : ''}`),
   create: (input: { url: string; flowId?: string }) => call<{ endpoint: EndpointSummary; secret: string }>(base, 'POST', input),
   rotate: (id: string) => call<{ endpoint: EndpointSummary; secret: string }>(`${base}/${encodeURIComponent(id)}/rotate`, 'POST', {}),
   setActive: (id: string, active: boolean) => call<{ endpoint: EndpointSummary }>(`${base}/${encodeURIComponent(id)}/${active ? 'resume' : 'pause'}`, 'POST', {}),
