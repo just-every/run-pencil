@@ -24,6 +24,8 @@ contract('LEDG-006', 'operators search responses, see matching answers and downl
   const scenario = await collectResponseSearchScenario(call, `search-${info.project.name}-${Date.now()}`)
   await page.goto(`/app/flows/${scenario.flowId}/results`)
   const ledger = page.getByRole('region', { name: 'Response ledger' })
+  // The static "All published revisions" option exists before the client loads results; choose it once the ledger has.
+  await expect(ledger.getByText('matching completed responses', { exact: false })).toBeVisible()
   await page.getByLabel('Published revision').selectOption('all')
   await ledger.getByRole('searchbox', { name: 'Search responses', exact: true }).fill('queue')
   await ledger.getByRole('button', { name: 'Search', exact: true }).click()
