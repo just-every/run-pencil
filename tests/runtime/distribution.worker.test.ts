@@ -6,9 +6,9 @@ import { foundationFixture } from './foundation-fixture'
 import { MailDeliveries } from '../../src/core/features/distribution/deliveries'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
-async function launched(slug: string, prefill?: {locked:boolean}) {
+async function launched(slug: string, prefill?: {locked:boolean}, questionType:'short_text'|'nps'='short_text') {
   const f = await foundationFixture(slug)
-  await f.add({ kind: 'question', questionType: 'short_text', prompt: 'Feedback', required: true })
+  await f.add({ kind: 'question', questionType, prompt: 'Feedback', required: true })
   await f.add({ kind: 'completion', questionType: null, prompt: 'Thank you' })
   if(prefill) { const draft=await f.draft(); await f.services.flows.updateFormSettings({...f.flow,expectedVersion:draft.flow.draftVersion,settings:{...draft.formSettings!,prefill:[{stepId:draft.steps[0].id,field:'company',locked:prefill.locked}]}}) }
   await f.publish()
@@ -19,8 +19,8 @@ async function launched(slug: string, prefill?: {locked:boolean}) {
   const delivery = (await f.services.distribution.launches.list(f.scope.workspaceId, f.flow.flowId))[0] as { deliveryId: string }
   return { ...f, contact, input, launch, p, delivery }
 }
-contract(['AUD-003', 'AUD-006', 'DIST-003', 'DIST-005', 'FLOW-008'], 'launch snapshots eligible recipient once, consent blocks sending and renewal records actor and source', async () => {
-  const f = await launched('distribution-consent')
+contract(['AUD-003', 'AUD-006', 'DIST-003', 'DIST-005', 'FLOW-008', 'DIST-014'], 'invitation score buttons preserve the recipient snapshot, consent blocks sending and renewal records actor and source', async () => {
+  const f = await launched('distribution-consent',undefined,'nps')
   expect(await f.services.distribution.launches.launch(f.input)).toEqual(f.launch)
   expect((await f.services.distribution.launches.list(f.scope.workspaceId, f.flow.flowId))).toHaveLength(1)
   await f.services.distribution.contacts.edit(f.scope.workspaceId, f.contact.id, { name: 'Changed name', email: 'changed-email@example.test' })
@@ -28,6 +28,9 @@ contract(['AUD-003', 'AUD-006', 'DIST-003', 'DIST-005', 'FLOW-008'], 'launch sna
   expect(prepared).toMatchObject({ ordinal: 1, to: 'distribution-consent@example.test', idempotencyKey: `invitation:${f.p.id}`, headers: { 'Auto-Submitted': 'auto-generated' } })
   expect(prepared!.text).toContain(`/i/${f.p.token}`)
   expect(prepared!.text).toContain(`/optout/${f.p.opt_out_token}`)
+  const buttons=[...prepared!.text.matchAll(/https?:\/\/[^\s]+\?__pencil_first=(\d+)/g)]
+  expect(buttons.map(button=>Number(button[1]))).toEqual(Array.from({length:11},(_,index)=>index))
+  expect(prepared!.html).toContain('aria-label="Feedback: 9"')
   expect((await env.DB.prepare('SELECT event FROM mail_delivery_attempts WHERE delivery_id = ?').bind(f.delivery.deliveryId).all()).results).toEqual([{ event: 'started' }])
   await f.services.distribution.deliveries.record(f.delivery.deliveryId, 1, { kind: 'transient', reason: 'Synthetic transport unavailable' })
   await f.services.distribution.contacts.optOut(f.p.opt_out_token)

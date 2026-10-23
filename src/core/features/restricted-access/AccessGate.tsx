@@ -1,3 +1,4 @@
+import { emailFirstAnswer } from '../../shared/emailFirstQuestion'
 import './access.css'
 import { useEffect, useState, type FormEvent } from 'react'
 import type { PublicFlow } from '../../app/api'
@@ -8,7 +9,7 @@ import { RespondentFlowPage } from '../responses/ui'
 import { KioskFlow } from '../responses/ui'
 import type { AccessRequirement } from './service'
 
-export function AccessGate({config,restriction,collectorKey,embedded,invitationToken,kioskIdleSeconds}:{config:PublicSeedConfig;restriction:AccessRequirement;collectorKey?:string;embedded?:boolean;invitationToken?:string;kioskIdleSeconds?:number}){
+export function AccessGate({config,restriction,collectorKey,embedded,invitationToken,kioskIdleSeconds,emailAnswerRaw}:{config:PublicSeedConfig;restriction:AccessRequirement;collectorKey?:string;embedded?:boolean;invitationToken?:string;kioskIdleSeconds?:number;emailAnswerRaw?:unknown}){
   const [password,setPassword]=useState(''),[email,setEmail]=useState(''),[code,setCode]=useState(''),[signedLink,setSignedLink]=useState('')
   const [challenge,setChallenge]=useState<string>(),[error,setError]=useState<string>(),[busy,setBusy]=useState(false)
   const [ready,setReady]=useState<{flow:PublicFlow;accessToken:string;identity?:string}>()
@@ -38,7 +39,7 @@ export function AccessGate({config,restriction,collectorKey,embedded,invitationT
   const reset=()=>{setReady(undefined);setChallenge(undefined);setEmail('');setPassword('');setCode('');setSignedLink('');setError(undefined)}
   if(ready){
     if(kioskIdleSeconds)return <KioskFlow config={config} data={{flow:ready.flow,collectorKey}} slug={restriction.slug} idleSeconds={kioskIdleSeconds} accessToken={ready.accessToken} verifiedIdentity={ready.identity} onResetAccess={reset}/>
-    return <RespondentFlowPage config={config} initialFlow={ready.flow} slug={restriction.slug} collectorKey={collectorKey} embedded={embedded} invitationToken={invitationToken} accessToken={ready.accessToken} verifiedIdentity={ready.identity}/>
+    return <RespondentFlowPage config={config} initialFlow={ready.flow} slug={restriction.slug} collectorKey={collectorKey} embedded={embedded} invitationToken={invitationToken} emailLanding={emailAnswerRaw!==undefined} initialEmailAnswer={invitationToken?emailFirstAnswer(ready.flow,emailAnswerRaw):undefined} accessToken={ready.accessToken} verifiedIdentity={ready.identity}/>
   }
   return <main className="pencil-canvas respondent-shell brand-surface" style={brandStyle(config)}><article className="respondent-card respondent-note-sheet"><BrandIdentity config={config}/><h1 id="access-title" tabIndex={-1} className="display">Access to {restriction.title}</h1>
     <p>{restriction.mode==='password'?'Enter the password provided by the business.':restriction.mode==='email'?'Verify an allowed email address before seeing the form. Your response will be identified by that verified email; only one response is allowed per email.':'This form requires a signed link from the business’s app. Your response will be identified by the account named in that link.'}</p>

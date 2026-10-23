@@ -1,3 +1,9 @@
+import { emailFirstQuestion } from '../../shared/emailFirstQuestion'
+import { formSettings } from '../../shared/hiddenFields'
+import { revisionBranchSelection } from '../../shared/flowPolicies'
+import { createDatabase } from '../../platform/db/repository'
+import { FlowRepository } from '../flows/repository'
+import { publicSteps, publicChoices, publicRules } from '../flows/serialization'
 import { admittedResponseSql } from '../payments/admission'
 import { invitationCollectorAdmissionSql } from '../collectors'
 import { participantInvitation } from './message'
@@ -5,7 +11,7 @@ import { readNotificationBrand } from '../notifications'
 import { ulid } from 'ulid'
 import { ConflictError, NotFoundError, ValidationError } from '../../shared/errors'
 import { nextSendingInstant, retryInstant } from './schedule'
-type Delivery = { id: string; participantId: string; kind: 'invitation' | 'reminder'; status: string; key: string; attempts: number; retryBase: number; firstAttempt: string | null; availableAt: string; workspaceId: string; email: string | null; token: string | null; optOutToken: string | null; title: string; timeZone: string; sendingWindowStart: string; sendingWindowEnd: string; eligible: number; reminderDelayHours: number }
+type Delivery = { id: string; participantId: string; revisionId: string; formSettingsJson: string | null; policySnapshotJson: string | null; kind: 'invitation' | 'reminder'; status: string; key: string; attempts: number; retryBase: number; firstAttempt: string | null; availableAt: string; workspaceId: string; email: string | null; token: string | null; optOutToken: string | null; title: string; timeZone: string; sendingWindowStart: string; sendingWindowEnd: string; eligible: number; reminderDelayHours: number }
 /** Domain receipts only. The maintained sender must call prepare before any provider effect. */
 export class MailDeliveries {
   constructor(private readonly db: D1Database) {}
@@ -15,7 +21,7 @@ export class MailDeliveries {
       (SELECT COALESCE(MAX(ordinal), 0) FROM mail_delivery_attempts WHERE delivery_id = d.id AND event = 'operator-retry') AS retryBase,
       CASE WHEN EXISTS (SELECT 1 FROM mail_delivery_attempts WHERE delivery_id = d.id AND event = 'operator-retry' AND ordinal = d.attempts)
         THEN NULL ELSE d.first_attempt_at END AS firstAttempt, d.available_at AS availableAt, p.workspace_id AS workspaceId, p.email_snapshot AS email,
-      p.token, p.opt_out_token AS optOutToken, r.title, w.time_zone AS timeZone,
+      p.token, p.opt_out_token AS optOutToken, p.revision_id AS revisionId, r.form_settings_json AS formSettingsJson, r.policy_snapshot_json AS policySnapshotJson, r.title, w.time_zone AS timeZone,
       w.sending_window_start AS sendingWindowStart, w.sending_window_end AS sendingWindowEnd,
       json_extract(l.policy_json, '$.reminderDelayHours') AS reminderDelayHours,
       (c.id IS NOT NULL AND c.opted_out_at IS NULL AND p.token IS NOT NULL AND f.status IN ('open', 'closed') AND r.admission_closed_at IS NULL
@@ -55,11 +61,19 @@ export class MailDeliveries {
     }
     let message: ReturnType<typeof participantInvitation> | undefined
     try {
-      const brand = await readNotificationBrand(this.db, delivery.workspaceId)
+      const repository = new FlowRepository(createDatabase(this.db), this.db)
+      const [brand, graph] = await Promise.all([
+        readNotificationBrand(this.db, delivery.workspaceId),
+        repository.getRevisionGraph(delivery.revisionId),
+      ])
+      const embedded = emailFirstQuestion({
+        steps: publicSteps(graph.steps), choices: publicChoices(graph.steps, graph.choices), branchRules: publicRules(graph.rules),
+        formSettings: formSettings(delivery.formSettingsJson), branchSelection: revisionBranchSelection(delivery.policySnapshotJson),
+      })
       const link = new URL(`/i/${delivery.token}`, origin).href, optOut = new URL(`/optout/${delivery.optOutToken}`, origin).href
-      message = participantInvitation(brand, delivery.title, link, optOut)
+      message = participantInvitation(brand, delivery.title, link, optOut, embedded)
     } catch {
-      // Claim and record a visible failure below; unreadable branding must not
+      // Claim and record a visible failure below; unreadable branding or published graph must not
       // leave a pending delivery blocking every later recipient in the queue.
     }
     const attemptId = ulid()
@@ -88,7 +102,7 @@ export class MailDeliveries {
     ])
     if (!results[0].meta.changes || !results[1].meta.changes) return null
     if (!message) {
-      await this.record(id, delivery.attempts + 1, { kind: 'permanent', reason: 'Invitation not sent: business branding or invitation links could not be read or validated. Correct the saved settings, then queue a retry.' }, now)
+      await this.record(id, delivery.attempts + 1, { kind: 'permanent', reason: 'Invitation not sent: business branding, published questions or invitation links could not be read or validated. Correct the saved settings, then queue a retry.' }, now)
       return null
     }
     return { deliveryId: id, ordinal: delivery.attempts + 1, idempotencyKey: delivery.key, to: delivery.email!, ...message, headers: { 'Auto-Submitted': 'auto-generated' } }

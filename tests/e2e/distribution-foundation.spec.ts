@@ -15,7 +15,7 @@ contract('BASE-PUBLIC-003', 'production invitation capability paths reject malfo
   }
   expect((await page.request.get('/i/' + '0'.repeat(64))).status()).toBe(404)
 })
-contract(['LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-005','RESP-008','DIST-005','LEDG-001','LEDG-003','RSLT-001','RSLT-003','RSLT-004','BASE-PUBLIC-003'], 'Audience CSV review, saved segment, editable invitation prefill, identified ledger, cancellation, opt-out and erasure are keyboard accessible', async ({ page }, info) => {
+contract(['DIST-014','LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-005','RESP-008','DIST-005','LEDG-001','LEDG-003','RSLT-001','RSLT-003','RSLT-004','BASE-PUBLIC-003'], 'Audience CSV review, saved segment, email score 9, editable invitation prefill, identified ledger, cancellation, opt-out and erasure are keyboard accessible', async ({ page }, info) => {
   test.setTimeout(120000)
   page.setDefaultTimeout(15000)
   const request = page.request, headers = { Origin: new URL(info.project.use.baseURL!).origin }
@@ -45,12 +45,13 @@ contract(['LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-005','RESP-008','DIST-
   const slug = `distribution-browser-${info.project.name}-${Date.now()}`
   const flow = await call('/api/app/flows', { title: 'Synthetic invitation review', slug })
   const path = `/api/app/flows/${flow.id}`
-  for (const step of [{ kind: 'question', questionType: 'short_text', prompt: 'Your feedback', required: true }, { kind:'question',questionType:'short_text',prompt:'Your company',required:true }, { kind: 'completion', questionType: null, prompt: 'Invitation recorded' }]) {
+  for (const step of [{kind:'question',questionType:'nps',prompt:'How likely are you to recommend us?',required:true},{ kind: 'question', questionType: 'short_text', prompt: 'Your feedback', required: true }, { kind:'question',questionType:'short_text',prompt:'Your company',required:true }, { kind: 'completion', questionType: null, prompt: 'Invitation recorded' }]) {
     const draft = await call(`${path}/draft`)
     await call(`${path}/draft/steps`, { expectedVersion: draft.flow.draftVersion, step })
   }
   await page.goto(`/app/flows/${flow.id}/builder`)
   await expect(page.locator('.operator-shell')).toHaveAttribute('data-hydrated','true')
+  await page.locator('.step-button').filter({hasText:'Your feedback'}).click()
   await page.locator('summary[aria-label="Known-data prefill"]').click()
   await page.getByLabel('Contact field key',{exact:true}).fill('company')
   await page.getByRole('button',{name:'Save prefill mapping',exact:true}).click()
@@ -118,7 +119,17 @@ contract(['LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-005','RESP-008','DIST-
   const participant = distribution.participants.find((item: { email: string; kind: string }) => item.email === recipient && item.kind === 'invitation')
   expect(participant).toBeTruthy()
   expect(distribution.participants.find((item: { email: string; kind: string }) => item.email === recipient && item.kind === 'reminder').status).toBe('pending')
-  const invitationDocument = await page.goto(mail.invitation)
+  expect(mail.answerLinks).toHaveLength(11)
+  await page.goto('about:blank')
+  await page.setContent(mail.html)
+  await audienceScreen(page,info,'email-first-question')
+  const [invitationDocument]=await Promise.all([page.waitForNavigation(),page.getByRole('link',{name:'How likely are you to recommend us?: 9',exact:true}).click()])
+  await expect(page.getByRole('heading',{name:'Your feedback',exact:true})).toBeVisible()
+  await expect(page.getByText(/Selected from email: 9/)).toBeVisible()
+  const beforeInteraction=await call(`${path}/traffic?revisionId=${participant.revisionId}`)
+  expect(beforeInteraction.totals).toMatchObject({views:0,starts:0,submissions:0})
+  expect((await call(`${path}/ledger`)).total).toBe(0)
+
   expect(invitationDocument!.headers()['x-robots-tag']).toBe('noindex')
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex, nofollow')
   expect(await page.locator('head').textContent()).not.toContain(recipient)
@@ -130,6 +141,8 @@ contract(['LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-005','RESP-008','DIST-
   await page.getByRole('textbox').focus()
   await page.getByRole('textbox').fill('Synthetic identified answer')
   await page.waitForTimeout(5000) // Respect the real minimum fill time; do not edit application state.
+  await page.keyboard.press('Tab')
+  await expect(page.getByRole('button', { name: 'Back', exact: true })).toBeFocused()
   await page.keyboard.press('Tab')
   await expect(page.getByRole('button', { name: 'Continue', exact: true })).toBeFocused()
   await page.keyboard.press('Enter')
@@ -171,10 +184,11 @@ contract(['LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-005','RESP-008','DIST-
   await expect(page.getByText(/Invited participant: Synthetic browser recipient/)).toBeVisible()
   const invitationLedger=page.getByRole('region',{name:'Response ledger',exact:true})
   expect((await call(`${path}/ledger`)).responses[0].identityMode).toBe('identified')
-  expect((await call(`${path}/ledger`)).responses[0].answers[0].prefill).toBe('edited')
+  expect((await call(`${path}/ledger`)).responses[0].answers.find((answer:{label:string})=>answer.label==='Your feedback').prefill).toBe('edited')
+  expect((await call(`${path}/ledger`)).responses[0].answers.find((answer:{questionType:string})=>answer.questionType==='nps').value).toBe(9)
   await expect(page.getByText(/Prefilled \(edited\)/)).toBeVisible()
   const copied=await httpExport(target=>request.get(target),`${path}/responses/export?search=Synthetic%20identified%20answer`)
-  expect(copied.responses[0].answers.map(answer=>answer.prefill)).toEqual(['edited','locked'])
+  expect(copied.responses[0].answers.map(answer=>answer.prefill).filter(Boolean)).toEqual(['edited','locked'])
   const csvStart=await call(`${path}/responses/export/start?format=csv&search=Synthetic%20identified%20answer`)
   const csvCopy=await request.get(`${path}/responses/export?token=${encodeURIComponent(csvStart.token)}`)
   expect(csvCopy.status()).toBe(200)

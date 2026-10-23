@@ -34,7 +34,7 @@ export async function invitationMail(page: Page, email: string) {
     const body = decode(message.text ?? message.html ?? '')
     const invitation = body.match(/https?:\/\/[^\s<>"']+\/i\/[a-f0-9]{64}/)?.[0]
     const optout = body.match(/https?:\/\/[^\s<>"']+\/optout\/[a-f0-9]{64}/)?.[0]
-    if (invitation && optout) return { invitation, optout }
+    if (invitation && optout) return { invitation, optout,html:String(message.html),answerLinks:[...body.matchAll(/https?:\/\/[^\s<>"']+\/i\/[a-f0-9]{64}\?__pencil_first=[^\s<>"']+/g)].map(match=>match[0]) }
   }
   throw new Error('No actual captured invitation is available for the journey recipient.')
 }
