@@ -1,5 +1,5 @@
 import type { MailSender } from '../../../base/operator-auth/index.mjs'
-import { retryInstant } from '../distribution/schedule'
+import { retryInstant } from '../distribution'
 import { safeNotificationReceipt } from './failure'
 import { deserializeConfirmation } from './confirmation-message'
 import { auditConfirmation, confirmationLive, confirmationRecipient, materializeConfirmations } from './confirmation-queue'
