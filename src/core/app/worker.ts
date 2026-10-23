@@ -12,6 +12,7 @@ import { registerBackupRoutes } from '../features/backup/routes'
 import { registerManagementRoutes } from '../features/management/routes'
 import { registerActionRoutes } from '../features/actions'
 import { registerAnalysisRoutes } from '../features/analysis'
+import { registerWebhookRoutes } from '../features/webhooks'
 import { registerNotificationRoutes } from '../features/notifications/routes'
 import { registerEmbeddingRoutes } from '../features/embedding/script'
 import { registerBrandRoutes } from '../features/brand/routes'
@@ -152,6 +153,7 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
   registerActionRoutes(app, context => context.get('services'))
   registerPaymentConnectionRoutes(app)
   registerPaymentRoutes(app)
+  registerWebhookRoutes(app)
   registerAnalysisRoutes(app, context => context.get('services'))
 
   app.onError((error, context) => {

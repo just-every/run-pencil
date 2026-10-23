@@ -5,6 +5,10 @@ import { failure } from './deployment-data-errors.mjs';
 const retained = {
   confirmation_deliveries: 'id response_id recipient message_json status attempts first_attempt_at last_attempt_at available_at provider_id reason created_at updated_at',
   confirmation_attempts: 'id delivery_id ordinal event provider provider_code created_at',
+  // Response webhooks hold identifiers, states and attempt outcomes only; the signing secret never travels (exclusions below).
+  response_webhook_endpoints: 'id workspace_id flow_id url secret_version state disabled_reason disabled_at failure_streak failure_streak_started_at created_by_operator_id created_at updated_at',
+  response_event_deliveries: 'id endpoint_id event_id event_type workspace_id flow_id revision_id response_id detail occurred_at status attempts first_attempt_at last_attempt_at available_at reason created_at updated_at',
+  response_event_attempts: 'id delivery_id ordinal event http_status outcome_class reason created_at',
 
   search_unicode_map: 'code value ccc',
   search_unicode_composition: 'first second composed',
@@ -199,6 +203,8 @@ const nul = { type: 'null' };
 const captured = { local_mail_outbox: ['message_json'], rer_mail_development_outbox: ['message'], rer_ai_development_outbox: ['record'] };
 export const exclusions = {
   confirmation_deliveries: { armed: { type: 'integer', value: '0' } },
+  // A restored endpoint has no signing secret, so it queues and sends nothing until the owner rotates a new one.
+  response_webhook_endpoints: { sealed_secret: nul },
   // Retain reminder history while refusing queued and future replay for restored actions.
   actions: { reminders_enabled: { type: 'integer', value: '0' } },
   form_access_rules: {password_verifier:nul},
