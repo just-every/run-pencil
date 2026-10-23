@@ -8,7 +8,8 @@ export function ConfirmationSettings({draft,stepId,disabled,onSave}:{draft:Build
   const [value,setValue]=useState(draft.formSettings?.confirmation??defaults)
   const [saving,setSaving]=useState(false),[error,setError]=useState<string>()
   const update=(patch:Partial<Settings>)=>setValue(current=>({...current,...patch}))
-  const types=[...new Set([...draft.steps.filter(step=>step.kind==='question').map(step=>step.questionType).filter((type):type is string=>!!type),...(draft.formSettings?.hiddenFields??[]).map(field=>field.type==='text'?'short_text':field.type==='boolean'?'yes_no':field.type),...(draft.formSettings?.calculations??[]).map(value=>value.type==='text'?'short_text':value.type)])]
+  const questionTypes=draft.steps.flatMap(step=>step.kind==='question'&&step.questionType?[step.questionType]:[])
+  const types=[...new Set([...questionTypes,...(draft.formSettings?.hiddenFields??[]).map(field=>field.type==='text'?'short_text':field.type==='boolean'?'yes_no':field.type),...(draft.formSettings?.calculations??[]).map(value=>value.type==='text'?'short_text':value.type)])]
   const busy=disabled||saving
   return <details><summary className="focus-ring">Respondent confirmation email</summary><p className="muted">Off by default. Publish to apply. A receipt has no response access link. Identified participants who opted out receive none.</p>
     <label className="toggle-row"><input type="checkbox" checked={value.enabled} disabled={busy} onChange={event=>update({enabled:event.target.checked})}/><span>Send a confirmation after completion</span></label>
