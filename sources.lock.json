@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "441d77a6bfbab40bb84949a1af3fe6f948b7dc44283cf6fc9c2c731fe934ae56",
+      "sha256": "2311d303d35cca9bf19add919cecfe3c9b12c6480feb78df4e6fa080596f93c2",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "489b06f2ec49afa7d58febbba30b5c55a3e6fcd18c02b67f7c2b917fcf4ccd54",
+      "sha256": "540840ab5d4669a1dacfce141393d7efe38d4d8bc6b060c438bea6c0be352473",
       "executable": false
     },
     "DEMO.md": {
@@ -6961,7 +6961,7 @@
       "executable": false
     },
     "tests/e2e/reporting-bounded.spec.ts": {
-      "sha256": "13d1e85c7e84b2858faedb9bc319b0cc2f85ed0adbe381b8d09fd7a0df588d22",
+      "sha256": "ee32a0d6f5b8a7c34032852152be194ad312edf863ffcc160d48934618b048a7",
       "executable": false
     },
     "tests/e2e/reporting-counts.spec.ts": {
@@ -6977,7 +6977,7 @@
       "executable": false
     },
     "tests/e2e/response-search.spec.ts": {
-      "sha256": "7f6c7f44b7a838128f8747aa56897c3c8bffa23a0b6dc653ee6c79d6e7f223ca",
+      "sha256": "08fdc444a154ed41c2c947f213df004bc3c7c66bf6d5319cd46f14f2057c59e9",
       "executable": false
     },
     "tests/e2e/restricted-access.spec.ts": {
@@ -7437,7 +7437,7 @@
       "executable": false
     },
     "tests/runtime/foundation.worker.test.ts": {
-      "sha256": "2db4a6327c9d594d47662d195b4f7a04abd1ab515d487d8cfa37e36a894c5425",
+      "sha256": "8a702122171a7bac6a3170846204360edaf1803fae5720decaa95f0a977b6767",
       "executable": false
     },
     "tests/runtime/google-form-import.worker.test.ts": {
