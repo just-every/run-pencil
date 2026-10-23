@@ -1,4 +1,6 @@
 import type { LedgerFilter } from '../reporting'
+import { closedFlowFor } from '../responses/closed'
+import { respondentTextPublicationIssues } from '../../shared/respondentText'
 import { confirmationPublicationIssues, remapConfirmationSettings } from '../../shared/confirmationSettings'
 import { prefillPublicationIssues } from '../../shared/knownDataPrefill'
 import type { RestrictedAccess } from '../restricted-access'
@@ -431,6 +433,7 @@ export class FlowService {
     if (draft.flow.status === 'archived') throw new ValidationError('An archived flow cannot be published or reopened. Duplicate it to create a separate draft.')
     const { steps: rawSteps, choices: rawChoices, rules: rawRules } = snapshot
     const issues = validateRevisionGraph(rawSteps, rawChoices, rawRules, evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'], formSettings(snapshot.revision.formSettingsJson))
+    issues.push(...respondentTextPublicationIssues(draft.formSettings.text))
     issues.push(...confirmationPublicationIssues(draft.formSettings.confirmation,draft))
     issues.push(...prefillPublicationIssues(draft.formSettings.prefill ?? [],draft.steps))
     issues.push(...hiddenPublicationIssues(formSettings(snapshot.revision.formSettingsJson)))
@@ -486,7 +489,7 @@ export class FlowService {
     if (!revision) throw new NotFoundError('This flow has no published revision.')
     const expired = revision.deadlineAt && Date.parse(revision.deadlineAt) <= Date.now()
     if (expired) await this.repository.closeExpiredRevision(revision.id, new Date().toISOString())
-    if (flow.status === 'closed' || revision.admissionClosedAt || expired || (revision.targetCompletedResponses !== null && resolved.completedResponses >= revision.targetCompletedResponses)) throw new FlowClosedError({ title: revision.title, slug: flow.slug })
+    if (flow.status === 'closed' || revision.admissionClosedAt || expired || (revision.targetCompletedResponses !== null && resolved.completedResponses >= revision.targetCompletedResponses)) throw new FlowClosedError(closedFlowFor(revision, flow.slug))
     if(formSettings(revision.formSettingsJson).access){
       if(!this.access)throw new ValidationError('Access verification is unavailable.')
       await this.access.require(formSettings(revision.formSettingsJson),revision.id,revision.title,flow.slug,accessToken)

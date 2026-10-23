@@ -2,6 +2,7 @@ import { useRespondentFocus } from '../../../shared/ui/useRespondentFocus'
 import { BrandIdentity } from '../../brand'
 import { brandStyle } from '../../brand'
 import { useEmbedProtocol } from '../../embedding'
+import { respondentTextDefaults } from '../../../shared/respondentText'
 import type { ClosedFlow } from '../../../app/api'
 import type { PublicSeedConfig } from '../../../shared/config'
 
@@ -15,7 +16,7 @@ export function PublicClosedPage({ config, flow, landing, embedded, recovery }: 
       <BrandIdentity config={config} />
       <h1 className="display" id="closed-title" tabIndex={-1}>{flow.collectionClosed ? 'This collection link is closed.' : 'This feedback flow is closed.'}</h1>
       <p className="respondent-helper">{flow.title}</p>
-      <p>Thank you for your interest. {flow.collectionClosed ? 'This collection link' : 'This form'} is no longer accepting responses.</p>
+      <p>{flow.message ?? (flow.collectionClosed ? 'Thank you for your interest. This collection link is no longer accepting responses.' : respondentTextDefaults.closedMessage)}</p>
       {recovery ? <section aria-label={recovery.mode === 'submission' ? 'Pending submission' : 'Response recovery'}><p>Your answers are kept privately in this tab. {recovery.mode === 'submission' ? 'Retry to check this submission.' : 'Try again to answer the current form.'}</p>{recovery.error ? <p className="status-note" data-tone="error" role="alert">{recovery.error}</p> : null}<button className="primary-button focus-ring" disabled={recovery.busy} onClick={recovery.onRetry} type="button">{recovery.busy ? 'Checking…' : recovery.mode === 'submission' ? 'Retry submission' : 'Start again'}</button></section> : null}
     </article>
     {landing && config.showPoweredByCredit ? <footer className="respondent-landing-credit">Powered by {config.productName} · <a href="https://runeditrun.com">runeditrun.com</a></footer> : null}
