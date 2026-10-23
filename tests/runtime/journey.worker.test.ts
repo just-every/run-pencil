@@ -491,8 +491,6 @@ contract(['RSLT-001','RSLT-003','RSLT-004','DASH-002'], 'retains factual zero, q
   const selected = `${devicePath}&answerStepId=${f.route.id}&answerValue=${f.more.id}`
   expect(await ok(selected)).toMatchObject({basis:'responses',total:1,counts:{mobile:1,tablet:0,desktop:0,unknown:0},nativeResponses:1,sessionsWithoutResponse:0})
   expect(await ok(`${selected}&deviceClass=desktop`)).toMatchObject({total:0,counts:{mobile:0,desktop:0}})
-  const emptyRevision = await ok<{revision:{id:string}}>(`${f.path}/publish`,{expectedVersion:(await f.draft()).flow.draftVersion})
-  expect(await ok(`${f.path}/devices?revisionId=${emptyRevision.revision.id}&deviceClass=mobile`)).toMatchObject({total:0})
   expect(await ok(selected)).toMatchObject({total:1,counts:{mobile:1}})
   // A historical response's absent class is unknown, never inferred from its answers or source.
   await env.DB.prepare('UPDATE responses SET device_class=NULL WHERE id=?').bind(mobileReceipt.responseId).run()
@@ -512,4 +510,6 @@ contract(['RSLT-001','RSLT-003','RSLT-004','DASH-002'], 'retains factual zero, q
   await ok(`/api/app/responses/${receipt.responseId}`, undefined, 'DELETE')
   expect(await results()).toMatchObject({ starts: 2, completedResponses: 0, completionRate: 0, averageCompletionMilliseconds: 0, deviceStarts: { mobile: 1, tablet: 0, desktop: 1 } })
   expect(await ok('/api/app/dashboard?status=open')).toEqual(expect.arrayContaining([expect.objectContaining({ id: f.flow.id, starts: 2, completedResponses: 0 })]))
+  const emptyRevision = await ok<{revision:{id:string}}>(`${f.path}/publish`,{expectedVersion:(await f.draft()).flow.draftVersion})
+  expect(await ok(`${f.path}/devices?revisionId=${emptyRevision.revision.id}&deviceClass=mobile`)).toMatchObject({total:0})
 })
