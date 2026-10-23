@@ -1,3 +1,5 @@
+import { mkdir } from 'node:fs/promises'
+import { join } from 'node:path'
 import AxeBuilder from '@axe-core/playwright'
 import manifest from '../../seed.json' with { type: 'json' }
 import type { Page, Response } from '@playwright/test'
@@ -27,6 +29,11 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
     view.on('console',message=>{if(message.type()==='error'&&/hydrat/i.test(message.text()))hydrationErrors.push(message.text())})
   }
   observePage(page)
+  const captureEmbed=async(view:Page,name:string)=>{
+    if(!process.env.PENCIL_CAPTURE_DIR)return
+    await mkdir(process.env.PENCIL_CAPTURE_DIR,{recursive:true})
+    await view.screenshot({path:join(process.env.PENCIL_CAPTURE_DIR,`${info.project.name}-payment-embed-${name}.png`),fullPage:true})
+  }
   const pencil = new URL(process.env.PENCIL_E2E_BASE_URL!).origin
   const stripe = await startStripeReceiver(pencil)
   try {
@@ -229,6 +236,7 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
     const proof = async (name: string) => {
       expect(await visitor.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
       expect((await new AxeBuilder({page:visitor}).analyze()).violations.filter(violation=>violation.impact==='serious'||violation.impact==='critical')).toEqual([])
+      await captureEmbed(visitor,name)
       const path = info.outputPath(`embed-${name}-${info.project.name}.png`)
       await visitor.screenshot({ path, fullPage: true })
       await info.attach(`Embed ${name}`, { path, contentType: 'image/png' })
@@ -310,6 +318,7 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
         expect(invalid.url()).toBe(`${invalidHost.origin}/`)
         expect(await invalid.evaluate(() => (window as unknown as { messages: Array<{ type?: string }> }).messages.filter(message => message.type === 'pencil:checkout'))).toEqual([])
         expect(outside).toEqual([])
+        await captureEmbed(invalid,checkoutOrigin.startsWith('http:')?'refused-http':'refused-origin')
         expect(await invalid.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
         expect((await new AxeBuilder({page:invalid}).analyze()).violations.filter(violation=>violation.impact==='serious'||violation.impact==='critical')).toEqual([])
         const rejected = [...stripe.sessions.values()].find(session => session.url.startsWith(`${checkoutOrigin}/`))!
@@ -351,6 +360,7 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
     expect(await fallback.evaluate(() => (window as unknown as { messages: Array<{ type?: string }> }).messages.filter(message => message.type === 'pencil:checkout'))).toEqual([])
     expect(await fallback.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
     expect((await new AxeBuilder({page:fallback}).analyze()).violations.filter(violation=>violation.impact==='serious'||violation.impact==='critical')).toEqual([])
+    await captureEmbed(fallback,'missing-ack')
     const fallbackPath = info.outputPath(`embed-missing-ack-${info.project.name}.png`)
     await fallback.screenshot({ path: fallbackPath, fullPage: true })
     await info.attach(`Embed missing acknowledgement · ${info.project.name}`, { path: fallbackPath, contentType: 'image/png' })

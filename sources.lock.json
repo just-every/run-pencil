@@ -6753,7 +6753,7 @@
       "executable": false
     },
     "tests/e2e/calculations.spec.ts": {
-      "sha256": "c1e231247b7fd664cb1b0a6266c5cb148e47d41e7efaa29bf6d4b14fccb633a3",
+      "sha256": "8093b9757b38d97250f5b426c1437b28a70527a007622a6e887042a3da423df5",
       "executable": false
     },
     "tests/e2e/client-secrets.spec.ts": {
