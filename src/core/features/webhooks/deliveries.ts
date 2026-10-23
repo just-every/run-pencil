@@ -16,7 +16,7 @@ export class ResponseEventDeliveries {
       .bind(workspaceId, filter.endpointId ?? null, filter.endpointId ?? null, filter.status ?? null, filter.status ?? null, deliveryId ?? null, deliveryId ?? null, Math.min(filter.limit ?? 50, 200)).all<DeliveryRow>()
     if (!rows.results.length) return []
     const attempts = await this.db.prepare(`SELECT delivery_id AS deliveryId, ordinal, event, http_status AS httpStatus, outcome_class AS outcomeClass, reason, created_at AS createdAt FROM response_event_attempts
-      WHERE delivery_id IN (${rows.results.map(() => '?').join(',')}) ORDER BY ordinal, created_at, id`).bind(...rows.results.map(row => row.id)).all<AttemptSummary & { deliveryId: string }>()
+      WHERE delivery_id IN (${rows.results.map(() => '?').join(',')}) ORDER BY ordinal, CASE event WHEN 'started' THEN 0 WHEN 'replay' THEN 2 ELSE 1 END, created_at, id`).bind(...rows.results.map(row => row.id)).all<AttemptSummary & { deliveryId: string }>()
     return rows.results.map(row => ({ ...row, attemptLog: attempts.results.filter(attempt => attempt.deliveryId === row.id).map(({ deliveryId: _delivery, ...attempt }) => attempt) }))
   }
 

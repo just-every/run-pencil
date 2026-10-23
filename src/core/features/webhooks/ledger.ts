@@ -21,7 +21,7 @@ export class IntegrationLedger {
       FROM response_event_deliveries d JOIN response_webhook_endpoints e ON e.id = d.endpoint_id WHERE e.workspace_id = ? ORDER BY d.updated_at DESC, d.id DESC LIMIT ?`).bind(workspaceId, limit)
       .all<{ id: string; subject: string; status: keyof typeof states; idempotencyKey: string; responseId: string | null; endpointId: string; updatedAt: string }>()
     const hookAttempts = hooks.results.length ? await this.db.prepare(`SELECT delivery_id AS deliveryId, ordinal, event AS outcome, http_status AS httpStatus, reason, created_at AS at FROM response_event_attempts
-      WHERE delivery_id IN (${hooks.results.map(() => '?').join(',')}) AND event <> 'started' ORDER BY ordinal, created_at, id`).bind(...hooks.results.map(row => row.id)).all<LedgerAttempt & { deliveryId: string }>() : { results: [] }
+      WHERE delivery_id IN (${hooks.results.map(() => '?').join(',')}) AND event <> 'started' ORDER BY ordinal, CASE event WHEN 'replay' THEN 1 ELSE 0 END, created_at, id`).bind(...hooks.results.map(row => row.id)).all<LedgerAttempt & { deliveryId: string }>() : { results: [] }
     const tasks = await this.db.prepare(`SELECT d.action_id AS id, d.state, d.idempotency_key AS idempotencyKey, d.updated_at AS updatedAt FROM action_task_deliveries d JOIN actions a ON a.id = d.action_id
       WHERE a.workspace_id = ? ORDER BY d.updated_at DESC, d.action_id DESC LIMIT ?`).bind(workspaceId, limit).all<{ id: string; state: LedgerDelivery['state']; idempotencyKey: string; updatedAt: string }>()
     const taskAttempts = tasks.results.length ? await this.db.prepare(`SELECT action_id AS actionId, ordinal, outcome, http_status AS httpStatus, outcome_class AS reason, COALESCE(finished_at, started_at) AS at FROM action_task_attempts
