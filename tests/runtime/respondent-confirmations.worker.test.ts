@@ -1,4 +1,4 @@
-import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
+import { applyD1Migrations, env, SELF, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect, vi } from 'vitest'
 import { contract } from '../../src/test/contract'
 import { foundationFixture } from './foundation-fixture'
@@ -9,6 +9,14 @@ declare const __PENCIL_CORE_MIGRATIONS__:D1Migration[]
 beforeAll(()=>applyD1Migrations(env.DB,__PENCIL_CORE_MIGRATIONS__))
 contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released confirmations use only the marked mailbox or participant, escape permitted recall and dates, retry once and erase their retained copy',async()=>{
  const f=await foundationFixture('synthetic-pencil-confirmation')
+ const post=async<T,>(slug:string,door:string,body:unknown):Promise<T>=>{
+  const result=await SELF.fetch(`http://localhost/api/public/flows/${slug}/${door}`,{method:'POST',headers:{Host:'localhost',Origin:'http://localhost','Content-Type':'application/json','CF-Connecting-IP':'192.0.2.61'},body:JSON.stringify(body)})
+  expect(result.status,await result.clone().text()).toBe(201)
+  return result.json() as Promise<T>
+ }
+ type Session=Awaited<ReturnType<typeof f.start>>
+ const start=(fixture:typeof f,invitationToken?:string)=>post<Session>(fixture.slug,'sessions',{deviceClass:'desktop',source:'direct',invitationToken})
+ const final=async(fixture:typeof f,session:Session,answers:Array<{stepId:string;value:unknown}>,honeypot='',invitationToken?:string,hidden?:Record<string,string>)=>post(fixture.slug,'responses',{sessionId:session.sessionId,sessionToken:session.sessionToken,loadTime:await fixture.loadTime(session),idempotencyKey:'key-'+session.sessionId,answers,honeypot,invitationToken,hidden})
  await f.add({kind:'question',questionType:'email',prompt:'Your receipt address',required:true})
  await f.add({kind:'question',questionType:'short_text',prompt:'Feedback',required:true})
  await f.add({kind:'question',questionType:'short_text',prompt:'Optional note',required:false})
@@ -20,9 +28,9 @@ contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released co
  await f.services.flows.updateFormSettings({...f.flow,expectedVersion:draft.flow.draftVersion,settings})
  expect(await f.publish()).toMatchObject({kind:'published'})
  const submit=async(options:{immature?:boolean;honeypot?:string;token?:string;mailbox?:string}={})=>{
-  const session=await f.services.responses.startPublicSession({slug:f.slug,deviceClass:'desktop',source:'direct',clientAddress:'synthetic-pencil-confirmation',...(options.token?{invitationToken:options.token}:{})})
+  const session=await start(f,options.token)
   if(!options.immature)await f.mature(session.sessionId)
-  await f.services.responses.submitPublicResponse({slug:f.slug,sessionId:session.sessionId,sessionToken:session.sessionToken,loadTime:await f.loadTime(session),idempotencyKey:'key-'+session.sessionId,clientAddress:'synthetic-pencil-confirmation',hidden:{campaign:'Synthetic <campaign>'},answers:[{stepId:email.id,value:options.mailbox??'synthetic-pencil-receipt@example.test'},{stepId:text.id,value:'<script>alert(1)</script> {{hidden:campaign}}'},{stepId:date.id,value:'2026-07-04'},{stepId:number.id,value:3}],honeypot:options.honeypot??'',invitationToken:options.token})
+  await final(f,session,[{stepId:email.id,value:options.mailbox??'synthetic-pencil-receipt@example.test'},{stepId:text.id,value:'<script>alert(1)</script> {{hidden:campaign}}'},{stepId:date.id,value:'2026-07-04'},{stepId:number.id,value:3}],options.honeypot??'',options.token,{campaign:'Synthetic <campaign>'})
   return {session,row:await env.DB.prepare('SELECT id,state FROM responses WHERE session_id=?').bind(session.sessionId).first<{id:string;state:string}>()}
  }
  const sent:Array<any>=[]
@@ -42,7 +50,7 @@ contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released co
   expect(plain).toContain('hidden Synthetic <campaign>');expect(html).toContain('hidden Synthetic &lt;campaign&gt;')
   expect(plain).toContain('calculated 6');expect(plain).toContain('skipped []');expect(plain).toContain('07/04/2026')
   expect(plain).not.toContain('2026-07-04');expect(plain).not.toContain('/app/');expect(plain).not.toContain('/response')
-  await f.final(completed.session,[{stepId:email.id,value:'synthetic-pencil-receipt@example.test'},{stepId:text.id,value:'<script>alert(1)</script> {{hidden:campaign}}'},{stepId:date.id,value:'2026-07-04'},{stepId:number.id,value:3}]);await dispatcher.run()
+  await final(f,completed.session,[{stepId:email.id,value:'synthetic-pencil-receipt@example.test'},{stepId:text.id,value:'<script>alert(1)</script> {{hidden:campaign}}'},{stepId:date.id,value:'2026-07-04'},{stepId:number.id,value:3}]);await dispatcher.run()
   expect(sent).toHaveLength(2)
   for(const options of [{immature:true},{honeypot:'scanner'}]){
    const held=await submit(options);expect(held.row!.state).toBe('quarantined');await dispatcher.run();expect(sent).toHaveLength(2)
@@ -53,19 +61,19 @@ contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released co
   await noQuestion.add({kind:'question',questionType:'short_text',prompt:'Feedback',required:true});await noQuestion.add({kind:'completion',questionType:null,prompt:'Recorded'})
   const noDraft=await noQuestion.draft()
   await noQuestion.services.flows.updateFormSettings({...noQuestion.flow,expectedVersion:noDraft.flow.draftVersion,settings:{...noDraft.formSettings!,confirmation:{enabled:true,includeAnswers:false,answerTypes:[],subject:'Response receipt',body:'Thank you.'}}});await noQuestion.publish()
-  const noSession=await noQuestion.start();await noQuestion.mature(noSession.sessionId);await noQuestion.final(noSession,[{stepId:noDraft.steps[0].id,value:'Anonymous feedback'}]);await dispatcher.run()
+  const noSession=await start(noQuestion);await noQuestion.mature(noSession.sessionId);await final(noQuestion,noSession,[{stepId:noDraft.steps[0].id,value:'Anonymous feedback'}]);await dispatcher.run()
   expect(sent).toHaveLength(4)
   const contact=await noQuestion.services.distribution.contacts.save(noQuestion.scope.workspaceId,{name:'Synthetic participant',email:'synthetic-pencil-participant@example.test'}) as {id:string}
   await noQuestion.services.distribution.launches.launch({...noQuestion.flow,operatorId:noQuestion.operatorId,contactIds:[contact.id],commandKey:'synthetic-pencil-confirmation-participant'})
   const invitation=(await env.DB.prepare('SELECT token FROM invitation_participants WHERE contact_id=? AND revision_id=?').bind(contact.id,noSession.revisionId).first<{token:string}>())!
-  const identified=await noQuestion.services.responses.startPublicSession({slug:noQuestion.slug,deviceClass:'desktop',source:'direct',invitationToken:invitation.token});await noQuestion.mature(identified.sessionId)
-  await noQuestion.final(identified,[{stepId:noDraft.steps[0].id,value:'Identified feedback'}],'',invitation.token);await dispatcher.run()
+  const identified=await start(noQuestion,invitation.token);await noQuestion.mature(identified.sessionId)
+  await final(noQuestion,identified,[{stepId:noDraft.steps[0].id,value:'Identified feedback'}],'',invitation.token);await dispatcher.run()
   expect(sent).toHaveLength(5);expect(sent.at(-1).personalizations[0].to).toEqual([{email:'synthetic-pencil-participant@example.test'}])
   const opted=await noQuestion.services.distribution.contacts.save(noQuestion.scope.workspaceId,{name:'Synthetic opted out',email:'synthetic-pencil-opted@example.test'}) as {id:string}
   await noQuestion.services.distribution.launches.launch({...noQuestion.flow,operatorId:noQuestion.operatorId,contactIds:[opted.id],commandKey:'synthetic-pencil-confirmation-opted'})
   const optedInvite=(await env.DB.prepare('SELECT token,opt_out_token AS optOutToken FROM invitation_participants WHERE contact_id=?').bind(opted.id).first<{token:string;optOutToken:string}>())!
-  const optedSession=await noQuestion.services.responses.startPublicSession({slug:noQuestion.slug,deviceClass:'desktop',source:'direct',invitationToken:optedInvite.token});await noQuestion.mature(optedSession.sessionId)
-  await noQuestion.final(optedSession,[{stepId:noDraft.steps[0].id,value:'Consented collection'}],'',optedInvite.token)
+  const optedSession=await start(noQuestion,optedInvite.token);await noQuestion.mature(optedSession.sessionId)
+  await final(noQuestion,optedSession,[{stepId:noDraft.steps[0].id,value:'Consented collection'}],'',optedInvite.token)
   await noQuestion.services.distribution.contacts.optOut(optedInvite.optOutToken)
   await dispatcher.run();expect(sent).toHaveLength(5)
 
@@ -76,6 +84,12 @@ contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released co
   const blocked=await submit({mailbox:'SYNTHETIC-PENCIL-SUPPRESSED@example.test'});await dispatcher.run()
   expect(sent).toHaveLength(5)
   expect(await env.DB.prepare('SELECT status FROM confirmation_deliveries WHERE response_id=?').bind(blocked.row!.id).first()).toEqual({status:'cancelled'})
+  const bounced=await f.services.distribution.contacts.save(f.scope.workspaceId,{name:'Synthetic bounced recipient',email:'synthetic-pencil-bounced@example.test'}) as {id:string}
+  await f.services.distribution.launches.launch({...f.flow,operatorId:f.operatorId,contactIds:[bounced.id],commandKey:'synthetic-pencil-bounced-confirmation'})
+  await env.DB.prepare("UPDATE invitation_participants SET delivery_status='bounced' WHERE contact_id=?").bind(bounced.id).run()
+  const bouncedResponse=await submit({mailbox:'SYNTHETIC-PENCIL-BOUNCED@example.test'});await dispatcher.run()
+  expect(sent).toHaveLength(5)
+  expect(await env.DB.prepare('SELECT status FROM confirmation_deliveries WHERE response_id=?').bind(bouncedResponse.row!.id).first()).toEqual({status:'cancelled'})
   await f.services.responses.eraseReleasedResponse({...f.scope,responseId:completed.row!.id,operatorId:f.operatorId})
   expect(await env.DB.prepare('SELECT id FROM confirmation_deliveries WHERE response_id=?').bind(completed.row!.id).first()).toBeNull()
   expect((await env.DB.prepare("SELECT id FROM confirmation_attempts WHERE delivery_id=?").bind('confirmation:'+completed.row!.id).all()).results).toHaveLength(0)
