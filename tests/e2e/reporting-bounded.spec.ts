@@ -50,7 +50,7 @@ contract(['RSLT-005','LEDG-001','LEDG-004','BASE-PUBLIC-003','BASE-OPS-004'], 'r
   expect((await new AxeBuilder({page}).include('.operator-content').analyze()).violations.filter(v=>['serious','critical'].includes(v.impact??''))).toEqual([])
   await comparison.getByRole('button',{name:'Back to results'}).click()
   const ledger=page.getByRole('region',{name:'Response ledger'})
-  await ledger.getByLabel('Response revision').selectOption('')
+  await page.getByLabel('Published revision').selectOption('all')
   await expect(ledger.getByText('3 matching completed responses',{exact:false})).toBeVisible()
   const jsonDownload=page.waitForEvent('download');await ledger.getByRole('button',{name:'Export JSON'}).click()
   const jsonFile=await jsonDownload,json=JSON.parse(await downloadedText(jsonFile))
