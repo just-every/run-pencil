@@ -42,7 +42,9 @@ contract(['RESP-006', 'RESP-010', 'FLOW-019'], 'retains no abandoned answers or 
   expect(JSON.stringify(exported)).not.toMatch(/participant|contact|sessionToken|deviceClass|addressHash/)
   const response = await env.DB.prepare('SELECT * FROM responses WHERE id = ?').bind(receipt.responseId).first()
   expect(response!.participant_id).toBeNull()
-  expect(Object.keys(response!).some(key => /email|contact|address|device|agent|host/.test(key))).toBe(false)
+  // RSLT-004 stores the coarse session-start class on the response; no other device, address or identity field exists.
+  expect(Object.keys(response!).filter(key => /email|contact|address|device|agent|host/.test(key))).toEqual(['device_class'])
+  expect(response!.device_class).toBe('mobile')
 }, 60_000)
 
 contract(['RESP-016','RSLT-013'], 'retains honeypot exclusions for reversible review without downstream delivery or view and start changes', async () => {
