@@ -36,6 +36,7 @@ export class ResumeService {
     if (context.session.source==='invitation') {
       const invitation = input.invitationToken && await this.repository.invitation(input.invitationToken)
       if (!invitation || invitation.revision_id!==context.revision.id || invitation.response_status==='completed' || !await this.repository.ownsInvitation(input.sessionId,invitation.collector_id)) throw new SessionUnavailableError()
+      if(formSettings(context.revision.formSettingsJson).prefill?.length) throw new ValidationError('Invitations with known-data prefill cannot be saved to another device. Complete this invitation here.')
       participantId=invitation.id
     } else if (input.invitationToken) throw new ValidationError('This response does not use an invitation.')
     const graph = await this.flows.getRevisionGraph(context.revision.id)

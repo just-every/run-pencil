@@ -31,6 +31,7 @@ const submitResponseSchema = sessionCredentials.extend({
   idempotencyKey: z.string().min(12).max(200),
   answers: z.array(z.object({ stepId: resourceId, value: answerValue })).max(formLimits.questions.perRevision),
   invitationToken: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+  prefillProof:z.string().max(200000).optional(),
   honeypot: z.string().max(500).optional(),
   loadTime: z.string().max(84).optional(),
   // PAY-001: never trusted. Pencil recomputes every amount from the published revision; a supplied one is refused.

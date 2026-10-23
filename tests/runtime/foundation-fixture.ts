@@ -22,7 +22,7 @@ export async function foundationFixture(slug: string) {
     const at = maturedTimes.get(session.sessionId)
     return at === undefined ? session.loadTime : issueLoadTime(env.SESSION_SECRET, session.revisionId, at)
   }
-  const final = async (session: Awaited<ReturnType<typeof start>>, answers: Array<{ stepId: string; value: unknown }>, honeypot = '', invitationToken?: string) => services.responses.submitPublicResponse({ slug, sessionId: session.sessionId, sessionToken: session.sessionToken, loadTime: await loadTime(session), idempotencyKey: `key-${session.sessionId}`, answers, honeypot, invitationToken, clientAddress: slug })
+  const final = async (session: Awaited<ReturnType<typeof start>>, answers: Array<{ stepId: string; value: unknown }>, honeypot = '', invitationToken?: string) => services.responses.submitPublicResponse({ slug, sessionId: session.sessionId, sessionToken: session.sessionToken, loadTime: await loadTime(session), idempotencyKey: `key-${session.sessionId}`, prefillProof: session.flow.prefillProof, answers, honeypot, invitationToken, clientAddress: slug })
   const mature = async (id: string) => {
     const at = Date.now() - 5000
     const result = await env.DB.prepare('UPDATE respondent_sessions SET created_at = ? WHERE id = ?').bind(new Date(at).toISOString(), id).run()

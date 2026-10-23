@@ -1,3 +1,5 @@
+import { issuePrefillProof, readPrefillProof } from './prefillProof'
+import { resolvePrefills, prefillMarkers } from '../../shared/knownDataPrefill'
 import { presentationOrder, presentFlow, retainedPresentation, type PresentationOrder } from '../../shared/presentationOrder'
 import type { RestrictedAccess } from '../restricted-access'
 import { completionRedirect } from '../../shared/completionRedirect'
@@ -9,7 +11,7 @@ import { type CollectorService } from '../collectors'
 import { collectorFlowFailure } from './collectorFailure'
 import { runtimeAnswerValue, storedAnswerValue } from './answerStorage'
 import { revisionReviewEnabled, revisionBranchSelection, type BranchSelection } from '../../shared/flowPolicies'
-import manifest from '../../../../seed.json'
+import manifest from '../../../../seed.json' with { type: 'json' }
 import { visibilityCondition } from '../../shared/screenLayout'
 import { evaluateCondition } from '../../shared/conditions'
 import { answerIssue, isUnanswered } from '../../shared/answers'
@@ -117,7 +119,9 @@ export class ResponseService {
       .catch(error => collectorFlowFailure(error, { title: revision.title, slug: flow.slug }))
     await this.access.require(formSettings(revision.formSettingsJson),revision.id,revision.title,flow.slug,accessToken)
     const { steps, choices, rules } = await this.flowRepository.getRevisionGraph(revision.id)
-    return { invitation, collector, flow, revision, steps, choices, rules, publicFlow: presentFlow({ formSettings: formSettings(revision.formSettingsJson), reviewBeforeSubmit: revisionReviewEnabled(revision.policySnapshotJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules), identity: 'identified' as const, completedStepId: invitation.responseStatus === 'completed' ? invitation.completionStepId : null }) }
+    const prefilledAnswers = invitation.responseStatus === 'completed' ? {} : resolvePrefills(formSettings(revision.formSettingsJson).prefill ?? [], await this.repository.invitationFields(invitation.id), publicSteps(steps), publicChoices(steps,choices))
+    const prefillProof = formSettings(revision.formSettingsJson).prefill?.length ? await issuePrefillProof(this.loadTimeSecret,{participantId:invitation.id,revisionId:revision.id,answers:prefilledAnswers}) : undefined
+    return { invitation, collector, flow, revision, steps, choices, rules, publicFlow: presentFlow({ formSettings: formSettings(revision.formSettingsJson), reviewBeforeSubmit: revisionReviewEnabled(revision.policySnapshotJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules), prefilledAnswers, prefillProof, identity: 'identified' as const, completedStepId: invitation.responseStatus === 'completed' ? invitation.completionStepId : null }) }
   }
 
   async startPublicSession(input: { slug: string; deviceClass: DeviceClass; source: PublicSource; clientAddress?: string; invitationToken?: string; collectorKey?: string; accessToken?:string; presentation?:PresentationOrder }) {
@@ -166,7 +170,7 @@ export class ResponseService {
       throw new ValidationError('This form changed before you began. Please start again using the current version.')
     }
     await this.access.bindSession(session.id,grant)
-    return { sessionId: session.id, sessionToken: token, loadTime: await issueLoadTime(this.loadTimeSecret, revision.id), revisionId: revision.id, flowId: flow.id, flow: presentFlow({ formSettings: formSettings(revision.formSettingsJson), reviewBeforeSubmit: revisionReviewEnabled(revision.policySnapshotJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) },presentation) }
+    return { sessionId: session.id, sessionToken: token, loadTime: await issueLoadTime(this.loadTimeSecret, revision.id), revisionId: revision.id, flowId: flow.id, flow: presentFlow({ ...(invitationContext ? {prefillProof:invitationContext.publicFlow.prefillProof,prefilledAnswers:invitationContext.publicFlow.prefilledAnswers} : {}), formSettings: formSettings(revision.formSettingsJson), reviewBeforeSubmit: revisionReviewEnabled(revision.policySnapshotJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) },presentation) }
   }
 
   async advancePublicSession(input: { slug: string; sessionId: string; sessionToken: string; stepId: string }) {
@@ -179,7 +183,7 @@ export class ResponseService {
     }
   }
 
-  async submitPublicResponse(input: { slug: string; sessionId: string; sessionToken: string; idempotencyKey: string; answers: AnswerInput[]; hidden?:Record<string,unknown>; honeypot?: string; loadTime?: string; clientAddress?: string; invitationToken?: string }) {
+  async submitPublicResponse(input: { slug: string; sessionId: string; sessionToken: string; idempotencyKey: string; answers: AnswerInput[]; prefillProof?:string; hidden?:Record<string,unknown>; honeypot?: string; loadTime?: string; clientAddress?: string; invitationToken?: string }) {
     await this.enforcePublicRequestRateLimit({ clientAddress: input.clientAddress, scope: 'submission' })
     if (!input.sessionToken) throw new SessionUnavailableError()
     const tokenHash = await this.hash(input.sessionToken)
@@ -237,6 +241,12 @@ export class ResponseService {
     if(accessIdentity?.subject){hiddenContext.verifiedSubject=accessIdentity.subject;hiddenContext.identityMode='identified'}
     if(invitation) hiddenContext.identityMode='identified'
     const { accepted: acceptedAnswers, completionStepId, reachedStepIds, paymentStepId } = validatePathAnswers(steps, choices, rules, input.answers, revisionBranchSelection(revision.policySnapshotJson),hiddenAnswers(hiddenContext),settings)
+    if(invitation) {
+      const prefills = settings.prefill?.length ? await readPrefillProof(this.loadTimeSecret,input.prefillProof ?? '',invitation.id,revision.id) : {}
+      const onPath = Object.fromEntries(Object.entries(prefills).filter(([id])=>reachedStepIds.includes(id)))
+      const markers = prefillMarkers(onPath,acceptedAnswers)
+      if(Object.keys(markers).length) hiddenContext.prefill = markers
+    }
     if(settings.calculations?.length) hiddenContext.calculations=evaluateCalculations(settings.calculations ?? [],Object.fromEntries(acceptedAnswers.map(answer=>[answer.stepId,answer.value])),hiddenContext.hidden)
     const order=JSON.parse(session.presentationJson) as Partial<PresentationOrder>
     const presentedOrder=retainedPresentation({choices:order.choices ?? {},blocks:order.blocks ?? {}},reachedStepIds)

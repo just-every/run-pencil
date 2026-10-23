@@ -1,3 +1,4 @@
+import { Tooltip } from '../../../shared/ui/Tooltip'
 import { OwnerEditorShell } from '../../../../editor/owner-editor'
 import { useEffect, useState } from 'react'
 import { Link, Outlet, useRouterState, useNavigate } from '@tanstack/react-router'
@@ -33,7 +34,7 @@ export function OperatorShellPage({ config, editorEnabled }: { config: PublicSee
   return <main className="pencil-canvas operator-shell" data-hydrated={hydrated}>
     {editorEnabled ? <OwnerEditorShell /> : null}
     <header className="operator-header" style={{ flexWrap: 'wrap' }}>
-      <BrandMark href="/app" name={config.productName} />
+      <Tooltip label={config.productName}><BrandMark href="/app" name={config.productName} /></Tooltip>
       <nav className="operator-nav" aria-label="Operator navigation">
         <Link activeOptions={{ exact: true }} aria-current={flowsCurrent ? 'page' : undefined} to="/app">Flows</Link>
         <Link activeOptions={{ exact: true }} to="/app/audience">Audience</Link>

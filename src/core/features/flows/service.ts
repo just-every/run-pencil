@@ -1,3 +1,4 @@
+import { prefillPublicationIssues } from '../../shared/knownDataPrefill'
 import type { RestrictedAccess } from '../restricted-access'
 import { linkPreviewPublicationIssues, resolveLinkPreview, type LinkPreviewDefaults, type LinkPreviewAssetStore } from '../../shared/linkPreview'
 import { formAnswerContext } from '../../shared/calculationContext'
@@ -166,6 +167,7 @@ export class FlowService {
     const variableIds = new Map((copiedSettings.calculations ?? []).map(value=>[value.id,ulid()]))
     const fieldIds = new Map(copiedSettings.hiddenFields.map(field => [field.id,ulid()]))
     const stableIdByOldStableId = new Map([...sourceSteps.map((step) => [step.stableId, ulid()] as [string,string]), ...[...fieldIds].map(([old,id]) => [`hidden:${old}`,`hidden:${id}`] as [string,string]), ...[...variableIds].map(([old,id])=>[`variable:${old}`,`variable:${id}`] as [string,string])])
+    if (copiedSettings.prefill) copiedSettings.prefill = copiedSettings.prefill.map(mapping=>({...mapping,stepId:stableIdByOldStableId.get(mapping.stepId) ?? mapping.stepId}))
     copiedSettings.hiddenFields = copiedSettings.hiddenFields.map(field => ({...field,id:fieldIds.get(field.id)!}))
     const rowIdByOldRowId = new Map(sourceSteps.map((step) => [step.id, ulid()]))
     const choiceStableIdByOldStableId = new Map(sourceChoices.map((choice) => [choice.stableId, ulid()]))
@@ -444,6 +446,7 @@ export class FlowService {
     if (draft.flow.status === 'archived') throw new ValidationError('An archived flow cannot be published or reopened. Duplicate it to create a separate draft.')
     const { steps: rawSteps, choices: rawChoices, rules: rawRules } = snapshot
     const issues = validateRevisionGraph(rawSteps, rawChoices, rawRules, evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'], formSettings(snapshot.revision.formSettingsJson))
+    issues.push(...prefillPublicationIssues(draft.formSettings.prefill ?? [],draft.steps))
     issues.push(...hiddenPublicationIssues(formSettings(snapshot.revision.formSettingsJson)))
     issues.push(...linkPreviewPublicationIssues(draft.formSettings))
     if (issues.length > 0) throw new ValidationError('This draft cannot be published until every listed issue is resolved.', issues)

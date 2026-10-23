@@ -89,3 +89,9 @@ For a named environment, replace `pencil-production` with its existing Worker na
 ## Emails to you about new responses
 
 Operators can also get immediate or Daily email about new completed responses. That is separate from invitations and is set per flow on the **Results** page. See [Results, review and exports](results.md#get-an-email-for-new-responses).
+
+## Prefill known contact fields
+
+In a question's existing editor, open **Known-data prefill**, enter a stored **Contact field key**, optionally choose **Lock prefilled answer**, then save the mapping and publish. Only that published revision's invitation links receive a prefill. Public links, embeds, previews and other-device resumes do not receive contact values. Invalid or incompatible values are left blank; publication refuses incompatible question mappings.
+
+Respondents see **Prefilled**, may edit an unlocked value, and cannot change a locked value. After submission the answer is ordinary answer text: it can identify someone and can reach the configured analysis service when selected for analysis. The ledger and JSON/CSV answer metadata record whether a prefill was unchanged, edited or locked, without keeping the original contact value. Erasure and archives carry the marker with its answer. Invitations with a prefill mapping must be completed on their invitation path; saving them to another device is unavailable. In-product and CRM prefill are not available.

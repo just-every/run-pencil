@@ -1,3 +1,4 @@
+import { httpExport } from '../helpers/report-download'
 import { developmentInbox } from '../helpers/development-outbox'
 import { audienceOutboxHeaders, audienceScreen, invitationMail, inviteAudienceOperator } from './distribution-helpers'
 import { operatorEmail } from './auth-identity'
@@ -14,7 +15,7 @@ contract('BASE-PUBLIC-003', 'production invitation capability paths reject malfo
   }
   expect((await page.request.get('/i/' + '0'.repeat(64))).status()).toBe(404)
 })
-contract(['AUD-001','AUD-002','AUD-003','RESP-005','RESP-008','DIST-005','LEDG-001','LEDG-003','RSLT-001','RSLT-003','RSLT-004','BASE-PUBLIC-003'], 'Audience CSV review, saved segment, invitation, identified response, cancellation, opt-out and erasure are keyboard accessible', async ({ page }, info) => {
+contract(['LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-005','RESP-008','DIST-005','LEDG-001','LEDG-003','RSLT-001','RSLT-003','RSLT-004','BASE-PUBLIC-003'], 'Audience CSV review, saved segment, editable invitation prefill, identified ledger, cancellation, opt-out and erasure are keyboard accessible', async ({ page }, info) => {
   test.setTimeout(120000)
   page.setDefaultTimeout(15000)
   const request = page.request, headers = { Origin: new URL(info.project.use.baseURL!).origin }
@@ -44,11 +45,30 @@ contract(['AUD-001','AUD-002','AUD-003','RESP-005','RESP-008','DIST-005','LEDG-0
   const slug = `distribution-browser-${info.project.name}-${Date.now()}`
   const flow = await call('/api/app/flows', { title: 'Synthetic invitation review', slug })
   const path = `/api/app/flows/${flow.id}`
-  for (const step of [{ kind: 'question', questionType: 'short_text', prompt: 'Your feedback', required: true }, { kind: 'completion', questionType: null, prompt: 'Invitation recorded' }]) {
+  for (const step of [{ kind: 'question', questionType: 'short_text', prompt: 'Your feedback', required: true }, { kind:'question',questionType:'short_text',prompt:'Your company',required:true }, { kind: 'completion', questionType: null, prompt: 'Invitation recorded' }]) {
     const draft = await call(`${path}/draft`)
     await call(`${path}/draft/steps`, { expectedVersion: draft.flow.draftVersion, step })
   }
+  await page.goto(`/app/flows/${flow.id}/builder`)
+  await expect(page.locator('.operator-shell')).toHaveAttribute('data-hydrated','true')
+  await page.getByText('Known-data prefill',{exact:true}).click()
+  await page.getByLabel('Contact field key',{exact:true}).fill('company')
+  await page.getByRole('button',{name:'Save prefill mapping',exact:true}).click()
+  await expect(page.getByRole('status')).toContainText('Prefill mapping saved to the draft')
+  await expect(page.getByLabel('Contact field key',{exact:true})).toHaveValue('company')
+  await page.locator('.step-button').filter({hasText:'Your company'}).click()
+  await page.getByText('Known-data prefill',{exact:true}).click()
+  await page.getByLabel('Contact field key',{exact:true}).fill('company')
+  await page.getByLabel('Lock prefilled answer',{exact:true}).check()
+  await page.getByRole('button',{name:'Save prefill mapping',exact:true}).click()
+  await expect(page.getByRole('status')).toContainText('Prefill mapping saved to the draft')
+  await expect(page.getByLabel('Lock prefilled answer',{exact:true})).toBeChecked()
+  await page.getByText('Known-data prefill',{exact:true}).click()
+  await page.getByRole('button',{name:'Move down',exact:true}).focus()
+  await expect(page.getByRole('tooltip',{name:'Move down',exact:true})).toBeVisible()
+  await audienceScreen(page,info,'prefill-builder')
   await call(`${path}/publish`, { expectedVersion: (await call(`${path}/draft`)).flow.draftVersion })
+  expect(await call(`/api/public/flows/${slug}`)).not.toHaveProperty('prefilledAnswers')
   const recipient = `${slug}@example.test`, other = `${slug}-other@example.test`, existing = `${slug}-existing@example.test`
   await page.goto('/app/audience')
   await expect(page.locator('.operator-shell')).toHaveAttribute('data-hydrated', 'true')
@@ -57,7 +77,7 @@ contract(['AUD-001','AUD-002','AUD-003','RESP-005','RESP-008','DIST-005','LEDG-0
   await page.getByLabel('Contact email', { exact: true }).fill(existing)
   await page.getByRole('button', { name: 'Save contact', exact: true }).click()
   await expect(page.getByRole('status')).toContainText('Contact saved')
-  const csv = `name,email,team\nSynthetic browser recipient,${recipient},${slug}\nRepeat in file,${recipient.toUpperCase()},${slug}\nUploaded existing label,${existing.toUpperCase()},${slug}\nOther browser recipient,${other},${slug}\nBad row,not-an-address,${slug}`
+  const csv = `name,email,team,company\nSynthetic browser recipient,${recipient},${slug},Aurora Coffee\nRepeat in file,${recipient.toUpperCase()},${slug},Aurora Coffee\nUploaded existing label,${existing.toUpperCase()},${slug},Aurora Coffee\nOther browser recipient,${other},${slug},Harbour Roasters\nBad row,not-an-address,${slug},Aurora Coffee`
   await page.getByLabel('Contact CSV file').setInputFiles({ name: 'audience.csv', mimeType: 'text/csv', buffer: Buffer.from(csv) })
   await expect(page.getByLabel('Uploaded CSV')).toHaveValue(csv)
   await page.getByRole('button', { name: 'Preview contact import' }).click()
@@ -104,12 +124,20 @@ contract(['AUD-001','AUD-002','AUD-003','RESP-005','RESP-008','DIST-005','LEDG-0
   expect(await page.locator('head').textContent()).not.toContain(recipient)
     await expect(page.getByText(/identified through your invitation/)).toBeVisible()
   await audienceScreen(page, info, 'invitation')
+  await expect(page.getByRole('textbox')).toHaveValue('Aurora Coffee')
+  await expect(page.getByText('Prefilled · you can edit this answer',{exact:true})).toBeVisible()
+  await audienceScreen(page,info,'prefilled-answer')
   await page.getByRole('textbox').focus()
-  await page.keyboard.type('Synthetic identified answer')
+  await page.getByRole('textbox').fill('Synthetic identified answer')
   await page.waitForTimeout(5000) // Respect the real minimum fill time; do not edit application state.
   await page.keyboard.press('Tab')
-  await expect(page.getByRole('button', { name: 'Submit response', exact: true })).toBeFocused()
+  await expect(page.getByRole('button', { name: 'Continue', exact: true })).toBeFocused()
   await page.keyboard.press('Enter')
+  await expect(page.getByRole('textbox')).toHaveValue('Aurora Coffee')
+  await expect(page.getByRole('textbox')).toBeDisabled()
+  await expect(page.getByText('Prefilled · locked by the operator',{exact:true})).toBeVisible()
+  await audienceScreen(page,info,'locked-prefill')
+  await page.getByRole('button',{name:'Submit response',exact:true}).click()
   await expect(page.getByRole('heading', { name: 'Invitation recorded' })).toBeVisible()
   await page.reload()
   await expect(page.getByRole('heading', { name: 'Invitation recorded' })).toBeVisible()
@@ -143,7 +171,17 @@ contract(['AUD-001','AUD-002','AUD-003','RESP-005','RESP-008','DIST-005','LEDG-0
   await expect(page.getByText(/Invited participant: Synthetic browser recipient/)).toBeVisible()
   const invitationLedger=page.getByRole('region',{name:'Response ledger',exact:true})
   expect((await call(`${path}/ledger`)).responses[0].identityMode).toBe('identified')
+  expect((await call(`${path}/ledger`)).responses[0].answers[0].prefill).toBe('edited')
+  await expect(page.getByText(/Prefilled \(edited\)/)).toBeVisible()
+  const copied=await httpExport(target=>request.get(target),`${path}/responses/export?search=Synthetic%20identified%20answer`)
+  expect(copied.responses[0].answers.map(answer=>answer.prefill)).toEqual(['edited','locked'])
+  const csvStart=await call(`${path}/responses/export/start?format=csv&search=Synthetic%20identified%20answer`)
+  const csvCopy=await request.get(`${path}/responses/export?token=${encodeURIComponent(csvStart.token)}`)
+  expect(csvCopy.status()).toBe(200)
+  expect(await csvCopy.text()).toContain('prefill')
+  expect(await csvCopy.text()).toContain('edited')
   await invitationLedger.screenshot({path:info.outputPath(`identified-ledger-${info.project.name}.png`)})
+  if(process.env.PENCIL_CAPTURE_DIR) await invitationLedger.locator('.ledger-row').first().screenshot({path:`${process.env.PENCIL_CAPTURE_DIR}/${info.project.name}-prefill-ledger.png`})
   await expect(page.getByText('Synthetic identified answer', { exact: true }).last()).toBeVisible()
   await audienceScreen(page, info, 'identified-results')
   await page.goto('/app/audience')

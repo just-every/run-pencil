@@ -6,12 +6,13 @@ import { foundationFixture } from './foundation-fixture'
 import { MailDeliveries } from '../../src/core/features/distribution/deliveries'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
-async function launched(slug: string) {
+async function launched(slug: string, prefill?: {locked:boolean}) {
   const f = await foundationFixture(slug)
   await f.add({ kind: 'question', questionType: 'short_text', prompt: 'Feedback', required: true })
   await f.add({ kind: 'completion', questionType: null, prompt: 'Thank you' })
+  if(prefill) { const draft=await f.draft(); await f.services.flows.updateFormSettings({...f.flow,expectedVersion:draft.flow.draftVersion,settings:{...draft.formSettings!,prefill:[{stepId:draft.steps[0].id,field:'company',locked:prefill.locked}]}}) }
   await f.publish()
-  const contact = await f.services.distribution.contacts.save(f.scope.workspaceId, { name: 'Synthetic recipient', email: `${slug}@example.test` }) as { id: string }
+  const contact = await f.services.distribution.contacts.save(f.scope.workspaceId, { name: 'Synthetic recipient', email: `${slug}@example.test`, fields: {company: 'Synthetic company'} }) as { id: string }
   const input = { ...f.flow, operatorId: f.operatorId, contactIds: [contact.id], commandKey: `command-${slug}` }
   const launch = await f.services.distribution.launches.launch(input)
   const p = (await env.DB.prepare('SELECT * FROM invitation_participants WHERE launch_id = ?').bind(launch.id).first())! as { id: string; token: string; opt_out_token: string; revision_id: string }
@@ -34,24 +35,60 @@ contract(['AUD-003', 'AUD-006', 'DIST-003', 'DIST-005', 'FLOW-008'], 'launch sna
   await f.services.distribution.contacts.consent({ ...f.scope, contactId: f.contact.id, actor: f.operatorId, source: 'Explicit synthetic consent', renewed: true })
   expect((await env.DB.prepare('SELECT consent, actor, source FROM contact_consent_events WHERE contact_id = ? ORDER BY created_at').bind(f.contact.id).all()).results).toEqual([{ consent: 'opted-out', actor: 'recipient', source: 'invitation-opt-out' }, { consent: 'renewed', actor: f.operatorId, source: 'Explicit synthetic consent' }])
 }, 60_000)
-contract(['FLOW-008', 'FLOW-009', 'FLOW-017', 'RESP-008', 'DIST-004', 'RESP-007'], 'invitation stays pinned after publication and allows one atomic completion, cancelling its reminder', async () => {
-  const f = await launched('distribution-admission')
+contract(['FLOW-008', 'FLOW-009', 'FLOW-017', 'RESP-008', 'DIST-004', 'RESP-007', 'LOGIC-002'], 'invitation prefill stays pinned, is editable and marked in the ledger, locks are enforced and one completion cancels reminders', async () => {
+  const f = await launched('distribution-admission', {locked:false})
   await f.services.distribution.deliveries.prepare(f.delivery.deliveryId, 'https://synthetic.example.test')
   await f.services.distribution.deliveries.record(f.delivery.deliveryId, 1, { kind: 'sent', providerId: 'synthetic-provider-id' })
   const before = await f.services.responses.invitationFlow(f.p.token)
+  const firstQuestion=before.publicFlow.steps.find(s=>s.kind==='question')!
+  expect(before.publicFlow.prefilledAnswers).toEqual({[firstQuestion.id]:{value:'Synthetic company',locked:false}})
+  expect(await f.services.flows.getPublicFlow(f.slug)).not.toHaveProperty('prefilledAnswers')
   await f.publish()
   const start = () => f.services.responses.startPublicSession({ slug: f.slug, deviceClass: 'desktop', source: 'direct', invitationToken: f.p.token })
   const [a, b] = await Promise.all([start(), start()])
   expect(a.revisionId).toBe(f.p.revision_id)
   expect(a.flow.steps).toEqual(before.publicFlow.steps)
+  await f.services.distribution.contacts.edit(f.scope.workspaceId,f.contact.id,{name:'Synthetic recipient',email:'distribution-admission@example.test',fields:{company:'Synthetic response'}})
   await f.mature(a.sessionId); await f.mature(b.sessionId)
   const answers = [{ stepId: a.flow.steps.find(s => s.kind === 'question')!.id, value: 'Synthetic response' }]
   const outcomes = await Promise.allSettled([f.final(a, answers, '', f.p.token), f.final(b, answers, '', f.p.token)])
   expect(outcomes.filter(o => o.status === 'fulfilled')).toHaveLength(1)
   expect((await env.DB.prepare('SELECT source, participant_id FROM responses WHERE participant_id = ?').bind(f.p.id).all()).results).toEqual([{ source: 'invitation', participant_id: f.p.id }])
+  const ledger=await f.services.reporting.ledger(f.scope.workspaceId,f.flow.flowId,{search:'Synthetic response'})
+  expect(ledger.responses[0].answers[0]).toMatchObject({value:'Synthetic response',prefill:'edited'})
+  expect(JSON.parse((await env.DB.prepare('SELECT response_context_json AS context FROM responses WHERE participant_id=?').bind(f.p.id).first<{context:string}>())!.context).prefill).toEqual({[firstQuestion.id]:'edited'})
+  expect(JSON.stringify(ledger.responses)).not.toContain('Synthetic company')
+  const locked=await launched('distribution-locked',{locked:true})
+  const lockedStart=await locked.services.responses.startPublicSession({slug:locked.slug,deviceClass:'desktop',source:'direct',invitationToken:locked.p.token})
+  await locked.mature(lockedStart.sessionId)
+  await expect(locked.services.responses.submitPublicResponse({slug:locked.slug,sessionId:lockedStart.sessionId,sessionToken:lockedStart.sessionToken,loadTime:await locked.loadTime(lockedStart),idempotencyKey:'synthetic-pencil-proof',invitationToken:locked.p.token,answers:[{stepId:lockedStart.flow.steps[0].id,value:'Synthetic company'}]})).rejects.toThrow('verified')
+  const lockedQuestion=lockedStart.flow.steps.find(s=>s.kind==='question')!
+  await expect(locked.final(lockedStart,[{stepId:lockedQuestion.id,value:'Changed'}],'',locked.p.token)).rejects.toThrow('locked')
+  await locked.final(lockedStart,[{stepId:lockedQuestion.id,value:'Synthetic company'}],'',locked.p.token)
+  expect((await locked.services.reporting.ledger(locked.scope.workspaceId,locked.flow.flowId,{})).responses[0].answers[0].prefill).toBe('locked')
+  await locked.services.distribution.contacts.erase(locked.scope.workspaceId,locked.contact.id,locked.operatorId)
+  expect((await locked.services.reporting.ledger(locked.scope.workspaceId,locked.flow.flowId,{})).total).toBe(0)
   expect((await env.DB.prepare("SELECT status FROM mail_deliveries WHERE participant_id = ? AND kind = 'reminder'").bind(f.p.id).first())).toEqual({ status: 'cancelled' })
   expect((await f.services.responses.invitationFlow(f.p.token)).publicFlow.completedStepId).toBe(a.flow.steps.find(s => s.kind === 'completion')!.id)
   await expect(start()).rejects.toThrow('already completed')
+  const invalid=await foundationFixture('distribution-prefill-publication')
+  await invalid.add({kind:'question',questionType:'number',prompt:'Team size',required:true})
+  await invalid.add({kind:'completion',questionType:null,prompt:'Recorded'})
+  for(const stepId of [(await invalid.draft()).steps[0].id,'deleted-question']) {
+    const draft=await invalid.draft()
+    await invalid.services.flows.updateFormSettings({...invalid.flow,expectedVersion:draft.flow.draftVersion,settings:{...draft.formSettings!,prefill:[{stepId,field:'company',locked:false}]}})
+    await expect(invalid.publish()).rejects.toMatchObject({details:expect.arrayContaining([expect.objectContaining({stepId})])})
+  }
+  const malformed=await foundationFixture('distribution-prefill-invalid-value')
+  await malformed.add({kind:'question',questionType:'email',prompt:'Email address',required:true})
+  await malformed.add({kind:'completion',questionType:null,prompt:'Recorded'})
+  const malformedDraft=await malformed.draft()
+  await malformed.services.flows.updateFormSettings({...malformed.flow,expectedVersion:malformedDraft.flow.draftVersion,settings:{...malformedDraft.formSettings!,prefill:[{stepId:malformedDraft.steps[0].id,field:'company',locked:true}]}})
+  await malformed.publish()
+  const badContact=await malformed.services.distribution.contacts.save(malformed.scope.workspaceId,{name:'Synthetic invalid contact value',email:'synthetic-pencil-invalid@example.test',fields:{company:'Not an email'}}) as {id:string}
+  await malformed.services.distribution.launches.launch({...malformed.flow,operatorId:malformed.operatorId,contactIds:[badContact.id],commandKey:'synthetic-pencil-invalid-prefill'})
+  const badInvitation=(await env.DB.prepare('SELECT token FROM invitation_participants WHERE contact_id=?').bind(badContact.id).first<{token:string}>())!
+  expect((await malformed.services.responses.invitationFlow(badInvitation.token)).publicFlow.prefilledAnswers).toEqual({})
   await f.services.flows.closeFlow(f.scope.workspaceId, f.flow.flowId)
   await expect(f.services.responses.invitationFlow(f.p.token)).rejects.toThrow('no longer accepting')
 }, 60_000)

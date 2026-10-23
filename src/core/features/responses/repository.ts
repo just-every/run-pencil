@@ -34,6 +34,11 @@ export class ResponseRepository {
       WHERE p.token = ? AND p.contact_id IS NOT NULL`).bind(token).first<{ id: string; revisionId: string; responseStatus: string; completionStepId: string | null; slug: string }>()
   }
 
+  async invitationFields(participantId: string): Promise<Record<string,string>> {
+    const row = await this.binding.prepare('SELECT c.fields_json AS fields FROM distribution_contacts c JOIN invitation_participants p ON p.contact_id=c.id WHERE p.id=? AND c.opted_out_at IS NULL').bind(participantId).first<{fields:string}>()
+    return row ? JSON.parse(row.fields) : {}
+  }
+
   async ensureSession(session: SessionInsert) {
     await this.database.insert(respondentSessions).values(session).onConflictDoNothing()
   }
