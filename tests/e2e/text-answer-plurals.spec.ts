@@ -7,7 +7,7 @@ import { operatorEmail } from './auth-identity'
 import { contract } from './contract'
 import { expect, test, openMailLink } from './fixtures'
 
-contract(['RSLT-001', 'RSLT-002', 'BASE-PUBLIC-003'], 'selects answer grammar from matching text results through search', async ({ page }, info) => {
+contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'BASE-PUBLIC-003'], 'selects answer grammar from matching text results through search', async ({ page }, info) => {
   test.setTimeout(180000)
   const capture = async (state: string) => {
     if (!process.env.PENCIL_CAPTURE_DIR) return
@@ -48,6 +48,15 @@ contract(['RSLT-001', 'RSLT-002', 'BASE-PUBLIC-003'], 'selects answer grammar fr
   })
   draft = await call<BuilderDraft>(`${path}/draft`)
   await call(`${path}/publish`, { expectedVersion: draft.flow.draftVersion })
+
+  draft = await call<BuilderDraft>(`${path}/draft`)
+  await call(`${path}/publish`, { expectedVersion: draft.flow.draftVersion })
+  await page.goto(`/app/flows/${flow.id}/results`)
+  await expect(page.locator('.results-summary article').filter({has:page.getByText('Completion rate',{exact:true})}).locator('strong')).toHaveText('No rate')
+  await page.getByRole('button',{name:'Compare revisions',exact:true}).click()
+  await expect(page.getByText('No rate answered · 0 / 0 released responses from revisions containing this question',{exact:true})).toBeVisible()
+  await capture('empty-comparison')
+  await page.getByRole('button',{name:'Back to results',exact:true}).click()
 
   for (const [index, value] of ['seaglass firstlight', 'seaglass moonrise'].entries()) {
     const session = await call<{ sessionId: string; sessionToken: string }>(`/api/public/flows/${slug}/sessions`, { deviceClass: 'desktop', source: 'direct' })

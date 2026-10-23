@@ -40,7 +40,7 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'IMPORT-004', 'LEDG-001', 'BASE-PU
   await expect(metric('Completion rate')).toContainText('0 native completions / 0 views')
   await expect(metric('Average time')).toContainText('0ms total / 0 native completed responses')
   const counts = answers.getByText('How we count', { exact: true }); await counts.click()
-  await expect(answers.getByText('0 distinct sessions reached · 0 expired sessions ended here · 0% drop-off (0 / 0 reached sessions)')).toBeVisible()
+  await expect(answers.getByText('0 distinct sessions reached · 0 expired sessions ended here · No rate drop-off (0 / 0 reached sessions)')).toBeVisible()
   const ledger = page.getByRole('region', { name: 'Response ledger' })
   await ledger.getByLabel('Source', { exact: true }).selectOption('imported')
   await ledger.getByLabel('Device class',{exact:true}).selectOption('unknown')

@@ -24,7 +24,7 @@ export function RevisionComparison({ flowId, onClose }: { flowId: string; onClos
     {report?.revisions.length === 0 ? <p>No published revisions to compare.</p> : null}
     {report?.questions.map(question => <article className="quiet-panel" key={question.id} style={{ marginTop: '1rem', padding: '1rem' }} aria-label={`Question comparison: ${question.versions[0].prompt}`}>
       <h3>{question.versions[0].prompt}</h3>
-      <p className="muted">{question.eligibleResponses ? Math.round(question.answered / question.eligibleResponses * 100) : 0}% answered · {question.answered} / {question.eligibleResponses} released responses from revisions containing this question</p>
+      <p className="muted">{question.eligibleResponses ? `${Math.round(question.answered / question.eligibleResponses * 100)}%` : 'No rate'} answered · {question.answered} / {question.eligibleResponses} released responses from revisions containing this question</p>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 20rem), 1fr))', gap: '1rem', marginTop: '.75rem' }}>{report.revisions.map(revision => {
         const version = question.versions.find(value => value.revisionId === revision.id)
         return <section key={revision.id} className="quiet-panel" style={{ padding: '1rem' }} aria-label={`Revision ${revision.number}: ${version?.prompt ?? 'question absent'}`}>

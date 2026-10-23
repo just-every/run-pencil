@@ -2,7 +2,7 @@
 .trend-controls .builder-actions { align-self: end; }
 .trend-chart { margin: 1.5rem 0; }
 .trend-chart svg { width: 100%; height: auto; min-height: 150px; overflow: visible; }
-.trend-chart text { fill: var(--muted); font-size: 11px; }
+.trend-chart text { fill: var(--muted); font-size: 13px; }
 .trend-axis { stroke: var(--line); }
 .trend-line { fill: none; stroke: var(--ink); stroke-width: 2; }
 .trend-point { fill: var(--ink); }
@@ -10,7 +10,7 @@
 .trend-table-scroll { overflow-x: auto; }
 .trend-table { border-collapse: collapse; width: 100%; min-width: 640px; margin-block: 1rem; }
 .trend-table caption { text-align: left; margin-bottom: .75rem; }
-.trend-table th,.trend-table td { text-align: left; vertical-align: top; padding: .65rem; border-bottom: 1px solid var(--line); overflow-wrap: normal; }
+.trend-table th,.trend-table td { text-align: left; vertical-align: top; padding: .65rem; border: 1px solid var(--line); overflow-wrap: normal; }
 .trend-table th:first-child { min-width: 95px; }
 .trend-table p { margin: 0 0 .5rem; }
 

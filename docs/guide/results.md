@@ -50,7 +50,7 @@ Bot checks run only when a response is submitted. A signed form-load timestamp m
 
 Narrow the list with these filters. They combine with **Published revision** and apply to the summary cards, answer summaries, device split, ledger and exports. Traffic, crosstabs and trends have their own controls:
 
-- **Response revision** and **Source**: **Direct link**, **Embed**, **Invitation** or **Imported**. Responses recorded by an earlier runtime may show **Historical source unavailable**.
+- **Source**: **Direct link**, **Embed**, **Invitation** or **Imported**. Responses recorded by an earlier runtime may show **Historical source unavailable**.
 - **Participant status**: **Eligible** or **Opted out**, for responses from invited people. The list also offers **Bounced**, but it always shows nothing in this release, because Pencil receives no bounce reports from your mail provider.
 - **Submitted from** and **Submitted through**, as dates in your workspace time zone.
 - **Structured question** with **Answer contains / equals**, to find everyone who gave a particular answer.

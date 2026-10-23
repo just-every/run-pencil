@@ -51,6 +51,29 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
   await text.getByRole('searchbox').fill('answer 0'); await expect(text.getByText('Exact retained answer 0', { exact: true })).toBeVisible()
   await text.getByRole('searchbox').fill(''); await text.getByRole('button', { name: 'Show more answers' }).click()
   await expect(text.getByText('Exact retained answer 0', { exact: true })).toBeVisible()
+  const choiceCard=(type:string)=>answers.locator('.question-card').filter({has:page.getByRole('heading',{name:`Question ${type}`,exact:true})})
+  await expect(choiceCard('multiple_choice').locator('.answer-scope')).toContainText('Multiple select; shares may total more than 100%.')
+  await expect(choiceCard('multiple_choice').locator('.answer-bucket strong')).toHaveText(['12 of 12 answers · 100%','12 of 12 answers · 100%'])
+  for(const type of ['single_choice','dropdown','yes_no','consent']) {
+    const labels=await choiceCard(type).locator('.answer-bucket strong').allTextContents()
+    expect(labels.reduce((sum,label)=>sum+Number(label.split(' ')[0]),0)).toBe(12)
+    expect(labels).toEqual(['6 of 12 answers · 50%','6 of 12 answers · 50%'])
+  }
+  for(const type of ['rating','nps']) {
+    const labels=await choiceCard(type).locator('.answer-bucket strong').allTextContents()
+    expect(labels.reduce((sum,label)=>sum+Number(label.split(' ')[0]),0)).toBe(12)
+    expect(labels.every(label=>label.includes('of 12 answers'))).toBe(true)
+  }
+  const trends=page.getByRole('region',{name:'Trends over time',exact:true})
+  await trends.getByLabel('Trend question',{exact:true}).selectOption(scenario.questions.find(question=>question.questionType==='yes_no')!.id)
+  await trends.getByLabel('Answer to chart',{exact:true}).selectOption('true')
+  await trends.getByLabel('Minimum answers per period',{exact:true}).fill('1')
+  await trends.getByLabel('Period',{exact:true}).selectOption('quarter')
+  await trends.getByRole('button',{name:'Show trends',exact:true}).click()
+  const trendValues=trends.getByRole('region',{name:'Trend period values',exact:true})
+  await expect(trendValues.getByRole('cell',{name:'50% 6 matching answers / 12 answered responses',exact:true})).toBeVisible()
+  await capture('trend-numerator')
+  if(process.env.PENCIL_CAPTURE_DIR) await trends.screenshot({path:join(process.env.PENCIL_CAPTURE_DIR,`${info.project.name}-trend-table.png`)})
   await capture('summary')
 
   const responseFilters = page.getByRole('region',{name:'Response ledger'})
@@ -80,7 +103,9 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
   await expect(devices).toContainText('0 filtered native responses')
   await expect(metric('Responses').locator('strong')).toHaveText('0')
   await expect(metric('Starts').locator('strong')).toHaveText('0')
+  await expect(choiceCard('single_choice').locator('.answer-bucket strong')).toHaveText(['0 of 0 answers · No rate','0 of 0 answers · No rate'])
   await expect(metric('Completion rate')).toContainText('0 native completions / 0 filtered native response starts')
+  await expect(metric('Completion rate').locator('strong')).toHaveText('No rate')
   await expect(metric('Average time')).toContainText('0ms total / 0 native completed responses')
   await responseFilters.getByLabel('Device class',{exact:true}).selectOption('')
   await responseFilters.getByLabel('Answer contains / equals').selectOption('false')
@@ -111,6 +136,7 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
   await expect(metric('Responses').locator('strong')).toHaveText('12')
   await expect(metric('Starts').locator('strong')).toHaveText('12')
   await expect(metric('Completion rate')).toContainText('12 native completions / 0 views')
+  await expect(metric('Completion rate').locator('strong')).toHaveText('No rate')
   await expect(metric('Average time')).toContainText('12 native completed responses')
 
   const crosstab = page.locator('section.crosstab')
