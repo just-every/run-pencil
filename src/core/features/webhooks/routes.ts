@@ -7,13 +7,18 @@ import { createEndpointSchema } from './model'
 
 const endpointParam = validateInput('param', z.object({ endpointId: resourceId }))
 const deliveryParam = validateInput('param', z.object({ deliveryId: resourceId }))
+const ledgerQuery = validateInput('query', z.object({ state: z.enum(['pending', 'confirmed', 'unknown', 'failed']).optional() }))
 const deliveryQuery = validateInput('query', z.object({ endpointId: resourceId.optional(), status: z.enum(['pending', 'sending', 'confirmed', 'failed', 'cancelled']).optional() }))
 
 /** INTEG-010: the owner registers, tests, pauses, rotates and removes endpoints; signed-in operators read the ledger. The signing secret is shown once. */
 export function registerWebhookRoutes(app: Hono<WorkerEnvironment>) {
   const webhooks = (context: Parameters<typeof requireConnectionOwner>[0]) => context.get('services').webhooks
   app.get('/api/app/webhooks', async c => c.json({ endpoints: await webhooks(c).endpoints.list(c.get('operatorSession').workspaceId) }))
-  app.get('/api/app/webhooks/alerts', async c => c.json({ alerts: await webhooks(c).endpoints.alerts(c.get('operatorSession').workspaceId) }))
+  app.get('/api/app/webhooks/alerts', async c => {
+    const { workspaceId } = c.get('operatorSession')
+    return c.json({ alerts: [...await webhooks(c).endpoints.alerts(workspaceId), ...await webhooks(c).ledger.taskAlerts(workspaceId)] })
+  })
+  app.get('/api/app/integration-deliveries', ledgerQuery, async c => c.json({ deliveries: await webhooks(c).ledger.list(c.get('operatorSession').workspaceId, c.req.valid('query')) }))
   app.get('/api/app/webhooks/deliveries', deliveryQuery, async c => c.json({ deliveries: await webhooks(c).deliveries.list(c.get('operatorSession').workspaceId, c.req.valid('query')) }))
   app.get('/api/app/webhooks/:endpointId/undelivered', endpointParam, async c => {
     const { workspaceId } = c.get('operatorSession'), { endpointId } = c.req.valid('param')
