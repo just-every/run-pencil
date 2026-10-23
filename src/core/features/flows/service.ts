@@ -1,5 +1,5 @@
 import type { LedgerFilter } from '../reporting'
-import { closedFlowFor } from '../responses/closed'
+import { closedFlowFor } from '../../shared/closedFlow'
 import { marketingPublicationIssues } from '../../shared/marketingConsent'
 import { respondentTextPublicationIssues } from '../../shared/respondentText'
 import { confirmationPublicationIssues, remapConfirmationSettings } from '../../shared/confirmationSettings'

@@ -1,5 +1,5 @@
 import { consentRecords } from '../../shared/marketingConsent'
-import { closedFlowFor } from './closed'
+import { closedFlowFor } from '../../shared/closedFlow'
 import { issuePrefillProof, readPrefillProof } from './prefillProof'
 import { resolvePrefills, prefillMarkers } from '../../shared/knownDataPrefill'
 import { presentationOrder, presentFlow, retainedPresentation, type PresentationOrder } from '../../shared/presentationOrder'
