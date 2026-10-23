@@ -219,7 +219,7 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
     await visitor.goto(host.origin)
     const frame = visitor.frameLocator('iframe')
     await expect(frame.getByRole('spinbutton',{name:quantity.prompt,exact:true})).toBeVisible()
-    const observationErrors=await observeEmbedMessages(visitorContext,visitor.frames().find(frame=>frame.url().includes('/embed/'))!,value=>checkoutMessages.push(value as typeof checkoutMessages[number]))
+    const observationErrors=await observeEmbedMessages(visitorContext,visitor,value=>checkoutMessages.push(value as typeof checkoutMessages[number]))
     await expect(visitor.locator('iframe')).toHaveAttribute('sandbox', 'allow-scripts allow-forms allow-top-navigation-by-user-activation')
     await frame.getByRole('spinbutton', { name: quantity.prompt, exact: true }).fill('3')
     await frame.getByRole('button', { name: 'Continue', exact: true }).click()

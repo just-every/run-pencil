@@ -64,8 +64,8 @@ export function missingLandingSelection() {
 }
 
 /** Observe the real send call. Cross-origin WindowProxy calls bypass a parent's JavaScript method override. */
-export async function observeEmbedMessages(context: import('@playwright/test').BrowserContext, frame: import('@playwright/test').Frame, receive: (message: {payload:unknown;targetOrigin:string})=>void) {
-  const session = await context.newCDPSession(frame)
+export async function observeEmbedMessages(context: import('@playwright/test').BrowserContext, page: import('@playwright/test').Page, receive: (message: {payload:unknown;targetOrigin:string})=>void) {
+  const session = await context.newCDPSession(page)
   const scripts: Array<{scriptId:string;url:string}> = [], errors:string[]=[]
   const expressions = new Map<string,string>()
   session.on('Debugger.scriptParsed',script=>scripts.push(script))
