@@ -45,8 +45,7 @@ function fixture() {
     insert('responses', { id, workspace_id: 'workspace', flow_id: 'flow', revision_id: revision, session_id: `${id}-removed-session`, session_token_hash: `${id}-hash`, idempotency_key: `${id}-receipt`, state, quarantine_reason: state === 'quarantined' ? 'minimum-fill-time' : null, released_at: state === 'released' ? stamp : null, completed_at: stamp, created_at: stamp, updated_at: stamp, source: 'direct', started_at: stamp, device_class: state === 'released' ? 'mobile' : 'tablet', response_context_json: JSON.stringify({prefill:{'stable-question':'edited'}}) });
     insert('response_answers', { id: `${id}-answer`, response_id: id, step_id: 'stable-question', value_json: JSON.stringify('  Exact 😀 line\n=literal,"quote"\u0000\t  '), created_at: stamp, updated_at: stamp });
   }
-  insert('response_versions',{response_id:'completed',number:1,answers_json:JSON.stringify([{stepId:'question',value:'Original synthetic answer'}]),context_json:'{}',created_at:stamp});
-  insert('response_versions',{response_id:'completed',number:2,answers_json:JSON.stringify([{stepId:'question',value:'Edited synthetic answer'}]),context_json:'{}',created_at:stamp});
+  for(let number=1;number<=102;number++)insert('response_versions',{response_id:'completed',number,answers_json:JSON.stringify([{stepId:'question',value:`Synthetic answer ${number}`}]),context_json:JSON.stringify({prefill:{'stable-question':`version ${number}`},calculations:{total:number*2}}),created_at:stamp});
   insert('response_edit_links',{hash:'synthetic-pencil-edit-token-hash',response_id:'completed',version:1,expires_at:stamp,created_at:stamp});
   for(const kind of ['slack','teams'])insert('integration_connections',{kind,sealed:'synthetic-pencil-private-chat-ciphertext',updated_at:stamp});
   insert('answer_alert_evaluations',{response_id:'completed',created_at:stamp});
@@ -143,7 +142,7 @@ test('full current-data roundtrip preserves prefill markers, disabled confirmati
     const database = new DatabaseSync(f.restored, { readOnly: true });
     assert.deepEqual(database.prepare('SELECT id,device_class FROM responses ORDER BY id').all().map(row=>[row.id,row.device_class]), [['completed','mobile'],['suspected','tablet']]);
     assert.deepEqual(JSON.parse(database.prepare("SELECT response_context_json AS context FROM responses WHERE id='completed'").get().context).prefill, {'stable-question':'edited'});
-    assert.deepEqual(database.prepare("SELECT number,answers_json FROM response_versions WHERE response_id='completed' ORDER BY number").all().map(row=>({number:row.number,answers:JSON.parse(row.answers_json)})),[{number:1,answers:[{stepId:'question',value:'Original synthetic answer'}]},{number:2,answers:[{stepId:'question',value:'Edited synthetic answer'}]}]);
+    assert.deepEqual(database.prepare("SELECT number,answers_json,context_json FROM response_versions WHERE response_id='completed' ORDER BY number").all().map(row=>({number:row.number,answers:JSON.parse(row.answers_json),context:JSON.parse(row.context_json)})),Array.from({length:102},(_,index)=>({number:index+1,answers:[{stepId:'question',value:`Synthetic answer ${index+1}`}],context:{prefill:{'stable-question':`version ${index+1}`},calculations:{total:(index+1)*2}}})));
     assert.equal(database.prepare('SELECT count(*) AS n FROM response_edit_links').get().n,0);
     assert.deepEqual({...database.prepare("SELECT status,armed,attempts FROM answer_alert_deliveries WHERE id='synthetic-pencil-alert'").get()},{status:'pending',armed:0,attempts:1});
     assert.equal(database.prepare("SELECT count(*) AS n FROM answer_alert_evaluations WHERE response_id='completed'").get().n,1);

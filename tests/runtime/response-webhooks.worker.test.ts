@@ -28,8 +28,10 @@ contract(['INTEG-010', 'INTEG-015', 'DATA-002', 'RESP-021', 'INTEG-006'], 'signe
   await env.DB.prepare("UPDATE oa_operators SET role='owner' WHERE id=?").bind(f.lead.operatorId).run()
   await env.DB.prepare('UPDATE oa_sessions SET operator_version=(SELECT version FROM oa_operators WHERE id=operator_id) WHERE operator_id=?').bind(f.lead.operatorId).run()
   const received: Received[] = [], answers = new Map<string, Answer>()
+  const actualFetch=globalThis.fetch.bind(globalThis)
   const network = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
     const url = String(input instanceof Request ? input.url : input)
+    if(url.startsWith((env as unknown as {EXPORT_READER_ORIGIN:string}).EXPORT_READER_ORIGIN+'/'))return actualFetch(input,init)
     if (!url.startsWith(receiverOrigin)) throw new Error('Unexpected external request')
     const headers = new Headers(init?.headers), request: Received = { url, eventId: headers.get('pencil-event-id')!, eventType: headers.get('pencil-event-type')!, timestamp: headers.get('pencil-timestamp')!, signature: headers.get('pencil-signature')!, body: String(init?.body) }
     expect(init?.redirect).toBe('manual')

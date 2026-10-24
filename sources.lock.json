@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "0eff0cd8b9335e4f036adf314e86a06894745bdba174584555964962fc6fe6f6",
+      "sha256": "a3706e61efbd6e7c79d62c0c0c8729d9f69c19d59a227ca8c78ad85dd34e96db",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "3146873485916ec7ba8f246b7a192c70028f0e752f1e2ac674545a3dfd231fa2",
+      "sha256": "6e89345bc5cd846f016414bafcd23a7cb7a0c6e7ea8452e1aa6890fbd73938b7",
       "executable": false
     },
     "DEMO.md": {
@@ -1817,7 +1817,7 @@
       "executable": false
     },
     "scripts/deployment-data.check.mjs": {
-      "sha256": "37f268c58aef2398527c2559f9df2510729810f3dce22c6e7bf476d0569b8a35",
+      "sha256": "b4f314eb7fb9846232806b03a6f97e5b8f4494c574388e55439c9fe62a3b0024",
       "executable": false
     },
     "scripts/deployment-data.mjs": {
@@ -7065,7 +7065,7 @@
       "executable": false
     },
     "test-budget.json": {
-      "sha256": "c97bc0743ef6545ee55aca331f7b308ee9fc33b9471b6e07a88cd4bb5d9d4a2d",
+      "sha256": "8d0fdf98043d638aa6612f1c46a004b7bb58a4c8c1aa5c8c18f3d4f44bbfe652",
       "executable": false
     },
     "tests/admission/management-edge.mjs": {
@@ -8009,11 +8009,11 @@
       "executable": false
     },
     "tests/runtime/respondent-confirmations.worker.test.ts": {
-      "sha256": "f52dea18c69e032c98cfa5606b6b124bb85e60ba26b76e7ae6c6cd7e9309b62a",
+      "sha256": "818f1d73dc4c31738bbdad8d462566e7ce2197c52c12569854d7900341f8ee5a",
       "executable": false
     },
     "tests/runtime/response-edit-proof.ts": {
-      "sha256": "e32a3a0f130d0cb2bc159d72a10e54677e141c1b3787fa59779da02b4a16e4c4",
+      "sha256": "c24bb373f1873b6b2bd4f0586c431ff90e011b513e7787e39740faf2d35f73dd",
       "executable": false
     },
     "tests/runtime/response-paid-edit-proof.ts": {
@@ -8021,7 +8021,7 @@
       "executable": false
     },
     "tests/runtime/response-webhooks.worker.test.ts": {
-      "sha256": "438f129a54162ce653b72aacb7e37c3ddbdcc2b2a6f56314db9f3d7c451db61a",
+      "sha256": "a12a776571b12fc7663137f85d61364c349d7b578189ccd6890650c19427064d",
       "executable": false
     },
     "tests/runtime/restricted-access.worker.test.ts": {

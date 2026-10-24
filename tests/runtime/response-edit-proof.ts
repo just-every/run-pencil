@@ -51,6 +51,44 @@ export async function proveResponseEdit(f:Awaited<ReturnType<typeof actionsHttp>
  expect((await report()).find(question=>question.id===quantity.id)).toMatchObject({answered:1,summary:{minimum:7,median:7,maximum:7}})
  expect(await okay(await f.call(`/api/app/flows/${created.id}/results`))).toMatchObject({completedResponses:1})
  expect(result.version).toBe(2)
+ // Ordinary export doors expose one current response, never the retained versions.
+ const exportBytes=async(format:string)=>{
+  const start=await okay<{token:string}>(await f.call('/api/app/flows/'+created.id+'/responses/export/start?format='+format))
+  const parts:Uint8Array[]=[]
+  for(let token:string|null=start.token;token;){
+   const response=await f.call('/api/app/flows/'+created.id+'/responses/export?token='+encodeURIComponent(token))
+   expect(response.status).toBe(200);parts.push(new Uint8Array(await response.arrayBuffer()));token=response.headers.get('x-export-next')
+  }
+  const bytes=new Uint8Array(parts.reduce((size,part)=>size+part.length,0));let offset=0
+  for(const part of parts){bytes.set(part,offset);offset+=part.length}return bytes
+ }
+ const assertCurrent=(value:unknown)=>{
+  const text=JSON.stringify(value)
+  expect(text).toContain('Synthetic feedback after editing');expect(text).not.toContain('Synthetic feedback before editing')
+  expect(text).not.toMatch(/response_versions|retainedVersions|"versions"|"history"/)
+ }
+ const exported=JSON.parse(new TextDecoder().decode(await exportBytes('json')))
+ expect(exported.responses).toHaveLength(1);expect(exported.responses[0].id).toBe(row.id);assertCurrent(exported)
+ expect(exported.responses[0].answers).toHaveLength(edited.length)
+ expect(exported.responses[0].answers).toEqual(expect.arrayContaining(edited.map(answer=>expect.objectContaining(answer))))
+ // Parse quoted CSV fields, including embedded commas, escaped quotes and newlines.
+ const csv=new TextDecoder().decode(await exportBytes('csv')),table:string[][]=[[]];let field='',quoted=false
+ for(let i=0;i<csv.length;i++){const char=csv[i];if(quoted){if(char==='"'&&csv[i+1]==='"'){field+='"';i++}else if(char==='"')quoted=false;else field+=char}else if(char==='"')quoted=true;else if(char===','){table.at(-1)!.push(field);field=''}else if(char==='\r'&&csv[i+1]==='\n'){table.at(-1)!.push(field);field='';table.push([]);i++}else field+=char}table.at(-1)!.push(field)
+ expect(table).toHaveLength(2);expect(table[1][0]).toBe(row.id);assertCurrent(table)
+ expect(JSON.parse(table[1][table[0].indexOf('answers_json')])).toHaveLength(edited.length)
+ expect(JSON.parse(table[1][table[0].indexOf('answers_json')])).toEqual(expect.arrayContaining(edited.map(answer=>expect.objectContaining(answer))))
+ const reader=(env as unknown as {EXPORT_READER_ORIGIN:string}).EXPORT_READER_ORIGIN
+ const independent=async(format:'xlsx'|'sav')=>{
+  const response=await fetch(reader+'/'+format,{method:'POST',body:await exportBytes(format)})
+  expect(response.status,await response.clone().text()).toBe(200);return response.json() as Promise<any>
+ }
+ const workbook=await independent('xlsx'),responses=workbook.sheets.find((sheet:any)=>sheet.name==='Responses').rows
+ expect(responses).toHaveLength(2);expect(responses[1][0]).toBe(row.id);assertCurrent(workbook)
+ expect(JSON.parse(responses[1][responses[0].indexOf('answers_json')])).toHaveLength(edited.length)
+ expect(JSON.parse(responses[1][responses[0].indexOf('answers_json')])).toEqual(expect.arrayContaining(edited.map(answer=>expect.objectContaining(answer))))
+ const sav=await independent('sav');expect(sav.header.n_cases).toBe(1);expect(sav.rows).toHaveLength(1);expect(sav.rows[0].response_id).toBe(row.id);assertCurrent(sav)
+ expect(sav.rows[0][sav.variables.find((variable:any)=>variable.label==='Quantity').name]).toBe(7)
+
  const history=await okay<{versions:Array<{number:number;current:boolean;createdAt:string;answers:typeof answers;context:{calculations:Record<string,number>}}> }>(await f.call(`/api/app/responses/${row.id}/versions`))
  expect(history.versions).toHaveLength(2)
  expect(history.versions[0]).toMatchObject({number:2,current:true,answers:expect.arrayContaining(edited),context:{calculations:{'synthetic-total':14}}})
@@ -78,7 +116,9 @@ export async function proveResponseEdit(f:Awaited<ReturnType<typeof actionsHttp>
   env.DB.prepare('UPDATE response_versions SET number=number+100 WHERE response_id=? AND number=1').bind(row.id),
  ])
  await env.DB.batch(Array.from({length:100},(_,index)=>env.DB.prepare('INSERT INTO response_versions(response_id,number,answers_json,context_json,created_at) SELECT response_id,?,answers_json,context_json,created_at FROM response_versions WHERE response_id=? AND number=101').bind(index+1,row.id)))
- expect((await okay<{versions:unknown[]}>(await f.call(`/api/app/responses/${row.id}/versions`))).versions).toHaveLength(100)
+ const newest=(await okay<{versions:Array<{number:number;current:boolean}>}>(await f.call(`/api/app/responses/${row.id}/versions`))).versions
+ expect(newest.map(version=>version.number)).toEqual(Array.from({length:100},(_,index)=>102-index))
+ expect(newest.filter(version=>version.current).map(version=>version.number)).toEqual([102])
  const [complete,...retained]=await download()
  expect(complete).toMatchObject({currentVersion:102,retainedVersions:102})
  expect(retained).toHaveLength(102);expect(retained.map(version=>version.number)).toEqual(Array.from({length:102},(_,index)=>102-index))

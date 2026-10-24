@@ -22,6 +22,7 @@ contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released co
  await f.add({kind:'question',questionType:'short_text',prompt:'Optional note',required:false})
  await f.add({kind:'question',questionType:'date',prompt:'Visit date',required:true,questionSettings:{displayFormat:'MM/DD/YYYY'}})
  await f.add({kind:'question',questionType:'number',prompt:'Party size',required:true})
+ await f.add({kind:'question',questionType:'email',prompt:'Unmarked mailbox',required:false})
  await f.add({kind:'completion',questionType:null,prompt:'Recorded'})
  const draft=await f.draft(),[email,text,skipped,date,number]=draft.steps
  const settings={...draft.formSettings!,responseEdits:{enabled:true,deadline:new Date(Date.now()+86400000).toISOString()},hiddenFields:[{id:'campaign',name:'campaign',type:'text' as const,category:'plain' as const}],calculations:[{id:'double',name:'Double',type:'number' as const,expression:{kind:'multiply' as const,left:{kind:'answer' as const,stepId:number.id},right:{kind:'literal' as const,value:2}}}],confirmation:{enabled:true,includeAnswers:true,answerTypes:['short_text','date','number'],emailStepId:email.id,subject:`Received {{${text.id}}}`,body:`Answer {{${text.id}}}; hidden {{hidden:campaign}}; calculated {{variable:double}}; skipped [{{${skipped.id}}}]`}}
@@ -30,7 +31,7 @@ contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released co
  const submit=async(options:{immature?:boolean;honeypot?:string;token?:string;mailbox?:string}={})=>{
   const session=await start(f,options.token)
   if(!options.immature)await f.mature(session.sessionId)
-  await final(f,session,[{stepId:email.id,value:options.mailbox??'synthetic-pencil-receipt@example.test'},{stepId:text.id,value:'<script>alert(1)</script> {{hidden:campaign}}'},{stepId:date.id,value:'2026-07-04'},{stepId:number.id,value:3}],options.honeypot??'',options.token,{campaign:'Synthetic <campaign>'})
+  await final(f,session,[{stepId:email.id,value:options.mailbox??'synthetic-pencil-receipt@example.test'},{stepId:text.id,value:'<script>alert(1)</script> {{hidden:campaign}}'},{stepId:date.id,value:'2026-07-04'},{stepId:number.id,value:3},{stepId:draft.steps[5].id,value:'synthetic-pencil-unmarked@example.test'}],options.honeypot??'',options.token,{campaign:'Synthetic <campaign>'})
   return {session,row:await env.DB.prepare('SELECT id,state FROM responses WHERE session_id=?').bind(session.sessionId).first<{id:string;state:string}>()}
  }
  const sent:Array<any>=[]
@@ -43,6 +44,8 @@ contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released co
   await dispatcher.run(new Date(now+60_000).toISOString());await dispatcher.run(new Date(now+120_000).toISOString())
   expect(sent).toHaveLength(2)
   expect(new Set(sent.map(message=>message.custom_args.rer_delivery_id)).size).toBe(1)
+  expect(await env.DB.prepare('SELECT version FROM response_edit_links WHERE response_id=?').bind(completed.row!.id).first()).toEqual({version:1})
+  expect((await env.DB.prepare('SELECT recipient FROM confirmation_deliveries WHERE response_id=?').bind(completed.row!.id).all()).results).toEqual([{recipient:'synthetic-pencil-receipt@example.test'}])
   const message=sent[1],html=message.content.find((part:any)=>part.type==='text/html').value,plain=message.content.find((part:any)=>part.type==='text/plain').value
   expect(message.personalizations[0].to).toEqual([{email:'synthetic-pencil-receipt@example.test'}])
   expect(message.headers).not.toHaveProperty('Reply-To')
@@ -61,15 +64,20 @@ contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released co
   const noQuestion=await foundationFixture('synthetic-pencil-no-confirmation-address')
   await noQuestion.add({kind:'question',questionType:'short_text',prompt:'Feedback',required:true});await noQuestion.add({kind:'completion',questionType:null,prompt:'Recorded'})
   const noDraft=await noQuestion.draft()
-  await noQuestion.services.flows.updateFormSettings({...noQuestion.flow,expectedVersion:noDraft.flow.draftVersion,settings:{...noDraft.formSettings!,confirmation:{enabled:true,includeAnswers:false,answerTypes:[],subject:'Response receipt',body:'Thank you.'}}});await noQuestion.publish()
+  await noQuestion.services.flows.updateFormSettings({...noQuestion.flow,expectedVersion:noDraft.flow.draftVersion,settings:{...noDraft.formSettings!,responseEdits:{enabled:true,deadline:new Date(Date.now()+86400000).toISOString()},confirmation:{enabled:true,includeAnswers:false,answerTypes:[],subject:'Response receipt',body:'Thank you.'}}});await noQuestion.publish()
   const noSession=await start(noQuestion);await noQuestion.mature(noSession.sessionId);await final(noQuestion,noSession,[{stepId:noDraft.steps[0].id,value:'Anonymous feedback'}]);await dispatcher.run()
   expect(sent).toHaveLength(4)
+  const anonymous=(await env.DB.prepare('SELECT id FROM responses WHERE session_id=?').bind(noSession.sessionId).first<{id:string}>())!
+  expect((await env.DB.prepare('SELECT hash FROM response_edit_links WHERE response_id=?').bind(anonymous.id).all()).results).toEqual([])
   const contact=await noQuestion.services.distribution.contacts.save(noQuestion.scope.workspaceId,{name:'Synthetic participant',email:'synthetic-pencil-participant@example.test'}) as {id:string}
   await noQuestion.services.distribution.launches.launch({...noQuestion.flow,operatorId:noQuestion.operatorId,contactIds:[contact.id],commandKey:'synthetic-pencil-confirmation-participant'})
   const invitation=(await env.DB.prepare('SELECT token FROM invitation_participants WHERE contact_id=? AND revision_id=?').bind(contact.id,noSession.revisionId).first<{token:string}>())!
   const identified=await start(noQuestion,invitation.token);await noQuestion.mature(identified.sessionId)
   await final(noQuestion,identified,[{stepId:noDraft.steps[0].id,value:'Identified feedback'}],'',invitation.token);await dispatcher.run()
   expect(sent).toHaveLength(5);expect(sent.at(-1).personalizations[0].to).toEqual([{email:'synthetic-pencil-participant@example.test'}])
+  const participant=(await env.DB.prepare('SELECT id FROM responses WHERE session_id=?').bind(identified.sessionId).first<{id:string}>())!
+  expect((await env.DB.prepare('SELECT version FROM response_edit_links WHERE response_id=?').bind(participant.id).all()).results).toEqual([{version:1}])
+  expect(sent.at(-1).content.find((part:any)=>part.type==='text/plain').value).toMatch(/\?edit=[a-f0-9]{64}/)
   const opted=await noQuestion.services.distribution.contacts.save(noQuestion.scope.workspaceId,{name:'Synthetic opted out',email:'synthetic-pencil-opted@example.test'}) as {id:string}
   await noQuestion.services.distribution.launches.launch({...noQuestion.flow,operatorId:noQuestion.operatorId,contactIds:[opted.id],commandKey:'synthetic-pencil-confirmation-opted'})
   const optedInvite=(await env.DB.prepare('SELECT token,opt_out_token AS optOutToken FROM invitation_participants WHERE contact_id=?').bind(opted.id).first<{token:string;optOutToken:string}>())!
