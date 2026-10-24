@@ -44,11 +44,12 @@ export async function runVitestJson(root, { config, files = [], exclude = [], en
     for (const key of ['PENCIL_ARCHIVE_GROUP', 'PENCIL_PREVIOUS_MIGRATIONS_DIR', 'PENCIL_UPGRADE_FIXTURE_PATH', 'PENCIL_UPGRADE_CHECKS_JSON']) delete inheritedEnv[key]
     const result = await new Promise((resolve, reject) => {
       const child = spawnChild(process.execPath, args, { cwd: root, env: { ...inheritedEnv, ...env }, stdio: ['ignore', 'pipe', 'pipe'] })
-      child.stdout.resume()
+      let stdout = ''
+      child.stdout.on('data', chunk => { stdout += chunk })
       let stderr = ''
       child.stderr.on('data', chunk => { stderr += chunk })
       child.on('error', reject)
-      child.on('close', code => resolve({ code: code ?? 1, stderr }))
+      child.on('close', code => resolve({ code: code ?? 1, stderr, stdout }))
     })
     let report
     try { report = JSON.parse(await readFile(output, 'utf8')); vitestPassedTests(report) } catch (error) {
