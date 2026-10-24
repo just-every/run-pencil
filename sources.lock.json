@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "19d5fcf2f0d54cec2196d8818d3bdb7dad74dd58393bfb17207012ca319a3494",
+      "sha256": "f6dffb6a37052ac85e38959e14f2a6d37b91425b4cec25772feecec540659734",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "a8f8ad8fc8630f156b182d895b81b921098a2e7f7b384662413c73c1c6f8ee69",
+      "sha256": "30519555cb6a7c67f5a22f39dc160adb81fb6a2052af16104f98d750137283fc",
       "executable": false
     },
     "DEMO.md": {
@@ -1025,7 +1025,7 @@
       "executable": false
     },
     "docs/guide/build-a-form.md": {
-      "sha256": "ea3f692190606f25ede06576dacaaa2df56a6747b5fb038f40b3ecb15a8d5786",
+      "sha256": "f02f72e6dead34752d231786ec46f1f5d490e6a520895bcc53548a127203fb33",
       "executable": false
     },
     "docs/guide/getting-started.md": {
@@ -4617,7 +4617,7 @@
       "executable": false
     },
     "src/core/features/embedding/script.ts": {
-      "sha256": "729b9fcc61a72ea6fee2cae7134dec0debcb7384bb1416bdad393416f1849b56",
+      "sha256": "b9ff2bb57385613045a548636761ef23d6d657ef441d9ec9ba3d731e479d353f",
       "executable": false
     },
     "src/core/features/flows/authoring.ts": {
@@ -6057,7 +6057,7 @@
       "executable": false
     },
     "src/core/features/studio/model.ts": {
-      "sha256": "16ebcd9f596e5eab2cd6162baed5bcd3182253a06c9a8ff1868475bd994b2eb2",
+      "sha256": "69a4fd1fd7442b433ec03f1b20f0091b881cd41f1a9b318abe768456ed457f1b",
       "executable": false
     },
     "src/core/features/studio/routes.ts": {
@@ -6065,7 +6065,7 @@
       "executable": false
     },
     "src/core/features/studio/service.ts": {
-      "sha256": "b0771454ea2e542ee069e3062d1de4c6fb44bc12509283b14f3db404360cafcf",
+      "sha256": "82fe6cad7612ecf6e0f4f0e006d449f3a53d6b55513dc03540179d7088da5c8c",
       "executable": false
     },
     "src/core/features/studio/ui/api.ts": {
@@ -6089,7 +6089,7 @@
       "executable": false
     },
     "src/core/features/studio/validate.ts": {
-      "sha256": "a7bbb86c932a573416dca6de8c8bc539427c4357da0faffb9cea7befacdfe6b7",
+      "sha256": "1e260fa5d0c62aded5752a87b4a4666e921df9dae02f4c47acb684df71d85832",
       "executable": false
     },
     "src/core/features/submissions/filter.ts": {
@@ -7089,7 +7089,7 @@
       "executable": false
     },
     "tests/e2e/script-embed.spec.ts": {
-      "sha256": "aa0688762789be1fcea48931db03e87c2b241277b99620f07df0716e6644a25c",
+      "sha256": "a3bed927f295de23dd90d52f4c5e10f497bda52ad1da1ac06b1ef7aacddcd858",
       "executable": false
     },
     "tests/e2e/session-recovery-http.spec.ts": {
@@ -7117,7 +7117,7 @@
       "executable": false
     },
     "tests/e2e/studio-journey.ts": {
-      "sha256": "dcc2a1e06f0ec9ad36dcaa48b12ff52c3eac5608c0d761e1fcc780647908f7fc",
+      "sha256": "f8daf22c31c11f79583ac21afe04f244aa8383e6067141d8edb765d75204e6c8",
       "executable": false
     },
     "tests/e2e/surveymonkey-import.spec.ts": {
@@ -7133,7 +7133,7 @@
       "executable": false
     },
     "tests/e2e/templates.spec.ts": {
-      "sha256": "82ba9f9c11baa69dca0fd39a466a1dda6c8eccb4839898ac24cecfebf0ff1ccf",
+      "sha256": "1162443e51da71947b46bfc9235f8869e7aa48caec033654b2653df4eb2911f2",
       "executable": false
     },
     "tests/e2e/text-answer-plurals.spec.ts": {
@@ -7237,7 +7237,7 @@
       "executable": false
     },
     "tests/fixtures/studio.ts": {
-      "sha256": "4e1499e7429f3b94f7bd6505812b90ad4ffc7ac7b01b74abfdf4e213a7417299",
+      "sha256": "f5c979abd780622ad6c43bbbd897921c7df09151dce43d99ec822d6c7feccd94",
       "executable": false
     },
     "tests/helpers/captured-mail.server.ts": {
@@ -7705,7 +7705,7 @@
       "executable": false
     },
     "tests/runtime/studio-scenario.ts": {
-      "sha256": "ad74048495191664980114f21bd65aae414765e242fa115ef76833cf311270d8",
+      "sha256": "8662252ecbc97d4030e933c4488e7f12ff537b2ebb0376c9c82995a08196b59b",
       "executable": false
     },
     "tests/runtime/submissions.worker.test.ts": {

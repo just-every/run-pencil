@@ -42,9 +42,30 @@ export async function exerciseStudio(f:Fixture,other:Fixture,off:Fixture){
  for(const mutate of mutations){
   const output=structuredClone(studioForm());mutate(output);const rows=await count()
   await ai.script(scripted(output))
+  const state = async () => (await env.DB.batch(['flows','flow_revisions','flow_steps','choice_options','flow_branch_rules','analysis_calls'].map(table=>env.DB.prepare(`SELECT * FROM ${table} ORDER BY id`)))).map(result=>result.results)
+  const beforeState = await state()
   expect((await f.call('/api/app/studio',input)).status).toBe(400)
   expect(await count()).toBe(rows)
+  expect(await state()).toEqual(beforeState)
  }
+ for (const questionType of ['short_text','long_text','email','single_choice','multiple_choice','rating','priority','dropdown','yes_no','nps','number','date','consent','csat','ces','emoji_rating','thumbs_rating','phone','postal_address','full_name','url','currency']) {
+  const output:any=studioForm()
+  output.steps[0].questionType=questionType
+  output.steps[0].choices=['single_choice','multiple_choice','priority','dropdown'].includes(questionType)?['First','Second']:[]
+  output.steps[0].scale=questionType==='rating'?{min:1,max:5}:null
+  output.steps[0].consentStatement=questionType==='consent'?'I consent to this use.':null
+  output.branches=[]
+  output.hiddenFields=[{name:'utm_campaign',type:'text',category:'campaign'}]
+  await ai.script(scripted(output))
+  const generated=await call('/api/app/studio',input)
+  const draft=await call(`/api/app/flows/${generated.flowId}/draft`)
+  expect(draft.steps[0].questionType).toBe(questionType)
+  expect(draft.formSettings.hiddenFields).toEqual([expect.objectContaining({name:'utm_campaign',type:'text',category:'campaign'})])
+  expect((await f.call(`/api/app/flows/${generated.flowId}/publish`,{expectedVersion:draft.flow.draftVersion})).status).toBe(201)
+ }
+ const invalidHidden:any=studioForm();invalidHidden.hiddenFields=[{name:'email',type:'email',category:'identifying'}]
+ await ai.script(scripted(invalidHidden));const beforeInvalid=await count()
+ expect((await f.call('/api/app/studio',input)).status).toBe(400);expect(await count()).toBe(beforeInvalid)
  const requests=(await ai.requests()).length
  expect((await off.call('/api/app/studio',input)).status).toBe(400)
  expect((await f.call('/api/app/studio',{...input,sourceType:'pdf'})).status).toBe(400)

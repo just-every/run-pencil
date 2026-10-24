@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { questionTypes } from '../../shared/questionKinds'
 export const biasKinds = ['leading','double_barreled','loaded','unbalanced'] as const
 export const studioInput = z.object({
   mode:z.enum(['form','study']),goal:z.string().trim().min(1).max(2000),source:z.string().max(50000).default(''),sourceType:z.enum(['text','markdown','csv','html']).default('text'),
@@ -10,8 +11,9 @@ export type Study = z.infer<typeof studySchema>
 const key=z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,49}$/)
 export const outputSchema=z.object({
   title:z.string().trim().min(1).max(200),
-  steps:z.array(z.object({key,kind:z.enum(['question','completion']),questionType:z.enum(['short_text','long_text','email','number','single_choice','multiple_choice','yes_no','rating','nps']).nullable(),prompt:z.string().trim().min(1).max(1000),required:z.boolean(),choices:z.array(z.string().trim().min(1).max(300)).max(20),scale:z.object({min:z.number().int().min(0).max(1),max:z.number().int().min(1).max(11)}).strict().nullable(),next:key.nullable()}).strict()).min(2).max(30),
+  steps:z.array(z.object({key,kind:z.enum(['question','completion']),questionType:z.enum(questionTypes).nullable(),prompt:z.string().trim().min(1).max(1000),required:z.boolean(),consentStatement:z.string().trim().min(1).max(1000).nullable(),choices:z.array(z.string().trim().min(1).max(300)).max(20),scale:z.object({min:z.number().int().min(0).max(1),max:z.number().int().min(1).max(11)}).strict().nullable(),next:key.nullable()}).strict()).min(2).max(30),
   branches:z.array(z.object({source:key,destination:key,predicate:z.enum(['equals','greater_than','less_than']),choiceIndex:z.number().int().min(0).max(19).nullable(),numberValue:z.number().nullable(),booleanValue:z.boolean().nullable()}).strict()).max(30),
+  hiddenFields:z.array(z.object({name:z.string().regex(/^[a-z][a-z0-9_]{0,63}$/),type:z.enum(['text','number','email','date','boolean']),category:z.enum(['plain','campaign','identifying','click_id'])}).strict()).max(20),identityMode:z.enum(['anonymous','identified']),
   study:studySchema.nullable(),flags:z.array(z.object({step:key,kind:z.enum(biasKinds),reason:z.string().trim().min(1).max(1000)}).strict()).max(50),
 }).strict()
 export type StudioOutput=z.infer<typeof outputSchema>

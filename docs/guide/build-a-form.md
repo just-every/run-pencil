@@ -169,3 +169,12 @@ Payment mode Settings also supports monthly or yearly subscriptions with an acti
 Enable **Offer ACH bank payments** in payment step Settings to add US bank accounts to Checkout. Apple Pay and Google Pay use Checkout’s card wallets on supported devices and Stripe accounts. ACH responses show **Payment processing** until a signed success or failure event arrives; only **Paid** consumes an admission place. The return page says Stripe is confirming while settlement is pending. PayPal and Square are not connected, and failed ACH retries require checking the payment in Stripe.
 
 A cancelled or expired subscription, donation or ACH checkout keeps its saved answers but cannot replace that checkout yet. Ask the business to check the payment in Stripe before starting a new response; the app refuses replacement instead of reusing stale billing settings. Ordinary one-time Checkout cancellation and retry remain supported.
+
+
+### Script embed modes
+
+On an approved host, add attributes to the copied script snippet: `data-pencil-mode="full-page"`, `"popup"`, `"popover"`, `"slider"` or `"side-tab"`. Omit it for inline embedding. Each floating mode includes Open form and Close form controls. `data-pencil-label` names the opener; `data-pencil-target="#contact-button"` also opens from an existing host control.
+
+Choose `data-pencil-trigger="click"`, `"delay"`, `"scroll"` or `"exit"`. Delay uses `data-pencil-delay` milliseconds (default 1000, at most one hour); scroll uses `data-pencil-scroll` percent (default 50). Exit intent uses a pointer leaving the top of the document. Click remains available on touch devices. `data-pencil-cap` limits openings per browser and form/mode (default one, at most 100); unavailable browser storage keeps the mode closed. Campaign parameters named `utm_*` are forwarded to the form, where declared hidden-field and identity rules apply. Respondent answers stay inside the opaque frame; the host receives only the existing layout/completion events, with the existing payment navigation behavior unchanged.
+
+WordPress shortcodes/plugins and DIST-021 integrations remain unavailable.

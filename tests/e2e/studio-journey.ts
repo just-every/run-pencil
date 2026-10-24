@@ -4,6 +4,7 @@ import { expect } from './fixtures'
 import { answer,type startAiReceiver } from './ai-receiver'
 import { studioForm } from '../fixtures/studio'
 export async function studioJourney(page:Page,info:TestInfo,provider:Awaited<ReturnType<typeof startAiReceiver>>,priorTitle:string){
+ await page.context().newCDPSession(page).then(session=>session.send('Emulation.setCPUThrottlingRate',{rate:4}))
  const capture=async(name:string)=>{await page.screenshot({path:info.outputPath(`${info.project.name}-${name}.png`),fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect((await new AxeBuilder({page}).analyze()).violations).toEqual([])}
  for(const mode of ['form','study'] as const){
   await page.goto('/app')

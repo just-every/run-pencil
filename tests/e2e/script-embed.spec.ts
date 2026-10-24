@@ -6,7 +6,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 
-contract(['DIST-002', 'DIST-009', 'BASE-PUBLIC-001', 'BASE-PUBLIC-002'], 'copied async script mounts an opaque allowed-host iframe, resizes, emits only permitted events and rejects malicious messages', async ({ page, context, browser }, info) => {
+contract(['DIST-013', 'DIST-002', 'DIST-009', 'BASE-PUBLIC-001', 'BASE-PUBLIC-002'], 'copied async script mounts an opaque allowed-host iframe, resizes, emits only permitted events and rejects malicious messages', async ({ page, context, browser }, info) => {
   test.setTimeout(120_000)
   await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
   await signInBrand(page)
@@ -14,7 +14,9 @@ contract(['DIST-002', 'DIST-009', 'BASE-PUBLIC-001', 'BASE-PUBLIC-002'], 'copied
   const workspace = await page.request.get('/api/app/workspace').then(r => r.json())
   const headers = { Origin: origin }
   const flow = await page.request.post('/api/app/flows', { headers, data: { title: 'Embedded feedback', slug: `embed-${crypto.randomUUID().slice(0, 8)}`, template: 'feedback' } }).then(r => r.json())
-  const draft = await page.request.get(`/api/app/flows/${flow.id}/draft`).then(r => r.json())
+  let draft = await page.request.get(`/api/app/flows/${flow.id}/draft`).then(r => r.json())
+  expect((await page.request.put(`/api/app/flows/${flow.id}/draft/settings`, { headers, data: { expectedVersion: draft.flow.draftVersion, settings: { identityMode: 'anonymous', hiddenFields: [{ id: 'synthetic-pencil-campaign', name: 'utm_campaign', type: 'text', category: 'campaign' }] } } })).status()).toBe(200)
+  draft = await page.request.get(`/api/app/flows/${flow.id}/draft`).then(r => r.json())
   expect((await page.request.post(`/api/app/flows/${flow.id}/publish`, { headers, data: { expectedVersion: draft.flow.draftVersion } })).status()).toBe(201)
   await page.goto(`/app/flows/${flow.id}/builder`)
   await page.getByRole('button', { name: 'Share', exact: true }).click()
@@ -148,6 +150,49 @@ contract(['DIST-002', 'DIST-009', 'BASE-PUBLIC-001', 'BASE-PUBLIC-002'], 'copied
     expect(await visitor.evaluate(()=>(window as unknown as {events:{type:string;detail:unknown}[]}).events.filter(event=>event.type==='pencil:checkout'))).toEqual([{type:'pencil:checkout',detail:checkout}])
     expect(visitor.url()).toBe(`${host.origin}/`)
     expect(await visitor.locator('body').innerText()).not.toContain('Private answer')
+    let forwardedResponses = 0
+    for (const [mode, trigger] of [['full-page','click'],['popup','delay'],['popover','scroll'],['slider','exit'],['side-tab','click']]) {
+      const modalHost = await nativeHost(snippet.replace('<script ', `<script data-pencil-mode="${mode}" data-pencil-trigger="${trigger}" data-pencil-delay="0" data-pencil-scroll="25" `))
+      const modal = await visitorContext.newPage()
+      try {
+        await modal.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
+        await modal.context().newCDPSession(modal).then(session => session.send('Emulation.setCPUThrottlingRate', { rate: 4 }))
+        expect((await page.request.put('/api/app/workspace', { headers, data: { ...workspace, embedAllowedOrigins: [host.origin, modalHost.origin] } })).status()).toBe(200)
+        await modal.goto(modalHost.origin + '/landing?utm_campaign=spring')
+        await expect(modal.getByRole('button', { name: 'Open form', exact: true })).toBeVisible()
+        if (trigger === 'click') await modal.getByRole('button', { name: 'Open form', exact: true }).click()
+        if (trigger === 'scroll') await modal.evaluate(() => { document.body.style.minHeight = '3000px'; scrollTo(0, 1500) })
+        if (trigger === 'exit') await modal.evaluate(() => document.dispatchEvent(new MouseEvent('mouseout', { clientY: -1, relatedTarget: null })))
+        await expect(modal.getByRole('dialog', { name: 'Feedback form', exact: true })).toBeVisible()
+        const embedded = modal.frameLocator('iframe')
+        await expect(embedded.getByRole('radio', { name: 'Great', exact: true })).toBeVisible()
+        await embedded.getByRole('radio', { name: 'Great', exact: true }).click()
+        await embedded.getByRole('button', { name: 'Continue', exact: true }).click()
+        await embedded.getByRole('textbox', { name: 'What could we do better?' }).fill('Private modal response')
+        await embedded.getByRole('button', { name: 'Submit response', exact: true }).click()
+        await expect(embedded.getByRole('heading', { name: 'Thank you. Your response has been received.' })).toBeVisible()
+        await expect.poll(() => modal.evaluate(() => (window as unknown as { events: { type: string }[] }).events.some(event => event.type === 'pencil:completed'))).toBe(true)
+        const modalEvents = await modal.evaluate(() => (window as unknown as { events: { type: string; detail: unknown }[] }).events)
+        for (const event of modalEvents) expect(['pencil:loaded','pencil:height','pencil:completed']).toContain(event.type)
+        expect(JSON.stringify(modalEvents)).not.toMatch(/answer|responseId|token|Private modal/)
+        expect(await modal.locator('iframe').getAttribute('src')).toContain('utm_campaign=spring')
+        const exported = await page.request.post('/api/app/backup/export', { headers, data: {} })
+        expect(exported.status()).toBe(200)
+        const archive = await exported.json()
+        const responses = archive.payload.tables.find((table: any) => table.name === 'responses')
+        const revisionColumn = responses.columns.indexOf('revision_id'), contextColumn = responses.columns.indexOf('response_context_json')
+        const campaigns = responses.rows.filter((row: any[]) => row[revisionColumn].value === draft.revision.id && JSON.parse(row[contextColumn].value).hidden?.['synthetic-pencil-campaign'] === 'spring')
+        expect(campaigns).toHaveLength(++forwardedResponses)
+        expect(await modal.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+        await modal.screenshot({ path: info.outputPath(`${mode}-completed.png`), fullPage: true })
+        await modal.getByRole('button', { name: 'Close form', exact: true }).click()
+        await modal.getByRole('button', { name: 'Open form', exact: true }).click()
+        await expect(modal.getByRole('dialog')).toBeHidden()
+        await modal.reload()
+        await modal.getByRole('button', { name: 'Open form', exact: true }).click()
+        await expect(modal.locator('iframe')).toHaveCount(0)
+      } finally { await modal.close(); await modalHost.close() }
+    }
     for (const referer of ['https://hostile.invalid/page', `${host.origin}.hostile.invalid/page`, '']) {
       const refused = await page.request.get(`/embed.js?flow=${flow.slug}`, { headers: { Referer: referer } })
       expect(refused.status()).toBe(403)
