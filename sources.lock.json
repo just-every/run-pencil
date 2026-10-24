@@ -4413,7 +4413,7 @@
       "executable": false
     },
     "src/core/features/dashboard/ui/DashboardPage.tsx": {
-      "sha256": "69b0b522f59255a13429c578a2446cf9c92e2152c778807d973dcf5b983a3915",
+      "sha256": "c61e72f12deb1150463ff1402315f4145c4a3a520b82101c5972d3c8f772ac2b",
       "executable": false
     },
     "src/core/features/dashboard/ui/FlowCard.tsx": {

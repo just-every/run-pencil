@@ -29,6 +29,7 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
   const [slugEdited, setSlugEdited] = useState(false)
   const [showStudio,setShowStudio]=useState(false)
   const [showCreate, setShowCreate] = useState(!initialData.hasFlows)
+  const createRequested = useRef(false)
   const [teamTemplate,setTeamTemplate]=useState<string>()
   const [template, setTemplate] = useState<FlowTemplateId>()
   const [templateSearch, setTemplateSearch] = useState('')
@@ -64,7 +65,8 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; requestVersion.current++ } }, [])
   useEffect(() => {
     setFlows(initialData.flows); setWorkspace(initialData.workspace); setHasFlows(initialData.hasFlows)
-    if (initialData.hasFlows && !title && !slug) setShowCreate(false)
+    // Loader reconciliation must not undo a New flow click made while it was pending.
+    if (initialData.hasFlows && !createRequested.current && !title && !slug) setShowCreate(false)
   }, [initialData])
   const updateList = (nextStatus = status) => {
     if (loading || saving) return
@@ -79,6 +81,7 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
       const input = { title, slug, ...(template ? { template } : {}) }
       const flow = teamTemplate ? await api.createFromTeamTemplate(teamTemplate,{title,slug}) : await api.createFlow(input)
       if (!mounted.current) return
+      createRequested.current = false
       setTitle(''); setSlug(''); setSlugEdited(false); setTemplate(undefined); setTeamTemplate(undefined); setShowCreate(false); markSaved()
       await router.invalidate({ filter: match => match.routeId === '/app/' })
       if (!mounted.current) return
@@ -86,9 +89,9 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
     } catch (reason) { if (mounted.current) setError(reason instanceof Error ? reason.message : 'The draft flow could not be created.') }
     finally { if (mounted.current) setCreating(false) }
   }
-  const cancel = () => { setShowCreate(false); setTitle(''); setSlug(''); setSlugEdited(false); setTemplate(undefined); setTeamTemplate(undefined); setError(undefined) }
+  const cancel = () => { createRequested.current = false; setShowCreate(false); setTitle(''); setSlug(''); setSlugEdited(false); setTemplate(undefined); setTeamTemplate(undefined); setError(undefined) }
 
-  const openCreate = () => { if (dirty && !window.confirm('Discard the unfinished copy and create a new flow?')) return; setError(undefined); setShowCreate(true) }
+  const openCreate = () => { if (dirty && !window.confirm('Discard the unfinished copy and create a new flow?')) return; createRequested.current = true; setError(undefined); setShowCreate(true) }
   const firstFlow = !hasFlows && status === 'active'
 
   return <section className="dashboard" aria-labelledby="dashboard-title">
