@@ -1,3 +1,4 @@
+import AxeBuilder from '@axe-core/playwright'
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { contract } from './contract'
@@ -42,6 +43,8 @@ contract(['PART-002','RSLT-013'], 'a respondent saves two answers, resumes priva
     { kind: 'question', questionType: 'long_text', prompt: 'Tell us about your project.', required: true },
     { kind: 'completion', questionType: null, prompt: 'Your project brief is with us.' },
   ]) await call(`${path}/draft/steps`, { expectedVersion: (await draft()).flow.draftVersion, step })
+  const editable=await draft()
+  expect((await page.request.put(`${path}/draft/settings`,{headers:appHeaders,data:{expectedVersion:editable.flow.draftVersion,settings:{...editable.formSettings!,responseEdits:{enabled:true,deadline:new Date(Date.now()+86400000).toISOString()},confirmation:{enabled:true,includeAnswers:false,answerTypes:[],emailStepId:editable.steps[1].id,subject:'Response received',body:'Thank you.'}}}})).ok()).toBe(true)
   await call(`${path}/publish`, { expectedVersion: (await draft()).flow.draftVersion })
   const original=await call<{revision:{id:string}}>(`/api/public/flows/${slug}`)
   const origin = new URL(page.url()).origin
@@ -109,5 +112,48 @@ contract(['PART-002','RSLT-013'], 'a respondent saves two answers, resumes priva
     await call('/api/app/flows', { title: 'Unpublished catering draft', slug: draftSlug })
     const privateDraft = await otherContext.request.get(`/f/${draftSlug}?resume=${'0'.repeat(64)}`)
     expect(privateDraft.status()).toBe(404)
+    // RESP-021 shares this existing respondent journey: settings, prefilled editing and retained ledger versions.
+    const cdp=await page.context().newCDPSession(page);await cdp.send('Emulation.setCPUThrottlingRate',{rate:4})
+    await page.goto(`/app/flows/${flow.id}/builder`)
+    await expect(page.locator('.flow-authoring')).toBeVisible()
+    await page.getByRole('complementary',{name:'Flow steps'}).getByRole('button',{name:/Your project brief/}).click()
+    const editSettings=page.locator('details').filter({has:page.locator('summary').filter({hasText:'Edit after submission'})})
+    await editSettings.locator('summary').click()
+    await expect(editSettings.getByLabel('Allow response editing')).toBeChecked()
+    await editSettings.getByRole('button',{name:'Save editing settings'}).click()
+    await expect(page.getByText('Editing settings saved. Publish to apply.',{exact:true})).toBeVisible()
+    await editSettings.locator('summary').click()
+    await expect(editSettings.getByLabel('Allow response editing')).toBeChecked()
+    await inspectState(page,'edit-settings',info.project.name)
+    const mail=await page.request.get('/__test/mail',{headers:{'x-rer-dev-key':testDevKey}}).then(response=>response.json())
+    const receipt=mail.messages.find((message:{text?:string})=>message.text?.includes('?edit='))
+    const editLink=/https?:\/\/[^\s]+[?&]edit=[a-f0-9]{64}/.exec(receipt?.text??'')?.[0]
+    expect(editLink,'The permitted confirmation carries a private edit link.').toBeTruthy()
+    await page.goto(editLink!)
+    await expect(page.getByRole('textbox',{name:'What is your name?'})).toHaveValue('Jo Taylor')
+    await page.getByRole('textbox',{name:'What is your name?'}).fill('Jo Updated')
+    await inspectState(page,'edit-prefilled',info.project.name)
+    expect((await new AxeBuilder({page}).analyze()).violations).toEqual([])
+    await page.getByRole('button',{name:'Continue',exact:true}).click()
+    await expect(page.getByRole('textbox',{name:'What is your work email?'})).toHaveValue('jo@harbour.example')
+    await page.getByRole('button',{name:'Continue',exact:true}).click()
+    await expect(page.getByRole('textbox',{name:'Tell us about your project.'})).toHaveValue('We need a booking site for our new studio.')
+    await page.getByRole('button',{name:'Review answers',exact:true}).click()
+    await expect(page.getByRole('region',{name:'Your answers'})).toContainText('Jo Updated')
+    await page.getByRole('button',{name:'Submit response',exact:true}).click()
+    await expect(page.getByRole('heading',{name:'Your project brief is with us.'})).toBeVisible()
+    expect((await call<{totals:unknown}>(`${path}/traffic?revisionId=${original.revision.id}`)).totals).toEqual(traffic.totals)
+    await page.goto(editLink!)
+    await expect(page.getByRole('alert')).toContainText(/expired|used|unavailable/)
+    await page.goto(`/app/flows/${flow.id}/results`)
+    await page.getByRole('combobox',{name:'Published revision',exact:true}).selectOption(original.revision.id)
+    await page.getByRole('button',{name:'View answers',exact:true}).click()
+    await page.getByText('Response versions (2)',{exact:true}).click()
+    await expect(page.getByRole('region',{name:'Version 2 current'})).toContainText('Jo Updated')
+    await expect(page.getByRole('region',{name:'Version 1',exact:true})).toContainText('Jo Taylor')
+    await inspectState(page,'ledger-versions',info.project.name)
+    if(process.env.PENCIL_CAPTURE_DIR)await page.getByRole('region',{name:'Version 2 current'}).locator('..').screenshot({path:join(process.env.PENCIL_CAPTURE_DIR,`versions-detail-${info.project.name}.png`)})
+    expect((await new AxeBuilder({page}).analyze()).violations).toEqual([])
+
   } finally { await firstContext.close(); await otherContext.close() }
 })

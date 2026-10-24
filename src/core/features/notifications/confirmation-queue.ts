@@ -17,7 +17,7 @@ export async function auditConfirmation(db:D1Database,workspaceId:string,status:
  await db.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at)
  VALUES(?,?,'respondent.confirmation',NULL,'confirmation',NULL,?,?)`).bind(crypto.randomUUID(),workspaceId,JSON.stringify({status,reason}),now).run()
 }
-export async function materializeConfirmations(db:D1Database,now:string) {
+export async function materializeConfirmations(db:D1Database,now:string,origin='http://localhost') {
  const rows=await db.prepare(`SELECT r.id,r.workspace_id AS workspaceId,r.revision_id AS revisionId,r.response_context_json AS contextJson,
  v.form_settings_json AS settingsJson,v.policy_snapshot_json AS policyJson,
  (SELECT p.email_snapshot FROM invitation_participants p WHERE p.id=r.participant_id AND r.source='invitation') AS participantEmail
@@ -25,7 +25,7 @@ export async function materializeConfirmations(db:D1Database,now:string) {
  AND NOT EXISTS(SELECT 1 FROM confirmation_deliveries d WHERE d.response_id=r.id) ORDER BY r.completed_at,r.id LIMIT 50`).all<ConfirmationCandidate>()
  for(const row of rows.results) {
   let prepared:Awaited<ReturnType<typeof prepareConfirmation>>=null,reason:string|null=null
-  try { prepared=await prepareConfirmation(db,row) }
+  try { prepared=await prepareConfirmation(db,row,origin) }
   catch { reason='Confirmation preparation failed: retained questions, answers, settings or business branding could not be read or validated.' }
   reason ??= prepared ? null : 'Confirmation cancelled: no valid consented mailbox was selected on the completed path.'
   const status=prepared?'pending':reason?.startsWith('Confirmation preparation')?'failed':'cancelled'

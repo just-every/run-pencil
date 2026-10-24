@@ -24,7 +24,7 @@ contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released co
  await f.add({kind:'question',questionType:'number',prompt:'Party size',required:true})
  await f.add({kind:'completion',questionType:null,prompt:'Recorded'})
  const draft=await f.draft(),[email,text,skipped,date,number]=draft.steps
- const settings={...draft.formSettings!,hiddenFields:[{id:'campaign',name:'campaign',type:'text' as const,category:'plain' as const}],calculations:[{id:'double',name:'Double',type:'number' as const,expression:{kind:'multiply' as const,left:{kind:'answer' as const,stepId:number.id},right:{kind:'literal' as const,value:2}}}],confirmation:{enabled:true,includeAnswers:true,answerTypes:['short_text','date','number'],emailStepId:email.id,subject:`Received {{${text.id}}}`,body:`Answer {{${text.id}}}; hidden {{hidden:campaign}}; calculated {{variable:double}}; skipped [{{${skipped.id}}}]`}}
+ const settings={...draft.formSettings!,responseEdits:{enabled:true,deadline:new Date(Date.now()+86400000).toISOString()},hiddenFields:[{id:'campaign',name:'campaign',type:'text' as const,category:'plain' as const}],calculations:[{id:'double',name:'Double',type:'number' as const,expression:{kind:'multiply' as const,left:{kind:'answer' as const,stepId:number.id},right:{kind:'literal' as const,value:2}}}],confirmation:{enabled:true,includeAnswers:true,answerTypes:['short_text','date','number'],emailStepId:email.id,subject:`Received {{${text.id}}}`,body:`Answer {{${text.id}}}; hidden {{hidden:campaign}}; calculated {{variable:double}}; skipped [{{${skipped.id}}}]`}}
  await f.services.flows.updateFormSettings({...f.flow,expectedVersion:draft.flow.draftVersion,settings})
  expect(await f.publish()).toMatchObject({kind:'published'})
  const submit=async(options:{immature?:boolean;honeypot?:string;token?:string;mailbox?:string}={})=>{
@@ -49,6 +49,7 @@ contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released co
   expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt; {{hidden:campaign}}');expect(html).not.toContain('<script>')
   expect(plain).toContain('hidden Synthetic <campaign>');expect(html).toContain('hidden Synthetic &lt;campaign&gt;')
   expect(plain).toContain('calculated 6');expect(plain).toContain('skipped []');expect(plain).toContain('07/04/2026')
+  expect(plain).toMatch(/http:\/\/localhost\/f\/[^?]+\?edit=[a-f0-9]{64}/)
   expect(plain).not.toContain('2026-07-04');expect(plain).not.toContain('/app/');expect(plain).not.toContain('/response')
   await final(f,completed.session,[{stepId:email.id,value:'synthetic-pencil-receipt@example.test'},{stepId:text.id,value:'<script>alert(1)</script> {{hidden:campaign}}'},{stepId:date.id,value:'2026-07-04'},{stepId:number.id,value:3}]);await dispatcher.run()
   expect(sent).toHaveLength(2)
@@ -91,6 +92,7 @@ contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released co
   expect(sent).toHaveLength(5)
   expect(await env.DB.prepare('SELECT status FROM confirmation_deliveries WHERE response_id=?').bind(bouncedResponse.row!.id).first()).toEqual({status:'cancelled'})
   await f.services.responses.eraseReleasedResponse({...f.scope,responseId:completed.row!.id,operatorId:f.operatorId})
+  expect(await env.DB.prepare('SELECT hash FROM response_edit_links WHERE response_id=?').bind(completed.row!.id).first()).toBeNull()
   expect(await env.DB.prepare('SELECT id FROM confirmation_deliveries WHERE response_id=?').bind(completed.row!.id).first()).toBeNull()
   expect((await env.DB.prepare("SELECT id FROM confirmation_attempts WHERE delivery_id=?").bind('confirmation:'+completed.row!.id).all()).results).toHaveLength(0)
  }finally{network.mockRestore()}

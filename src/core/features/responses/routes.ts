@@ -1,3 +1,4 @@
+import { ResponseEdits } from './edits'
 import { formLimits } from '../../shared/formLimits'
 import { collectorKey, CollectorClosedError } from '../collectors'
 import { validateInput as zValidator, resourceId, flowSlug, emptyMutationBody, answerValue } from '../../shared/validation'
@@ -49,6 +50,17 @@ function failure(context: Context<WorkerEnvironment>, error: unknown) {
 }
 
 export function registerResponseRoutes(app: Hono<WorkerEnvironment>, services: RequestServices) {
+  const editToken=z.string().regex(/^[a-f0-9]{64}$/)
+  app.get('/api/public/flows/:slug/edit',zValidator('param',z.object({slug:flowSlug})),zValidator('query',z.object({token:editToken})),async context=>{
+    try{return context.json(await new ResponseEdits(context.get('platform').databaseBinding).read(context.req.param('slug'),context.req.valid('query').token))}catch(error){return failure(context,error)}
+  })
+  app.post('/api/public/flows/:slug/edit',zValidator('param',z.object({slug:flowSlug})),zValidator('json',z.object({token:editToken,answers:z.array(z.object({stepId:resourceId,value:answerValue})).max(formLimits.questions.perRevision)}).strict()),async context=>{
+    try{requireSameOriginRequest(context.req.raw);await services(context).responses.enforcePublicRequestRateLimit({clientAddress:context.req.header('CF-Connecting-IP'),scope:'submission'});const input=context.req.valid('json');return context.json(await new ResponseEdits(context.get('platform').databaseBinding).submit(context.req.param('slug'),input.token,input.answers))}catch(error){return failure(context,error)}
+  })
+  app.get('/api/app/responses/:responseId/versions',zValidator('param',z.object({responseId:resourceId})),async context=>{
+    try{return context.json(await new ResponseEdits(context.get('platform').databaseBinding).versions(context.get('operatorSession').workspaceId,context.req.param('responseId')))}catch(error){return failure(context,error)}
+  })
+
   app.post('/api/public/flows/:slug/views',zValidator('param',z.object({slug:flowSlug})),zValidator('json',z.object({revisionId:resourceId,source:z.enum(['direct','embed']),accessToken:z.string().max(8192).optional(),collectorKey:collectorKey.optional(),invitationToken:z.string().regex(/^[a-f0-9]{64}$/).optional()}).strict()),async context=>{
     try {
       if(/prefetch/i.test(context.req.header('Sec-Purpose')??context.req.header('Purpose')??''))return context.body(null,204)

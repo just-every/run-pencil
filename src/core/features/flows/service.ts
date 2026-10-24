@@ -1,3 +1,4 @@
+import { answerAlertPublicationIssues, remapAnswerAlerts } from '../../shared/answerAlerts'
 import type { LedgerFilter } from '../reporting'
 import { closedFlowFor } from '../../shared/closedFlow'
 import { marketingPublicationIssues } from '../../shared/marketingConsent'
@@ -177,6 +178,7 @@ export class FlowService {
     copiedSettings.hiddenFields = copiedSettings.hiddenFields.map(field => ({...field,id:fieldIds.get(field.id)!}))
     const rowIdByOldRowId = new Map(sourceSteps.map((step) => [step.id, ulid()]))
     const choiceStableIdByOldStableId = new Map(sourceChoices.map((choice) => [choice.stableId, ulid()]))
+    copiedSettings.answerAlerts=remapAnswerAlerts(copiedSettings.answerAlerts,stableIdByOldStableId,choiceStableIdByOldStableId)
     copiedSettings.calculations=remapCalculations(copiedSettings.calculations ?? [],stableIdByOldStableId,fieldIds,variableIds,choiceStableIdByOldStableId)
     const created = await this.repository.createStructure({
       flow: { id: flowId, workspaceId: input.workspaceId, title, slug, status: 'draft', draftVersion: 0, lastActivityAt: now, createdAt: now, updatedAt: now },
@@ -233,6 +235,7 @@ export class FlowService {
     if (flow.status === 'archived') throw new ValidationError('Duplicate an archived flow before editing.')
     const issue = hiddenSettingsIssue(input.settings)
     if (issue) throw new ValidationError(issue)
+    for(const rule of input.settings.answerAlerts??[])if(!await this.repository.validAlertRecipients(input.workspaceId,rule.recipientIds))throw new ValidationError(`${rule.name}: choose active operators in this workspace.`)
     if (input.settings.linkPreview?.image && !this.previewAssets) throw new ValidationError('Share image storage is not configured.')
     const settings = this.previewAssets ? await this.previewAssets.save(input.workspaceId, input.flowId, input.settings) : input.settings
     if (!await this.repository.updateFormSettings({...input,revisionId:revision.id,json:JSON.stringify(settings),now:new Date().toISOString()})) return draftConflict((await this.requireWorkspaceFlow(input.workspaceId,input.flowId)).draftVersion)
@@ -436,6 +439,8 @@ export class FlowService {
     const issues = validateRevisionGraph(rawSteps, rawChoices, rawRules, evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'], formSettings(snapshot.revision.formSettingsJson))
     issues.push(...respondentTextPublicationIssues(draft.formSettings.text))
     issues.push(...marketingPublicationIssues(draft.formSettings.marketing,draft.steps))
+    for(const rule of draft.formSettings.answerAlerts??[])if(!await this.repository.validAlertRecipients(input.workspaceId,rule.recipientIds))issues.push({stepId:`alert:${rule.id}`,reason:`${rule.name}: choose active operators in this workspace.`})
+    issues.push(...answerAlertPublicationIssues(draft.formSettings.answerAlerts,draft))
     issues.push(...confirmationPublicationIssues(draft.formSettings.confirmation,draft))
     issues.push(...prefillPublicationIssues(draft.formSettings.prefill ?? [],draft.steps))
     issues.push(...hiddenPublicationIssues(formSettings(snapshot.revision.formSettingsJson)))

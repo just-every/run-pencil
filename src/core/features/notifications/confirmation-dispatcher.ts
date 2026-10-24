@@ -5,9 +5,9 @@ import { deserializeConfirmation } from './confirmation-message'
 import { auditConfirmation, confirmationLive, confirmationRecipient, materializeConfirmations } from './confirmation-queue'
 type Due={id:string;workspaceId:string;recipient:string;messageJson:string;attempts:number;firstAttempt:string|null}
 export class RespondentConfirmationDispatcher {
- constructor(private db:D1Database,private sender:MailSender,private from:string,private configurationFailure:string|null=null) {}
+ constructor(private db:D1Database,private sender:MailSender,private from:string,private configurationFailure:string|null=null,private origin='http://localhost') {}
  async run(now=new Date().toISOString()):Promise<{attempted:number}> {
-  await materializeConfirmations(this.db,now)
+  await materializeConfirmations(this.db,now,this.origin)
   // A started transport without a receipt is ambiguous, including a process interruption.
   const interrupted=await this.db.prepare(`UPDATE confirmation_deliveries SET status='unknown',reason='Interrupted delivery has an unknown outcome; automatic resend is disabled.',updated_at=?
    WHERE id IN (SELECT id FROM confirmation_deliveries WHERE status='sending' AND last_attempt_at<=? ORDER BY last_attempt_at,id LIMIT 50) RETURNING id,(SELECT workspace_id FROM responses WHERE id=response_id) AS workspaceId`)

@@ -1,3 +1,4 @@
+import { AnswerAlertAttention } from './AnswerAlertAttention'
 import { useId } from 'react'
 import { useNotifications } from './useNotifications'
 import type { NotificationMode } from './repository'
@@ -23,6 +24,7 @@ export function NotificationsPanel({flowId,timeZone}:{flowId:string;timeZone:str
         {delivery.reason && <p>{delivery.reason}</p>}
         {delivery.replayEnabled !== 0 && ['failed','unknown'].includes(delivery.status) && <button className="secondary-button focus-ring" type="button" disabled={busy || state.mode==='off' || !!state.senderError} onClick={()=>{const accepted=delivery.status==='unknown' && window.confirm('The previous delivery outcome is unknown. Sending again may deliver a duplicate email. Send again anyway?'); if(delivery.status!=='unknown'||accepted) void retry(delivery.id,accepted)}}>{delivery.status==='unknown'?'Send again':'Retry'}</button>}
       </li>)}</ul> : <p>No response notifications yet.</p>}
+      <AnswerAlertAttention flowId={flowId}/>
     </>}
   </section>
 }

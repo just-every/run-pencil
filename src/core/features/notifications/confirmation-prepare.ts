@@ -1,3 +1,4 @@
+import { confirmationEditLink } from '../responses'
 import { z } from 'zod'
 import type { PublicFlow } from '../../app/api'
 import { createDatabase } from '../../platform/db/repository'
@@ -11,7 +12,7 @@ import { readNotificationBrand } from './brand'
 import { composeRespondentConfirmation } from './confirmation-compose'
 import { serializeConfirmation } from './confirmation-message'
 export type ConfirmationCandidate={id:string;workspaceId:string;revisionId:string;contextJson:string;settingsJson:string;policyJson:string|null;participantEmail:string|null}
-export async function prepareConfirmation(db:D1Database,row:ConfirmationCandidate) {
+export async function prepareConfirmation(db:D1Database,row:ConfirmationCandidate,origin='http://localhost') {
  const repository=new FlowRepository(createDatabase(db),db)
  const [graph,revision,answers,brand]=await Promise.all([
   repository.getRevisionGraph(row.revisionId),repository.findRevisionById(row.revisionId),
@@ -42,5 +43,7 @@ export async function prepareConfirmation(db:D1Database,row:ConfirmationCandidat
  if(suppressed)return null
  const accepted=Object.fromEntries(path.filter(step=>step.kind==='question' && Object.hasOwn(values,step.id) && !answerIssue(step,flow.choices.filter(choice=>choice.stepId===step.id).map(choice=>choice.id),values[step.id])).map(step=>[step.id,values[step.id]]))
  const message=composeRespondentConfirmation({brand,flow,answers:accepted,completionStepId:completion.id,settings:confirmation})
+ const editLink=settings.responseEdits?.enabled?await confirmationEditLink(db,row.id,settings.responseEdits.deadline):undefined
+ if(editLink){const absolute=new URL(editLink,origin).href;message.text+=`\n\nEdit your response before ${settings.responseEdits!.deadline}: ${absolute}`;message.html=message.html.replace('</main>',`<p><a href="${absolute}">Edit your response</a> before ${settings.responseEdits!.deadline}</p></main>`)}
  return {recipient:mailbox.data,messageJson:serializeConfirmation(message)}
 }

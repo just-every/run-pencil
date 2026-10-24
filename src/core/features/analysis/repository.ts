@@ -29,7 +29,7 @@ const runColumns = `(SELECT time_zone FROM workspaces WHERE id=a.workspace_id) A
   (SELECT COUNT(*) FROM analysis_evidence e WHERE e.run_id = a.id) AS evidenceCount, a.evidence_cutoff AS evidenceCutoff, a.created_at AS createdAt, a.finished_at AS finishedAt,
   a.error_code AS errorCode, a.error_message AS errorMessage, a.next_attempt_at AS nextAttemptAt, a.attempts,
   (SELECT COUNT(*) FROM responses x WHERE x.revision_id = a.revision_id AND x.workspace_id = a.workspace_id AND x.state = 'released' AND x.completed_at IS NOT NULL
-    AND NOT EXISTS (SELECT 1 FROM analysis_evidence e WHERE e.run_id = a.id AND e.response_id = x.id)) AS staleResponses,
+    AND (NOT EXISTS (SELECT 1 FROM analysis_evidence e WHERE e.run_id = a.id AND e.response_id = x.id) OR EXISTS(SELECT 1 FROM response_versions v WHERE v.response_id=x.id AND v.number>1 AND v.created_at>a.evidence_cutoff))) AS staleResponses,
   a.question_ids_json AS questionIds, a.policy_json AS policy, a.provider_origin AS providerOrigin, a.model, a.insufficient_reason AS insufficientReason, a.redacted_at AS redactedAt`
 const fromRuns = 'FROM analysis_runs a JOIN flows f ON f.id = a.flow_id JOIN flow_revisions r ON r.id = a.revision_id'
 

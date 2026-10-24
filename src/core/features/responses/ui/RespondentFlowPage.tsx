@@ -42,18 +42,18 @@ function choicesForStep(choices: ChoiceOption[], stepId: string) {
   return choices.filter((choice) => choice.stepId === stepId).sort((left, right) => left.position - right.position)
 }
 
-export function RespondentFlowPage({ config, slug, embedded = false, landing = false, initialFlow, initialEmailAnswer, emailLanding, invitationToken, collectorKey, resume, onKioskComplete, accessToken, verifiedIdentity, restoredAnswers, payment }: { config: PublicSeedConfig; slug: string; embedded?: boolean; landing?: boolean; initialFlow: PublicFlow; initialEmailAnswer?:{stepId:string;value:number|string}; emailLanding?:boolean; invitationToken?: string; collectorKey?:string; resume?: Extract<SavedResponseState, { state: 'open' }>; onKioskComplete?: () => void; accessToken?:string; verifiedIdentity?:string; restoredAnswers?: Array<{ stepId: string; value: unknown }>; payment?: { state: PaymentState; notice?: string } }) {
+export function RespondentFlowPage({ config, slug, embedded = false, landing = false, initialFlow, initialEmailAnswer, emailLanding, invitationToken, collectorKey, resume, onKioskComplete, accessToken, verifiedIdentity, restoredAnswers, payment, editToken }: { config: PublicSeedConfig; slug: string; embedded?: boolean; landing?: boolean; initialFlow: PublicFlow; initialEmailAnswer?:{stepId:string;value:number|string}; emailLanding?:boolean; invitationToken?: string; collectorKey?:string; resume?: Extract<SavedResponseState, { state: 'open' }>; onKioskComplete?: () => void; accessToken?:string; verifiedIdentity?:string; restoredAnswers?: Array<{ stepId: string; value: unknown }>; editToken?:string; payment?: { state: PaymentState; notice?: string } }) {
   const [closedFlow, setClosedFlow] = useState<ClosedFlow>()
   const [unconfirmedClosedFlow, setUnconfirmedClosedFlow] = useState<ClosedFlow>()
   const [closedRestart, setClosedRestart] = useState(false)
   const [baseFlow, setFlow] = useState<PublicFlow>(initialFlow)
   const [hidden, setHidden] = useState<Record<string,unknown>>(() => Object.fromEntries((initialFlow.formSettings?.hiddenFields ?? []).flatMap(field => initialFlow.hiddenContext?.hidden[field.id] === undefined ? [] : [[field.name,initialFlow.hiddenContext.hidden[field.id]]])))
-  useEffect(() => { if (!resume && !restoredAnswers) setHidden(Object.fromEntries([...new URLSearchParams(window.location.search)].filter(([name])=>!['collector','resume','source','challenge','kiosk','payment-return','payment-key','__pencil_first'].includes(name)))) }, [])
+  useEffect(() => { if (!resume && !restoredAnswers && !editToken) setHidden(Object.fromEntries([...new URLSearchParams(window.location.search)].filter(([name])=>!['collector','resume','source','challenge','kiosk','payment-return','payment-key','__pencil_first'].includes(name)))) }, [])
   const hiddenContext = normalizeHidden(baseFlow.formSettings ?? {hiddenFields:[],identityMode:'anonymous'},hidden)
   const flow = {...baseFlow,hiddenContext}
   const emailSelection=invitationToken && !resume && !restoredAnswers && !initialFlow.completedStepId ? initialEmailAnswer : undefined
   const [interacted,setInteracted]=useState(false)
-  const view = useViewCounter({slug,revisionId:flow.revision.id,source:embedded?'embed':'direct',collectorKey,invitationToken,accessToken},!resume&&!initialFlow.completedStepId&&(!(invitationToken&&emailLanding)||interacted), resume?.loadTime)
+  const view = useViewCounter({slug,revisionId:flow.revision.id,source:embedded?'embed':'direct',collectorKey,invitationToken,accessToken},!editToken&&!resume&&!initialFlow.completedStepId&&(!(invitationToken&&emailLanding)||interacted), resume?.loadTime)
   const [hydrated, setHydrated] = useState(false)
   useEffect(() => { setHydrated(true) }, [])
   const responseContext = useRef(0)
@@ -112,6 +112,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   }
 
   const ensureSession = async () => {
+    if(editToken)return {sessionId:'editing',sessionToken:editToken,revisionId:flow.revision.id}
     if (!sessionStart.current) {
       const context = responseContext.current
       sessionStart.current = (invitationToken ? api.startSession(slug, deviceClass(), 'direct', invitationToken,undefined,accessToken,flow.presentation) : api.startSession(slug, deviceClass(), embedded ? 'embed' : 'direct', undefined, collectorKey, accessToken,flow.presentation)).then((session) => {
@@ -129,7 +130,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   const changeAnswer = (stepId: string, value: unknown) => {
     if (pendingFinal || sessionUnavailable || formChanged || prefills[stepId]?.locked) return
     setInteracted(true)
-    void view.begin()
+    if(!editToken)void view.begin()
     setError(undefined)
     setFieldErrors({})
     const reachableSkipped = new Set(visiblePath(flow, { ...answers, [stepId]: value }).map(step => step.id))
@@ -170,7 +171,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   const configuredTheme = brandStyle(config)
 
   const confirmFinal = async (attempt: PendingFinal) => {
-    const receipt = await api.submitResponse(slug, attempt.input)
+    const receipt:Awaited<ReturnType<typeof api.submitResponse>> = editToken ? await (async()=>{const response=await fetch(`/api/public/flows/${encodeURIComponent(slug)}/edit`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({token:editToken,answers:attempt.input.answers})});const body=await response.json() as Awaited<ReturnType<typeof api.submitResponse>> & {message?:string};if(!response.ok)throw new Error(body.message??'The edit could not be saved.');return body})() : await api.submitResponse(slug, attempt.input)
     // PAY-001: the response is committed with payment pending; the respondent pays on Stripe's hosted Checkout page.
     if (receipt.payment?.checkoutUrl) {
       if (embedded) {
@@ -220,7 +221,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   const next = async () => {
     if (navigating.current) return
     setInteracted(true)
-    void view.begin()
+    if(!editToken)void view.begin()
     setError(undefined)
     if (isCompletion) return
     if (!pendingFinal && current.kind === 'question') {
@@ -250,13 +251,13 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
           return
         }
         const submittedAnswers = questionSteps.flatMap((step) => filled(answers[step.id]) ? [{ stepId: step.id, value: answers[step.id] }] : [])
-        const attempt = { input: { ...credentials, idempotencyKey: idempotencyKey.current, answers: submittedAnswers, prefillProof:initialFlow.prefillProof, hidden, honeypot, loadTime: await view.token(), ...(invitationToken ? { invitationToken } : {}) } }
+        const attempt = { input: { ...credentials, idempotencyKey: idempotencyKey.current, answers: submittedAnswers, prefillProof:initialFlow.prefillProof, hidden, honeypot, loadTime: editToken?'':await view.token(), ...(invitationToken ? { invitationToken } : {}) } }
         attemptedFinal = attempt
         setPendingFinal(attempt)
         await confirmFinal(attempt)
         return
       }
-      await api.advanceSession(slug, { ...credentials, stepId: nextCandidate!.id })
+      if(!editToken)await api.advanceSession(slug, { ...credentials, stepId: nextCandidate!.id })
       setSkipped(previous=>new Set([...previous,...(screen?.steps??[current]).filter(step=>step.kind==='question'&&!step.required&&isUnanswered(answers[step.id])).map(step=>step.id)]))
       setIndex((currentIndex) => Math.min(currentIndex + 1, screens.length - 1))
     } catch (reason) {
@@ -287,14 +288,14 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
 
   const backTo = (target: number) => {
     setInteracted(true)
-    void view.begin()
+    if(!editToken)void view.begin()
     setError(undefined); setFieldErrors({}); setReviewing(false)
     const earlier = new Set(screens.slice(0,target).flatMap(screen=>screen.steps.map(step=>step.id)))
     setSkipped(previous => new Set([...previous].filter(id => earlier.has(id))))
     setIndex(target)
   }
   const needsAdmission = sessionUnavailable || formChanged
-  const primaryLabel = pendingFinal ? 'Retry submission' : formChanged ? 'Use current form' : sessionUnavailable ? 'Start again' : isWelcome ? respondentString(flow.formSettings?.text, 'startLabel') : nextCandidate?.kind === 'completion' ? flow.reviewBeforeSubmit && !reviewing ? 'Review answers' : isPayment && charge !== undefined ? `Pay ${formatUsd(charge)} with Stripe` : respondentString(flow.formSettings?.text, 'submitLabel') : respondentString(flow.formSettings?.text, 'nextLabel')
+  const primaryLabel = pendingFinal ? 'Retry submission' : formChanged ? 'Use current form' : sessionUnavailable ? 'Start again' : isWelcome ? respondentString(flow.formSettings?.text, 'startLabel') : nextCandidate?.kind === 'completion' ? flow.reviewBeforeSubmit && !reviewing ? 'Review answers' : !editToken && isPayment && charge !== undefined ? `Pay ${formatUsd(charge)} with Stripe` : respondentString(flow.formSettings?.text, 'submitLabel') : respondentString(flow.formSettings?.text, 'nextLabel')
 
   return (
     <main className="pencil-canvas respondent-shell brand-surface" data-hydrated={hydrated} data-embedded={embedded ? 'true' : undefined} data-landing={landing ? 'true' : undefined} style={configuredTheme}>
@@ -304,14 +305,14 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
         {!isCompletion ? <><div className="respondent-top"><span>{reviewing ? 'Before you submit' : isWelcome ? 'Before you begin' : isPayment ? 'Payment' : screen?.layout ? `${screen.layout.kind === 'page' ? 'Page' : 'Group'} ${screens.filter(entry=>entry.steps[0]?.kind==='question').findIndex(entry=>entry.id===screen.id)+1} of ${screens.filter(entry=>entry.steps[0]?.kind==='question').length} · ${screen.steps.length} question${screen.steps.length===1?'':'s'}` : `Question ${questionPosition + 1} of ${questionSteps.length}`}</span><span>{reviewing ? `${questionSteps.length} question${questionSteps.length === 1 ? '' : 's'}` : isWelcome ? `${questionSteps.length} question${questionSteps.length === 1 ? '' : 's'} ahead` : isPayment ? 'Last step' : respondentString(flow.formSettings?.text, 'progressText').replaceAll('{remaining}', String(Math.max(0, progressTotal - progressDone)))}</span></div><div aria-label="Response progress" aria-valuemax={100} aria-valuemin={0} aria-valuenow={Math.round(progress)} className="progress-track" role="progressbar"><span style={{ width: `${progress}%` }} />{!isWelcome && current.kind === 'question' ? <span className="progress-track__here" style={{ left: `${progressPosition / Math.max(1, progressTotal) * 100}%`, width: `${(screen ? units(screen) : 1)*100 / Math.max(1, progressTotal)}%` }} /> : null}</div></> : null}
         <h1 className="display" id="respondent-title" tabIndex={-1}>{reviewing ? 'Review your answers' : screen?.layout && !isCompletion ? screen.layout.title : displayedStep.prompt}</h1>
         {reviewing ? null : screen?.layout && !isCompletion ? screen.layout.description ? <p className="respondent-helper">{screen.layout.description}</p> : null : current.helperText ? <p className="respondent-helper">{displayedStep.helperText}</p> : null}
-        {!reviewing && (isWelcome || (!path.some((step) => step.kind === 'welcome') && current.kind === 'question' && (index === 0 || emailSelection && index === initialIndex))) ? <aside className="privacy-card"><LockKeyhole aria-hidden="true" size={22} strokeWidth={1.6} /><span><strong>Before you share</strong><br />{config.publicFlowPurpose} Your response is {(verifiedIdentity??initialFlow.hiddenContext?.verifiedEmail??initialFlow.hiddenContext?.verifiedSubject) ? `identified as ${verifiedIdentity??initialFlow.hiddenContext?.verifiedEmail??initialFlow.hiddenContext?.verifiedSubject} through verified form access` : initialFlow.identity === 'identified' ? 'identified through your invitation' : hiddenContext.identityMode === 'identified' ? 'identified; values supplied by this link are unverified, and forwarding the link forwards those values' : 'anonymous'}. At {config.publicFlowBusinessName}, operators can see the answers you submit. {Object.keys(prefills).length ? 'Identifying details in your answers, including prefilled values you submit, identify you to those operators.' : 'Identifying details you choose to type, such as an email address, identify you to those operators.'} Your answers are received and stored by this feedback service.{config.answersMayReachAi ? <> <span data-disclosure="ai-analysis">If {config.publicFlowBusinessName} analyses feedback, your written answers may be sent to the AI service it chose. Separate contact, invitation and session identity is excluded. {Object.keys(prefills).length ? 'Names, emails or other identifying details in selected text answers, including submitted prefills, are sent with those answers.' : 'Names, emails or other identifying details you type in selected text answers are sent with those answers.'}</span></> : null}{flow.formSettings?.googleSheets?<span data-disclosure="google-sheets" style={{display:'block',marginTop:'.5rem'}}>Your submitted answers are also sent to Google Sheets for this business. Identifying details you type in answers are included.</span>:null}<CompletionDisclosure flow={flow}/><PaymentDisclosure flow={flow}/></span></aside> : null}
+        {!reviewing && (isWelcome || (!path.some((step) => step.kind === 'welcome') && current.kind === 'question' && (index === 0 || emailSelection && index === initialIndex))) ? <aside className="privacy-card"><LockKeyhole aria-hidden="true" size={22} strokeWidth={1.6} /><span><strong>Before you share</strong><br />{config.publicFlowPurpose} Your response is {(verifiedIdentity??initialFlow.hiddenContext?.verifiedEmail??initialFlow.hiddenContext?.verifiedSubject) ? `identified as ${verifiedIdentity??initialFlow.hiddenContext?.verifiedEmail??initialFlow.hiddenContext?.verifiedSubject} through verified form access` : initialFlow.identity === 'identified' ? 'identified through your invitation' : hiddenContext.identityMode === 'identified' ? 'identified; values supplied by this link are unverified, and forwarding the link forwards those values' : 'anonymous'}. At {config.publicFlowBusinessName}, operators can see the answers you submit. {Object.keys(prefills).length ? 'Identifying details in your answers, including prefilled values you submit, identify you to those operators.' : 'Identifying details you choose to type, such as an email address, identify you to those operators.'} Your answers are received and stored by this feedback service.{config.answersMayReachAi ? <> <span data-disclosure="ai-analysis">If {config.publicFlowBusinessName} analyses feedback, your written answers may be sent to the AI service it chose. Separate contact, invitation and session identity is excluded. {Object.keys(prefills).length ? 'Names, emails or other identifying details in selected text answers, including submitted prefills, are sent with those answers.' : 'Names, emails or other identifying details you type in selected text answers are sent with those answers.'}</span></> : null}{flow.formSettings?.googleSheets?<span data-disclosure="google-sheets" style={{display:'block',marginTop:'.5rem'}}>Your submitted answers are also sent to Google Sheets for this business. Identifying details you type in answers are included.</span>:null}{!editToken?<><CompletionDisclosure flow={flow}/><PaymentDisclosure flow={flow}/></>:null}</span></aside> : null}
         {!isCompletion && hiddenContext.identityMode === 'identified' && Object.entries(hiddenContext.hidden).some(([id])=>flow.formSettings?.hiddenFields.some(field=>field.id===id&&field.category==='identifying')) ? <aside className="privacy-card"><span>Answering as {flow.formSettings?.hiddenFields.filter(field=>field.category==='identifying'&&hiddenContext.hidden[field.id]!==undefined).map(field=>String(hiddenContext.hidden[field.id])).join(', ')}. These link-supplied values are unverified. <button type="button" className="quiet-button" disabled={submitting||!!pendingFinal} onClick={()=>setHidden(previous=>Object.fromEntries(Object.entries(previous).filter(([name])=>!flow.formSettings?.hiddenFields.some(field=>field.name===name&&field.category==='identifying'))))}>This isn’t me</button></span></aside> : null}
         {emailSelection && !isCompletion ? <p className="status-note">Selected from email: {flow.choices.find(choice=>choice.stepId===emailSelection.stepId&&choice.id===emailSelection.value)?.label ?? String(emailSelection.value)} · not submitted yet. Continue or submit to confirm.</p> : null}
-        {!isCompletion && flow.formSettings?.confirmation?.enabled ? <p className="status-note">After you submit, a confirmation will be emailed to {flow.formSettings.confirmation.emailStepId ? 'the address you enter in the marked question' : 'your invitation address'}, if eligible. {flow.formSettings.confirmation.includeAnswers ? 'It includes a copy of the answer types selected for this form.' : 'It does not include your answers.'}</p> : null}
-        {!reviewing && current.kind==='question' && flow.formSettings?.confirmation?.enabled && flow.formSettings.confirmation.emailStepId===current.id ? <p className="respondent-required">Send my confirmation here</p> : null}
+        {!editToken && !isCompletion && flow.formSettings?.confirmation?.enabled ? <p className="status-note">After you submit, a confirmation will be emailed to {flow.formSettings.confirmation.emailStepId ? 'the address you enter in the marked question' : 'your invitation address'}, if eligible. {flow.formSettings.confirmation.includeAnswers ? 'It includes a copy of the answer types selected for this form.' : 'It does not include your answers.'}</p> : null}
+        {!editToken && !reviewing && current.kind==='question' && flow.formSettings?.confirmation?.enabled && flow.formSettings.confirmation.emailStepId===current.id ? <p className="respondent-required">Send my confirmation here</p> : null}
         {!reviewing && !screen?.layout && prefills[current.id] ? <p className="respondent-required">Prefilled{prefills[current.id].locked ? ' · locked by the operator' : ' · you can edit this answer'}</p> : null}
         {!reviewing && !screen?.layout && current.kind === 'question' && current.required ? <p className="respondent-required">Required</p> : null}
-        {reviewing ? <ReviewAnswers flow={flow} steps={questionSteps} answers={answers} disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onEdit={id=>backTo(screens.findIndex(entry=>entry.steps.some(step=>step.id===id)))} /> : current.kind === 'question' && screen?.layout ? <ScreenQuestions confirmationStepId={flow.formSettings?.confirmation?.enabled?flow.formSettings.confirmation.emailStepId:undefined} prefills={prefills} steps={screen.steps} choices={flow.choices} answers={answers} errors={fieldErrors} disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} recall={(text,id)=>interpolateAnswerRecall(text,flow,answers,id)} onChange={changeAnswer}/> : current.kind === 'question' ? <AnswerFieldset id={current.id} disabled={prefills[current.id]?.locked || !hydrated || submitting || !!pendingFinal || needsAdmission} labelledBy="respondent-title" error={fieldErrors[current.id]}><QuestionInput key={`${flow.revision.id}-${current.id}`} choices={currentChoices} onChange={(value) => changeAnswer(current.id, value)} step={displayedStep} value={answers[current.id]} /></AnswerFieldset> : null}
+        {reviewing ? <ReviewAnswers flow={flow} steps={questionSteps} answers={answers} disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onEdit={id=>backTo(screens.findIndex(entry=>entry.steps.some(step=>step.id===id)))} /> : current.kind === 'question' && screen?.layout ? <ScreenQuestions confirmationStepId={!editToken&&flow.formSettings?.confirmation?.enabled?flow.formSettings.confirmation.emailStepId:undefined} prefills={prefills} steps={screen.steps} choices={flow.choices} answers={answers} errors={fieldErrors} disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} recall={(text,id)=>interpolateAnswerRecall(text,flow,answers,id)} onChange={changeAnswer}/> : current.kind === 'question' ? <AnswerFieldset id={current.id} disabled={prefills[current.id]?.locked || !hydrated || submitting || !!pendingFinal || needsAdmission} labelledBy="respondent-title" error={fieldErrors[current.id]}><QuestionInput key={`${flow.revision.id}-${current.id}`} choices={currentChoices} onChange={(value) => changeAnswer(current.id, value)} step={displayedStep} value={answers[current.id]} /></AnswerFieldset> : null}
         {isPayment && payment?.notice ? <p className="status-note" role="status">{payment.notice}</p> : null}
         {!reviewing && isPayment && quote ? <><PaymentSummary quote={quote} /><p className="payment-note">You pay on Stripe’s secure checkout page. Stripe receives the items and amounts above; {config.publicFlowBusinessName} and this form never receive your card or bank details.</p></> : null}
         {!reviewing && isPayment && payment?.notice ? <ReviewAnswers flow={flow} steps={questionSteps} answers={answers} disabled={!hydrated || submitting || leaving} onEdit={id=>backTo(screens.findIndex(entry=>entry.steps.some(step=>step.id===id)))} /> : null}
@@ -322,7 +323,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
         {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
         {!isCompletion && !reviewing && nextCandidate?.kind === 'completion' && flow.formSettings?.marketing?.purpose === 'email_marketing' ? <p className="respondent-marketing" data-testid="marketing-opt-in">{flow.formSettings.marketing.wording}</p> : null}
         {!isCompletion ? <footer className="respondent-actions">{index > 0 || reviewing ? <button className="secondary-button focus-ring" disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onClick={() => backTo(reviewing ? index : Math.max(0, index - 1))} type="button"><ArrowLeft aria-hidden="true" size={17} /> Back</button> : null}<button className="primary-button focus-ring" disabled={!hydrated || submitting || leaving || !!checkoutFallback || (isPayment && !reviewing && charge === undefined)} onClick={needsAdmission && !pendingFinal ? restart : next} type="button">{leaving ? 'Opening Stripe Checkout…' : submitting ? (needsAdmission ? 'Starting again…' : pendingFinal || nextCandidate?.kind === 'completion' ? 'Submitting…' : 'Continuing…') : primaryLabel} <ArrowRight aria-hidden="true" size={17} /></button></footer> : null}
-        {!isCompletion && !isPayment && !onKioskComplete && !(invitationToken && flow.formSettings?.prefill?.length) ? <SaveResponse disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onSave={saveForLater} /> : null}
+        {!editToken && !isCompletion && !isPayment && !onKioskComplete && !(invitationToken && flow.formSettings?.prefill?.length) ? <SaveResponse disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onSave={saveForLater} /> : null}
       </article>
       {landing && config.showPoweredByCredit ? <footer className="respondent-landing-credit">Powered by {config.productName} · <a href="https://runeditrun.com">runeditrun.com</a></footer> : null}
     </main>

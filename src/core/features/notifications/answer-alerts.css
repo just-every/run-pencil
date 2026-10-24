@@ -1,0 +1,4 @@
+.answer-alert-settings, .answer-alert-settings fieldset { min-width: 0; max-width: 100%; }
+.answer-alert-settings fieldset { margin-inline: 0; }
+.answer-alert-settings .toggle-row > span { min-width: 0; overflow-wrap: anywhere; }
+.answer-alert-settings .text-input { min-width: 0; max-width: 100%; }

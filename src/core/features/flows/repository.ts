@@ -36,6 +36,11 @@ export class FlowRepository {
       .bind(crypto.randomUUID(), kind, operatorId ?? null, now, flowId)
   }
 
+  async validAlertRecipients(workspaceId:string,ids:string[]) {
+    if(!ids.length)return true
+    const rows=await this.binding.prepare(`SELECT id FROM operators WHERE workspace_id=? AND id IN (SELECT value FROM json_each(?)) AND NOT EXISTS(SELECT 1 FROM operator_auth_links l JOIN oa_operators a ON a.id=l.auth_id WHERE l.operator_id=operators.id AND a.status='inactive')`).bind(workspaceId,JSON.stringify(ids)).all<{id:string}>()
+    return ids.every(id=>rows.results.some(row=>row.id===id))
+  }
   async createStructure(input: FlowStructure) { return createFlowStructure(this.binding, input) }
 
   async updateScreen(input: DraftVersion & {changes:Array<{id:string;settings:Record<string,unknown>|null;nextStepId:string|null}>}) {

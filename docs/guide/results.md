@@ -109,14 +109,14 @@ Response exports omit automated bot-check and minimum-time exclusions by default
 
 ## Send response events to your own system
 
-The installation owner can register HTTPS endpoints in **Settings → Response webhooks**, for one form or for every form in the workspace. Pencil sends a signed message when a response is created (a quarantined response only when you release it), when a response is erased, when a respondent saves a partial response to resume later, and when a payment on a response changes state. The events for an edited response and for an approval decision cannot be sent yet, because Pencil has no edit-after-submission or approval step.
+The installation owner can register HTTPS endpoints in **Settings → Response webhooks**, for one form or for every form in the workspace. Pencil sends a signed message when a response is created (a quarantined response only when you release it), when a response is edited or erased, when a respondent saves a partial response to resume later, and when a payment on a response changes state. Approval decision events wait for an approval step.
 
 **Messages carry identifiers only.** The body names the event type and ID, the form, the revision and the response, plus the payment state for payment events. It never carries answers, names, email addresses or other contact details. A receiver that needs the answers reads them through Pencil's signed-in results or the authenticated export.
 
 Each delivery is one `POST` with a JSON body and these headers:
 
 - `Pencil-Event-Id`: the event ID, the same on every retry and replay. Keep the IDs you already handled and ignore repeats.
-- `Pencil-Event-Type`: `response.created`, `response.deleted`, `response.partial_saved` or `payment.changed` (`webhook.test` for the **Send test event** button).
+- `Pencil-Event-Type`: `response.created`, `response.updated`, `response.deleted`, `response.partial_saved` or `payment.changed` (`webhook.test` for the **Send test event** button).
 - `Pencil-Timestamp`: when this attempt was sent, in Unix seconds. The same moment is in the body as `sentAt`. Reject an attempt older than five minutes.
 - `Pencil-Signature`: `sha256=` followed by the hexadecimal HMAC-SHA256 of the exact request body bytes, keyed by the endpoint's signing secret (its UTF-8 bytes). Compute it over the raw body before parsing it, and compare in constant time.
 
@@ -131,10 +131,32 @@ The installation owner connects Google in Settings with an OAuth client configur
 
 Released responses whose published revision discloses Google Sheets are backfilled and then synced. Question columns keep their stable IDs in the header; republishing appends new question columns without moving old ones. Pencil owns the response-key column, so leave its keys and row order intact. Cells use Google’s RAW input mode. Erasure clears the corresponding row; it does not shift other rows. The current bounded sync supports 1,000 worksheet rows and 499 question columns.
 
-Settings’ Delivery ledger shows each row’s attempts, failure reason and replay action. Collection continues while Google is unavailable. Known read failures retry within a bounded budget; an uncertain write needs reconciliation and an explicit replay using its original row key. Credentials are private and excluded from backups. Restored worksheet links remain disarmed until explicitly reattached. Respondent editing is not yet available; its future native answer writes already enqueue updates.
+Settings’ Delivery ledger shows each row’s attempts, failure reason and replay action. Collection continues while Google is unavailable. Known read failures retry within a bounded budget; an uncertain write needs reconciliation and an explicit replay using its original row key. Credentials are private and excluded from backups. Restored worksheet links remain disarmed until explicitly reattached. Respondent edits enqueue native answer updates; the same response key keeps the worksheet row in place.
 
 ## SMS invitations
 
 The installation owner saves the Twilio connection in Settings and configures Twilio’s incoming webhook to the address shown there. The A2P registration state is owner-reported; finish carrier registration in the owner’s Twilio account before marking it approved.
 
 In Audience, save an E.164 mobile number and record the exact SMS consent wording. The record keeps its operator, time and source. Choose SMS in the form’s invitation channel. Every selected recipient needs current SMS consent; a mixed selection with an unconsented recipient is refused. Invitations and reminders use the existing durable delivery queue and workspace quiet hours. Changing a number cancels pending SMS. A verified STOP records withdrawal and cancels the scheduled reminder; verified HELP names the inviting business for known contacts. Live delivery, automatic A2P lookup and per-contact time zones remain outside the current implementation.
+
+## Edit after submission
+
+In the builder, select the completion screen and open **Edit after submission**. Enable editing and choose the UTC deadline, then save and publish. Enable the existing respondent confirmation email and select its mailbox question, or use an identified invitation participant. Without a permitted confirmation recipient, Pencil sends no edit link.
+
+The confirmation carries a single-use private link. It opens the response’s current answers on its original published form. Submitting replaces the current answers, recomputes calculated values and queues a signed `response.updated` event. A used, expired or past-deadline link, a closed form or an erased response is refused. An edit that changes a payment’s payable total is refused; payment state stays unchanged.
+
+Expand **Response versions** in the response ledger to inspect the current and earlier answers. Erasure removes all versions and the edit capability. Installation backups retain versions, exclude edit-link rows and remove live edit URLs from retained confirmations; restored confirmations remain disarmed. Ordinary response downloads currently contain the current answers only.
+
+## Answer alerts
+
+Select the completion screen in the builder and open **Answer alerts**. Add a named rule, choose its typed conditions and named operator recipients, save and publish. Answers, declared hidden fields, numeric or text calculations and payment state use the same condition evaluator as branching. Matching released responses create one email and one in-app attention item per rule recipient. Quarantined responses wait for release; pending payment responses wait for payment. Mail names the flow and rule and links to signed-in results, with no answer text.
+
+The Results attention list lets each recipient mark an alert as read. Failed delivery keeps its attempts and original key. An uncertain delivery requires an explicit risk-confirmed retry. Backup restoration disarms retained deliveries. Slack/Teams rule routing, mobile push and answer inclusion remain unavailable.
+
+## Slack and Teams
+
+The installation owner saves Slack bot/signing credentials or a Teams incoming webhook in **Settings → Slack and Teams**. Credentials are sealed, never returned to the screen and excluded from backups. In a form’s completion settings, open **Slack and Teams notifications**, select the channel/account mapping and explicitly select any allowed closed-choice, numeric or yes/no summary fields. Contact details, free text and uploads cannot be selected. This type-based restriction does not replace a future sensitivity classification.
+
+Future released responses post the flow, time, chosen summary and a signed-in response link. An explicitly authored action template enables the mapped owner’s signed Slack control to create one action. The message-created action’s Slack and Teams owner reminders run three calendar days before review, on the date and weekly while unresolved, within workspace sending hours; outside-hours work waits and the owner verdict stops it. The Delivery ledger records failed posts. Uncertain posts do not automatically resend. Changing form settings invalidates earlier controls; replacing a connection or restoring a backup disarms form links until explicitly saved again.
+
+These connections have loopback receiver proof only. Live Slack/Teams, the sibling Nook, answer-alert routing to chat, Teams action controls and chat reminders for manually created actions remain unproved or unavailable.

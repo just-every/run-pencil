@@ -1,3 +1,5 @@
+import { answerAlertsIssue, type AnswerAlertRule } from './answerAlerts'
+import { responseEditsIssue, type ResponseEditSettings } from './responseEdits'
 import { marketingSettingsIssue, type ConsentRecord, type MarketingOptIn } from './marketingConsent'
 import { respondentTextIssue, type RespondentText } from './respondentText'
 import { confirmationSettingsIssue, type ConfirmationSettings } from './confirmationSettings'
@@ -11,20 +13,22 @@ import type { FlowStep } from '../app/api'
 import { linkPreviewIssue, type LinkPreviewSettings } from './linkPreview'
 
 export type HiddenField = { id: string; name: string; type: 'text' | 'number' | 'email' | 'date' | 'boolean'; category: 'plain' | 'campaign' | 'identifying' | 'click_id' }
-export type FormSettings = { googleSheets?:boolean; marketing?: MarketingOptIn; text?: RespondentText; confirmation?: ConfirmationSettings; prefill?: PrefillMapping[]; linkPreview?: LinkPreviewSettings; reviewBeforeSubmit?: boolean; access?: {id:string;mode:'password'|'email'|'signed'}; redirectOrigins?: string[]; calculations?: Calculation[]; hiddenFields: HiddenField[]; identityMode: 'anonymous' | 'identified' }
+export type FormSettings = { answerAlerts?: AnswerAlertRule[]; responseEdits?: ResponseEditSettings; googleSheets?:boolean; marketing?: MarketingOptIn; text?: RespondentText; confirmation?: ConfirmationSettings; prefill?: PrefillMapping[]; linkPreview?: LinkPreviewSettings; reviewBeforeSubmit?: boolean; access?: {id:string;mode:'password'|'email'|'signed'}; redirectOrigins?: string[]; calculations?: Calculation[]; hiddenFields: HiddenField[]; identityMode: 'anonymous' | 'identified' }
 export type ResponseContext = { consents?: ConsentRecord[]; prefill?: Record<string,PrefillMarker>; presentedOrder?: import('./presentationOrder').PresentationOrder; verifiedEmail?:string; verifiedSubject?:string; calculations?: Record<string,number|string|null>; hidden: Record<string, string | number | boolean>; discarded: number; identityMode: 'anonymous' | 'identified' }
 const reserved = new Set(['collector','resume','source','challenge','kiosk','__proto__','constructor','prototype'])
 export const hiddenFieldLimits = manifest.limits.hiddenFields
 
 export function formSettings(json?: string | null): FormSettings {
   const value = JSON.parse(json ?? '{}') as Partial<FormSettings>
-  return { ...(value.googleSheets!==undefined?{googleSheets:value.googleSheets}:{}), ...(value.marketing !== undefined ? {marketing:value.marketing} : {}), ...(value.text !== undefined ? {text:value.text} : {}), ...(value.confirmation !== undefined ? {confirmation:value.confirmation} : {}), ...(value.prefill !== undefined ? {prefill:value.prefill} : {}), ...(value.linkPreview !== undefined ? {linkPreview:value.linkPreview} : {}), ...(value.reviewBeforeSubmit !== undefined ? {reviewBeforeSubmit:value.reviewBeforeSubmit} : {}), ...(value.access ? {access:value.access} : {}), ...(value.redirectOrigins ? {redirectOrigins:value.redirectOrigins} : {}), calculations:value.calculations ?? [], hiddenFields: value.hiddenFields ?? [], identityMode: value.identityMode ?? 'anonymous' }
+  return { ...(value.answerAlerts?{answerAlerts:value.answerAlerts}:{}), ...(value.responseEdits?{responseEdits:value.responseEdits}:{}), ...(value.googleSheets!==undefined?{googleSheets:value.googleSheets}:{}), ...(value.marketing !== undefined ? {marketing:value.marketing} : {}), ...(value.text !== undefined ? {text:value.text} : {}), ...(value.confirmation !== undefined ? {confirmation:value.confirmation} : {}), ...(value.prefill !== undefined ? {prefill:value.prefill} : {}), ...(value.linkPreview !== undefined ? {linkPreview:value.linkPreview} : {}), ...(value.reviewBeforeSubmit !== undefined ? {reviewBeforeSubmit:value.reviewBeforeSubmit} : {}), ...(value.access ? {access:value.access} : {}), ...(value.redirectOrigins ? {redirectOrigins:value.redirectOrigins} : {}), calculations:value.calculations ?? [], hiddenFields: value.hiddenFields ?? [], identityMode: value.identityMode ?? 'anonymous' }
 }
 export function hiddenSettingsIssue(value: unknown): string | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return 'Choose valid hidden-field settings.'
-  if (Object.keys(value).some(key=>!['googleSheets','marketing','text','confirmation','prefill','hiddenFields','identityMode','calculations','redirectOrigins','access','reviewBeforeSubmit','linkPreview'].includes(key))) return 'Unknown form setting.'
+  if (Object.keys(value).some(key=>!['answerAlerts','responseEdits','googleSheets','marketing','text','confirmation','prefill','hiddenFields','identityMode','calculations','redirectOrigins','access','reviewBeforeSubmit','linkPreview'].includes(key))) return 'Unknown form setting.'
   const settings = value as FormSettings
   if(settings.googleSheets!==undefined&&typeof settings.googleSheets!=='boolean')return 'Choose whether Google Sheets is disclosed.'
+  const alertIssue=answerAlertsIssue(settings.answerAlerts); if(alertIssue)return alertIssue
+  const editIssue=responseEditsIssue(settings.responseEdits); if(editIssue)return editIssue
   const marketingIssue=marketingSettingsIssue(settings.marketing); if(marketingIssue)return marketingIssue
   const textIssue=respondentTextIssue(settings.text); if(textIssue)return textIssue
   const confirmationIssue=confirmationSettingsIssue(settings.confirmation); if(confirmationIssue)return confirmationIssue

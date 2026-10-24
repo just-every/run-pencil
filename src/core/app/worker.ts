@@ -1,3 +1,4 @@
+import { registerChatRoutes } from '../features/chat-integrations'
 import { registerGoogleRoutes } from '../features/google-sheets'
 import { registerSmsRoutes } from '../features/sms'
 import { registerAddressRoutes } from '../features/addresses/routes'
@@ -131,6 +132,7 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
   app.use('/app', requireOperator)
   app.use('/app/*', requireOperator)
 
+  registerChatRoutes(app)
   registerGoogleRoutes(app)
   registerSmsRoutes(app)
   registerAddressRoutes(app)

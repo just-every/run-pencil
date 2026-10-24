@@ -1,3 +1,4 @@
+import { proveChatSettings } from './chat-settings-proof'
 import { createServer } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import AxeBuilder from '@axe-core/playwright'
@@ -6,7 +7,7 @@ import { contract } from './contract'
 import { signInEmptyWorkspace } from './authoring-helpers'
 import { openStateDatabase, stateDatabaseFile } from './state-database'
 
-contract(['INTEG-010', 'INTEG-015'], 'an owner adds a response webhook, sees its secret once, tests it, and an operator sees the disabled alert at both widths', async ({ page }, info) => {
+contract(['INTEG-010', 'INTEG-015', 'INTEG-006'], 'an owner adds a response webhook, sees its secret once, tests it, and an operator sees the disabled alert at both widths', async ({ page }, info) => {
   test.setTimeout(120_000)
   const origin = new URL(info.project.use.baseURL!).origin
   const cdp = await page.context().newCDPSession(page)
@@ -81,6 +82,7 @@ contract(['INTEG-010', 'INTEG-015'], 'an owner adds a response webhook, sees its
       const axe = await new AxeBuilder({ page }).analyze(); expect(axe.violations).toEqual([])
       await page.screenshot({ path: info.outputPath(`audit-events-${viewport.width}.png`), fullPage: true })
     }
+    await proveChatSettings(page,info)
     expect(flow.id).toBeTruthy()
   } finally { db.close(); await new Promise<void>(resolve => { receiver.closeAllConnections(); receiver.close(() => resolve()) }) }
 })

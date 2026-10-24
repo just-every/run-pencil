@@ -1,0 +1,67 @@
+import { createServer } from 'node:http'
+import type { AddressInfo } from 'node:net'
+import { mkdir } from 'node:fs/promises'
+import { join } from 'node:path'
+import AxeBuilder from '@axe-core/playwright'
+import type { Page,TestInfo } from '@playwright/test'
+import type { BuilderDraft,Operator } from '../../src/core/app/api'
+import { expect } from './fixtures'
+
+/** The owner's existing Settings and builder doors at both supported widths; credentials are never returned to the document. */
+export async function proveChatSettings(page:Page,info:TestInfo){
+  const origin=new URL(info.project.use.baseURL!).origin
+  const receiver=createServer((request,response)=>{request.resume();request.on('end',()=>{response.writeHead(200,{'content-type':'application/json'});response.end(JSON.stringify({ok:true}))})})
+  await new Promise<void>(resolve=>receiver.listen(0,'127.0.0.1',resolve))
+  const receiverOrigin=`http://127.0.0.1:${(receiver.address() as AddressInfo).port}`
+  const request=async<T>(path:string,method='GET',data?:unknown)=>{const response=await page.request.fetch(path,{method,headers:{Origin:origin},...(data===undefined?{}:{data})});expect(response.status(),await response.text()).toBeLessThan(300);return response.status()===204?undefined as T:response.json() as Promise<T>}
+  const capture=async(label:string)=>{if(process.env.PENCIL_CAPTURE_DIR){await mkdir(process.env.PENCIL_CAPTURE_DIR,{recursive:true});await page.screenshot({path:join(process.env.PENCIL_CAPTURE_DIR,`integ006-${label}-${page.viewportSize()!.width}.png`),fullPage:true})}else await page.screenshot({path:info.outputPath(`chat-${label}-${page.viewportSize()!.width}.png`),fullPage:true})}
+  let flowId:string|undefined
+  try{
+    await page.goto('/app/settings');await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
+    const card=page.getByRole('region',{name:'Slack and Teams',exact:true})
+    await card.getByText('Slack connection',{exact:true}).click()
+    await card.getByLabel('Slack bot token',{exact:true}).fill('synthetic-pencil-chat-bot')
+    await card.getByLabel('Slack signing secret',{exact:true}).fill('synthetic-pencil-chat-signing-secret')
+    await card.getByRole('button',{name:'Save Slack connection',exact:true}).click()
+    await expect(card.getByRole('status')).toContainText('Slack connection saved')
+    await expect(card.getByLabel('Slack bot token',{exact:true})).toHaveValue('')
+    await expect(card.getByLabel('Slack signing secret',{exact:true})).toHaveValue('')
+    // All subsequent posts, should any be queued, go only to the loopback fixture.
+    await request('/api/app/connections/slack','PUT',{botToken:'synthetic-pencil-chat-bot',signingSecret:'synthetic-pencil-chat-signing-secret',apiOrigin:receiverOrigin})
+    await card.getByText('Teams connection',{exact:true}).click()
+    await card.getByLabel('Teams incoming webhook',{exact:true}).fill(receiverOrigin+'/teams')
+    await card.getByRole('button',{name:'Save Teams connection',exact:true}).click()
+    await expect(card.getByRole('status')).toContainText('Teams connection saved')
+    await expect(card.getByLabel('Teams incoming webhook',{exact:true})).toHaveValue('')
+    expect(await page.content()).not.toContain('synthetic-pencil-chat-signing-secret')
+    for(const viewport of [{width:1440,height:900},{width:390,height:844}]){await page.setViewportSize(viewport);await card.scrollIntoViewIfNeeded();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);expect((await new AxeBuilder({page}).analyze()).violations).toEqual([]);await capture('connections')}
+    const flow=await request<{id:string}>('/api/app/flows','POST',{title:'Chat settings proof',slug:`chat-settings-${info.project.name}-${Date.now()}`});flowId=flow.id
+    const draft=()=>request<BuilderDraft>(`/api/app/flows/${flow.id}/draft`)
+    for(const step of [{kind:'question',questionType:'single_choice',prompt:'Visit rating',required:true,choices:[{value:'good',label:'Good'},{value:'poor',label:'Poor'}]},{kind:'question',questionType:'email',prompt:'Private mailbox',required:false},{kind:'completion',questionType:null,prompt:'Chat settings complete'}])await request(`/api/app/flows/${flow.id}/draft/steps`,'POST',{expectedVersion:(await draft()).flow.draftVersion,step})
+    const operators=await request<Operator[]>('/api/app/operators')
+    await page.goto(`/app/flows/${flow.id}/builder`);await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
+    await page.getByRole('button',{name:/Chat settings complete Completion/}).click()
+    const service=page.getByRole('combobox',{name:'Chat service',exact:true}),settings=service.locator('..').locator('..')
+    await page.getByText('Slack and Teams notifications',{exact:true}).click()
+    await expect(service).toBeEnabled()
+    await settings.getByRole('textbox',{name:'Slack channel ID',exact:true}).fill('synthetic-pencil-channel')
+    await settings.getByRole('combobox',{name:'Action owner',exact:true}).selectOption(operators[0].id)
+    await settings.getByRole('textbox',{name:'Owner’s Slack user ID',exact:true}).fill('synthetic-pencil-slack-user')
+    await settings.getByRole('checkbox',{name:'Visit rating',exact:true}).check()
+    await expect(settings.getByRole('checkbox',{name:'Private mailbox',exact:true})).toHaveCount(0)
+    await settings.getByRole('button',{name:'Save chat settings',exact:true}).click()
+    await expect(settings.getByRole('status')).toContainText('Chat settings saved')
+    for(const viewport of [{width:1440,height:900},{width:390,height:844}]){await page.setViewportSize(viewport);await settings.scrollIntoViewIfNeeded();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);expect((await new AxeBuilder({page}).analyze()).violations).toEqual([]);await capture('slack-form')}
+    await service.selectOption('teams')
+    await settings.getByRole('combobox',{name:'Action owner',exact:true}).selectOption(operators[0].id)
+    await settings.getByRole('textbox',{name:'Owner’s Microsoft user ID',exact:true}).fill('synthetic-pencil-microsoft-user')
+    await settings.getByRole('button',{name:'Save chat settings',exact:true}).click()
+    await expect(settings.getByRole('status')).toContainText('Chat settings saved')
+    for(const viewport of [{width:1440,height:900},{width:390,height:844}]){await page.setViewportSize(viewport);await settings.scrollIntoViewIfNeeded();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);expect((await new AxeBuilder({page}).analyze()).violations).toEqual([]);await capture('teams-form')}
+  }finally{
+    try{
+      if(flowId)for(const platform of ['slack','teams'])await request(`/api/app/flows/${flowId}/chat/${platform}`,'DELETE',{})
+      for(const platform of ['slack','teams'])await request(`/api/app/connections/${platform}`,'DELETE',{})
+    }finally{await new Promise<void>(resolve=>{receiver.closeAllConnections();receiver.close(()=>resolve())})}
+  }
+}

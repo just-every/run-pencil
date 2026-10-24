@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { type SlackConnection, type TeamsConnection } from '../../features/chat-integrations/model'
 import { ValidationError } from '../../shared/errors'
 import { readAiProvider } from '../ai/provider'
 import type { PencilPlatform } from '../runtime'
@@ -28,7 +29,7 @@ export type GoogleConnection=z.infer<typeof googleConnectionSchema>&{accessToken
 type AnalysisConnection = z.infer<typeof analysisConnectionSchema>
 type TaskConnection = z.infer<typeof taskConnectionSchema>
 export type PaymentConnection = z.infer<typeof paymentConnectionSchema>
-type Kind = 'analysis' | 'task' | 'payment' | 'sms' | 'google'
+type Kind = 'analysis' | 'task' | 'payment' | 'sms' | 'google' | 'slack' | 'teams'
 
 function validateAddress(value: string, local: boolean) {
   const url = new URL(value)
@@ -76,6 +77,23 @@ export class IntegrationConnections {
   async saveGoogle(input:GoogleConnection){this.validateGoogle(input);await this.save('google',input)}
   async google(){return this.read<GoogleConnection>('google')}
   async googleStatus(){const saved=await this.google();return {connected:!!saved?.accessToken,configured:!!saved,callbackUrl:this.platform.configuration.appOrigin+'/api/app/connections/google/callback'}}
+  async saveSlack(input: SlackConnection) {
+    validateAddress(input.apiOrigin, this.platform.configuration.isLocalDevelopment)
+    const url = new URL(input.apiOrigin)
+    if (input.apiOrigin !== 'https://slack.com/api' && !(this.platform.configuration.isLocalDevelopment && ['localhost','127.0.0.1','[::1]'].includes(url.hostname))) throw new ValidationError('Slack uses https://slack.com/api.')
+    await this.save('slack', input)
+  }
+  async slack() { return this.read<SlackConnection>('slack') }
+  async slackStatus() { return { saved: !!await this.slack(), interactionUrl: this.platform.configuration.appOrigin + '/api/public/chat/slack/interactions' } }
+  async saveTeams(input: TeamsConnection) {
+    const url = new URL(input.webhookUrl)
+    if (url.username || url.password || url.hash || (url.protocol !== 'https:' && !(this.platform.configuration.isLocalDevelopment && url.protocol === 'http:' && ['localhost','127.0.0.1','[::1]'].includes(url.hostname)))) throw new ValidationError('Use an HTTPS Teams incoming-webhook address. Local development accepts loopback HTTP.')
+    const host = url.hostname.toLowerCase(), loopback = this.platform.configuration.isLocalDevelopment && ['localhost','127.0.0.1','[::1]'].includes(host)
+    if (!loopback && host !== 'outlook.office.com' && !['.webhook.office.com','.webhook.office365.com','.logic.azure.com','.api.powerplatform.com'].some(suffix => host.endsWith(suffix))) throw new ValidationError('Use the incoming-webhook URL supplied by Microsoft Teams.')
+    await this.save('teams', input)
+  }
+  async teams() { return this.read<TeamsConnection>('teams') }
+  async teamsStatus() { return { saved: !!await this.teams() } }
   async savePayment(input: PaymentConnection) {
     await this.save('payment', input)
   }

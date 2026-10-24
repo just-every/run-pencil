@@ -2,7 +2,7 @@ import type { WebhookAlert } from './endpoints'
 
 export type LedgerAttempt = { ordinal: number; outcome: string | null; httpStatus: number | null; reason: string | null; at: string }
 export type LedgerDelivery = {
-  kind: 'webhook' | 'task' | 'sheet'; id: string; subject: string; state: 'pending' | 'confirmed' | 'unknown' | 'failed'; idempotencyKey: string
+  kind: 'webhook' | 'task' | 'sheet' | 'slack' | 'teams'; id: string; subject: string; state: 'pending' | 'confirmed' | 'unknown' | 'failed'; idempotencyKey: string
   responseId: string | null; endpointId: string | null; actionId: string | null; updatedAt: string; attempts: LedgerAttempt[]
 }
 const states = { pending: 'pending', sending: 'pending', confirmed: 'confirmed', failed: 'failed', cancelled: 'failed' } as const
@@ -28,7 +28,12 @@ export class IntegrationLedger {
       WHERE action_id IN (${tasks.results.map(() => '?').join(',')}) ORDER BY ordinal`).bind(...tasks.results.map(row => row.id)).all<LedgerAttempt & { actionId: string }>() : { results: [] }
     const sheets=await this.db.prepare(`SELECT r.id,r.state,r.generation,r.response_id AS responseId,r.updated_at AS updatedAt FROM google_sheet_rows r JOIN google_sheet_links l ON l.id=r.link_id WHERE l.workspace_id=? ORDER BY r.updated_at DESC,r.id DESC LIMIT ?`).bind(workspaceId,limit).all<{id:string;state:LedgerDelivery['state'];generation:number;responseId:string|null;updatedAt:string}>()
     const sheetAttempts=sheets.results.length?await this.db.prepare(`SELECT row_id AS rowId,ordinal,outcome,http_status AS httpStatus,reason,created_at AS at FROM google_sheet_attempts WHERE row_id IN (${sheets.results.map(()=>'?').join(',')}) ORDER BY ordinal,created_at,id`).bind(...sheets.results.map(row=>row.id)).all<LedgerAttempt&{rowId:string}>():{results:[]}
+    const chat = await this.db.prepare(`SELECT d.id,l.platform,d.kind,d.state,d.idempotency_key AS idempotencyKey,d.response_id AS responseId,t.action_id AS actionId,d.updated_at AS updatedAt
+      FROM chat_deliveries d JOIN chat_form_links l ON l.id=d.link_id LEFT JOIN chat_action_targets t ON t.id=d.action_target_id
+      WHERE l.workspace_id=? ORDER BY d.updated_at DESC,d.id DESC LIMIT ?`).bind(workspaceId,limit).all<{id:string;platform:'slack'|'teams';kind:string;state:LedgerDelivery['state']|'sending'|'cancelled';idempotencyKey:string;responseId:string|null;actionId:string|null;updatedAt:string}>()
+    const chatAttempts=chat.results.length?await this.db.prepare(`SELECT delivery_id AS deliveryId,ordinal,outcome,http_status AS httpStatus,reason,created_at AS at FROM chat_attempts WHERE delivery_id IN (${chat.results.map(()=>'?').join(',')}) AND outcome<>'started' ORDER BY ordinal,created_at,id`).bind(...chat.results.map(row=>row.id)).all<LedgerAttempt&{deliveryId:string}>():{results:[]}
     const rows: LedgerDelivery[] = [
+      ...chat.results.map(row=>({kind:row.platform,id:row.id,subject:'chat.'+row.kind,state:row.state==='sending'?'pending' as const:row.state==='cancelled'?'failed' as const:row.state,idempotencyKey:row.idempotencyKey,responseId:row.responseId,endpointId:null,actionId:row.actionId,updatedAt:row.updatedAt,attempts:chatAttempts.results.filter(attempt=>attempt.deliveryId===row.id).map(({deliveryId:_delivery,...attempt})=>attempt)})),
       ...sheets.results.map(row=>({kind:'sheet' as const,id:row.id,subject:row.responseId?'sheet.upsert':'sheet.erase',state:(row.state as string)==='sending'?'pending' as const:row.state,idempotencyKey:`sheets:${row.id}:${row.generation}`,responseId:row.responseId,endpointId:null,actionId:null,updatedAt:row.updatedAt,attempts:sheetAttempts.results.filter(attempt=>attempt.rowId===row.id).map(({rowId:_row,...attempt})=>attempt)})),
       ...hooks.results.map(row => ({ kind: 'webhook' as const, id: row.id, subject: row.subject, state: states[row.status], idempotencyKey: row.idempotencyKey, responseId: row.responseId, endpointId: row.endpointId, actionId: null, updatedAt: row.updatedAt,
         attempts: hookAttempts.results.filter(attempt => attempt.deliveryId === row.id).map(({ deliveryId: _delivery, ...attempt }) => attempt) })),

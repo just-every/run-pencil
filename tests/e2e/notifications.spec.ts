@@ -1,20 +1,46 @@
 import { developmentInbox } from '../helpers/development-outbox'
 import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { DatabaseSync } from 'node:sqlite'
-import { readdirSync } from 'node:fs'
+import { mkdirSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import AxeBuilder from '@axe-core/playwright'
 import { expect } from './fixtures'
 import { contract } from './contract'
 import { operatorEmail } from './auth-identity'
-contract(['NOTIFY-002','NOTIFY-004','BASE-PUBLIC-003'],'notification preference and failed delivery controls are accessible on desktop and mobile with authenticated results',async({page},info)=>{
+contract(['NOTIFY-002','NOTIFY-004','NOTIFY-005','BASE-PUBLIC-003'],'notification preference and failed delivery controls are accessible on desktop and mobile with authenticated results',async({page},info)=>{
+  const cdp=await page.context().newCDPSession(page);await cdp.send('Emulation.setCPUThrottlingRate',{rate:4})
+  const capture=process.env.PENCIL_CAPTURE_DIR
+  if(capture)mkdirSync(capture,{recursive:true})
   const request=page.request,headers={Origin:new URL(info.project.use.baseURL!).origin},email=operatorEmail()
   const call=async(path:string,data?:unknown)=>{const response=await request.fetch(path,{method:data===undefined?'GET':'POST',headers,...(data===undefined?{}:{data})});expect(response.ok(),path).toBe(true);return response.json()}
   await call('/auth/magic-link',{email});const inbox=await developmentInbox(path=>request.get(path, { headers: devKeyHeaders }),email)
   expect((await request.post('/auth/confirm',{headers,data:{token:inbox.messages[0].magicLinkToken},maxRedirects:0})).status()).toBe(303)
   const flow=await call('/api/app/flows',{title:'Response notification controls',slug:`notifications-${info.project.name}-${Date.now()}`}),path=`/api/app/flows/${flow.id}`
-  for(const step of [{kind:'question',questionType:'short_text',prompt:'Feedback',required:true},{kind:'completion',questionType:null,prompt:'Recorded'}]) await call(`${path}/draft/steps`,{expectedVersion:(await call(`${path}/draft`)).flow.draftVersion,step})
-  await call(`${path}/publish`,{expectedVersion:(await call(`${path}/draft`)).flow.draftVersion})
+  for(const step of [{kind:'question',questionType:'short_text',prompt:'Feedback',required:true},{kind:'question',questionType:'nps',prompt:'Recommend us',required:true},{kind:'completion',questionType:null,prompt:'Recorded'}]) await call(`${path}/draft/steps`,{expectedVersion:(await call(`${path}/draft`)).flow.draftVersion,step})
+  const draft=await call(`${path}/draft`),nps=draft.steps.find((step:{questionType:string})=>step.questionType==='nps')
+  await page.goto(`/app/flows/${flow.id}/builder`)
+  await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
+  await page.locator('.step-button').filter({hasText:'Recorded'}).click()
+  await page.getByText('Answer alerts',{exact:true}).click()
+  await page.getByRole('button',{name:'Add alert rule',exact:true}).click()
+  const rule=page.getByRole('group',{name:'Alert 1',exact:true})
+  await rule.getByLabel('Rule name',{exact:true}).fill('Detractor follow-up')
+  await rule.getByLabel('Question',{exact:true}).selectOption(nps.id)
+  await rule.getByLabel('Condition',{exact:true}).selectOption('less_than_or_equal')
+  await rule.getByLabel('Value',{exact:true}).fill('6')
+  await rule.locator('label').filter({hasText:email}).getByRole('checkbox').check()
+  for(const viewport of [{width:1440,height:900},{width:390,height:844}]) {
+    await page.setViewportSize(viewport)
+    await expect(rule.getByLabel('Rule name',{exact:true})).toBeVisible()
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true)
+    expect((await new AxeBuilder({page}).analyze()).violations).toEqual([])
+    await page.screenshot({path:capture?join(capture,`answer-alert-settings-${viewport.width}-${info.project.name}.png`):info.outputPath(`answer-alert-settings-${viewport.width}.png`),fullPage:true})
+  }
+  await page.getByRole('button',{name:'Save alert rules',exact:true}).click()
+  await expect.poll(async()=>((await call(`${path}/draft`)).formSettings.answerAlerts??[]).length).toBe(1)
+  const saved=await call(`${path}/draft`)
+  expect(saved.formSettings.answerAlerts).toMatchObject([{name:'Detractor follow-up',condition:{stepId:nps.id,operator:'less_than_or_equal',value:6},recipientIds:expect.any(Array)}])
+  await call(`${path}/publish`,{expectedVersion:saved.flow.draftVersion})
   await page.goto(`/app/flows/${flow.id}/results`)
   const choice=page.getByLabel('Email me about completed responses')
   await expect(choice).toHaveValue('immediately')
@@ -27,13 +53,19 @@ contract(['NOTIFY-002','NOTIFY-004','BASE-PUBLIC-003'],'notification preference 
     const operator=db.prepare('SELECT id FROM operators WHERE email=?').get(email)!,revision=db.prepare("SELECT id FROM flow_revisions WHERE flow_id=? AND state='published'").get(flow.id)!,workspace=db.prepare('SELECT workspace_id FROM flows WHERE id=?').get(flow.id)!,now=new Date().toISOString(),responseId=crypto.randomUUID(),deliveryId=crypto.randomUUID()
     db.prepare(`INSERT INTO responses(id,workspace_id,flow_id,revision_id,session_id,session_token_hash,idempotency_key,state,completed_at,created_at,updated_at,notification_eligible) VALUES(?,?,?,?,?,?,?,'released',?,?,?,1)`).run(responseId,workspace.workspace_id,flow.id,revision.id,crypto.randomUUID(),'synthetic-hash',crypto.randomUUID(),now,now,now)
     db.prepare(`INSERT INTO notification_deliveries(id,response_id,operator_id,status,idempotency_key,available_at,reason,created_at,updated_at) VALUES(?,?,?,'failed',?,?,'Mail provider rejected this operator notification.',?,?)`).run(deliveryId,responseId,operator.id,deliveryId,now,now,now)
+    const alertId=crypto.randomUUID()
+    db.prepare(`INSERT INTO answer_alert_deliveries(id,response_id,rule_id,rule_name,operator_id,status,idempotency_key,available_at,created_at,updated_at) VALUES(?,?,?,'Detractor follow-up',?,'sent',?,?,?,?)`).run(alertId,responseId,saved.formSettings.answerAlerts[0].id,operator.id,crypto.randomUUID(),now,now,now)
+    await page.getByRole('button',{name:'Refresh answer alerts',exact:true}).click()
+    await expect(page.getByRole('region',{name:'Answer alert attention'}).getByText('Detractor follow-up',{exact:true})).toBeVisible()
+    await page.getByRole('button',{name:'Mark alert as read',exact:true}).click()
+    await expect(page.getByText('Alert marked as read.',{exact:true})).toBeVisible()
     await page.getByRole('button',{name:'Refresh delivery status'}).click()
     await expect(page.getByText('Mail provider rejected this operator notification.')).toBeVisible()
     for(const viewport of [{width:1440,height:900},{width:390,height:844}]) {
       await page.setViewportSize(viewport)
       expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true)
       const axe=await new AxeBuilder({page}).analyze();expect(axe.violations).toEqual([])
-      await page.screenshot({path:info.outputPath(`notifications-${viewport.width}.png`),fullPage:true})
+      await page.screenshot({path:capture?join(capture,`notifications-${viewport.width}-${info.project.name}.png`):info.outputPath(`notifications-${viewport.width}.png`),fullPage:true})
     }
     await page.getByRole('button',{name:'Retry',exact:true}).click();await expect(page.getByText('Retry queued with the original delivery key.')).toBeVisible()
     await expect.poll(()=>db.prepare('SELECT status,idempotency_key FROM notification_deliveries WHERE id=?').get(deliveryId)).toEqual({status:'sent',idempotency_key:deliveryId})

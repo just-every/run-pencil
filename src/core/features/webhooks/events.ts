@@ -1,6 +1,6 @@
 // Constants shared by the Worker and the operator screens: nothing here may import server-only code.
 /** The wire contract (INTEG-010): the events an endpoint can receive, in the order the screen lists them. */
-export const eventTypes = ['response.created', 'response.deleted', 'response.partial_saved', 'payment.changed'] as const
+export const eventTypes = ['response.created', 'response.updated', 'response.deleted', 'response.partial_saved', 'payment.changed'] as const
 export type EventType = typeof eventTypes[number] | 'webhook.test'
 export type DeliveryStatus = 'pending' | 'sending' | 'confirmed' | 'failed' | 'cancelled'
 export type EndpointState = 'active' | 'paused' | 'disabled'

@@ -1,3 +1,5 @@
+import { proveChatIntegrations } from './chat-integrations-proof'
+import { proveResponseEdit } from './response-edit-proof'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { afterEach, beforeAll, expect, vi } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -19,7 +21,7 @@ async function expectedSignature(secret: string, body: string) {
 const minute = 60_000
 const receiverOrigin = 'http://127.0.0.1:9'
 
-contract(['INTEG-010', 'INTEG-015', 'DATA-002'], 'signed response events verify, retry on one event ID, replay, disable with an alert and list undelivered responses without ever blocking collection', async () => {
+contract(['INTEG-010', 'INTEG-015', 'DATA-002', 'RESP-021', 'INTEG-006'], 'signed response events verify, retry on one event ID, replay, disable with an alert and list undelivered responses without ever blocking collection', async () => {
   const f = await actionsHttp({}, 'hooks')
   await env.DB.prepare("UPDATE oa_operators SET role='owner' WHERE id=?").bind(f.lead.operatorId).run()
   await env.DB.prepare('UPDATE oa_sessions SET operator_version=(SELECT version FROM oa_operators WHERE id=operator_id) WHERE operator_id=?').bind(f.lead.operatorId).run()
@@ -185,5 +187,7 @@ contract(['INTEG-010', 'INTEG-015', 'DATA-002'], 'signed response events verify,
   expect(received.at(-1)!.signature).not.toBe(await expectedSignature(secret, received.at(-1)!.body))
   expect((await f.call(`/api/app/webhooks/${endpointId}`, undefined, { method: 'DELETE' })).status).toBe(204)
   expect((await env.DB.prepare('SELECT count(*) AS n FROM response_event_deliveries WHERE endpoint_id=?').bind(endpointId).first<{ n: number }>())!.n).toBe(0)
+  await proveResponseEdit(f,received,expectedSignature)
   network.mockRestore()
+  await proveChatIntegrations()
 })

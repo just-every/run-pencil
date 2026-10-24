@@ -3,6 +3,16 @@ import { failure } from './deployment-data-errors.mjs';
 // Every persisted column is reviewed here. A migration cannot silently add data
 // to an archive: both new tables and new columns fail closed until classified.
 const retained = {
+  chat_form_links: 'id workspace_id flow_id platform settings_json updated_at',
+  chat_action_targets: 'id action_id link_id operator_id platform user_id',
+  chat_deliveries: 'id link_id response_id action_target_id kind due_date review_date idempotency_key state attempts available_at started_at reason updated_at',
+  chat_attempts: 'id delivery_id ordinal outcome http_status reason created_at',
+  chat_interactions: 'delivery_id action_id created_at',
+  answer_alert_evaluations: 'response_id created_at',
+  answer_alert_deliveries: 'id response_id rule_id rule_name operator_id status idempotency_key attempts first_attempt_at last_attempt_at available_at reason read_at created_at updated_at',
+  answer_alert_attempts: 'id delivery_id ordinal event provider provider_code created_at',
+  response_versions: 'response_id number answers_json context_json created_at',
+  response_edit_links: 'hash response_id version expires_at used_claim created_at',
   google_oauth_states: 'hash operator_id workspace_id sealed expires_at',
   google_sheet_links: 'id workspace_id flow_id spreadsheet_id tab columns_json updated_at',
   google_sheet_rows: 'id link_id response_id generation state attempts available_at started_at reason updated_at',
@@ -211,6 +221,8 @@ const retained = {
 const nul = { type: 'null' };
 const captured = { local_mail_outbox: ['message_json'], rer_mail_development_outbox: ['message'], rer_ai_development_outbox: ['record'] };
 export const exclusions = {
+  chat_form_links: {armed:{type:'integer',value:'0'}},
+  answer_alert_deliveries: { armed: {type:'integer',value:'0'} },
   google_sheet_links: { armed: {type:'integer',value:'0'} },
   confirmation_deliveries: { armed: { type: 'integer', value: '0' } },
   // A restored endpoint has no signing secret, so it queues and sends nothing until the owner rotates a new one.
@@ -248,7 +260,7 @@ export function classify(table) {
 // Base messages require a real sender and at least one recipient. Captured mail
 // cannot be represented as valid empty-address messages without fabrication.
 // Preserve these tables in the required schema, but exclude their private rows.
-const excludedCaptureTables = new Set(['notification_timer', 'local_mail_outbox', 'rer_mail_development_outbox', 'oa_dev_credentials', 'oa_setup_links', 'rer_ai_development_outbox', 'integration_connections','google_oauth_states']);
+const excludedCaptureTables = new Set(['notification_timer', 'local_mail_outbox', 'rer_mail_development_outbox', 'oa_dev_credentials', 'oa_setup_links', 'rer_ai_development_outbox', 'integration_connections','google_oauth_states','response_edit_links']);
 // Sign-in authorization never travels: sessions (native, dev, review, provider), sign-in and invitation links, step-up
 // challenges, minted API credentials and the provider bindings of those sessions. A restore cannot revive a session that
 // was signed out or revoked after the backup, so everyone signs in again. Operators, roles and the audit history stay.
@@ -261,7 +273,7 @@ export function sanitize(table) {
   classify(table);
   if (rowsNeverTravel(table.name)) return { ...table, rows: [] };
   const replacements = exclusions[table.name] ?? {};
-  const rows = withoutDevRows(table, table.rows.map(row => row.map((value, index) => replacements[table.columns[index]] ?? value)));
+  const rows = withoutDevRows(table, table.rows.map(row => row.map((value, index) => replacements[table.columns[index]] ?? (table.name==='confirmation_deliveries' && table.columns[index]==='message_json' && value.type==='text' ? {...value,value:value.value.replace(/https?:\/\/[^\s\"<>]*[?&]edit=[a-f0-9]{64}/g,'[Edit link excluded from backup]')} : value))));
   rows.sort((left, right) => JSON.stringify(left) < JSON.stringify(right) ? -1 : JSON.stringify(left) > JSON.stringify(right) ? 1 : 0);
   return { ...table, rows };
 }

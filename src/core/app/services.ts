@@ -1,3 +1,5 @@
+import { AnswerAlerts } from '../features/notifications/answer-alerts'
+import { ChatIntegrations } from '../features/chat-integrations'
 import { GoogleOAuth,GoogleSheets } from '../features/google-sheets'
 import { SmsService } from '../features/sms'
 import { FormAddresses } from '../features/addresses/service'
@@ -88,6 +90,7 @@ export function createPencilServices(platform: PencilPlatform) {
   const payments = new PaymentService(new PaymentRepository(platform.databaseBinding), connections, { appOrigin: platform.configuration.appOrigin, apiOrigin: platform.configuration.paymentApiOrigin, secret: platform.configuration.sessionSecret })
   const responses = new ResponseService(flowRepository, responseRepository, collectors, platform.configuration.sessionSecret, access, new PaymentResponses(flowRepository, responseRepository, payments, platform.configuration.sessionSecret))
   return {
+    chat: new ChatIntegrations(platform.databaseBinding,connections,{origin:platform.configuration.appOrigin,local:platform.configuration.isLocalDevelopment}),
     addresses: new FormAddresses(platform.databaseBinding),
     googleOAuth,
     sheets,
@@ -104,7 +107,8 @@ export function createPencilServices(platform: PencilPlatform) {
     payments,
     webhooks: { endpoints: new ResponseWebhooks(platform.databaseBinding, platform.configuration.sessionSecret, platform.configuration.isLocalDevelopment), deliveries: new ResponseEventDeliveries(platform.databaseBinding), ledger: new IntegrationLedger(platform.databaseBinding), dispatcher: new ResponseEventDispatcher(platform.databaseBinding, platform.configuration.sessionSecret, platform.configuration.isLocalDevelopment) },
     notifications: {
-      confirmations: new RespondentConfirmationDispatcher(platform.databaseBinding,sender,from,senderFailure),
+      answerAlerts: new AnswerAlerts(platform.databaseBinding,sender,platform.configuration.appOrigin,from,senderFailure,mailProvider),
+      confirmations: new RespondentConfirmationDispatcher(platform.databaseBinding,sender,from,senderFailure,platform.configuration.appOrigin),
       actionReminders: new ActionReminderDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,senderFailure,mailProvider),
       digest: new DigestDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,undefined,senderFailure,mailProvider),
       preferences: new NotificationRepository(platform.databaseBinding, notificationSenderError(from,mailProvider) ?? senderFailure, mailProvider === 'local-development', platform.configuration.isHostedDemo),

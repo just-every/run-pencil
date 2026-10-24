@@ -1,3 +1,4 @@
+import { proveAnswerAlerts } from './answer-alert-proof'
 
 import { applyD1Migrations, env, SELF, type D1Migration } from 'cloudflare:test'
 import { afterEach, beforeAll, expect, vi } from 'vitest'
@@ -8,7 +9,7 @@ async function notificationFixture(slug: string) { return ownNotificationFixture
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(()=>applyD1Migrations(env.DB,__PENCIL_CORE_MIGRATIONS__))
 afterEach(clearOwnedNotificationWork)
-contract(['NOTIFY-002','NOTIFY-004'],'publisher defaults Immediately only if unset, others Off; committed private mail has a durable attempt and replay cannot double send',async()=>{
+contract(['NOTIFY-002','NOTIFY-004','NOTIFY-005'],'publisher defaults Immediately only if unset, others Off; committed private mail has a durable attempt and replay cannot double send',async()=>{
   const f=await notificationFixture('notification-defaults')
   expect((await f.deliveries()).mode).toBe('immediately')
   const second=await env.DB.prepare('SELECT id FROM operators WHERE workspace_id=? AND id!=? LIMIT 1').bind(f.scope.workspaceId,f.operatorId).first<{id:string}>()
@@ -43,6 +44,7 @@ contract(['NOTIFY-002','NOTIFY-004'],'publisher defaults Immediately only if uns
     const document=await SELF.fetch(`http://localhost/app/flows/${f.flow.flowId}/results`,{headers:{Host:'localhost'},redirect:'manual'})
     expect(document.status).toBe(302);expect(document.headers.get('location')).toContain('/signin')
   } finally {send.mockRestore()}
+  await proveAnswerAlerts()
 })
 contract(['NOTIFY-002','NOTIFY-004','DIST-006'],'transient retries keep their key through five retries; permanent and unknown failures remain visible only to their operator',async()=>{
   const f=await notificationFixture('notification-retries');await f.submit()

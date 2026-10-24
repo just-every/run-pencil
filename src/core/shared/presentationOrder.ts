@@ -42,7 +42,9 @@ export function presentationOrder(graph:Graph,proposed?:PresentationOrder):Prese
 }
 export function presentFlow<T extends Graph>(flow:T,order=presentationOrder(flow)):T&{presentation:PresentationOrder} {
   const choices=flow.choices.map(choice=>({...choice,position:order.choices[choice.stepId]?.indexOf(choice.id) ?? choice.position})).sort((a,b)=>a.position-b.position)
-  return {...flow,choices,presentation:order}
+  const settings=(flow as T & {formSettings?:import('./hiddenFields').FormSettings}).formSettings
+  const publicSettings=settings?{...settings,answerAlerts:undefined}:undefined
+  return {...flow,...(publicSettings?{formSettings:publicSettings}:{}),choices,presentation:order}
 }
 export function retainedPresentation(order:PresentationOrder,reached:string[]):PresentationOrder {
   const visible=new Set(reached)
