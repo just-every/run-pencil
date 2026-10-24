@@ -561,8 +561,8 @@ These totals are computed from the current Status rows; done targets remain dist
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 115 | 5 | 0 | 120 |
-| Target and push further | 18 | 40 | 61 | 119 |
-| All | 133 | 45 | 61 | 239 |
+| Target and push further | 18 | 41 | 60 | 119 |
+| All | 133 | 46 | 60 | 239 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
