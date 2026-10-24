@@ -33,7 +33,7 @@ contract(['INTEG-001','INTEG-015'],'Google OAuth seals owner tokens and Sheets b
  const slug=(await readDraft()).flow.slug
  const submit=async(n:number)=>{
   const session=await accepted(await f.call(`/api/public/flows/${slug}/sessions`,{source:'direct',deviceClass:'desktop'}),201);await matureLoad(session,5000)
-  const graph=session.flow,answers=graph.steps.filter((step:any)=>step.kind==='question').map((step:any)=>({stepId:step.id,value:step.questionType==='single_choice'?graph.choices.find((choice:any)=>choice.stepId===step.id).id:`Synthetic sheet row ${n}`}))
+  const graph=session.flow,answers=graph.steps.filter((step:any)=>step.kind==='question').map((step:any)=>({stepId:step.id,value:step.questionType==='single_choice'?graph.choices.find((choice:any)=>choice.stepId===step.id).id:step.questionType==='multiple_choice'?[graph.choices.find((choice:any)=>choice.stepId===step.id).id]:`Synthetic sheet row ${n}`}))
   const result=await accepted(await f.call(`/api/public/flows/${slug}/responses`,{...session,answers,idempotencyKey:`synthetic-pencil-${n}`,honeypot:''}),201)
   expect(result.disposition).toBe('released');return result.responseId as string
  }
@@ -47,7 +47,7 @@ contract(['INTEG-001','INTEG-015'],'Google OAuth seals owner tokens and Sheets b
  await accepted(await f.call(base+'/google-sheet/sync',{}))
  expect((await sheet()).filter(row=>row[0])).toHaveLength(5)
  current=await readDraft()
- await accepted(await f.call(base+'/draft/steps',{expectedVersion:current.flow.draftVersion,step:{kind:'question',questionType:'short_text',prompt:'Synthetic additional column',required:false}}),201)
+ await accepted(await f.call(base+'/draft/steps',{expectedVersion:current.flow.draftVersion,step:{kind:'question',questionType:'multiple_choice',prompt:'Synthetic additional column',required:false,choices:[{value:'workshop',label:'Workshop'},{value:'consultation',label:'Consultation'}]}}),201)
  current=await readDraft()
  const previous=current.steps.find((step:any)=>step.prompt==='Anything else?'),newStep=current.steps.find((step:any)=>step.prompt==='Synthetic additional column')
  await accepted(await f.call(base+'/draft',{expectedVersion:current.flow.draftVersion,stepId:previous.id,prompt:previous.prompt,required:previous.required,nextStepId:newStep.id},{method:'PUT'}))
@@ -68,6 +68,8 @@ contract(['INTEG-001','INTEG-015'],'Google OAuth seals owner tokens and Sheets b
  const alert=await accepted(await f.call('/api/app/webhooks/alerts'));expect(alert.alerts.some((row:any)=>row.message.includes('5 Google Sheets'))).toBe(true)
  await fetch(receiver+'/__control/google-mode',{method:'POST',body:JSON.stringify({down:false})})
  for(const row of failed)await accepted(await f.call(`/api/app/google-sheet/deliveries/${row.id}/replay`,{}))
+ const addedChoice=(await readDraft()).choices.find((choice:any)=>choice.stepId===added.id).id
+ expect((await sheet()).flat()).toContain(JSON.stringify([addedChoice]))
  expect((await sheet()).filter(row=>row[0])).toHaveLength(10)
  ledger=await accepted(await f.call('/api/app/integration-deliveries?state=confirmed'));expect(ledger.deliveries.filter((row:any)=>row.kind==='sheet')).toHaveLength(9)
  const replay=ledger.deliveries.find((row:any)=>row.kind==='sheet');await accepted(await f.call(`/api/app/google-sheet/deliveries/${replay.id}/replay`,{}));expect((await sheet()).filter(row=>row[0])).toHaveLength(10)
@@ -145,5 +147,17 @@ contract(['INTEG-001','INTEG-015'],'Google OAuth seals owner tokens and Sheets b
  expect(stopped.attempts).toHaveLength(4);expect((await captured()).requests.slice(readStart)).toHaveLength(4)
  await control({});await accepted(await f.call('/api/app/google-sheet/deliveries/'+stopped.id+'/replay',{}))
  expect((await accepted(await f.call('/api/app/integration-deliveries?state=confirmed'))).deliveries.some((r:any)=>r.responseId===bounded)).toBe(true)
+ // A historical released-response fixture also proves attachment's count guard at 1,000 and one over.
+ const responseFixture=(await env.DB.prepare('SELECT * FROM responses WHERE id=?').bind(fourth).first())!
+ const otherRevision=(await env.DB.prepare("SELECT id FROM flow_revisions WHERE flow_id=? AND state='published' AND is_current=1").bind(other.id).first<{id:string}>())!.id
+ const insertFixture=(n:number)=>{
+  const id='synthetic-pencil-count-'+n,record={...responseFixture,id,flow_id:other.id,revision_id:otherRevision,session_id:id,session_token_hash:id,idempotency_key:id}
+  const columns=Object.keys(record);return env.DB.prepare('INSERT INTO responses('+columns.map(c=>'"'+c+'"').join(',')+') VALUES('+columns.map(()=>'?').join(',')+')').bind(...Object.values(record))
+ }
+ for(let offset=0;offset<1000;offset+=100)await env.DB.batch(Array.from({length:100},(_,i)=>insertFixture(offset+i)))
+ await accepted(await f.call(otherBase+'/google-sheet',{spreadsheetId:'synthetic-pencil-count-book',tab:'Synthetic responses'},{method:'PUT'}))
+ await insertFixture(1000).run()
+ expect((await f.call(otherBase+'/google-sheet',{spreadsheetId:'synthetic-pencil-count-book',tab:'Synthetic responses'},{method:'PUT'})).status).toBe(400)
+
 
 })

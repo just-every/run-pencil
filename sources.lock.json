@@ -7729,7 +7729,7 @@
       "executable": false
     },
     "tests/runtime/google-sheets.worker.test.ts": {
-      "sha256": "e66bae4bd056e09c04ee8a458ecf4d882990105e9b559d8a9939d333d637a7c3",
+      "sha256": "00fcaaa9384c9d7dbe441c8f2675f7d09e6c5c29effc1c668aef5148bf69c41b",
       "executable": false
     },
     "tests/runtime/graph-reachability.worker.test.ts": {
