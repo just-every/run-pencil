@@ -1,12 +1,11 @@
 import { sanitize } from './deployment-data-policy.mjs';
 import { erasureFence } from './deployment-data-journal.mjs';
 import { initializedPredicate } from './deployment-data-initialized.mjs';
-import { DatabaseSync } from 'node:sqlite';
 import { dirname, join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { initialize, inventory, metadata, failure, schema, quote } from './deployment-data-core.mjs';
+import { metadata, failure, quote, trustedReferenceMetadata } from './deployment-data-core.mjs';
 import { privateArchivePath } from './deployment-data-paths.mjs';
-import { ledger, schemaQuery } from './deployment-data-sql.mjs';
+import { schemaQuery } from './deployment-data-sql.mjs';
 import { assertLedgerShape, ledgerShapeQuery, sameLedger, validateLedger } from './deployment-data-ledger.mjs';
 import { createStore, readStore, storeDigest, storeSummary, validateStore, writeStore } from './deployment-data-stream.mjs';
 import { cloudflareClient, primaryQuery } from './deployment-data-provider.mjs';
@@ -17,12 +16,6 @@ import { bucketObjects } from './deployment-data-objects.mjs';
 import { stageObjects, cleanupObjects, verifyObject } from './deployment-data-object-transfer.mjs';
 export { cloudflareClient } from './deployment-data-provider.mjs';
 
-function committed(history = ledger) {
-  const db = new DatabaseSync(':memory:'); initialize(db, history);
-  const tables = inventory(db);
-  const trusted = { schema: db.prepare("SELECT type,name,tbl_name,sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*' ORDER BY type,name").all(), foreignKeys: Object.fromEntries([history,...tables].map(table => [table.name,db.prepare(`PRAGMA foreign_key_list(${quote(table.name)})`).all()])) };
-  return { db, tables, schema: schema(db), trusted };
-}
 async function bookmark(query) {
   if (typeof query.bookmark !== 'function') throw failure('CONSISTENCY_UNCONFIRMED', 'D1 consistency bookmarks are required for paginated data operations.');
   return query.bookmark();
@@ -78,23 +71,23 @@ async function captureRemote(query, parent, expected, plan, bucket, archiveHisto
 // materialize this object; they consume the same validated row iterator.
 export async function remoteSnapshot(query, directory = tmpdir(), bucket) {
   privateArchivePath(join(directory,'.pencil-snapshot'));
-  const expected = committed(); let store;
+  const expected = trustedReferenceMetadata(); let store;
   try {
     store = await captureRemote(query,directory,expected,undefined,bucket); validateStore(store);
     return {payload:{...store.payload,tables:store.payload.tables.map((table,index)=>({...table,rows:[...store.rows(index)]})),...(store.payload.objects !== undefined ? {objects:[...store.objects()]} : {})},sha256:store.sha256};
-  } finally {store?.close();expected.db.close();}
+  } finally {store?.close();}
 }
 export async function exportRemote(output, query = cloudflareClient(), bucket) {
   privateArchivePath(output);
-  const expected = committed(); let store;
+  const expected = trustedReferenceMetadata(); let store;
   try {
     store = await captureRemote(query, dirname(output), expected, undefined, bucket);
     validateStore(store); writeStore(store, output); return storeSummary(store);
-  } finally { store?.close(); expected.db.close(); }
+  } finally { store?.close(); }
 }
 export async function importRemote(archivePath, query = cloudflareClient(), journalPath, bucket) {
   privateArchivePath(archivePath);
-  const store = readStore(archivePath), expected = committed(store.payload.d1Migrations);
+  const store = readStore(archivePath), expected = trustedReferenceMetadata(store.payload.d1Migrations);
   let plan, prepared = false, published = false, publicationAttempted = false;
   const owned = [];
   try {
@@ -134,12 +127,12 @@ export async function importRemote(archivePath, query = cloudflareClient(), jour
     }
     if (bucket) await cleanupObjects(bucket,owned);
     throw error;
-  } finally { store.close(); expected.db.close(); }
+  } finally { store.close(); }
 }
 
 export async function cleanupRemote(archivePath, query = cloudflareClient(), bucket) {
   privateArchivePath(archivePath);
-  const store = readStore(archivePath), expected = committed(store.payload.d1Migrations);
+  const store = readStore(archivePath), expected = trustedReferenceMetadata(store.payload.d1Migrations);
   try {
     if (store.payload.objects !== undefined && !bucket) throw failure('ATTACHMENT_REQUIRED', 'Set CLOUDFLARE_FORM_ASSETS_BUCKET to clean up database and attachment staging together.');
     const [result] = await query([{sql:"SELECT name FROM sqlite_schema WHERE type='table' AND name GLOB '_pencil_restore_*_state'"}]);
@@ -151,5 +144,5 @@ export async function cleanupRemote(archivePath, query = cloudflareClient(), buc
     await cleanupStage(query, plan);
     if (bucket) await cleanupObjects(bucket,owned);
     return { ...storeSummary(store), stagedRestoreRemoved:true };
-  } finally { store.close(); expected.db.close(); }
+  } finally { store.close(); }
 }

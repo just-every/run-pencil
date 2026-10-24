@@ -5,7 +5,7 @@ import { tableRows, readCells } from './deployment-data-values.mjs';
 import { createHash } from 'node:crypto';
 import { closeSync, openSync, mkdtempSync, rmSync, writeSync, fsyncSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { archiveSchema, canonicalDatabaseSchema, cell, decode, failure, initialize, integrity, inventory, keptHistory, metadata, quote, readTable, schema } from './deployment-data-core.mjs';
+import { archiveSchema, canonicalDatabaseSchema, cell, decode, failure, initialize, integrity, inventory, keptHistory, metadata, quote, readTable, schema, trustedReferenceMetadata } from './deployment-data-core.mjs';
 import { checkedLedger, keepsHistory, validateLedger } from './deployment-data-ledger.mjs';
 import { classify, sanitize, rowsNeverTravel, refuseAuthorization } from './deployment-data-policy.mjs';
 import { refuseDevRows } from './deployment-data-dev.mjs';
@@ -151,9 +151,8 @@ export function validateStore(store) {
 export function readStore(path) {
   const store = createStore(dirname(path)); store.db.exec('BEGIN');
   try {
-    const shape = new DatabaseSync(':memory:');
-    let limits;
-    try { initialize(shape); limits = {migrations:metadata().length,columns:inventory(shape).map(table=>table.columns.length)}; } finally {shape.close();}
+    const reference = trustedReferenceMetadata();
+    const limits = {migrations:reference.migrations.length,columns:reference.tables.map(table=>table.columns.length)};
     let previousTable = -1, previousRow;
     let previousObject;
     const parsed = archiveSchema.parse(readArchiveJSON(path, (table, ordinal, row) => {

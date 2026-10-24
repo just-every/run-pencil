@@ -41,10 +41,13 @@ export function migrations() {
 }
 
 export function initialize(database, history = ledger) {
+  initializeFromRows(database, history, migrations());
+}
+function initializeFromRows(database, history, rows) {
   const { table } = ledgerDefinition(history);
   if (table === kitLedger || table === hashedLedger) {
     database.exec(table === kitLedger ? kitLedgerSQL : hashedLedgerSQL);
-    for (const migration of migrations()) {
+    for (const migration of rows) {
       database.exec(migration.sql);
       database.prepare(`INSERT INTO ${table.name} (name,sha256,state) VALUES (?,?,'applied')`).run(migration.name, hash(migration.sql));
     }
@@ -52,27 +55,56 @@ export function initialize(database, history = ledger) {
   }
   if (table === platformLedger) {
     database.exec(platformLedgerSQL);
-    for (const migration of migrations()) {
+    for (const migration of rows) {
       database.exec(migration.sql);
       database.prepare('INSERT INTO rer_migrations (name,sha256) VALUES (?,?)').run(migration.name, hash(migration.sql));
     }
     return;
   }
   database.exec('CREATE TABLE d1_migrations (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT UNIQUE, applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL)');
-  for (const migration of migrations()) {
+  for (const migration of rows) {
     database.exec(migration.sql);
     database.prepare('INSERT INTO d1_migrations (name) VALUES (?)').run(migration.name);
   }
 }
 
 export function metadata() { return migrations().map(({ name, sql }) => ({ name, sha256: hash(sql) })); }
+// Cache only compilation of trusted migration bytes into reference metadata.
+// Actual databases, archive rows, ledger observations and validation results
+// never enter this cache. Each lookup re-reads and hashes current source bytes.
+let referenceMigrationDigest;
+const referenceMetadata = new Map();
+export function trustedReferenceMetadata(history = ledger) {
+  const definition = ledgerDefinition(history);
+  const rows = migrations();
+  const recorded = rows.map(({name,sql}) => ({name,sha256:hash(sql)}));
+  const digest = hash(JSON.stringify(recorded));
+  if (digest !== referenceMigrationDigest) {
+    referenceMetadata.clear();
+    referenceMigrationDigest = digest;
+  }
+  const key = JSON.stringify({table:definition.table,shape:definition.shape});
+  if (!referenceMetadata.has(key)) {
+    const db = new DatabaseSync(':memory:');
+    try {
+      // The cache key and reference SQL use the same captured byte snapshot.
+      initializeFromRows(db, definition.table, rows);
+      const tables = inventory(db);
+      const trusted = {
+        schema: db.prepare("SELECT type,name,tbl_name,sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*' ORDER BY type,name").all(),
+        foreignKeys: Object.fromEntries([definition.table,...tables].map(table => [table.name,db.prepare(`PRAGMA foreign_key_list(${quote(table.name)})`).all()])),
+      };
+      referenceMetadata.set(key, {migrations:recorded,tables,schema:schema(db),trusted});
+    } finally { db.close(); }
+  }
+  // Consumers may assemble archive/staging metadata without mutating the cache.
+  return structuredClone(referenceMetadata.get(key));
+}
 export function schema(database) {
   return JSON.stringify(database.prepare("SELECT type, name, tbl_name, sql FROM sqlite_schema WHERE sql IS NOT NULL AND name NOT GLOB 'sqlite_*' AND name NOT IN ('_cf_METADATA','_cf_KV') AND name NOT IN ('d1_migrations','_rer_deploy_migrations','rer_migrations') ORDER BY type, name").all());
 }
 export function canonicalDatabaseSchema(database) {
-  const expected = new DatabaseSync(':memory:');
-  try { initialize(expected); return canonicalSchema(JSON.parse(schema(database)), schema(expected)); }
-  finally { expected.close(); }
+  return canonicalSchema(JSON.parse(schema(database)), trustedReferenceMetadata().schema);
 }
 export function inventory(database) {
   return database.prepare("SELECT name FROM sqlite_schema WHERE type = 'table' AND name NOT GLOB 'sqlite_*' AND name NOT IN ('_cf_METADATA','_cf_KV') AND name NOT IN ('d1_migrations','_rer_deploy_migrations','rer_migrations') ORDER BY name").all().map(({ name }) => ({ name, columns: database.prepare(`PRAGMA table_xinfo(${quote(name)})`).all().filter(column => column.hidden === 0).map(column => column.name) }));

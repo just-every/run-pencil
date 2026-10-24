@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { migrate } from '@runeditrun/rer/internal/modules/deploy-kit/migrations.mjs';
-import { metadata, migrations } from './deployment-data-core.mjs';
+import { hash, migrations } from './deployment-data-core.mjs';
 import { sqliteTransport } from './deployment-data-test-helpers.mjs';
 
 export async function kitDatabase(path) {
@@ -27,7 +27,7 @@ export async function migrateKit(db) {
   return migrate({
     async request(_path, {body}) { return execute(body.sql); },
     async importSql(_id, sql) { return execute(sql); },
-  }, 'local-stand-in', migrations().map((row,index)=>({...row,sha256:metadata()[index].sha256})));
+  }, 'local-stand-in', migrations().map(row=>({...row,sha256:hash(row.sql)})));
 }
 export function providerFetch(db) {
   const transport = sqliteTransport(db);

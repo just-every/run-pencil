@@ -136,7 +136,7 @@ test('kit recovery refuses incomplete, uncertain, altered and mixed migration le
 const platformLedgerDDL='CREATE TABLE IF NOT EXISTS rer_migrations (name TEXT PRIMARY KEY, sha256 TEXT NOT NULL, applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)';
 function platformDatabase(path,appliedAt,ddl=platformLedgerDDL){
   const db=new DatabaseSync(path);db.exec(ddl);
-  for(const [index,migration] of migrations().entries()){db.exec(migration.sql);db.prepare('INSERT INTO rer_migrations(name,sha256,applied_at) VALUES(?,?,?)').run(migration.name,metadata()[index].sha256,appliedAt);}
+  for(const migration of migrations()){db.exec(migration.sql);db.prepare('INSERT INTO rer_migrations(name,sha256,applied_at) VALUES(?,?,?)').run(migration.name,hash(migration.sql),appliedAt);}
   db.exec('PRAGMA foreign_keys=ON');return db;
 }
 
