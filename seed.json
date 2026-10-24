@@ -294,9 +294,11 @@
     {
       "id": "ai",
       "required": false,
-      "why": "Evidence synthesis and draft-question assistance require a model provider; no model is bundled with the deployment.",
+      "why": "Evidence synthesis, draft-question assistance and explicitly requested form or study drafts require a model provider; no model is bundled with the deployment.",
       "data": [
         "draft question text for requested assistance",
+        "operator-submitted form or study goal and source text, only on an explicit request",
+        "prompts of operator-selected prior forms",
         "published revision prompts and settings",
         "completed answer text and structured values selected for an analysis",
         "stable response IDs without contact identity"

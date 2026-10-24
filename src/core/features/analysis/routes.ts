@@ -1,3 +1,4 @@
+import { registerStudioRoutes } from '../studio'
 import { rewriteSchema } from './rewrites'
 import type { Hono } from 'hono'
 import { z } from 'zod'
@@ -12,6 +13,7 @@ const runParam = validateInput('param', z.object({ runId: resourceId }))
 
 export function registerAnalysisRoutes(app: Hono<WorkerEnvironment>, services: RequestServices) {
   registerAnalysisConnectionRoutes(app)
+  registerStudioRoutes(app,services)
   app.post('/api/app/flows/:flowId/rewrites', validateInput('param',z.object({flowId:resourceId})),validateInput('json',rewriteSchema),async c=>{
     const {workspaceId,operatorId}=c.get('operatorSession')
     return c.json(await services(c).rewrites.request(workspaceId,operatorId,c.req.param('flowId'),c.req.valid('json')),201)

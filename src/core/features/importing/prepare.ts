@@ -1,3 +1,4 @@
+import { surveyMonkeySource } from './surveymonkey-source'
 import { decodeLogo } from '../brand'
 import type { LinkPreviewUpload } from '../../shared/linkPreview'
 import { choiceLimit, structureLimitIssue } from '../../shared/formLimits'
@@ -26,24 +27,26 @@ import { canonicalHash } from '../../../base/import-kit/src/provenance/canonical
 export function prepareImport(input: ImportInput, workspaceId: string, hashPayload = canonicalHash) {
   const definitionBytes = Buffer.byteLength(input.definition), csvBytes = Buffer.byteLength(input.csv)
   if (definitionBytes + csvBytes > 8 * 1024 * 1024) throw new ValidationError('Import files exceed the 8 MiB combined upload limit. Nothing was written.')
-  const google = input.source === 'google-forms'
-  if (input.source && !['typeform', 'google-forms'].includes(input.source)) throw new ValidationError('Unknown import source.')
+  const google = input.source === 'google-forms', monkey = input.source === 'surveymonkey'
+  if (input.source && !['typeform', 'google-forms', 'surveymonkey'].includes(input.source)) throw new ValidationError('Unknown import source.')
   if (!google && input.google) throw new ValidationError('Google settings require the Google Forms source.')
   if (google && !input.definition.trim() && !input.csv.trim()) throw new ValidationError('Provide a Google definition or response CSV.')
   let definition: Record<string, any>
   try { definition = object(JSON.parse(input.definition || (google ? '{}' : ''))) } catch { throw new ValidationError('Form JSON is not valid.') }
-  if (!google && (!Array.isArray(definition.fields) || typeof definition.title !== 'string' || !definition.title.trim())) throw new ValidationError('Form JSON needs a title and fields array.')
-  if (!google) for (const key of ['welcome_screens', 'thankyou_screens', 'logic']) if (definition[key] !== undefined && !Array.isArray(definition[key])) throw new ValidationError(`${key} must be an array.`)
+  if (!google && !monkey && (!Array.isArray(definition.fields) || typeof definition.title !== 'string' || !definition.title.trim())) throw new ValidationError('Form JSON needs a title and fields array.')
+  if (!google && !monkey) for (const key of ['welcome_screens', 'thankyou_screens', 'logic']) if (definition[key] !== undefined && !Array.isArray(definition[key])) throw new ValidationError(`${key} must be an array.`)
   if (definition.hidden !== undefined && (!Array.isArray(definition.hidden) || definition.hidden.some((name: unknown) => typeof name !== 'string'))) throw new ValidationError('Hidden source names must be an array of strings.')
   const plannedAt = input.plannedAt ?? new Date().toISOString()
   const formHash = sha256(input.definition), csvHash = sha256(input.csv), digest = sha256(`${formHash}:${csvHash}`)
-  const namespace = `${google ? 'google-forms' : 'documented-form'}:${digest}`, flowId = stableId(workspaceId, google ? namespace : digest)
+  const namespace = `${monkey ? 'surveymonkey' : google ? 'google-forms' : 'documented-form'}:${digest}`, flowId = stableId(workspaceId, google || monkey ? namespace : digest)
   const googleParsed = google ? googleSource(input, definition, namespace) : undefined
-  const forbidden = googleParsed?.forbidden ?? forbiddenSources(definition), form = googleParsed?.form ?? mapFields(definition, namespace, forbidden)
-  if (!google) mapLogic(form, definition.logic)
+  const monkeyParsed = monkey ? surveyMonkeySource(input, definition, namespace) : undefined
+  const normalizedCsv = monkeyParsed?.csv ?? input.csv
+  const forbidden = googleParsed?.forbidden ?? forbiddenSources(definition), form = monkeyParsed?.form ?? googleParsed?.form ?? mapFields(definition, namespace, forbidden)
+  if (!google && !monkey) mapLogic(form, definition.logic)
   reportGraph(form)
   const limits = manifest.limits
-  if ((google ? definition.items?.length ?? 0 : definition.fields.length) + (definition.welcome_screens?.length ?? 0) + (definition.thankyou_screens?.length ?? 0) > limits.steps.perRevision || form.steps.length > limits.steps.perRevision || form.title.length > 200 || limits.flowRevisions.perFlow < 2) throw new ValidationError('Form exceeds the configured flow, revision, step or title limits. Nothing was written.')
+  if ((monkey ? definition.pages.reduce((n:number,page:any)=>n+page.questions.length,0) : google ? definition.items?.length ?? 0 : definition.fields.length) + (definition.welcome_screens?.length ?? 0) + (definition.thankyou_screens?.length ?? 0) > limits.steps.perRevision || form.steps.length > limits.steps.perRevision || form.title.length > 200 || limits.flowRevisions.perFlow < 2) throw new ValidationError('Form exceeds the configured flow, revision, step or title limits. Nothing was written.')
   if (structureLimitIssue(form.steps)) throw new ValidationError(structureLimitIssue(form.steps)!)
   for (const step of form.steps) {
     if (!typeSettingsValid(step.questionType, step.settings)) throw new ValidationError('A question has invalid native type settings. Nothing was written.')
@@ -57,11 +60,11 @@ export function prepareImport(input: ImportInput, workspaceId: string, hashPaylo
   // The normalized form now owns every retained field. Do not keep the parsed
   // upload, including discarded source fields, live while consuming the CSV.
   definition = {}
-  const csv = csvRows(input.csv), firstRow = csv.next().value, headers: string[] = firstRow?.cells ?? [], errors = rowErrorStore()
+  const csv = csvRows(normalizedCsv), firstRow = csv.next().value, headers: string[] = firstRow?.cells ?? [], errors = rowErrorStore()
   errors.push(...(firstRow?.errors ?? []))
   function* admittedRows() { for (const row of csv) { if (row.row - 1 > limits.responses.perRevision) throw new ValidationError('CSV exceeds the configured responses-per-revision limit. Nothing was written.'); yield row } }
   const forbiddenColumns = headers.flatMap((header, column) => forbiddenSource(header, forbidden) || googleParsed?.hardColumns.has(column) ? [column] : [])
-  const columns = input.columns?.map(column => ({ ...column })) ?? googleParsed?.columns ?? suggestColumns(headers, form, forbiddenColumns)
+  const columns = input.columns?.map(column => ({ ...column })) ?? monkeyParsed?.columns ?? googleParsed?.columns ?? suggestColumns(headers, form, forbiddenColumns)
   if (columns.length !== headers.length || new Set(columns.map(c => c.column)).size !== headers.length || columns.some(c => c.column < 0 || c.column >= headers.length)) throw new ValidationError('Review exactly one mapping for each CSV column.')
   if (google) {
     const assigned = new Set<string>()
@@ -85,10 +88,13 @@ export function prepareImport(input: ImportInput, workspaceId: string, hashPaylo
   const responses = responseStore()
   const time = googleParsed ? googleTime(input.csv, columns, input.google ?? {}, googleParsed.review) : undefined
   if (googleParsed) form.report.push({ location: '/google/interpretation', label: 'Google response interpretation', sourceType: 'operator settings', state: 'changed', change: `${googleParsed.review.dateOrder ?? 'Date order required'} · ${googleParsed.review.timeZone ?? 'Sheet time zone required'}`, reason: 'Sheet timestamps use this explicit zone and reviewed date order. Ambiguous and nonexistent local times are refused. Checkbox answers require unambiguous whole option labels.' })
-  for (const response of mapResponses(admittedRows(), headers, form, columns, errors, forbiddenColumns, time ? { time, dateOrder: googleParsed!.review.dateOrder } : undefined)) responses.add(response)
+  for (const response of mapResponses(admittedRows(), headers, form, columns, errors, forbiddenColumns, time ? { time, dateOrder: googleParsed!.review.dateOrder } : undefined)) {
+    if(monkeyParsed && Object.keys(monkeyParsed.contexts[response.row-2]?.hidden ?? {}).length) response.context=monkeyParsed.contexts[response.row-2]
+    responses.add(response)
+  }
   form.report.push({ location: '/custody', label: 'Original files', sourceType: 'artifact', state: 'unsupported', change: 'Original bytes not retained', reason: 'Only source hashes, safe mapping records and imported answers are retained. Keep your original files privately; hidden and network/IP values are discarded.' })
   form.report.push({ location: '/responses/identity', label: 'Response identity', sourceType: 'CSV rows', state: 'changed', change: 'Anonymous imported responses', reason: 'File digest and row position recognize exact repeat files. Different exports are not deduplicated across files; no contacts, sessions or effects are created.' })
-  const source: SourceBundle = { records: [], artifacts: [{ name: 'form.json', sha256: formHash, size: definitionBytes, original: { status: 'unavailable', reason: 'not-supplied' } }, ...(csvBytes ? [{ name: 'responses.csv', sha256: csvHash, size: csvBytes, original: { status: 'unavailable' as const, reason: 'not-supplied' as const } }] : [])], diagnostics: [] }
+  const source: SourceBundle = { records: [], artifacts: [{ name: 'form.json', sha256: formHash, size: definitionBytes, original: { status: 'unavailable', reason: 'not-supplied' } }, ...(csvBytes ? [{ name: monkey ? 'responses-bulk.json' : 'responses.csv', sha256: csvHash, size: csvBytes, original: { status: 'unavailable' as const, reason: 'not-supplied' as const } }] : [])], diagnostics: [] }
   const encodeValue = nativeValueStrings(), consentSteps = new Set(form.steps.filter(step => step.questionType === 'consent').map(step => step.id))
   const previewUpload = form.settings?.linkPreview?.image && 'base64' in form.settings.linkPreview.image ? form.settings.linkPreview.image as LinkPreviewUpload : undefined
   if (previewUpload) {
@@ -104,6 +110,6 @@ export function prepareImport(input: ImportInput, workspaceId: string, hashPaylo
   const formRecord: SourceRecord = { namespace, kind: 'form', sourceId: 'form', payload, payloadHash: sha256(canonicalJson(payload)), artifactHash: formHash, location: { artifact: 'form.json', pointer: '/' } }
   // Invalid rows retain locations and diagnostics, never unreviewed or skipped values.
   const { rejected, rowErrors } = errors.finish()
-  source.records = sourceRecords(formRecord,responses,rejected,csvHash,hashPayload)
-  return { ...(googleParsed ? { sourceName: 'google-forms' as const, google: googleParsed.review } : {}), plannedAt, form, previewUpload, flowId, namespace, digest, source, effects, headers, columns, forbiddenColumns, rowErrors, responseCount: responses.length, mapping: { version: mappingVersion, map: (r: SourceRecord) => ({ effects: effectFor(r), unmapped: r.kind === 'form' ? form.report.filter(i => i.state !== 'imported').map(i => ({ field: i.location, reason: i.reason })) : [], ...(r.kind === 'rejected-row' ? { rejection: 'CSV row is invalid; inspect every listed row error.' } : {}) }) } }
+  source.records = sourceRecords(formRecord,responses,rejected,csvHash,hashPayload,monkey ? 'responses-bulk.json' : 'responses.csv')
+  return { ...(monkey ? {sourceName:'surveymonkey' as const} : {}), ...(googleParsed ? { sourceName: 'google-forms' as const, google: googleParsed.review } : {}), plannedAt, form, previewUpload, flowId, namespace, digest, source, effects, headers, columns, forbiddenColumns, rowErrors, responseCount: responses.length, mapping: { version: mappingVersion, map: (r: SourceRecord) => ({ effects: effectFor(r), unmapped: r.kind === 'form' ? form.report.filter(i => i.state !== 'imported').map(i => ({ field: i.location, reason: i.reason })) : [], ...(r.kind === 'rejected-row' ? { rejection: 'CSV row is invalid; inspect every listed row error.' } : {}) }) } }
 }

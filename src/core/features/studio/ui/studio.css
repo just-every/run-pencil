@@ -1,0 +1,16 @@
+.studio-panel { padding: 24px; margin: 20px 0; min-width: 0; }
+.studio-panel h2 { margin: 0 0 12px; }
+.studio-panel p { font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; }
+.studio-fields { display: grid; gap: 14px; min-width: 0; }
+.studio-fields .text-area { min-height: 90px; }
+.studio-context { max-height: 220px; overflow-y: auto; border: 1px solid var(--line, #d9d5cd); border-radius: 10px; padding: 12px; }
+.studio-context label { display: flex; gap: 8px; padding: 6px 0; font-size: 14px; }
+.studio-sample { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 12px; }
+.studio-questions { padding-left: 24px; }
+.studio-questions li { margin: 12px 0; }
+.studio-questions .badge { font-size: 13px; }
+.studio-flag { padding: 10px 12px; border: 1px solid var(--line, #d9d5cd); border-radius: 10px; }
+@media(max-width:600px) { .studio-panel {padding:16px;} .studio-sample {grid-template-columns:minmax(0,1fr);} }
+
+.studio-panel .primary-button {white-space:normal;overflow-wrap:anywhere;max-width:100%;}
+.studio-context span {overflow-wrap:anywhere;min-width:0;}

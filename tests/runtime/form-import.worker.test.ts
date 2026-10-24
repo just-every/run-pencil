@@ -1,3 +1,6 @@
+import { matureLoad } from './load-time-fixture'
+import { analysisHttp } from './analysis-fixture'
+import { surveyMonkeyDetails, surveyMonkeyResponses } from '../fixtures/form-import/surveymonkey'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -33,7 +36,7 @@ async function nativeSnapshot(db: D1Database, flowId: string) {
     count: await db.prepare('SELECT count(*) AS total FROM responses WHERE flow_id=?').bind(flowId).first(),
   }
 }
-contract(['IMPORT-001', 'IMPORT-002', 'IMPORT-003', 'IMPORT-004', 'LEDG-002'], 'two fresh databases produce equivalent reports, source structures, typed answers and 27 inert completions', async () => {
+contract(['IMPORT-001', 'IMPORT-002', 'IMPORT-003', 'IMPORT-004', 'LEDG-002', 'IMPORT-005', 'FIELD-013', 'FIELD-016', 'FIELD-010'], 'two fresh databases produce equivalent reports, source structures, typed answers and 27 inert completions', async () => {
   const a = await fixture(), b = await fixture(second)
   const first = await committed(a), next = await committed(b)
   expect(first.review.report).toEqual(next.review.report)
@@ -50,6 +53,42 @@ contract(['IMPORT-001', 'IMPORT-002', 'IMPORT-003', 'IMPORT-004', 'LEDG-002'], '
   const persisted = await readD1PersistedImport(context)
   expect(persisted.rows).toHaveLength(28)
   expect(persisted.provenance).toHaveLength(28)
+  // The same reviewed import model also accepts an uploaded SurveyMonkey file pair through HTTP.
+  const http=await analysisHttp({AI_ENABLED:'false'},'synthetic-pencil-sm')
+  const source={source:'surveymonkey',definition:JSON.stringify(surveyMonkeyDetails),csv:JSON.stringify(surveyMonkeyResponses)}
+  const call=async(path:string,body?:unknown)=>{const response=await http.call(path,body);expect(response.ok,await response.clone().text()).toBe(true);return response.json() as Promise<any>}
+  const review=await call('/api/app/imports/review',source)
+  expect(review).toMatchObject({source:'surveymonkey',responseCount:1,rowErrors:[]})
+  expect(review.report).toEqual(expect.arrayContaining([
+    expect.objectContaining({label:'Unsupported matrix',state:'unsupported'}),expect.objectContaining({label:'Later descriptive text',state:'unsupported'}),expect.objectContaining({sourceType:'collector',state:'unsupported'}),
+  ]))
+  const text=review.questions.find((step:any)=>step.prompt==='Your reference code'), choice=review.questions.find((step:any)=>step.prompt==='Which option fits?'), scale=review.questions.find((step:any)=>step.prompt==='How helpful was this?')
+  expect(text.settings).toMatchObject({minLength:8,maxLength:8,inputMask:'###-####',pattern:'[0-9]{3}-[0-9]{4}'})
+  expect(scale.settings).toEqual({min:0,max:6,lowLabel:'Not at all',middleLabel:'Neutral',highLabel:'Completely'})
+  let job=await call('/api/app/imports/commit',{...source,columns:review.columns,plannedAt:review.plannedAt,fingerprint:review.fingerprint,acknowledged:true})
+  while(job.state!=='completed')job=await call(`/api/app/imports/${job.id}/resume`,{})
+  const answers=(await env.DB.prepare('SELECT a.step_id,a.value_json,r.response_context_json FROM response_answers a JOIN responses r ON r.id=a.response_id WHERE r.flow_id=?').bind(review.flowId).all()).results
+  expect(JSON.parse(String(answers.find(answer=>answer.step_id===choice.id)?.value_json))).toEqual({choiceIds:[choice.settings.otherChoiceId],otherText:'Blue'})
+  expect(JSON.parse(String(answers.find(answer=>answer.step_id===scale.id)?.value_json))).toBe(0)
+  expect(JSON.parse(String(answers[0].response_context_json)).hidden[review.settings.hiddenFields[0].id]).toBe('enterprise')
+  const draft=await call(`/api/app/flows/${review.flowId}/draft`)
+  await call(`/api/app/flows/${review.flowId}/publish`,{expectedVersion:draft.flow.draftVersion})
+  const slug=draft.flow.slug
+  const session=await call(`/api/public/flows/${slug}/sessions`,{source:'direct',deviceClass:'desktop'})
+  expect((await http.call(`/api/public/flows/${slug}/responses`,{...session,idempotencyKey:'synthetic-pencil-sm-invalid',answers:[{stepId:text.id,value:'bad'}]})).status).toBe(400)
+  await matureLoad(session)
+  const valid=await call(`/api/public/flows/${slug}/responses`,{...session,idempotencyKey:'synthetic-pencil-sm-valid',answers:[{stepId:text.id,value:'555-0100'}]})
+  expect(valid.disposition).toBe('released')
+  // Undo is checked on a second, unedited import; publication is deliberately a later native edit.
+  const undoSource={...source,definition:JSON.stringify({...surveyMonkeyDetails,title:'Synthetic undo intake'})}
+  const undoReview=await call('/api/app/imports/review',undoSource)
+  let undoJob=await call('/api/app/imports/commit',{...undoSource,columns:undoReview.columns,plannedAt:undoReview.plannedAt,fingerprint:undoReview.fingerprint,acknowledged:true})
+  while(undoJob.state!=='completed')undoJob=await call(`/api/app/imports/${undoJob.id}/resume`,{})
+  undoJob=await call(`/api/app/imports/${undoJob.id}/undo`,{})
+  while(undoJob.state!=='undone')undoJob=await call(`/api/app/imports/${undoJob.id}/resume`,{})
+  expect(await env.DB.prepare('SELECT count(*) n FROM flows WHERE id=?').bind(undoReview.flowId).first()).toEqual({n:0})
+  expect(await env.DB.prepare('SELECT count(*) n FROM responses WHERE flow_id=?').bind(undoReview.flowId).first()).toEqual({n:0})
+
 }, 90_000)
 contract(['IMPORT-003', 'IMPORT-004', 'BASE-OPS-005'], 'native kit undo removes imported flow and responses, retains safe provenance, and preserves same-revision edits', async () => {
   const f = await fixture(), result = await committed(f)

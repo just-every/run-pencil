@@ -335,8 +335,8 @@ export class FlowRepository {
     const statements: D1PreparedStatement[] = [
       this.binding.prepare(`
         INSERT INTO flow_revisions (id, flow_id, number, state, title, published_at, is_current, admission_closed_at, admission_close_reason, deadline_at, deadline_time_zone, target_completed_responses, policy_snapshot_json, form_settings_json, created_at, updated_at)
-        SELECT ?, ?, ?, 'draft', ?, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL, ?, ?, ? WHERE ${guarded} RETURNING id
-      `).bind(input.newDraft.id, input.newDraft.flowId, input.newDraft.number, input.newDraft.title, input.newDraft.formSettingsJson ?? '{}', input.newDraft.createdAt, input.newDraft.updatedAt, input.flowId, input.expectedVersion),
+        SELECT ?, ?, ?, 'draft', ?, NULL, 0, NULL, NULL, NULL, NULL, NULL, (SELECT json_object('studio',json_extract(policy_snapshot_json,'$.studio')) FROM flow_revisions WHERE id=? AND json_type(policy_snapshot_json,'$.studio')='object'), ?, ?, ? WHERE ${guarded} RETURNING id
+      `).bind(input.newDraft.id, input.newDraft.flowId, input.newDraft.number, input.newDraft.title, input.currentRevisionId, input.newDraft.formSettingsJson ?? '{}', input.newDraft.createdAt, input.newDraft.updatedAt, input.flowId, input.expectedVersion),
       ...input.newSteps.map((step) => this.binding.prepare(`
         INSERT INTO flow_steps (id, revision_id, position, stable_id, kind, question_type, prompt, helper_text, required, next_step_stable_id, question_settings_json, created_at, updated_at)
         SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
@@ -356,9 +356,9 @@ export class FlowRepository {
       this.binding.prepare(`
         UPDATE flow_revisions
         SET state = 'published', published_at = ?, is_current = 1, admission_closed_at = NULL, admission_close_reason = NULL,
-            deadline_at = ?, deadline_time_zone = ?, target_completed_responses = ?, policy_snapshot_json = ?, updated_at = ?
+            deadline_at = ?, deadline_time_zone = ?, target_completed_responses = ?, policy_snapshot_json = CASE WHEN json_type(policy_snapshot_json,'$.studio')='object' THEN json_set(?,'$.studio',json_extract(policy_snapshot_json,'$.studio')) ELSE ? END, updated_at = ?
         WHERE id = ? AND state = 'draft' AND ${guarded}
-      `).bind(input.now, input.deadlineAt, input.deadlineTimeZone, input.targetCompletedResponses, input.policySnapshotJson, input.now, input.currentRevisionId, input.flowId, input.expectedVersion),
+      `).bind(input.now, input.deadlineAt, input.deadlineTimeZone, input.targetCompletedResponses, input.policySnapshotJson, input.policySnapshotJson, input.now, input.currentRevisionId, input.flowId, input.expectedVersion),
       this.binding.prepare(`INSERT OR IGNORE INTO notification_preferences(flow_id,operator_id,mode,updated_at) SELECT f.id,o.id,'immediately',? FROM flows f JOIN operators o ON o.workspace_id=f.workspace_id WHERE f.id=? AND f.draft_version=? AND o.id=?`).bind(input.now,input.flowId,input.expectedVersion,input.operatorId ?? null),
       this.binding.prepare(`UPDATE flows SET status = 'open', draft_version = ?, last_activity_at = ?, updated_at = ? WHERE id = ? AND draft_version = ? RETURNING id`).bind(input.expectedVersion + 1, input.now, input.now, input.flowId, input.expectedVersion),
     ]

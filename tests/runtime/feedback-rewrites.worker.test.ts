@@ -1,3 +1,4 @@
+import { exerciseStudio } from './studio-scenario'
 import { applyD1Migrations,env,type D1Migration } from 'cloudflare:test'
 import { beforeAll,beforeEach,expect } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -5,7 +6,7 @@ import { ai,analysisHttp,answer } from './analysis-fixture'
 declare const __PENCIL_CORE_MIGRATIONS__:D1Migration[]
 beforeAll(()=>applyD1Migrations(env.DB,__PENCIL_CORE_MIGRATIONS__))
 beforeEach(()=>ai.reset())
-contract(['ANLY-009','ANLY-008','ANLY-010','BASE-INPUT-001'],'rewrite requests preserve the source and draft until explicit guarded acceptance, with real provider calls, failure and usage attribution',async()=>{
+contract(['ANLY-009','ANLY-008','ANLY-010','BASE-INPUT-001','AI-001','AGENT-001'],'rewrite requests preserve the source and draft until explicit guarded acceptance, with real provider calls, failure and usage attribution',async()=>{
  const f=await analysisHttp(),other=await analysisHttp(),draft=async()=>await (await f.call(`/api/app/flows/${f.flowId}/draft`)).json() as any
  const original=await draft(),step=original.steps.find((s:any)=>s.kind==='question')
  const published=await env.DB.prepare('SELECT * FROM flow_steps WHERE revision_id=? ORDER BY id').bind(f.revisionId).all()
@@ -55,6 +56,7 @@ contract(['ANLY-009','ANLY-008','ANLY-010','BASE-INPUT-001'],'rewrite requests p
  const off=await analysisHttp({AI_ENABLED:'false'}),offDraft=await off.services.flows.getBuilderDraft(off.workspaceId,off.flowId),offStep=offDraft.steps.find(s=>s.kind==='question')!
  const unavailable=await (await off.call(`/api/app/flows/${off.flowId}/rewrites`,{...source,expectedVersion:offDraft.flow.draftVersion,stepId:offStep.id,source:offStep.prompt})).json() as any
  expect(unavailable).toMatchObject({state:'failed',proposal:null});expect(await ai.requests()).toHaveLength(6)
+ await exerciseStudio(f,other,off)
  // Accepted proposals and their usage remain history after their author loses access.
  const history=await env.DB.prepare('SELECT id,state,source,proposal FROM draft_rewrites WHERE workspace_id=? ORDER BY id').bind(f.workspaceId).all()
  const peer=crypto.randomUUID(),at=new Date().toISOString()

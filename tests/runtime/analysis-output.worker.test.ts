@@ -86,9 +86,13 @@ contract(['ANLY-003', 'ANLY-004', 'ANLY-005', 'ANLY-011', 'ANLY-012', 'AGENT-002
   expect(await env.DB.prepare('SELECT count(*) n FROM analysis_finding_decisions WHERE run_id=?').bind(conflict.id).first()).toEqual({n:0})
 
 
+  // Valid and invalid answers share one output-admission matrix; all original cases and fixtures remain.
+  await ai.reset()
+  await invalidOutputCases()
+
 })
 
-contract(['ANLY-012'], 'a schema-invalid answer, an unknown response, a mismatched quote or a wrong count fails the run with nothing shown', async () => {
+async function invalidOutputCases() {
   const { f, queue } = await nineResponses()
   const outsider = (await analysisHttp()).flowId
   const cases: Array<[string, unknown]> = [
@@ -105,7 +109,8 @@ contract(['ANLY-012'], 'a schema-invalid answer, an unknown response, a mismatch
     expect(run, code).toMatchObject({ state: 'failed', errorCode: code, themes: [], recommendation: null })
     expect(await stored(run.id)).toEqual({ analysis_themes: 0, analysis_theme_members: 0, analysis_quotes: 0, analysis_recommendations: 0 })
   }
-})
+}
+
 
 contract(['ANLY-006'], 'a sufficient run proposes one primary action, and turning it into an action records the analysis without contacting anyone', async () => {
   const { f, queue } = await nineResponses()

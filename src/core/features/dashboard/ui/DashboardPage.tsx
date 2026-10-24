@@ -1,3 +1,4 @@
+import { StudioPanel } from '../../studio/ui'
 import { TeamTemplatePicker } from './TeamTemplatePicker'
 import { flowTemplates, type FlowTemplateId } from '../../flows'
 import { Plus, RefreshCw } from 'lucide-react'
@@ -26,6 +27,7 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
   const [title, setTitle] = useState('')
   const [slug, setSlug] = useState('')
   const [slugEdited, setSlugEdited] = useState(false)
+  const [showStudio,setShowStudio]=useState(false)
   const [showCreate, setShowCreate] = useState(!initialData.hasFlows)
   const [teamTemplate,setTeamTemplate]=useState<string>()
   const [template, setTemplate] = useState<FlowTemplateId>()
@@ -101,9 +103,10 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
     <nav className="filter-row" aria-label="Filter flows">
       {(['active', 'draft', 'open', 'closed', 'archived'] as const).map((item) => <button aria-pressed={status === item} className="quiet-button focus-ring" data-selected={status === item} key={item} disabled={loading || saving} onClick={() => { if (status !== item) updateList(item) }} type="button">{item === 'active' ? 'All flows' : item[0].toUpperCase() + item.slice(1)}</button>)}
     </nav>
-    {showCreate ? <form className="panel dashboard-create-panel" onSubmit={(event) => { event.preventDefault(); void createFlow() }}>
+    {showCreate && !showStudio ? <form className="panel dashboard-create-panel" onSubmit={(event) => { event.preventDefault(); void createFlow() }}>
       <div className="dashboard-create">
         {!hasFlows ? <><p className="eyebrow">Ask → Signal → Act</p><h2 className="display">Create your first flow</h2><p className="muted">Ask a clear question, use the answers to make a decision, then act.</p></> : <h2 className="display">New flow</h2>}
+        <button className="secondary-button focus-ring" type="button" disabled={creating} onClick={()=>setShowStudio(true)}>Generate with AI</button>
         <div aria-label="Flow templates" className="builder-actions template-choices">
           {flowTemplates.map(item => <button className="secondary-button focus-ring" aria-pressed={template === item.id} disabled={creating} type="button" key={item.id} onClick={() => { setTeamTemplate(undefined); setTemplate(item.id); setTitle(item.title); setSlug(`${suggestedSlug(item.title)}-${crypto.randomUUID().slice(0, 8)}`); setSlugEdited(false) }}>{item.title}</button>)}
           <button className="secondary-button focus-ring" aria-pressed={!template && !teamTemplate} disabled={creating} type="button" onClick={() => { setTemplate(undefined); setTeamTemplate(undefined); setTitle(''); setSlug(''); setSlugEdited(false) }}>Blank flow</button>
@@ -116,10 +119,11 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
       </div>
       {template ? <div className="dashboard-create-preview"><TemplatePreview template={template} /><AppNote className="create-note" wideOnly>you can edit every question</AppNote></div> : null}
     </form> : null}
+    {showStudio ? <StudioPanel onClose={()=>{setShowStudio(false);void router.invalidate({filter:match=>match.routeId==='/app/'})}} /> : null}
     {loading ? <p className="status-note" role="status">Updating flows…</p> : null}
     {!loading && !error && !flows.length && !showCreate ? firstFlow
       ? <section className="panel dashboard-empty" aria-labelledby="empty-title"><div className="dashboard-empty__copy"><h2 id="empty-title" className="display">No flows yet</h2><p className="muted">Ask → Signal → Act. Create a flow to ask, make a decision, then act.</p><button className="primary-button focus-ring" disabled={saving} type="button" onClick={openCreate}><Plus size={16} aria-hidden="true" /> New flow</button></div><div className="dashboard-empty__art"><NoteIllustration variant="blank" /><AppNote className="empty-note">ask your first question</AppNote></div></section>
       : <section className="quiet-panel dashboard-filter-empty" aria-labelledby="empty-title"><h2 id="empty-title" className="display">{`No ${status} flows`}</h2><p className="muted">Choose another filter or create a new flow.</p></section> : null}
-    {!showCreate ? <div className="flow-grid" aria-busy={loading}>{flows.map((flow) => <FlowCard flow={flow} key={flow.id} refreshing={loading || saving} onSavingChange={onCopySaving} timeZone={workspace.timeZone} />)}</div> : null}
+    {!showCreate && !showStudio ? <div className="flow-grid" aria-busy={loading}>{flows.map((flow) => <FlowCard flow={flow} key={flow.id} refreshing={loading || saving} onSavingChange={onCopySaving} timeZone={workspace.timeZone} />)}</div> : null}
   </section>
 }

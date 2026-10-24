@@ -1,3 +1,4 @@
+import { studioJourney } from './studio-journey'
 import { appHeaders } from './api-headers'
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -13,7 +14,7 @@ async function axe(page: Page) {
   expect((await new AxeBuilder({ page }).analyze()).violations.map(violation => violation.id)).toEqual([])
 }
 
-contract(['ANLY-001', 'ANLY-003', 'ANLY-004', 'ANLY-005', 'ANLY-006', 'ANLY-008', 'ANLY-011'], 'an operator requests analysis, reads a quoted finding back to its response, sees a small theme withheld, turns the recommendation into an action and retries a failed run', async ({ page }, info) => {
+contract(['ANLY-001', 'ANLY-003', 'ANLY-004', 'ANLY-005', 'ANLY-006', 'ANLY-008', 'ANLY-011', 'AGENT-002', 'AI-001', 'AGENT-001'], 'an operator requests analysis, reads a quoted finding back to its response, sees a small theme withheld, turns the recommendation into an action and retries a failed run', async ({ page }, info) => {
   test.setTimeout(180_000)
   const cdp = await page.context().newCDPSession(page)
   await cdp.send('Emulation.setCPUThrottlingRate',{rate:4})
@@ -142,5 +143,6 @@ contract(['ANLY-001', 'ANLY-003', 'ANLY-004', 'ANLY-005', 'ANLY-006', 'ANLY-008'
     await page.getByRole('button', { name: 'Retry' }).click()
     await expect(page.getByRole('heading', { name: 'What 7 responses say' })).toBeVisible()
     expect(provider.requests.length).toBe(5)
+    await studioJourney(page,info,provider,title)
   } finally { await page.request.delete('/api/app/connections/analysis', { headers: appHeaders, data: {} }); await provider.close() }
 })

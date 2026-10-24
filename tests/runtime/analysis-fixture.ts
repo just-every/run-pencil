@@ -19,7 +19,7 @@ export const ai = {
 }
 /** A Responses API answer whose one output text is the given analysis JSON. */
 export const answer = (output: unknown, headers: Record<string, string> = {}) => ({ status: 200, headers, body: {
-  id: 'resp_synthetic', status: 'completed', usage: { input_tokens: 1200, output_tokens: 300 },
+  id: 'synthetic-pencil-1', status: 'completed', usage: { input_tokens: 1200, output_tokens: 300 },
   output: [{ type: 'message', role: 'assistant', content: [{ type: 'output_text', text: typeof output === 'string' ? output : JSON.stringify(output) }] }],
 } })
 export const theme = (title: string, responseIds: string[], quotes: unknown[] = []) => ({ title, summary: `${title}, as analysed.`, responseIds, count: responseIds.length, quotes })
