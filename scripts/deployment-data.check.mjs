@@ -4,7 +4,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { exportData, importData, initialize, snapshot, migrations, readTable } from './deployment-data.mjs';
@@ -251,10 +251,11 @@ test('a target appearing during private staging is never overwritten and only ow
   try {
     exportData(f.source, f.archive);
     const originalClose = DatabaseSync.prototype.close;
-    let closes = 0;
     interception = mock.method(DatabaseSync.prototype, 'close', function () {
+      const path = this.location('main');
       originalClose.call(this);
-      if (++closes === 2) writeFileSync(f.restored, 'Existing target appeared during staging', { flag: 'wx' });
+      // Race the real validation stage, independent of trusted-reference cache closes.
+      if (path && basename(path) === 'validated.sqlite') writeFileSync(f.restored, 'Existing target appeared during staging', { flag: 'wx' });
     });
     assert.throws(() => importData(f.archive, f.restored), { code: 'EEXIST' });
     assert.equal(readFileSync(f.restored, 'utf8'), 'Existing target appeared during staging');
