@@ -106,7 +106,9 @@
 @media (max-width: 650px) {
   .ledger-filters { grid-template-columns: 1fr; }
   .ledger-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .ledger-row--open .ledger-row__toggle { grid-column: 2; }
   .ledger-row__when { white-space: normal; }
+  .ledger-row__when .payment-state { max-width: 100%; white-space: normal; }
   .ledger-row__answers { grid-row: 2; grid-column: 1 / -1; }
   /* One row on a phone: Previous, the range, Next, never Next alone beneath. */
   .ledger-pages { flex-wrap: nowrap; justify-content: space-between; gap: 8px; font-size: 14px; }
