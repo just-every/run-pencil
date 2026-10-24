@@ -62,6 +62,10 @@ contract('RESP-009', 'a respondent losing manual or final target admission sees 
       await page.getByLabel('This form is an email-marketing opt-in').check()
       await page.getByRole('button', { name: 'Save marketing opt-in' }).click()
       await expect(page.getByText('Marketing opt-in saved to the draft. Publish to apply it.')).toBeVisible()
+      await page.getByText('Respondent text', { exact: true }).click()
+      await page.getByText('Email marketing opt-in', { exact: true }).click()
+      await expect(page.getByLabel('Start button label')).toHaveValue('Go')
+      await expect(page.getByLabel('This form is an email-marketing opt-in')).toBeChecked()
       for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
         await page.setViewportSize(viewport)
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
@@ -116,7 +120,7 @@ contract('RESP-009', 'a respondent losing manual or final target admission sees 
       await page.goto(`/app/flows/${f.id}/results`)
       await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
       await page.getByRole('button', { name: 'View answers', exact: true }).first().click()
-      await expect(page.getByText('By submitting you agree to receive our newsletter; unsubscribe any time.', { exact: true })).toBeVisible()
+      await expect(page.getByRole('region', { name: 'Consent records' }).getByRole('definition')).toHaveText(/^Consent given · .+“By submitting you agree to receive our newsletter; unsubscribe any time\.” \(form opt-in\)$/)
       await page.screenshot({ path: info.outputPath(`consent-records-${info.project.name}.png`), fullPage: true })
     }
   }
