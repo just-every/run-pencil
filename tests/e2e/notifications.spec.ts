@@ -89,7 +89,7 @@ contract(['NOTIFY-002','NOTIFY-004','NOTIFY-005','BASE-PUBLIC-003'],'notificatio
       await page.setViewportSize(viewport)
       expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true)
       const axe=await new AxeBuilder({page}).analyze();expect(axe.violations).toEqual([])
-      await page.screenshot({path:capture?join(capture,`notifications-${viewport.width}-${info.project.name}.png`):info.outputPath(`notifications-${viewport.width}.png`),fullPage:true})
+      await page.screenshot({path:capture?join(capture,`notifications-${viewport.width}-${info.project.name}.png`):info.outputPath(`notifications-${viewport.width}.png`),fullPage:true,scale:'css'})
     }
     await page.getByRole('button',{name:'Retry',exact:true}).click();await expect(page.getByText('Retry queued with the original delivery key.')).toBeVisible()
     await expect.poll(()=>db.prepare('SELECT status,idempotency_key FROM notification_deliveries WHERE id=?').get(deliveryId)).toEqual({status:'sent',idempotency_key:deliveryId})
