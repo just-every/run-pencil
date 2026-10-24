@@ -26,7 +26,7 @@ else if (lane.startsWith('worker-')) {
       files: ['tests/release/ledger-search.worker.test.ts'],
       env: { PENCIL_RUN_LOAD: '1', PENCIL_LOAD_MODE: '1' },
     })
-    for (const line of capacity.stdout.split('\n')) if (line.includes('PENCIL_SEARCH_CAPACITY ')) console.log(line)
+    for (const line of (capacity.stdout + '\n' + capacity.stderr).split('\n')) if (line.includes('PENCIL_SEARCH_CAPACITY ')) console.log(line)
     const summary = vitestRunSummary(capacity)
     // A skipped or missing capacity registration must never earn lane evidence.
     const passed = summary.passed === 1 && summary.failed === 0 && summary.pending === 0
