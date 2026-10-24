@@ -48,6 +48,13 @@ function fixture() {
   insert('response_versions',{response_id:'completed',number:1,answers_json:JSON.stringify([{stepId:'question',value:'Original synthetic answer'}]),context_json:'{}',created_at:stamp});
   insert('response_versions',{response_id:'completed',number:2,answers_json:JSON.stringify([{stepId:'question',value:'Edited synthetic answer'}]),context_json:'{}',created_at:stamp});
   insert('response_edit_links',{hash:'synthetic-pencil-edit-token-hash',response_id:'completed',version:1,expires_at:stamp,created_at:stamp});
+  for(const kind of ['slack','teams'])insert('integration_connections',{kind,sealed:'synthetic-pencil-private-chat-ciphertext',updated_at:stamp});
+  insert('answer_alert_evaluations',{response_id:'completed',created_at:stamp});
+  insert('answer_alert_deliveries',{id:'synthetic-pencil-alert',response_id:'completed',rule_id:'synthetic-pencil-rule',rule_name:'Synthetic rule',operator_id:'operator',status:'pending',idempotency_key:'synthetic-pencil-alert-key',attempts:1,first_attempt_at:stamp,last_attempt_at:stamp,available_at:stamp,armed:1,created_at:stamp,updated_at:stamp});
+  insert('answer_alert_attempts',{id:'synthetic-pencil-alert-attempt',delivery_id:'synthetic-pencil-alert',ordinal:1,event:'started',created_at:stamp});
+  insert('chat_form_links',{id:'synthetic-pencil-chat-link',workspace_id:'workspace',flow_id:'flow',platform:'slack',settings_json:JSON.stringify({platform:'slack',channel:'synthetic-pencil-channel',answerStepIds:[],operatorId:'operator',slackUserId:'synthetic-pencil-user'}),armed:1,updated_at:stamp});
+  insert('chat_deliveries',{id:'synthetic-pencil-chat-delivery',link_id:'synthetic-pencil-chat-link',response_id:'completed',kind:'response',idempotency_key:'synthetic-pencil-chat-key',state:'pending',attempts:1,available_at:stamp,started_at:stamp,updated_at:stamp});
+  insert('chat_attempts',{id:'synthetic-pencil-chat-attempt',delivery_id:'synthetic-pencil-chat-delivery',ordinal:1,outcome:'started',created_at:stamp});
   insert('google_sheet_links',{id:'synthetic-pencil-sheet-link',workspace_id:'workspace',flow_id:'flow',spreadsheet_id:'synthetic-pencil-book',tab:'Synthetic responses',columns_json:'[]',armed:1,updated_at:stamp});
   insert('confirmation_deliveries',{id:'confirmation:completed',response_id:'completed',recipient:'synthetic-pencil-receipt@example.test',message_json:JSON.stringify({subject:'Receipt',text:'Retained respondent answer',html:'<p>Retained respondent answer</p>'}),status:'pending',attempts:1,available_at:stamp,armed:1,created_at:stamp,updated_at:stamp});
   insert('confirmation_deliveries',{id:'confirmation:suspected',response_id:'suspected',recipient:'synthetic-pencil-private@example.test',message_json:JSON.stringify({subject:'Receipt',text:'https://pencil.example.test/f/synthetic-pencil?edit='+ '1'.repeat(64),html:'<p>Confirmation</p>'}),status:'pending',attempts:0,available_at:stamp,armed:1,created_at:stamp,updated_at:stamp});
@@ -137,6 +144,14 @@ test('full current-data roundtrip preserves prefill markers, disabled confirmati
     assert.deepEqual(JSON.parse(database.prepare("SELECT response_context_json AS context FROM responses WHERE id='completed'").get().context).prefill, {'stable-question':'edited'});
     assert.deepEqual(database.prepare("SELECT number,answers_json FROM response_versions WHERE response_id='completed' ORDER BY number").all().map(row=>({number:row.number,answers:JSON.parse(row.answers_json)})),[{number:1,answers:[{stepId:'question',value:'Original synthetic answer'}]},{number:2,answers:[{stepId:'question',value:'Edited synthetic answer'}]}]);
     assert.equal(database.prepare('SELECT count(*) AS n FROM response_edit_links').get().n,0);
+    assert.deepEqual({...database.prepare("SELECT status,armed,attempts FROM answer_alert_deliveries WHERE id='synthetic-pencil-alert'").get()},{status:'pending',armed:0,attempts:1});
+    assert.equal(database.prepare("SELECT count(*) AS n FROM answer_alert_evaluations WHERE response_id='completed'").get().n,1);
+    assert.equal(database.prepare("SELECT count(*) AS n FROM answer_alert_attempts WHERE delivery_id='synthetic-pencil-alert'").get().n,1);
+    assert.equal(database.prepare("SELECT armed FROM chat_form_links WHERE id='synthetic-pencil-chat-link'").get().armed,0);
+    assert.deepEqual({...database.prepare("SELECT state,attempts FROM chat_deliveries WHERE id='synthetic-pencil-chat-delivery'").get()},{state:'pending',attempts:1});
+    assert.equal(database.prepare("SELECT count(*) AS n FROM chat_attempts WHERE delivery_id='synthetic-pencil-chat-delivery'").get().n,1);
+    assert.equal(readFileSync(f.archive,'utf8').includes('synthetic-pencil-private-chat-ciphertext'),false);
+
     assert.equal(readFileSync(f.archive,'utf8').includes('?edit='+'1'.repeat(64)),false);
     assert.equal(database.prepare("SELECT armed FROM google_sheet_links WHERE id='synthetic-pencil-sheet-link'").get().armed,0);
     assert.equal(database.prepare("SELECT armed FROM confirmation_deliveries WHERE response_id='completed'").get().armed,0);

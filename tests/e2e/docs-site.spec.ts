@@ -1,7 +1,11 @@
+import { mkdir } from 'node:fs/promises'
+import { join } from 'node:path'
 import { expect } from './fixtures'
 import { contract } from './contract'
 
 contract('DOCS-001', 'the documentation renders with navigation and contents, answers an unknown page with 404, and sets no cookies or third-party requests', async ({ page, context, baseURL }, info) => {
+  const cdp=await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setCPUThrottlingRate',{rate:4})
   const origin = new URL(baseURL!).origin
   const foreign: string[] = []
   page.on('request', request => { if (/^https?:/.test(request.url()) && new URL(request.url()).origin !== origin) foreign.push(request.url()) })
@@ -34,6 +38,15 @@ contract('DOCS-001', 'the documentation renders with navigation and contents, an
   // Following a link in the navigation shows that page.
   await navigation.getByRole('link', { name: 'Answer paths' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Answer paths' })).toBeVisible()
+
+  // The response guide carries the editing, alert and chat doors without changing the docs shell.
+  const resultsGuide=await page.goto('/docs/results')
+  expect(resultsGuide?.status()).toBe(200)
+  await expect(page.locator('.docs-prose')).toBeVisible()
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
+  const guideCapture=process.env.PENCIL_CAPTURE_DIR?join(process.env.PENCIL_CAPTURE_DIR,`results-guide-${info.project.name}.png`):info.outputPath(`results-guide-${info.project.name}.png`)
+  if(process.env.PENCIL_CAPTURE_DIR)await mkdir(process.env.PENCIL_CAPTURE_DIR,{recursive:true})
+  await page.screenshot({path:guideCapture,fullPage:true})
 
   const missing = await page.goto('/docs/no-such-page')
   expect(missing?.status()).toBe(404)

@@ -48,7 +48,7 @@ export async function proveResponseEdit(f:Awaited<ReturnType<typeof actionsHttp>
  expect((await call('/api/public/flows/synthetic-pencil-edit/edit',{token,answers})).status).toBe(404)
  await f.services.webhooks.dispatcher.run(new Date(Date.now()+60000).toISOString())
  const events=received.filter(item=>item.eventType==='response.updated' && JSON.parse(item.body).responseId===row.id)
- expect(events).toHaveLength(1);expect(events[0].signature).toBe(await expectedSignature(hook.secret,events[0].body));expect(events[0].body).not.toContain('synthetic-pencil-edit@example.test')
+ expect(events).toHaveLength(1);expect(JSON.parse(events[0].body)).toMatchObject({type:'response.updated',responseId:row.id,formId:created.id,revisionId:session.revisionId});expect(events[0].signature).toBe(await expectedSignature(hook.secret,events[0].body));expect(events[0].body).not.toContain('synthetic-pencil-edit@example.test')
  await f.services.responses.eraseReleasedResponse({workspaceId:f.workspaceId,responseId:row.id,operatorId:f.owner.operatorId})
  expect((await env.DB.prepare('SELECT number FROM response_versions WHERE response_id=?').bind(row.id).all()).results).toHaveLength(0)
  expect((await env.DB.prepare('SELECT hash FROM response_edit_links WHERE response_id=?').bind(row.id).all()).results).toHaveLength(0)

@@ -1,3 +1,4 @@
+import { sanitize } from './deployment-data-policy.mjs';
 import { erasureFence } from './deployment-data-journal.mjs';
 import { initializedPredicate } from './deployment-data-initialized.mjs';
 import { DatabaseSync } from 'node:sqlite';
@@ -47,7 +48,13 @@ async function captureRemote(query, parent, expected, plan, bucket, archiveHisto
         if(!occupied)continue;
       }
       for await (const row of remoteRows(query, { ...table, name: plan?.names[table.name] ?? table.name })) {
-        if (index === 0) store.payload.d1Migrations.rows.push(row); else store.add(index - 1, ordinal++, row);
+        if (index === 0) store.payload.d1Migrations.rows.push(row);
+        else if (!plan && table.name === 'confirmation_deliveries') {
+          // SQL paging already applies column exclusions. Confirmation messages additionally
+          // redact edit capabilities inside JSON, just like local and browser snapshots.
+          // Staged import verification stays byte-exact: never sanitize staged values.
+          for (const safe of sanitize({...table,rows:[row]}).rows) store.add(index - 1, ordinal++, safe);
+        } else store.add(index - 1, ordinal++, row);
       }
     }
     store.db.exec('COMMIT');
