@@ -1,5 +1,5 @@
 import { resolve } from 'node:path'
-import { workerShards, runtimeLanes } from './verification-lanes.mjs'
+import { workerShards, runtimeLanes, archiveLanes } from './verification-lanes.mjs'
 import { runPlaywrightJson } from './browser-evidence.mjs'
 import { contractLanes, writeCiContractEvidence } from './ci-contract-evidence.mjs'
 import { withReleaseUpgradeInputs } from './release-upgrade-inputs.mjs'
@@ -9,7 +9,14 @@ const root = resolve(import.meta.dirname, '..')
 const [lane, directory] = process.argv.slice(2)
 if (!contractLanes.includes(lane) || !directory) throw new Error('Pass a contract lane and its output directory.')
 let run
-if (lane === 'unit') run = await runVitestJson(root)
+if (lane === 'unit') run = await runVitestJson(root, { exclude: ['tests/contract/data-release.contract.test.ts'] })
+else if (archiveLanes.includes(lane)) {
+  const group = lane.slice('archive-'.length)
+  const started = performance.now()
+  console.log(`Archive group ${group}: started.`)
+  run = await runVitestJson(root, { files: ['tests/contract/data-release.contract.test.ts'], env: { PENCIL_ARCHIVE_GROUP: group } })
+  console.log(`Archive group ${group}: ${run.code === 0 ? 'passed' : 'failed'} in ${((performance.now() - started) / 1000).toFixed(3)} s.`)
+}
 else if (lane.startsWith('worker-')) run = await withReleaseUpgradeInputs(root, upgrade => runVitestJson(root, { config: 'vitest.worker.config.ts', env: upgrade.env, shard: `${lane.split('-')[1]}/${workerShards}` }))
 else {
   const [project, shard] = lane.split('-')

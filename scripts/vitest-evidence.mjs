@@ -32,15 +32,16 @@ export function vitestRunSummary(run) {
     failures: assertions.filter(test => test.status === 'failed').map(test => ({ file: test.file, title: test.title, messages: test.failureMessages })) }
 }
 
-export async function runVitestJson(root, { config, files = [], env = {}, shard, spawnChild = spawn } = {}) {
+export async function runVitestJson(root, { config, files = [], exclude = [], env = {}, shard, spawnChild = spawn } = {}) {
   const directory = await mkdtemp(join(tmpdir(), 'pencil-contract-coverage-'))
   const output = join(directory, 'results.json')
   try {
     const args = ['./node_modules/vitest/vitest.mjs', 'run', ...files, '--maxWorkers=2', '--reporter=json', '--outputFile', output]
+    for (const pattern of exclude) args.push('--exclude', pattern)
     if (config) args.push('--config', config)
     if (shard) args.push('--shard', shard)
     const inheritedEnv = { ...process.env }
-    for (const key of ['PENCIL_PREVIOUS_MIGRATIONS_DIR', 'PENCIL_UPGRADE_FIXTURE_PATH', 'PENCIL_UPGRADE_CHECKS_JSON']) delete inheritedEnv[key]
+    for (const key of ['PENCIL_ARCHIVE_GROUP', 'PENCIL_PREVIOUS_MIGRATIONS_DIR', 'PENCIL_UPGRADE_FIXTURE_PATH', 'PENCIL_UPGRADE_CHECKS_JSON']) delete inheritedEnv[key]
     const result = await new Promise((resolve, reject) => {
       const child = spawnChild(process.execPath, args, { cwd: root, env: { ...inheritedEnv, ...env }, stdio: ['ignore', 'pipe', 'pipe'] })
       child.stdout.resume()

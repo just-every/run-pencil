@@ -809,7 +809,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "a971b752ec1391badd5f8639d8db5b8384fea68b82a638d4a783ed2903e818db",
+      "sha256": "8f1d8b59658671280e2987d0b2da51d46a543e2bec02c6d00362efc24a778a86",
       "executable": false
     },
     ".gitignore": {
@@ -1925,7 +1925,7 @@
       "executable": false
     },
     "scripts/run-contract-lane.mjs": {
-      "sha256": "112b5e3b383bd8bef2f7cf50d28e037103538c2a1ef16258d95f19aec2326abd",
+      "sha256": "27fa462fe9a1460ffc895476207421c20f784031b0444ae9187cfa2b4b77b8a1",
       "executable": false
     },
     "scripts/run-e2e-server.mjs": {
@@ -1969,7 +1969,7 @@
       "executable": false
     },
     "scripts/verification-lanes.mjs": {
-      "sha256": "80a29cdab2feae63f04c050d023cbbd9aefbd18a466cbbb11cbd63af0bb20342",
+      "sha256": "cb958ab0c33e9e5f5d0885b50406f0a91af010cb4e932a006e501e552ee9e249",
       "executable": false
     },
     "scripts/verify-base-source.mjs": {
@@ -1997,7 +1997,7 @@
       "executable": false
     },
     "scripts/vitest-evidence.mjs": {
-      "sha256": "a9340b0bbc39404c0c84f97304cd038b905ce441f653236cc5e099c614d430a5",
+      "sha256": "0a57abd76b9ab074b39afd0dd708366d1a84904b99c2c88db704b11234b213d5",
       "executable": false
     },
     "SEED-COMMAND-CONTRACT.md": {
@@ -6777,7 +6777,7 @@
       "executable": false
     },
     "tests/contract/data-release.contract.test.ts": {
-      "sha256": "ed9d34d29354f61cd17f25731e9675556b5834a6f37606522f520c2a7ceef666",
+      "sha256": "32eec57ccf3bf4f08d73db2f1a04d95f74be670991393914838d3571ea08fe62",
       "executable": false
     },
     "tests/disclosure-scenario.ts": {
