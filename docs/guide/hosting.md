@@ -11,7 +11,7 @@ Deploy acts only on the Cloudflare account you select. No command in Pencil depl
 ## What you need
 
 - **A Cloudflare account on Workers Paid**, and an API token for it that may edit Workers and D1. You give Pencil the account's ID and the token as `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_API_TOKEN`, through your secret manager or the secret environment of your terminal.
-- **Node.js 22 or later with npm, Git, the rer launcher and the source**, from [Install and run locally](install.md). Node and npm must be on `PATH` for the one line `npx -y @runeditrun/rer dev just-every/run-pencil`, as on the Run page. The launcher delegates to the exact checkout version in `package.json` and its lockfile. rer installs Pencil's pinned runtime and pnpm for its own commands; local `rer setup` is optional.
+- **Node.js 22 or later with npm, Git, the rer launcher and the source**, from [Install and run locally](install.md). Node and npm must be on `PATH`. The launcher delegates to the exact checkout version in `package.json` and its lockfile. rer installs Pencil's pinned runtime and pnpm for its own commands; local `rer setup` is optional.
 - **A mail provider**, SendGrid or Resend, with a verified sender address and an API key. See [Set up email](#set-up-email).
 - **Installed dependencies.** Run `rer install` if you have not run Pencil locally yet. Deploy builds and validates the checkout. If you changed the source, follow the [source checks](install.md#changing-the-source); the complete `rer verify` suite is separate from the deployment commands below.
 
