@@ -32,11 +32,12 @@ export function vitestRunSummary(run) {
     failures: assertions.filter(test => test.status === 'failed').map(test => ({ file: test.file, title: test.title, messages: test.failureMessages })) }
 }
 
-export async function runVitestJson(root, { config, files = [], exclude = [], env = {}, shard, spawnChild = spawn } = {}) {
+export async function runVitestJson(root, { config, files = [], exclude = [], env = {}, shard, reporters = ['json'], spawnChild = spawn } = {}) {
   const directory = await mkdtemp(join(tmpdir(), 'pencil-contract-coverage-'))
   const output = join(directory, 'results.json')
   try {
-    const args = ['./node_modules/vitest/vitest.mjs', 'run', ...files, '--maxWorkers=2', '--reporter=json', '--outputFile', output]
+    const args = ['./node_modules/vitest/vitest.mjs', 'run', ...files, '--maxWorkers=2', '--outputFile', output]
+    for (const reporter of reporters) args.push('--reporter=' + reporter)
     for (const pattern of exclude) args.push('--exclude', pattern)
     if (config) args.push('--config', config)
     if (shard) args.push('--shard', shard)

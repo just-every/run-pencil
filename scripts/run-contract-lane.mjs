@@ -23,6 +23,7 @@ else if (lane.startsWith('worker-')) {
   if (lane === 'worker-2') {
     const capacity = await runVitestJson(root, {
       config: 'vitest.release.config.ts',
+      reporters: ['verbose', 'json'],
       files: ['tests/release/ledger-search.worker.test.ts'],
       env: { PENCIL_RUN_LOAD: '1', PENCIL_LOAD_MODE: '1' },
     })

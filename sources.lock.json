@@ -1925,7 +1925,7 @@
       "executable": false
     },
     "scripts/run-contract-lane.mjs": {
-      "sha256": "7df4b2deb5fc62420176a1be540707249dda178a13b3e2255c18b4644fefa418",
+      "sha256": "0f130f0eff449214e7035823a1ab77208eb2db76fa5e33eea938597bc68de5fa",
       "executable": false
     },
     "scripts/run-e2e-server.mjs": {
@@ -1997,7 +1997,7 @@
       "executable": false
     },
     "scripts/vitest-evidence.mjs": {
-      "sha256": "4c76a301120de18da801cecf9e5313af2b9f3e1a4267df7c1b13ab86dc20c27d",
+      "sha256": "dec08426dbcb3ab4a634804f3f3ca3c8ffb2c0d3e41b22fc3df433e3786a7039",
       "executable": false
     },
     "SEED-COMMAND-CONTRACT.md": {
