@@ -1677,7 +1677,7 @@
       "executable": false
     },
     "scripts/deployment-data-cli.mjs": {
-      "sha256": "829011b3da9e415a3978773c99a881c34ef484c51388174269dc43f7698268d7",
+      "sha256": "178df3e8c9ab9a9c8fd86f0464b5b1e10c8cefa93987591db83b38cd5fb1d5f7",
       "executable": false
     },
     "scripts/deployment-data-core.mjs": {
@@ -1709,7 +1709,7 @@
       "executable": false
     },
     "scripts/deployment-data-hosted.check.mjs": {
-      "sha256": "ecd631290c208c1dc235669d106db61fa91f80123b1fdd5acc26040b292c4f2d",
+      "sha256": "e905544d52c298d9382d802cbbfbf6ef8a7492bfc24802537b04b737778f1073",
       "executable": false
     },
     "scripts/deployment-data-initialized.check.mjs": {
@@ -1773,7 +1773,7 @@
       "executable": false
     },
     "scripts/deployment-data-provider.mjs": {
-      "sha256": "7a6cef034a5de3a1a9d02a8320f67e1f2b566f214a1c429691bc9909d69f1d1e",
+      "sha256": "b99b722bfadc79305d77d9b890c3f5f33625835d774062ba531c6a814072a4f3",
       "executable": false
     },
     "scripts/deployment-data-remote-objects.mjs": {
@@ -1817,7 +1817,7 @@
       "executable": false
     },
     "scripts/deployment-data.check.mjs": {
-      "sha256": "9c249966e049cfbd864973d8e7b4c9635c2f85d57bf60af22a1e9ef090b74f18",
+      "sha256": "8c496481f109a57550ca65f06cde1c5d4433c7848a7286c353019b2018d73225",
       "executable": false
     },
     "scripts/deployment-data.mjs": {

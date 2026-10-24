@@ -20,7 +20,6 @@ test('owner recovery command round-trips a kit-created installation filled throu
   const network=[];
   const mail=mock.method(globalThis,'fetch',async(url,options)=>{assert.equal(String(url),'https://api.sendgrid.com/v3/mail/send');network.push(options.body);return new Response(null,{status:202,headers:{'X-Message-Id':'recovery-delivery'}});});
   // Provider pacing is a clock concern. All queries and app SQL still execute.
-  let timers;
   try {
     const fixture=await hostedFixture(dir,source);
     // A respondent part-way through the form holds a resume credential.
@@ -33,13 +32,12 @@ test('owner recovery command round-trips a kit-created installation filled throu
     await fixture.call('/api/public/flows/preserved-form/responses',submission,201);
     assert.ok(network.length>0);
     assert.ok(source.prepare("SELECT count(*) n FROM mail_deliveries WHERE status='sent'").get().n>0);
-    timers=mock.method(globalThis,'setTimeout',(fn,_delay,...args)=>{queueMicrotask(()=>fn(...args));return {unref(){}};});
     const history=source.prepare('SELECT * FROM d1_migrations ORDER BY name').all();
     assert.deepEqual(history.map(({name,sha256})=>({name,sha256})),metadata());
     assert.equal(source.prepare("SELECT count(*) n FROM sqlite_schema WHERE name='_rer_deploy_migrations'").get().n,0);
     const archive=join(dir,'source.rer'), after=join(dir,'restored.rer'), older=join(dir,'before-erasure.rer');
     const sourceEdge=providerFetch(source), targetEdge=providerFetch(target);
-    const command=(args,edge)=>recoveryCommand([...args,'--writers-stopped'],{env:providerEnv,fetch:edge.fetch});
+    const command=(args,edge)=>recoveryCommand([...args,'--writers-stopped'],{env:providerEnv,fetch:edge.fetch,sleep:async()=>{}});
     await command(['export','--output',older],sourceEdge);
     await fixture.call(`/api/app/responses/${fixture.erased}`,{},204,'DELETE');
     const exported=await command(['export','--output',archive],sourceEdge);
@@ -94,7 +92,6 @@ test('owner recovery command round-trips a kit-created installation filled throu
     assert.equal((await restoredApp.request('/api/public/flows/preserved-form/sessions/advance',resume())).status,400);
     assert.equal((await restoredApp.request('/api/public/flows/preserved-form/responses',submission)).status,400);
     restoredApp.setCookie(undefined);
-    timers.mock.restore();timers=undefined;
     assert.equal((await restoredApp.request('/auth/magic-link',{email:'owner@example.test'})).status,202);
     for(let i=0;i<100&&network.length===mailsBefore;i++)await new Promise(resolve=>setImmediate(resolve));
     assert.equal(network.length,mailsBefore+1);
@@ -113,7 +110,7 @@ test('owner recovery command round-trips a kit-created installation filled throu
     } finally {empty.close();}
     const evidence=process.env.PENCIL_RECOVERY_EVIDENCE;
     if(evidence){mkdirSync(evidence,{recursive:true,mode:0o700});for(const file of ['source.rer','restored.rer','before-erasure.rer'])copyFileSync(join(dir,file),join(evidence,file));writeFileSync(join(evidence,'roundtrip.json'),JSON.stringify({exported,archiveBytes:Buffer.byteLength(bytes),semanticEquality:true,byteEquality:true,kitLedger:history,secondRestore:{code:'NONEMPTY_TARGET',databaseBytesUnchanged:true,totalChangesUnchanged:true,onlyReads:true},journalRefusal:'ERASURE_EPOCH',providerCalls:network.length,mailReplayed:0,sourceSnapshot:snapshot(source).sha256},null,2));}
-  } finally {timers?.mock.restore();mail.mock.restore();source.close();target.close();rmSync(dir,{recursive:true});}
+  } finally {mail.mock.restore();source.close();target.close();rmSync(dir,{recursive:true});}
 });
 
 test('kit recovery refuses incomplete, uncertain, altered and mixed migration ledgers before archive publication or destination writes', async () => {
@@ -146,11 +143,9 @@ function platformDatabase(path,appliedAt,ddl=platformLedgerDDL){
 test('[BASE-DATA-001,DATA-001] owner recovery command exports and restores a Platform-installed database: rer_migrations is validated and kept, never rewritten or dropped', async () => {
   const dir=directory(), source=platformDatabase(join(dir,'source.sqlite'),'2026-10-01 09:00:00'), target=platformDatabase(join(dir,'target.sqlite'),'2026-10-19 06:00:00');
   const mail=mock.method(globalThis,'fetch',async url=>{assert.equal(String(url),'https://api.sendgrid.com/v3/mail/send');return new Response(null,{status:202,headers:{'X-Message-Id':'platform-delivery'}});});
-  let timers;
   try {
     await hostedFixture(dir,source);
-    timers=mock.method(globalThis,'setTimeout',(fn,_delay,...args)=>{queueMicrotask(()=>fn(...args));return {unref(){}};});
-    const command=(args,db)=>recoveryCommand([...args,'--writers-stopped'],{env:providerEnv,fetch:providerFetch(db).fetch});
+    const command=(args,db)=>recoveryCommand([...args,'--writers-stopped'],{env:providerEnv,fetch:providerFetch(db).fetch,sleep:async()=>{}});
     const archive=join(dir,'platform.rer'), after=join(dir,'platform-restored.rer');
     const exported=await command(['export','--output',archive],source), bytes=readFileSync(archive,'utf8');
     const history=JSON.parse(bytes).payload.d1Migrations;
@@ -209,5 +204,5 @@ test('[BASE-DATA-001,DATA-001] owner recovery command exports and restores a Pla
         assert.deepEqual(readFileSync(join(dir,path)),before);
       }
     } finally {altered.close();reshaped.close();}
-  } finally {timers?.mock.restore();mail.mock.restore();source.close();target.close();rmSync(dir,{recursive:true});}
+  } finally {mail.mock.restore();source.close();target.close();rmSync(dir,{recursive:true});}
 });

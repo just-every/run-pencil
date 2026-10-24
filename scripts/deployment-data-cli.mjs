@@ -9,7 +9,7 @@ import { readStore } from './deployment-data-stream.mjs';
 
 // This separate owner command uses explicit provider resource IDs. It does not
 // infer a deployment from local Wrangler state or change the public rer contract.
-export async function recoveryCommand(args, { env = process.env, fetch = globalThis.fetch, openObjects = openRemoteObjects } = {}) {
+export async function recoveryCommand(args, { env = process.env, fetch = globalThis.fetch, openObjects = openRemoteObjects, sleep } = {}) {
   const { values, positionals } = parseArgs({ args, allowPositionals: true, options: {
     output: { type:'string' }, input: { type:'string' }, journal: { type:'string' },
     yes: { type:'boolean' }, 'writers-stopped': { type:'boolean' },
@@ -20,7 +20,7 @@ export async function recoveryCommand(args, { env = process.env, fetch = globalT
   if (verb !== 'export' && !values.yes) throw failure('CONFIRMATION_REQUIRED', 'Restore or cleanup requires --yes.');
   const file = verb === 'export' ? values.output : values.input;
   if (!file || (verb === 'export' && (values.input || values.journal || values.yes)) || (verb !== 'export' && values.output) || (verb === 'cleanup' && values.journal)) throw failure('USAGE', 'Provide only the flags for this recovery operation.');
-  const query = cloudflareClient(env, fetch);
+  const query = cloudflareClient(env, fetch, sleep);
   if (verb !== 'export') {
     const archive = readStore(resolve(file));
     try { if (archive.payload.objects !== undefined && !env.CLOUDFLARE_FORM_ASSETS_BUCKET) throw failure('ATTACHMENT_REQUIRED','Set CLOUDFLARE_FORM_ASSETS_BUCKET to restore database and images together.'); }

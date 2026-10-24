@@ -112,7 +112,7 @@ test('complete archive restores R2 bytes and ownership metadata with D1, re-expo
     const remoteSource=new DatabaseSync(f.source),remoteTarget=new DatabaseSync(join(f.directory,'remote.sqlite'));initialize(remoteTarget);
     try {
       const sourceEdge=providerFetch(remoteSource),targetEdge=providerFetch(remoteTarget),env={...providerEnv,CLOUDFLARE_FORM_ASSETS_BUCKET:'synthetic-pencil-assets'};
-      const edge=(transport,bucket)=>({env,fetch:transport.fetch,openObjects:async()=>({bucket,close:async()=>{}})});
+      const edge=(transport,bucket)=>({env,fetch:transport.fetch,sleep:async()=>{},openObjects:async()=>({bucket,close:async()=>{}})});
       const remoteArchive=join(f.directory,'remote.rer'),remoteAfter=join(f.directory,'remote-after.rer');
       assert.deepEqual(await recoveryCommand(['export','--output',remoteArchive,'--writers-stopped'],edge(sourceEdge,proxy.env.SOURCE)),exported);
       assert.deepEqual(await recoveryCommand(['import','--input',remoteArchive,'--writers-stopped','--yes'],edge(targetEdge,proxy.env.TARGET)),exported);

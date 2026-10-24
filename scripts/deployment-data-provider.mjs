@@ -7,7 +7,7 @@ export const queryLimits = { sqlBytes: 100_000, bindings: 100, statements: 16, p
 export function assertQueryBudget(batch) {
   for (const statement of batch) if (Buffer.byteLength(statement.sql) > queryLimits.sqlBytes || (statement.params?.length ?? 0) > queryLimits.bindings) throw failure('QUERY_BUDGET', 'Generated SQL exceeds the documented D1 statement budget.');
 }
-export function cloudflareClient(env = process.env, fetcher = globalThis.fetch) {
+export function cloudflareClient(env = process.env, fetcher = globalThis.fetch, sleep = delay => new Promise(resolve => setTimeout(resolve, delay))) {
   for (const name of ['CLOUDFLARE_ACCOUNT_ID','CLOUDFLARE_DATABASE_ID','CLOUDFLARE_API_TOKEN']) if (typeof env[name] !== 'string' || !env[name].trim()) throw failure('CONFIGURATION_REQUIRED', `${name} is required for deployed data operations.`);
   if (!/^[a-f0-9]{32}$/i.test(env.CLOUDFLARE_ACCOUNT_ID) || !/^[a-f0-9-]{36}$/i.test(env.CLOUDFLARE_DATABASE_ID)) throw failure('CONFIGURATION_INVALID', 'Cloudflare account or database identifier is invalid.');
   const base = `https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/d1/database/${env.CLOUDFLARE_DATABASE_ID}`;
@@ -15,7 +15,7 @@ export function cloudflareClient(env = process.env, fetcher = globalThis.fetch) 
   async function request(path, body) {
     // Stay below the account API limit of 1,200 requests per five minutes.
     const delay = nextRequestAt - Date.now();
-    if (delay > 0) await new Promise(resolve => setTimeout(resolve, delay));
+    if (delay > 0) await sleep(delay);
     nextRequestAt = Date.now() + 300;
     let response, parsed;
     try {
