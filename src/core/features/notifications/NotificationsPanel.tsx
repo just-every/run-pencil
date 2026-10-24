@@ -8,7 +8,7 @@ export function NotificationsPanel({flowId,timeZone}:{flowId:string;timeZone:str
     <h2 id={id}>Response notifications</h2>
     <p>Choose when this flow emails you. Each message names the business and flow and links to signed-in results. Answers and respondent details stay in Pencil.</p>
     {error && <p role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}
-    {!state ? <p role="status">Loading notifications…</p> : <>
+    {!state ? <p aria-busy="true">Loading notifications…</p> : <>
       {state.hostedDemo ? <p role="status">This is a demo: email sends are simulated and nothing is sent. A Sent status here records a simulated delivery.</p> : state.localMail ? <p role="status">Local development suppresses email. A Sent status here records a completed local delivery; no message leaves this computer.</p> : <p>Immediately sends when a response is received or Pencil is next used, usually within a minute. {state.timerLastStartedAt ? 'The automatic timer is running too.' : 'Cloudflare’s automatic timer is starting. You can keep collecting responses: ordinary page visits and requests send due notices while it starts.'}</p>}
       {state.senderError && <p role="alert">{state.senderError}</p>}
       <label className="inspector-field">Email me about completed responses<select className="text-input" value={state.mode} disabled={busy} onChange={e=>void setMode(e.target.value as NotificationMode)}><option value="immediately">Immediately</option><option value="daily">Daily</option><option value="off">Off</option></select></label>

@@ -5505,7 +5505,7 @@
       "executable": false
     },
     "src/core/features/notifications/NotificationsPanel.tsx": {
-      "sha256": "efce808d34596c146130a9541b6a266d2e266515b77cb86a428d615d9ff2c189",
+      "sha256": "235c7558d42076cd960469b729d337e8417c6b006397a2df0f0c4da58ef2b67c",
       "executable": false
     },
     "src/core/features/notifications/outbox.ts": {
