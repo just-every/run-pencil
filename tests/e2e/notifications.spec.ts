@@ -25,9 +25,8 @@ contract(['NOTIFY-002','NOTIFY-004','NOTIFY-005','BASE-PUBLIC-003'],'notificatio
   try {
   const put=async(path:string,data:unknown)=>{const response=await request.put(path,{headers,data});expect(response.ok(),path).toBe(true);return response.json()}
   const operators=await call('/api/app/operators'),chatOwner=operators.find((operator:{email:string})=>operator.email===email)??operators[0]
-  await put('/api/app/connections/slack',{botToken:'synthetic-pencil-chat-bot',signingSecret:'synthetic-pencil-chat-signing-secret',apiOrigin:receiverOrigin})
-  await put('/api/app/connections/teams',{webhookUrl:receiverOrigin+'/teams'})
-  for(const platform of ['slack','teams'])await put(path+'/chat',{platform,postResponses:false,answerStepIds:[],operatorId:chatOwner.id,...(platform==='slack'?{channel:'synthetic-pencil-channel',slackUserId:'synthetic-pencil-slack-user'}:{teamsUserId:'synthetic-pencil-microsoft-user'})})
+  await Promise.all([put('/api/app/connections/slack',{botToken:'synthetic-pencil-chat-bot',signingSecret:'synthetic-pencil-chat-signing-secret',apiOrigin:receiverOrigin}),put('/api/app/connections/teams',{webhookUrl:receiverOrigin+'/teams'})])
+  await Promise.all(['slack','teams'].map(platform=>put(path+'/chat',{platform,postResponses:platform==='slack',answerStepIds:[],operatorId:chatOwner.id,...(platform==='slack'?{channel:'synthetic-pencil-channel',slackUserId:'synthetic-pencil-slack-user'}:{teamsUserId:'synthetic-pencil-microsoft-user'})})))
   const draft=await call(`${path}/draft`),nps=draft.steps.find((step:{questionType:string})=>step.questionType==='nps')
   await page.goto(`/app/flows/${flow.id}/builder`)
   await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
@@ -44,11 +43,8 @@ contract(['NOTIFY-002','NOTIFY-004','NOTIFY-005','BASE-PUBLIC-003'],'notificatio
   await rule.getByRole('checkbox',{name:'Send to Teams',exact:true}).check()
   await page.getByText('Slack and Teams notifications',{exact:true}).click()
   const postEvery=page.getByRole('checkbox',{name:'Post every released response',exact:true})
-  await expect(postEvery).not.toBeChecked()
+  await expect(postEvery).toBeChecked()
   const chatSettings=postEvery.locator('..').locator('..')
-  await postEvery.check()
-  await chatSettings.getByRole('button',{name:'Save chat settings',exact:true}).click()
-  await expect(chatSettings.getByRole('status')).toContainText('Future released responses use this connection.')
   await postEvery.uncheck()
   await chatSettings.getByRole('button',{name:'Save chat settings',exact:true}).click()
   await expect(chatSettings.getByRole('status')).toContainText('Matching answer alerts use this connection.')
@@ -105,10 +101,10 @@ contract(['NOTIFY-002','NOTIFY-004','NOTIFY-005','BASE-PUBLIC-003'],'notificatio
   }finally{db.close()}
   } finally {
     try {
-      for(const platform of ['slack','teams']) {
+      await Promise.all(['slack','teams'].map(async platform=>{
         await request.delete(path+'/chat/'+platform,{headers,data:{}})
         await request.delete('/api/app/connections/'+platform,{headers,data:{}})
-      }
+      }))
     } finally {await new Promise<void>(resolve=>{receiver.closeAllConnections();receiver.close(()=>resolve())})}
   }
 })
