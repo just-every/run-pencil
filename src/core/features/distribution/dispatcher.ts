@@ -1,3 +1,4 @@
+import type { SmsService } from '../sms'
 import type { MailSender } from '../../../base/operator-auth/index.mjs'
 import type { MailDeliveries } from './deliveries'
 
@@ -5,7 +6,7 @@ import type { MailDeliveries } from './deliveries'
  * unknown, never an automatic resend: SendGrid offers no lookup by our key. */
 export class DistributionDispatcher {
   constructor(private readonly db: D1Database, private readonly deliveries: MailDeliveries,
-    private readonly sender: MailSender, private readonly origin: string, private readonly from: string) {}
+    private readonly sender: MailSender, private readonly origin: string, private readonly from: string, private readonly sms?: SmsService) {}
   async run(now = new Date().toISOString()) {
     // Archives retain delivery facts but omit bearer capabilities. Those rows
     // must neither consume the live queue nor acquire a new automatic outcome.
@@ -18,6 +19,10 @@ export class DistributionDispatcher {
       const message = await this.deliveries.prepare(row.id, this.origin, now)
       if (!message) continue
       attempted++
+      if(message.channel==='sms'){
+        const outcome = this.sms ? await this.sms.send(message.to,message.text,message.idempotencyKey) : {kind:'permanent' as const,reason:'SMS connection is unavailable.'}
+        await this.deliveries.record(message.deliveryId,message.ordinal,outcome,now);continue
+      }
       let outcome: Parameters<MailDeliveries['record']>[2]
       try {
         const result = await this.sender.send({ deliveryId: message.idempotencyKey, from: this.from, to: [message.to], subject: message.subject, text: message.text, html: message.html, ...('attachments' in message ? { attachments: message.attachments } : {}), headers: message.headers })

@@ -21,10 +21,12 @@ export const paymentConnectionSchema = z.object({
   secretKey: z.string().trim().regex(/^(?:rk|sk)_(?:test|live)_[A-Za-z0-9]{8,240}$/, 'Use a Stripe restricted key (rk_test_ or rk_live_) or secret key.'),
   webhookSecret: z.string().trim().regex(/^whsec_[A-Za-z0-9+/=_-]{8,240}$/, 'Use the webhook signing secret that starts with whsec_.'),
 }).strict()
+export const smsConnectionSchema = z.object({accountId:secret,authToken:secret,fromNumber:z.string().regex(/^\+[1-9][0-9]{7,14}$/),a2pState:z.enum(['unregistered','pending','approved','rejected']),apiOrigin:address.default('https://api.twilio.com')}).strict()
+export type SmsConnection = z.infer<typeof smsConnectionSchema>
 type AnalysisConnection = z.infer<typeof analysisConnectionSchema>
 type TaskConnection = z.infer<typeof taskConnectionSchema>
 export type PaymentConnection = z.infer<typeof paymentConnectionSchema>
-type Kind = 'analysis' | 'task' | 'payment'
+type Kind = 'analysis' | 'task' | 'payment' | 'sms'
 
 function validateAddress(value: string, local: boolean) {
   const url = new URL(value)
@@ -58,6 +60,14 @@ export class IntegrationConnections {
     validateAddress(input.url, this.platform.configuration.isLocalDevelopment)
     await this.save('task', input)
   }
+  async saveSms(input:SmsConnection) {
+    validateAddress(input.apiOrigin,this.platform.configuration.isLocalDevelopment)
+    if(input.apiOrigin!=='https://api.twilio.com' && !(this.platform.configuration.isLocalDevelopment && ['localhost','127.0.0.1','[::1]'].includes(new URL(input.apiOrigin).hostname)))throw new ValidationError('Twilio uses https://api.twilio.com.')
+    if(new URL(input.apiOrigin).origin!==input.apiOrigin)throw new ValidationError('Use the Twilio API origin without a path.')
+    await this.save('sms',input)
+  }
+  async sms(){return this.read<SmsConnection>('sms')}
+  async smsStatus(){const saved=await this.sms();return {saved:!!saved,a2pState:saved?.a2pState??null,fromNumber:saved?.fromNumber??null,webhookUrl:this.platform.configuration.appOrigin+'/api/public/sms/twilio'}}
   async savePayment(input: PaymentConnection) {
     await this.save('payment', input)
   }

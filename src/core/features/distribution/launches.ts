@@ -26,13 +26,17 @@ export class InvitationLaunches {
     const rows=(await this.db.prepare('SELECT l.id,l.revision_id AS revisionId,l.command_key AS commandKey,resume_enabled AS resumeEnabled,(SELECT collector_id FROM invitation_launch_collector WHERE launch_id=l.id) AS collectorId FROM invitation_launches l JOIN flow_revisions r ON r.id=l.revision_id WHERE l.workspace_id=? AND r.flow_id=? ORDER BY l.created_at DESC').bind(workspaceId,flowId).all<LaunchRow>()).results
     return Promise.all(rows.map(row=>this.summary(row)))
   }
-  async launch(input: { workspaceId: string; flowId: string; contactIds?: string[]; segmentId?:string; commandKey: string; operatorId: string; collectorId?: string }) {
+  async launch(input: { workspaceId: string; flowId: string; contactIds?: string[]; segmentId?:string; commandKey: string; operatorId: string; collectorId?: string; channel?:'email'|'sms' }) {
     if(input.collectorId!==undefined&&!collectorIdSchema.safeParse(input.collectorId).success) throw new ValidationError('Choose a valid collector.')
     let row = await this.db.prepare('SELECT id, revision_id AS revisionId,command_key AS commandKey,resume_enabled AS resumeEnabled,(SELECT collector_id FROM invitation_launch_collector WHERE launch_id=invitation_launches.id) AS collectorId FROM invitation_launches WHERE workspace_id = ? AND command_key = ?').bind(input.workspaceId, input.commandKey).first<LaunchRow>()
     if (!row) {
       if(!!input.contactIds===!!input.segmentId) throw new ValidationError('Choose contacts or a segment for a new launch.')
       const ids=input.segmentId?await new DistributionSegments(this.db).ids(input.workspaceId,input.segmentId):input.contactIds??[]
       if(ids.length>contactLimits.participantsPerRevision||new Set(ids).size!==ids.length) throw new ValidationError('Choose 1–25000 distinct contacts.')
+      if(input.channel==='sms'){
+        const refused=await this.db.prepare('SELECT count(*) AS n FROM distribution_contacts WHERE workspace_id=? AND id IN(SELECT value FROM json_each(?)) AND (mobile IS NULL OR sms_consent_at IS NULL OR sms_stopped_at IS NOT NULL OR sms_consent_mobile IS NOT mobile)').bind(input.workspaceId,JSON.stringify(ids)).first<{n:number}>()
+        if(refused?.n)throw new ValidationError('Every SMS recipient needs a mobile number and current recorded SMS consent.')
+      }
       const now=new Date().toISOString(),id=ulid(),audience=audienceEligibility(this.policies)
       const revision=await this.db.prepare(`SELECT r.id FROM flow_revisions r JOIN flows f ON f.id=r.flow_id WHERE f.workspace_id=? AND f.id=? AND f.status='open' AND r.is_current=1 AND r.state='published' AND r.admission_closed_at IS NULL AND (r.deadline_at IS NULL OR r.deadline_at>?) AND (r.target_completed_responses IS NULL OR (SELECT count(*) FROM responses admitted WHERE admitted.revision_id=r.id AND ${admittedResponseSql('admitted')})<r.target_completed_responses)`).bind(input.workspaceId,input.flowId,now).first<{id:string}>()
       if(!revision) throw new NotFoundError('This flow has no open published revision.')
@@ -44,19 +48,19 @@ export class InvitationLaunches {
       if(owned?.n!==ids.length) throw new NotFoundError('A selected contact is not in your workspace.')
       const settings=await this.db.prepare('SELECT reminder_delay_hours AS delay FROM workspaces WHERE id=?').bind(input.workspaceId).first<{delay:number|null}>()
       const delay=settings?.delay??reminderDelayHours(this.policies)
-      const policy={ 'flow.audience-eligibility.v1':audience,'flow.reminder-schedule.v1':{delayHours:delay},reminderDelayHours:delay,admission:'one-completion',identity:'identified',participantIds:[] }
+      const policy={ channel:input.channel??'email', 'flow.audience-eligibility.v1':audience,'flow.reminder-schedule.v1':{delayHours:delay},reminderDelayHours:delay,admission:'one-completion',identity:'identified',participantIds:[] }
       try { await this.db.batch([
         this.db.prepare(`INSERT OR IGNORE INTO invitation_launches(id,workspace_id,revision_id,command_key,policy_json,actor_operator_id,created_at,resume_enabled)
           SELECT ?,?,?,?,?,(SELECT id FROM operators WHERE id=? AND workspace_id=?),?,1 WHERE ${collectorOpen.sql}`)
           .bind(id,input.workspaceId,revision.id,input.commandKey,JSON.stringify(policy),input.operatorId,input.workspaceId,now,collector.id,input.flowId,...collectorOpen.params),
         ...bindInvitationCollectorSql({launchId:id,collectorId:collector.id,flowId:input.flowId,now}).map(statement=>this.db.prepare(statement.sql).bind(...statement.params)),
-        this.db.prepare(`INSERT INTO invitation_candidates(id,launch_id,contact_id,email_snapshot,name_snapshot,outcome)
+        this.db.prepare(`INSERT INTO invitation_candidates(id,launch_id,contact_id,email_snapshot,name_snapshot,outcome,sms_mobile_snapshot)
           SELECT substr(hex(randomblob(16)),1,26),?,c.id,c.email,c.name,
           CASE WHEN c.opted_out_at IS NOT NULL THEN 'optedOut' WHEN length(trim(c.email))=0 THEN 'noAddress'
           WHEN EXISTS(SELECT 1 FROM invitation_participants WHERE revision_id=? AND contact_id=c.id)
            OR EXISTS(SELECT 1 FROM invitation_candidates x JOIN invitation_launches l ON l.id=x.launch_id WHERE l.revision_id=? AND x.contact_id=c.id AND x.outcome IN ('pending','invited')) THEN 'alreadyInvited'
-          WHEN ?=1 AND EXISTS(SELECT 1 FROM invitation_participants p JOIN flow_revisions r ON r.id=p.revision_id WHERE r.flow_id=? AND p.contact_id=c.id) THEN 'policyExcluded' ELSE 'pending' END
-          FROM distribution_contacts c WHERE c.workspace_id=? AND c.id IN(SELECT value FROM json_each(?)) AND EXISTS(SELECT 1 FROM invitation_launches WHERE id=?)`).bind(id,revision.id,revision.id,audience.excludePreviouslyInvitedToFlow?1:0,input.flowId,input.workspaceId,JSON.stringify(ids),id),
+          WHEN ?=1 AND EXISTS(SELECT 1 FROM invitation_participants p JOIN flow_revisions r ON r.id=p.revision_id WHERE r.flow_id=? AND p.contact_id=c.id) THEN 'policyExcluded' ELSE 'pending' END, CASE WHEN ?='sms' THEN c.mobile ELSE NULL END
+          FROM distribution_contacts c WHERE c.workspace_id=? AND c.id IN(SELECT value FROM json_each(?)) AND EXISTS(SELECT 1 FROM invitation_launches WHERE id=?)`).bind(id,revision.id,revision.id,audience.excludePreviouslyInvitedToFlow?1:0,input.flowId,input.channel??'email',input.workspaceId,JSON.stringify(ids),id),
         this.db.prepare(`UPDATE flow_revisions SET invitation_reserved_count=invitation_reserved_count+(SELECT count(*) FROM invitation_candidates WHERE launch_id=? AND outcome='pending') WHERE id=?`).bind(id,revision.id),
         this.db.prepare(`UPDATE invitation_launches SET policy_json=json_set(policy_json,'$.participantIds',json((SELECT json_group_array(id) FROM invitation_candidates WHERE launch_id=? AND outcome='pending'))) WHERE id=?`).bind(id,id),
         this.db.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at) SELECT ?,workspace_id,'audience.launched',actor_operator_id,'launch',NULL,json_object('selected',?,'eligible',(SELECT count(*) FROM invitation_candidates WHERE launch_id=? AND outcome='pending')),? FROM invitation_launches WHERE id=?`).bind(ulid(),ids.length,id,now,id),
@@ -86,8 +90,8 @@ export class InvitationLaunches {
       const now=new Date().toISOString()
       const collectorOpen=invitationCollectorAdmissionSql('l.id','v.flow_id',now)
       const result=await this.db.batch([
-        this.db.prepare(`INSERT OR IGNORE INTO invitation_participants(id,launch_id,workspace_id,revision_id,contact_id,email_snapshot,name_snapshot,token,opt_out_token,delivery_status,response_status,created_at)
-          SELECT c.id,l.id,l.workspace_id,l.revision_id,c.contact_id,c.email_snapshot,c.name_snapshot,lower(hex(randomblob(32))),lower(hex(randomblob(32))),'queued','not-started',?
+        this.db.prepare(`INSERT OR IGNORE INTO invitation_participants(id,launch_id,workspace_id,revision_id,contact_id,email_snapshot,name_snapshot,sms_mobile_snapshot,token,opt_out_token,delivery_status,response_status,created_at)
+          SELECT c.id,l.id,l.workspace_id,l.revision_id,c.contact_id,c.email_snapshot,c.name_snapshot,c.sms_mobile_snapshot,lower(hex(randomblob(32))),lower(hex(randomblob(32))),'queued','not-started',?
           FROM invitation_candidates c JOIN invitation_launches l ON l.id=c.launch_id JOIN flow_revisions v ON v.id=l.revision_id
           WHERE c.launch_id=? AND c.outcome='pending' AND ${collectorOpen.sql} ORDER BY c.id LIMIT 100`).bind(now,row.id,...collectorOpen.params),
         this.db.prepare(`INSERT OR IGNORE INTO mail_deliveries(id,participant_id,kind,status,idempotency_key,available_at,created_at,updated_at)

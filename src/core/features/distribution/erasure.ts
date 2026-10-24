@@ -41,7 +41,7 @@ export async function eraseContact(db:D1Database, workspaceId: string, contactId
       (SELECT count(*) FROM response_answers WHERE response_id IN(SELECT id FROM responses WHERE participant_id IN(SELECT id FROM invitation_participants WHERE contact_id=?1 AND workspace_id=?2))) AS answers,
       (SELECT count(*) FROM mail_deliveries WHERE participant_id IN(SELECT id FROM invitation_participants WHERE contact_id=?1 AND workspace_id=?2)) AS deliveries,
       (SELECT count(*) FROM mail_delivery_attempts WHERE delivery_id IN(SELECT id FROM mail_deliveries WHERE participant_id IN(SELECT id FROM invitation_participants WHERE contact_id=?1 AND workspace_id=?2))) AS attempts,
-      (SELECT count(*) FROM contact_consent_events WHERE contact_id=?1 AND workspace_id=?2) AS consentEvents,
+      ((SELECT count(*) FROM contact_consent_events WHERE contact_id=?1 AND workspace_id=?2)+(SELECT count(*) FROM sms_consent_events WHERE contact_id=?1)) AS consentEvents,
       ((SELECT count(*) FROM rer_mail_development_outbox WHERE json_extract(message,'$.deliveryId') IN(
         SELECT d.idempotency_key FROM mail_deliveries d JOIN invitation_participants p ON p.id=d.participant_id WHERE p.contact_id=?1 AND p.workspace_id=?2
         UNION
@@ -67,9 +67,9 @@ export async function eraseContact(db:D1Database, workspaceId: string, contactId
       db.prepare(`DELETE FROM responses WHERE id IN (${owned})`).bind(contactId, workspaceId),
       db.prepare(`UPDATE mail_delivery_attempts SET reason = NULL, provider_id = NULL WHERE delivery_id IN (SELECT d.id FROM mail_deliveries d JOIN invitation_participants p ON p.id = d.participant_id WHERE p.contact_id = ? AND p.workspace_id = ?)`).bind(contactId, workspaceId),
       db.prepare(`UPDATE mail_deliveries SET status = CASE WHEN status IN ('pending','sending','unknown') THEN 'cancelled' ELSE status END, reason = NULL, provider_id = NULL WHERE participant_id IN (SELECT id FROM invitation_participants WHERE contact_id = ? AND workspace_id = ?)`).bind(contactId, workspaceId),
-      db.prepare(`UPDATE invitation_participants SET contact_id = NULL, email_snapshot = NULL, name_snapshot = NULL, token = NULL, opt_out_token = NULL, completion_step_id = NULL WHERE contact_id = ? AND workspace_id = ?`).bind(contactId, workspaceId),
+      db.prepare(`UPDATE invitation_participants SET contact_id = NULL, email_snapshot = NULL, name_snapshot = NULL, sms_mobile_snapshot = NULL, token = NULL, opt_out_token = NULL, completion_step_id = NULL WHERE contact_id = ? AND workspace_id = ?`).bind(contactId, workspaceId),
       db.prepare('DELETE FROM contact_consent_events WHERE contact_id = ? AND workspace_id = ?').bind(contactId, workspaceId),
-      db.prepare(`UPDATE invitation_candidates SET contact_id=NULL,email_snapshot=NULL,name_snapshot=NULL,outcome=CASE WHEN outcome='pending' THEN 'noAddress' ELSE outcome END WHERE contact_id=? AND launch_id IN(SELECT id FROM invitation_launches WHERE workspace_id=?)`).bind(contactId,workspaceId),
+      db.prepare(`UPDATE invitation_candidates SET contact_id=NULL,email_snapshot=NULL,name_snapshot=NULL,sms_mobile_snapshot=NULL,outcome=CASE WHEN outcome='pending' THEN 'noAddress' ELSE outcome END WHERE contact_id=? AND launch_id IN(SELECT id FROM invitation_launches WHERE workspace_id=?)`).bind(contactId,workspaceId),
       db.prepare('DELETE FROM distribution_contacts WHERE id = ? AND workspace_id = ?').bind(contactId, workspaceId),
       db.prepare(restoreCheckpoint.sql),
     ])

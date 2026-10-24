@@ -10,20 +10,20 @@ import { readNotificationBrand } from '../notifications'
 import { ulid } from 'ulid'
 import { ConflictError, NotFoundError, ValidationError } from '../../shared/errors'
 import { nextSendingInstant, retryInstant } from './schedule'
-type Delivery = { id: string; participantId: string; revisionId: string; formSettingsJson: string | null; policySnapshotJson: string | null; kind: 'invitation' | 'reminder'; status: string; key: string; attempts: number; retryBase: number; firstAttempt: string | null; availableAt: string; workspaceId: string; email: string | null; token: string | null; optOutToken: string | null; title: string; timeZone: string; sendingWindowStart: string; sendingWindowEnd: string; eligible: number; reminderDelayHours: number }
+type Delivery = { channel:'email'|'sms'; mobile:string|null; id: string; participantId: string; revisionId: string; formSettingsJson: string | null; policySnapshotJson: string | null; kind: 'invitation' | 'reminder'; status: string; key: string; attempts: number; retryBase: number; firstAttempt: string | null; availableAt: string; workspaceId: string; email: string | null; token: string | null; optOutToken: string | null; title: string; timeZone: string; sendingWindowStart: string; sendingWindowEnd: string; eligible: number; reminderDelayHours: number }
 /** Domain receipts only. The maintained sender must call prepare before any provider effect. */
 export class MailDeliveries {
   constructor(private readonly db: D1Database) {}
   private async read(id: string, now = new Date().toISOString()) {
     const collectorOpen=invitationCollectorAdmissionSql('p.launch_id','f.id',now)
-    return this.db.prepare(`SELECT d.id, d.participant_id AS participantId, d.kind, d.status, d.idempotency_key AS key, d.attempts,
+    return this.db.prepare(`SELECT d.id, d.participant_id AS participantId, d.kind, d.status, COALESCE(json_extract(l.policy_json,'$.channel'),'email') AS channel, p.sms_mobile_snapshot AS mobile, d.idempotency_key AS key, d.attempts,
       (SELECT COALESCE(MAX(ordinal), 0) FROM mail_delivery_attempts WHERE delivery_id = d.id AND event = 'operator-retry') AS retryBase,
       CASE WHEN EXISTS (SELECT 1 FROM mail_delivery_attempts WHERE delivery_id = d.id AND event = 'operator-retry' AND ordinal = d.attempts)
         THEN NULL ELSE d.first_attempt_at END AS firstAttempt, d.available_at AS availableAt, p.workspace_id AS workspaceId, p.email_snapshot AS email,
       p.token, p.opt_out_token AS optOutToken, p.revision_id AS revisionId, r.form_settings_json AS formSettingsJson, r.policy_snapshot_json AS policySnapshotJson, r.title, w.time_zone AS timeZone,
       w.sending_window_start AS sendingWindowStart, w.sending_window_end AS sendingWindowEnd,
       json_extract(l.policy_json, '$.reminderDelayHours') AS reminderDelayHours,
-      (c.id IS NOT NULL AND c.opted_out_at IS NULL AND p.token IS NOT NULL AND f.status IN ('open', 'closed') AND r.admission_closed_at IS NULL
+      (c.id IS NOT NULL AND c.opted_out_at IS NULL AND (COALESCE((SELECT json_extract(policy_json,'$.channel') FROM invitation_launches WHERE id=p.launch_id),'email')!='sms' OR (c.mobile IS NOT NULL AND c.sms_consent_at IS NOT NULL AND c.sms_stopped_at IS NULL AND c.mobile=c.sms_consent_mobile AND c.mobile=p.sms_mobile_snapshot)) AND p.token IS NOT NULL AND f.status IN ('open', 'closed') AND r.admission_closed_at IS NULL
         AND (r.deadline_at IS NULL OR r.deadline_at > ?)
         AND ${collectorOpen.sql}
         AND (r.target_completed_responses IS NULL OR (SELECT count(*) FROM responses admitted WHERE admitted.revision_id = r.id AND ${admittedResponseSql('admitted')}) < r.target_completed_responses)
@@ -54,7 +54,7 @@ export class MailDeliveries {
       await this.db.prepare("UPDATE mail_deliveries SET status = 'cancelled', reason = 'Consent or admission is no longer eligible.', updated_at = ? WHERE id = ? AND status = 'pending'").bind(now, id).run()
       return null
     }
-    if (delivery.kind === 'reminder') {
+    if (delivery.kind === 'reminder' || delivery.channel === 'sms') {
       const next = nextSendingInstant(now, delivery)
       if (next > now) { await this.db.prepare("UPDATE mail_deliveries SET available_at = ?, updated_at = ? WHERE id = ? AND status = 'pending'").bind(next, now, id).run(); return null }
     }
@@ -88,7 +88,7 @@ export class MailDeliveries {
           AND EXISTS (
           SELECT 1 FROM invitation_participants p JOIN distribution_contacts c ON c.id = p.contact_id
           JOIN flow_revisions r ON r.id = p.revision_id JOIN flows f ON f.id = r.flow_id WHERE p.id = mail_deliveries.participant_id
-          AND c.opted_out_at IS NULL AND p.token IS NOT NULL AND f.status IN ('open', 'closed') AND r.admission_closed_at IS NULL
+          AND c.opted_out_at IS NULL AND (COALESCE((SELECT json_extract(policy_json,'$.channel') FROM invitation_launches WHERE id=p.launch_id),'email')!='sms' OR (c.mobile IS NOT NULL AND c.sms_consent_at IS NOT NULL AND c.sms_stopped_at IS NULL AND c.mobile=c.sms_consent_mobile AND c.mobile=p.sms_mobile_snapshot)) AND p.token IS NOT NULL AND f.status IN ('open', 'closed') AND r.admission_closed_at IS NULL
           AND (r.deadline_at IS NULL OR r.deadline_at > ?)
           AND ${collectorOpen.sql}
           AND (r.target_completed_responses IS NULL OR (SELECT count(*) FROM responses admitted WHERE admitted.revision_id = r.id AND ${admittedResponseSql('admitted')}) < r.target_completed_responses) AND p.delivery_status != 'bounced'
@@ -104,7 +104,8 @@ export class MailDeliveries {
       await this.record(id, delivery.attempts + 1, { kind: 'permanent', reason: 'Invitation not sent: business branding, published questions or invitation links could not be read or validated. Correct the saved settings, then queue a retry.' }, now)
       return null
     }
-    return { deliveryId: id, ordinal: delivery.attempts + 1, idempotencyKey: delivery.key, to: delivery.email!, ...message, headers: { 'Auto-Submitted': 'auto-generated' } }
+    if(delivery.channel==='sms')message={...message,text:`${delivery.title}: ${new URL(`/i/${delivery.token}`,origin).href} Reply STOP to opt out.`,html:''}
+    return { channel:delivery.channel, deliveryId: id, ordinal: delivery.attempts + 1, idempotencyKey: delivery.key, to: delivery.channel==='sms'?delivery.mobile!:delivery.email!, ...message, headers: { 'Auto-Submitted': 'auto-generated' } }
   }
   async record(id: string, ordinal: number, outcome: { kind: 'sent'; providerId: string | null } | { kind: 'transient' | 'permanent' | 'unknown' | 'bounced'; reason: string }, now = new Date().toISOString()) {
     const delivery = await this.read(id)

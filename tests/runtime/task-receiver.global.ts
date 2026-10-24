@@ -17,6 +17,11 @@ export default async function setup(project: TestProject) {
     if (request.url === '/__control/reset') { const options = JSON.parse(body || '{}'); mode = options.mode ?? 'ok'; delayMilliseconds = options.delayMilliseconds ?? 0; tasks.clear(); faulted.clear(); requests.length = 0; return json(response, 200, { reset: true }) }
     if (request.url === '/__control/state') return json(response, 200, { tasks: Object.fromEntries(tasks), requests })
     requests.push({ path: request.url ?? '', authorization: request.headers.authorization ?? null, idempotencyKey: (request.headers['idempotency-key'] as string | undefined) ?? null, contentType: request.headers['content-type'] ?? null, body })
+    if (/^\/2010-04-01\/Accounts\/[^/]+\/Messages\.json$/.test(request.url??'')){
+      if(!request.headers.authorization?.startsWith('Basic '))return json(response,401,{error:'unauthorized'})
+      const key=String(request.headers['idempotency-key']??'');if(!key)return json(response,400,{error:'missing-key'})
+      const sid=tasks.get(key)??`synthetic-pencil-${tasks.size+1}`;tasks.set(key,sid);return json(response,201,{sid,status:'queued'})
+    }
     if (request.url !== '/tasks') return json(response, 404, { error: 'not found' })
     if (mode === 'redirect') { response.writeHead(307, { location: '/redirected-tasks' }); return response.end() }
     if (delayMilliseconds) await new Promise(resolve => setTimeout(resolve, delayMilliseconds))

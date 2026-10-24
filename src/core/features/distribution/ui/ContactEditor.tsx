@@ -3,14 +3,15 @@ import { useState } from 'react'
 import { audienceRequest, contactsPath, type Contact } from './audienceApi'
 export function ContactEditor({ contact, saved, cancel }: { contact?: Contact; saved: () => Promise<void>; cancel: () => void }) {
   const [name, setName] = useState(contact?.name ?? ''), [email, setEmail] = useState(contact?.email ?? '')
+  const [mobile,setMobile]=useState(contact?.mobile??''),[smsConsent,setSmsConsent]=useState(false),[smsWording,setSmsWording]=useState('')
   const [fields, setFields] = useState(Object.entries(contact?.fields ?? {}).map(([key, value]) => ({ key, value })))
   const [busy, setBusy] = useState(false), [error, setError] = useState<string>()
-  useProtectUnsavedChanges(name !== (contact?.name ?? '') || email !== (contact?.email ?? '') || JSON.stringify(Object.fromEntries(fields.map(field => [field.key, field.value]))) !== JSON.stringify(contact?.fields ?? {}))
+  useProtectUnsavedChanges(mobile !== (contact?.mobile??'') || smsConsent || name !== (contact?.name ?? '') || email !== (contact?.email ?? '') || JSON.stringify(Object.fromEntries(fields.map(field => [field.key, field.value]))) !== JSON.stringify(contact?.fields ?? {}))
   return <form className="panel" style={{ padding: '1.25rem', minWidth: 0 }} onSubmit={event => {
     event.preventDefault(); setBusy(true); setError(undefined)
     void (async () => {
       if (new Set(fields.map(field => field.key)).size !== fields.length) throw new Error('Each custom field needs a different key.')
-      await audienceRequest(contact ? `${contactsPath}/${contact.id}` : contactsPath, { name, email, fields: Object.fromEntries(fields.map(field => [field.key, field.value])) }, contact ? 'PUT' : 'POST')
+      await audienceRequest(contact ? `${contactsPath}/${contact.id}` : contactsPath, { name, email, mobile:mobile||null,...(smsConsent?{smsConsent:{given:true,wording:smsWording}}:{}), fields: Object.fromEntries(fields.map(field => [field.key, field.value])) }, contact ? 'PUT' : 'POST')
       await saved()
     })().catch(e => setError((e as Error).message)).finally(() => setBusy(false))
   }}>
@@ -19,6 +20,10 @@ export function ContactEditor({ contact, saved, cancel }: { contact?: Contact; s
     <fieldset style={{ minWidth: 0 }} disabled={busy}><legend>Contact details</legend>
       <label className="inspector-field">Contact name<input className="text-input" required maxLength={200} value={name} onChange={e => setName(e.target.value)} /></label>
       <label className="inspector-field">Contact email<input className="text-input" required type="email" maxLength={320} value={email} onChange={e => setEmail(e.target.value)} /></label>
+      <label className="inspector-field">Contact mobile<input className="text-input" type="tel" placeholder="+15555550100" value={mobile} onChange={e=>setMobile(e.target.value)}/></label>
+      {contact?.smsConsentAt?<p>SMS consent recorded {contact.smsConsentAt}{contact.smsStoppedAt?' · stopped':''}</p>:null}
+      <label className="toggle-row"><input type="checkbox" checked={smsConsent} onChange={e=>setSmsConsent(e.target.checked)}/>Record explicit SMS consent</label>
+      {smsConsent?<label className="inspector-field">SMS consent wording<textarea className="textarea-input" required maxLength={500} value={smsWording} onChange={e=>setSmsWording(e.target.value)}/></label>:null}
       {fields.map((field, index) => <div key={index} style={{ marginTop: '.75rem' }}>
         <label className="inspector-field">Field {index + 1} key<input className="text-input" required maxLength={64} value={field.key} onChange={e => setFields(fields.map((f, i) => i === index ? { ...f, key: e.target.value } : f))} /></label>
         <label className="inspector-field">Field {index + 1} value<input className="text-input" maxLength={500} value={field.value} onChange={e => setFields(fields.map((f, i) => i === index ? { ...f, value: e.target.value } : f))} /></label>

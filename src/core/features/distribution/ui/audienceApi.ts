@@ -1,4 +1,4 @@
-export type Contact = { id: string; name: string; email: string; fields: Record<string, string>; optedOutAt: string | null }
+export type Contact = { id: string; name: string; email: string; fields: Record<string, string>; optedOutAt: string | null;mobile:string|null;smsConsentAt:string|null;smsStoppedAt:string|null }
 export type Rule = { field: 'name' | 'emailDomain' | 'consent' | 'custom'; key?: string; operator: 'is' | 'contains' | 'is-set'; value?: string }
 export type Segment = { id: string; name: string; rules: Rule[]; matchCount: number }
 export type ImportReport = { rows: Array<{ row: number; status: string; match?: string; message?: string }>; counts: { added: number; matched: number; updated: number; invalid: number; overLimit: number }; committed: boolean }

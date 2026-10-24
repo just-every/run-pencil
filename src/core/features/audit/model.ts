@@ -53,7 +53,7 @@ export function auditDetails(kind: string, json: string): AuditRow['details'] {
     'notification.delivery': { status: ['sent', 'pending', 'failed', 'unknown'] },
     'digest.delivery': { status: ['sent', 'pending', 'failed', 'unknown'] },
     'contact.consent-changed': { consent: ['renewed', 'opted-out'] },
-    ...Object.fromEntries(['saved', 'tested', 'removed', 'rotated', 'paused', 'resumed'].map(change => [`connection.${change}`, { connection: ['analysis', 'task', 'payment', 'webhook'] }])),
+    ...Object.fromEntries(['saved', 'tested', 'removed', 'rotated', 'paused', 'resumed'].map(change => [`connection.${change}`, { connection: ['analysis', 'task', 'payment', 'webhook', 'sms'] }])),
     'export.created': { export: ['responses', 'backup'] },
   }
   const counts = Object.hasOwn(countKeys, kind) ? countKeys[kind] : []

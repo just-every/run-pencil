@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { audienceRequest as request, launchSummary, segmentsPath, type Contact, type Segment, type Launch } from './audienceApi'
 type Delivery = { id: string; name: string | null; email: string | null; revisionId: string; deliveryId: string; kind: string; status: string; reason: string | null; attempts: number; responseStatus: string; optedOutAt: string | null }
 export function DistributionPanel({ flowId }: { flowId: string }) {
+  const [channel,setChannel]=useState<'email'|'sms'>('email')
   const [contacts, setContacts] = useState<Contact[]>([])
   const [contactSearch, setContactSearch] = useState(''), [contactOffset, setContactOffset] = useState(0)
   const [deliveries, setDeliveries] = useState<Delivery[]>([])
@@ -29,7 +30,7 @@ export function DistributionPanel({ flowId }: { flowId: string }) {
     setPendingLaunch({ selector, commandKey })
     try {
       let result: Launch
-      do { result = await request<Launch>(`/api/app/flows/${flowId}/distribution`, { ...selector, commandKey }); setNotice(`Launch processing: ${launchSummary(result)}.`) } while (!result.complete)
+      do { result = await request<Launch>(`/api/app/flows/${flowId}/distribution`, { ...selector, commandKey,channel }); setNotice(`Launch processing: ${launchSummary(result)}.`) } while (!result.complete)
       setPendingLaunch(undefined); setSelected([]); await load(); setNotice(`Launch complete: ${launchSummary(result)}. Review each durable delivery outcome below.`)
     } catch (e) { setError((e as Error).message) } finally { setBusy(false) }
   }
@@ -38,6 +39,7 @@ export function DistributionPanel({ flowId }: { flowId: string }) {
     {error ? <p role="alert" className="status-note" data-tone="error">{error}</p> : null}
     {notice ? <p role="status" className="status-note">{notice}</p> : null}
     <p><Link className="quiet-button focus-ring" to="/app/audience">Manage contacts, CSV imports and segments in Audience</Link></p>
+    <label className="inspector-field">Invitation channel<select aria-label="Invitation channel" className="text-input" value={channel} disabled={busy||!!pendingLaunch} onChange={e=>setChannel(e.target.value as 'email'|'sms')}><option value="email">Email</option><option value="sms">SMS · recorded consent required</option></select></label>
     <label className="inspector-field">Launch segment<select className="text-input" disabled={busy} value={segmentId} onChange={event => setSegmentId(event.target.value)}><option value="">Choose a saved segment</option>{segments.map(segment => <option key={segment.id} value={segment.id}>{segment.name} · {segment.matchCount} current matches</option>)}</select></label>
     <button className="secondary-button focus-ring" type="button" disabled={busy || !!pendingLaunch || launches.some(item => item.resumable) || !segmentId} onClick={() => void launch({ segmentId })}>Queue segment invitations</button>
     <p>Launches freeze the audience and evaluated eligibility and reminder policies. Later edits do not change their recipients or addresses.</p>

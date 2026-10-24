@@ -1,16 +1,19 @@
 import { ulid } from 'ulid'
+import type { SmsService } from '../sms'
 import { NotFoundError, ValidationError, ConflictError } from '../../shared/errors'
 import { eraseContact } from './erasure'
 import { contactSchema, contactColumns, contactLimits, decodeContact, type ContactRow } from './contact-model'
 export class DistributionContacts {
-  constructor(private readonly db: D1Database) {}
-  async save(workspaceId: string, input: unknown) { return this.write(workspaceId, input) }
-  async edit(workspaceId: string, id: string, input: unknown) { return this.write(workspaceId, input, id) }
-  private async write(workspaceId: string, input: unknown, id?: string) {
+  constructor(private readonly db: D1Database, private readonly sms?: SmsService) {}
+  async save(workspaceId: string, input: unknown, actor?:string) { return this.write(workspaceId, input,undefined,actor) }
+  async edit(workspaceId: string, id: string, input: unknown, actor?:string) { return this.write(workspaceId, input, id,actor) }
+  private async write(workspaceId: string, input: unknown, id?: string, actor?:string) {
     const valid = contactSchema.safeParse(input)
     if (!valid.success) throw new ValidationError('Provide a name, valid email and bounded custom fields.')
     if (id && !await this.db.prepare('SELECT id FROM distribution_contacts WHERE workspace_id=? AND id=?').bind(workspaceId,id).first()) throw new NotFoundError('This contact is not in your workspace.')
-    const data=valid.data, now=new Date().toISOString(), contactId=id ?? ulid()
+    const data=valid.data
+    if(data.smsConsent && (!data.mobile || !this.sms || !actor))throw new ValidationError('SMS consent requires a mobile number.')
+    const now=new Date().toISOString(), contactId=id ?? ulid()
     try {
       if (id) await this.db.prepare('UPDATE distribution_contacts SET name=?,email=?,fields_json=?,updated_at=? WHERE id=? AND workspace_id=?').bind(data.name,data.email,JSON.stringify(data.fields),now,id,workspaceId).run()
       else {
@@ -19,6 +22,8 @@ export class DistributionContacts {
         if (!result.meta.changes) throw new ValidationError('Contact limit reached.')
       }
     } catch(error) { if (String(error).includes('UNIQUE constraint')) throw new ConflictError('A contact with this email address already exists.'); throw error }
+    if(data.mobile!==undefined)await this.db.prepare('UPDATE distribution_contacts SET mobile=?,updated_at=? WHERE id=? AND workspace_id=?').bind(data.mobile,now,contactId,workspaceId).run()
+    if(data.smsConsent&&data.mobile&&this.sms)await this.sms.consent(contactId,data.mobile,data.smsConsent.given,data.smsConsent.wording,'operator-recorded',actor)
     return decodeContact((await this.db.prepare(`SELECT ${contactColumns} FROM distribution_contacts WHERE id=?`).bind(contactId).first<ContactRow>())!)
   }
   async list(workspaceId: string, query = '', offset = 0, limit = 250) {

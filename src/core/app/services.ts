@@ -1,3 +1,4 @@
+import { SmsService } from '../features/sms'
 import { FormAddresses } from '../features/addresses/service'
 import { RespondentConfirmationDispatcher } from '../features/notifications/confirmation-dispatcher'
 import { LinkPreviewAssets } from '../features/link-preview/assets'
@@ -68,7 +69,9 @@ export function createPencilServices(platform: PencilPlatform) {
     // Preserve the genuine failure for mail callers while collection remains available.
     sender = { send: async () => { throw error } }
   }
-  const dispatcher = new DistributionDispatcher(platform.databaseBinding, deliveries, sender, platform.configuration.appOrigin, platform.configuration.mail.kind === 'local-development' ? 'no-reply@pencil.test' : platform.configuration.mail.from)
+  const connections = new IntegrationConnections(platform)
+  const sms = new SmsService(platform.databaseBinding,connections,platform.configuration.appOrigin)
+  const dispatcher = new DistributionDispatcher(platform.databaseBinding, deliveries, sender, platform.configuration.appOrigin, platform.configuration.mail.kind === 'local-development' ? 'no-reply@pencil.test' : platform.configuration.mail.from,sms)
   const from = platform.configuration.mail.kind === 'local-development' ? 'no-reply@pencil.test' : platform.configuration.mail.from
   const mailProvider = platform.configuration.mail.kind
   const access = new RestrictedAccess(platform.databaseBinding,platform.configuration.sessionSecret,sender,{from,local:mailProvider==='local-development'})
@@ -79,11 +82,11 @@ export function createPencilServices(platform: PencilPlatform) {
     return { background: '#fbfaf6', ...(row?.brandLogoBase64 && row.brandLogoMime ? {image:{base64:row.brandLogoBase64,mime:row.brandLogoMime,alt:row.name}} : {}) }
   },previewAssets)
   const brand = new BrandService(brandRepository,slug=>flows.getPublicFlow(slug))
-  const connections = new IntegrationConnections(platform)
   const payments = new PaymentService(new PaymentRepository(platform.databaseBinding), connections, { appOrigin: platform.configuration.appOrigin, apiOrigin: platform.configuration.paymentApiOrigin, secret: platform.configuration.sessionSecret })
   const responses = new ResponseService(flowRepository, responseRepository, collectors, platform.configuration.sessionSecret, access, new PaymentResponses(flowRepository, responseRepository, payments, platform.configuration.sessionSecret))
   return {
     addresses: new FormAddresses(platform.databaseBinding),
+    sms,
     access,
     previewAssets,
     previews: new LinkPreviews(platform.databaseBinding, platform.configuration.appOrigin, previewAssets),
@@ -102,7 +105,7 @@ export function createPencilServices(platform: PencilPlatform) {
       preferences: new NotificationRepository(platform.databaseBinding, notificationSenderError(from,mailProvider) ?? senderFailure, mailProvider === 'local-development', platform.configuration.isHostedDemo),
       dispatcher: new NotificationDispatcher(platform.databaseBinding,sender,platform.configuration.appOrigin,from,workspaceId => readNotificationBrand(platform.databaseBinding,workspaceId),senderFailure,mailProvider),
     },
-    distribution: { segments: new DistributionSegments(platform.databaseBinding), importer: new ContactImport(platform.databaseBinding), contacts: new DistributionContacts(platform.databaseBinding), launches: new InvitationLaunches(platform.databaseBinding, extensions.distributionPolicies, collectors), deliveries, dispatcher },
+    distribution: { segments: new DistributionSegments(platform.databaseBinding), importer: new ContactImport(platform.databaseBinding), contacts: new DistributionContacts(platform.databaseBinding,sms), launches: new InvitationLaunches(platform.databaseBinding, extensions.distributionPolicies, collectors), deliveries, dispatcher },
     reporting: new ReportingService(new ReportingRepository(platform.databaseBinding)),
     audit,
     brand,

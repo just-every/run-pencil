@@ -3,6 +3,7 @@ import { failure } from './deployment-data-errors.mjs';
 // Every persisted column is reviewed here. A migration cannot silently add data
 // to an archive: both new tables and new columns fail closed until classified.
 const retained = {
+  sms_consent_events: 'id contact_id mobile given wording source created_at actor_operator_id actor_kind',
   form_address_aliases: 'slug flow_id retired_at',
   confirmation_deliveries: 'id response_id recipient message_json status attempts first_attempt_at last_attempt_at available_at provider_id reason created_at updated_at',
   confirmation_attempts: 'id delivery_id ordinal event provider provider_code created_at',
@@ -85,9 +86,9 @@ const retained = {
   auth_magic_links: 'id operator_id token_hash expires_at consumed_at created_at revoked_at',
   choice_options: 'id step_id value label position created_at updated_at stable_id',
   contact_consent_events: 'id contact_id workspace_id consent actor source created_at',
-  distribution_contacts: 'id workspace_id email name opted_out_at created_at updated_at fields_json',
+  distribution_contacts: 'id workspace_id email name opted_out_at created_at updated_at fields_json mobile sms_consent_at sms_consent_mobile sms_stopped_at',
   distribution_segments: 'id workspace_id name rules_json created_at updated_at',
-  invitation_candidates: 'id launch_id contact_id email_snapshot name_snapshot outcome',
+  invitation_candidates: 'id launch_id contact_id email_snapshot name_snapshot outcome sms_mobile_snapshot',
   flow_branch_rules: 'id revision_id source_step_stable_id predicate_kind expected_value_json condition_json destination_step_stable_id position created_at updated_at',
   // Upgrade-time public preview defaults travel with their immutable revision.
   revision_link_previews: 'revision_id preview_json',
@@ -95,7 +96,7 @@ const retained = {
   flow_steps: 'id revision_id position kind question_type prompt helper_text required created_at updated_at stable_id next_step_stable_id question_settings_json',
   flows: 'id workspace_id slug title status draft_version last_activity_at created_at updated_at',
   invitation_launches: 'id workspace_id revision_id command_key policy_json actor_operator_id created_at',
-  invitation_participants: 'id launch_id workspace_id revision_id contact_id email_snapshot name_snapshot delivery_status response_status completed_at completion_step_id created_at',
+  invitation_participants: 'id launch_id workspace_id revision_id contact_id email_snapshot name_snapshot sms_mobile_snapshot delivery_status response_status completed_at completion_step_id created_at',
   local_dev_inbox: 'id to_email expires_at created_at',
   local_fixture_initializations: 'id initialized_at',
   local_mail_outbox: 'delivery_id created_at',
