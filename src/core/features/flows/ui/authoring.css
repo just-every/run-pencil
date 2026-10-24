@@ -183,11 +183,11 @@
   .builder-lifecycle-status p:last-child { border: 0; padding: 0; font-size: 14px; }
   .publication-options { padding: 14px 16px; }
   .draft-preview, .flow-share-panel { padding: 14px; }
-  /* Share stays within three phone screens too: the builder's 12px gap after each card, and each copy button on its field's label line. */
+  /* Share stays within three phone screens too: the builder's 12px gap after each card, and each copy button on its field's label line as a full 44px tap target. */
   .flow-share-panel { margin-bottom: 12px; }
   .flow-share-field { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 12px; }
   .flow-share-field .inspector-field { display: contents; }
-  .flow-share-field .quiet-button { grid-area: 1 / 2; min-height: 32px; margin-top: 0; }
+  .flow-share-field .quiet-button { grid-area: 1 / 2; min-height: 44px; margin-top: 0; }
   .flow-share-field :is(.text-input, .text-area, .status-note) { grid-column: 1 / -1; }
   /* A code box keeps its four rows rather than the generic 8rem field height. */
   .flow-share-field .text-area { min-height: 0; }
