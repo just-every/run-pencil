@@ -73,6 +73,15 @@ test('real rer setup, one-click sign-in, preserved owner/settings, confirmed res
   assert.equal((await post('/setup', { name: 'Fresh business', timeZone: 'Australia/Brisbane' })).status, 303);
   const emptyFlows = await request('/api/app/dashboard'); assert.equal(emptyFlows.status, 200);
   assert.deepEqual(await emptyFlows.json(), [], 'confirmed reset leaves the fresh installation empty');
+  const platformFlow = await post('/api/app/flows', { title: 'Platform workshop feedback', slug: 'platform-retained-flow', template: 'feedback' });
+  assert.equal(platformFlow.status, 201);
+  const platformCreated = await platformFlow.json();
+  assert.equal((await post(`/api/app/flows/${platformCreated.id}/publish`, { expectedVersion: 0 })).status, 201);
+  const workshop = await post('/api/public/flows/platform-retained-flow/sessions', { deviceClass: 'desktop' });
+  assert.equal(workshop.status, 201);
+  const workshopSession = await workshop.json();
+  const workshopResponse = await post('/api/public/flows/platform-retained-flow/responses', { sessionId: workshopSession.sessionId, sessionToken: workshopSession.sessionToken, loadTime: workshopSession.loadTime, idempotencyKey: 'synthetic-pencil-workshop', answers: workshopSession.flow.steps.filter(step => step.kind === 'question').map(step => ({ stepId: step.id, value: step.questionType === 'single_choice' ? workshopSession.flow.choices.find(choice => choice.stepId === step.id).id : 'Synthetic workshop feedback' })) });
+  assert.equal(workshopResponse.status, 201);
   await app.stop(empty); await assert.rejects(fetch(app.origin + '/health'));
   // A Platform-installed local database: export preserves its validated ledger without replaying it through Wrangler.
   const { DatabaseSync } = await import('node:sqlite');
@@ -92,6 +101,14 @@ test('real rer setup, one-click sign-in, preserved owner/settings, confirmed res
    local.exec("UPDATE rer_migrations SET sha256='altered' WHERE name=(SELECT min(name) FROM rer_migrations)");
    assert.notEqual((await app.run(['export', '--output', 'exports/altered.rer'])).code, 0, 'an altered Platform ledger is refused');
    assert.equal(native(), 0);
+   for (const { name, sha256 } of metadata()) local.prepare('UPDATE rer_migrations SET sha256=? WHERE name=?').run(sha256, name);
   } finally { local.close(); }
+  const platformArchive = JSON.parse(await readFile(join(app.root, 'exports/platform.rer'), 'utf8'));
+  assert.equal((await app.run(['reset', '--yes'])).code, 0);
+  assert.equal((await app.run(['import', '--input', 'exports/platform.rer', '--yes'])).code, 0, 'Platform export imports into a fresh native installation');
+  assert.equal((await app.run(['export', '--output', 'exports/native-platform.rer'])).code, 0);
+  const nativeArchive = JSON.parse(await readFile(join(app.root, 'exports/native-platform.rer'), 'utf8'));
+  assert.equal(nativeArchive.payload.d1Migrations.name, 'd1_migrations');
+  assert.deepEqual(nativeArchive.payload.tables, platformArchive.payload.tables, 'every Platform product table and row survives native import');
  } finally { await app.close(); }
 });

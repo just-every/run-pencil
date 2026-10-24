@@ -66,7 +66,9 @@ export function keepsHistory(table) {
   return ledgerDefinition(table).table === platformLedger;
 }
 export function sameLedger(left, right) {
-  return ledgerDefinition(left) === ledgerDefinition(right);
+  const destination = ledgerDefinition(left).table;
+  const source = ledgerDefinition(right).table;
+  return destination === source || (source === platformLedger && (destination === ledger || destination === hashedLedger));
 }
 export function assertLedgerShape(rows) {
   const result = definitions.find(item => equal(rows, item.shape))?.table;

@@ -3,8 +3,22 @@ import { checkAuthoringLayout, signInEmptyWorkspace } from './authoring-helpers'
 
 for (const template of ['Customer feedback', 'NPS', 'Contact/lead']) test(`${template}: empty dashboard to publication, response and counted result`, async ({ page }, info) => {
   test.setTimeout(90_000)
+  await page.context().newCDPSession(page).then(session => session.send('Emulation.setCPUThrottlingRate', { rate: 4 }))
   await signInEmptyWorkspace(page)
   for (const name of ['Customer feedback', 'NPS', 'Contact/lead']) await expect(page.getByRole('button', { name, exact: true })).toBeVisible()
+  const longestTitle = (await page.locator('.template-gallery button').allTextContents()).sort((a, b) => b.length - a.length)[0]
+  await page.getByRole('button', { name: longestTitle, exact: true }).click()
+  await checkAuthoringLayout(page)
+  await page.screenshot({ path: info.outputPath(`${info.project.name}-gallery-longest.png`), fullPage: true })
+  await page.getByLabel('Search templates', { exact: true }).fill('Delivery experience')
+  await expect(page.getByRole('button', { name: 'Delivery experience', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'NPS', exact: true })).toHaveCount(0)
+  await page.getByLabel('Template category', { exact: true }).selectOption('Customer feedback')
+  await page.getByRole('button', { name: 'Delivery experience', exact: true }).click()
+  await expect(page.getByText('Positive → What to keep · Needs attention → What to improve')).toBeVisible()
+  await checkAuthoringLayout(page)
+  await page.getByLabel('Search templates', { exact: true }).fill('')
+  await page.getByLabel('Template category', { exact: true }).selectOption('All categories')
   await page.getByRole('button', { name: template, exact: true }).click()
   await page.getByRole('button', { name: 'Create draft flow' }).click()
   await expect(page.getByRole('heading', { name: template, exact: true })).toBeVisible()

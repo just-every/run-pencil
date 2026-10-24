@@ -126,6 +126,7 @@ export function populate(database, archive, { existing = false } = {}) {
 // Restore writes no ledger rows here: the destination must already hold exactly the committed history.
 export function keptHistory(database, history, archive) {
   if (!sameLedger(history, archive.payload.d1Migrations)) throw failure('MIGRATION_MISMATCH', 'Destination uses a different migration controller.');
+  validateLedger(archive.payload.d1Migrations, metadata());
   validateLedger(readTable(database, history), metadata());
 }
 export function integrity(database) {

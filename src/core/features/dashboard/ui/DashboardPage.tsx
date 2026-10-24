@@ -31,6 +31,8 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
   const [showCreate, setShowCreate] = useState(!initialData.hasFlows)
   const [teamTemplate,setTeamTemplate]=useState<string>()
   const [template, setTemplate] = useState<FlowTemplateId>()
+  const [templateSearch, setTemplateSearch] = useState('')
+  const [templateCategory, setTemplateCategory] = useState('All categories')
   const [creating, setCreating] = useState(false)
   const [loading, setLoading] = useState(false)
   const [copySaves, setCopySaves] = useState(new Set<string>())
@@ -107,8 +109,10 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
       <div className="dashboard-create">
         {!hasFlows ? <><p className="eyebrow">Ask → Signal → Act</p><h2 className="display">Create your first flow</h2><p className="muted">Ask a clear question, use the answers to make a decision, then act.</p></> : <h2 className="display">New flow</h2>}
         <button className="secondary-button focus-ring" type="button" disabled={creating} onClick={()=>setShowStudio(true)}>Generate with AI</button>
-        <div aria-label="Flow templates" className="builder-actions template-choices">
-          {flowTemplates.map(item => <button className="secondary-button focus-ring" aria-pressed={template === item.id} disabled={creating} type="button" key={item.id} onClick={() => { setTeamTemplate(undefined); setTemplate(item.id); setTitle(item.title); setSlug(`${suggestedSlug(item.title)}-${crypto.randomUUID().slice(0, 8)}`); setSlugEdited(false) }}>{item.title}</button>)}
+        <label className="inspector-field">Search templates<input className="text-input" type="search" value={templateSearch} onChange={event => setTemplateSearch(event.target.value)} /></label>
+        <label className="inspector-field">Template category<select aria-label="Template category" className="text-input" value={templateCategory} onChange={event => setTemplateCategory(event.target.value)}><option>All categories</option>{[...new Set(flowTemplates.map(item => item.category))].map(category => <option key={category}>{category}</option>)}</select></label>
+        <div aria-label="Flow templates" className="template-gallery">
+          {flowTemplates.filter(item => (templateCategory === 'All categories' || item.category === templateCategory) && `${item.title} ${item.category}`.toLowerCase().includes(templateSearch.toLowerCase())).map(item => <button className="secondary-button focus-ring" aria-pressed={template === item.id} disabled={creating} type="button" key={item.id} onClick={() => { setTeamTemplate(undefined); setTemplate(item.id); setTitle(item.title); setSlug(`${suggestedSlug(item.title)}-${crypto.randomUUID().slice(0, 8)}`); setSlugEdited(false) }}>{item.title}</button>)}
           <button className="secondary-button focus-ring" aria-pressed={!template && !teamTemplate} disabled={creating} type="button" onClick={() => { setTemplate(undefined); setTeamTemplate(undefined); setTitle(''); setSlug(''); setSlugEdited(false) }}>Blank flow</button>
         </div>
         <TeamTemplatePicker selected={teamTemplate} disabled={creating} onSelect={item=>{setTeamTemplate(item?.id);setTemplate(undefined);if(item){setTitle(item.name);setSlug(`${suggestedSlug(item.name)}-${crypto.randomUUID().slice(0,8)}`);setSlugEdited(false)}}} />

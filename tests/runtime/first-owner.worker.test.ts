@@ -1,3 +1,4 @@
+import { flowTemplates } from '../../src/core/features/flows/templates'
 import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { checkConfirmation, checkMail } from '../../src/base/operator-auth/conformance/presentation.mjs'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
@@ -14,7 +15,8 @@ contract(['BASE-ACCESS-001', 'BASE-SECRET-001', 'DASH-001', 'OPER-002'], 'local 
   const origin = 'http://localhost'
   const bindings = { ...env, SEED_SAMPLE_DATA: 'false', SEED_ADMIN_EMAIL: 'configured-owner@example.test', SETUP_TOKEN: 'synthetic-local-setup-token-with-32-characters' } as WorkerBindings
   const services = await initializePencil(createPencilPlatform(origin, bindings))
-  const request = (path: string, body?: unknown, cookie?: string) => worker.fetch(new Request(origin + path, { method: body ? 'POST' : 'GET', headers: { Host: 'localhost', Origin: origin, ...devKeyHeaders, 'Content-Type': 'application/json', ...(cookie ? { Cookie: cookie } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) }), bindings, {} as ExecutionContext)
+  let requestNumber = 0
+  const request = (path: string, body?: unknown, cookie?: string) => worker.fetch(new Request(origin + path, { method: body ? 'POST' : 'GET', headers: { Host: 'localhost', Origin: origin, 'CF-Connecting-IP': `198.19.${Math.floor(++requestNumber / 250)}.${requestNumber % 250}`, ...devKeyHeaders, 'Content-Type': 'application/json', ...(cookie ? { Cookie: cookie } : {}) }, ...(body ? { body: JSON.stringify(body) } : {}) }), bindings, {} as ExecutionContext)
   expect(await services.auth.needsBootstrap()).toBe(true)
   expect((await request('/auth/bootstrap', { token: 'incorrect', displayName: 'Owner' })).status).toBe(403)
   expect(await services.auth.needsBootstrap()).toBe(true)
@@ -73,4 +75,34 @@ contract(['BASE-ACCESS-001', 'BASE-SECRET-001', 'DASH-001', 'OPER-002'], 'local 
     expect.objectContaining({ email: invitationInput.email, isSetupOperator: false }),
   ]))
   expect((await request('/auth/confirm', { token: invite.magicLinkToken })).status).toBe(400)
+  expect(new Set(flowTemplates.map(item => item.id)).size).toBeGreaterThanOrEqual(60)
+  for (const template of flowTemplates) {
+    const created = await request('/api/app/flows', { title: template.title, slug: `synthetic-pencil-${template.id}`, template: template.id }, cookie)
+    expect(created.status).toBe(201)
+    const flow = await created.json() as { id: string; slug: string }
+    const published = await request(`/api/app/flows/${flow.id}/publish`, { expectedVersion: 0 }, cookie)
+    expect(published.status, template.id).toBe(201)
+    const publicFlow = await request(`/api/public/flows/${flow.slug}`)
+    expect(publicFlow.status).toBe(200)
+    const definition = await publicFlow.json() as any
+    for (const path of definition.branchRules.length ? [0, 1] : [0]) {
+      const started = await request(`/api/public/flows/${flow.slug}/sessions`, { deviceClass: 'desktop' })
+      expect(started.status).toBe(201)
+      const session = await started.json() as any
+      const answers: { stepId: string; value: unknown }[] = []
+      let step = definition.steps[0]
+      while (step.kind !== 'completion') {
+        const options = definition.choices.filter((choice: any) => choice.stepId === step.id)
+        const value = options.length ? options[path]?.id ?? options[0].id : ['rating','nps','csat','ces'].includes(step.questionType) ? (path === 0 ? 5 : 1) : step.questionType === 'email' ? 'synthetic-pencil-1@example.test' : 'Synthetic business response'
+        answers.push({ stepId: step.id, value })
+        expect((await request(`/api/public/flows/${flow.slug}/sessions/advance`, { sessionId: session.sessionId, sessionToken: session.sessionToken, stepId: step.id })).status).toBe(204)
+        const rule = definition.branchRules.find((rule: any) => rule.sourceStepId === step.id && (rule.predicateKind === 'equals' ? rule.expectedValue === value : Number(value) > rule.expectedValue))
+        step = definition.steps.find((candidate: any) => candidate.id === (rule?.destinationStepId ?? step.nextStepId))
+        expect(step).toBeDefined()
+      }
+      const completed = await request(`/api/public/flows/${flow.slug}/responses`, { sessionId: session.sessionId, sessionToken: session.sessionToken, loadTime: session.loadTime, idempotencyKey: `synthetic-pencil-${template.id}-${path}`, answers })
+      expect(completed.status, template.id).toBe(201)
+    }
+  }
+
 })

@@ -6,8 +6,9 @@ import { join } from 'node:path';
 import { recoveryCommand } from './deployment-data-cli.mjs';
 import { kitDatabase, providerFetch, providerEnv, application } from './deployment-data-hosted-test-helpers.mjs';
 import { hostedFixture } from './deployment-data-hosted-fixture.mjs';
-import { snapshot, metadata, hash, migrations } from './deployment-data-core.mjs';
+import { snapshot, metadata, hash, migrations, initialize } from './deployment-data-core.mjs';
 import { DatabaseSync } from 'node:sqlite';
+import { ledger, hashedLedger } from './deployment-data-ledger.mjs';
 import { exportRemote, importRemote } from './deployment-data-remote.mjs';
 import { exportData, restoreData } from './deployment-data-local.mjs';
 import { sqliteTransport } from './deployment-data-test-helpers.mjs';
@@ -163,6 +164,38 @@ test('[BASE-DATA-001,DATA-001] owner recovery command exports and restores a Pla
     assert.deepEqual(await command(['export','--output',after],target),exported);
     assert.equal(readFileSync(after,'utf8'),bytes);
     assert.equal(target.prepare("SELECT slug FROM flows WHERE slug='preserved-form'").get().slug,'preserved-form');
+    // Both native controllers keep their own ledger and reproduce every product table and row.
+    for (const controller of [ledger, hashedLedger]) {
+      const nativePath = join(dir, controller === ledger ? 'native.sqlite' : 'hashed.sqlite');
+      const native = new DatabaseSync(nativePath);
+      try {
+        initialize(native, controller);
+        const keptNative = native.prepare('SELECT * FROM d1_migrations ORDER BY id').all();
+        assert.deepEqual(await command(['import','--input',archive,'--yes'],native), exported);
+        assert.deepEqual(native.prepare('SELECT * FROM d1_migrations ORDER BY id').all(), keptNative);
+        const nativeExport = join(dir, controller === ledger ? 'native.rer' : 'hashed.rer');
+        await command(['export','--output',nativeExport],native);
+        assert.deepEqual(JSON.parse(readFileSync(nativeExport,'utf8')).payload.tables, JSON.parse(bytes).payload.tables);
+        assert.equal(native.prepare("SELECT count(*) n FROM sqlite_schema WHERE name='rer_migrations'").get().n, 0);
+      } finally { native.close(); }
+    }
+    for (const controller of [ledger, hashedLedger]) for (const defect of ['missing','extra','renamed','mixed','reshaped', ...(controller === hashedLedger ? ['sha256'] : [])]) {
+      const path = join(dir, `refused-${controller.columns.length}-${defect}.sqlite`);
+      const native = new DatabaseSync(path);
+      try {
+        initialize(native, controller);
+        if (defect === 'missing') native.exec('DELETE FROM d1_migrations WHERE id=(SELECT min(id) FROM d1_migrations)');
+        if (defect === 'extra') native.prepare('INSERT INTO d1_migrations(name) VALUES(?)').run('synthetic-pencil-extra.sql');
+        if (defect === 'renamed') native.exec("UPDATE d1_migrations SET name='synthetic-pencil-renamed.sql' WHERE id=(SELECT min(id) FROM d1_migrations)");
+        if (defect === 'mixed') native.exec(platformLedgerDDL);
+        if (defect === 'reshaped') native.exec('ALTER TABLE d1_migrations ADD COLUMN unexpected TEXT');
+        if (defect === 'sha256') native.exec("UPDATE d1_migrations SET sha256='altered' WHERE id=(SELECT min(id) FROM d1_migrations)");
+        const before = readFileSync(path), changes = native.prepare('SELECT total_changes() n').get().n;
+        await assert.rejects(command(['import','--input',archive,'--yes'],native));
+        assert.equal(native.prepare('SELECT total_changes() n').get().n, changes);
+        assert.deepEqual(readFileSync(path), before);
+      } finally { native.close(); }
+    }
     // A destination whose Platform history differs, or a ledger that is not Platform's exact definition, is refused without writes.
     const altered=platformDatabase(join(dir,'altered.sqlite'),'2026-10-19 06:00:00');
     const reshaped=platformDatabase(join(dir,'reshaped.sqlite'),'2026-10-19 06:00:00',platformLedgerDDL.replace(' DEFAULT CURRENT_TIMESTAMP',''));

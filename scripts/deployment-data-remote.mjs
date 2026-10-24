@@ -26,7 +26,7 @@ async function bookmark(query) {
   if (typeof query.bookmark !== 'function') throw failure('CONSISTENCY_UNCONFIRMED', 'D1 consistency bookmarks are required for paginated data operations.');
   return query.bookmark();
 }
-async function captureRemote(query, parent, expected, plan, bucket) {
+async function captureRemote(query, parent, expected, plan, bucket, archiveHistory) {
   const store = createStore(parent);
   try {
     const before = await bookmark(query);
@@ -53,6 +53,11 @@ async function captureRemote(query, parent, expected, plan, bucket) {
     store.db.exec('COMMIT');
     store.payload.d1Migrations.rows.sort((left,right)=>JSON.stringify(left)<JSON.stringify(right)?-1:JSON.stringify(left)>JSON.stringify(right)?1:0);
     validateLedger(store.payload.d1Migrations, metadata());
+    if (archiveHistory) {
+      if (!sameLedger(store.payload.d1Migrations, archiveHistory)) throw failure('MIGRATION_MISMATCH', 'Destination uses a different migration controller.');
+      validateLedger(archiveHistory, metadata());
+      store.payload.d1Migrations = archiveHistory;
+    }
     if (bucket) {
       for await (const object of bucketObjects(bucket)) store.addObject(object);
       if (store.db.prepare('SELECT count(*) n FROM objects').get().n) store.payload.objects = [];
@@ -91,24 +96,25 @@ export async function importRemote(archivePath, query = cloudflareClient(), jour
     // One read-only preflight preserves the no-write refusal. Preparation
     // repeats all guards atomically before creating any inert staging schema.
     const preflight = await query([{ sql: schemaQuery }, { sql: ledgerShapeQuery }, ...expected.tables.map(table=>{ const expected = initializedPredicate(table); return { sql: `SELECT CASE WHEN (${expected.sql}) THEN 0 ELSE 1 END AS occupied`, params: expected.params }; })]);
-    if (!sameLedger(assertLedgerShape(preflight[1].results), store.payload.d1Migrations)) throw failure('MIGRATION_MISMATCH', 'Destination uses a different migration controller.'); canonicalSchema(preflight[0].results, expected.schema);
+    const destinationHistory = assertLedgerShape(preflight[1].results);
+    if (!sameLedger(destinationHistory, store.payload.d1Migrations)) throw failure('MIGRATION_MISMATCH', 'Destination uses a different migration controller.'); canonicalSchema(preflight[0].results, expected.schema);
     if (preflight.slice(2).some(result=>result.results[0]?.occupied !== 0)) throw failure('NONEMPTY_TARGET', 'Destination contains application records; nothing was written.');
     if (bucket && (await bucket.list({limit:1})).objects.length) throw failure('NONEMPTY_TARGET', 'Destination FORM_ASSETS contains attachments; nothing was written.');
     plan = stagingPlan(store, expected.trusted);
-    await query([...destinationGuards(store, JSON.stringify(preflight[0].results)),...plan.create]);
+    await query([...destinationGuards(store, JSON.stringify(preflight[0].results), destinationHistory),...plan.create]);
     prepared = true;
     await stageRows(query, store, plan);
     if (bucket) await stageObjects(store,bucket,owned);
-    const staged = await captureRemote(query, store.directory, expected, plan, bucket);
+    const staged = await captureRemote(query, store.directory, expected, plan, bucket, store.payload.d1Migrations);
     let stagedSchema;
     try {
       if (staged.sha256 !== store.sha256) throw failure('CONTENT_MISMATCH', 'Staged contents differ from the archive; application records were not published.');
       stagedSchema = staged.actualSchema;
     } finally { staged.close(); }
     publicationAttempted = true;
-    await query([...destinationGuards(store, stagedSchema),...plan.publish]);
+    await query([...destinationGuards(store, stagedSchema, destinationHistory),...plan.publish]);
     published = true;
-    const verified = await captureRemote(query, store.directory, expected, undefined, bucket);
+    const verified = await captureRemote(query, store.directory, expected, undefined, bucket, store.payload.d1Migrations);
     try { if (verified.sha256 !== store.sha256) throw failure('CONTENT_MISMATCH', 'Destination verification differs; keep the runtime stopped and inspect the target.'); }
     finally { verified.close(); }
     return storeSummary(store);

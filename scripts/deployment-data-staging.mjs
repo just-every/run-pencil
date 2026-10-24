@@ -9,11 +9,11 @@ import { assertQueryBudget, queryLimits } from './deployment-data-provider.mjs';
 
 export const guard = (expression, params = []) => ({ sql: `SELECT CASE WHEN (${expression}) THEN 1 ELSE json('Restore precondition failed') END AS verified`, params });
 const schemaExpression = `SELECT json_group_array(json_object('type',type,'name',name,'tbl_name',tbl_name,'sql',sql)) FROM (${schemaQuery})`;
-export function destinationGuards(store, actualSchema) {
-  const history = historyGuard(store.payload.d1Migrations, store.payload.migrations);
+export function destinationGuards(store, actualSchema, destinationHistory = store.payload.d1Migrations) {
+  const history = historyGuard(destinationHistory, store.payload.migrations);
   return [
     guard(`(${schemaExpression})=?`, [actualSchema]),
-    guard(`(SELECT json_group_array(json_object('cid',cid,'name',name,'type',type,'notnull',"notnull",'dflt_value',dflt_value,'pk',pk,'hidden',hidden)) FROM (${ledgerShapeQuery}))=?`, [JSON.stringify(ledgerDefinition(store.payload.d1Migrations).shape)]),
+    guard(`(SELECT json_group_array(json_object('cid',cid,'name',name,'type',type,'notnull',"notnull",'dflt_value',dflt_value,'pk',pk,'hidden',hidden)) FROM (${ledgerShapeQuery}))=?`, [JSON.stringify(ledgerDefinition(destinationHistory).shape)]),
     guard(history.sql, history.params),
     ...store.payload.tables.map(table => { const expected = initializedPredicate(table); return guard(expected.sql, expected.params); }),
   ];

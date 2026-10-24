@@ -84,3 +84,7 @@
 
 .team-template-picker { padding: 16px; min-width: 0; margin: 8px 0 20px; }
 .team-template-picker legend { padding: 0 6px; font-weight: 600; }
+
+.template-gallery { display: grid; grid-auto-rows: max-content; align-content: start; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; max-height: 190px; overflow-y: auto; padding: 3px; }
+.template-gallery button { min-width: 0; height: auto; min-height: 44px; white-space: normal; line-height: 1.35; text-align: left; font-size: 14px; padding: 10px 12px; overflow-wrap: anywhere; }
+.template-gallery button[aria-pressed="true"] { background: var(--wash); box-shadow: inset 0 0 0 2px var(--ink); }
