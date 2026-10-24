@@ -407,7 +407,7 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001', 'PAY-005', 'PAY-003', 'PAY-004'],
     await page.getByRole('button',{name:'Issue refund',exact:true}).click()
     await expect(row).toContainText('Partially refunded')
     await expect(row).toContainText('Refunded $10.00')
-    await expect(row).toContainText('card · ending 4242')
+    await expect(row).toContainText('Card · ending 4242')
     await page.getByLabel('Status',{exact:true}).selectOption('partially_refunded')
     await expect(page.locator('.payments-row')).toHaveCount(1)
     const exported=await page.request.get('/api/app/payments?format=csv&state=partially_refunded')
@@ -453,7 +453,7 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001', 'PAY-005', 'PAY-003', 'PAY-004'],
       await page.goto(`/app/flows/${flow.id}/results`)
       await page.getByRole('button',{name:'View answers',exact:true}).first().click()
       const record=page.getByRole('region',{name:'Payment',exact:true})
-      await expect(record).toContainText(mode)
+      await expect(record).toContainText(mode==='subscription'?'Subscription':'Donation')
       if(mode==='subscription') {
         await expect(record).toContainText('active')
         const subscription=[...stripe.sessions.values()].filter(row=>row.subscription).at(-1)!
@@ -497,7 +497,7 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001', 'PAY-005', 'PAY-003', 'PAY-004'],
     await page.reload()
     await page.getByRole('button',{name:'View answers',exact:true}).first().click()
     await expect(bankRecord).toContainText('Paid')
-    await expect(bankRecord).toContainText('us_bank_account · ending 6789')
+    await expect(bankRecord).toContainText('US bank account (ACH) · ending 6789')
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
     await bankRecord.screenshot({path:info.outputPath(`ach-paid-${info.project.name}.png`)})
   } finally { await refundCdp.detach() }

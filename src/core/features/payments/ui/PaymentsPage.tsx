@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { formatUsd, paymentStateLabels, type PaymentState } from '../../../shared/payments'
+import { formatUsd, paymentStateLabels, paymentMethodLabel, type PaymentState } from '../../../shared/payments'
 import './payments.css'
 
 type Row = {responseId:string;provider:string;id:string|null;state:PaymentState;amount:number;total:number|null;refundedAmount:number;methodType:string|null;methodLast4:string|null;subscriptionStatus:string|null;at:string}
@@ -24,7 +24,7 @@ export function PaymentsPage() {
       <a className="secondary-button focus-ring" href={`/api/app/payments?format=csv${state?'&state='+encodeURIComponent(state):''}`}>Export payments</a><button className="secondary-button focus-ring" disabled={busy} onClick={()=>void act(load)}>Refresh payments</button></div>
     {notice?<p role="status">{notice}</p>:null}
     <section aria-label="Payment ledger" className="payments-list">{rows.map(row=><article className="payments-row" key={row.responseId}>
-      <div><strong>{paymentStateLabels[row.state]}</strong><p>{row.provider} · <code>{row.id??'Checkout not opened'}</code></p><p>{row.methodType??'Method not received'}{row.methodLast4?` · ending ${row.methodLast4}`:''}</p>{row.subscriptionStatus?<p>Subscription: {row.subscriptionStatus}</p>:null}</div>
+      <div><strong>{paymentStateLabels[row.state]}</strong><p>{row.provider} · <code>{row.id??'Checkout not opened'}</code></p><p>{paymentMethodLabel(row.methodType)}{row.methodLast4?` · ending ${row.methodLast4}`:''}</p>{row.subscriptionStatus?<p>Subscription: {row.subscriptionStatus}</p>:null}</div>
       <div><p>{row.total===null?'Quoted':'Charged'} {formatUsd(row.total??row.amount)}</p><p>Refunded {formatUsd(row.refundedAmount)}</p>{['paid','partially_refunded'].includes(row.state)?<button className="quiet-button focus-ring" onClick={()=>{setSelected(row);setConfirmed(false)}}>Refund payment</button>:null}</div>
     </article>)}</section>
     {selected?<form className="payment-pricing" aria-label="Confirm refund" onSubmit={event=>{event.preventDefault();void act(async()=>{await read(`/api/app/payments/${encodeURIComponent(selected.responseId)}/refund`,{amount:Math.round(Number(amount)*100),confirm:confirmed});setSelected(undefined);setNotice('Refund requested. Refresh after Stripe confirms it by webhook.');await load()})}}>

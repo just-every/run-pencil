@@ -16,6 +16,9 @@ export type LedgerPayment = { responseId?: string; refundedAmount?: number; meth
 export const paymentLimits = { minimum: 50, maximum: 99_999_999, products: 20, options: 20, quantity: 999, nameCharacters: 250 } as const
 export const paymentStateLabels: Record<PaymentState, string> = { pending: 'Payment pending', paid: 'Paid', failed: 'Payment failed', expired: 'Checkout expired', cancelled: 'Checkout cancelled', processing: 'Payment processing', partially_refunded: 'Partially refunded', refunded: 'Refunded' }
 
+export const paymentMethodLabel = (value: string | null | undefined) => value === 'card' ? 'Card' : value === 'us_bank_account' ? 'US bank account (ACH)' : value ?? 'Not received'
+export const paymentModeLabel = (value: string) => value === 'one_time' ? 'One-time' : value === 'subscription' ? 'Subscription' : value === 'donation' ? 'Donation' : value
+
 const cents = (value: unknown, minimum = 0): value is number => Number.isInteger(value) && (value as number) >= minimum && (value as number) <= paymentLimits.maximum
 const identifier = (value: unknown): value is string => typeof value === 'string' && value.length > 0 && value.length <= 200
 

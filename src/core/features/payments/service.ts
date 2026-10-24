@@ -82,6 +82,13 @@ export class PaymentService {
   byReturnToken(hash: string) { return this.repository.byReturnToken(hash) }
 
   async attempt(input: { responseId: string; attempt: number; stepId: string; completionStepId: string; quote: PaymentQuote; connection: PaymentConnection }): Promise<PaymentAttempt> {
+    if(input.attempt>1) {
+      // The response-owned replacement write predates Checkout preferences and billing metadata.
+      // Keep new modes fail-closed until that transaction can carry and reset their complete state.
+      const previous=await this.repository.forResponse(input.responseId)
+      const extended=(checkout:{mode?:string;ach?:boolean}|undefined)=>checkout?.mode==='subscription'||checkout?.mode==='donation'||checkout?.ach===true
+      if(extended(input.quote.checkout) || (previous && extended(JSON.parse(previous.checkoutSettingsJson))))throw new ValidationError('This payment mode cannot replace a cancelled or expired checkout. Ask the business to check it before starting a new response.')
+    }
     if(input.quote.checkout?.mode==='subscription') {
       let price:Awaited<ReturnType<ReturnType<typeof stripeClient>['retrievePrice']>>
       try {price=await stripeClient(this.options.apiOrigin,input.connection.secretKey).retrievePrice(input.quote.checkout.priceId!)}catch{throw new ValidationError('Stripe could not verify the subscription price. Check the price and connection.')}
@@ -177,6 +184,8 @@ export class PaymentService {
     }
     let paymentIntentId=text('payment_intent')??null
     if(['checkout.session.completed','checkout.session.async_payment_succeeded'].includes(event.type) && object.payment_status==='paid' && text('subscription') && !paymentIntentId) {
+      const own=text('id')?await this.repository.match({kind:'session',sessionId:text('id')!}):undefined
+      if(!own || Boolean(own.livemode)!==event.livemode)return {status:200,outcome:'ignored'}
       if(!text('invoice'))return {status:400,outcome:'invoice-missing'}
       try {
         const invoice=await stripeClient(this.options.apiOrigin,connection.secretKey).retrieveInvoice(text('invoice')!)

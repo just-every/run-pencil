@@ -636,6 +636,10 @@ contract(['PAY-002','PAY-005','PAY-003','PAY-004'], 'preserves signed tax and di
   expect(await env.DB.prepare('SELECT response_id FROM response_payments WHERE response_id=?').bind(receipt.responseId).first()).toBeNull()
   expect((await env.DB.prepare('SELECT id FROM payment_movements WHERE response_id=?').bind(receipt.responseId).all()).results).toEqual([])
 
+  // A subscription Checkout from another system is acknowledged without reading its invoice.
+  const beforeInvoices=(await stripe.state()).requests.filter(row=>row.path.startsWith('/v1/invoices/')).length
+  expect(await deliver(await stripeEvent('checkout.session.completed',{id:'synthetic-pencil-999',subscription:'synthetic-pencil-999',invoice:'synthetic-pencil-999',payment_status:'paid'}))).toMatchObject({status:200,outcome:'ignored'})
+  expect((await stripe.state()).requests.filter(row=>row.path.startsWith('/v1/invoices/'))).toHaveLength(beforeInvoices)
   // PAY-003: fixed monthly/yearly Stripe prices, recurring donations and bounded custom amounts on Stripe.
   for(const mode of ['month','year','custom','recurring-donation'] as const) {
     const b=await fixture()
@@ -688,6 +692,15 @@ contract(['PAY-002','PAY-005','PAY-003','PAY-004'], 'preserves signed tax and di
       await restoreFixture(env.IMPORT_SECOND,await archiveFixture(env.DB,__PENCIL_CORE_MIGRATIONS__))
       expect(await env.IMPORT_SECOND.prepare('SELECT subscription_id,subscription_status,subscription_event_at FROM response_payments WHERE response_id=?').bind(receipt.responseId).first()).toEqual({subscription_id:id,subscription_status:'canceled',subscription_event_at:at+1})
     }
+    const abandoned=await b.submit([{stepId:b.quantity.id,value:2},{stepId:b.discount.id,value:false}])
+    const open=Object.values((await stripe.state()).sessions).find(row=>row.client_reference_id===abandoned.receipt.responseId)!
+    const returned=await accepted<PaymentReturnView>(await b.call(`/api/public/flows/${b.slug}/payments/return`,{token:new URL(open.cancel_url).searchParams.get('payment-key'),outcome:'cancel'},{auth:false}))
+    expect(returned.state).toBe('open')
+    if(returned.state!=='open')throw new Error('Cancelled billing checkout did not return the saved answers.')
+    const refused=await b.call(`/api/public/flows/${b.slug}/responses`,{sessionId:returned.sessionId,sessionToken:returned.sessionToken,idempotencyKey:returned.idempotencyKey,loadTime:await issueLoadTime(env.SESSION_SECRET,returned.revisionId,Date.now()-5000),answers:abandoned.input.answers},{auth:false})
+    expect(refused.status).toBe(400)
+    expect(await refused.json()).toMatchObject({message:expect.stringContaining('cannot replace a cancelled or expired checkout')})
+    expect((await b.call(`/api/app/responses/${abandoned.receipt.responseId}`,{},{method:'DELETE'})).status).toBe(204)
     expect((await b.call(`/api/app/responses/${receipt.responseId}`,{},{method:'DELETE'})).status).toBe(204)
     expect(await env.DB.prepare('SELECT subscription_id FROM response_payments WHERE response_id=?').bind(receipt.responseId).first()).toBeNull()
   }
