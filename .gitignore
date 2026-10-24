@@ -30,3 +30,5 @@ delivery-artifact/
 .pencil-delivery-build-*/
 
 .rer/demo/
+
+.env*
