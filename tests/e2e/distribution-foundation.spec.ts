@@ -5,10 +5,7 @@ import { operatorEmail } from './auth-identity'
 import { expect, test } from './fixtures'
 import { contract } from './contract'
 // Isolate this new journey's API traffic; actual per-address rate limits stay enabled.
-// Native Wrangler's proxy and Worker both expire pooled connections at five seconds.
-// This journey's real minimum-fill wait hits that boundary; close each local HTTP
-// connection so advancing a response never reuses a socket the Worker is closing.
-test.use({ extraHTTPHeaders: { 'CF-Connecting-IP': '198.18.240.11', Connection: 'close' } })
+test.use({ extraHTTPHeaders: { 'CF-Connecting-IP': '198.18.240.11' } })
 contract('BASE-PUBLIC-003', 'production invitation capability paths reject malformed and unknown tokens without echoing them', async ({ page }) => {
   for (const path of ['/i/private-invalid-capability', '/optout/private-invalid-capability', '/i/%E0%A4%A', '/optout/' + 'A'.repeat(64)]) {
     const refused = await page.request.get(path)
@@ -157,6 +154,10 @@ contract(['RESP-020','DIST-014','LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-
   await page.getByRole('textbox').focus()
   await page.getByRole('textbox').fill('Synthetic identified answer')
   await page.waitForTimeout(5000) // Respect the real minimum fill time; do not edit application state.
+  // The email landing must now have recorded the respondent's first real edit.
+  // Read that state before continuing; the native proxy can safely refresh a
+  // stale GET connection after its five-second idle boundary, unlike a POST.
+  expect((await call(`${path}/traffic?revisionId=${participant.revisionId}`)).totals).toMatchObject({views:1,starts:1,submissions:0})
   await page.keyboard.press('Tab')
   await expect(page.getByRole('button', { name: 'Back', exact: true })).toBeFocused()
   await page.keyboard.press('Tab')
