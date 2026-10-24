@@ -3,6 +3,7 @@ import { failure } from './deployment-data-errors.mjs';
 // Every persisted column is reviewed here. A migration cannot silently add data
 // to an archive: both new tables and new columns fail closed until classified.
 const retained = {
+  form_address_aliases: 'slug flow_id retired_at',
   confirmation_deliveries: 'id response_id recipient message_json status attempts first_attempt_at last_attempt_at available_at provider_id reason created_at updated_at',
   confirmation_attempts: 'id delivery_id ordinal event provider provider_code created_at',
   // Response webhooks hold identifiers, states and attempt outcomes only; the signing secret never travels (exclusions below).

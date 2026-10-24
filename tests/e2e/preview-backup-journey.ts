@@ -3,7 +3,7 @@ import type { Page, APIRequestContext } from '@playwright/test'
 import { expect } from './fixtures'
 import { appHeaders } from './api-headers'
 
-export async function previewBackupJourney(page: Page, request: APIRequestContext, cookie: string, project: string) {
+export async function previewBackupJourney(page: Page, request: APIRequestContext, cookie: string, project: string, alias?: {slug:string;flowId:string}) {
   const [name,value] = cookie.split('=')
   await page.context().addCookies([{name,value,url:process.env.PENCIL_E2E_BASE_URL!}])
   const call = async (path:string,data:unknown,method='POST') => {
@@ -24,6 +24,11 @@ export async function previewBackupJourney(page: Page, request: APIRequestContex
   await page.getByRole('button',{name:'Download backup',exact:true}).click()
   const download=await downloaded, buffer=await readFile((await download.path())!)
   const archive=JSON.parse(buffer.toString())
+  if(alias){
+    const addresses=archive.payload.tables.find((table:{name:string})=>table.name==='form_address_aliases')
+    expect(addresses.rows.some((row:Array<{value:unknown}>)=>row[addresses.columns.indexOf('slug')].value===alias.slug&&row[addresses.columns.indexOf('flow_id')].value===alias.flowId)).toBe(true)
+  }
+
   expect(archive.payload.objects).toContainEqual(expect.objectContaining({key,data:image.base64,mime:image.mime}))
   await page.getByLabel('Pencil backup file',{exact:true}).setInputFiles({name:'harbour-studio.rer',mimeType:'application/json',buffer})
   await page.getByRole('button',{name:'Check backup',exact:true}).click()

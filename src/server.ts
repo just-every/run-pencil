@@ -99,9 +99,10 @@ async function fetchPencil(request: Request, bindings: WorkerBindings, execution
     }
     if (path.startsWith('/_serverFn/')) return start.fetch(request)
     if (request.method !== 'GET' && request.method !== 'HEAD') return new Response('Not found', { status: 404 })
+    const addressRedirect = await services.addresses.redirect(request)
     let embedOrigins: string[] | undefined
     if (path.startsWith('/embed/')) {
-      const workspaceId = await services.flows.getFlowWorkspaceId(decodePublicSlug(path.slice('/embed/'.length))!)
+      const workspaceId = await services.flows.getFlowWorkspaceId(decodePublicSlug((addressRedirect ? new URL(addressRedirect.headers.get('Location')!).pathname : path).slice('/embed/'.length))!)
       if (workspaceId) embedOrigins = (await services.workspace.getSettings(workspaceId)).embedAllowedOrigins
       if (request.headers.get('Sec-Fetch-Dest') === 'iframe') {
         let hostOrigin: string | undefined
@@ -109,6 +110,7 @@ async function fetchPencil(request: Request, bindings: WorkerBindings, execution
         if (!hostOrigin || !embedOrigins?.includes(hostOrigin)) return new Response('This host is not allowed to embed the flow.', { status: 403, headers: { 'Content-Security-Policy': "frame-ancestors 'none'", 'Cache-Control': 'no-store' } })
       }
     }
+    if (addressRedirect) return addressRedirect
     const response = await start.fetch(request)
     const headers = new Headers(response.headers)
     headers.set('Content-Security-Policy', embedOrigins ? `frame-ancestors ${embedOrigins.length ? embedOrigins.join(' ') : "'none'"}; sandbox allow-scripts allow-forms allow-top-navigation-by-user-activation` : "frame-ancestors 'none'")
@@ -117,7 +119,7 @@ async function fetchPencil(request: Request, bindings: WorkerBindings, execution
     headers.set('Cache-Control', 'no-store, no-transform')
     if (/^\/f\//.test(path) && response.status === 200) {
       const slug = decodePublicSlug(path.slice(3))
-      if (slug && (await services.previews.document(slug,path,new URL(request.url).search))?.indexable) headers.set('X-Pencil-Indexable','true')
+      if (slug && (await services.previews.document(slug,path,new URL(request.url).search,new URL(request.url).origin))?.indexable) headers.set('X-Pencil-Indexable','true')
     }
     // /setup's native forms POST to this origin, whose exact Origin check needs the browser to send it; no-referrer would send Origin: null.
     headers.set('Referrer-Policy', path === '/setup' ? 'same-origin' : 'no-referrer')

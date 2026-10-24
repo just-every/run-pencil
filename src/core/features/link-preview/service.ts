@@ -25,7 +25,7 @@ export class LinkPreviews {
     const steps = await this.db.prepare("SELECT kind,prompt,helper_text AS helperText FROM flow_steps WHERE revision_id=? AND kind='welcome' ORDER BY position LIMIT 1").bind(row.id).all<{ kind: string; prompt: string; helperText: string | null }>()
     return resolveLinkPreview(formSettings(row.settings), row.title, steps.results)
   }
-  async document(slug: string, path: string, search: string): Promise<DocumentPreview | undefined> {
+  async document(slug: string, path: string, search: string, requestOrigin = this.origin): Promise<DocumentPreview | undefined> {
     const row = await this.revision(slug)
     if (!row) return undefined
     const data = await this.metadata(row), settings = formSettings(row.settings)
@@ -34,7 +34,7 @@ export class LinkPreviews {
       title: previewText(data.title), description: previewText(data.description),
       imageUrl: new URL(`/api/public/previews/${encodeURIComponent(row.id)}/image`, this.origin).href,
       imageAlt: previewText(data.image?.alt ?? data.title), canonicalUrl: new URL(canonicalPath, this.origin).href,
-      indexable: data.allowIndexing && !settings.access && settings.identityMode === 'anonymous' && row.status === 'open' && path === canonicalPath && search === '',
+      indexable: requestOrigin === this.origin && data.allowIndexing && !settings.access && settings.identityMode === 'anonymous' && row.status === 'open' && path === canonicalPath && search === '',
     }
   }
   async image(revisionId: string): Promise<Response> {

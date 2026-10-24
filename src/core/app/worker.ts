@@ -1,3 +1,4 @@
+import { registerAddressRoutes } from '../features/addresses/routes'
 import { registerPreviewRoutes } from '../features/link-preview/routes'
 import { registerPaymentConnectionRoutes, registerPaymentRoutes } from '../features/payments'
 import { registerRetentionRoutes } from '../features/retention/routes'
@@ -128,6 +129,7 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
   app.use('/app', requireOperator)
   app.use('/app/*', requireOperator)
 
+  registerAddressRoutes(app)
   registerRetentionRoutes(app)
   registerBackupRoutes(app)
   registerManagementRoutes(app)

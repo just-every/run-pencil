@@ -1,3 +1,4 @@
+import { FormAddresses } from '../features/addresses/service'
 import { RespondentConfirmationDispatcher } from '../features/notifications/confirmation-dispatcher'
 import { LinkPreviewAssets } from '../features/link-preview/assets'
 import { LinkPreviews } from '../features/link-preview/service'
@@ -82,6 +83,7 @@ export function createPencilServices(platform: PencilPlatform) {
   const payments = new PaymentService(new PaymentRepository(platform.databaseBinding), connections, { appOrigin: platform.configuration.appOrigin, apiOrigin: platform.configuration.paymentApiOrigin, secret: platform.configuration.sessionSecret })
   const responses = new ResponseService(flowRepository, responseRepository, collectors, platform.configuration.sessionSecret, access, new PaymentResponses(flowRepository, responseRepository, payments, platform.configuration.sessionSecret))
   return {
+    addresses: new FormAddresses(platform.databaseBinding),
     access,
     previewAssets,
     previews: new LinkPreviews(platform.databaseBinding, platform.configuration.appOrigin, previewAssets),

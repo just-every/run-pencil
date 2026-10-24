@@ -1,5 +1,5 @@
 import type { Page, APIRequestContext } from '@playwright/test'
-import { expect } from './fixtures'
+import { expect, test } from './fixtures'
 import { appHeaders } from './api-headers'
 
 const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jU1sAAAAASUVORK5CYII=', 'base64')
@@ -42,6 +42,9 @@ export async function publishedPreviewJourney(page: Page, request: APIRequestCon
   const publicPreview=await inspect(canonical)
   expect(publicPreview).toMatchObject({title:settings.linkPreview.title,meta:{'og:title':settings.linkPreview.title,'og:description':settings.linkPreview.description,'og:image:alt':settings.linkPreview.image.alt,'og:url':canonical,'twitter:card':'summary_large_image'}})
   expect(publicPreview.meta.robots).toBeUndefined();expect(publicPreview.robots).toBeUndefined()
+  const alternate=new URL(canonical);alternate.hostname=alternate.hostname==='localhost'?'127.0.0.1':'localhost'
+  const alternatePage=await inspect(alternate.href)
+  expect(alternatePage.meta).toMatchObject({'og:url':canonical,robots:'noindex, nofollow'});expect(alternatePage.robots).toBe('noindex')
   const image=await request.get(publicPreview.meta['og:image']!);expect(image.headers()['content-type']).toBe('image/png');expect(await image.body()).toEqual(png)
   const collector=await call(base+'/collectors',{name:'Studio newsletter',channel:'email'})
   for(const path of [`/embed/${slug}`,`/f/${slug}?collector=${collector.publicKey}`,`/f/${slug}?utm_campaign=PRIVATE_RECALLED_VALUE`,`/f/${slug}?kiosk=60`,`/f/${slug}?completed=1`]){
@@ -85,4 +88,35 @@ export async function publishedPreviewJourney(page: Page, request: APIRequestCon
   expect((await request.get(`/api/public/flows/${slug}`,{headers:{Cookie:''}})).status()).toBe(403)
   expect((await request.post(`/api/public/flows/${slug}/sessions`,{headers:appHeaders,data:{source:'direct',deviceClass:'desktop'}})).status()).toBe(400)
   expect((await request.get(`/api/public/previews/${first.revision.id}/image`)).ok()).toBe(true)
+  // DIST-018: rename through the builder; old direct and embedded URLs retain their queries and never become reusable.
+  const cdp=await page.context().newCDPSession(page); await cdp.send('Emulation.setCPUThrottlingRate',{rate:4})
+  const [name,value]=cookie.split('=');await page.context().addCookies([{name,value,url:origin}])
+  await page.goto(`/app/flows/${created.id}/builder`);await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
+  await page.locator('.step-button').last().click();await page.getByText('Form address',{exact:true}).click()
+  const renamed=`${slug}-renamed`
+  await page.getByLabel('Public address',{exact:true}).fill(renamed)
+  const saved=page.waitForResponse(response=>response.url().endsWith(`/flows/${created.id}/address`)&&response.request().method()==='PUT')
+  await page.getByRole('button',{name:'Rename address',exact:true}).click();expect((await saved).status()).toBe(200)
+  await page.reload();await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
+  await page.locator('.step-button').last().click();await page.getByText('Form address',{exact:true}).click()
+  for(const viewport of [{width:1440,height:900},{width:390,height:844}]){
+    await page.setViewportSize(viewport);await expect(page.getByLabel('Public address',{exact:true})).toHaveValue(renamed)
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
+    await page.screenshot({path:test.info().outputPath(`form-address-${viewport.width}.png`),fullPage:true})
+  }
+  for(const door of ['f','embed']){
+    const redirect=await request.get(`/${door}/${slug}?utm_campaign=synthetic-pencil-1`,{maxRedirects:0})
+    expect(redirect.status()).toBe(301);expect(redirect.headers().location).toBe(new URL(`/${door}/${renamed}?utm_campaign=synthetic-pencil-1`,origin).href)
+  }
+  const retired=await request.post('/api/app/flows',{headers:{...appHeaders,Cookie:cookie},data:{title:'Synthetic address refusal',slug}})
+  expect(retired.status()).toBe(400)
+  const mapped=new URL(`/f/${renamed}`,origin);mapped.hostname=mapped.hostname==='localhost'?'127.0.0.1':'localhost'
+  const mappedProtected=await inspect(mapped.href)
+  expect(mappedProtected.status).toBe(200);expect(mappedProtected.meta).toMatchObject({'og:title':settings.linkPreview.title,'og:url':new URL(`/f/${renamed}`,origin).href,robots:'noindex, nofollow'})
+  expect(mappedProtected.html).not.toContain('What should we improve?')
+  expect((await request.get(new URL(`/api/public/flows/${renamed}`,mapped).href,{headers:{Cookie:''}})).status()).toBe(403)
+  expect((await request.get(new URL(`/embed/${renamed}`,mapped).href,{headers:{Referer:'https://untrusted.example/page','Sec-Fetch-Dest':'iframe'}})).status()).toBe(403)
+  const {previewBackupJourney}=await import('./preview-backup-journey')
+  await previewBackupJourney(page,request,cookie,project,{slug,flowId:created.id})
+
 }

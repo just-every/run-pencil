@@ -94,7 +94,8 @@ export function deploymentConfigurationErrors(requestUrl: string, environment: W
   if (environment.SEED_ADMIN_EMAIL && !isEmail(environment.SEED_ADMIN_EMAIL.trim())) errors.push('SEED_ADMIN_EMAIL must be an email address')
   if (environment.MAIL_FROM && !isValidMailFrom(environment.MAIL_FROM.trim())) errors.push('MAIL_FROM must be a sender email address')
   if (environment.MAIL_API_KEY && hasLineBreak(environment.MAIL_API_KEY)) errors.push('MAIL_API_KEY must not contain line breaks')
-  if (errors.length === 0 && new URL(requestUrl).origin !== new URL(environment.APP_ORIGIN!).origin) {
+  const publicForm = /^\/(?:f\/|embed\/|api\/public\/(?:flows\/|previews\/))/.test(new URL(requestUrl).pathname)
+  if (errors.length === 0 && !publicForm && new URL(requestUrl).origin !== new URL(environment.APP_ORIGIN!).origin) {
     errors.push('This address does not match APP_ORIGIN. Set APP_ORIGIN to the exact HTTPS origin people open, then deploy again')
   }
   return errors
@@ -105,7 +106,7 @@ export function readRuntimeConfiguration(requestUrl: string, environment: Worker
   if (errors.length > 0) throw new DeploymentConfigurationError(`Invalid deployment configuration: ${errors.join('; ')}.`)
   if (isLocalDevelopmentRequest(requestUrl, environment)) {
     return {
-      appOrigin: new URL(requestUrl).origin,
+      appOrigin: new URL(environment.APP_ORIGIN ?? requestUrl).origin,
       sessionSecret: environment.SESSION_SECRET!,
       setupToken: environment.SETUP_TOKEN,
       bootstrapAdminEmail: environment.SEED_ADMIN_EMAIL?.trim().toLowerCase(),
