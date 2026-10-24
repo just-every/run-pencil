@@ -30,7 +30,7 @@ export async function proveAnswerAlertChat() {
     await accepted(await f.call('/api/app/connections/slack',{botToken:'synthetic-pencil-chat-bot',signingSecret:'synthetic-pencil-chat-signing-secret',apiOrigin:receiver},{method:'PUT'}))
     await accepted(await f.call('/api/app/connections/teams',{webhookUrl:receiver+'/teams'},{method:'PUT'}))
     for(const platform of ['slack','teams']) {
-      await accepted(await f.call(base+'/chat',{platform,postResponses:false,answerStepIds:[],operatorId:f.lead.operatorId,...(platform==='slack'?{channel:'synthetic-pencil-channel',slackUserId:'synthetic-pencil-slack-user'}:{teamsUserId:'synthetic-pencil-microsoft-user'})},{method:'PUT'}))
+      await accepted(await f.call(base+'/chat',{platform,postResponses:false,answerStepIds:[nps.id],operatorId:f.lead.operatorId,...(platform==='slack'?{channel:'synthetic-pencil-channel',slackUserId:'synthetic-pencil-slack-user'}:{teamsUserId:'synthetic-pencil-microsoft-user'})},{method:'PUT'}))
     }
     await accepted(await save())
     await accepted(await f.call(base+'/publish',{expectedVersion:(await read()).flow.draftVersion}),201)
@@ -56,6 +56,7 @@ export async function proveAnswerAlertChat() {
       expect(post.body).toContain(`/app/flows/${flow.id}/results`)
       expect(post.body).not.toContain('synthetic-pencil-private-chat-alert-answer')
       expect(post.body).not.toContain('Private feedback')
+      expect(post.body).not.toContain('Recommend us')
       expect(post.body).not.toContain('pencil_create_action')
     }
     expect((await f.call(`/api/public/flows/${slug}/responses`,detractor.body,{auth:false})).status).toBe(201)

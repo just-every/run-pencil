@@ -7749,7 +7749,7 @@
       "executable": false
     },
     "tests/runtime/answer-alert-chat-proof.ts": {
-      "sha256": "ac440b681df052d88b12f11a98bec35783f4145e48df2db3dabbf0a965f8ffdf",
+      "sha256": "23de6ab56b764470c30009968aabdea68f4f18ed6fc3d2b1727268b532d4735f",
       "executable": false
     },
     "tests/runtime/answer-alert-proof.ts": {
