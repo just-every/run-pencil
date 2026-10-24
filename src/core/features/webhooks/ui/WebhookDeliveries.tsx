@@ -24,7 +24,7 @@ export function WebhookDeliveries({ endpointId, canReplay, version, onChanged }:
     <h3>Deliveries</h3>
     {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
     {undelivered.length ? <p className="muted" data-testid="webhook-undelivered">Not delivered yet ({undelivered.length}): {undelivered.map(item => item.responseId).join(', ')}</p> : null}
-    {!deliveries ? <p className="muted" role="status">Loading deliveries…</p> : deliveries.length ? <ul className="webhook-deliveries">{deliveries.map(delivery => <li key={delivery.id} data-status={delivery.status}>
+    {!deliveries ? <p className="muted" aria-busy="true">Loading deliveries…</p> : deliveries.length ? <ul className="webhook-deliveries">{deliveries.map(delivery => <li key={delivery.id} data-status={delivery.status}>
       <p><strong>{label(delivery.status)}</strong> · {delivery.eventType} · <code>{delivery.eventId}</code></p>
       <p className="muted">{delivery.responseId ? <>Response <code>{delivery.responseId}</code> · </> : null}{delivery.attempts === 1 ? '1 attempt' : `${delivery.attempts} attempts`} · {when(delivery.updatedAt)}{delivery.status === 'pending' && delivery.attempts > 0 ? ` · next try ${when(delivery.availableAt)}` : ''}</p>
       {delivery.reason ? <p className="muted">{delivery.reason}</p> : null}

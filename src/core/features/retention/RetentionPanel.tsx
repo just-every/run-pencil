@@ -18,7 +18,7 @@ export function RetentionPanel({flowId}:{flowId:string}) {
     <h2 id={`${id}-title`}>Retention and legal hold</h2>
     <p className="muted">Automatic response deletion is off until the owner chooses a period and confirms it. Retention covers completed and quarantined responses and private saved answers. Deletion removes answers, updates results and redacts affected analyses.</p>
     {error?<p role="alert" className="status-note" data-tone="error">{error}</p>:null}
-    {!state?<p role="status">{error?'Retention settings unavailable.':'Loading retention settings…'}</p>:<>
+    {!state?<p aria-busy={!error}>{error?'Retention settings unavailable.':'Loading retention settings…'}</p>:<>
       <div className="inspector-field"><label htmlFor={`${id}-days`}>Retention period in days</label><input className="text-input" id={`${id}-days`} type="number" min="1" max="36500" value={days} onChange={event=>{setDays(event.target.value);setConfirmed(false)}}/><p className="muted">Leave blank to keep responses. Saved resume links still have their original expiry. Data receives at least seven days of in-app notice before scheduled deletion, including data already older than a newly enabled period.</p></div>
       <label className="check-row"><input type="checkbox" checked={hold} onChange={event=>setHold(event.target.checked)}/>Legal hold: pause all automatic deletion</label>
       <p className="muted">A hold also preserves private saved answers past their original expiry; expired links stay unavailable. Releasing a hold starts a fresh seven-day notice window.</p>
