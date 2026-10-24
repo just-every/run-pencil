@@ -20,7 +20,7 @@ export function PaymentsPage() {
   useEffect(()=>{void load().catch(error=>setNotice(error.message))},[state])
   const act=async(action:()=>Promise<void>)=>{setBusy(true);setNotice('');try{await action()}catch(error){setNotice(error instanceof Error?error.message:'Payment request failed.')}finally{setBusy(false)}}
   return <main className="payments-page"><header><h1>Payments</h1><p>Stripe payments and refunds. Billing management belongs to Stripe’s customer portal.</p></header>
-    <div className="payments-tools"><label>Status<select className="text-input" value={state} onChange={event=>setState(event.target.value)}><option value="">All statuses</option>{Object.entries(paymentStateLabels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+    <div className="payments-tools"><label>Status<select aria-label="Status" className="text-input" value={state} onChange={event=>setState(event.target.value)}><option value="">All statuses</option>{Object.entries(paymentStateLabels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
       <a className="secondary-button focus-ring" href={`/api/app/payments?format=csv${state?'&state='+encodeURIComponent(state):''}`}>Export payments</a><button className="secondary-button focus-ring" disabled={busy} onClick={()=>void act(load)}>Refresh payments</button></div>
     {notice?<p role="status">{notice}</p>:null}
     <section aria-label="Payment ledger" className="payments-list">{rows.map(row=><article className="payments-row" key={row.responseId}>

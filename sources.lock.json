@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "667489beb3cfc9b99d468076a3bb2dead1f42456c8c9a0ac4849ebe7abe7b81b",
+      "sha256": "9d83f5414cd8ba3c29ada8d70eaaad141e4fd16b9c61139eb3a3706efd554b32",
       "executable": false
     },
     "CLAUDE.md": {
@@ -5497,7 +5497,7 @@
       "executable": false
     },
     "src/core/features/payments/ui/PaymentsPage.tsx": {
-      "sha256": "b56f32ba69cb83535d4ad041c6258bee26074abbf318d3ed51a9466923de7351",
+      "sha256": "c0e9f69281c5514183632eb34045b813eb50dfa2ce4059525f03b4a62a521e71",
       "executable": false
     },
     "src/core/features/payments/ui/PaymentStepSettings.tsx": {
@@ -5673,7 +5673,7 @@
       "executable": false
     },
     "src/core/features/responses/payment-responses.ts": {
-      "sha256": "9db134e398f65cbc031ef1365459a6c1ec6d66f1eab51ab57eb72b3215468210",
+      "sha256": "a3eb3bb486802e12f93b3443193979b85fb384e84ff4f1ab098c7b14f2897bfe",
       "executable": false
     },
     "src/core/features/responses/prefillProof.ts": {
