@@ -5,7 +5,10 @@ import { operatorEmail } from './auth-identity'
 import { expect, test } from './fixtures'
 import { contract } from './contract'
 // Isolate this new journey's API traffic; actual per-address rate limits stay enabled.
-test.use({ extraHTTPHeaders: { 'CF-Connecting-IP': '198.18.240.11' } })
+// Native Wrangler's proxy and Worker both expire pooled connections at five seconds.
+// This journey's real minimum-fill wait hits that boundary; close each local HTTP
+// connection so advancing a response never reuses a socket the Worker is closing.
+test.use({ extraHTTPHeaders: { 'CF-Connecting-IP': '198.18.240.11', Connection: 'close' } })
 contract('BASE-PUBLIC-003', 'production invitation capability paths reject malformed and unknown tokens without echoing them', async ({ page }) => {
   for (const path of ['/i/private-invalid-capability', '/optout/private-invalid-capability', '/i/%E0%A4%A', '/optout/' + 'A'.repeat(64)]) {
     const refused = await page.request.get(path)
