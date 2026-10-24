@@ -58,7 +58,7 @@ contract(['NOTIFY-002','NOTIFY-004','NOTIFY-005','BASE-PUBLIC-003'],'notificatio
     await expect(postEvery).not.toBeChecked()
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true)
     expect((await new AxeBuilder({page}).analyze()).violations).toEqual([])
-    await page.screenshot({path:capture?join(capture,`answer-alert-settings-${viewport.width}-${info.project.name}.png`):info.outputPath(`answer-alert-settings-${viewport.width}.png`),fullPage:true})
+    await page.screenshot({path:capture?join(capture,`answer-alert-settings-${viewport.width}-${info.project.name}.png`):info.outputPath(`answer-alert-settings-${viewport.width}.png`),fullPage:true,scale:'css'})
   }
   await page.getByRole('button',{name:'Save alert rules',exact:true}).click()
   await expect.poll(async()=>((await call(`${path}/draft`)).formSettings.answerAlerts??[]).length).toBe(1)
