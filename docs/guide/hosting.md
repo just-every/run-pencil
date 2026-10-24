@@ -1,5 +1,7 @@
 # Hosting on Cloudflare
 
+**Or let Run Edit Run host it.** [Run Edit Run](https://app.runeditrun.com/?product=pencil&plan=assisted) can set Pencil up on your own Cloudflare account and keep it updated; sign-ups are by request for now.
+
 For Managed hosting through RER, Pencil sends email through the RER relay. You do not need a SendGrid or Resend account or API key. Free and Assisted installations keep the ordinary SendGrid or Resend choices.
 
 For direct hosting, Pencil runs on your own Cloudflare account as one Worker with a D1 database. This page takes you from a working local copy to a deployed one: setting your secrets, deploying, and signing in as the first owner. It also covers setting up email, which Pencil cannot work without.

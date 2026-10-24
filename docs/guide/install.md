@@ -4,21 +4,21 @@ This page takes you from the Pencil source code to a working copy on your own co
 
 ## What you need
 
-Use macOS, Linux or Windows with WSL2, as on the Run page.
+Use macOS, Linux or Windows with WSL2, as on the Run page. Git is required; rer brings Node and pnpm.
 
-- **Node.js 22 or later, including npm, and Git for the one line below.** Check `node --version` and `npm --version` in your terminal. Without Node, `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-pencil` brings its own.
+- **Git, for the one line below.** The line installs rer with its own Node when Node 22 or later is missing. Some commands further down use npm or npx: those need Node.js 22 or later on your `PATH` (check `node --version` and `npm --version`).
 - **rer, the Run Edit Run command.** The one line below fetches it for you. In the source folder it runs the exact `@runeditrun/rer` version in Pencil's `package.json` and lockfile. `rer --version` can show the global launcher and checkout versions separately; a difference does not change the checkout pin. Do not change that pin to match your global launcher.
 - **The source code.** The one line below clones it from https://github.com/just-every/run-pencil into `run-pencil`.
 
-With Node available, rer installs Pencil's pinned runtime and pnpm for its own commands. It does not put pnpm on your shell's `PATH`; the commands below use npm or npx when needed. `rer dev` prepares a local owner automatically; choosing your own local owner details with `rer setup` is optional.
+rer installs Pencil's pinned runtime and pnpm for its own commands. It does not put pnpm on your shell's `PATH`; the commands below use npm or npx when needed. Starting Pencil prepares a local owner automatically; choosing your own local owner details first is optional (below).
 
 ## Start Pencil on your computer
 
 ```sh
-npx -y @runeditrun/rer dev just-every/run-pencil
+curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-pencil
 ```
 
-To start it again later, run `cd run-pencil && rer dev`. To set Pencil up without starting it, use `npx -y @runeditrun/rer setup just-every/run-pencil`.
+Already have Node 22 or later? `npx -y @runeditrun/rer dev just-every/run-pencil` does the same. If the installer prints a line that puts `rer` on your PATH, run that line too. To start it again later, run the same line from the same folder, or `cd run-pencil && rer dev`. To set Pencil up without starting it, use `setup` in place of `dev`.
 
 `rer dev` installs the exact locked dependencies, applies local migrations and prepares a local owner on first launch. It then prints the app’s address and a `RER_OPEN` link that opens it signed in. Later launches keep your owner, data and private settings, and apply any migration a newer source added before serving. To move to a newer Pencil, follow [Upgrading a local install](#upgrading-a-local-install). To choose local owner details, optionally run `rer setup --owner-email you@example.com --owner-name "Your Name"`; no separate setup command is needed for the normal launch.
 

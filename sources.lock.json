@@ -1028,12 +1028,16 @@
       "sha256": "ea3f692190606f25ede06576dacaaa2df56a6747b5fb038f40b3ecb15a8d5786",
       "executable": false
     },
+    "docs/guide/getting-started.md": {
+      "sha256": "d9556b51d2202890b44abef4c118d58b4ddd6074e41f1b969bb567ee988c5b5f",
+      "executable": false
+    },
     "docs/guide/hosting.md": {
-      "sha256": "4182c476f38819674c3b4967199389f98551e0b18048540b23ae6833ea93170a",
+      "sha256": "79beb084b61661d9c3485daac99fd0b0aef805da531db254e54323817ac6baa0",
       "executable": false
     },
     "docs/guide/install.md": {
-      "sha256": "c6af6e6042cf8136be92b264006101b9bf88aef5e4112adfe1cd9f8db3fa8386",
+      "sha256": "def229f3b41334706278c0348602cf300fc6c4103b543d041369a0e085d1e238",
       "executable": false
     },
     "docs/guide/invitations.md": {
@@ -1081,7 +1085,7 @@
       "executable": false
     },
     "docs/site.json": {
-      "sha256": "59437b6b21abc6210adc9afc9d85a1335441e8f756837f3e8b2dcb67c395ccf8",
+      "sha256": "48d4b71001154e6d7b8b0c596ca7b94100207d636d0616738d392399f2f1eaa3",
       "executable": false
     },
     "edition.json": {
