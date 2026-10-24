@@ -135,7 +135,7 @@ const retained = {
   responses: 'response_context_json id workspace_id flow_id revision_id session_id session_token_hash idempotency_key state quarantine_reason released_at released_by_operator_id completion_milliseconds completed_at created_at updated_at source started_at participant_id device_class',
   // PAY-001 payment state and Stripe IDs travel with their response. No card or bank detail exists to travel;
   // the Stripe key and signing secret stay sealed in integration_connections, whose rows never travel.
-  response_payments: 'response_id step_id completion_step_id provider livemode state attempt amount currency lines_json checkout_session_id checkout_url checkout_expires_at payment_intent_id provider_amount return_token_hash state_changed_at created_at updated_at',
+  response_payments: 'response_id step_id completion_step_id provider livemode state attempt amount currency lines_json checkout_settings_json discount tax total checkout_session_id checkout_url checkout_expires_at payment_intent_id provider_amount return_token_hash state_changed_at created_at updated_at',
   payment_events: 'id type response_id outcome created_at received_at',
   revision_metric_counters: 'id revision_id starts completions total_completion_milliseconds mobile_starts tablet_starts desktop_starts created_at updated_at',
   revision_step_metric_counters: 'id revision_id step_stable_id reached dropped created_at updated_at',

@@ -1,4 +1,4 @@
-import type { PaymentLine } from '../../shared/payments'
+import type { CheckoutOptions, PaymentLine } from '../../shared/payments'
 
 /** The Stripe API version Pencil reads and writes; event payloads keep the fields it uses across versions. */
 export const stripeApiVersion = '2024-06-20'
@@ -24,10 +24,15 @@ export function stripeClient(origin: string, secretKey: string) {
     return body as T
   }
   return {
-    createCheckoutSession(input: { lines: PaymentLine[]; successUrl: string; cancelUrl: string; responseId: string; attempt: number; idempotencyKey: string }) {
+    createCheckoutSession(input: { lines: PaymentLine[]; checkout?: CheckoutOptions; successUrl: string; cancelUrl: string; responseId: string; attempt: number; idempotencyKey: string }) {
       const form = new URLSearchParams({ mode: 'payment', success_url: input.successUrl, cancel_url: input.cancelUrl, client_reference_id: input.responseId,
         'metadata[pencil_response]': input.responseId, 'metadata[pencil_attempt]': String(input.attempt),
         'payment_intent_data[metadata][pencil_response]': input.responseId, 'payment_intent_data[metadata][pencil_attempt]': String(input.attempt) })
+      form.set('automatic_tax[enabled]', String(input.checkout?.automaticTax ?? false))
+      if (input.checkout?.automaticTax) form.set('billing_address_collection', 'required')
+      if (input.checkout?.couponId) form.set('discounts[0][coupon]', input.checkout.couponId)
+      else form.set('allow_promotion_codes', String(input.checkout?.promotionCodes ?? false))
+      if (input.checkout?.receipts) form.set('customer_creation', 'always')
       input.lines.forEach((line, index) => {
         form.set(`line_items[${index}][price_data][currency]`, 'usd')
         form.set(`line_items[${index}][price_data][unit_amount]`, String(line.unitAmount))

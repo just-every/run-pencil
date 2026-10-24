@@ -49,6 +49,14 @@ export function PaymentStepSettings({ draft, step, value, disabled, onChange }: 
       </div> })}
       {choiceQuestions.some(question => !settings.options.some(option => option.stepId === question.id)) ? <label className="inspector-field">Price the choices of<select aria-label="Price the choices of" className="text-input" value="" onChange={event => { if (event.target.value) change({ options: [...settings.options, { stepId: event.target.value, prices: {} }] }) }}><option value="">Choose an earlier choice question</option>{choiceQuestions.filter(question => !settings.options.some(option => option.stepId === question.id)).map(question => <option key={question.id} value={question.id}>{question.prompt}</option>)}</select></label> : null}
     </fieldset> : null}
+    <fieldset disabled={disabled}><legend>Tax, discounts and receipts</legend>
+      <label className="payment-choice"><input type="checkbox" checked={settings.automaticTax ?? false} onChange={event => change({ automaticTax: event.target.checked })} /><span>Use Stripe Tax</span></label>
+      <p className="muted">Checkout collects the billing address for tax. Pencil stores no address.</p>
+      <label className="payment-choice"><input type="checkbox" checked={settings.promotionCodes ?? false} onChange={event => change({ promotionCodes: event.target.checked, ...(event.target.checked ? { couponId: undefined } : {}) })} /><span>Allow promotion codes</span></label>
+      <label className="inspector-field">Stripe coupon ID<input className="text-input" value={settings.couponId ?? ''} maxLength={200} disabled={settings.promotionCodes} onChange={event => change({ couponId: event.target.value || undefined })} /></label>
+      <label className="payment-choice"><input type="checkbox" checked={settings.receipts ?? false} onChange={event => change({ receipts: event.target.checked })} /><span>Collect email for Stripe receipts</span></label>
+      <p className="muted">Stripe sends receipts to the email collected by Checkout when receipts are enabled in your Stripe account. Pencil forwards no answer as an email address.</p>
+    </fieldset>
     <fieldset disabled={disabled}><legend>Charge limits</legend>
       <UsdField label="Minimum charge (USD)" cents={settings.minimum} disabled={disabled} onChange={minimum => change({ minimum })} />
       <UsdField label="Maximum charge (USD)" cents={settings.maximum} disabled={disabled} onChange={maximum => change({ maximum })} />

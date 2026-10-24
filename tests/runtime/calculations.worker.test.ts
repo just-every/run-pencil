@@ -9,6 +9,7 @@ import { issueLoadTime } from '../../src/core/features/traffic/loadTime'
 import { resumeBearer } from '../../src/core/features/resuming/credentials'
 import { interpolateAnswerRecall } from '../../src/core/shared/answerRecall'
 import type { BuilderDraft, Ledger, PaymentReturnView, PublicFlow } from '../../src/core/app/api'
+import { archiveFixture, restoreFixture } from './archive-fixture'
 import { materializeNotifications } from '../../src/core/features/notifications/outbox'
 import { deliver, stripe, stripeEvent, stripeKey, webhookSecret } from './payment-fixture'
 import type { Calculation, CalculationExpression } from '../../src/core/shared/calculations'
@@ -541,3 +542,42 @@ contract('LOGIC-003', 'a BMI from two decimal answers gates a branch and publish
     expect(stored.calculations.find(item => item.id === 'bmi')?.value).toBe(value)
   }
 }, 60_000)
+
+contract('PAY-002', 'preserves signed tax and discount totals in the ledger, exports, archives and erasure while refusing a changed subtotal', async () => {
+  for (const promotionCodes of [false, true]) {
+    const f = await fixture()
+    await accepted(await f.call('/api/app/connections/payment', { secretKey: stripeKey, webhookSecret }, { method: 'PUT' }))
+    const pricing = { products: [], options: [], calculationId: 'total', minimum: 50, maximum: 200_000, automaticTax: true, receipts: true, promotionCodes, ...(!promotionCodes ? { couponId: 'synthetic-pencil-1' } : {}) }
+    await accepted(await f.call(`${f.base}/draft/steps`, { expectedVersion: (await f.read()).flow.draftVersion, step: { kind: 'payment', questionType: null, prompt: 'Pay order', nextStepId: f.ordinary.id, questionSettings: { payment: pricing } } }), 201)
+    const pay = (await f.read()).steps.filter(step => step.kind === 'payment').at(-1)!
+    await accepted(await f.call(`${f.base}/draft`, { expectedVersion: (await f.read()).flow.draftVersion, stepId: f.discount.id, prompt: f.discount.prompt, nextStepId: pay.id, required: true }, { method: 'PUT' }))
+    await accepted(await f.publish(), 201)
+    const { receipt } = await f.submit([{ stepId: f.quantity.id, value: 2 }, { stepId: f.discount.id, value: false }])
+    const request = (await stripe.state()).requests.filter(request => request.path === '/v1/checkout/sessions' && request.method === 'POST').at(-1)!
+    expect(request.form).toMatchObject({ 'automatic_tax[enabled]': 'true', billing_address_collection: 'required', customer_creation: 'always', 'line_items[0][price_data][unit_amount]': '4000' })
+    expect(request.form.customer_email).toBeUndefined()
+    expect(request.form[promotionCodes ? 'allow_promotion_codes' : 'discounts[0][coupon]']).toBe(promotionCodes ? 'true' : 'synthetic-pencil-1')
+    const pending = Object.values((await stripe.state()).sessions).find(session => session.client_reference_id === receipt.responseId)!
+    const paid = { ...await stripe.settle('complete', pending.id), amount_subtotal: 4000, amount_total: 3780, total_details: { amount_discount: 500, amount_tax: 280 } }
+    expect(await deliver(await stripeEvent('checkout.session.completed', { ...paid, amount_subtotal: 3999 }))).toMatchObject({ status: 400, outcome: 'amount-mismatch' })
+    expect((await f.ledger()).responses.find(row => row.id === receipt.responseId)!.payment!.state).toBe('pending')
+    const event = await stripeEvent('checkout.session.completed', paid)
+    expect(await deliver(event)).toMatchObject({ outcome: 'applied' })
+    expect(await deliver(event)).toMatchObject({ outcome: 'duplicate' })
+    const expected = { state: 'paid', providerAmount: 4000, discount: 500, tax: 280, total: 3780 }
+    expect((await f.ledger()).responses.find(row => row.id === receipt.responseId)!.payment).toMatchObject(expected)
+    expect((await httpExport<{ responses: Ledger['responses'] }>(path => f.call(path), `${f.base}/responses/export`)).responses.find(row => row.id === receipt.responseId)!.payment).toMatchObject(expected)
+    expect((await csvRows(f.call, f.base)).find(row => row.response_id === receipt.responseId)).toMatchObject({ payment_subtotal: '4000', payment_discount: '500', payment_tax: '280', payment_total: '3780' })
+    const backup = await accepted<{ payload: { tables: Array<{ name: string; columns: string[]; rows: Array<Array<{ value?: string | number }>> }> } }>(await f.call('/api/app/backup/export', {}))
+    const table = backup.payload.tables.find(table => table.name === 'response_payments')!
+    const row = table.rows.find(row => row[table.columns.indexOf('response_id')].value === receipt.responseId)!
+    for (const [column, value] of Object.entries({ provider_amount: 4000, discount: 500, tax: 280, total: 3780 })) expect(row[table.columns.indexOf(column)]).toMatchObject({ type: 'integer', value: String(value) })
+    await applyD1Migrations(env.IMPORT_SECOND, __PENCIL_CORE_MIGRATIONS__)
+    await restoreFixture(env.IMPORT_SECOND, await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__))
+    expect(await env.IMPORT_SECOND.prepare('SELECT provider_amount, discount, tax, total FROM response_payments WHERE response_id=?').bind(receipt.responseId).first()).toEqual({ provider_amount: 4000, discount: 500, tax: 280, total: 3780 })
+    expect((await f.call(`/api/app/responses/${receipt.responseId}`, {}, { method: 'DELETE' })).status).toBe(204)
+    expect(await env.DB.prepare('SELECT response_id FROM response_payments WHERE response_id=?').bind(receipt.responseId).first()).toBeNull()
+    const after = JSON.stringify(await accepted(await f.call('/api/app/backup/export', {})))
+    expect(after).not.toContain(pending.id)
+  }
+})

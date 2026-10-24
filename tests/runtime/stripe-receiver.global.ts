@@ -5,7 +5,7 @@ import type { AddressInfo } from 'node:net'
 import type { TestProject } from 'vitest/node'
 
 export type StripeRequest = { method: string; path: string; authorization: string | null; idempotencyKey: string | null; version: string | null; form: Record<string, string> }
-export type StripeSession = { id: string; object: 'checkout.session'; url: string; amount_total: number; currency: 'usd'; status: 'open' | 'complete' | 'expired'; payment_status: 'paid' | 'unpaid'; payment_intent: string | null; expires_at: number; livemode: false; client_reference_id: string | null; metadata: Record<string, string>; success_url: string; cancel_url: string }
+export type StripeSession = { id: string; object: 'checkout.session'; url: string; amount_subtotal: number; total_details: { amount_discount: number; amount_tax: number }; amount_total: number; currency: 'usd'; status: 'open' | 'complete' | 'expired'; payment_status: 'paid' | 'unpaid'; payment_intent: string | null; expires_at: number; livemode: false; client_reference_id: string | null; metadata: Record<string, string>; success_url: string; cancel_url: string }
 
 export default async function setup(project: TestProject) {
   const sessions = new Map<string, StripeSession>(), keys = new Map<string, string>(), requests: StripeRequest[] = []
@@ -47,7 +47,7 @@ export default async function setup(project: TestProject) {
     }
     if (form.mode !== 'payment' || !form.success_url || !form.cancel_url || amount < 50) return refuse(response, 400, 'A payment-mode session needs success and cancel URLs and at least $0.50.')
     const id = `cs_test_${sessions.size + 1}${Math.random().toString(36).slice(2, 8)}`
-    const session: StripeSession = { id, object: 'checkout.session', url: `${origin}/pay/${id}`, amount_total: amount, currency: 'usd', status: 'open', payment_status: 'unpaid', payment_intent: null,
+    const session: StripeSession = { id, object: 'checkout.session', url: `${origin}/pay/${id}`, amount_subtotal: amount, total_details: { amount_discount: 0, amount_tax: 0 }, amount_total: amount, currency: 'usd', status: 'open', payment_status: 'unpaid', payment_intent: null,
       expires_at: Math.floor(Date.now() / 1000) + 86_400, livemode: false, client_reference_id: form.client_reference_id ?? null,
       metadata: Object.fromEntries(Object.entries(form).flatMap(([name, value]) => { const match = /^metadata\[(\w+)\]$/.exec(name); return match ? [[match[1], value]] : [] })), success_url: form.success_url, cancel_url: form.cancel_url }
     sessions.set(id, session)

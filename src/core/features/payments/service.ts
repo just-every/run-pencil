@@ -49,7 +49,7 @@ export class PaymentService {
   byReturnToken(hash: string) { return this.repository.byReturnToken(hash) }
 
   async attempt(input: { responseId: string; attempt: number; stepId: string; completionStepId: string; quote: PaymentQuote; connection: PaymentConnection }): Promise<PaymentAttempt> {
-    return { stepId: input.stepId, completionStepId: input.completionStepId, livemode: input.connection.secretKey.includes('_live_'), attempt: input.attempt, amount: input.quote.total, lines: input.quote.lines, returnTokenHash: (await this.returnToken(input.responseId, input.attempt)).hash }
+    return { stepId: input.stepId, completionStepId: input.completionStepId, livemode: input.connection.secretKey.includes('_live_'), attempt: input.attempt, amount: input.quote.total, lines: input.quote.lines, checkout: input.quote.checkout, returnTokenHash: (await this.returnToken(input.responseId, input.attempt)).hash }
   }
 
   /** Creates (or, after a lost answer, re-reads under the same idempotency key) the attempt's Checkout Session. */
@@ -60,7 +60,7 @@ export class PaymentService {
     const back = (outcome: 'success' | 'cancel') => `${this.options.appOrigin}/f/${encodeURIComponent(slug)}?payment-return=${outcome}&payment-key=${token}`
     let session: CheckoutSession
     try {
-      session = await stripeClient(this.options.apiOrigin, connection.secretKey).createCheckoutSession({ lines: JSON.parse(payment.linesJson), successUrl: back('success'), cancelUrl: back('cancel'), responseId: payment.responseId, attempt: payment.attempt, idempotencyKey: `pencil-checkout:${payment.responseId}:${payment.attempt}` })
+      session = await stripeClient(this.options.apiOrigin, connection.secretKey).createCheckoutSession({ lines: JSON.parse(payment.linesJson), checkout: JSON.parse(payment.checkoutSettingsJson), successUrl: back('success'), cancelUrl: back('cancel'), responseId: payment.responseId, attempt: payment.attempt, idempotencyKey: `pencil-checkout:${payment.responseId}:${payment.attempt}` })
     } catch (error) {
       if (error instanceof StripeRequestError) throw new ValidationError('Stripe could not open checkout. Your answers are saved; retry to continue to payment.')
       throw new ValidationError('Stripe could not be reached. Your answers are saved; retry to continue to payment.')
@@ -98,9 +98,11 @@ export class PaymentService {
     const object = event.data.object, text = (key: string) => typeof object[key] === 'string' ? object[key] as string : undefined
     const metadata = (object.metadata && typeof object.metadata === 'object' ? object.metadata : {}) as Record<string, unknown>
     const byAttempt = (): EventMatch | undefined => typeof metadata.pencil_response === 'string' && /^\d+$/.test(String(metadata.pencil_attempt)) ? { kind: 'attempt', responseId: metadata.pencil_response, attempt: Number(metadata.pencil_attempt) } : undefined
-    const session = (to: PaymentState, from: PaymentState[], extra: { paymentIntentId?: string | null; providerAmount?: number | null } = {}) => text('id')?.startsWith('cs_') ? { match: { kind: 'session' as const, sessionId: text('id')! }, transition: { to, from, ...extra } } : undefined
-    const handled = event.type === 'checkout.session.completed' ? object.payment_status === 'paid' ? session('paid', ['pending', 'failed'], { paymentIntentId: text('payment_intent') ?? null, providerAmount: typeof object.amount_total === 'number' ? object.amount_total : null }) : undefined
-      : event.type === 'checkout.session.async_payment_succeeded' ? session('paid', ['pending', 'failed'], { paymentIntentId: text('payment_intent') ?? null, providerAmount: typeof object.amount_total === 'number' ? object.amount_total : null })
+    const session = (to: PaymentState, from: PaymentState[], extra: { paymentIntentId?: string | null; providerAmount?: number | null; discount?: number; tax?: number; total?: number } = {}) => text('id')?.startsWith('cs_') ? { match: { kind: 'session' as const, sessionId: text('id')! }, transition: { to, from, ...extra } } : undefined
+    const details = object.total_details as Record<string, unknown> | undefined
+    const amounts = { providerAmount: typeof object.amount_subtotal === 'number' ? object.amount_subtotal : null, discount: typeof details?.amount_discount === 'number' ? details.amount_discount : 0, tax: typeof details?.amount_tax === 'number' ? details.amount_tax : 0, total: typeof object.amount_total === 'number' ? object.amount_total : undefined }
+    const handled = event.type === 'checkout.session.completed' ? object.payment_status === 'paid' ? session('paid', ['pending', 'failed'], { paymentIntentId: text('payment_intent') ?? null, ...amounts }) : undefined
+      : event.type === 'checkout.session.async_payment_succeeded' ? session('paid', ['pending', 'failed'], { paymentIntentId: text('payment_intent') ?? null, ...amounts })
       : event.type === 'checkout.session.async_payment_failed' ? session('failed', ['pending'])
       : event.type === 'checkout.session.expired' ? session('expired', ['pending', 'failed'])
       : event.type === 'payment_intent.payment_failed' && byAttempt() ? { match: byAttempt()!, transition: { to: 'failed' as const, from: ['pending' as const] } }
@@ -110,6 +112,7 @@ export class PaymentService {
     const payment = await this.repository.match(handled.match)
     // Events from other systems on the same Stripe account, or from the other mode, are acknowledged and not kept.
     if (!payment || Boolean(payment.livemode) !== event.livemode) return { status: 200, outcome: 'ignored' }
+    if (handled.transition.to === 'paid' && (amounts.providerAmount !== payment.amount || ![amounts.providerAmount, amounts.discount, amounts.tax, amounts.total].every(value => Number.isSafeInteger(value) && value! >= 0) || amounts.total !== amounts.providerAmount - amounts.discount + amounts.tax)) return { status: 400, outcome: 'amount-mismatch' }
     return { status: 200, outcome: await this.repository.applyEvent(event, payment, handled.transition, new Date().toISOString()) }
   }
 

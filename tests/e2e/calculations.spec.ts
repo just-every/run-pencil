@@ -463,3 +463,66 @@ contract('LOGIC-003', 'a BMI from two decimal answers gates a branch and publish
   const ledger = await call<Ledger>(`${base}/ledger`)
   expect(ledger.responses.map(response => response.calculations.find(value => value.id === 'bmi')?.value).sort((a, b) => Number(a) - Number(b))).toEqual([23, 31.1])
 })
+
+contract('PAY-002', 'authors Checkout tax, coupon and receipt settings and reads the signed totals on the response', async ({ page, context }, info) => {
+  const cdp = await context.newCDPSession(page)
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+  const stripe = await startStripeReceiver(new URL(process.env.PENCIL_E2E_BASE_URL!).origin)
+  try {
+    await signInEmptyWorkspace(page)
+    const call = async <T,>(path: string, method = 'GET', data?: unknown) => {
+      const response = await page.request.fetch(path, { method, ...(data === undefined ? {} : { data }) })
+      expect(response.status(), await response.text()).toBeLessThan(300)
+      return response.json() as Promise<T>
+    }
+    await call('/api/app/connections/payment', 'PUT', { secretKey: stripeFixture.secretKey, webhookSecret: stripeFixture.webhookSecret })
+    const slug = `tax-order-${info.project.name}-${Date.now()}`
+    const { id } = await call<{ id: string }>('/api/app/flows', 'POST', { title: 'Tax and coupon order', slug })
+    const base = `/api/app/flows/${id}`, read = () => call<BuilderDraft>(`${base}/draft`)
+    for (const step of [
+      { kind: 'question', questionType: 'short_text', prompt: 'Order reference', required: true },
+      { kind: 'completion', questionType: null, prompt: 'Order received' },
+    ]) await call(`${base}/draft/steps`, 'POST', { expectedVersion: (await read()).flow.draftVersion, step })
+    await page.goto(`/app/flows/${id}/builder`)
+    await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
+    await page.getByRole('button', { name: 'Add payment step', exact: true }).click()
+    await expect(page.getByRole('region', { name: 'Payment pricing', exact: true })).toBeVisible()
+    await page.getByLabel('Prompt', { exact: true }).fill('Pay order')
+    await page.getByRole('button', { name: 'Add product', exact: true }).click()
+    await page.getByLabel('Product 1 price (USD)', { exact: true }).fill('40')
+    await page.getByLabel('Use Stripe Tax', { exact: true }).check()
+    await page.getByLabel('Allow promotion codes', { exact: true }).check()
+    await expect(page.getByLabel('Stripe coupon ID', { exact: true })).toBeDisabled()
+    await page.getByLabel('Allow promotion codes', { exact: true }).uncheck()
+    await page.getByLabel('Stripe coupon ID', { exact: true }).fill('synthetic-pencil-1')
+    await page.getByLabel('Collect email for Stripe receipts', { exact: true }).check()
+    await page.getByRole('button', { name: 'Save', exact: true }).click()
+    await expect(page.getByText('Saved.', { exact: true })).toBeVisible()
+    const draft = await read(), payment = draft.steps.find(step => step.kind === 'payment')!, question = draft.steps.find(step => step.kind === 'question')!, completion = draft.steps.find(step => step.kind === 'completion')!
+    expect(payment.questionSettings?.payment).toMatchObject({ automaticTax: true, promotionCodes: false, couponId: 'synthetic-pencil-1', receipts: true })
+    await expect(page.getByLabel('Use Stripe Tax', { exact: true })).toBeChecked()
+    await page.screenshot({ path: info.outputPath(`checkout-settings-${info.project.name}.png`), fullPage: true })
+    await call(`${base}/draft`, 'PUT', { expectedVersion: draft.flow.draftVersion, stepId: question.id, prompt: question.prompt, required: true, nextStepId: payment.id })
+    await call(`${base}/draft`, 'PUT', { expectedVersion: (await read()).flow.draftVersion, stepId: payment.id, prompt: payment.prompt, required: false, nextStepId: completion.id })
+    await call(`${base}/publish`, 'POST', { expectedVersion: (await read()).flow.draftVersion })
+    const load = formLoad(page)
+    await page.goto(`/f/${slug}`)
+    await submissionWindow(load)
+    await page.getByRole('textbox', { name: 'Order reference', exact: true }).fill('synthetic-pencil-1')
+    await page.getByRole('button', { name: 'Continue', exact: true }).click()
+    await page.getByRole('button', { name: /Pay.*40/ }).click()
+    await expect(page.getByRole('heading', { name: 'Test checkout', exact: true })).toBeVisible()
+    const session = [...stripe.sessions.values()].find(session => session.client_reference_id)!
+    session.total_details = { amount_discount: 500, amount_tax: 280 }
+    session.amount_total = 3780
+    await page.reload()
+    await page.getByRole('button', { name: 'Pay $37.80', exact: true }).click()
+    await expect(page.getByText(/Your payment is received\./)).toBeVisible()
+    await page.goto(`/app/flows/${id}/results`)
+    await page.getByRole('button', { name: 'View answers', exact: true }).first().click()
+    const record = page.getByRole('region', { name: 'Payment', exact: true })
+    for (const amount of ['$40.00', '$5.00', '$2.80', '$37.80']) await expect(record).toContainText(amount)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    await page.screenshot({ path: info.outputPath(`checkout-record-${info.project.name}.png`), fullPage: true })
+  } finally { await stripe.close(); await cdp.detach() }
+})

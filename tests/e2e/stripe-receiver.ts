@@ -5,7 +5,7 @@ import { createHmac } from 'node:crypto'
 import { createServer } from 'node:http'
 
 export const stripeFixture = { secretKey: 'rk_test_example2', webhookSecret: 'whsec_example_browser_signing_secret' }
-type Session = { id: string; object: 'checkout.session'; url: string; amount_total: number; currency: 'usd'; status: 'open' | 'complete' | 'expired'; payment_status: 'paid' | 'unpaid'; payment_intent: string | null; expires_at: number; livemode: false; client_reference_id: string | null; metadata: Record<string, string>; success_url: string; cancel_url: string; lines: Array<{ name: string; amount: number; quantity: number }> }
+type Session = { id: string; object: 'checkout.session'; url: string; amount_subtotal: number; total_details: { amount_discount: number; amount_tax: number }; amount_total: number; currency: 'usd'; status: 'open' | 'complete' | 'expired'; payment_status: 'paid' | 'unpaid'; payment_intent: string | null; expires_at: number; livemode: false; client_reference_id: string | null; metadata: Record<string, string>; success_url: string; cancel_url: string; lines: Array<{ name: string; amount: number; quantity: number }> }
 
 export async function startStripeReceiver(pencilOrigin: string) {
   const port = Number(process.env.PENCIL_E2E_STRIPE_PORT ?? Number(process.env.PENCIL_E2E_PORT ?? '4173') + 4)
@@ -51,7 +51,7 @@ export async function startStripeReceiver(pencilOrigin: string) {
       const lines: Session['lines'] = []
       for (let index = 0; form[`line_items[${index}][quantity]`] !== undefined; index++) lines.push({ name: form[`line_items[${index}][price_data][product_data][name]`], amount: Number(form[`line_items[${index}][price_data][unit_amount]`]), quantity: Number(form[`line_items[${index}][quantity]`]) })
       const id = `cs_test_${sessions.size + 1}${Math.random().toString(36).slice(2, 8)}`
-      const session: Session = { id, object: 'checkout.session', url: `${checkoutOrigin}/pay/${id}`, amount_total: lines.reduce((sum, line) => sum + line.amount * line.quantity, 0), currency: 'usd', status: 'open', payment_status: 'unpaid', payment_intent: null,
+      const session: Session = { id, object: 'checkout.session', url: `${checkoutOrigin}/pay/${id}`, amount_subtotal: lines.reduce((sum, line) => sum + line.amount * line.quantity, 0), total_details: { amount_discount: 0, amount_tax: 0 }, amount_total: lines.reduce((sum, line) => sum + line.amount * line.quantity, 0), currency: 'usd', status: 'open', payment_status: 'unpaid', payment_intent: null,
         expires_at: Math.floor(Date.now() / 1000) + 86_400, livemode: false, client_reference_id: form.client_reference_id ?? null, metadata: { pencil_response: form['metadata[pencil_response]'], pencil_attempt: form['metadata[pencil_attempt]'] }, success_url: form.success_url, cancel_url: form.cancel_url, lines }
       sessions.set(id, session)
       if (key) keys.set(key, id)

@@ -4,12 +4,13 @@ import { selectedChoiceIds } from './otherChoices'
 /** PAY-001 payment step settings, kept as the step's `payment` setting. Every amount is whole US cents. */
 export type PaymentProduct = { id: string; name: string; unitAmount: number; quantity?: number; quantityStepId?: string }
 export type PaymentOption = { stepId: string; prices: Record<string, number> }
-export type PaymentSettings = { products: PaymentProduct[]; options: PaymentOption[]; calculationId?: string; minimum: number; maximum: number }
+export type CheckoutOptions = { automaticTax?: boolean; promotionCodes?: boolean; couponId?: string; receipts?: boolean }
+export type PaymentSettings = CheckoutOptions & { products: PaymentProduct[]; options: PaymentOption[]; calculationId?: string; minimum: number; maximum: number }
 export type PaymentLine = { name: string; unitAmount: number; quantity: number }
-export type PaymentQuote = { lines: PaymentLine[]; total: number }
+export type PaymentQuote = { lines: PaymentLine[]; total: number; checkout?: CheckoutOptions }
 export type PaymentState = 'pending' | 'paid' | 'failed' | 'expired' | 'cancelled' | 'refunded'
 /** What an operator sees of a response's payment. Card or bank numbers are never stored. */
-export type LedgerPayment = { state: PaymentState; amount: number; providerAmount: number | null; checkoutSessionId: string | null; paymentIntentId: string | null; stateChangedAt: string; attempt: number }
+export type LedgerPayment = { state: PaymentState; amount: number; providerAmount: number | null; discount?: number | null; tax?: number | null; total?: number | null; checkoutSessionId: string | null; paymentIntentId: string | null; stateChangedAt: string; attempt: number }
 
 /** Stripe's US-dollar charge floor is $0.50 and its ceiling $999,999.99. */
 export const paymentLimits = { minimum: 50, maximum: 99_999_999, products: 20, options: 20, quantity: 999, nameCharacters: 250 } as const
@@ -37,8 +38,11 @@ export function paymentStepSettingsIssue(kind: FlowStep['kind'], settings: Recor
 export function paymentSettingsIssue(value: unknown): string | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return 'A payment step needs its pricing.'
   const settings = value as Record<string, unknown>
-  if (Object.keys(settings).some(key => !['products', 'options', 'calculationId', 'minimum', 'maximum'].includes(key))) return 'A payment step has an unknown setting.'
+  if (Object.keys(settings).some(key => !['products', 'options', 'calculationId', 'minimum', 'maximum', 'automaticTax', 'promotionCodes', 'couponId', 'receipts'].includes(key))) return 'A payment step has an unknown setting.'
   if (!cents(settings.minimum, paymentLimits.minimum) || !cents(settings.maximum, paymentLimits.minimum) || settings.minimum > settings.maximum) return `Set a minimum and maximum between ${formatUsd(paymentLimits.minimum)} and ${formatUsd(paymentLimits.maximum)}, with the minimum no larger than the maximum.`
+  for (const key of ['automaticTax', 'promotionCodes', 'receipts']) if (settings[key] !== undefined && typeof settings[key] !== 'boolean') return 'Checkout switches must be on or off.'
+  if (settings.couponId !== undefined && (typeof settings.couponId !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(settings.couponId))) return 'Enter a valid Stripe coupon identifier.'
+  if (settings.couponId && settings.promotionCodes) return 'Use a coupon or allow promotion codes, rather than both.'
   const products = settings.products, options = settings.options
   if (!Array.isArray(products) || products.length > paymentLimits.products || !Array.isArray(options) || options.length > paymentLimits.options) return `A payment step lists at most ${paymentLimits.products} products and ${paymentLimits.options} option-price questions.`
   for (const product of products as unknown[]) {
@@ -85,7 +89,7 @@ export function paymentQuote(settings: PaymentSettings, flow: { steps: FlowStep[
   const total = lines.reduce((sum, line) => sum + line.unitAmount * line.quantity, 0)
   if (total < settings.minimum || total > settings.maximum) return { issue: `The total ${formatUsd(total)} is outside this form's limits of ${formatUsd(settings.minimum)} to ${formatUsd(settings.maximum)}. Go back and check your answers.` }
   if (lines.some(line => line.unitAmount < 1)) return { issue: 'A calculated amount must be at least one cent.' }
-  return { lines, total }
+  return { lines, total, checkout: { automaticTax: settings.automaticTax, promotionCodes: settings.promotionCodes, couponId: settings.couponId, receipts: settings.receipts } }
 }
 
 /** Builder copies and duplicates keep a payment step pointing at the copied questions, choices and calculation. */

@@ -376,6 +376,12 @@
       "name": "0060_analysis_contradictions.sql",
       "sha256": "5675ec6ae64016efbc085506c6acd5e7a075c4968ea029ffe071fcff66a456f7",
       "sql": "-- AGENT-002: grounded contradictions and explicit finding decisions.\nCREATE TABLE analysis_contradictions (\n id TEXT PRIMARY KEY,\n run_id TEXT NOT NULL REFERENCES analysis_runs(id) ON DELETE CASCADE,\n position INTEGER NOT NULL,\n payload_json TEXT CHECK(payload_json IS NULL OR json_valid(payload_json)),\n UNIQUE(run_id,position)\n);\nCREATE TABLE analysis_finding_decisions (\n run_id TEXT NOT NULL REFERENCES analysis_runs(id) ON DELETE CASCADE,\n finding_id TEXT NOT NULL,\n decision TEXT NOT NULL CHECK(decision IN ('accepted','dismissed')),\n operator_id TEXT NOT NULL,\n decided_at TEXT NOT NULL,\n PRIMARY KEY(run_id,finding_id)\n);\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0061_payment_totals.sql",
+      "sha256": "489fbd2d871fb117ec621724d2e698d8818838b010c9403871f91fa4c7b8c939",
+      "sql": "-- PAY-002: revision-frozen Checkout preferences and signed provider totals.\n-- Response erasure already deletes its payment row; archives include these columns.\nALTER TABLE response_payments ADD COLUMN checkout_settings_json TEXT NOT NULL DEFAULT '{}';\nALTER TABLE response_payments ADD COLUMN discount INTEGER CHECK(discount >= 0);\nALTER TABLE response_payments ADD COLUMN tax INTEGER CHECK(tax >= 0);\nALTER TABLE response_payments ADD COLUMN total INTEGER CHECK(total >= 0);\nUPDATE response_payments SET discount = 0, tax = 0, total = provider_amount WHERE provider_amount IS NOT NULL;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

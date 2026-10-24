@@ -11,7 +11,8 @@ export function PaymentRecord({ payment, time }: { payment: LedgerPayment; time:
   const ended = payment.state === 'expired' || payment.state === 'cancelled'
   const rows: Array<[string, React.ReactNode]> = [
     ['State', <PaymentBadge payment={payment} />],
-    ['Charged by Stripe', payment.providerAmount === null ? ended ? 'Not charged' : 'Not yet' : formatUsd(payment.providerAmount)],
+    ['Subtotal', payment.providerAmount === null ? ended ? 'Not charged' : 'Not yet' : formatUsd(payment.providerAmount)],
+    ...([['Discount', payment.discount], ['Tax', payment.tax], ['Total charged', payment.total]] as const).map(([label, amount]): [string, React.ReactNode] => [label, amount == null ? 'Not yet' : formatUsd(amount)]),
     ['Checkout Session', <code>{payment.checkoutSessionId ?? 'Not opened'}</code>],
     ['Payment intent', <code>{payment.paymentIntentId ?? (ended ? 'None' : 'None yet')}</code>],
     ['Last change', `${time(payment.stateChangedAt)}${payment.attempt > 1 ? ` · attempt ${payment.attempt}` : ''}`],
