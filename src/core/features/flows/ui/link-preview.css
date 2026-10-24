@@ -9,7 +9,7 @@
 .flow-link-preview-image img { width: 100%; max-height: 180px; padding: 18px; object-fit: contain; }
 .flow-link-preview-image img[data-custom='true'] { padding: 0; align-self: stretch; height: 100%; object-fit: contain; }
 .flow-link-preview-copy { min-width: 0; padding: 16px; overflow-wrap: anywhere; }
-.flow-link-preview-copy .eyebrow { margin: 0 0 6px; font-size: 11px; }
+.flow-link-preview-copy .eyebrow { margin: 0 0 6px; }
 .flow-link-preview-copy h4 { margin: 0; font-size: 19px; line-height: 1.25; font-weight: 500; }
 .flow-link-preview-copy > p:last-child:not(.eyebrow) { margin: 8px 0 0; font-size: 14px; white-space: pre-line; }
 .flow-link-preview-settings { margin-top: 8px; max-width: 640px; }
