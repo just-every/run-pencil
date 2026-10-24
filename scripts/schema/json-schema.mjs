@@ -23,7 +23,7 @@ function isDeepStrictEqual(left, right) {
 const SUPPORTED = new Set([
   '$schema', '$id', '$ref', '$defs', 'title', 'description',
   'type', 'enum', 'const', 'required', 'properties', 'additionalProperties',
-  'propertyNames', 'items', 'minItems', 'minLength', 'pattern', 'format',
+  'propertyNames', 'items', 'minItems', 'maxItems', 'minLength', 'pattern', 'format',
   'allOf', 'if', 'then', 'uniqueItems'
 ]);
 
@@ -180,6 +180,9 @@ export function validate(schema, data, { root = schema, path = '$', label = '' }
     }
     if (schema.minItems !== undefined && data.length < schema.minItems) {
       fail(`needs at least ${schema.minItems} item(s)`);
+    }
+    if (schema.maxItems !== undefined && data.length > schema.maxItems) {
+      fail(`needs at most ${schema.maxItems} item(s)`);
     }
     if (schema.items) {
       data.forEach((item, index) => {
