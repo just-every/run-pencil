@@ -10,6 +10,8 @@ export function ownNotificationFixture<T extends {flow:{flowId:string}}>(fixture
  * later Cron tests cannot accidentally deliver an earlier case's queued mail. */
 export async function clearOwnedNotificationWork() {
   for (const flowId of ownedFlows) await env.DB.batch([
+    env.DB.prepare('DELETE FROM chat_deliveries WHERE response_id IN (SELECT id FROM responses WHERE flow_id=?)').bind(flowId),
+    env.DB.prepare('DELETE FROM chat_form_links WHERE flow_id=?').bind(flowId),
     env.DB.prepare('DELETE FROM answer_alert_deliveries WHERE response_id IN (SELECT id FROM responses WHERE flow_id=?)').bind(flowId),
     env.DB.prepare('DELETE FROM answer_alert_evaluations WHERE response_id IN (SELECT id FROM responses WHERE flow_id=?)').bind(flowId),
     env.DB.prepare(`DELETE FROM rer_mail_development_outbox WHERE json_extract(message,'$.deliveryId') IN

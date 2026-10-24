@@ -1,4 +1,5 @@
 import { proveAnswerAlerts } from './answer-alert-proof'
+import { proveAnswerAlertChat } from './answer-alert-chat-proof'
 
 import { applyD1Migrations, env, SELF, type D1Migration } from 'cloudflare:test'
 import { afterEach, beforeAll, expect, vi } from 'vitest'
@@ -45,6 +46,7 @@ contract(['NOTIFY-002','NOTIFY-004','NOTIFY-005'],'publisher defaults Immediatel
     expect(document.status).toBe(302);expect(document.headers.get('location')).toContain('/signin')
   } finally {send.mockRestore()}
   await proveAnswerAlerts()
+  await proveAnswerAlertChat()
 })
 contract(['NOTIFY-002','NOTIFY-004','DIST-006'],'transient retries keep their key through five retries; permanent and unknown failures remain visible only to their operator',async()=>{
   const f=await notificationFixture('notification-retries');await f.submit()

@@ -1,5 +1,6 @@
 import type { IntegrationConnections } from '../../platform/config/connections'
 import { NotFoundError, ValidationError } from '../../shared/errors'
+import { formSettings } from '../../shared/hiddenFields'
 import { insideSendingWindow, nextSendingInstant } from '../distribution'
 import { createSlackAction } from './interaction'
 import { chatFormSchema, safeSummaryTypes, type ChatFormLink, type ChatFormSettings, type ChatPlatform } from './model'
@@ -74,8 +75,14 @@ export class ChatIntegrations {
   private async message(row:Due,now:string):Promise<ChatMessage|null>{
     const settings=chatFormSchema.parse(JSON.parse(row.settingsJson))
     if(row.responseId){
-      const response=await this.db.prepare(`SELECT r.revision_id AS revisionId,v.title,r.completed_at AS completedAt FROM responses r JOIN flow_revisions v ON v.id=r.revision_id JOIN chat_form_links l ON l.flow_id=r.flow_id WHERE r.id=? AND l.id=? AND l.armed=1 AND l.settings_json=? AND ${eligibleChatResponse}`).bind(row.responseId,row.linkId,row.settingsJson).first<{revisionId:string;title:string;completedAt:string}>()
+      const response=await this.db.prepare(`SELECT r.revision_id AS revisionId,v.title,r.completed_at AS completedAt,v.form_settings_json AS revisionSettingsJson FROM responses r JOIN flow_revisions v ON v.id=r.revision_id JOIN chat_form_links l ON l.flow_id=r.flow_id WHERE r.id=? AND l.id=? AND l.armed=1 AND l.settings_json=? AND ${eligibleChatResponse}`).bind(row.responseId,row.linkId,row.settingsJson).first<{revisionId:string;title:string;completedAt:string;revisionSettingsJson:string}>()
       if(!response){await this.db.prepare("UPDATE chat_deliveries SET state='cancelled',reason='The response is no longer eligible.',updated_at=? WHERE id=? AND state='pending'").bind(now,row.id).run();return null}
+      if(row.key.startsWith('chat:alert:')) {
+        const ruleId=/^chat:alert:([A-Za-z0-9_-]{1,100}):/.exec(row.key)?.[1]
+        const rule=formSettings(response.revisionSettingsJson).answerAlerts?.find(rule=>rule.id===ruleId&&rule.chatPlatforms?.includes(row.platform))
+        if(!rule||row.key!==`chat:alert:${rule.id}:${row.linkId}:${row.responseId}`)throw new ValidationError('The retained answer alert route is unavailable.')
+        return {text:`${response.title}\nAnswer alert: ${rule.name}\nSubmitted ${response.completedAt}`,link:new URL(`/app/flows/${encodeURIComponent(row.flowId)}/results`,this.configuration.origin).href,channel:settings.channel}
+      }
       const answers=await this.db.prepare(`SELECT s.stable_id AS id,s.question_type AS type,s.prompt,a.value_json AS valueJson FROM response_answers a JOIN flow_steps s ON s.revision_id=? AND s.stable_id=a.step_id WHERE a.response_id=?`).bind(response.revisionId,row.responseId).all<{id:string;type:string;prompt:string;valueJson:string}>()
       const summary:string[]=[]
       for(const id of settings.answerStepIds){const answer=answers.results.find(answer=>answer.id===id);if(!answer)continue;if(!safeSummaryTypes.has(answer.type))throw new ValidationError('A selected field is sensitive or free text. No answers were posted. Repair this form’s chat summary.')

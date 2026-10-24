@@ -1,3 +1,5 @@
+import { createServer } from 'node:http'
+import type { AddressInfo } from 'node:net'
 import { developmentInbox } from '../helpers/development-outbox'
 import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { DatabaseSync } from 'node:sqlite'
@@ -17,6 +19,15 @@ contract(['NOTIFY-002','NOTIFY-004','NOTIFY-005','BASE-PUBLIC-003'],'notificatio
   expect((await request.post('/auth/confirm',{headers,data:{token:inbox.messages[0].magicLinkToken},maxRedirects:0})).status()).toBe(303)
   const flow=await call('/api/app/flows',{title:'Response notification controls',slug:`notifications-${info.project.name}-${Date.now()}`}),path=`/api/app/flows/${flow.id}`
   for(const step of [{kind:'question',questionType:'short_text',prompt:'Feedback',required:true},{kind:'question',questionType:'nps',prompt:'Recommend us',required:true},{kind:'completion',questionType:null,prompt:'Recorded'}]) await call(`${path}/draft/steps`,{expectedVersion:(await call(`${path}/draft`)).flow.draftVersion,step})
+  const receiver=createServer((incoming,outgoing)=>{incoming.resume();incoming.on('end',()=>{outgoing.writeHead(200,{'content-type':'application/json'});outgoing.end(JSON.stringify({ok:true}))})})
+  await new Promise<void>(resolve=>receiver.listen(0,'127.0.0.1',resolve))
+  const receiverOrigin=`http://127.0.0.1:${(receiver.address() as AddressInfo).port}`
+  try {
+  const put=async(path:string,data:unknown)=>{const response=await request.put(path,{headers,data});expect(response.ok(),path).toBe(true);return response.json()}
+  const operators=await call('/api/app/operators'),chatOwner=operators.find((operator:{email:string})=>operator.email===email)??operators[0]
+  await put('/api/app/connections/slack',{botToken:'synthetic-pencil-chat-bot',signingSecret:'synthetic-pencil-chat-signing-secret',apiOrigin:receiverOrigin})
+  await put('/api/app/connections/teams',{webhookUrl:receiverOrigin+'/teams'})
+  for(const platform of ['slack','teams'])await put(path+'/chat',{platform,postResponses:false,answerStepIds:[],operatorId:chatOwner.id,...(platform==='slack'?{channel:'synthetic-pencil-channel',slackUserId:'synthetic-pencil-slack-user'}:{teamsUserId:'synthetic-pencil-microsoft-user'})})
   const draft=await call(`${path}/draft`),nps=draft.steps.find((step:{questionType:string})=>step.questionType==='nps')
   await page.goto(`/app/flows/${flow.id}/builder`)
   await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
@@ -29,9 +40,26 @@ contract(['NOTIFY-002','NOTIFY-004','NOTIFY-005','BASE-PUBLIC-003'],'notificatio
   await rule.getByLabel('Condition',{exact:true}).selectOption('less_than_or_equal')
   await rule.getByLabel('Value',{exact:true}).fill('6')
   await rule.locator('label').filter({hasText:email}).getByRole('checkbox').check()
+  await rule.getByRole('checkbox',{name:'Send to Slack',exact:true}).check()
+  await rule.getByRole('checkbox',{name:'Send to Teams',exact:true}).check()
+  await page.getByText('Slack and Teams notifications',{exact:true}).click()
+  const postEvery=page.getByRole('checkbox',{name:'Post every released response',exact:true})
+  await expect(postEvery).not.toBeChecked()
+  const chatSettings=postEvery.locator('..').locator('..')
+  await postEvery.check()
+  await chatSettings.getByRole('button',{name:'Save chat settings',exact:true}).click()
+  await expect(chatSettings.getByRole('status')).toContainText('Future released responses use this connection.')
+  await postEvery.uncheck()
+  await chatSettings.getByRole('button',{name:'Save chat settings',exact:true}).click()
+  await expect(chatSettings.getByRole('status')).toContainText('Matching answer alerts use this connection.')
+  const chatTargets=await call(path+'/chat')
+  expect(chatTargets.links.find((link:{platform:string})=>link.platform==='slack')).toMatchObject({postResponses:false,armed:true})
   for(const viewport of [{width:1440,height:900},{width:390,height:844}]) {
     await page.setViewportSize(viewport)
     await expect(rule.getByLabel('Rule name',{exact:true})).toBeVisible()
+    await expect(rule.getByRole('checkbox',{name:'Send to Slack',exact:true})).toBeChecked()
+    await expect(rule.getByRole('checkbox',{name:'Send to Teams',exact:true})).toBeChecked()
+    await expect(postEvery).not.toBeChecked()
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true)
     expect((await new AxeBuilder({page}).analyze()).violations).toEqual([])
     await page.screenshot({path:capture?join(capture,`answer-alert-settings-${viewport.width}-${info.project.name}.png`):info.outputPath(`answer-alert-settings-${viewport.width}.png`),fullPage:true})
@@ -39,7 +67,7 @@ contract(['NOTIFY-002','NOTIFY-004','NOTIFY-005','BASE-PUBLIC-003'],'notificatio
   await page.getByRole('button',{name:'Save alert rules',exact:true}).click()
   await expect.poll(async()=>((await call(`${path}/draft`)).formSettings.answerAlerts??[]).length).toBe(1)
   const saved=await call(`${path}/draft`)
-  expect(saved.formSettings.answerAlerts).toMatchObject([{name:'Detractor follow-up',condition:{stepId:nps.id,operator:'less_than_or_equal',value:6},recipientIds:expect.any(Array)}])
+  expect(saved.formSettings.answerAlerts).toMatchObject([{name:'Detractor follow-up',condition:{stepId:nps.id,operator:'less_than_or_equal',value:6},recipientIds:expect.any(Array),chatPlatforms:['slack','teams']}])
   await call(`${path}/publish`,{expectedVersion:saved.flow.draftVersion})
   await page.goto(`/app/flows/${flow.id}/results`)
   const choice=page.getByLabel('Email me about completed responses')
@@ -75,4 +103,12 @@ contract(['NOTIFY-002','NOTIFY-004','NOTIFY-005','BASE-PUBLIC-003'],'notificatio
     page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Send again'}).click();await expect(page.getByText('Retry queued with the original delivery key.')).toBeVisible()
     await expect.poll(()=>db.prepare('SELECT status,idempotency_key FROM notification_deliveries WHERE id=?').get(deliveryId)).toEqual({status:'sent',idempotency_key:deliveryId})
   }finally{db.close()}
+  } finally {
+    try {
+      for(const platform of ['slack','teams']) {
+        await request.delete(path+'/chat/'+platform,{headers,data:{}})
+        await request.delete('/api/app/connections/'+platform,{headers,data:{}})
+      }
+    } finally {await new Promise<void>(resolve=>{receiver.closeAllConnections();receiver.close(()=>resolve())})}
+  }
 })

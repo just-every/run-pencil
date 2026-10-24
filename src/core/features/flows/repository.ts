@@ -41,6 +41,13 @@ export class FlowRepository {
     const rows=await this.binding.prepare(`SELECT id FROM operators WHERE workspace_id=? AND id IN (SELECT value FROM json_each(?)) AND NOT EXISTS(SELECT 1 FROM operator_auth_links l JOIN oa_operators a ON a.id=l.auth_id WHERE l.operator_id=operators.id AND a.status='inactive')`).bind(workspaceId,JSON.stringify(ids)).all<{id:string}>()
     return ids.every(id=>rows.results.some(row=>row.id===id))
   }
+  async validAlertChatTargets(workspaceId:string,flowId:string,platforms:string[]) {
+    if(!platforms.length)return true
+    const rows=await this.binding.prepare(`SELECT l.platform FROM chat_form_links l WHERE l.workspace_id=? AND l.flow_id=? AND l.armed=1
+      AND l.platform IN (SELECT value FROM json_each(?)) AND EXISTS(SELECT 1 FROM integration_connections c WHERE c.kind=l.platform)`)
+      .bind(workspaceId,flowId,JSON.stringify(platforms)).all<{platform:string}>()
+    return platforms.every(platform=>rows.results.some(row=>row.platform===platform))
+  }
   async createStructure(input: FlowStructure) { return createFlowStructure(this.binding, input) }
 
   async updateScreen(input: DraftVersion & {changes:Array<{id:string;settings:Record<string,unknown>|null;nextStepId:string|null}>}) {

@@ -9,7 +9,7 @@ export const eligibleChatAction = `a.reminders_enabled=1 AND a.verdict IS NULL A
 export async function materializeChatResponses(db:D1Database,now:string) {
   await db.prepare(`INSERT OR IGNORE INTO chat_deliveries(id,link_id,response_id,kind,idempotency_key,state,available_at,updated_at)
     SELECT lower(hex(randomblob(16))),l.id,r.id,'response','chat:response:'||l.id||':'||r.id,'pending',?,? FROM chat_form_links l JOIN responses r ON r.flow_id=l.flow_id AND r.workspace_id=l.workspace_id
-    WHERE l.armed=1 AND ${eligibleChatResponse} AND COALESCE(r.released_at,r.completed_at)>=l.updated_at
+    WHERE l.armed=1 AND COALESCE(json_extract(l.settings_json,'$.postResponses'),1)=1 AND ${eligibleChatResponse} AND COALESCE(r.released_at,r.completed_at)>=l.updated_at
     AND NOT EXISTS(SELECT 1 FROM chat_deliveries existing WHERE existing.idempotency_key='chat:response:'||l.id||':'||r.id)
     ORDER BY r.completed_at,r.id LIMIT 100`).bind(now,now).run()
 }

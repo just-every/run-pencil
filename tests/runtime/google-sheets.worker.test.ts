@@ -3,6 +3,7 @@ import { beforeAll,expect } from 'vitest'
 import { contract } from '../../src/test/contract'
 import { actionsHttp,everyStoredValue } from './actions-fixture'
 import { matureLoad } from './load-time-fixture'
+import { materializeConfirmations } from '../../src/core/features/notifications/confirmation-queue'
 declare const __PENCIL_CORE_MIGRATIONS__:D1Migration[]
 beforeAll(()=>applyD1Migrations(env.DB,__PENCIL_CORE_MIGRATIONS__))
 const receiver=(env as unknown as {TASK_RECEIVER_ORIGIN:string}).TASK_RECEIVER_ORIGIN
@@ -28,12 +29,18 @@ contract(['INTEG-001','INTEG-015'],'Google OAuth seals owner tokens and Sheets b
  expect((await f.call(base+'/google-sheet',{spreadsheetId:book,tab:'Synthetic responses'},{method:'PUT'})).status).toBe(400)
  const readDraft=async()=>accepted(await f.call(base+'/draft'))
  let current=await readDraft()
- await accepted(await f.call(base+'/draft/settings',{expectedVersion:current.flow.draftVersion,settings:{...current.formSettings,googleSheets:true}},{method:'PUT'}))
+ await accepted(await f.call(base+'/draft/steps',{expectedVersion:current.flow.draftVersion,step:{kind:'question',questionType:'email',prompt:'Sheet receipt mailbox',required:true}}),201)
+ current=await readDraft()
+ const mailbox=current.steps.find((step:any)=>step.prompt==='Sheet receipt mailbox')
+ const comments=current.steps.find((step:any)=>step.prompt==='Anything else?')
+ await accepted(await f.call(base+'/draft',{expectedVersion:current.flow.draftVersion,stepId:comments.id,prompt:comments.prompt,required:comments.required,nextStepId:mailbox.id},{method:'PUT'}))
+ current=await readDraft()
+ await accepted(await f.call(base+'/draft/settings',{expectedVersion:current.flow.draftVersion,settings:{...current.formSettings,googleSheets:true,responseEdits:{enabled:true,deadline:new Date(Date.now()+86400000).toISOString()},confirmation:{enabled:true,includeAnswers:false,answerTypes:[],emailStepId:mailbox.id,subject:'Synthetic sheet receipt',body:'Recorded.'}}},{method:'PUT'}))
  await accepted(await f.call(base+'/publish',{expectedVersion:(await readDraft()).flow.draftVersion}),201)
  const slug=(await readDraft()).flow.slug
  const submit=async(n:number)=>{
   const session=await accepted(await f.call(`/api/public/flows/${slug}/sessions`,{source:'direct',deviceClass:'desktop'}),201);await matureLoad(session,5000)
-  const graph=session.flow,answers=graph.steps.filter((step:any)=>step.kind==='question').map((step:any)=>({stepId:step.id,value:step.questionType==='single_choice'?graph.choices.find((choice:any)=>choice.stepId===step.id).id:step.questionType==='multiple_choice'?[graph.choices.find((choice:any)=>choice.stepId===step.id).id]:`Synthetic sheet row ${n}`}))
+  const graph=session.flow,answers=graph.steps.filter((step:any)=>step.kind==='question').map((step:any)=>({stepId:step.id,value:step.questionType==='email'?'synthetic-pencil-sheet@example.test':step.questionType==='single_choice'?graph.choices.find((choice:any)=>choice.stepId===step.id).id:step.questionType==='multiple_choice'?[graph.choices.find((choice:any)=>choice.stepId===step.id).id]:`Synthetic sheet row ${n}`}))
   const result=await accepted(await f.call(`/api/public/flows/${slug}/responses`,{...session,answers,idempotencyKey:`synthetic-pencil-${n}`,honeypot:''}),201)
   expect(result.disposition).toBe('released');return result.responseId as string
  }
@@ -49,16 +56,27 @@ contract(['INTEG-001','INTEG-015'],'Google OAuth seals owner tokens and Sheets b
  current=await readDraft()
  await accepted(await f.call(base+'/draft/steps',{expectedVersion:current.flow.draftVersion,step:{kind:'question',questionType:'multiple_choice',prompt:'Synthetic additional column',required:false,choices:[{value:'workshop',label:'Workshop'},{value:'consultation',label:'Consultation'}]}}),201)
  current=await readDraft()
- const previous=current.steps.find((step:any)=>step.prompt==='Anything else?'),newStep=current.steps.find((step:any)=>step.prompt==='Synthetic additional column')
+ const previous=current.steps.find((step:any)=>step.prompt==='Sheet receipt mailbox'),newStep=current.steps.find((step:any)=>step.prompt==='Synthetic additional column')
  await accepted(await f.call(base+'/draft',{expectedVersion:current.flow.draftVersion,stepId:previous.id,prompt:previous.prompt,required:previous.required,nextStepId:newStep.id},{method:'PUT'}))
  await accepted(await f.call(base+'/publish',{expectedVersion:(await readDraft()).flow.draftVersion}),201)
  await accepted(await f.call(base+'/google-sheet/sync',{}))
  const after=await sheet();expect(after.filter(row=>row[0])).toHaveLength(5);expect(after[0].slice(0,oldHeader.length)).toEqual(oldHeader)
  const added=(await readDraft()).steps.find((step:any)=>step.prompt==='Synthetic additional column')
  expect(after[0].at(-1)).toContain(added.id);expect(after[0].at(-1)).toContain('Synthetic additional column');expect(after.some(row=>row.includes('Synthetic sheet row 4'))).toBe(true)
- // RESP-021 has no public editing door yet. Its eventual native answer write already enqueues this in-place update.
- await env.DB.prepare('UPDATE response_answers SET value_json=?,updated_at=? WHERE response_id=? AND step_id=?').bind(JSON.stringify('=SUM(1,2)\nSynthetic edited sheet answer'),new Date().toISOString(),fourth,(await readDraft()).steps.find((step:any)=>step.prompt==='Anything else?').id).run()
- await accepted(await f.call(base+'/google-sheet/sync',{}));expect((await sheet()).some(row=>row.includes('=SUM(1,2)\nSynthetic edited sheet answer'))).toBe(true);expect((await sheet()).filter(row=>row[0])).toHaveLength(5)
+ // The respondent follows the confirmation's single-use public edit door. The receiver must update the same keyed row.
+ await materializeConfirmations(env.DB,new Date().toISOString())
+ const confirmation=(await env.DB.prepare('SELECT message_json AS message FROM confirmation_deliveries WHERE response_id=?').bind(fourth).first<{message:string}>())!
+ const token=/\?edit=([a-f0-9]{64})/.exec(JSON.parse(confirmation.message).text)![1]
+ const beforeEdit=await sheet(),rowIndex=beforeEdit.findIndex(row=>row.includes('Synthetic sheet row 4')),rowKey=beforeEdit[rowIndex][0]
+ expect(rowIndex).toBeGreaterThan(0)
+ const editable=await accepted(await f.call(`/api/public/flows/${slug}/edit?token=${token}`,undefined,{auth:false}))
+ const editedAnswers=editable.answers.map((answer:any)=>answer.stepId===comments.id?{...answer,value:'=SUM(1,2)\nSynthetic edited sheet answer'}:answer)
+ expect((await accepted(await f.call(`/api/public/flows/${slug}/edit`,{token,answers:editedAnswers},{auth:false}))).version).toBe(2)
+ await accepted(await f.call(base+'/google-sheet/sync',{}))
+ const afterEdit=await sheet()
+ expect(afterEdit[rowIndex][0]).toBe(rowKey);expect(afterEdit[rowIndex]).toContain('=SUM(1,2)\nSynthetic edited sheet answer')
+ expect(afterEdit.filter(row=>row[0])).toHaveLength(5);expect(afterEdit.filter(row=>row[0]===rowKey)).toHaveLength(1)
+ expect((await f.call(`/api/public/flows/${slug}/edit`,{token,answers:editedAnswers},{auth:false})).status).toBe(404)
  await fetch(receiver+'/__control/google-mode',{method:'POST',body:JSON.stringify({down:true})})
  const missing=[] as string[];for(let n=5;n<=9;n++)missing.push(await submit(n))
  await accepted(await f.call(base+'/google-sheet/sync',{}))

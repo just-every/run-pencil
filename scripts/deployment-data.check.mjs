@@ -55,6 +55,7 @@ function fixture() {
   insert('chat_form_links',{id:'synthetic-pencil-chat-link',workspace_id:'workspace',flow_id:'flow',platform:'slack',settings_json:JSON.stringify({platform:'slack',channel:'synthetic-pencil-channel',answerStepIds:[],operatorId:'operator',slackUserId:'synthetic-pencil-user'}),armed:1,updated_at:stamp});
   insert('chat_deliveries',{id:'synthetic-pencil-chat-delivery',link_id:'synthetic-pencil-chat-link',response_id:'completed',kind:'response',idempotency_key:'synthetic-pencil-chat-key',state:'pending',attempts:1,available_at:stamp,started_at:stamp,updated_at:stamp});
   insert('chat_attempts',{id:'synthetic-pencil-chat-attempt',delivery_id:'synthetic-pencil-chat-delivery',ordinal:1,outcome:'started',created_at:stamp});
+  insert('chat_deliveries',{id:'synthetic-pencil-chat-alert',link_id:'synthetic-pencil-chat-link',response_id:'completed',kind:'response',idempotency_key:'chat:alert:synthetic-pencil-rule:synthetic-pencil-chat-link:completed',state:'pending',attempts:0,available_at:stamp,updated_at:stamp});
   insert('google_sheet_links',{id:'synthetic-pencil-sheet-link',workspace_id:'workspace',flow_id:'flow',spreadsheet_id:'synthetic-pencil-book',tab:'Synthetic responses',columns_json:'[]',armed:1,updated_at:stamp});
   insert('confirmation_deliveries',{id:'confirmation:completed',response_id:'completed',recipient:'synthetic-pencil-receipt@example.test',message_json:JSON.stringify({subject:'Receipt',text:'Retained respondent answer',html:'<p>Retained respondent answer</p>'}),status:'pending',attempts:1,available_at:stamp,armed:1,created_at:stamp,updated_at:stamp});
   insert('confirmation_deliveries',{id:'confirmation:suspected',response_id:'suspected',recipient:'synthetic-pencil-private@example.test',message_json:JSON.stringify({subject:'Receipt',text:'https://pencil.example.test/f/synthetic-pencil?edit='+ '1'.repeat(64),html:'<p>Confirmation</p>'}),status:'pending',attempts:0,available_at:stamp,armed:1,created_at:stamp,updated_at:stamp});
@@ -150,6 +151,7 @@ test('full current-data roundtrip preserves prefill markers, disabled confirmati
     assert.equal(database.prepare("SELECT armed FROM chat_form_links WHERE id='synthetic-pencil-chat-link'").get().armed,0);
     assert.deepEqual({...database.prepare("SELECT state,attempts FROM chat_deliveries WHERE id='synthetic-pencil-chat-delivery'").get()},{state:'pending',attempts:1});
     assert.equal(database.prepare("SELECT count(*) AS n FROM chat_attempts WHERE delivery_id='synthetic-pencil-chat-delivery'").get().n,1);
+    assert.deepEqual({...database.prepare("SELECT idempotency_key,state,attempts FROM chat_deliveries WHERE id='synthetic-pencil-chat-alert'").get()},{idempotency_key:'chat:alert:synthetic-pencil-rule:synthetic-pencil-chat-link:completed',state:'pending',attempts:0});
     assert.equal(readFileSync(f.archive,'utf8').includes('synthetic-pencil-private-chat-ciphertext'),false);
 
     assert.equal(readFileSync(f.archive,'utf8').includes('?edit='+'1'.repeat(64)),false);

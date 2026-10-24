@@ -12,7 +12,7 @@ export type ChatPlatform = typeof chatPlatforms[number]
 export const safeSummaryTypes = new Set(['number', 'rating', 'opinion_scale', 'nps', 'yes_no', 'boolean', 'single_choice', 'multiple_choice'])
 const accountId = z.string().trim().min(1).max(200).regex(/^[A-Za-z0-9_-]+$/)
 export const chatFormSchema = z.object({
-  platform: z.enum(chatPlatforms), channel: accountId.optional(),
+  platform: z.enum(chatPlatforms), postResponses: z.boolean().default(true), channel: accountId.optional(),
   answerStepIds: z.array(resourceId).max(20).refine(ids => new Set(ids).size === ids.length),
   operatorId: resourceId, slackUserId: accountId.optional(), teamsUserId: accountId.optional(),
   action: actionFieldsSchema.omit({ ownerOperatorId: true }).optional(),

@@ -1,3 +1,5 @@
+import { aiBindings } from './analysis-fixture'
+import { provePaidResponseEdit } from './response-paid-edit-proof'
 import { proveChatIntegrations } from './chat-integrations-proof'
 import { proveResponseEdit } from './response-edit-proof'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
@@ -22,7 +24,7 @@ const minute = 60_000
 const receiverOrigin = 'http://127.0.0.1:9'
 
 contract(['INTEG-010', 'INTEG-015', 'DATA-002', 'RESP-021', 'INTEG-006'], 'signed response events verify, retry on one event ID, replay, disable with an alert and list undelivered responses without ever blocking collection', async () => {
-  const f = await actionsHttp({}, 'hooks')
+  const f = await actionsHttp(aiBindings, 'hooks')
   await env.DB.prepare("UPDATE oa_operators SET role='owner' WHERE id=?").bind(f.lead.operatorId).run()
   await env.DB.prepare('UPDATE oa_sessions SET operator_version=(SELECT version FROM oa_operators WHERE id=operator_id) WHERE operator_id=?').bind(f.lead.operatorId).run()
   const received: Received[] = [], answers = new Map<string, Answer>()
@@ -189,5 +191,6 @@ contract(['INTEG-010', 'INTEG-015', 'DATA-002', 'RESP-021', 'INTEG-006'], 'signe
   expect((await env.DB.prepare('SELECT count(*) AS n FROM response_event_deliveries WHERE endpoint_id=?').bind(endpointId).first<{ n: number }>())!.n).toBe(0)
   await proveResponseEdit(f,received,expectedSignature)
   network.mockRestore()
+  await provePaidResponseEdit(f)
   await proveChatIntegrations()
 })

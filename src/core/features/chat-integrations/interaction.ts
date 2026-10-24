@@ -16,7 +16,7 @@ export async function createSlackAction(db:D1Database,connections:IntegrationCon
     (SELECT COUNT(*) FROM responses counted WHERE counted.revision_id=r.revision_id AND counted.state='released') AS completedResponses,
     COALESCE((SELECT starts FROM revision_metric_counters WHERE revision_id=r.revision_id),0) AS starts
     FROM chat_deliveries d JOIN chat_form_links l ON l.id=d.link_id JOIN responses r ON r.id=d.response_id JOIN flow_revisions v ON v.id=r.revision_id
-    WHERE d.id=? AND l.platform='slack' AND l.armed=1 AND d.state='confirmed' AND l.updated_at<=d.started_at AND ${eligibleChatResponse}`).bind(action.value)
+    WHERE d.id=? AND d.idempotency_key NOT LIKE 'chat:alert:%' AND l.platform='slack' AND l.armed=1 AND d.state='confirmed' AND l.updated_at<=d.started_at AND ${eligibleChatResponse}`).bind(action.value)
     .first<{workspaceId:string;flowId:string;settingsJson:string;revisionId:string;title:string;number:number;completedResponses:number;starts:number}>()
   if(!row)throw new NotFoundError('This response post is no longer available for actions.')
   const settings=chatFormSchema.parse(JSON.parse(row.settingsJson))

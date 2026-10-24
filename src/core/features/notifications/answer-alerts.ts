@@ -28,13 +28,23 @@ export async function materializeAnswerAlerts(db:D1Database,now:string) {
     const answers=await db.prepare('SELECT step_id AS stepId,value_json AS valueJson FROM response_answers WHERE response_id=?').bind(response.id).all<{stepId:string;valueJson:string}>()
     const values={...Object.fromEntries(answers.results.map(answer=>[answer.stepId,JSON.parse(answer.valueJson)])),...hiddenAnswers(context),...variableAnswers(context.calculations),'payment:state':response.paymentState}
     const rules:AnswerAlertRule[]=formSettings(response.settingsJson).answerAlerts??[]
-    const matches=rules.filter(rule=>evaluateCondition(rule.condition,values).matched).flatMap(rule=>rule.recipientIds.map(operatorId=>({ruleId:rule.id,ruleName:rule.name,operatorId,id:crypto.randomUUID(),key:`answer-alert:${crypto.randomUUID()}`})))
+    const matchedRules=rules.filter(rule=>evaluateCondition(rule.condition,values).matched)
+    const matches=matchedRules.flatMap(rule=>rule.recipientIds.map(operatorId=>({ruleId:rule.id,ruleName:rule.name,operatorId,id:crypto.randomUUID(),key:`answer-alert:${crypto.randomUUID()}`})))
+    const chats=matchedRules.flatMap(rule=>(rule.chatPlatforms??[]).map(platform=>({ruleId:rule.id,platform})))
     await db.batch([
       db.prepare(`INSERT OR IGNORE INTO answer_alert_deliveries(id,response_id,rule_id,rule_name,operator_id,status,idempotency_key,available_at,created_at,updated_at)
         SELECT json_extract(m.value,'$.id'),r.id,json_extract(m.value,'$.ruleId'),json_extract(m.value,'$.ruleName'),o.id,'pending',json_extract(m.value,'$.key'),?,?,?
         FROM responses r JOIN json_each(?) m JOIN operators o ON o.id=json_extract(m.value,'$.operatorId')
         WHERE r.id=? AND r.updated_at=? AND r.response_context_json=? AND ${responseEligible} AND ${recipientEligible}
         AND NOT EXISTS(SELECT 1 FROM answer_alert_evaluations e WHERE e.response_id=r.id)`).bind(now,now,now,JSON.stringify(matches),response.id,response.updatedAt,response.contextJson),
+      // Chat and mail capture the same first eligible evaluation. Later edits
+      // and concurrent dispatchers cannot create another rule delivery.
+      db.prepare(`INSERT OR IGNORE INTO chat_deliveries(id,link_id,response_id,kind,idempotency_key,state,available_at,updated_at)
+        SELECT lower(hex(randomblob(16))),l.id,r.id,'response','chat:alert:'||json_extract(m.value,'$.ruleId')||':'||l.id||':'||r.id,'pending',?,?
+        FROM responses r JOIN json_each(?) m JOIN chat_form_links l ON l.flow_id=r.flow_id AND l.workspace_id=r.workspace_id AND l.platform=json_extract(m.value,'$.platform')
+        WHERE r.id=? AND r.updated_at=? AND r.response_context_json=? AND ${responseEligible} AND l.armed=1 AND COALESCE(r.released_at,r.completed_at)>=l.updated_at
+        AND NOT EXISTS(SELECT 1 FROM answer_alert_evaluations e WHERE e.response_id=r.id)`)
+        .bind(now,now,JSON.stringify(chats),response.id,response.updatedAt,response.contextJson),
       db.prepare(`INSERT OR IGNORE INTO answer_alert_evaluations(response_id,created_at) SELECT r.id,? FROM responses r WHERE r.id=? AND r.updated_at=? AND r.response_context_json=? AND ${responseEligible}`)
         .bind(now,response.id,response.updatedAt,response.contextJson),
     ])
