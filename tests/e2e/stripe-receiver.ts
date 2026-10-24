@@ -5,13 +5,14 @@ import { createHmac } from 'node:crypto'
 import { createServer } from 'node:http'
 
 export const stripeFixture = { secretKey: 'rk_test_example2', webhookSecret: 'whsec_example_browser_signing_secret' }
-type Session = { id: string; object: 'checkout.session'; url: string; amount_subtotal: number; total_details: { amount_discount: number; amount_tax: number }; amount_total: number; currency: 'usd'; status: 'open' | 'complete' | 'expired'; payment_status: 'paid' | 'unpaid'; payment_intent: string | null; expires_at: number; livemode: false; client_reference_id: string | null; metadata: Record<string, string>; success_url: string; cancel_url: string; lines: Array<{ name: string; amount: number; quantity: number }> }
+type Session = { ach?:boolean; subscription?:string;invoice?:string; id: string; object: 'checkout.session'; url: string; amount_subtotal: number; total_details: { amount_discount: number; amount_tax: number }; amount_total: number; currency: 'usd'; status: 'open' | 'complete' | 'expired'; payment_status: 'paid' | 'unpaid'; payment_intent: string | null; expires_at: number; livemode: false; client_reference_id: string | null; metadata: Record<string, string>; success_url: string; cancel_url: string; lines: Array<{ name: string; amount: number; quantity: number }> }
 
 export async function startStripeReceiver(pencilOrigin: string) {
   const port = Number(process.env.PENCIL_E2E_STRIPE_PORT ?? Number(process.env.PENCIL_E2E_PORT ?? '4173') + 4)
   const origin = `http://127.0.0.1:${port}`, sessions = new Map<string, Session>(), keys = new Map<string, string>(), webhooks: Array<{ status: number; body: string }> = []
   let checkoutOrigin = origin
   const html = (value: string) => value.replace(/[&<>"']/g, character => `&#${character.charCodeAt(0)};`)
+  const prices=new Map<string,{amount:number;name:string}>()
   const refunded=new Map<string,number>()
   const event=async(type:string,object:unknown)=>{
     const at=Math.floor(Date.now()/1000),payload=JSON.stringify({id:`evt_test_${crypto.randomUUID().replaceAll('-','')}`,type,created:at,livemode:false,data:{object}})
@@ -19,6 +20,7 @@ export async function startStripeReceiver(pencilOrigin: string) {
     if(!response.ok)throw new Error(`Webhook failed: ${response.status}`)
     return response.json()
   }
+  const intentFor=(session:Session)=>session.payment_intent??(session.invoice?'synthetic-pencil-'+(Number(session.invoice.split('-').at(-1))+1000):null)
   const server = createServer((request, response) => {
     let body = ''
     request.setEncoding('utf8'); request.on('data', chunk => { body += chunk })
@@ -30,11 +32,12 @@ export async function startStripeReceiver(pencilOrigin: string) {
         if (!session) return response.writeHead(404).end()
         if (hosted[2] === 'cancel') return response.writeHead(303, { location: session.cancel_url }).end()
         if (hosted[2] === 'complete' && request.method === 'POST' && session.status === 'open') {
-          Object.assign(session, { status: 'complete', payment_status: 'paid', payment_intent: `pi_test_${session.id.slice(8)}` })
+          Object.assign(session, { status: 'complete', payment_status: session.ach?'unpaid':'paid', payment_intent: session.subscription?null:`pi_test_${session.id.slice(8)}` })
           const { lines: _lines, ...object } = session, at = Math.floor(Date.now() / 1000)
-          const event = JSON.stringify({ id: `evt_test_${crypto.randomUUID().replaceAll('-', '')}`, object: 'event', api_version: '2024-06-20', type: 'checkout.session.completed', created: at, livemode: false, data: { object } })
-          const delivered = await fetch(`${pencilOrigin}/api/public/payments/stripe`, { method: 'POST', body: event, headers: { 'content-type': 'application/json', 'stripe-signature': `t=${at},v1=${createHmac('sha256', stripeFixture.webhookSecret).update(`${at}.${event}`).digest('hex')}` } })
+          const checkoutEvent = JSON.stringify({ id: `evt_test_${crypto.randomUUID().replaceAll('-', '')}`, object: 'event', api_version: '2024-06-20', type: 'checkout.session.completed', created: at, livemode: false, data: { object } })
+          const delivered = await fetch(`${pencilOrigin}/api/public/payments/stripe`, { method: 'POST', body: checkoutEvent, headers: { 'content-type': 'application/json', 'stripe-signature': `t=${at},v1=${createHmac('sha256', stripeFixture.webhookSecret).update(`${at}.${checkoutEvent}`).digest('hex')}` } })
           webhooks.push({ status: delivered.status, body: await delivered.text() })
+          if(session.subscription)await event('customer.subscription.created',{id:session.subscription,status:'active',metadata:session.metadata})
           return response.writeHead(303, { location: session.success_url }).end()
         }
         return response.writeHead(200, { 'content-type': 'text/html; charset=utf-8' }).end(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stripe test checkout</title></head>
@@ -44,11 +47,29 @@ export async function startStripeReceiver(pencilOrigin: string) {
       if (url.pathname === '/__control/state') return json(200, { sessions: Object.fromEntries(sessions), webhooks })
       if (request.headers.authorization !== `Bearer ${stripeFixture.secretKey}`) return json(401, { error: { message: 'Invalid API Key provided.' } })
       const form = Object.fromEntries(new URLSearchParams(body)), expire = /^\/v1\/checkout\/sessions\/(cs_test_\w+)\/expire$/.exec(url.pathname)
+      if(request.method==='GET' && ['/v1/charges','/v1/refunds'].includes(url.pathname)) {
+        const now=Math.floor(Date.now()/1000)
+        const data=url.pathname==='/v1/charges'?[...sessions.values()].filter(row=>row.payment_status==='paid').map(row=>({id:row.id,amount:row.amount_total,payment_intent:intentFor(row),paid:true,created:now})):[...refunded.entries()].map(([id,amount])=>({id,payment_intent:intentFor(sessions.get(id)!),amount,status:'succeeded',created:now}))
+        return json(200,{data,has_more:false})
+      }
+      if(request.method==='GET' && url.pathname.startsWith('/v1/invoices/')) {
+        const session=[...sessions.values()].find(row=>row.invoice===decodeURIComponent(url.pathname.split('/').at(-1)!))
+        if(!session)return json(404,{error:{code:'unknown-invoice'}})
+        return json(200,{subscription:session.subscription,amount_paid:session.amount_total,currency:'usd',payment_intent:intentFor(session)})
+      }
+      if(request.method==='GET' && url.pathname.startsWith('/v1/prices/')) {
+        const id=decodeURIComponent(url.pathname.split('/').at(-1)!)
+        prices.set(id,{amount:4000,name:'Subscription'})
+        return json(200,{id,active:true,currency:'usd',unit_amount:4000,recurring:{interval:id==='synthetic-pencil-2'?'year':'month',interval_count:1}})
+      }
+      if(request.method==='POST' && url.pathname==='/v1/prices') {
+        const id=`synthetic-pencil-${1000+prices.size}`;prices.set(id,{amount:Number(form['custom_unit_amount[preset]']),name:form['product_data[name]']});return json(200,{id})
+      }
       if(request.method==='POST' && url.pathname==='/v1/refunds') {
-        const session=[...sessions.values()].find(row=>row.payment_intent===form.payment_intent), amount=Number(form.amount)
+        const session=[...sessions.values()].find(row=>intentFor(row)===form.payment_intent), amount=Number(form.amount)
         if(!session || amount<1 || !Number.isSafeInteger(amount) || (refunded.get(session.id)??0)+amount>session.amount_total)return json(400,{error:{code:'invalid-refund'}})
         const total=(refunded.get(session.id)??0)+amount;refunded.set(session.id,total)
-        await event('charge.refunded',{id:'synthetic-pencil-1',payment_intent:session.payment_intent,amount_refunded:total,refunded:total===session.amount_total,payment_method_details:{type:'card',card:{last4:'4242'}}})
+        await event('charge.refunded',{id:'synthetic-pencil-1',payment_intent:form.payment_intent,amount_refunded:total,refunded:total===session.amount_total,payment_method_details:{type:'card',card:{last4:'4242'}}})
         return json(200,{id:'synthetic-pencil-1',status:'succeeded'})
       }
       if (request.method === 'GET' && url.pathname === '/v1/checkout/sessions') return json(200, { object: 'list', data: [...sessions.values()].slice(0, 1) })
@@ -63,9 +84,9 @@ export async function startStripeReceiver(pencilOrigin: string) {
       const key = request.headers['idempotency-key'] as string | undefined
       if (key && keys.has(key)) return json(200, sessions.get(keys.get(key)!))
       const lines: Session['lines'] = []
-      for (let index = 0; form[`line_items[${index}][quantity]`] !== undefined; index++) lines.push({ name: form[`line_items[${index}][price_data][product_data][name]`], amount: Number(form[`line_items[${index}][price_data][unit_amount]`]), quantity: Number(form[`line_items[${index}][quantity]`]) })
+      for (let index = 0; form[`line_items[${index}][quantity]`] !== undefined; index++) lines.push({ name: prices.get(form[`line_items[${index}][price]`])?.name??form[`line_items[${index}][price_data][product_data][name]`], amount: prices.get(form[`line_items[${index}][price]`])?.amount??Number(form[`line_items[${index}][price_data][unit_amount]`]), quantity: Number(form[`line_items[${index}][quantity]`]) })
       const id = `cs_test_${sessions.size + 1}${Math.random().toString(36).slice(2, 8)}`
-      const session: Session = { id, object: 'checkout.session', url: `${checkoutOrigin}/pay/${id}`, amount_subtotal: lines.reduce((sum, line) => sum + line.amount * line.quantity, 0), total_details: { amount_discount: 0, amount_tax: 0 }, amount_total: lines.reduce((sum, line) => sum + line.amount * line.quantity, 0), currency: 'usd', status: 'open', payment_status: 'unpaid', payment_intent: null,
+      const session: Session = { ach:form['payment_method_types[1]']==='us_bank_account', ...(form.mode==='subscription'?{subscription:`synthetic-pencil-${sessions.size+100}`,invoice:`synthetic-pencil-${sessions.size+1000}`} : {}),id, object: 'checkout.session', url: `${checkoutOrigin}/pay/${id}`, amount_subtotal: lines.reduce((sum, line) => sum + line.amount * line.quantity, 0), total_details: { amount_discount: 0, amount_tax: 0 }, amount_total: lines.reduce((sum, line) => sum + line.amount * line.quantity, 0), currency: 'usd', status: 'open', payment_status: 'unpaid', payment_intent: null,
         expires_at: Math.floor(Date.now() / 1000) + 86_400, livemode: false, client_reference_id: form.client_reference_id ?? null, metadata: { pencil_response: form['metadata[pencil_response]'], pencil_attempt: form['metadata[pencil_attempt]'] }, success_url: form.success_url, cancel_url: form.cancel_url, lines }
       sessions.set(id, session)
       if (key) keys.set(key, id)

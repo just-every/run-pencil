@@ -4,13 +4,13 @@ import { selectedChoiceIds } from './otherChoices'
 /** PAY-001 payment step settings, kept as the step's `payment` setting. Every amount is whole US cents. */
 export type PaymentProduct = { id: string; name: string; unitAmount: number; quantity?: number; quantityStepId?: string }
 export type PaymentOption = { stepId: string; prices: Record<string, number> }
-export type CheckoutOptions = { automaticTax?: boolean; promotionCodes?: boolean; couponId?: string; receipts?: boolean }
+export type CheckoutOptions = { ach?: boolean; mode?: 'one_time' | 'subscription' | 'donation'; priceId?: string; interval?: 'month' | 'year'; customDonation?: boolean; minimum?: number; maximum?: number; automaticTax?: boolean; promotionCodes?: boolean; couponId?: string; receipts?: boolean }
 export type PaymentSettings = CheckoutOptions & { products: PaymentProduct[]; options: PaymentOption[]; calculationId?: string; minimum: number; maximum: number }
 export type PaymentLine = { name: string; unitAmount: number; quantity: number }
 export type PaymentQuote = { lines: PaymentLine[]; total: number; checkout?: CheckoutOptions }
 export type PaymentState = 'pending' | 'paid' | 'failed' | 'expired' | 'cancelled' | 'processing' | 'partially_refunded' | 'refunded'
 /** What an operator sees of a response's payment. Card or bank numbers are never stored. */
-export type LedgerPayment = { responseId?: string; refundedAmount?: number; methodType?: string | null; methodLast4?: string | null; subscriptionStatus?: string | null; state: PaymentState; amount: number; providerAmount: number | null; discount?: number | null; tax?: number | null; total?: number | null; checkoutSessionId: string | null; paymentIntentId: string | null; stateChangedAt: string; attempt: number }
+export type LedgerPayment = { responseId?: string; refundedAmount?: number; methodType?: string | null; methodLast4?: string | null; subscriptionStatus?: string | null; mode?: string | null; state: PaymentState; amount: number; providerAmount: number | null; discount?: number | null; tax?: number | null; total?: number | null; checkoutSessionId: string | null; paymentIntentId: string | null; stateChangedAt: string; attempt: number }
 
 /** Stripe's US-dollar charge floor is $0.50 and its ceiling $999,999.99. */
 export const paymentLimits = { minimum: 50, maximum: 99_999_999, products: 20, options: 20, quantity: 999, nameCharacters: 250 } as const
@@ -38,11 +38,20 @@ export function paymentStepSettingsIssue(kind: FlowStep['kind'], settings: Recor
 export function paymentSettingsIssue(value: unknown): string | undefined {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return 'A payment step needs its pricing.'
   const settings = value as Record<string, unknown>
-  if (Object.keys(settings).some(key => !['products', 'options', 'calculationId', 'minimum', 'maximum', 'automaticTax', 'promotionCodes', 'couponId', 'receipts'].includes(key))) return 'A payment step has an unknown setting.'
+  if (Object.keys(settings).some(key => !['products', 'options', 'calculationId', 'minimum', 'maximum', 'automaticTax', 'promotionCodes', 'couponId', 'receipts', 'mode', 'priceId', 'interval', 'customDonation', 'ach'].includes(key))) return 'A payment step has an unknown setting.'
   if (!cents(settings.minimum, paymentLimits.minimum) || !cents(settings.maximum, paymentLimits.minimum) || settings.minimum > settings.maximum) return `Set a minimum and maximum between ${formatUsd(paymentLimits.minimum)} and ${formatUsd(paymentLimits.maximum)}, with the minimum no larger than the maximum.`
-  for (const key of ['automaticTax', 'promotionCodes', 'receipts']) if (settings[key] !== undefined && typeof settings[key] !== 'boolean') return 'Checkout switches must be on or off.'
+  for (const key of ['automaticTax', 'promotionCodes', 'receipts', 'ach']) if (settings[key] !== undefined && typeof settings[key] !== 'boolean') return 'Checkout switches must be on or off.'
   if (settings.couponId !== undefined && (typeof settings.couponId !== 'string' || !/^[A-Za-z0-9_-]{1,200}$/.test(settings.couponId))) return 'Enter a valid Stripe coupon identifier.'
   if (settings.couponId && settings.promotionCodes) return 'Use a coupon or allow promotion codes, rather than both.'
+  if (settings.mode !== undefined && !['one_time','subscription','donation'].includes(String(settings.mode))) return 'Choose a payment mode.'
+  if (settings.interval !== undefined && !['month','year'].includes(String(settings.interval))) return 'Choose monthly or yearly billing.'
+  if (settings.priceId !== undefined && (typeof settings.priceId!=='string' || !/^[A-Za-z0-9_-]{1,200}$/.test(settings.priceId))) return 'Enter a valid Stripe price ID.'
+  if (settings.customDonation !== undefined && typeof settings.customDonation!=='boolean') return 'Choose whether the donation amount is entered on Stripe.'
+  if (settings.mode==='subscription' && (!settings.priceId || !settings.interval)) return 'A subscription needs its Stripe price ID and monthly or yearly interval.'
+  if (settings.mode!=='subscription' && settings.priceId!==undefined) return 'Only a subscription uses a saved Stripe price ID.'
+  if (settings.mode!=='subscription' && settings.mode!=='donation' && settings.interval!==undefined) return 'Only subscriptions or recurring donations have a billing interval.'
+  if (settings.customDonation && settings.mode!=='donation') return 'Only donations can use a custom amount on Stripe.'
+  if (settings.customDonation && settings.interval) return 'Custom donations are one-time. Use a fixed suggested amount for recurring donations.'
   const products = settings.products, options = settings.options
   if (!Array.isArray(products) || products.length > paymentLimits.products || !Array.isArray(options) || options.length > paymentLimits.options) return `A payment step lists at most ${paymentLimits.products} products and ${paymentLimits.options} option-price questions.`
   for (const product of products as unknown[]) {
@@ -51,6 +60,10 @@ export function paymentSettingsIssue(value: unknown): string | undefined {
       || typeof item.name !== 'string' || !item.name.trim() || item.name.length > paymentLimits.nameCharacters || !cents(item.unitAmount, 1)
       || (item.quantity !== undefined && (!Number.isInteger(item.quantity) || (item.quantity as number) < 1 || (item.quantity as number) > paymentLimits.quantity))
       || (item.quantityStepId !== undefined && (!identifier(item.quantityStepId) || item.quantity !== undefined))) return 'Each product needs a name, a price of at least one cent, and either a fixed quantity or a quantity question.'
+  }
+  if (settings.mode==='subscription' || settings.customDonation) {
+    const product=(products as PaymentProduct[])[0]
+    if(products.length!==1 || options.length || settings.calculationId!==undefined || product.quantityStepId!==undefined || (product.quantity??1)!==1) return 'Use one fixed product amount for a subscription or custom donation preset.'
   }
   if (new Set((products as PaymentProduct[]).map(product => product.id)).size !== products.length) return 'Each product needs a distinct identifier.'
   for (const option of options as unknown[]) {
@@ -89,7 +102,7 @@ export function paymentQuote(settings: PaymentSettings, flow: { steps: FlowStep[
   const total = lines.reduce((sum, line) => sum + line.unitAmount * line.quantity, 0)
   if (total < settings.minimum || total > settings.maximum) return { issue: `The total ${formatUsd(total)} is outside this form's limits of ${formatUsd(settings.minimum)} to ${formatUsd(settings.maximum)}. Go back and check your answers.` }
   if (lines.some(line => line.unitAmount < 1)) return { issue: 'A calculated amount must be at least one cent.' }
-  return { lines, total, checkout: { automaticTax: settings.automaticTax, promotionCodes: settings.promotionCodes, couponId: settings.couponId, receipts: settings.receipts } }
+  return { lines, total, checkout: { automaticTax: settings.automaticTax, promotionCodes: settings.promotionCodes, couponId: settings.couponId, receipts: settings.receipts, ach: settings.ach, mode: settings.mode, priceId: settings.priceId, interval: settings.interval, customDonation: settings.customDonation, ...(settings.customDonation ? {minimum:settings.minimum,maximum:settings.maximum} : {}) } }
 }
 
 /** Builder copies and duplicates keep a payment step pointing at the copied questions, choices and calculation. */

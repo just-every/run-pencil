@@ -43,7 +43,7 @@ export class PaymentResponses {
   async settle(response: ResponseRow, input: PaymentSubmission) {
     const payment = await this.payments.forResponse(response.id)
     if (!payment) return completionReceipt(this.flows, this.responses, response)
-    if (payment.state === 'paid' || payment.state === 'partially_refunded' || payment.state === 'refunded') return { ...await completionReceipt(this.flows, this.responses, response), payment: { state: payment.state } }
+    if (payment.state === 'paid' || payment.state === 'processing' || payment.state === 'partially_refunded' || payment.state === 'refunded') return { ...await completionReceipt(this.flows, this.responses, response), payment: { state: payment.state } }
     if (!unpaidEnd(payment)) return this.checkoutReceipt(response, input.slug, true)
     return this.replace(response, payment, input)
   }

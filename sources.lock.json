@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "2293f9863e8fd977563f7fbaa1765a9a1e8430586ba0ef916e019ad7fc0d7a43",
+      "sha256": "280b4d6fb7e25fcddc589e68b40dce0299e4c89d7173499e61cb64020ca49785",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "9d83f5414cd8ba3c29ada8d70eaaad141e4fd16b9c61139eb3a3706efd554b32",
+      "sha256": "d55d3f923eed72b7b2a64354b12b3bf1e01c86b0d310005b748e277ccb1cfc10",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "94e0d6093b7d6ab5306e7cd2c91512d67540b6585444a8b826247b9acc074e40",
+      "sha256": "f037489102c86151ae9de687663ed42feb2158c373cc1dba02941ffac2661064",
       "executable": false
     },
     "DEMO.md": {
@@ -1025,7 +1025,7 @@
       "executable": false
     },
     "docs/guide/build-a-form.md": {
-      "sha256": "8287432e30bfd4c2247a920f78a22e63a16c65672d151f82d4e51cd0b0e3240c",
+      "sha256": "1b0b5c9fcf3f2bd5b2354970f583e03b2447409b5995bd30faade3dcf8e2edbf",
       "executable": false
     },
     "docs/guide/hosting.md": {
@@ -5461,7 +5461,7 @@
       "executable": false
     },
     "src/core/features/payments/repository.ts": {
-      "sha256": "192540fb7f4d32f053a73921e6bc481c32d1cd5336dff63e9b4d720ac758eba2",
+      "sha256": "d3b9f9520bfb1422f1876a1a84b6b060d6a92697d67e2159eb106c17abd750f2",
       "executable": false
     },
     "src/core/features/payments/routes.ts": {
@@ -5469,11 +5469,11 @@
       "executable": false
     },
     "src/core/features/payments/service.ts": {
-      "sha256": "ba32a369add6bfed2eb94a85ddd327b4bcf180238653814aaebd04f0c3fc902a",
+      "sha256": "51e9eed4b4761ae897ea822e21147ebefb7139c874281cab75496b5a8d4d302c",
       "executable": false
     },
     "src/core/features/payments/stripe.ts": {
-      "sha256": "2c544fea9403842f1fc762d8c01204c9e47ae5663bf9b6a96ecc08af29c2367f",
+      "sha256": "27c312439075fa2b3ba0a967e2e3cbc45ccebee0b9676335e6af06561ca616cf",
       "executable": false
     },
     "src/core/features/payments/ui/index.ts": {
@@ -5481,7 +5481,7 @@
       "executable": false
     },
     "src/core/features/payments/ui/PaymentConnection.tsx": {
-      "sha256": "ac25c62a139d441dfd62562529939824150c8a2180a6ca2a4aa5b06feb458fea",
+      "sha256": "914c0676df64c61229f17b6b771cf427de250315889c57e0567139a891d8a146",
       "executable": false
     },
     "src/core/features/payments/ui/PaymentDisclosure.tsx": {
@@ -5489,11 +5489,11 @@
       "executable": false
     },
     "src/core/features/payments/ui/PaymentRecord.tsx": {
-      "sha256": "eee5bded3f802f30120b5207b7a9665350501aae187c6240180395e91a0e06a5",
+      "sha256": "bf652abb2dbda91185d6e4580091edfc761b59671c50b8ce3691a73925c421b6",
       "executable": false
     },
     "src/core/features/payments/ui/payments.css": {
-      "sha256": "739814e4d644f3f1417cfaa3a1ac9d5a2b51f823c79b1ed691e963dce3cd14b4",
+      "sha256": "dddf6b748bdb5ba8ed20eeab2334c845f69727773998112613bca38f4c7447b6",
       "executable": false
     },
     "src/core/features/payments/ui/PaymentsPage.tsx": {
@@ -5501,11 +5501,11 @@
       "executable": false
     },
     "src/core/features/payments/ui/PaymentStepSettings.tsx": {
-      "sha256": "cd4752b69282be4035d1b24afa43a2cb935ac6d1dc98ba039102b66ede9e1cd3",
+      "sha256": "677b76a602cb11c07f2b1183924cb120ce590373f4b6a3ab5643063824e572f4",
       "executable": false
     },
     "src/core/features/payments/ui/PaymentSummary.tsx": {
-      "sha256": "729423e939544d1b432c56eeefa45636623d3556d1a5892cace374916bb014af",
+      "sha256": "1b40297df5307720d4b6980ed4b8e78a5511de7c866f8a2ebd01c2faad9a2334",
       "executable": false
     },
     "src/core/features/reporting/aggregate.ts": {
@@ -5585,7 +5585,7 @@
       "executable": false
     },
     "src/core/features/reporting/repository.ts": {
-      "sha256": "a767557544d5e45580e109426a3efbdcfe7f1de12b7084cd085d990ebc61fd1e",
+      "sha256": "dc49b01c31429f8e6eca689fafb76babea026ecf4c82f352190fa4cff567f0d1",
       "executable": false
     },
     "src/core/features/reporting/retainedAnswer.ts": {
@@ -5673,7 +5673,7 @@
       "executable": false
     },
     "src/core/features/responses/payment-responses.ts": {
-      "sha256": "a3eb3bb486802e12f93b3443193979b85fb384e84ff4f1ab098c7b14f2897bfe",
+      "sha256": "40bba48dae41e3fd499de2b6d2f4ca3ea5503dc7bda8b1e64b3142c7b0854b1b",
       "executable": false
     },
     "src/core/features/responses/prefillProof.ts": {
@@ -6401,7 +6401,7 @@
       "executable": false
     },
     "src/core/shared/payments.ts": {
-      "sha256": "80d979742fe8e9e4c69bbfed4bb06fd1f4cb94b3cafe9f0230e12330d6d92b7b",
+      "sha256": "e607157bebba8747114fdc65eccded8524f71d27cde57e03f6e7f9f34565c2a1",
       "executable": false
     },
     "src/core/shared/presentationOrder.ts": {
@@ -6825,7 +6825,7 @@
       "executable": false
     },
     "tests/e2e/calculations.spec.ts": {
-      "sha256": "fee1a5aa38bced47634624c0bc85bfd8fe43f274523f6670caf23cfb35014109",
+      "sha256": "1ad383034808532e2108d24416bb92029bdda98c4aca9c45ac190fcf4fc35e72",
       "executable": false
     },
     "tests/e2e/client-secrets.spec.ts": {
@@ -7105,7 +7105,7 @@
       "executable": false
     },
     "tests/e2e/stripe-receiver.ts": {
-      "sha256": "ff2578635e858614ffe1a71d3fc041493b3e6e893169a752ece71d236829faa5",
+      "sha256": "d0daaeda1be348a88cdad481824bb7069c56fc8a93c9300c516c6a0c4296c7d9",
       "executable": false
     },
     "tests/e2e/studio-journey.ts": {
@@ -7465,7 +7465,7 @@
       "executable": false
     },
     "tests/runtime/calculations.worker.test.ts": {
-      "sha256": "14eaffb4fca416e51e49d66de32497b780f1ec649c1de1667119cf02efef0319",
+      "sha256": "f8ebb023e4356679a1942c9488bb4da57227e9fc89d5efe3624730f9e832a95e",
       "executable": false
     },
     "tests/runtime/coding.worker.test.ts": {
@@ -7693,7 +7693,7 @@
       "executable": false
     },
     "tests/runtime/stripe-receiver.global.ts": {
-      "sha256": "c59dc7c6060a0b3929ee32dad8fdec2d3ccd56960b223af654a3c54ce652c1b4",
+      "sha256": "63901580979297b219d25a22f88f0e13465abfda3a8e1fe4142b7252a10a59bd",
       "executable": false
     },
     "tests/runtime/studio-scenario.ts": {

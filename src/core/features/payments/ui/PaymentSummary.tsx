@@ -16,6 +16,7 @@ export function PaymentSummary({ quote }: { quote: PaymentQuote | { issue: strin
   if ('issue' in quote) return <p className="status-note" data-tone="error" role="alert">{quote.issue}</p>
   return <dl className="payment-summary" aria-label="Order summary">
     {quote.lines.map((line, index) => <div className="payment-summary__line" key={`${index}:${line.name}`}><dt>{line.name}{line.quantity > 1 ? ` × ${line.quantity}` : ''}</dt><dd>{formatUsd(line.unitAmount * line.quantity)}</dd></div>)}
-    <div className="payment-summary__line payment-summary__total"><dt>Total</dt><dd>{formatUsd(quote.total)}</dd></div>
+    {quote.checkout?.customDonation?<div><dt>Choose your amount on Stripe</dt><dd>Between {formatUsd(quote.checkout.minimum!)} and {formatUsd(quote.checkout.maximum!)}, one time.</dd></div>:null}
+    <div className="payment-summary__line payment-summary__total"><dt>{quote.checkout?.customDonation?'Suggested amount':quote.checkout?.interval?'Recurring amount':'Total'}</dt><dd>{formatUsd(quote.total)}</dd></div>
   </dl>
 }

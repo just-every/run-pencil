@@ -82,6 +82,11 @@ export class PaymentService {
   byReturnToken(hash: string) { return this.repository.byReturnToken(hash) }
 
   async attempt(input: { responseId: string; attempt: number; stepId: string; completionStepId: string; quote: PaymentQuote; connection: PaymentConnection }): Promise<PaymentAttempt> {
+    if(input.quote.checkout?.mode==='subscription') {
+      let price:Awaited<ReturnType<ReturnType<typeof stripeClient>['retrievePrice']>>
+      try {price=await stripeClient(this.options.apiOrigin,input.connection.secretKey).retrievePrice(input.quote.checkout.priceId!)}catch{throw new ValidationError('Stripe could not verify the subscription price. Check the price and connection.')}
+      if(!price.active || price.currency!=='usd' || price.unit_amount!==input.quote.total || price.recurring?.interval!==input.quote.checkout.interval || price.recurring?.interval_count!==1)throw new ValidationError('The active Stripe USD price must match this step’s fixed amount and monthly or yearly interval.')
+    }
     return { stepId: input.stepId, completionStepId: input.completionStepId, livemode: input.connection.secretKey.includes('_live_'), attempt: input.attempt, amount: input.quote.total, lines: input.quote.lines, checkout: input.quote.checkout, returnTokenHash: (await this.returnToken(input.responseId, input.attempt)).hash }
   }
 
@@ -134,6 +139,15 @@ export class PaymentService {
     const session = (to: PaymentState, from: PaymentState[], extra: { paymentIntentId?: string | null; providerAmount?: number | null; discount?: number; tax?: number; total?: number } = {}) => text('id')?.startsWith('cs_') ? { match: { kind: 'session' as const, sessionId: text('id')! }, transition: { to, from, ...extra } } : undefined
     const details = object.total_details as Record<string, unknown> | undefined
     const amounts = { providerAmount: typeof object.amount_subtotal === 'number' ? object.amount_subtotal : null, discount: typeof details?.amount_discount === 'number' ? details.amount_discount : 0, tax: typeof details?.amount_tax === 'number' ? details.amount_tax : 0, total: typeof object.amount_total === 'number' ? object.amount_total : undefined }
+    if(['customer.subscription.created','customer.subscription.updated','customer.subscription.deleted'].includes(event.type)) {
+      const match=byAttempt(),id=text('id'),status=event.type==='customer.subscription.deleted'?'canceled':text('status')
+      if(!match || !id || !status || !['incomplete','incomplete_expired','trialing','active','past_due','canceled','unpaid','paused'].includes(status))return {status:200,outcome:'ignored'}
+      const payment=await this.repository.match(match)
+      if(!payment || Boolean(payment.livemode)!==event.livemode)return {status:200,outcome:'ignored'}
+      const settings=JSON.parse(payment.checkoutSettingsJson) as {mode?:string;interval?:string}
+      if(settings.mode!=='subscription' && !(settings.mode==='donation' && settings.interval))return {status:200,outcome:'ignored'}
+      return {status:200,outcome:await this.repository.subscriptionEvent(event,payment,id,status,new Date().toISOString())}
+    }
     if(event.type==='charge.succeeded' && text('payment_intent')) {
       const payment=await this.repository.match({kind:'intent',intentId:text('payment_intent')!})
       if(!payment || Boolean(payment.livemode)!==event.livemode)return {status:200,outcome:'ignored'}
@@ -161,9 +175,18 @@ export class PaymentService {
       const last4=typeof method?.last4==='string' && /^\d{4}$/.test(method.last4) ? method.last4 : undefined
       return {status:200,outcome:await this.repository.refundEvent(event,payment,amount!,{type,last4},new Date().toISOString())}
     }
-    const handled = event.type === 'checkout.session.completed' ? object.payment_status === 'paid' ? session('paid', ['pending', 'failed'], { paymentIntentId: text('payment_intent') ?? null, ...amounts }) : undefined
-      : event.type === 'checkout.session.async_payment_succeeded' ? session('paid', ['pending', 'failed'], { paymentIntentId: text('payment_intent') ?? null, ...amounts })
-      : event.type === 'checkout.session.async_payment_failed' ? session('failed', ['pending'])
+    let paymentIntentId=text('payment_intent')??null
+    if(['checkout.session.completed','checkout.session.async_payment_succeeded'].includes(event.type) && object.payment_status==='paid' && text('subscription') && !paymentIntentId) {
+      if(!text('invoice'))return {status:400,outcome:'invoice-missing'}
+      try {
+        const invoice=await stripeClient(this.options.apiOrigin,connection.secretKey).retrieveInvoice(text('invoice')!)
+        if(invoice.subscription!==text('subscription') || invoice.currency!=='usd' || invoice.amount_paid!==object.amount_total || !invoice.payment_intent)return {status:400,outcome:'invoice-mismatch'}
+        paymentIntentId=invoice.payment_intent
+      }catch{return {status:400,outcome:'invoice-unavailable'}}
+    }
+    const handled = event.type === 'checkout.session.completed' ? object.payment_status === 'paid' ? session('paid', ['pending', 'processing', 'failed'], { paymentIntentId, ...amounts }) : object.payment_status==='unpaid' ? session('processing',['pending'],{paymentIntentId}) : undefined
+      : event.type === 'checkout.session.async_payment_succeeded' ? session('paid', ['pending', 'processing', 'failed'], { paymentIntentId, ...amounts })
+      : event.type === 'checkout.session.async_payment_failed' ? session('failed', ['pending','processing'])
       : event.type === 'checkout.session.expired' ? session('expired', ['pending', 'failed'])
       : event.type === 'payment_intent.payment_failed' && byAttempt() ? { match: byAttempt()!, transition: { to: 'failed' as const, from: ['pending' as const] } }
       : event.type === 'charge.refunded' && object.refunded === true && text('payment_intent') ? { match: { kind: 'intent' as const, intentId: text('payment_intent')! }, transition: { to: 'refunded' as const, from: ['paid' as const] } }
@@ -172,7 +195,10 @@ export class PaymentService {
     const payment = await this.repository.match(handled.match)
     // Events from other systems on the same Stripe account, or from the other mode, are acknowledged and not kept.
     if (!payment || Boolean(payment.livemode) !== event.livemode) return { status: 200, outcome: 'ignored' }
-    if (handled.transition.to === 'paid' && (amounts.providerAmount !== payment.amount || ![amounts.providerAmount, amounts.discount, amounts.tax, amounts.total].every(value => Number.isSafeInteger(value) && value! >= 0) || amounts.total !== amounts.providerAmount - amounts.discount + amounts.tax)) return { status: 400, outcome: 'amount-mismatch' }
+    const checkout=JSON.parse(payment.checkoutSettingsJson) as {ach?:boolean;customDonation?:boolean;minimum?:number;maximum?:number}
+    if(handled.transition.to==='processing' && !checkout.ach)return {status:200,outcome:'ignored'}
+    const quotedAmount=checkout.customDonation ? Number.isSafeInteger(amounts.providerAmount) && amounts.providerAmount!>=checkout.minimum! && amounts.providerAmount!<=checkout.maximum! : amounts.providerAmount===payment.amount
+    if (handled.transition.to === 'paid' && (!quotedAmount || ![amounts.providerAmount, amounts.discount, amounts.tax, amounts.total].every(value => Number.isSafeInteger(value) && value! >= 0) || amounts.total !== amounts.providerAmount! - amounts.discount + amounts.tax)) return { status: 400, outcome: 'amount-mismatch' }
     return { status: 200, outcome: await this.repository.applyEvent(event, payment, handled.transition, new Date().toISOString()) }
   }
 

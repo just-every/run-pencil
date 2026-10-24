@@ -5,15 +5,17 @@ import type { AddressInfo } from 'node:net'
 import type { TestProject } from 'vitest/node'
 
 export type StripeRequest = { method: string; path: string; authorization: string | null; idempotencyKey: string | null; version: string | null; form: Record<string, string> }
-export type StripeSession = { id: string; object: 'checkout.session'; url: string; amount_subtotal: number; total_details: { amount_discount: number; amount_tax: number }; amount_total: number; currency: 'usd'; status: 'open' | 'complete' | 'expired'; payment_status: 'paid' | 'unpaid'; payment_intent: string | null; expires_at: number; livemode: false; client_reference_id: string | null; metadata: Record<string, string>; success_url: string; cancel_url: string }
+export type StripeSession = { invoice?:string;subscription?:string; id: string; object: 'checkout.session'; url: string; amount_subtotal: number; total_details: { amount_discount: number; amount_tax: number }; amount_total: number; currency: 'usd'; status: 'open' | 'complete' | 'expired'; payment_status: 'paid' | 'unpaid'; payment_intent: string | null; expires_at: number; livemode: false; client_reference_id: string | null; metadata: Record<string, string>; success_url: string; cancel_url: string }
 
 export default async function setup(project: TestProject) {
   const sessions = new Map<string, StripeSession>(), keys = new Map<string, string>(), requests: StripeRequest[] = []
+  const prices=new Map<string,{id:string;active:boolean;currency:string;unit_amount:number|null;recurring:{interval:string;interval_count:number}|null;preset?:number}>()
   let origin = ''
   const refunds: Array<{id:string;amount:number;payment_intent:string;created:number;status:string}>=[]
   const read = (request: IncomingMessage) => new Promise<string>(resolve => { let body = ''; request.setEncoding('utf8'); request.on('data', chunk => { body += chunk }); request.on('end', () => resolve(body)) })
   const json = (response: ServerResponse, status: number, value: unknown) => { response.writeHead(status, { 'content-type': 'application/json' }); response.end(JSON.stringify(value)) }
   const refuse = (response: ServerResponse, status: number, message: string) => json(response, status, { error: { type: 'invalid_request_error', message } })
+  const intentFor=(session:StripeSession)=>session.payment_intent??(session.invoice?'synthetic-pencil-'+(Number(session.invoice.split('-').at(-1))+1000):null)
   const server = createServer(async (request, response) => {
     const body = await read(request), url = new URL(request.url ?? '/', origin)
     if (url.pathname === '/__control/reset') { sessions.clear(); keys.clear(); requests.length = 0; return json(response, 200, { reset: true }) }
@@ -22,25 +24,41 @@ export default async function setup(project: TestProject) {
     if (control) {
       const session = sessions.get(control[2])
       if (!session || session.status !== 'open') return refuse(response, 400, 'This Checkout Session is not open.')
-      Object.assign(session, control[1] === 'complete' ? { status: 'complete', payment_status: 'paid', payment_intent: `pi_test_${session.id.slice(8)}` } : { status: 'expired' })
+      Object.assign(session, control[1] === 'complete' ? { status: 'complete', payment_status: 'paid', payment_intent: session.subscription?null:`pi_test_${session.id.slice(8)}` } : { status: 'expired' })
       return json(response, 200, session)
     }
     const form = Object.fromEntries(new URLSearchParams(body))
     requests.push({ method: request.method ?? '', path: url.pathname + url.search, authorization: request.headers.authorization ?? null, idempotencyKey: (request.headers['idempotency-key'] as string | undefined) ?? null, version: (request.headers['stripe-version'] as string | undefined) ?? null, form })
     if (!/^Bearer (?:rk|sk)_test_\w+$/.test(request.headers.authorization ?? '')) return refuse(response, 401, 'Invalid API Key provided.')
+    if(request.method==='GET' && url.pathname.startsWith('/v1/invoices/')) {
+      const session=[...sessions.values()].find(row=>row.invoice===decodeURIComponent(url.pathname.split('/').at(-1)!))
+      if(!session)return refuse(response,404,'Unknown invoice.')
+      return json(response,200,{subscription:session.subscription,amount_paid:session.amount_total,currency:'usd',payment_intent:intentFor(session)})
+    }
+    if(request.method==='GET' && url.pathname.startsWith('/v1/prices/')) {
+      const id=decodeURIComponent(url.pathname.split('/').at(-1)!)
+      if(!['synthetic-pencil-1','synthetic-pencil-2'].includes(id))return refuse(response,404,'Unknown price.')
+      const price={id,active:true,currency:'usd',unit_amount:4000,recurring:{interval:id==='synthetic-pencil-2'?'year':'month',interval_count:1}}
+      prices.set(id,price);return json(response,200,price)
+    }
+    if(request.method==='POST' && url.pathname==='/v1/prices') {
+      const id=`synthetic-pencil-${1000+prices.size}`
+      const price={id,active:true,currency:'usd',unit_amount:null,recurring:null,preset:Number(form['custom_unit_amount[preset]'])}
+      prices.set(id,price);return json(response,200,price)
+    }
     if (url.pathname==='/v1/refunds' && request.method==='POST') {
       const amount=Number(form.amount), intent=form.payment_intent
-      const session=[...sessions.values()].find(row=>row.payment_intent===intent)
-      if(!session || !Number.isSafeInteger(amount) || amount<1 || refunds.filter(row=>row.payment_intent===intent).reduce((sum,row)=>sum+row.amount,0)+amount>session.amount_total)return refuse(response,400,'Refund exceeds capture.')
+      const session=[...sessions.values()].find(row=>intentFor(row)===intent)
+      if(!session || !Number.isSafeInteger(amount) || amount<1 || refunds.filter(row=>intentFor(row)===intent).reduce((sum,row)=>sum+row.amount,0)+amount>session.amount_total)return refuse(response,400,'Refund exceeds capture.')
       const refund={id:`synthetic-pencil-${refunds.length+1}`,amount,payment_intent:intent,created:Math.floor(Date.now()/1000),status:'succeeded'}
       refunds.push(refund);return json(response,200,refund)
     }
     if(request.method==='GET' && url.pathname.startsWith('/v1/charges/')) {
       const intent=decodeURIComponent(url.pathname.split('/').at(-1)!)
-      return json(response,200,{payment_intent:intent,amount_refunded:refunds.filter(row=>row.payment_intent===intent).reduce((sum,row)=>sum+row.amount,0)})
+      return json(response,200,{payment_intent:intent,amount_refunded:refunds.filter(row=>intentFor(row)===intent).reduce((sum,row)=>sum+row.amount,0)})
     }
     if(request.method==='GET' && ['/v1/charges','/v1/refunds'].includes(url.pathname)) {
-      const data=url.pathname==='/v1/refunds'?refunds:[...sessions.values()].filter(row=>row.payment_status==='paid').map(row=>({id:row.id,amount:row.amount_total,payment_intent:row.payment_intent,paid:true,created:Math.floor(Date.now()/1000)}))
+      const data=url.pathname==='/v1/refunds'?refunds:[...sessions.values()].filter(row=>row.payment_status==='paid').map(row=>({id:row.id,amount:row.amount_total,payment_intent:intentFor(row),paid:true,created:Math.floor(Date.now()/1000)}))
       return json(response,200,{data,has_more:false})
     }
     if (request.method === 'GET' && url.pathname === '/v1/checkout/sessions') return json(response, 200, { object: 'list', data: [...sessions.values()].slice(0, Number(url.searchParams.get('limit') ?? 10)) })
@@ -58,12 +76,14 @@ export default async function setup(project: TestProject) {
     if (key && keys.has(key)) return json(response, 200, sessions.get(keys.get(key)!))
     let amount = 0
     for (let index = 0; form[`line_items[${index}][quantity]`] !== undefined; index++) {
+      const price=prices.get(form[`line_items[${index}][price]`])
+      if(price) {amount+=(price.unit_amount??price.preset!)*Number(form[`line_items[${index}][quantity]`]);continue}
       if (form[`line_items[${index}][price_data][currency]`] !== 'usd' || !form[`line_items[${index}][price_data][product_data][name]`]) return refuse(response, 400, 'Each line item needs a USD price and a product name.')
       amount += Number(form[`line_items[${index}][price_data][unit_amount]`]) * Number(form[`line_items[${index}][quantity]`])
     }
-    if (form.mode !== 'payment' || !form.success_url || !form.cancel_url || amount < 50) return refuse(response, 400, 'A payment-mode session needs success and cancel URLs and at least $0.50.')
+    if (!['payment','subscription'].includes(form.mode) || !form.success_url || !form.cancel_url || amount < 50) return refuse(response, 400, 'A payment-mode session needs success and cancel URLs and at least $0.50.')
     const id = `cs_test_${sessions.size + 1}${Math.random().toString(36).slice(2, 8)}`
-    const session: StripeSession = { id, object: 'checkout.session', url: `${origin}/pay/${id}`, amount_subtotal: amount, total_details: { amount_discount: 0, amount_tax: 0 }, amount_total: amount, currency: 'usd', status: 'open', payment_status: 'unpaid', payment_intent: null,
+    const session: StripeSession = { ...(form.mode==='subscription'?{subscription:`synthetic-pencil-${sessions.size+100}`,invoice:`synthetic-pencil-${sessions.size+1000}`} : {}),id, object: 'checkout.session', url: `${origin}/pay/${id}`, amount_subtotal: amount, total_details: { amount_discount: 0, amount_tax: 0 }, amount_total: amount, currency: 'usd', status: 'open', payment_status: 'unpaid', payment_intent: null,
       expires_at: Math.floor(Date.now() / 1000) + 86_400, livemode: false, client_reference_id: form.client_reference_id ?? null,
       metadata: Object.fromEntries(Object.entries(form).flatMap(([name, value]) => { const match = /^metadata\[(\w+)\]$/.exec(name); return match ? [[match[1], value]] : [] })), success_url: form.success_url, cancel_url: form.cancel_url }
     sessions.set(id, session)

@@ -11,6 +11,7 @@ export function PaymentRecord({ payment, time }: { payment: LedgerPayment; time:
   const ended = payment.state === 'expired' || payment.state === 'cancelled'
   const rows: Array<[string, React.ReactNode]> = [
     ['Provider', 'Stripe'],
+    ...(payment.mode ? [['Payment mode', payment.mode]] as Array<[string, React.ReactNode]> : []),
     ['Method', `${payment.methodType ?? 'Not received'}${payment.methodLast4 ? ` · ending ${payment.methodLast4}` : ''}`],
     ['Refunded', formatUsd(payment.refundedAmount ?? 0)],
     ...(payment.subscriptionStatus ? [['Subscription', payment.subscriptionStatus], ['Billing management', 'Stripe customer portal']] as Array<[string, React.ReactNode]> : []),

@@ -28,11 +28,11 @@ export function PaymentConnection() {
   const save = (event: FormEvent) => { event.preventDefault(); void run('save', async () => { setStatus(await connectionRequest('PUT', path, { secretKey: secretKey.trim(), webhookSecret: webhookSecret.trim() })); setSecretKey(''); setWebhookSecret(''); setNotice('Stripe connection saved. Test it before publishing a payment form.') }) }
   return <section className="panel settings-card" aria-labelledby="payment-connection-title">
     <header className="card-title"><CreditCard aria-hidden="true" size={22} strokeWidth={1.75} /><h2 className="display" id="payment-connection-title">Payments</h2></header>
-    <p>Respondents pay on Stripe Checkout, Stripe’s hosted page. Pencil sends Stripe each order’s items and amounts and never receives card or bank details.</p>
+    <p>Respondents pay on Stripe Checkout, Stripe’s hosted page. Pencil sends Stripe each order’s items and amounts and never receives full card or bank numbers.</p>
     {status ? <p className="muted">{status.saved ? `Stripe is connected in ${status.mode} mode with a ${status.restricted ? 'restricted' : 'secret'} key. The key and signing secret are never shown again.` : 'Stripe is not connected. Payment forms cannot take payments until it is.'}</p> : <p className="muted" role="status">{busy === 'load' ? 'Loading the Stripe connection…' : 'The Stripe connection could not load.'}</p>}
     <details className="payment-setup"><summary className="focus-ring">How to connect Stripe</summary>
       <ol className="muted">
-        <li>In the Stripe Dashboard, create a restricted key with write access to Checkout Sessions.</li>
+        <li>In the Stripe Dashboard, create a restricted key with write access to Checkout Sessions and Refunds, and read access to Charges and Invoices. Subscriptions need Prices read access; custom donations also need Prices and Products write access.</li>
         <li>Add a webhook endpoint at <code>{status?.webhookUrl ?? '/api/public/payments/stripe'}</code> for these events: {stripeWebhookEvents.map(event => <code key={event}>{event} </code>)}</li>
         <li>Paste the restricted key and the endpoint’s signing secret below.</li>
       </ol>

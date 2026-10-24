@@ -37,6 +37,14 @@ export class PaymentRepository {
     await this.db.prepare('UPDATE response_payments SET method_type=?,method_last4=? WHERE response_id=?').bind(type,last4,responseId).run()
   }
 
+  async subscriptionEvent(event:{id:string;type:string;created:number},payment:PaymentRow,id:string,status:string,now:string) {
+    const results=await this.db.batch([
+      this.db.prepare(`INSERT OR IGNORE INTO payment_events(id,type,response_id,outcome,created_at,received_at) VALUES (?,?,?,'applied',?,?) RETURNING id`).bind(event.id,event.type,payment.responseId,new Date(event.created*1000).toISOString(),now),
+      this.db.prepare(`UPDATE response_payments SET subscription_id=?,subscription_status=?,subscription_event_at=?,updated_at=? WHERE response_id=? AND attempt=? AND (subscription_id IS NULL OR subscription_id=?) AND subscription_event_at<=? AND (subscription_status IS NULL OR subscription_status!='canceled' OR ?='canceled') AND EXISTS(SELECT 1 FROM payment_events WHERE id=? AND received_at=?)`).bind(id,status,event.created,now,payment.responseId,payment.attempt,id,event.created,status,event.id,now)
+    ])
+    return results[0].results.length?'applied':'duplicate'
+  }
+
   async reserveRefund(payment: PaymentRow, amount: number) {
     return (await this.db.prepare(`UPDATE response_payments SET refund_requested=? WHERE response_id=? AND refunded_amount=? AND refund_requested=0 AND state IN ('paid','partially_refunded') AND ? <= COALESCE(total,provider_amount,amount)-refunded_amount RETURNING response_id`).bind(amount,payment.responseId,payment.refundedAmount,amount).all()).results.length === 1
   }

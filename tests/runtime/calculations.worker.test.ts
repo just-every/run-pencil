@@ -543,7 +543,7 @@ contract('LOGIC-003', 'a BMI from two decimal answers gates a branch and publish
   }
 }, 60_000)
 
-contract(['PAY-002','PAY-005'], 'preserves signed tax and discount totals in the ledger, exports, archives and erasure while refusing a changed subtotal', async () => {
+contract(['PAY-002','PAY-005','PAY-003','PAY-004'], 'preserves signed tax and discount totals in the ledger, exports, archives and erasure while refusing a changed subtotal', async () => {
   for (const promotionCodes of [false, true]) {
     const f = await fixture()
     await accepted(await f.call('/api/app/connections/payment', { secretKey: stripeKey, webhookSecret }, { method: 'PUT' }))
@@ -623,7 +623,9 @@ contract(['PAY-002','PAY-005'], 'preserves signed tax and discount totals in the
   expect(await accepted(await f.call('/api/app/payments/reconcile',{period:new Date().toISOString().slice(0,10)}))).toMatchObject({mismatch:true})
   await applyD1Migrations(env.IMPORT_SECOND,__PENCIL_CORE_MIGRATIONS__)
   await restoreFixture(env.IMPORT_SECOND,await archiveFixture(env.DB,__PENCIL_CORE_MIGRATIONS__))
-  expect(await env.IMPORT_SECOND.prepare('SELECT refunded_amount,method_type,method_last4 FROM response_payments WHERE response_id=?').bind(receipt.responseId).first()).toEqual({refunded_amount:1000,method_type:'card',method_last4:'4242'})
+  expect(await env.IMPORT_SECOND.prepare('SELECT refunded_amount,refund_requested,method_type,method_last4,subscription_id,subscription_status,subscription_event_at FROM response_payments WHERE response_id=?').bind(receipt.responseId).first()).toEqual({refunded_amount:1000,refund_requested:500,method_type:'card',method_last4:'4242',subscription_id:null,subscription_status:null,subscription_event_at:0})
+  expect(await env.IMPORT_SECOND.prepare('SELECT amount,occurred_at FROM payment_movements WHERE id=?').bind(refund.id).first()).toEqual({amount:-1000,occurred_at:new Date(JSON.parse(refund.body).created*1000).toISOString()})
+  expect(await env.IMPORT_SECOND.prepare('SELECT SUM(amount) AS net FROM payment_movements WHERE response_id=?').bind(receipt.responseId).first()).toEqual({net:3000})
   const later=await stripeEvent('refund.updated',{id:'synthetic-pencil-2',payment_intent:paid.payment_intent,charge:paid.payment_intent,status:'succeeded'})
   expect(await deliver(later)).toMatchObject({outcome:'applied'})
   expect(await deliver(later)).toMatchObject({outcome:'duplicate'})
@@ -633,5 +635,94 @@ contract(['PAY-002','PAY-005'], 'preserves signed tax and discount totals in the
   expect((await f.call(`/api/app/responses/${receipt.responseId}`,{},{method:'DELETE'})).status).toBe(204)
   expect(await env.DB.prepare('SELECT response_id FROM response_payments WHERE response_id=?').bind(receipt.responseId).first()).toBeNull()
   expect((await env.DB.prepare('SELECT id FROM payment_movements WHERE response_id=?').bind(receipt.responseId).all()).results).toEqual([])
+
+  // PAY-003: fixed monthly/yearly Stripe prices, recurring donations and bounded custom amounts on Stripe.
+  for(const mode of ['month','year','custom','recurring-donation'] as const) {
+    const b=await fixture()
+    await accepted(await b.call('/api/app/connections/payment',{secretKey:stripeKey,webhookSecret},{method:'PUT'}))
+    const subscription=mode==='month'||mode==='year'
+    const pricing={products:[{id:'synthetic-pencil-1',name:'Support',unitAmount:4000}],options:[],minimum:1000,maximum:10000,...(subscription?{mode:'subscription',priceId:mode==='year'?'synthetic-pencil-2':'synthetic-pencil-1',interval:mode}:{mode:'donation',...(mode==='custom'?{customDonation:true}:{interval:'month'})})}
+    await accepted(await b.call(`${b.base}/draft/steps`,{expectedVersion:(await b.read()).flow.draftVersion,step:{kind:'payment',questionType:null,prompt:'Support us',nextStepId:b.ordinary.id,questionSettings:{payment:pricing}}}),201)
+    const step=(await b.read()).steps.find(row=>row.kind==='payment')!
+    await accepted(await b.call(`${b.base}/draft`,{expectedVersion:(await b.read()).flow.draftVersion,stepId:b.discount.id,prompt:b.discount.prompt,required:true,nextStepId:step.id},{method:'PUT'}))
+    if(subscription) {
+      await accepted(await b.call(`${b.base}/draft`,{expectedVersion:(await b.read()).flow.draftVersion,stepId:step.id,prompt:step.prompt,required:false,nextStepId:b.ordinary.id,questionSettings:{payment:{...pricing,products:[{id:'synthetic-pencil-1',name:'Support',unitAmount:4100}]}}},{method:'PUT'}))
+      await accepted(await b.publish(),201)
+      const wrong=await b.start()
+      expect((await b.call(`/api/public/flows/${b.slug}/responses`,{...wrong,loadTime:await issueLoadTime(env.SESSION_SECRET,wrong.revisionId,Date.now()-5000),idempotencyKey:crypto.randomUUID(),answers:[{stepId:b.quantity.id,value:2},{stepId:b.discount.id,value:false}]},{auth:false})).status).toBe(400)
+      expect((await b.ledger()).responses).toHaveLength(0)
+      await accepted(await b.call(`${b.base}/draft`,{expectedVersion:(await b.read()).flow.draftVersion,stepId:step.id,prompt:step.prompt,required:false,nextStepId:b.ordinary.id,questionSettings:{payment:pricing}},{method:'PUT'}))
+    }
+    await accepted(await b.publish(),201)
+    const session=await b.start(), input={...session,loadTime:await issueLoadTime(env.SESSION_SECRET,session.revisionId,Date.now()-5000),idempotencyKey:crypto.randomUUID(),answers:[{stepId:b.quantity.id,value:2},{stepId:b.discount.id,value:false}]}
+    expect((await b.call(`/api/public/flows/${b.slug}/responses`,{...input,amount:1},{auth:false})).status).toBe(400)
+    const receipt=await accepted<{responseId:string}>(await b.call(`/api/public/flows/${b.slug}/responses`,input,{auth:false}),201)
+    const request=(await stripe.state()).requests.filter(row=>row.path==='/v1/checkout/sessions'&&row.method==='POST').at(-1)!
+    expect(request.form.mode).toBe(mode==='custom'?'payment':'subscription')
+    if(subscription)expect(request.form['line_items[0][price]']).toBe(pricing.priceId)
+    if(mode==='custom')expect((await stripe.state()).requests.filter(row=>row.path==='/v1/prices'&&row.method==='POST').at(-1)!.form).toMatchObject({'custom_unit_amount[enabled]':'true','custom_unit_amount[minimum]':'1000','custom_unit_amount[maximum]':'10000','custom_unit_amount[preset]':'4000'})
+    const checkout=Object.values((await stripe.state()).sessions).find(row=>row.client_reference_id===receipt.responseId)!
+    const paid=await stripe.settle('complete',checkout.id)
+    const charged=mode==='custom'?{...paid,amount_subtotal:6000,amount_total:6000}:paid
+    if(mode==='custom')expect(await deliver(await stripeEvent('checkout.session.completed',{...paid,amount_subtotal:10001,amount_total:10001}))).toMatchObject({status:400,outcome:'amount-mismatch'})
+    expect(await deliver(await stripeEvent('checkout.session.completed',charged))).toMatchObject({outcome:'applied'})
+    const record=async()=>(await b.ledger()).responses.find(row=>row.id===receipt.responseId)!.payment!
+    expect(await record()).toMatchObject({state:'paid',mode:subscription?'subscription':'donation',providerAmount:mode==='custom'?6000:4000})
+    if(mode!=='custom') {
+      const metadata={pencil_response:receipt.responseId,pencil_attempt:'1'}, id=checkout.subscription!
+      expect(id).toBeTruthy()
+      const at=Math.floor(Date.now()/1000)
+      expect(await deliver(await stripeEvent('customer.subscription.created',{id,status:'active',metadata},{at}))).toMatchObject({outcome:'applied'})
+      expect(await record()).toMatchObject({subscriptionStatus:'active'})
+      const cancelled=await stripeEvent('customer.subscription.deleted',{id,metadata},{at:at+1})
+      expect(await deliver(cancelled)).toMatchObject({outcome:'applied'})
+      expect(await deliver(cancelled)).toMatchObject({outcome:'duplicate'})
+      await deliver(await stripeEvent('customer.subscription.updated',{id,status:'active',metadata},{at}))
+      expect(await record()).toMatchObject({state:'paid',subscriptionStatus:'canceled'})
+      const captured=await record()
+      expect(captured.paymentIntentId).toBeTruthy()
+      await accepted(await b.call(`/api/app/payments/${receipt.responseId}/refund`,{amount:1000,confirm:true}))
+      expect(await deliver(await stripeEvent('charge.refunded',{id:'synthetic-pencil-4',payment_intent:captured.paymentIntentId,amount_refunded:1000}))).toMatchObject({outcome:'applied'})
+      expect(await record()).toMatchObject({state:'partially_refunded',subscriptionStatus:'canceled',refundedAmount:1000})
+      await applyD1Migrations(env.IMPORT_SECOND,__PENCIL_CORE_MIGRATIONS__)
+      await restoreFixture(env.IMPORT_SECOND,await archiveFixture(env.DB,__PENCIL_CORE_MIGRATIONS__))
+      expect(await env.IMPORT_SECOND.prepare('SELECT subscription_id,subscription_status,subscription_event_at FROM response_payments WHERE response_id=?').bind(receipt.responseId).first()).toEqual({subscription_id:id,subscription_status:'canceled',subscription_event_at:at+1})
+    }
+    expect((await b.call(`/api/app/responses/${receipt.responseId}`,{},{method:'DELETE'})).status).toBe(204)
+    expect(await env.DB.prepare('SELECT subscription_id FROM response_payments WHERE response_id=?').bind(receipt.responseId).first()).toBeNull()
+  }
+
+  // PAY-004: delayed settlement does not admit a response before the signed success event.
+  for(const succeeds of [true,false]) {
+    const b=await fixture()
+    await accepted(await b.call('/api/app/connections/payment',{secretKey:stripeKey,webhookSecret},{method:'PUT'}))
+    await accepted(await b.call(`${b.base}/draft/steps`,{expectedVersion:(await b.read()).flow.draftVersion,step:{kind:'payment',questionType:null,prompt:'Pay by bank',nextStepId:b.ordinary.id,questionSettings:{payment:{products:[{id:'synthetic-pencil-1',name:'Order',unitAmount:4000}],options:[],minimum:50,maximum:10000,ach:true}}}}),201)
+    const step=(await b.read()).steps.find(row=>row.kind==='payment')!
+    await accepted(await b.call(`${b.base}/draft`,{expectedVersion:(await b.read()).flow.draftVersion,stepId:b.discount.id,prompt:b.discount.prompt,required:true,nextStepId:step.id},{method:'PUT'}))
+    await accepted(await b.call(`${b.base}/publish`,{expectedVersion:(await b.read()).flow.draftVersion,targetCompletedResponses:1}),201)
+    const {receipt,input}=await b.submit([{stepId:b.quantity.id,value:2},{stepId:b.discount.id,value:false}])
+    const request=(await stripe.state()).requests.filter(row=>row.path==='/v1/checkout/sessions'&&row.method==='POST').at(-1)!
+    expect(request.form).toMatchObject({'payment_method_types[0]':'card','payment_method_types[1]':'us_bank_account'})
+    const checkout=Object.values((await stripe.state()).sessions).find(row=>row.client_reference_id===receipt.responseId)!
+    const paid=await stripe.settle('complete',checkout.id)
+    const processing=await stripeEvent('checkout.session.completed',{...paid,payment_status:'unpaid'})
+    expect(await deliver(processing)).toMatchObject({outcome:'applied'})
+    expect(await deliver(processing)).toMatchObject({outcome:'duplicate'})
+    const record=async()=>(await b.ledger()).responses.find(row=>row.id===receipt.responseId)!.payment!
+    expect(await record()).toMatchObject({state:'processing',total:null,providerAmount:null})
+    expect(await accepted(await b.call(`/api/public/flows/${b.slug}/responses`,input,{auth:false}),201)).toMatchObject({payment:{state:'processing'},completionStepId:b.ordinary.id})
+    const start=()=>b.call(`/api/public/flows/${b.slug}/sessions`,{deviceClass:'desktop',source:'direct'},{auth:false})
+    expect((await start()).status).toBe(201)
+    await applyD1Migrations(env.IMPORT_SECOND,__PENCIL_CORE_MIGRATIONS__)
+    await restoreFixture(env.IMPORT_SECOND,await archiveFixture(env.DB,__PENCIL_CORE_MIGRATIONS__))
+    expect(await env.IMPORT_SECOND.prepare('SELECT state,total FROM response_payments WHERE response_id=?').bind(receipt.responseId).first()).toEqual({state:'processing',total:null})
+    const settlement=await stripeEvent(succeeds?'checkout.session.async_payment_succeeded':'checkout.session.async_payment_failed',paid)
+    expect(await deliver(settlement)).toMatchObject({outcome:'applied'})
+    expect(await deliver(settlement)).toMatchObject({outcome:'duplicate'})
+    expect(await record()).toMatchObject({state:succeeds?'paid':'failed'})
+    expect((await start()).status).toBe(succeeds?409:201)
+    expect((await b.call(`/api/app/responses/${receipt.responseId}`,{},{method:'DELETE'})).status).toBe(204)
+    expect(await env.DB.prepare('SELECT response_id FROM response_payments WHERE response_id=?').bind(receipt.responseId).first()).toBeNull()
+  }
 
 })
