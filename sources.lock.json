@@ -4373,7 +4373,7 @@
       "executable": false
     },
     "src/core/features/dashboard/ui/dashboard.css": {
-      "sha256": "5bdd89efb1fddd797614d386191560c1cd35855f85c424799c43ba619c594f0f",
+      "sha256": "93234626949bf99c4494ced58de65ad3d2a6ef9f49cdfd53181a14bfe9880e83",
       "executable": false
     },
     "src/core/features/dashboard/ui/DashboardPage.tsx": {
