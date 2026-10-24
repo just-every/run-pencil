@@ -39,6 +39,8 @@ async function form(request: APIRequestContext, slug: string, target?: number, t
 
 contract('RESP-009', 'a respondent losing manual or final target admission sees a named closed page and saves no response', async ({ page }, info) => {
   test.setTimeout(90_000)
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
   await login(page.request)
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
@@ -64,6 +66,7 @@ contract('RESP-009', 'a respondent losing manual or final target admission sees 
         await page.setViewportSize(viewport)
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
         await expect(new AxeBuilder({ page }).analyze().then((result) => result.violations)).resolves.toEqual([])
+        await page.screenshot({ path: info.outputPath(`respondent-settings-${viewport.width}.png`), fullPage: true })
       }
       await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
     }
@@ -109,12 +112,21 @@ contract('RESP-009', 'a respondent losing manual or final target admission sees 
     } else expect((await page.request.post(`${f.path}/reopen`, { headers: mutationHeaders })).status()).toBe(400)
     await mkdir('test-results/review-evidence', { recursive: true })
     await page.screenshot({ path: `test-results/review-evidence/${info.project.name}-closed-${reason}.png`, fullPage: true })
+    if (reason === 'target') {
+      await page.goto(`/app/flows/${f.id}/results`)
+      await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
+      await page.getByRole('button', { name: 'View answers', exact: true }).first().click()
+      await expect(page.getByText('By submitting you agree to receive our newsletter; unsubscribe any time.', { exact: true })).toBeVisible()
+      await page.screenshot({ path: info.outputPath(`consent-records-${info.project.name}.png`), fullPage: true })
+    }
   }
   expect(errors).toEqual([])
 })
 
 test('closed documents render their business and flow without JavaScript, honor embed hosts, and archive to a genuine 404', async ({ page, browser }, info) => {
   test.setTimeout(90_000)
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
   await login(page.request)
   const slug = `closed-document-${info.project.name}-${Date.now()}`
   const f = await form(page.request, slug)

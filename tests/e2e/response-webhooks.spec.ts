@@ -9,6 +9,8 @@ import { openStateDatabase, stateDatabaseFile } from './state-database'
 contract(['INTEG-010', 'INTEG-015'], 'an owner adds a response webhook, sees its secret once, tests it, and an operator sees the disabled alert at both widths', async ({ page }, info) => {
   test.setTimeout(120_000)
   const origin = new URL(info.project.use.baseURL!).origin
+  const cdp = await page.context().newCDPSession(page)
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
   await signInEmptyWorkspace(page)
   const call = async <T,>(path: string, data?: unknown) => { const response = await page.request.fetch(path, { method: data === undefined ? 'GET' : 'POST', headers: { Origin: origin }, ...(data === undefined ? {} : { data }) }); expect(response.status(), await response.text()).toBeLessThan(300); return await response.json() as T }
   const flow = await call<{ id: string }>('/api/app/flows', { title: 'Webhook feedback', slug: `webhooks-${info.project.name}-${Date.now()}` })
