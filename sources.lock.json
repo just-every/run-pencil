@@ -6269,11 +6269,11 @@
       "executable": false
     },
     "src/core/features/webhooks/endpoints.ts": {
-      "sha256": "3ad47c3439bc8e4424ab3ea3e9b866390d8dc1840de88bfca349554430c95fc9",
+      "sha256": "0b236afb6141dae0811435d5bca550dfdce4a2a2b0feebb8d95f6c7dc5a5697e",
       "executable": false
     },
     "src/core/features/webhooks/events.ts": {
-      "sha256": "9f50244684df99ce650b555ec5ced6012128200a64f8c660c35ffbabf75f49d6",
+      "sha256": "3927c58df664beb88239bed27c51991de99385f34547cb2517a290310fdb84ee",
       "executable": false
     },
     "src/core/features/webhooks/index.ts": {

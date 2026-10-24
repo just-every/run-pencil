@@ -13,4 +13,3 @@ export const disableAfterFailures = 10
 export const disableAfterMilliseconds = 24 * 3_600_000
 /** The longest an event keeps retrying: attempt n+1 runs this many minutes after the first attempt. */
 export const retryOffsetsMinutes = [1, 5, 15, 30, 60, 120, 240, 480, 960, 1440] as const
-
