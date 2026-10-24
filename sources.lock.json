@@ -4705,7 +4705,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/authoring.css": {
-      "sha256": "0009c041f06f92e4c93fac4e7bfbf88c0539fdb4c91c015e4db02761a73e289f",
+      "sha256": "425e3f81c6def8eb27a3e51d88fb138b3ae35c2852c19d1358f5ec0060a4caf8",
       "executable": false
     },
     "src/core/features/flows/ui/BranchEditor.tsx": {
@@ -4773,7 +4773,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/link-preview.css": {
-      "sha256": "b2a56df5443d250e000d9ff0e63c85ae583cea004f0b5c5d90336c971766c59a",
+      "sha256": "8dffd047cd45ab723e05363646b9b619c32b357cba4767e4755670caad8d2811",
       "executable": false
     },
     "src/core/features/flows/ui/PrefillSettings.tsx": {
