@@ -9,16 +9,16 @@ type Captured = { path: string; authorization: string | null; idempotencyKey: st
 
 export default async function setup(project: TestProject) {
   let mode: Mode = 'ok', delayMilliseconds = 0
-  let googleDown=false
+  let googleDown=false, googleTabs=1, googleBytes=0, googleDropWrite=false
   const sheetRows=new Map<string,string[][]>()
   const tasks = new Map<string, string>(), faulted = new Set<string>(), requests: Captured[] = []
   const read = (request: IncomingMessage) => new Promise<string>(resolve => { let body = ''; request.setEncoding('utf8'); request.on('data', chunk => { body += chunk }); request.on('end', () => resolve(body)) })
   const json = (response: ServerResponse, status: number, value: unknown) => { response.writeHead(status, { 'content-type': 'application/json' }); response.end(JSON.stringify(value)) }
   const server = createServer(async (request, response) => {
     const body = await read(request)
-    if (request.url === '/__control/reset') { const options = JSON.parse(body || '{}'); mode = options.mode ?? 'ok'; delayMilliseconds = options.delayMilliseconds ?? 0; tasks.clear(); faulted.clear(); sheetRows.clear();googleDown=false;requests.length = 0; return json(response, 200, { reset: true }) }
+    if (request.url === '/__control/reset') { const options = JSON.parse(body || '{}'); mode = options.mode ?? 'ok'; delayMilliseconds = options.delayMilliseconds ?? 0; tasks.clear(); faulted.clear(); sheetRows.clear();googleDown=false;googleTabs=1;googleBytes=0;googleDropWrite=false;requests.length = 0; return json(response, 200, { reset: true }) }
     if (request.url === '/__control/state') return json(response, 200, { tasks: Object.fromEntries(tasks), requests,sheets:Object.fromEntries(sheetRows) })
-    if(request.url==='/__control/google-mode'){googleDown=JSON.parse(body).down;return json(response,200,{down:googleDown})}
+    if(request.url==='/__control/google-mode'){const options=JSON.parse(body);googleDown=options.down??false;googleTabs=options.tabs??1;googleBytes=options.bytes??0;googleDropWrite=options.dropWrite??false;if(options.book&&options.rows)sheetRows.set(options.book,options.rows);return json(response,200,{down:googleDown})}
     requests.push({ path: request.url ?? '', authorization: request.headers.authorization ?? null, idempotencyKey: (request.headers['idempotency-key'] as string | undefined) ?? null, contentType: request.headers['content-type'] ?? null, body })
     const url=new URL(request.url??'/',`http://127.0.0.1:${(server.address() as AddressInfo).port}`)
     if(url.pathname==='/o/oauth2/v2/auth'){const callback=new URL(url.searchParams.get('redirect_uri')!);callback.searchParams.set('state',url.searchParams.get('state')!);callback.searchParams.set('code','synthetic-pencil-google-code');response.writeHead(302,{location:callback.href});return response.end()}
@@ -29,7 +29,11 @@ export default async function setup(project: TestProject) {
       const match=/^\/v4\/spreadsheets\/([^/]+)(?:\/values\/(.*))?$/.exec(url.pathname)
       if(!match)return json(response,404,{error:{message:'missing-sheet'}})
       const book=match[1]
-      if(!match[2])return json(response,200,{spreadsheetId:book,properties:{title:'Synthetic pencil workbook'},sheets:[{properties:{sheetId:1,title:'Synthetic responses'}}]})
+      if(!match[2]){
+        const result={spreadsheetId:book,properties:{title:'Synthetic pencil workbook'},sheets:Array.from({length:googleTabs},(_,i)=>({properties:{sheetId:i+1,title:i?'Synthetic '+(i+1):'Synthetic responses'}}))}
+        if(googleBytes){const text=JSON.stringify({...result,padding:''}),padded=text.slice(0,-2)+' '.repeat(Math.max(0,googleBytes-Buffer.byteLength(text)))+text.slice(-2);response.writeHead(200,{'content-type':'application/json'});return response.end(padded)}
+        return json(response,200,result)
+      }
       const range=decodeURIComponent(match[2]),rows=sheetRows.get(book)??[];sheetRows.set(book,rows)
       if(request.method==='GET')return json(response,200,{values:rows})
       const payload=JSON.parse(body||'{}'),row=/!A(\d+)/.exec(range)
@@ -37,6 +41,7 @@ export default async function setup(project: TestProject) {
       else if(range.endsWith(':clear')){if(row)rows[Number(row[1])-1]=[]}
       else if(request.method==='PUT'&&row)rows[Number(row[1])-1]=payload.values[0]
       else return json(response,400,{error:{message:'unsupported-write'}})
+      if(googleDropWrite){googleDropWrite=false;return request.socket.destroy()}
       return json(response,200,{updatedRows:1})
     }
     if (/^\/2010-04-01\/Accounts\/[^/]+\/Messages\.json$/.test(request.url??'')){

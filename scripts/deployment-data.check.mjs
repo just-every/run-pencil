@@ -45,6 +45,7 @@ function fixture() {
     insert('responses', { id, workspace_id: 'workspace', flow_id: 'flow', revision_id: revision, session_id: `${id}-removed-session`, session_token_hash: `${id}-hash`, idempotency_key: `${id}-receipt`, state, quarantine_reason: state === 'quarantined' ? 'minimum-fill-time' : null, released_at: state === 'released' ? stamp : null, completed_at: stamp, created_at: stamp, updated_at: stamp, source: 'direct', started_at: stamp, device_class: state === 'released' ? 'mobile' : 'tablet', response_context_json: JSON.stringify({prefill:{'stable-question':'edited'}}) });
     insert('response_answers', { id: `${id}-answer`, response_id: id, step_id: 'stable-question', value_json: JSON.stringify('  Exact 😀 line\n=literal,"quote"\u0000\t  '), created_at: stamp, updated_at: stamp });
   }
+  insert('google_sheet_links',{id:'synthetic-pencil-sheet-link',workspace_id:'workspace',flow_id:'flow',spreadsheet_id:'synthetic-pencil-book',tab:'Synthetic responses',columns_json:'[]',armed:1,updated_at:stamp});
   insert('confirmation_deliveries',{id:'confirmation:completed',response_id:'completed',recipient:'synthetic-pencil-receipt@example.test',message_json:JSON.stringify({subject:'Receipt',text:'Retained respondent answer',html:'<p>Retained respondent answer</p>'}),status:'pending',attempts:1,available_at:stamp,armed:1,created_at:stamp,updated_at:stamp});
   insert('confirmation_attempts',{id:'synthetic-pencil-confirmation-attempt',delivery_id:'confirmation:completed',ordinal:1,event:'transient',provider:'development',created_at:stamp});
   insert('response_webhook_endpoints',{id:'synthetic-pencil-endpoint',workspace_id:'workspace',flow_id:'flow',url:'https://receiver.example.test/hook',sealed_secret:'synthetic-pencil-sealed-webhook-secret',secret_version:2,state:'active',failure_streak:3,created_at:stamp,updated_at:stamp});
@@ -130,6 +131,7 @@ test('full current-data roundtrip preserves prefill markers, disabled confirmati
     const database = new DatabaseSync(f.restored, { readOnly: true });
     assert.deepEqual(database.prepare('SELECT id,device_class FROM responses ORDER BY id').all().map(row=>[row.id,row.device_class]), [['completed','mobile'],['suspected','tablet']]);
     assert.deepEqual(JSON.parse(database.prepare("SELECT response_context_json AS context FROM responses WHERE id='completed'").get().context).prefill, {'stable-question':'edited'});
+    assert.equal(database.prepare("SELECT armed FROM google_sheet_links WHERE id='synthetic-pencil-sheet-link'").get().armed,0);
     assert.equal(database.prepare("SELECT armed FROM confirmation_deliveries WHERE response_id='completed'").get().armed,0);
     assert.equal(JSON.parse(database.prepare("SELECT message_json FROM confirmation_deliveries WHERE response_id='completed'").get().message_json).text,'Retained respondent answer');
     assert.equal(database.prepare("SELECT count(*) AS n FROM confirmation_attempts WHERE delivery_id='confirmation:completed'").get().n,1);

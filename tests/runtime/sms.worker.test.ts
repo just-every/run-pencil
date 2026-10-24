@@ -24,6 +24,11 @@ contract('DIST-011','SMS invitations require recorded consent, use sealed owner 
  const wording='I agree to receive invitations and reminders by SMS. Reply STOP to opt out.'
  const contact=await accepted(await f.call(contacts,{name:'Synthetic SMS recipient',email:'sms@synthetic.test',mobile,smsConsent:{given:true,wording},fields:{}}),201)
  expect(await env.DB.prepare('SELECT mobile,given,wording,actor_operator_id AS actor,actor_kind AS kind,source,created_at AS at FROM sms_consent_events WHERE contact_id=?').bind(contact.id).first()).toMatchObject({mobile,given:1,wording,actor:f.lead.operatorId,kind:'operator',source:'operator-recorded',at:expect.any(String)})
+ // A mixed selection is refused atomically, including its otherwise eligible recipient.
+ const beforeMixed=await accepted(await f.call(path))
+ expect((await f.call(path,{channel:'sms',contactIds:[contact.id,unconsented.id],commandKey:'synthetic-pencil-mixed-consent'})).status).toBe(400)
+ expect(await accepted(await f.call(path))).toEqual(beforeMixed)
+ expect(((await (await fetch(receiver+'/__control/state')).json()) as {requests:unknown[]}).requests).toHaveLength(0)
  await env.DB.prepare("UPDATE workspaces SET name='Synthetic pencil business',sending_window_start='00:00',sending_window_end='00:00' WHERE id=?").bind(f.workspaceId).run()
  await accepted(await f.call(path,{channel:'sms',contactIds:[contact.id],commandKey:'synthetic-pencil-consented'}),201)
  const state=await (await fetch(receiver+'/__control/state')).json() as {requests:Array<{body:string;authorization:string;idempotencyKey:string}>}
@@ -43,6 +48,24 @@ contract('DIST-011','SMS invitations require recorded consent, use sealed owner 
  expect(((await (await fetch(receiver+'/__control/state')).json()) as {requests:unknown[]}).requests).toHaveLength(1)
  params.set('Body','HELP');const help=await webhook(await sign());expect(help.status).toBe(200);expect(await help.text()).toContain('Synthetic pencil business')
  expect((await f.call(path,{channel:'sms',contactIds:[contact.id],commandKey:'synthetic-pencil-after-stop'})).status).toBe(400)
+ // Changing a number cancels frozen deliveries; new consent does not rewrite an old invitation.
+ const moved=await accepted(await f.call(contacts,{name:'Synthetic moved mobile',email:'moved@synthetic.test',mobile:'+15555550103',smsConsent:{given:true,wording},fields:{}}),201)
+ await accepted(await f.call(path,{channel:'sms',contactIds:[moved.id],commandKey:'synthetic-pencil-before-mobile-change'}),201)
+ const frozen=await accepted(await f.call(path)),oldInvitation=frozen.participants.find((p:any)=>p.email==='moved@synthetic.test'&&p.kind==='invitation')
+ const oldReminder=frozen.participants.find((p:any)=>p.email==='moved@synthetic.test'&&p.kind==='reminder');expect(oldReminder.status).toBe('pending')
+ await accepted(await f.call(contacts+'/'+moved.id,{name:'Synthetic moved mobile',email:'moved@synthetic.test',mobile:'+15555550104',fields:{}},{method:'PUT'}))
+ expect((await accepted(await f.call(path))).participants.find((p:any)=>p.deliveryId===oldReminder.deliveryId).status).toBe('cancelled')
+ expect((await f.call(path,{channel:'sms',contactIds:[moved.id],commandKey:'synthetic-pencil-new-number-no-consent'})).status).toBe(400)
+ await accepted(await f.call(contacts+'/'+moved.id,{name:'Synthetic moved mobile',email:'moved@synthetic.test',mobile:'+15555550104',smsConsent:{given:true,wording},fields:{}},{method:'PUT'}))
+ const already=await accepted(await f.call(path,{channel:'sms',contactIds:[moved.id],commandKey:'synthetic-pencil-new-number-old-revision'}),201)
+ expect(already.counts.alreadyInvited).toBe(1);expect(already.counts.invited).toBe(0)
+ const fresh=await accepted(await f.call('/api/app/flows',{title:'Synthetic new eligible SMS form',slug:'sms-fresh-'+crypto.randomUUID().slice(0,8),template:'feedback'}),201)
+ const freshBase='/api/app/flows/'+fresh.id, freshDraft=await accepted(await f.call(freshBase+'/draft'))
+ await accepted(await f.call(freshBase+'/publish',{expectedVersion:freshDraft.flow.draftVersion}),201)
+ await accepted(await f.call(freshBase+'/distribution',{channel:'sms',contactIds:[moved.id],commandKey:'synthetic-pencil-new-number-fresh-form'}),201)
+ const movedRequests=((await (await fetch(receiver+'/__control/state')).json()) as {requests:Array<{body:string}>}).requests
+ expect(movedRequests.map(r=>new URLSearchParams(r.body).get('To'))).toEqual([mobile,'+15555550103','+15555550104'])
+ expect((await accepted(await f.call(path))).participants.find((p:any)=>p.deliveryId===oldInvitation.deliveryId).status).toBe('sent')
  expect((await everyStoredValue()).join('\n')).not.toContain(token)
  const backup=await accepted(await f.call('/api/app/backup/export',{}));expect(JSON.stringify(backup)).not.toContain(token)
  await accepted(await f.call(contacts+'/'+contact.id+'/erase',{confirm:true}))

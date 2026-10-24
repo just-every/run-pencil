@@ -77,7 +77,7 @@ export function ResultsPage() {
       {busy ? <p role="status">Updating the combined results selection…</p> : null}
       {!busy && !error ? <>
       <QuestionResults questions={questions} flowId={flowId} filter={filter} revisions={selectedRevision === 'all' ? revisions : undefined}>
-        {devices ? <DeviceSplit report={devices} /> : <p role="status">Loading device split…</p>}
+        {devices ? <DeviceSplit report={devices} /> : <p aria-busy="true">Loading device split…</p>}
       </QuestionResults>
       <p><Link className="quiet-button focus-ring" to="/app/actions/new" search={{ flowId, revisionId: results.revision.id }}>Turn these results into an action</Link></p>
       <ResultMetrics results={results} />

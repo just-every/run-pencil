@@ -110,6 +110,9 @@ export async function publishedPreviewJourney(page: Page, request: APIRequestCon
   }
   const retired=await request.post('/api/app/flows',{headers:{...appHeaders,Cookie:cookie},data:{title:'Synthetic address refusal',slug}})
   expect(retired.status()).toBe(400)
+  const reclaim=await request.put(base+'/address',{headers:{...appHeaders,Cookie:cookie},data:{expectedSlug:renamed,slug}})
+  expect(reclaim.status()).toBe(409)
+  expect((await draft()).flow.slug).toBe(renamed)
   const mapped=new URL(`/f/${renamed}`,origin);mapped.hostname=mapped.hostname==='localhost'?'127.0.0.1':'localhost'
   const mappedProtected=await inspect(mapped.href)
   expect(mappedProtected.status).toBe(200);expect(mappedProtected.meta).toMatchObject({'og:title':settings.linkPreview.title,'og:url':new URL(`/f/${renamed}`,origin).href,robots:'noindex, nofollow'})

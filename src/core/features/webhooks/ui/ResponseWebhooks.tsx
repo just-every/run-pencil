@@ -41,7 +41,7 @@ export function ResponseWebhooks() {
         <div className="builder-actions"><button className="secondary-button focus-ring" type="submit" disabled={!url.trim()}>{busy === 'add' ? 'Adding…' : 'Add endpoint'}</button></div>
       </fieldset>
     </form>
-    {!endpoints ? <p className="muted" role="status">{busy === 'load' ? 'Loading endpoints…' : 'Endpoints could not load.'}</p> : endpoints.length ? <ul className="webhook-endpoints">{endpoints.map(endpoint => <li key={endpoint.id} data-state={endpoint.state}>
+    {!endpoints ? <p className="muted" aria-busy={busy === 'load'}>{busy === 'load' ? 'Loading endpoints…' : 'Endpoints could not load.'}</p> : endpoints.length ? <ul className="webhook-endpoints">{endpoints.map(endpoint => <li key={endpoint.id} data-state={endpoint.state}>
       <p><strong>{endpoint.url}</strong></p>
       <p className="muted">{endpoint.flowTitle ? `Form: ${endpoint.flowTitle}` : 'Every form'} · {endpoint.state === 'active' ? 'Active' : endpoint.state === 'paused' ? 'Paused' : 'Disabled'} · {endpoint.pending} waiting · {endpoint.failed} not delivered{endpoint.secretSet ? '' : ' · no signing secret'}</p>
       {endpoint.state === 'disabled' ? <p className="status-note" data-tone="error" role="alert">Disabled: {endpoint.disabledReason}</p> : endpoint.failureStreak > 0 ? <p className="status-note" role="status">Failing: {endpoint.failureStreak} attempts in a row. Pencil keeps retrying for 24 hours.</p> : null}
