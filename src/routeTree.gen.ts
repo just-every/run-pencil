@@ -19,6 +19,7 @@ import { Route as AppAudienceRouteImport } from './routes/app.audience'
 import { Route as AppAuditRouteImport } from './routes/app.audit'
 import { Route as AppBackupRouteImport } from './routes/app.backup'
 import { Route as AppImportRouteImport } from './routes/app.import'
+import { Route as AppPaymentsRouteImport } from './routes/app.payments'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as DocsIndexRouteImport } from './routes/docs.index'
 import { Route as DocsSplatRouteImport } from './routes/docs.$'
@@ -85,6 +86,11 @@ const AppBackupRoute = AppBackupRouteImport.update({
 const AppImportRoute = AppImportRouteImport.update({
   id: '/import',
   path: '/import',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPaymentsRoute = AppPaymentsRouteImport.update({
+  id: '/payments',
+  path: '/payments',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
@@ -183,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/app/audit': typeof AppAuditRoute
   '/app/backup': typeof AppBackupRoute
   '/app/import': typeof AppImportRoute
+  '/app/payments': typeof AppPaymentsRoute
   '/app/settings': typeof AppSettingsRoute
   '/docs/$': typeof DocsSplatRoute
   '/docs/$slug': typeof DocsSlugRoute
@@ -211,6 +218,7 @@ export interface FileRoutesByTo {
   '/app/audit': typeof AppAuditRoute
   '/app/backup': typeof AppBackupRoute
   '/app/import': typeof AppImportRoute
+  '/app/payments': typeof AppPaymentsRoute
   '/app/settings': typeof AppSettingsRoute
   '/docs/$': typeof DocsSplatRoute
   '/docs/$slug': typeof DocsSlugRoute
@@ -241,6 +249,7 @@ export interface FileRoutesById {
   '/app/audit': typeof AppAuditRoute
   '/app/backup': typeof AppBackupRoute
   '/app/import': typeof AppImportRoute
+  '/app/payments': typeof AppPaymentsRoute
   '/app/settings': typeof AppSettingsRoute
   '/docs/$': typeof DocsSplatRoute
   '/docs/$slug': typeof DocsSlugRoute
@@ -272,6 +281,7 @@ export interface FileRouteTypes {
     | '/app/audit'
     | '/app/backup'
     | '/app/import'
+    | '/app/payments'
     | '/app/settings'
     | '/docs/$'
     | '/docs/$slug'
@@ -300,6 +310,7 @@ export interface FileRouteTypes {
     | '/app/audit'
     | '/app/backup'
     | '/app/import'
+    | '/app/payments'
     | '/app/settings'
     | '/docs/$'
     | '/docs/$slug'
@@ -329,6 +340,7 @@ export interface FileRouteTypes {
     | '/app/audit'
     | '/app/backup'
     | '/app/import'
+    | '/app/payments'
     | '/app/settings'
     | '/docs/$'
     | '/docs/$slug'
@@ -434,6 +446,13 @@ declare module '@tanstack/react-router' {
       path: '/import'
       fullPath: '/app/import'
       preLoaderRoute: typeof AppImportRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/payments': {
+      id: '/app/payments'
+      path: '/payments'
+      fullPath: '/app/payments'
+      preLoaderRoute: typeof AppPaymentsRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/settings': {
@@ -563,6 +582,7 @@ interface AppRouteChildren {
   AppAuditRoute: typeof AppAuditRoute
   AppBackupRoute: typeof AppBackupRoute
   AppImportRoute: typeof AppImportRoute
+  AppPaymentsRoute: typeof AppPaymentsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppActionsActionIdRoute: typeof AppActionsActionIdRoute
@@ -581,6 +601,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAuditRoute: AppAuditRoute,
   AppBackupRoute: AppBackupRoute,
   AppImportRoute: AppImportRoute,
+  AppPaymentsRoute: AppPaymentsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppIndexRoute: AppIndexRoute,
   AppActionsActionIdRoute: AppActionsActionIdRoute,

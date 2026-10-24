@@ -20,7 +20,7 @@ async function submissionWindow(load: Promise<Response>) {
   await expect.poll(()=>Date.now()-at).toBeGreaterThanOrEqual(manifest.limits.abuse.minimumSecondsFromFormLoadToSubmit*1000)
 }
 
-contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals', async ({ page, browser }, info) => {
+contract(['LOGIC-003', 'LOGIC-006', 'PAY-001', 'PAY-005'], 'builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals', async ({ page, browser }, info) => {
   test.setTimeout(240_000)
   page.setDefaultTimeout(15_000)
   const hydrationErrors:string[]=[]
@@ -377,6 +377,42 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001'], 'builds a conditional total, pre
     await fallbackContext.close(); await fallbackHost.close(); await call('/api/app/workspace', 'PUT', workspace)
   }
   expect(hydrationErrors).toEqual([])
+  // PAY-005: the existing calculated form also takes an undiscounted $40 order.
+  stripe.setCheckoutOrigin(stripe.origin)
+  const refundCdp=await page.context().newCDPSession(page)
+  await refundCdp.send('Emulation.setCPUThrottlingRate',{rate:4})
+  try {
+    const secondLoad=formLoad(page)
+    await page.goto(`/f/${slug}`)
+    await page.getByRole('spinbutton',{name:quantity.prompt,exact:true}).fill('2')
+    await page.getByRole('button',{name:'Continue',exact:true}).click()
+    await page.getByRole('radio',{name:'No',exact:true}).check()
+    await submissionWindow(secondLoad)
+    await page.getByRole('button',{name:'Continue',exact:true}).click()
+    await page.getByRole('button',{name:/Pay.*40/}).click()
+    await expect(page.getByRole('heading',{name:'Test checkout',exact:true})).toBeVisible()
+    await page.getByRole('button',{name:'Pay $40.00',exact:true}).click()
+    await expect(page.getByText(/Your payment is received\./)).toBeVisible()
+    await page.goto(`/app/flows/${flow.id}/results`)
+    await page.getByRole('button',{name:'View answers',exact:true}).first().click()
+    await page.getByRole('link',{name:'View payments and refunds',exact:true}).click()
+    await expect(page.getByRole('heading',{name:'Payments',exact:true})).toBeVisible()
+    const row=page.locator('.payments-row').filter({hasText:'Charged $40.00'})
+    await row.getByRole('button',{name:'Refund payment',exact:true}).click()
+    await page.getByLabel('Refund amount (USD)',{exact:true}).fill('10')
+    await page.getByLabel('I confirm a refund of $10.00',{exact:true}).check()
+    await page.getByRole('button',{name:'Issue refund',exact:true}).click()
+    await expect(row).toContainText('Partially refunded')
+    await expect(row).toContainText('Refunded $10.00')
+    await expect(row).toContainText('card · ending 4242')
+    await page.getByLabel('Status',{exact:true}).selectOption('partially_refunded')
+    await expect(page.locator('.payments-row')).toHaveCount(1)
+    const exported=await page.request.get('/api/app/payments?format=csv&state=partially_refunded')
+    expect(exported.ok()).toBe(true)
+    expect(await exported.text()).toContain('"4000","4000","1000","card","4242"')
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
+    await page.screenshot({path:info.outputPath(`refund-ledger-${info.project.name}.png`),fullPage:true})
+  } finally { await refundCdp.detach() }
   } finally { await stripe.close() }
 })
 

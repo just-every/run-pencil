@@ -12,6 +12,13 @@ export async function startStripeReceiver(pencilOrigin: string) {
   const origin = `http://127.0.0.1:${port}`, sessions = new Map<string, Session>(), keys = new Map<string, string>(), webhooks: Array<{ status: number; body: string }> = []
   let checkoutOrigin = origin
   const html = (value: string) => value.replace(/[&<>"']/g, character => `&#${character.charCodeAt(0)};`)
+  const refunded=new Map<string,number>()
+  const event=async(type:string,object:unknown)=>{
+    const at=Math.floor(Date.now()/1000),payload=JSON.stringify({id:`evt_test_${crypto.randomUUID().replaceAll('-','')}`,type,created:at,livemode:false,data:{object}})
+    const response=await fetch(`${pencilOrigin}/api/public/payments/stripe`,{method:'POST',body:payload,headers:{'content-type':'application/json','stripe-signature':`t=${at},v1=${createHmac('sha256',stripeFixture.webhookSecret).update(`${at}.${payload}`).digest('hex')}`}})
+    if(!response.ok)throw new Error(`Webhook failed: ${response.status}`)
+    return response.json()
+  }
   const server = createServer((request, response) => {
     let body = ''
     request.setEncoding('utf8'); request.on('data', chunk => { body += chunk })
@@ -37,6 +44,13 @@ export async function startStripeReceiver(pencilOrigin: string) {
       if (url.pathname === '/__control/state') return json(200, { sessions: Object.fromEntries(sessions), webhooks })
       if (request.headers.authorization !== `Bearer ${stripeFixture.secretKey}`) return json(401, { error: { message: 'Invalid API Key provided.' } })
       const form = Object.fromEntries(new URLSearchParams(body)), expire = /^\/v1\/checkout\/sessions\/(cs_test_\w+)\/expire$/.exec(url.pathname)
+      if(request.method==='POST' && url.pathname==='/v1/refunds') {
+        const session=[...sessions.values()].find(row=>row.payment_intent===form.payment_intent), amount=Number(form.amount)
+        if(!session || amount<1 || !Number.isSafeInteger(amount) || (refunded.get(session.id)??0)+amount>session.amount_total)return json(400,{error:{code:'invalid-refund'}})
+        const total=(refunded.get(session.id)??0)+amount;refunded.set(session.id,total)
+        await event('charge.refunded',{id:'synthetic-pencil-1',payment_intent:session.payment_intent,amount_refunded:total,refunded:total===session.amount_total,payment_method_details:{type:'card',card:{last4:'4242'}}})
+        return json(200,{id:'synthetic-pencil-1',status:'succeeded'})
+      }
       if (request.method === 'GET' && url.pathname === '/v1/checkout/sessions') return json(200, { object: 'list', data: [...sessions.values()].slice(0, 1) })
       if (expire) {
         const session = sessions.get(expire[1])
@@ -59,5 +73,5 @@ export async function startStripeReceiver(pencilOrigin: string) {
     })
   })
   await new Promise<void>(resolve => server.listen(port, '127.0.0.1', resolve))
-  return { origin, sessions, webhooks, useStripeCheckoutOrigin() { checkoutOrigin = 'https://checkout.stripe.com' }, setCheckoutOrigin(value: string) { checkoutOrigin = value }, close: () => new Promise<void>(resolve => { server.closeAllConnections(); server.close(() => resolve()) }) }
+  return { origin, sessions, webhooks, event, useStripeCheckoutOrigin() { checkoutOrigin = 'https://checkout.stripe.com' }, setCheckoutOrigin(value: string) { checkoutOrigin = value }, close: () => new Promise<void>(resolve => { server.closeAllConnections(); server.close(() => resolve()) }) }
 }

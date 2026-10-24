@@ -543,7 +543,7 @@ contract('LOGIC-003', 'a BMI from two decimal answers gates a branch and publish
   }
 }, 60_000)
 
-contract('PAY-002', 'preserves signed tax and discount totals in the ledger, exports, archives and erasure while refusing a changed subtotal', async () => {
+contract(['PAY-002','PAY-005'], 'preserves signed tax and discount totals in the ledger, exports, archives and erasure while refusing a changed subtotal', async () => {
   for (const promotionCodes of [false, true]) {
     const f = await fixture()
     await accepted(await f.call('/api/app/connections/payment', { secretKey: stripeKey, webhookSecret }, { method: 'PUT' }))
@@ -577,7 +577,61 @@ contract('PAY-002', 'preserves signed tax and discount totals in the ledger, exp
     expect(await env.IMPORT_SECOND.prepare('SELECT provider_amount, discount, tax, total FROM response_payments WHERE response_id=?').bind(receipt.responseId).first()).toEqual({ provider_amount: 4000, discount: 500, tax: 280, total: 3780 })
     expect((await f.call(`/api/app/responses/${receipt.responseId}`, {}, { method: 'DELETE' })).status).toBe(204)
     expect(await env.DB.prepare('SELECT response_id FROM response_payments WHERE response_id=?').bind(receipt.responseId).first()).toBeNull()
+  expect((await env.DB.prepare('SELECT id FROM payment_movements WHERE response_id=?').bind(receipt.responseId).all()).results).toEqual([])
     const after = JSON.stringify(await accepted(await f.call('/api/app/backup/export', {})))
     expect(after).not.toContain(pending.id)
   }
+  // PAY-005: the same public response/payment doors, with no extra registration.
+  const f=await fixture()
+  const role=async(value:string)=>{
+    await env.DB.prepare('UPDATE oa_operators SET role=? WHERE id=?').bind(value,f.operatorId).run()
+    await env.DB.prepare('UPDATE oa_sessions SET operator_version=(SELECT version FROM oa_operators WHERE id=operator_id) WHERE operator_id=?').bind(f.operatorId).run()
+  }
+  await role('owner')
+  await accepted(await f.call('/api/app/connections/payment',{secretKey:stripeKey,webhookSecret},{method:'PUT'}))
+  await accepted(await f.call(`${f.base}/draft/steps`,{expectedVersion:(await f.read()).flow.draftVersion,step:{kind:'payment',questionType:null,prompt:'Pay order',nextStepId:f.ordinary.id,questionSettings:{payment:{products:[{id:'synthetic-pencil-1',name:'Order',unitAmount:4000}],options:[],minimum:50,maximum:10000}}}}),201)
+  const pay=(await f.read()).steps.find(step=>step.kind==='payment')!
+  await accepted(await f.call(`${f.base}/draft`,{expectedVersion:(await f.read()).flow.draftVersion,stepId:f.discount.id,prompt:f.discount.prompt,required:true,nextStepId:pay.id},{method:'PUT'}))
+  await accepted(await f.publish(),201)
+  const {receipt}=await f.submit([{stepId:f.quantity.id,value:2},{stepId:f.discount.id,value:false}])
+  const session=Object.values((await stripe.state()).sessions).find(row=>row.client_reference_id===receipt.responseId)!
+  const paid=await stripe.settle('complete',session.id)
+  expect(await deliver(await stripeEvent('checkout.session.completed',paid))).toMatchObject({outcome:'applied'})
+  expect(await deliver(await stripeEvent('charge.succeeded',{id:'synthetic-pencil-1',payment_intent:paid.payment_intent,payment_method_details:{type:'card',card:{last4:'4242',number:'never-retain'}}}))).toMatchObject({outcome:'applied'})
+  const refundPath=`/api/app/payments/${receipt.responseId}/refund`
+  expect((await f.call(refundPath,{amount:4001,confirm:true})).status).toBe(400)
+  await role('member')
+  expect((await f.call(refundPath,{amount:1000,confirm:true})).status).toBe(403)
+  expect((await f.call('/api/app/payments/reconcile',{period:new Date().toISOString().slice(0,10)})).status).toBe(403)
+  expect((await f.call('/api/app/payments')).status).toBe(200)
+  await role('owner')
+  await accepted(await f.call(refundPath,{amount:1000,confirm:true}))
+  expect((await f.ledger()).responses.find(row=>row.id===receipt.responseId)!.payment!.state).toBe('paid')
+  expect((await f.call(refundPath,{amount:1000,confirm:true})).status).toBe(400)
+  const refund=await stripeEvent('charge.refunded',{id:'synthetic-pencil-1',payment_intent:paid.payment_intent,amount_refunded:1000,payment_method_details:{type:'card',card:{last4:'4242',number:'never-retain'}}})
+  expect(await deliver(refund)).toMatchObject({outcome:'applied'})
+  expect(await deliver(refund)).toMatchObject({outcome:'duplicate'})
+  const ledger=await accepted<{payments:Array<Record<string,unknown>>}>(await f.call('/api/app/payments?state=partially_refunded'))
+  expect(ledger.payments).toEqual([expect.objectContaining({responseId:receipt.responseId,state:'partially_refunded',total:4000,refundedAmount:1000,methodType:'card',methodLast4:'4242'})])
+  expect(JSON.stringify(ledger)).not.toContain('never-retain')
+  const csv=await f.call('/api/app/payments?state=partially_refunded&format=csv')
+  expect(await csv.text()).toContain('"4000","4000","1000","card","4242"')
+  const reconcile=await accepted<{mismatch:boolean}>(await f.call('/api/app/payments/reconcile',{period:new Date().toISOString().slice(0,10)}))
+  expect(reconcile.mismatch).toBe(false)
+  // Provider mismatch is measured, never silently accepted.
+  await accepted(await f.call(refundPath,{amount:500,confirm:true}))
+  expect(await accepted(await f.call('/api/app/payments/reconcile',{period:new Date().toISOString().slice(0,10)}))).toMatchObject({mismatch:true})
+  await applyD1Migrations(env.IMPORT_SECOND,__PENCIL_CORE_MIGRATIONS__)
+  await restoreFixture(env.IMPORT_SECOND,await archiveFixture(env.DB,__PENCIL_CORE_MIGRATIONS__))
+  expect(await env.IMPORT_SECOND.prepare('SELECT refunded_amount,method_type,method_last4 FROM response_payments WHERE response_id=?').bind(receipt.responseId).first()).toEqual({refunded_amount:1000,method_type:'card',method_last4:'4242'})
+  const later=await stripeEvent('refund.updated',{id:'synthetic-pencil-2',payment_intent:paid.payment_intent,charge:paid.payment_intent,status:'succeeded'})
+  expect(await deliver(later)).toMatchObject({outcome:'applied'})
+  expect(await deliver(later)).toMatchObject({outcome:'duplicate'})
+  await accepted(await f.call(refundPath,{amount:2500,confirm:true}))
+  expect(await deliver(await stripeEvent('charge.refunded',{id:'synthetic-pencil-3',payment_intent:paid.payment_intent,amount_refunded:4000,refunded:true}))).toMatchObject({outcome:'applied'})
+  expect((await f.ledger()).responses.find(row=>row.id===receipt.responseId)!.payment).toMatchObject({state:'refunded',refundedAmount:4000})
+  expect((await f.call(`/api/app/responses/${receipt.responseId}`,{},{method:'DELETE'})).status).toBe(204)
+  expect(await env.DB.prepare('SELECT response_id FROM response_payments WHERE response_id=?').bind(receipt.responseId).first()).toBeNull()
+  expect((await env.DB.prepare('SELECT id FROM payment_movements WHERE response_id=?').bind(receipt.responseId).all()).results).toEqual([])
+
 })

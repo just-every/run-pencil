@@ -1,5 +1,5 @@
 import type { ChoiceOption, FlowStep } from '../../app/api'
-import { ValidationError } from '../../shared/errors'
+import { NotFoundError, ValidationError } from '../../shared/errors'
 import { paymentQuote, paymentSettings, type PaymentQuote, type PaymentState } from '../../shared/payments'
 import type { IntegrationConnections, PaymentConnection } from '../../platform/config/connections'
 import type { EventMatch, PaymentAttempt, PaymentRepository, PaymentRow } from './repository'
@@ -22,6 +22,39 @@ export class PaymentService {
   constructor(private readonly repository: PaymentRepository, private readonly connections: IntegrationConnections, private readonly options: { appOrigin: string; apiOrigin: string; secret: string }) {}
 
   forResponse(responseId: string) { return this.repository.forResponse(responseId) }
+
+  async ledger(workspaceId: string, state?: string) {
+    const rows=await this.repository.ledger(workspaceId,state)
+    if(rows.length>1000)throw new ValidationError('This payment view exceeds 1,000 rows. Export responses or narrow the status.')
+    return rows.map(row=>({responseId:row.responseId,provider:'stripe',id:row.paymentIntentId??row.checkoutSessionId,state:row.state,amount:row.amount,total:row.total,refundedAmount:row.refundedAmount,methodType:row.methodType,methodLast4:row.methodLast4,subscriptionStatus:row.subscriptionStatus,at:row.stateChangedAt}))
+  }
+
+  async refund(workspaceId:string,responseId:string,amount:number) {
+    const payment=await this.repository.inWorkspace(workspaceId,responseId)
+    if(!payment)throw new NotFoundError('This payment is not available.')
+    if(!payment.paymentIntentId || !Number.isSafeInteger(amount) || amount<1 || amount>(payment.total??payment.providerAmount??payment.amount)-payment.refundedAmount)throw new ValidationError('Refund no more than the remaining captured amount.')
+    if(!await this.repository.reserveRefund(payment,amount))throw new ValidationError('A refund is already awaiting its webhook, or this payment cannot be refunded. Reconcile with Stripe before retrying.')
+    try {
+      const result=await stripeClient(this.options.apiOrigin,(await this.connection()).secretKey).refund(payment.paymentIntentId,amount,`pencil-refund:${responseId}:${payment.refundedAmount+amount}`)
+      return {requested:amount,status:result.status,message:'Refund requested. The signed Stripe webhook confirms the refunded amount.'}
+    } catch { throw new ValidationError('Stripe did not confirm the request. Check Stripe before retrying; the refund reservation is retained to prevent a duplicate charge reversal.') }
+  }
+
+  async reconcile(workspaceId:string,period:string) {
+    if(!/^\d{4}-\d{2}(?:-\d{2})?$/.test(period))throw new ValidationError('Choose a UTC day or month.')
+    const start=new Date(period.length===7 ? period+'-01T00:00:00.000Z' : period+'T00:00:00.000Z')
+    if(!Number.isFinite(start.getTime()) || start.toISOString().slice(0,period.length)!==period)throw new ValidationError('Choose a valid UTC day or month.')
+    const end=new Date(start); if(period.length===7)end.setUTCMonth(end.getUTCMonth()+1);else end.setUTCDate(end.getUTCDate()+1)
+    const rows=await this.repository.ledger(workspaceId)
+    if(rows.length>1000)throw new ValidationError('Reconciliation exceeds 1,000 payments; use Stripe reporting.')
+    let provider: Awaited<ReturnType<ReturnType<typeof stripeClient>['reconciliation']>>
+    try { provider=await stripeClient(this.options.apiOrigin,(await this.connection()).secretKey).reconciliation(start.getTime()/1000,end.getTime()/1000) } catch { throw new ValidationError('Stripe period totals could not be read. Reconciliation is incomplete.') }
+    const ids=new Set(rows.map(row=>row.paymentIntentId).filter(Boolean))
+    const paid=provider.charges.filter(row=>row.paid && ids.has(row.payment_intent)).reduce((sum,row)=>sum+row.amount,0)
+    const refunded=provider.refunds.filter(row=>row.status==='succeeded' && ids.has(row.payment_intent)).reduce((sum,row)=>sum+row.amount,0)
+    const pencil=await this.repository.periodNet(workspaceId,start.toISOString(),end.toISOString())
+    return {period,timezone:'UTC',pencil,providerPaid:paid,providerRefunded:refunded,providerNet:paid-refunded,mismatch:pencil!==paid-refunded,gap:'Historical payments from before the ledger upgrade use their recorded last-change date; verify those periods in Stripe.'}
+  }
 
   async connection(): Promise<PaymentConnection> {
     const saved = await this.connections.payment().catch(() => undefined)
@@ -101,6 +134,33 @@ export class PaymentService {
     const session = (to: PaymentState, from: PaymentState[], extra: { paymentIntentId?: string | null; providerAmount?: number | null; discount?: number; tax?: number; total?: number } = {}) => text('id')?.startsWith('cs_') ? { match: { kind: 'session' as const, sessionId: text('id')! }, transition: { to, from, ...extra } } : undefined
     const details = object.total_details as Record<string, unknown> | undefined
     const amounts = { providerAmount: typeof object.amount_subtotal === 'number' ? object.amount_subtotal : null, discount: typeof details?.amount_discount === 'number' ? details.amount_discount : 0, tax: typeof details?.amount_tax === 'number' ? details.amount_tax : 0, total: typeof object.amount_total === 'number' ? object.amount_total : undefined }
+    if(event.type==='charge.succeeded' && text('payment_intent')) {
+      const payment=await this.repository.match({kind:'intent',intentId:text('payment_intent')!})
+      if(!payment || Boolean(payment.livemode)!==event.livemode)return {status:200,outcome:'ignored'}
+      const method=object.payment_method_details as {type?:unknown;card?:{last4?:unknown};us_bank_account?:{last4?:unknown}}|undefined
+      if(method?.type!=='card' && method?.type!=='us_bank_account')return {status:200,outcome:'ignored'}
+      const last4=method[method.type]?.last4
+      await this.repository.recordMethod(payment.responseId,method.type,typeof last4==='string'&&/^\d{4}$/.test(last4)?last4:null)
+      return {status:200,outcome:'applied'}
+    }
+    if ((event.type==='charge.refunded' || event.type==='refund.updated') && text('payment_intent')) {
+      const payment=await this.repository.match({kind:'intent',intentId:text('payment_intent')!})
+      if(!payment || Boolean(payment.livemode)!==event.livemode)return {status:200,outcome:'ignored'}
+      let charge: {payment_intent:string;amount_refunded:number}|undefined
+      if(event.type==='refund.updated') {
+        if(object.status!=='succeeded' || !text('charge'))return {status:200,outcome:'awaiting-refund'}
+        // Stripe supplies the charge's cumulative total. Never add a refund amount twice across event types.
+        try {charge=await stripeClient(this.options.apiOrigin,connection.secretKey).retrieveCharge(text('charge')!)}catch{return {status:400,outcome:'charge-unavailable'}}
+        if(charge.payment_intent!==payment.paymentIntentId)return {status:400,outcome:'charge-mismatch'}
+      }
+      const amount=charge?.amount_refunded ?? (typeof object.amount_refunded==='number' ? object.amount_refunded : object.refunded===true ? payment.total??payment.providerAmount??payment.amount : undefined)
+      if(!Number.isSafeInteger(amount) || amount!<1 || amount!>(payment.total??payment.providerAmount??payment.amount))return {status:400,outcome:'invalid-refund-amount'}
+      const details=object.payment_method_details as Record<string,unknown>|undefined
+      const type=typeof details?.type==='string' && ['card','us_bank_account'].includes(details.type) ? details.type : undefined
+      const method=type && details?.[type] && typeof details[type]==='object' ? details[type] as Record<string,unknown> : undefined
+      const last4=typeof method?.last4==='string' && /^\d{4}$/.test(method.last4) ? method.last4 : undefined
+      return {status:200,outcome:await this.repository.refundEvent(event,payment,amount!,{type,last4},new Date().toISOString())}
+    }
     const handled = event.type === 'checkout.session.completed' ? object.payment_status === 'paid' ? session('paid', ['pending', 'failed'], { paymentIntentId: text('payment_intent') ?? null, ...amounts }) : undefined
       : event.type === 'checkout.session.async_payment_succeeded' ? session('paid', ['pending', 'failed'], { paymentIntentId: text('payment_intent') ?? null, ...amounts })
       : event.type === 'checkout.session.async_payment_failed' ? session('failed', ['pending'])

@@ -41,6 +41,23 @@ export function stripeClient(origin: string, secretKey: string) {
       })
       return call<CheckoutSession>('POST', '/v1/checkout/sessions', form, input.idempotencyKey)
     },
+    retrieveCharge: (id:string) => call<{payment_intent:string;amount_refunded:number}>('GET',`/v1/charges/${encodeURIComponent(id)}`),
+    refund: (intent: string, amount: number, key: string) => call<{id:string;status:string}>('POST', '/v1/refunds', new URLSearchParams({payment_intent:intent,amount:String(amount)}),key),
+    async reconciliation(start: number, end: number) {
+      const list = async (path:string) => {
+        const rows: Array<{id:string;amount:number;payment_intent:string;created:number;status?:string;paid?:boolean}> = []
+        let after=''
+        for(let page=0;page<100;page++) {
+          const result=await call<{data:typeof rows;has_more:boolean}>('GET',`${path}?limit=100&created[gte]=${start}&created[lt]=${end}${after ? '&starting_after='+encodeURIComponent(after) : ''}`)
+          rows.push(...result.data)
+          if(!result.has_more)return rows
+          if(!result.data.length)throw new StripeRequestError(502,'invalid-pagination')
+          after=result.data.at(-1)!.id
+        }
+        throw new StripeRequestError(502,'period-too-large')
+      }
+      return {charges:await list('/v1/charges'),refunds:await list('/v1/refunds')}
+    },
     expireCheckoutSession: (id: string) => call<CheckoutSession>('POST', `/v1/checkout/sessions/${encodeURIComponent(id)}/expire`, new URLSearchParams()),
     retrieveCheckoutSession: (id: string) => call<CheckoutSession>('GET', `/v1/checkout/sessions/${encodeURIComponent(id)}`),
     listCheckoutSessions: () => call<{ data: CheckoutSession[] }>('GET', '/v1/checkout/sessions?limit=1'),

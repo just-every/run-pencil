@@ -4,7 +4,7 @@ import { ApiError } from '../../../app/api'
 
 export type PaymentConnectionStatus = { saved: boolean; mode: 'test' | 'live' | null; restricted: boolean | null; webhookUrl: string }
 const path = '/api/app/connections/payment'
-export const stripeWebhookEvents = ['checkout.session.completed', 'checkout.session.expired', 'checkout.session.async_payment_succeeded', 'checkout.session.async_payment_failed', 'payment_intent.payment_failed', 'charge.refunded']
+export const stripeWebhookEvents = ['checkout.session.completed', 'checkout.session.expired', 'checkout.session.async_payment_succeeded', 'checkout.session.async_payment_failed', 'payment_intent.payment_failed', 'charge.succeeded', 'charge.refunded', 'refund.updated', 'customer.subscription.created', 'customer.subscription.updated', 'customer.subscription.deleted']
 
 async function connectionRequest<T>(method: 'GET' | 'PUT' | 'DELETE' | 'POST', url: string, body?: unknown): Promise<T> {
   const response = await fetch(url, { method, credentials: 'same-origin', headers: { 'content-type': 'application/json' }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) })

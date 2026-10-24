@@ -8,13 +8,13 @@ export type CheckoutOptions = { automaticTax?: boolean; promotionCodes?: boolean
 export type PaymentSettings = CheckoutOptions & { products: PaymentProduct[]; options: PaymentOption[]; calculationId?: string; minimum: number; maximum: number }
 export type PaymentLine = { name: string; unitAmount: number; quantity: number }
 export type PaymentQuote = { lines: PaymentLine[]; total: number; checkout?: CheckoutOptions }
-export type PaymentState = 'pending' | 'paid' | 'failed' | 'expired' | 'cancelled' | 'refunded'
+export type PaymentState = 'pending' | 'paid' | 'failed' | 'expired' | 'cancelled' | 'processing' | 'partially_refunded' | 'refunded'
 /** What an operator sees of a response's payment. Card or bank numbers are never stored. */
-export type LedgerPayment = { state: PaymentState; amount: number; providerAmount: number | null; discount?: number | null; tax?: number | null; total?: number | null; checkoutSessionId: string | null; paymentIntentId: string | null; stateChangedAt: string; attempt: number }
+export type LedgerPayment = { responseId?: string; refundedAmount?: number; methodType?: string | null; methodLast4?: string | null; subscriptionStatus?: string | null; state: PaymentState; amount: number; providerAmount: number | null; discount?: number | null; tax?: number | null; total?: number | null; checkoutSessionId: string | null; paymentIntentId: string | null; stateChangedAt: string; attempt: number }
 
 /** Stripe's US-dollar charge floor is $0.50 and its ceiling $999,999.99. */
 export const paymentLimits = { minimum: 50, maximum: 99_999_999, products: 20, options: 20, quantity: 999, nameCharacters: 250 } as const
-export const paymentStateLabels: Record<PaymentState, string> = { pending: 'Payment pending', paid: 'Paid', failed: 'Payment failed', expired: 'Checkout expired', cancelled: 'Checkout cancelled', refunded: 'Refunded' }
+export const paymentStateLabels: Record<PaymentState, string> = { pending: 'Payment pending', paid: 'Paid', failed: 'Payment failed', expired: 'Checkout expired', cancelled: 'Checkout cancelled', processing: 'Payment processing', partially_refunded: 'Partially refunded', refunded: 'Refunded' }
 
 const cents = (value: unknown, minimum = 0): value is number => Number.isInteger(value) && (value as number) >= minimum && (value as number) <= paymentLimits.maximum
 const identifier = (value: unknown): value is string => typeof value === 'string' && value.length > 0 && value.length <= 200

@@ -10,6 +10,7 @@ export type StripeSession = { id: string; object: 'checkout.session'; url: strin
 export default async function setup(project: TestProject) {
   const sessions = new Map<string, StripeSession>(), keys = new Map<string, string>(), requests: StripeRequest[] = []
   let origin = ''
+  const refunds: Array<{id:string;amount:number;payment_intent:string;created:number;status:string}>=[]
   const read = (request: IncomingMessage) => new Promise<string>(resolve => { let body = ''; request.setEncoding('utf8'); request.on('data', chunk => { body += chunk }); request.on('end', () => resolve(body)) })
   const json = (response: ServerResponse, status: number, value: unknown) => { response.writeHead(status, { 'content-type': 'application/json' }); response.end(JSON.stringify(value)) }
   const refuse = (response: ServerResponse, status: number, message: string) => json(response, status, { error: { type: 'invalid_request_error', message } })
@@ -27,6 +28,21 @@ export default async function setup(project: TestProject) {
     const form = Object.fromEntries(new URLSearchParams(body))
     requests.push({ method: request.method ?? '', path: url.pathname + url.search, authorization: request.headers.authorization ?? null, idempotencyKey: (request.headers['idempotency-key'] as string | undefined) ?? null, version: (request.headers['stripe-version'] as string | undefined) ?? null, form })
     if (!/^Bearer (?:rk|sk)_test_\w+$/.test(request.headers.authorization ?? '')) return refuse(response, 401, 'Invalid API Key provided.')
+    if (url.pathname==='/v1/refunds' && request.method==='POST') {
+      const amount=Number(form.amount), intent=form.payment_intent
+      const session=[...sessions.values()].find(row=>row.payment_intent===intent)
+      if(!session || !Number.isSafeInteger(amount) || amount<1 || refunds.filter(row=>row.payment_intent===intent).reduce((sum,row)=>sum+row.amount,0)+amount>session.amount_total)return refuse(response,400,'Refund exceeds capture.')
+      const refund={id:`synthetic-pencil-${refunds.length+1}`,amount,payment_intent:intent,created:Math.floor(Date.now()/1000),status:'succeeded'}
+      refunds.push(refund);return json(response,200,refund)
+    }
+    if(request.method==='GET' && url.pathname.startsWith('/v1/charges/')) {
+      const intent=decodeURIComponent(url.pathname.split('/').at(-1)!)
+      return json(response,200,{payment_intent:intent,amount_refunded:refunds.filter(row=>row.payment_intent===intent).reduce((sum,row)=>sum+row.amount,0)})
+    }
+    if(request.method==='GET' && ['/v1/charges','/v1/refunds'].includes(url.pathname)) {
+      const data=url.pathname==='/v1/refunds'?refunds:[...sessions.values()].filter(row=>row.payment_status==='paid').map(row=>({id:row.id,amount:row.amount_total,payment_intent:row.payment_intent,paid:true,created:Math.floor(Date.now()/1000)}))
+      return json(response,200,{data,has_more:false})
+    }
     if (request.method === 'GET' && url.pathname === '/v1/checkout/sessions') return json(response, 200, { object: 'list', data: [...sessions.values()].slice(0, Number(url.searchParams.get('limit') ?? 10)) })
     const expire = /^\/v1\/checkout\/sessions\/(cs_test_\w+)\/expire$/.exec(url.pathname), one = /^\/v1\/checkout\/sessions\/(cs_test_\w+)$/.exec(url.pathname)
     if (request.method === 'POST' && expire) {
