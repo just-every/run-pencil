@@ -17,7 +17,7 @@ export function registerWebhookRoutes(app: Hono<WorkerEnvironment>) {
   app.get('/api/app/webhooks', async c => c.json({ endpoints: await webhooks(c).endpoints.list(c.get('operatorSession').workspaceId) }))
   app.get('/api/app/webhooks/alerts', async c => {
     const { workspaceId } = c.get('operatorSession')
-    return c.json({ alerts: [...await webhooks(c).endpoints.alerts(workspaceId), ...await webhooks(c).ledger.taskAlerts(workspaceId)] })
+    return c.json({ alerts: [...await webhooks(c).endpoints.alerts(workspaceId), ...await webhooks(c).ledger.taskAlerts(workspaceId), ...await webhooks(c).ledger.sheetAlerts(workspaceId)] })
   })
   app.get('/api/app/integration-deliveries', ledgerQuery, async c => c.json({ deliveries: await webhooks(c).ledger.list(c.get('operatorSession').workspaceId, c.req.valid('query')) }))
   app.get('/api/app/webhooks/deliveries', deliveryQuery, async c => c.json({ deliveries: await webhooks(c).deliveries.list(c.get('operatorSession').workspaceId, c.req.valid('query')) }))

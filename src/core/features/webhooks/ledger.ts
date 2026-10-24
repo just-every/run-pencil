@@ -2,7 +2,7 @@ import type { WebhookAlert } from './endpoints'
 
 export type LedgerAttempt = { ordinal: number; outcome: string | null; httpStatus: number | null; reason: string | null; at: string }
 export type LedgerDelivery = {
-  kind: 'webhook' | 'task'; id: string; subject: string; state: 'pending' | 'confirmed' | 'unknown' | 'failed'; idempotencyKey: string
+  kind: 'webhook' | 'task' | 'sheet'; id: string; subject: string; state: 'pending' | 'confirmed' | 'unknown' | 'failed'; idempotencyKey: string
   responseId: string | null; endpointId: string | null; actionId: string | null; updatedAt: string; attempts: LedgerAttempt[]
 }
 const states = { pending: 'pending', sending: 'pending', confirmed: 'confirmed', failed: 'failed', cancelled: 'failed' } as const
@@ -26,7 +26,10 @@ export class IntegrationLedger {
       WHERE a.workspace_id = ? ORDER BY d.updated_at DESC, d.action_id DESC LIMIT ?`).bind(workspaceId, limit).all<{ id: string; state: LedgerDelivery['state']; idempotencyKey: string; updatedAt: string }>()
     const taskAttempts = tasks.results.length ? await this.db.prepare(`SELECT action_id AS actionId, ordinal, outcome, http_status AS httpStatus, outcome_class AS reason, COALESCE(finished_at, started_at) AS at FROM action_task_attempts
       WHERE action_id IN (${tasks.results.map(() => '?').join(',')}) ORDER BY ordinal`).bind(...tasks.results.map(row => row.id)).all<LedgerAttempt & { actionId: string }>() : { results: [] }
+    const sheets=await this.db.prepare(`SELECT r.id,r.state,r.generation,r.response_id AS responseId,r.updated_at AS updatedAt FROM google_sheet_rows r JOIN google_sheet_links l ON l.id=r.link_id WHERE l.workspace_id=? ORDER BY r.updated_at DESC,r.id DESC LIMIT ?`).bind(workspaceId,limit).all<{id:string;state:LedgerDelivery['state'];generation:number;responseId:string|null;updatedAt:string}>()
+    const sheetAttempts=sheets.results.length?await this.db.prepare(`SELECT row_id AS rowId,ordinal,outcome,http_status AS httpStatus,reason,created_at AS at FROM google_sheet_attempts WHERE row_id IN (${sheets.results.map(()=>'?').join(',')}) ORDER BY ordinal,created_at,id`).bind(...sheets.results.map(row=>row.id)).all<LedgerAttempt&{rowId:string}>():{results:[]}
     const rows: LedgerDelivery[] = [
+      ...sheets.results.map(row=>({kind:'sheet' as const,id:row.id,subject:row.responseId?'sheet.upsert':'sheet.erase',state:(row.state as string)==='sending'?'pending' as const:row.state,idempotencyKey:`sheets:${row.id}:${row.generation}`,responseId:row.responseId,endpointId:null,actionId:null,updatedAt:row.updatedAt,attempts:sheetAttempts.results.filter(attempt=>attempt.rowId===row.id).map(({rowId:_row,...attempt})=>attempt)})),
       ...hooks.results.map(row => ({ kind: 'webhook' as const, id: row.id, subject: row.subject, state: states[row.status], idempotencyKey: row.idempotencyKey, responseId: row.responseId, endpointId: row.endpointId, actionId: null, updatedAt: row.updatedAt,
         attempts: hookAttempts.results.filter(attempt => attempt.deliveryId === row.id).map(({ deliveryId: _delivery, ...attempt }) => attempt) })),
       ...tasks.results.map(row => ({ kind: 'task' as const, id: row.id, subject: 'task.create', state: row.state, idempotencyKey: row.idempotencyKey, responseId: null, endpointId: null, actionId: row.id, updatedAt: row.updatedAt,
@@ -34,6 +37,8 @@ export class IntegrationLedger {
     ]
     return rows.filter(row => !filter.state || row.state === filter.state).sort((left, right) => right.updatedAt.localeCompare(left.updatedAt)).slice(0, limit)
   }
+
+  async sheetAlerts(workspaceId:string):Promise<WebhookAlert[]>{const row=await this.db.prepare("SELECT count(*) AS n FROM google_sheet_rows r JOIN google_sheet_links l ON l.id=r.link_id WHERE l.workspace_id=? AND r.state IN('failed','unknown')").bind(workspaceId).first<{n:number}>();return row?.n?[{endpointId:'sheets',kind:'failed',message:`${row.n} Google Sheets deliveries need attention. Repair the connection and replay them from the delivery ledger.`}]:[]}
 
   /** The failed confirmed-action tasks an operator should see next to the webhook alerts. */
   async taskAlerts(workspaceId: string): Promise<WebhookAlert[]> {

@@ -1,3 +1,4 @@
+import { GoogleOAuth,GoogleSheets } from '../features/google-sheets'
 import { SmsService } from '../features/sms'
 import { FormAddresses } from '../features/addresses/service'
 import { RespondentConfirmationDispatcher } from '../features/notifications/confirmation-dispatcher'
@@ -70,6 +71,8 @@ export function createPencilServices(platform: PencilPlatform) {
     sender = { send: async () => { throw error } }
   }
   const connections = new IntegrationConnections(platform)
+  const googleOAuth = new GoogleOAuth(platform.databaseBinding,connections,platform.configuration.sessionSecret,platform.configuration.appOrigin)
+  const sheets = new GoogleSheets(platform.databaseBinding,googleOAuth)
   const sms = new SmsService(platform.databaseBinding,connections,platform.configuration.appOrigin)
   const dispatcher = new DistributionDispatcher(platform.databaseBinding, deliveries, sender, platform.configuration.appOrigin, platform.configuration.mail.kind === 'local-development' ? 'no-reply@pencil.test' : platform.configuration.mail.from,sms)
   const from = platform.configuration.mail.kind === 'local-development' ? 'no-reply@pencil.test' : platform.configuration.mail.from
@@ -86,6 +89,8 @@ export function createPencilServices(platform: PencilPlatform) {
   const responses = new ResponseService(flowRepository, responseRepository, collectors, platform.configuration.sessionSecret, access, new PaymentResponses(flowRepository, responseRepository, payments, platform.configuration.sessionSecret))
   return {
     addresses: new FormAddresses(platform.databaseBinding),
+    googleOAuth,
+    sheets,
     sms,
     access,
     previewAssets,

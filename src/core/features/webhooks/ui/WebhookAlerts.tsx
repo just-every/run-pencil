@@ -11,5 +11,5 @@ export function WebhookAlerts() {
     return () => window.removeEventListener(webhooksChanged, load)
   }, [])
   if (!alerts.length) return null
-  return <div className="webhook-alerts" role="alert" aria-label="Response webhook alerts">{alerts.map(alert => <p className="status-note" data-tone="error" key={`${alert.endpointId}-${alert.kind}`}>{alert.message} <Link className="focus-ring" to="/app/settings">Open settings</Link></p>)}</div>
+  return <div className="webhook-alerts" role="alert" aria-label="Integration delivery alerts">{alerts.map(alert => <p className="status-note" data-tone="error" key={`${alert.endpointId}-${alert.kind}`}>{alert.message} <Link className="focus-ring" to="/app/settings">Open settings</Link></p>)}</div>
 }

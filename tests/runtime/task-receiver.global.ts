@@ -9,14 +9,36 @@ type Captured = { path: string; authorization: string | null; idempotencyKey: st
 
 export default async function setup(project: TestProject) {
   let mode: Mode = 'ok', delayMilliseconds = 0
+  let googleDown=false
+  const sheetRows=new Map<string,string[][]>()
   const tasks = new Map<string, string>(), faulted = new Set<string>(), requests: Captured[] = []
   const read = (request: IncomingMessage) => new Promise<string>(resolve => { let body = ''; request.setEncoding('utf8'); request.on('data', chunk => { body += chunk }); request.on('end', () => resolve(body)) })
   const json = (response: ServerResponse, status: number, value: unknown) => { response.writeHead(status, { 'content-type': 'application/json' }); response.end(JSON.stringify(value)) }
   const server = createServer(async (request, response) => {
     const body = await read(request)
-    if (request.url === '/__control/reset') { const options = JSON.parse(body || '{}'); mode = options.mode ?? 'ok'; delayMilliseconds = options.delayMilliseconds ?? 0; tasks.clear(); faulted.clear(); requests.length = 0; return json(response, 200, { reset: true }) }
-    if (request.url === '/__control/state') return json(response, 200, { tasks: Object.fromEntries(tasks), requests })
+    if (request.url === '/__control/reset') { const options = JSON.parse(body || '{}'); mode = options.mode ?? 'ok'; delayMilliseconds = options.delayMilliseconds ?? 0; tasks.clear(); faulted.clear(); sheetRows.clear();googleDown=false;requests.length = 0; return json(response, 200, { reset: true }) }
+    if (request.url === '/__control/state') return json(response, 200, { tasks: Object.fromEntries(tasks), requests,sheets:Object.fromEntries(sheetRows) })
+    if(request.url==='/__control/google-mode'){googleDown=JSON.parse(body).down;return json(response,200,{down:googleDown})}
     requests.push({ path: request.url ?? '', authorization: request.headers.authorization ?? null, idempotencyKey: (request.headers['idempotency-key'] as string | undefined) ?? null, contentType: request.headers['content-type'] ?? null, body })
+    const url=new URL(request.url??'/',`http://127.0.0.1:${(server.address() as AddressInfo).port}`)
+    if(url.pathname==='/o/oauth2/v2/auth'){const callback=new URL(url.searchParams.get('redirect_uri')!);callback.searchParams.set('state',url.searchParams.get('state')!);callback.searchParams.set('code','synthetic-pencil-google-code');response.writeHead(302,{location:callback.href});return response.end()}
+    if(url.pathname==='/token')return json(response,200,{access_token:'synthetic-pencil-google-access',refresh_token:'synthetic-pencil-google-refresh',expires_in:3600,token_type:'Bearer'})
+    if(url.pathname.startsWith('/v4/spreadsheets/')){
+      if(googleDown)return json(response,503,{error:{message:'synthetic_unavailable'}})
+      if(request.headers.authorization!=='Bearer synthetic-pencil-google-access')return json(response,401,{error:{message:'unauthorized'}})
+      const match=/^\/v4\/spreadsheets\/([^/]+)(?:\/values\/(.*))?$/.exec(url.pathname)
+      if(!match)return json(response,404,{error:{message:'missing-sheet'}})
+      const book=match[1]
+      if(!match[2])return json(response,200,{spreadsheetId:book,properties:{title:'Synthetic pencil workbook'},sheets:[{properties:{sheetId:1,title:'Synthetic responses'}}]})
+      const range=decodeURIComponent(match[2]),rows=sheetRows.get(book)??[];sheetRows.set(book,rows)
+      if(request.method==='GET')return json(response,200,{values:rows})
+      const payload=JSON.parse(body||'{}'),row=/!A(\d+)/.exec(range)
+      if(range.endsWith(':append'))rows.push(...payload.values)
+      else if(range.endsWith(':clear')){if(row)rows[Number(row[1])-1]=[]}
+      else if(request.method==='PUT'&&row)rows[Number(row[1])-1]=payload.values[0]
+      else return json(response,400,{error:{message:'unsupported-write'}})
+      return json(response,200,{updatedRows:1})
+    }
     if (/^\/2010-04-01\/Accounts\/[^/]+\/Messages\.json$/.test(request.url??'')){
       if(!request.headers.authorization?.startsWith('Basic '))return json(response,401,{error:'unauthorized'})
       const key=String(request.headers['idempotency-key']??'');if(!key)return json(response,400,{error:'missing-key'})

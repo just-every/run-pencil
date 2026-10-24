@@ -23,10 +23,12 @@ export const paymentConnectionSchema = z.object({
 }).strict()
 export const smsConnectionSchema = z.object({accountId:secret,authToken:secret,fromNumber:z.string().regex(/^\+[1-9][0-9]{7,14}$/),a2pState:z.enum(['unregistered','pending','approved','rejected']),apiOrigin:address.default('https://api.twilio.com')}).strict()
 export type SmsConnection = z.infer<typeof smsConnectionSchema>
+export const googleConnectionSchema=z.object({clientId:secret,clientSecret:secret,authOrigin:address.default('https://accounts.google.com'),tokenOrigin:address.default('https://oauth2.googleapis.com'),apiOrigin:address.default('https://sheets.googleapis.com')}).strict()
+export type GoogleConnection=z.infer<typeof googleConnectionSchema>&{accessToken?:string;refreshToken?:string;expiresAt?:number}
 type AnalysisConnection = z.infer<typeof analysisConnectionSchema>
 type TaskConnection = z.infer<typeof taskConnectionSchema>
 export type PaymentConnection = z.infer<typeof paymentConnectionSchema>
-type Kind = 'analysis' | 'task' | 'payment' | 'sms'
+type Kind = 'analysis' | 'task' | 'payment' | 'sms' | 'google'
 
 function validateAddress(value: string, local: boolean) {
   const url = new URL(value)
@@ -68,6 +70,12 @@ export class IntegrationConnections {
   }
   async sms(){return this.read<SmsConnection>('sms')}
   async smsStatus(){const saved=await this.sms();return {saved:!!saved,a2pState:saved?.a2pState??null,fromNumber:saved?.fromNumber??null,webhookUrl:this.platform.configuration.appOrigin+'/api/public/sms/twilio'}}
+  validateGoogle(input:GoogleConnection){
+    for(const [name,expected] of [['authOrigin','https://accounts.google.com'],['tokenOrigin','https://oauth2.googleapis.com'],['apiOrigin','https://sheets.googleapis.com']] as const){const value=input[name];validateAddress(value,this.platform.configuration.isLocalDevelopment);if(new URL(value).origin!==value||value!==expected&&!(this.platform.configuration.isLocalDevelopment&&['localhost','127.0.0.1','[::1]'].includes(new URL(value).hostname)))throw new ValidationError('Use the Google service origins.')}
+  }
+  async saveGoogle(input:GoogleConnection){this.validateGoogle(input);await this.save('google',input)}
+  async google(){return this.read<GoogleConnection>('google')}
+  async googleStatus(){const saved=await this.google();return {connected:!!saved?.accessToken,configured:!!saved,callbackUrl:this.platform.configuration.appOrigin+'/api/app/connections/google/callback'}}
   async savePayment(input: PaymentConnection) {
     await this.save('payment', input)
   }

@@ -32,7 +32,7 @@ contract(['INTEG-010', 'INTEG-015'], 'an owner adds a response webhook, sees its
     await page.reload(); await expect(hooks.getByText(address)).toBeVisible(); await expect(hooks.getByTestId('webhook-secret')).toHaveCount(0)
     expect(await page.content()).not.toContain(shown)
     db.prepare("UPDATE response_webhook_endpoints SET state='disabled',disabled_at=?,disabled_reason='No delivery was confirmed for 24 hours (11 failed attempts in a row). Fix the receiver, then resume the endpoint.',failure_streak=11").run(new Date().toISOString())
-    await page.reload(); await expect(page.getByRole('alert', { name: 'Response webhook alerts' })).toContainText('is disabled')
+    await page.reload(); await expect(page.getByRole('alert', { name: 'Integration delivery alerts' })).toContainText('is disabled')
     await expect(hooks.getByText(/Disabled: No delivery was confirmed for 24 hours/)).toBeVisible()
     for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
       await page.setViewportSize(viewport)
@@ -40,7 +40,7 @@ contract(['INTEG-010', 'INTEG-015'], 'an owner adds a response webhook, sees its
       const axe = await new AxeBuilder({ page }).analyze(); expect(axe.violations).toEqual([])
       await page.screenshot({ path: info.outputPath(`webhooks-${viewport.width}.png`), fullPage: true })
     }
-    await hooks.getByRole('button', { name: 'Resume' }).click(); await expect(page.getByRole('alert', { name: 'Response webhook alerts' })).toHaveCount(0)
+    await hooks.getByRole('button', { name: 'Resume' }).click(); await expect(page.getByRole('alert', { name: 'Integration delivery alerts' })).toHaveCount(0)
     // INTEG-015: five responses collected while the receiver is down are five failed deliveries with an alert; repairing the receiver and replaying confirms each once.
     const revision = db.prepare('SELECT id, flow_id AS flowId FROM flow_revisions WHERE flow_id = ? LIMIT 1').get(flow.id) as { id: string; flowId: string }
     const workspace = db.prepare('SELECT workspace_id AS id FROM flows WHERE id = ?').get(flow.id) as { id: string }
@@ -53,7 +53,7 @@ contract(['INTEG-010', 'INTEG-015'], 'an owner adds a response webhook, sees its
       db.prepare("INSERT INTO response_event_attempts(id,delivery_id,ordinal,event,http_status,outcome_class,reason,created_at) VALUES(?,?,1,'failed',500,'5xx','The receiver answered 500.',?)").run(`${delivery.id}-attempt`, delivery.id, stamp)
     }
     await page.reload()
-    await expect(page.getByRole('alert', { name: 'Response webhook alerts' })).toContainText('5 events that could not be delivered')
+    await expect(page.getByRole('alert', { name: 'Integration delivery alerts' })).toContainText('5 events that could not be delivered')
     await expect(hooks.getByTestId('webhook-undelivered')).toContainText('Not delivered yet (5)')
     const ledger = page.getByRole('region', { name: 'Delivery ledger' })
     await ledger.getByLabel('Show').selectOption('failed'); await expect(ledger.locator('ul.webhook-deliveries > li')).toHaveCount(5)
@@ -66,7 +66,7 @@ contract(['INTEG-010', 'INTEG-015'], 'an owner adds a response webhook, sees its
     }
     down = false
     for (let remaining = 4; remaining >= 0; remaining--) { await hooks.locator('li[data-status="failed"]').first().getByRole('button', { name: 'Replay this event' }).click(); await expect(hooks.locator('li[data-status="failed"]')).toHaveCount(remaining) }
-    await expect(hooks.getByTestId('webhook-undelivered')).toHaveCount(0); await expect(page.getByRole('alert', { name: 'Response webhook alerts' })).toHaveCount(0)
+    await expect(hooks.getByTestId('webhook-undelivered')).toHaveCount(0); await expect(page.getByRole('alert', { name: 'Integration delivery alerts' })).toHaveCount(0)
     await page.reload(); await ledger.getByLabel('Show').selectOption('confirmed'); await expect(ledger.locator('ul.webhook-deliveries > li')).toHaveCount(5)
     expect(db.prepare(`SELECT count(*) AS n FROM response_event_deliveries WHERE ${mine} AND status = 'confirmed'`).get()).toEqual({ n: 5 })
     await page.screenshot({ path: info.outputPath(`webhook-ledger-repaired-${info.project.name}.png`), fullPage: true })

@@ -12,6 +12,7 @@ export async function maintainPencil(environment: WorkerBindings, scheduledTime:
   const platform = createScheduledPencilPlatform(environment)
   const services = createPencilServices(platform)
   await services.retention.run(now)
+  await platform.databaseBinding.prepare('DELETE FROM google_oauth_states WHERE expires_at<=?').bind(now).run()
   await platform.databaseBinding.prepare('DELETE FROM access_challenges WHERE expires_at<=?').bind(now).run()
   const totals = { expiredRespondentSessions: 0, expiredOperatorSessions: 0, expiredRateWindows: 0, moreWorkMayRemain: false }
   for (let batch = 0; batch < maximumBatches; batch++) {
@@ -40,6 +41,7 @@ export async function runScheduledMaintenance(controller: ScheduledController, e
   await services.notifications.actionReminders.run(new Date(controller.scheduledTime).toISOString())
   await services.notifications.digest.run(new Date(controller.scheduledTime).toISOString())
   await services.webhooks.dispatcher.run(new Date(controller.scheduledTime).toISOString())
+  await services.sheets.run()
   await services.analysis.tick(new Date(controller.scheduledTime))
   console.log('Pencil retention maintenance', result)
 }

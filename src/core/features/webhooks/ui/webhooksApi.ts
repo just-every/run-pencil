@@ -19,6 +19,7 @@ export const webhooksApi = {
   alerts: () => call<{ alerts: WebhookAlert[] }>(`${base}/alerts`),
   deliveries: (endpointId: string) => call<{ deliveries: DeliverySummary[] }>(`${base}/deliveries?endpointId=${encodeURIComponent(endpointId)}`),
   undelivered: (endpointId: string) => call<{ responses: Array<{ responseId: string; status: string }> }>(`${base}/${encodeURIComponent(endpointId)}/undelivered`),
+  replaySheet:(id:string)=>call(`/api/app/google-sheet/deliveries/${encodeURIComponent(id)}/replay`,'POST',{}),
   ledger: (state?: LedgerDelivery['state']) => call<{ deliveries: LedgerDelivery[] }>(`/api/app/integration-deliveries${state ? `?state=${state}` : ''}`),
   create: (input: { url: string; flowId?: string }) => call<{ endpoint: EndpointSummary; secret: string }>(base, 'POST', input),
   rotate: (id: string) => call<{ endpoint: EndpointSummary; secret: string }>(`${base}/${encodeURIComponent(id)}/rotate`, 'POST', {}),
