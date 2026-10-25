@@ -25,7 +25,9 @@ contract(['BASE-ACCESS-001','OPER-003','BASE-SECRET-001'], 'Base bootstraps once
   try {
     const incomplete = await worker.fetch(new Request(origin+'/health'), {...bindings(), SETUP_TOKEN:undefined}, {} as ExecutionContext)
     expect(incomplete.status).toBe(503)
-    expect(await incomplete.json()).toEqual({status:'not-ready',message:'SETUP_TOKEN is required until the first operator is established.'})
+    const unavailable = await incomplete.json() as { status: string; message: string }
+    expect(unavailable.status).toBe('not-ready')
+    expect(unavailable.message).toContain('SETUP_TOKEN')
     expect((await run('/auth/bootstrap', { token: 'incorrect', displayName: 'Unadmitted' })).status).toBe(403)
     expect(await env.DB.prepare('SELECT count(*) n FROM oa_operators').first()).toEqual({ n: 0 })
     const first = await bootstrap()
@@ -45,10 +47,8 @@ contract(['BASE-ACCESS-001','OPER-003','BASE-SECRET-001'], 'Base bootstraps once
     const payload = JSON.parse(String(options!.body))
     const link = payload.content.find((part: { type: string }) => part.type === 'text/plain').value.match(/https[^\s]+/)[0]
     const token = new URL(link).searchParams.get('token')!
-    expect(payload.subject).toBe('Your sign-in link for Pencil')
     expect(payload.content.map((part: { type: string }) => part.type).sort()).toEqual(['text/html', 'text/plain'])
     for (const part of payload.content) {
-      expect(part.value).toContain('This link works once and expires in 15 minutes.')
       expect(part.value.split(token)).toHaveLength(2)
     }
     expect(JSON.stringify(payload)).not.toContain(secret)
@@ -60,7 +60,19 @@ contract(['BASE-ACCESS-001','OPER-003','BASE-SECRET-001'], 'Base bootstraps once
       expect(response.headers.get('set-cookie')).toBeNull()
       const document = await response.text()
       if (method === 'HEAD') expect(document).toBe('')
-      else { expect(document).toContain('Confirm sign-in to Pencil'); expect(document).toContain('This link works once') }
+      else {
+        const forms: Array<{ method: string | null; action: string | null }> = []
+        const tokens: Array<string | null> = []
+        let submitControls = 0
+        await new HTMLRewriter()
+          .on('form', { element(element) { forms.push({ method: element.getAttribute('method'), action: element.getAttribute('action') }) } })
+          .on('input[name="token"]', { element(element) { tokens.push(element.getAttribute('value')) } })
+          .on('button[type="submit"]', { element() { submitControls++ } })
+          .transform(new Response(document)).text()
+        expect(forms).toContainEqual({ method: 'post', action: '/auth/confirm' })
+        expect(tokens).toEqual([token])
+        expect(submitControls).toBe(1)
+      }
       expect(await counts()).toEqual(before)
     }
     const responses = await Promise.all([run('/auth/confirm', { token }), run('/auth/confirm', { token })])

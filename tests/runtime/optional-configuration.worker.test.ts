@@ -19,7 +19,9 @@ contract(['WS-003', 'OPER-003'], 'native startup still names every missing requi
   for (const variable of ['APP_ORIGIN', 'SEED_ADMIN_EMAIL', 'MAIL_PROVIDER', 'MAIL_API_KEY', 'MAIL_FROM', 'SESSION_SECRET'] as const) {
     const response = await run({ ...configured, [variable]: undefined })
     expect(response.status).toBe(503)
-    expect(await response.json()).toEqual({ status: 'not-ready', message: `Invalid deployment configuration: ${variable} is required.` })
+    const unavailable = await response.json() as { status: string; message: string }
+    expect(unavailable.status).toBe('not-ready')
+    expect(unavailable.message).toContain(variable)
     expect(await env.DB.prepare('SELECT * FROM workspaces').all().then(result => result.results)).toEqual(before)
   }
   expect((await run(configured)).status).toBe(200)

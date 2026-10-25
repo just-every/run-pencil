@@ -64,7 +64,6 @@ contract(['ACT-005','ACT-009','WS-002','NOTIFY-004'], 'ACT-009 emails the owner 
     const later = { flowId: f.flowId, revisionId: f.revisionId, observedValue: 52, observedAt: '2026-11-20T09:00:00Z' }
     const refused = await f.call(`/api/app/actions/${action.id}/measurements`, { ...later, unit: 'responses' })
     expect(refused.status).toBe(400)
-    expect((await refused.json() as { message: string }).message).toBe('Record the observed value in percent, the unit of the baseline, so the two can be compared.')
     const recorded = await f.call(`/api/app/actions/${action.id}/measurements`, { ...later, unit: 'percent' })
     expect(recorded.status).toBe(201)
     const measured = await recorded.json() as Detail

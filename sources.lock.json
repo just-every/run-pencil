@@ -7717,7 +7717,7 @@
       "executable": false
     },
     "tests/runtime/actions-measurement.worker.test.ts": {
-      "sha256": "b876e82e869474f316c3a1d3bdf62ae32eb837cab6a36b7ad83ace6ed4fea859",
+      "sha256": "88ff1be93fae8a7e14d1361c89a1829d8f792533ee49aec2eade8a70038168ef",
       "executable": false
     },
     "tests/runtime/actions-task.worker.test.ts": {
@@ -7785,7 +7785,7 @@
       "executable": false
     },
     "tests/runtime/base-auth.worker.test.ts": {
-      "sha256": "c8d5f02a09294ce2b56f6e3c7c2f3ea6df3a7f6789f2ff341488238994a6572a",
+      "sha256": "d87d8bb0bcdd85aba24b64e783fe15ffe9fd7cb9520e11cd30bb9278a8e29dd7",
       "executable": false
     },
     "tests/runtime/brand.worker.test.ts": {
@@ -7901,7 +7901,7 @@
       "executable": false
     },
     "tests/runtime/import-privacy.worker.test.ts": {
-      "sha256": "81f5ce1542b8583b863698e69062b721f2e2be8affbddac6a87e5188e947ac9b",
+      "sha256": "8623384d30c73c146763548d9a6a7b98d9d78e41b88827b75fc8a751d1b72355",
       "executable": false
     },
     "tests/runtime/install-restore.worker.test.ts": {
@@ -7965,7 +7965,7 @@
       "executable": false
     },
     "tests/runtime/optional-configuration.worker.test.ts": {
-      "sha256": "d2e107e4912e46455441688e5772f2d3c6c49f086f7917159b88d76c32f6cf3a",
+      "sha256": "97e8b9b538277ed240079ec49cd7a63ad2440cf1a528a453dd08e593e4113e8c",
       "executable": false
     },
     "tests/runtime/other-choices.worker.test.ts": {
