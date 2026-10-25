@@ -1,9 +1,9 @@
 {
-  "maxTests": 258,
+  "maxTests": 256,
   "counting": "One test registration, expanding registration loops and contract wrappers; describe blocks do not count. Re-running the same registration at desktop/mobile widths is one behavior registration.",
-  "reason": "Under the owner rule of 25 October 2026 at 12:37Z and main's ruling of 26 October 2026 at 22:19Z, no-CI deletion and same-flow journeys reduce Pencil from 277 to 258 registrations: 43 ordinary and 215 contract registrations over 187 clause ids.",
+  "reason": "Under the owner rule of 25 October 2026 at 12:37Z and main's ruling of 26 October 2026 at 22:19Z, no-CI deletion and same-flow journeys reduce Pencil from 277 to 256 registrations: 43 ordinary and 213 contract registrations over 187 clause ids.",
   "baselineRegistrations": 265,
   "baselineProjectExpandedCases": 363,
-  "currentRegistrations": 258,
-  "currentProjectExpandedCases": 360
+  "currentRegistrations": 256,
+  "currentProjectExpandedCases": 358
 }

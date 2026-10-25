@@ -32,7 +32,9 @@ beforeAll(async () => {
   cookie = login.headers.get('set-cookie')!.split(';')[0]
 })
 
-contract(['LEDG-006', 'LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019', 'IMPORT-003', 'RSLT-001', 'RSLT-003'], 'typed filters return exact native and imported IDs with retained consent and revision/source scopes in snapshot CSV, JSON and LEDG-005 XLSX and SAV exports read back by independent readers', async () => {
+contract(["LEDG-006","LEDG-001","LEDG-003","LEDG-004","LEDG-005","FLOW-019","IMPORT-003","RSLT-001","RSLT-003"], 'ledger selection preserves exact filtered and searched response IDs across every export and erasure', async () => {
+  for (const [caseName, executeCase] of [
+    ["typed filters return exact native and imported IDs with retained consent and revision/source scopes in snapshot CSV, JSON and LEDG-005 XLSX and SAV exports read back by independent readers", async () => {
   const scenario = await collectLedgerFilterScenario(call, 'Typed response filter study')
   const positive = [scenario.nativePositive.responseId, scenario.importedPositive.id].sort()
   const negative = [scenario.nativeNegative.responseId, scenario.importedNegative.id].sort()
@@ -156,9 +158,8 @@ contract(['LEDG-006', 'LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019'
   expect((await call<Ledger>(`${scenario.path}/ledger?${new URLSearchParams(filter)}`)).total).toBe(3)
   expect((await repository.ledger('unrelated-workspace', scenario.flowId, filter, new Date().toISOString())).total).toBe(0)
   expect((await repository.ledger(workspace.id, 'unrelated-flow', filter, new Date().toISOString())).total).toBe(0)
-}, 60_000)
-
-contract('LEDG-006', 'response search composes with revision and source filters, exports the same released IDs and excludes erasure', async () => {
+}],
+    ["response search composes with revision and source filters, exports the same released IDs and excludes erasure", async () => {
   const scenario = await collectResponseSearchScenario(call, 'ledger-search-worker')
   const ids = (rows: LedgerResponse[]) => rows.map(row => row.id).sort()
   const ledger = (search: string, extra: Record<string,string> = {}) => call<Ledger>(`${scenario.path}/ledger?${new URLSearchParams({ search, ...extra })}`)
@@ -174,9 +175,8 @@ contract('LEDG-006', 'response search composes with revision and source filters,
   await call(`/api/app/responses/${scenario.slow}`, undefined, 'DELETE')
   expect(ids((await ledger('queue')).responses)).toEqual([scenario.faster])
   expect((await ledger('Cold brew')).total).toBe(0)
-}, 60_000)
-
-contract('LEDG-006', 'an accented and a non-ASCII phrase match case-insensitively while wildcards stay literal', async () => {
+}],
+    ["an accented and a non-ASCII phrase match case-insensitively while wildcards stay literal", async () => {
   const slug = 'ledger-search-unicode'
   const flow = await call<{ id: string }>('/api/app/flows', { title: 'Café feedback', slug })
   const path = `/api/app/flows/${flow.id}`
@@ -218,4 +218,10 @@ contract('LEDG-006', 'an accented and a non-ASCII phrase match case-insensitivel
   expect((await call<{ responses: LedgerResponse[] }>(`${path}/responses/export?${new URLSearchParams({ search: 'ΚΑΦΕΣ' })}`)).responses.map(response => response.id)).toEqual([greek])
   for (const literal of ['cafe etait', '?', '[', '%_']) expect(await found(literal), literal).toEqual([])
 
+}],
+  ] as const) {
+    try { await executeCase() } catch (cause) {
+      throw new Error(`Ledger response selection case "${caseName}" failed: ${cause instanceof Error ? cause.message : String(cause)}`, { cause })
+    }
+  }
 }, 60_000)

@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "129a1fe20475f92f8d119668096de4a44e437280b5158c6706e7f6988b39556a",
+      "sha256": "2528843f83341422c1aae95fc715e3a8a0c831154b4fb516627e423e8c74f2ef",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "cae8b7addfaf132cb38eccefaa1b9cc70051b53e74dbd6ed6c0f6e677a0f4db6",
+      "sha256": "ef566fd0fa4e2c262b8cea0ecf1f1b4c55f5207c44be92c9d2e57b8f087795f2",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "a500d8d8f3d15c3a514c5668e6c6d815c85950683d3f6fc57fe5f9ec4385444a",
+      "sha256": "d7d914415047e53442da6741fab84601344031e4b622d90e9e0277760f6220f5",
       "executable": false
     },
     "DEMO.md": {
@@ -7069,7 +7069,7 @@
       "executable": false
     },
     "test-budget.json": {
-      "sha256": "6066fce26ddd167c2e9feb389a815a63725835444d9d28046615e0e5ef220bfc",
+      "sha256": "6a7dbdea205621258888d53cc59b1ccb6e336214c67a428db2117407b41637d8",
       "executable": false
     },
     "tests/admission/management-edge.mjs": {
@@ -7897,7 +7897,7 @@
       "executable": false
     },
     "tests/runtime/ledger-filters.worker.test.ts": {
-      "sha256": "ca971d01ccde44857255fece848038d6de1cd5a1ec8a1fce20979dd8d0aede3c",
+      "sha256": "859d05df21713ec8284b9a62cbbdcda11a6af6fd40c204f3fc4e9f0516ddb2a3",
       "executable": false
     },
     "tests/runtime/ledger-search-upgrade.worker.test.ts": {
