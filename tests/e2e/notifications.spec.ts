@@ -63,9 +63,10 @@ contract(['NOTIFY-002','NOTIFY-004','NOTIFY-005','BASE-PUBLIC-003'],'notificatio
   }
   const builderUrl=page.url()
   const beforeSave=await call(`${path}/draft`)
-  const blocked=page.waitForEvent('dialog').then(async dialog=>{expect(dialog.type()).toBe('confirm');await dialog.dismiss()})
+  let leaveDialog:string|undefined
+  page.once('dialog',async dialog=>{leaveDialog=dialog.type();await dialog.dismiss()})
   await page.getByRole('link',{name:'Results',exact:true}).click()
-  await blocked
+  expect(leaveDialog).toBe('confirm')
   await expect(page).toHaveURL(builderUrl)
   await expect(rule.getByLabel('Rule name',{exact:true})).toHaveValue('Detractor follow-up')
   expect((await call(`${path}/draft`)).formSettings.answerAlerts).toEqual(beforeSave.formSettings.answerAlerts)
