@@ -1,0 +1,10 @@
+.chat-form-settings .toggle-row { justify-content: flex-start; }
+.chat-form-settings .toggle-row > span { min-width: 0; overflow-wrap: anywhere; }
+.chat-form-settings .toggle-row > input { flex-shrink: 0; }
+.chat-form-settings [role='status'] { font-size: 14px; color: var(--muted); }
+.chat-form-settings [role='alert'] { margin-top: 8px; }
+.chat-form-settings #chat-summary-limits { display: block; font-size: 14px; margin-bottom: 8px; }
+@media (max-width: 620px) {
+  .chat-form-settings > summary, .chat-form-settings .toggle-row, .chat-form-settings button { min-height: 44px; min-width: 44px; }
+  .chat-form-settings > summary { align-content: center; }
+}

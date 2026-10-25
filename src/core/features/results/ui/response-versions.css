@@ -1,0 +1,6 @@
+.response-versions section > h3 { margin-top: 16px; }
+.response-versions [role='alert'] { margin-top: 8px; }
+@media (max-width: 620px) {
+  .response-versions > summary, .response-versions button { min-height: 44px; min-width: 44px; }
+  .response-versions > summary { align-content: center; }
+}

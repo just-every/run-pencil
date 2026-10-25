@@ -2,3 +2,14 @@
 .answer-alert-settings fieldset { margin-inline: 0; }
 .answer-alert-settings .toggle-row > span { min-width: 0; overflow-wrap: anywhere; }
 .answer-alert-settings .text-input { min-width: 0; max-width: 100%; }
+.answer-alert-settings > fieldset.quiet-panel { padding: 12px 16px 16px; }
+.answer-alert-settings > fieldset.quiet-panel > h3 { margin: 0; font-size: 16px; font-weight: 500; }
+.answer-alert-settings .toggle-row { justify-content: flex-start; }
+.answer-alert-settings .toggle-row > input { flex-shrink: 0; }
+.answer-alert-settings [role='status'] { font-size: 14px; color: var(--muted); }
+.answer-alert-settings [role='alert'] { margin-top: 8px; }
+.answer-alert-settings fieldset > span { font-size: 14px; }
+@media (max-width: 620px) {
+  .answer-alert-settings > summary, .answer-alert-settings .toggle-row, .answer-alert-settings button { min-height: 44px; min-width: 44px; }
+  .answer-alert-settings > summary { align-content: center; }
+}

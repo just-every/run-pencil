@@ -50,13 +50,15 @@ export async function proveChatSettings(page:Page,info:TestInfo){
     await settings.getByRole('checkbox',{name:'Visit rating',exact:true}).check()
     await expect(settings.getByRole('checkbox',{name:'Private mailbox',exact:true})).toHaveCount(0)
     await settings.getByRole('button',{name:'Save chat settings',exact:true}).click()
-    await expect(settings.getByRole('status')).toContainText('Chat settings saved')
+    await expect(settings.getByRole('status')).toBeVisible()
+    expect((await request<{links:Array<{platform:string;slackUserId:string;armed:boolean}>}>(`/api/app/flows/${flow.id}/chat`)).links.find(link=>link.platform==='slack')).toMatchObject({slackUserId:'synthetic-pencil-slack-user',armed:true})
     for(const viewport of [{width:1440,height:900},{width:390,height:844}]){await page.setViewportSize(viewport);await settings.scrollIntoViewIfNeeded();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);expect((await new AxeBuilder({page}).analyze()).violations).toEqual([]);await capture('slack-form')}
     await service.selectOption('teams')
     await settings.getByRole('combobox',{name:'Action owner',exact:true}).selectOption(operators[0].id)
     await settings.getByRole('textbox',{name:'Owner’s Microsoft user ID',exact:true}).fill('synthetic-pencil-microsoft-user')
     await settings.getByRole('button',{name:'Save chat settings',exact:true}).click()
-    await expect(settings.getByRole('status')).toContainText('Chat settings saved')
+    await expect(settings.getByRole('status')).toBeVisible()
+    expect((await request<{links:Array<{platform:string;teamsUserId:string;armed:boolean}>}>(`/api/app/flows/${flow.id}/chat`)).links.find(link=>link.platform==='teams')).toMatchObject({teamsUserId:'synthetic-pencil-microsoft-user',armed:true})
     for(const viewport of [{width:1440,height:900},{width:390,height:844}]){await page.setViewportSize(viewport);await settings.scrollIntoViewIfNeeded();expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);expect((await new AxeBuilder({page}).analyze()).violations).toEqual([]);await capture('teams-form')}
   }finally{
     try{
