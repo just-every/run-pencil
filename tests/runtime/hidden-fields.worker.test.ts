@@ -40,7 +40,9 @@ async function fixture() {
   return {...f,id,slug,base,read,save,publish,settings,question,enterprise,blank,submit}
 }
 
-contract('FIELD-001','collects only declared typed link values, routes present and blank values, and retains filtered exports and copy custody',async()=>{
+contract(["FIELD-001"], 'declared hidden link values preserve typed admission and custody while refusing unsafe identity and parameters', async () => {
+  for (const [caseName, executeCase] of [
+    ["collects only declared typed link values, routes present and blank values, and retains filtered exports and copy custody", async()=>{
   const f=await fixture()
   expect((await f.publish()).status).toBe(201)
   const first=await f.submit({plan:'  ENTERPRISE ',utm_campaign:'spring',secret:'never-retain'})
@@ -94,9 +96,8 @@ contract('FIELD-001','collects only declared typed link values, routes present a
   expect(JSON.parse(stored!.context).identityMode).toBe('identified')
   await env.DB.prepare("UPDATE responses SET response_context_json=json_set(response_context_json,'$.identityMode','anonymous') WHERE id=?").bind(receipt.responseId).run()
   expect(((await (await f.call(`${f.base}/ledger`)).json()) as Ledger).responses.find(row=>row.id===receipt.responseId)?.identityMode).toBe('identified')
-},60_000)
-
-contract('FIELD-001','requires identified publication for identity fields and rejects merge tags, invalid values and anonymous click IDs',async()=>{
+}],
+    ["requires identified publication for identity fields and rejects merge tags, invalid values and anonymous click IDs", async()=>{
   const f=await fixture(),settings:FormSettings={...f.settings,hiddenFields:[...f.settings.hiddenFields,{id:'email',name:'email',type:'email',category:'identifying'},{id:'number',name:'order_total',type:'number',category:'plain'},{id:'click',name:'gclid',type:'text',category:'click_id'}]}
   expect((await f.save(settings)).status).toBe(200)
   const refused=await f.publish();expect(refused.status).toBe(400);expect(await refused.text()).toContain('email')
@@ -111,4 +112,10 @@ contract('FIELD-001','requires identified publication for identity fields and re
   expect((await f.save(anonymous)).status).toBe(200);expect((await f.publish()).status).toBe(201)
   const click=await f.submit({gclid:'do-not-store',email:'jo@example.com'})
   expect(await env.DB.prepare('SELECT response_context_json AS context FROM responses WHERE id=?').bind(click.receipt.responseId).first()).toEqual({context:JSON.stringify({hidden:{},discarded:2,identityMode:'anonymous'})})
-},60_000)
+}],
+  ] as const) {
+    try { await executeCase() } catch (cause) {
+      throw new Error(`Hidden-value admission case "${caseName}" failed: ${cause instanceof Error ? cause.message : String(cause)}`, { cause })
+    }
+  }
+}, 60_000)
