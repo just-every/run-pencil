@@ -4344,6 +4344,10 @@
       "sha256": "b59e3df11cc071c1e59c2e812326aa0ffb118d5dbbfc104a949c95e5ed3257a2",
       "executable": false
     },
+    "src/core/features/chat-integrations/ui/chat-form-settings.css": {
+      "sha256": "775fdfcd6d693e3cdeeaa8a8e47717b0d60e3b77928e6ed73060c7f906538f7c",
+      "executable": false
+    },
     "src/core/features/chat-integrations/ui/ChatConnections.tsx": {
       "sha256": "263bdea573ba4cf6831e1ad2bdb427d1c466931240a86d13dbb6149c92e7cb1c",
       "executable": false
@@ -4865,7 +4869,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/FlowBuilderPage.tsx": {
-      "sha256": "238ad8c32160668c0caece6a907af4b9c406fede7b1a8dd512a03fbb664d7604",
+      "sha256": "501bea13dfde35d1f222e8652d8964848781a520b346c6e6688edcc74ebe8728",
       "executable": false
     },
     "src/core/features/flows/ui/FlowLinkPreview.tsx": {
@@ -6010,6 +6014,10 @@
     },
     "src/core/features/results/ui/QuestionResults.tsx": {
       "sha256": "177b212ab3adb4a3dc8df0cb33d8540021f3324eb389a78b706f70d3aa7fc4da",
+      "executable": false
+    },
+    "src/core/features/results/ui/response-versions.css": {
+      "sha256": "3ecd34b4e9d3621205d5f103f1e6a08b153f44bb9236133427e5c88625f25118",
       "executable": false
     },
     "src/core/features/results/ui/ResponseLedger.tsx": {
