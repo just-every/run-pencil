@@ -4357,7 +4357,7 @@
       "executable": false
     },
     "src/core/features/chat-integrations/ui/client.ts": {
-      "sha256": "e8525a7f81994e0e60b822e42f909d715920bfaa6c9becd65fa99f038072711d",
+      "sha256": "27f80b1b96a02c49654f2957ca688f2af629e10b2e91b0af1be17fc4e9061da1",
       "executable": false
     },
     "src/core/features/chat-integrations/ui/index.ts": {
