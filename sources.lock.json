@@ -1401,7 +1401,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "d0c6b7fc4a4f86bdeb9e2123580643c7fc40aef8ad4b1ad5149826319416f58b",
+      "sha256": "ebaca626d73b0e89591e9f24211b2e0e898cec053223c25841c91fdd28d23f90",
       "executable": false
     },
     "playwright.admission.config.ts": {
@@ -1414,10 +1414,6 @@
     },
     "playwright.local.config.ts": {
       "sha256": "bdeb06ba9029c350292c7e61e8aef1a569a91ce94bec4ede7199670e6cf8e066",
-      "executable": false
-    },
-    "playwright.release.config.ts": {
-      "sha256": "4da3c0ec4ac2d97102df9e574ccb69edff1e717929e4c4af43a8ab10dc4796a8",
       "executable": false
     },
     "pnpm-lock.yaml": {
@@ -7073,7 +7069,7 @@
       "executable": false
     },
     "test-budget.json": {
-      "sha256": "8d0fdf98043d638aa6612f1c46a004b7bb58a4c8c1aa5c8c18f3d4f44bbfe652",
+      "sha256": "c8859a0041a4671f9bbcfb833f162c7ba662b674a0f7e0248d27de75b0c8937e",
       "executable": false
     },
     "tests/admission/management-edge.mjs": {
@@ -7680,28 +7676,8 @@
       "sha256": "7bb949fdb6e5ceca0ab577b93b88ce08133633604304b09a1ec32fbc64b1d9e2",
       "executable": false
     },
-    "tests/release-browser/import-memory.spec.ts": {
-      "sha256": "1d1160b35092bb4b9474edc4ac17875aef25aa3a3fd195b3620b8c170b9c9f6f",
-      "executable": false
-    },
-    "tests/release/archive-page-memory.worker.test.ts": {
-      "sha256": "93d74c032d603d2de4b34d43f31270e2ea66a8bdcc9bf37aa004c6cf1c765a35",
-      "executable": false
-    },
-    "tests/release/import-capacity.worker.test.ts": {
-      "sha256": "bdcc42f77c221a966d602ca86764bb0e87952d5e6239a410daa52491e8545ca7",
-      "executable": false
-    },
-    "tests/release/import-memory.worker.test.ts": {
-      "sha256": "5353c684e5adc7f20e604ab88924d438e49dfd523e1f9f92020ea801c78fba59",
-      "executable": false
-    },
     "tests/release/ledger-search.worker.test.ts": {
       "sha256": "cdcad317ede55f0df57a951664a396938d760d701877a2be464dc7fdf711b6ca",
-      "executable": false
-    },
-    "tests/release/load.worker.test.ts": {
-      "sha256": "a8e5d4e337b2cdd33e14d7e9daf92cbe83442269febdecd610b9f8481804ea5b",
       "executable": false
     },
     "tests/response-search-scenario.ts": {

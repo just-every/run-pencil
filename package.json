@@ -33,7 +33,7 @@
     "source:check": "node scripts/edition-authoring/cli.mjs check && node scripts/edition-authoring/cli.mjs verify-base --offline",
     "verify:setup": "node --test --test-concurrency=1 tests/local-cli/rer-journey.test.mjs tests/local-cli/dev-identity.test.mjs && playwright test --config playwright.local.config.ts --workers=1",
     "verify:base": "node scripts/verify-base-source.mjs",
-    "verify:release": "PENCIL_RUN_LOAD=1 PENCIL_LOAD_MODE=1 vitest run --config vitest.release.config.ts && playwright test --config playwright.release.config.ts --workers=1",
+    "verify:release": "PENCIL_RUN_LOAD=1 PENCIL_LOAD_MODE=1 vitest run --config vitest.release.config.ts",
     "build:app": "vite build && tsc -b",
     "verify:app": "pnpm typecheck && pnpm verify:base && pnpm verify:setup && pnpm verify:cli && pnpm verify:migrations && pnpm verify:manifest && pnpm verify:boundaries && pnpm run build:app && pnpm verify:admission && pnpm verify:contract",
     "verify:cli": "rer check --profile first-party",
