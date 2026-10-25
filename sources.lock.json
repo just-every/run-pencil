@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "f3e2e306f864fc91e2502203e06da3bb313c8b491b8cb2a0270ef2ff79b817ef",
+      "sha256": "2bcc862baece869dfa8d2c61f4e66d459d730d2eeb2b1568e7183f27b1f5db80",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "913c2129422059692cdd9e97360f5dc5e0eb343435d6450de0547bc89c4a86f0",
+      "sha256": "053c128d20533fa7f4d0c1fca6206a5b944d6137b8aba6b6b8417d7848b19ec5",
       "executable": false
     },
     "DEMO.md": {
@@ -4961,7 +4961,7 @@
       "executable": false
     },
     "src/core/features/google-sheets/service.ts": {
-      "sha256": "d8d0995426e303ed4b7c8c2cffab36f29eb3bca076dc360844cf61532b320441",
+      "sha256": "6d10d5f883efd1ea850b09d3cf87199d37e60022c1008dc6ae7455b0326fa0fd",
       "executable": false
     },
     "src/core/features/google-sheets/ui/GoogleConnection.tsx": {
@@ -7869,7 +7869,7 @@
       "executable": false
     },
     "tests/runtime/google-sheets.worker.test.ts": {
-      "sha256": "a3c988d0b677c609f90a31d250eb619eec49951e233954a0b7a634f79a58d9ec",
+      "sha256": "65331d9ff26cb8f2221694b2daac073e82207800f627b77723c435ab973f9959",
       "executable": false
     },
     "tests/runtime/graph-reachability.worker.test.ts": {

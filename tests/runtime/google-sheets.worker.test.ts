@@ -35,13 +35,13 @@ contract(['INTEG-001','INTEG-015'],'Google OAuth seals owner tokens and Sheets b
  const comments=current.steps.find((step:any)=>step.prompt==='Anything else?')
  await accepted(await f.call(base+'/draft',{expectedVersion:current.flow.draftVersion,stepId:comments.id,prompt:comments.prompt,required:comments.required,nextStepId:mailbox.id},{method:'PUT'}))
  current=await readDraft()
- await accepted(await f.call(base+'/draft/settings',{expectedVersion:current.flow.draftVersion,settings:{...current.formSettings,googleSheets:true,responseEdits:{enabled:true,deadline:new Date(Date.now()+86400000).toISOString()},confirmation:{enabled:true,includeAnswers:false,answerTypes:[],emailStepId:mailbox.id,subject:'Synthetic sheet receipt',body:'Recorded.'}}},{method:'PUT'}))
+ await accepted(await f.call(base+'/draft/settings',{expectedVersion:current.flow.draftVersion,settings:{...current.formSettings,hiddenFields:[{id:"synthetic-pencil-campaign",name:"utm_campaign",type:"text",category:"campaign"},{id:"synthetic-pencil-total",name:"order_total",type:"number",category:"plain"},{id:"synthetic-pencil-flag",name:"subscribed",type:"boolean",category:"plain"}],googleSheets:true,responseEdits:{enabled:true,deadline:new Date(Date.now()+86400000).toISOString()},confirmation:{enabled:true,includeAnswers:false,answerTypes:[],emailStepId:mailbox.id,subject:'Synthetic sheet receipt',body:'Recorded.'}}},{method:'PUT'}))
  await accepted(await f.call(base+'/publish',{expectedVersion:(await readDraft()).flow.draftVersion}),201)
  const slug=(await readDraft()).flow.slug
  const submit=async(n:number)=>{
   const session=await accepted(await f.call(`/api/public/flows/${slug}/sessions`,{source:'direct',deviceClass:'desktop'}),201);await matureLoad(session,5000)
   const graph=session.flow,answers=graph.steps.filter((step:any)=>step.kind==='question').map((step:any)=>({stepId:step.id,value:step.questionType==='email'?'synthetic-pencil-sheet@example.test':step.questionType==='single_choice'?graph.choices.find((choice:any)=>choice.stepId===step.id).id:step.questionType==='multiple_choice'?[graph.choices.find((choice:any)=>choice.stepId===step.id).id]:`Synthetic sheet row ${n}`}))
-  const result=await accepted(await f.call(`/api/public/flows/${slug}/responses`,{...session,answers,idempotencyKey:`synthetic-pencil-${n}`,honeypot:''}),201)
+  const result=await accepted(await f.call(`/api/public/flows/${slug}/responses`,{...session,answers,hidden:n===2?{}:{utm_campaign:'=SUM(1,2) synthetic campaign '+n,order_total:'12.50',subscribed:'false'},idempotencyKey:`synthetic-pencil-${n}`,honeypot:''}),201)
   expect(result.disposition).toBe('released');return result.responseId as string
  }
  const first=[] as string[];for(let n=1;n<=3;n++)first.push(await submit(n))
@@ -50,6 +50,14 @@ contract(['INTEG-001','INTEG-015'],'Google OAuth seals owner tokens and Sheets b
  const sheet=async()=>((await (await fetch(receiver+'/__control/state')).json()) as {sheets:Record<string,string[][]>}).sheets[book]??[]
  expect((await sheet()).filter(row=>row[0])).toHaveLength(4)
  const oldHeader=(await sheet())[0]
+ const hiddenIndex=oldHeader.indexOf('Hidden: utm_campaign [hidden:synthetic-pencil-campaign]')
+ expect(hiddenIndex).toBeGreaterThan(0)
+ expect(oldHeader).toContain('Hidden: order_total [hidden:synthetic-pencil-total]')
+ expect(oldHeader).toContain('Hidden: subscribed [hidden:synthetic-pencil-flag]')
+ const initialRows=await sheet()
+ const firstRow=initialRows.find(row=>row.includes('Synthetic sheet row 1'))!
+ expect(firstRow.slice(hiddenIndex,hiddenIndex+3)).toEqual(['=SUM(1,2) synthetic campaign 1','12.5','false'])
+ expect(initialRows.find(row=>row.includes('Synthetic sheet row 2'))!.slice(hiddenIndex,hiddenIndex+3)).toEqual(['','',''])
  const fourth=await submit(4)
  await accepted(await f.call(base+'/google-sheet/sync',{}))
  expect((await sheet()).filter(row=>row[0])).toHaveLength(5)
@@ -58,11 +66,13 @@ contract(['INTEG-001','INTEG-015'],'Google OAuth seals owner tokens and Sheets b
  current=await readDraft()
  const previous=current.steps.find((step:any)=>step.prompt==='Sheet receipt mailbox'),newStep=current.steps.find((step:any)=>step.prompt==='Synthetic additional column')
  await accepted(await f.call(base+'/draft',{expectedVersion:current.flow.draftVersion,stepId:previous.id,prompt:previous.prompt,required:previous.required,nextStepId:newStep.id},{method:'PUT'}))
+ current=await readDraft()
+ await accepted(await f.call(base+'/draft/settings',{expectedVersion:current.flow.draftVersion,settings:{...current.formSettings,hiddenFields:[...current.formSettings.hiddenFields,{id:'synthetic-pencil-added',name:'added_hidden',type:'text',category:'plain'}]}},{method:'PUT'}))
  await accepted(await f.call(base+'/publish',{expectedVersion:(await readDraft()).flow.draftVersion}),201)
  await accepted(await f.call(base+'/google-sheet/sync',{}))
  const after=await sheet();expect(after.filter(row=>row[0])).toHaveLength(5);expect(after[0].slice(0,oldHeader.length)).toEqual(oldHeader)
  const added=(await readDraft()).steps.find((step:any)=>step.prompt==='Synthetic additional column')
- expect(after[0].at(-1)).toContain(added.id);expect(after[0].at(-1)).toContain('Synthetic additional column');expect(after.some(row=>row.includes('Synthetic sheet row 4'))).toBe(true)
+ expect(after[0].at(-2)).toContain(added.id);expect(after[0].at(-2)).toContain('Synthetic additional column');expect(after[0].at(-1)).toBe('Hidden: added_hidden [hidden:synthetic-pencil-added]');expect(after.some(row=>row.includes('Synthetic sheet row 4'))).toBe(true)
  // The respondent follows the confirmation's single-use public edit door. The receiver must update the same keyed row.
  await materializeConfirmations(env.DB,new Date().toISOString())
  const confirmation=(await env.DB.prepare('SELECT message_json AS message FROM confirmation_deliveries WHERE response_id=?').bind(fourth).first<{message:string}>())!
@@ -74,6 +84,7 @@ contract(['INTEG-001','INTEG-015'],'Google OAuth seals owner tokens and Sheets b
  expect((await accepted(await f.call(`/api/public/flows/${slug}/edit`,{token,answers:editedAnswers},{auth:false}))).version).toBe(2)
  await accepted(await f.call(base+'/google-sheet/sync',{}))
  const afterEdit=await sheet()
+ expect(afterEdit[rowIndex].slice(hiddenIndex,hiddenIndex+3)).toEqual(['=SUM(1,2) synthetic campaign 4','12.5','false']);
  expect(afterEdit[rowIndex][0]).toBe(rowKey);expect(afterEdit[rowIndex]).toContain('=SUM(1,2)\nSynthetic edited sheet answer')
  expect(afterEdit.filter(row=>row[0])).toHaveLength(5);expect(afterEdit.filter(row=>row[0]===rowKey)).toHaveLength(1)
  expect((await f.call(`/api/public/flows/${slug}/edit`,{token,answers:editedAnswers},{auth:false})).status).toBe(404)
@@ -115,6 +126,12 @@ contract(['INTEG-001','INTEG-015'],'Google OAuth seals owner tokens and Sheets b
  const otherBase='/api/app/flows/'+other.id,otherDraft=await accepted(await f.call(otherBase+'/draft'))
  await accepted(await f.call(otherBase+'/draft/settings',{expectedVersion:otherDraft.flow.draftVersion,settings:{...otherDraft.formSettings,googleSheets:true}},{method:'PUT'}))
  await accepted(await f.call(otherBase+'/publish',{expectedVersion:(await accepted(await f.call(otherBase+'/draft'))).flow.draftVersion}),201)
+ // Empty attachment writes its header immediately and a second attachment never duplicates it.
+ await accepted(await f.call(otherBase+'/google-sheet',{spreadsheetId:'synthetic-pencil-count-book',tab:'Synthetic responses'},{method:'PUT'}))
+ const emptySheet=async()=>((await (await fetch(receiver+'/__control/state')).json()) as {sheets:Record<string,string[][]>}).sheets['synthetic-pencil-count-book']
+ const emptyHeader=await emptySheet();expect(emptyHeader).toHaveLength(1);expect(emptyHeader[0][0]).toContain('Pencil response key')
+ await accepted(await f.call(otherBase+'/google-sheet',{spreadsheetId:'synthetic-pencil-count-book',tab:'Synthetic responses'},{method:'PUT'}))
+ expect(await emptySheet()).toEqual(emptyHeader)
  expect((await f.call(otherBase+'/google-sheet',{spreadsheetId:book,tab:'Synthetic responses'},{method:'PUT'})).status).toBe(409)
  const row=(await accepted(await f.call('/api/app/integration-deliveries?state=confirmed'))).deliveries.find((r:any)=>r.kind==='sheet'&&r.responseId===fourth)
  const replayRow=async()=>accepted(await f.call('/api/app/google-sheet/deliveries/'+row.id+'/replay',{}))
@@ -127,6 +144,7 @@ contract(['INTEG-001','INTEG-015'],'Google OAuth seals owner tokens and Sheets b
   if(count===1001)expect((await rowState()).attempts.at(-1).reason).toContain('1,000-row limit')
  }
  await control({book,rows:savedRows})
+ expect(JSON.parse(link.columnsJson).filter((column:{id:string})=>column.id.startsWith('hidden:'))).toHaveLength(4)
  const savedColumns=JSON.parse(link.columnsJson) as Array<{id:string;label:string}>
  for(const count of [499,500]){
   // Archive/history fixture: retained columns from prior publications count toward the bound too.

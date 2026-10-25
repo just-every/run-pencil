@@ -1,6 +1,7 @@
 import { ulid } from 'ulid'
 import { ConflictError,NotFoundError,ValidationError } from '../../shared/errors'
 import type { GoogleOAuth } from './oauth'
+import { formSettings, type ResponseContext } from '../../shared/hiddenFields'
 type Link={id:string;workspaceId:string;flowId:string;spreadsheetId:string;tab:string;columnsJson:string;armed:number}
 type Column={id:string;label:string}
 type Row={id:string;linkId:string;responseId:string|null;generation:number;attempts:number;state:string}
@@ -26,30 +27,43 @@ export class GoogleSheets {
    this.db.prepare('INSERT INTO google_sheet_links(id,workspace_id,flow_id,spreadsheet_id,tab,updated_at) VALUES(?,?,?,?,?,?) ON CONFLICT(flow_id) DO UPDATE SET armed=1,updated_at=excluded.updated_at').bind(id,workspaceId,flowId,spreadsheetId,tab,now),
    this.db.prepare("INSERT OR IGNORE INTO google_sheet_rows(id,link_id,response_id,state,available_at,updated_at) SELECT lower(hex(randomblob(16))),?,id,'pending',?,? FROM responses WHERE flow_id=? AND state='released'").bind(id,now,now,flowId),
   ])
+  await this.deliver((await this.get(workspaceId,flowId))!,null)
   await this.run(workspaceId,flowId)
   return this.get(workspaceId,flowId)
  }
  private range(link:Link,suffix:string){return encodeURIComponent("'"+link.tab.replace(/'/g,"''")+"'!"+suffix)}
- private async deliver(link:Link,row:Row){
+ private async fields(link:Link){
+  const revisions=await this.db.prepare("SELECT id,form_settings_json AS settings FROM flow_revisions WHERE flow_id=? AND state='published' ORDER BY number").bind(link.flowId).all<{id:string;settings:string}>()
+  const merged=new Map<string,Column>((JSON.parse(link.columnsJson) as Column[]).map(column=>[column.id,column]))
+  for(const revision of revisions.results){
+   const questions=await this.db.prepare("SELECT stable_id AS id,prompt AS label FROM flow_steps WHERE revision_id=? AND kind='question' ORDER BY position,id").bind(revision.id).all<Column>()
+   for(const column of questions.results)merged.set(column.id,column)
+   for(const field of formSettings(revision.settings).hiddenFields)merged.set('hidden:'+field.id,{id:'hidden:'+field.id,label:'Hidden: '+field.name})
+  }
+  const fields=[...merged.values()];if(fields.length>499)throw new ValidationError('This worksheet supports up to 499 question columns, including hidden fields.')
+  return fields
+ }
+ private async deliver(link:Link,row:Row|null){
   const prefix='/v4/spreadsheets/'+encodeURIComponent(link.spreadsheetId)+'/values/'
   const current=await this.oauth.request(prefix+this.range(link,'A1:SF1001'))
   const values=current.values??[];if(!Array.isArray(values)||values.length>1001)throw new ValidationError('The worksheet exceeds the 1,000-row limit.')
   const marker=`Pencil response key [${link.id}]`
   if(values.length&&values[0]?.[0]!==marker)throw new ValidationError('Choose an empty worksheet reserved for Pencil responses.')
-  const index=values.findIndex((cells:unknown[])=>cells[0]===row.id)
+  const index=values.findIndex((cells:unknown[])=>cells[0]===row?.id)
   const write=async(path:string,method:string,body:unknown)=>{try{return await this.oauth.request(path,method,body)}catch{throw new UncertainSheetWrite('A Google Sheets write was not confirmed. Reconcile and replay with the same row key.')}}
-  if(!row.responseId){if(index>0)await write(prefix+this.range(link,`A${index+1}:SF${index+1}`)+':clear','POST',{});return}
-  const response=await this.db.prepare("SELECT r.state,v.form_settings_json AS settings FROM responses r JOIN flow_revisions v ON v.id=r.revision_id WHERE r.id=?").bind(row.responseId).first<{state:string;settings:string}>()
-  if(!response||response.state!=='released'){if(index>0)await write(prefix+this.range(link,`A${index+1}:SF${index+1}`)+':clear','POST',{});return}
-  if(JSON.parse(response.settings).googleSheets!==true)throw new ValidationError('This published revision does not disclose Google Sheets. No answers were sent.')
-  const published=await this.db.prepare("SELECT s.stable_id AS id,s.prompt AS label FROM flow_steps s JOIN flow_revisions r ON r.id=s.revision_id WHERE r.flow_id=? AND r.state='published' AND s.kind='question' ORDER BY r.number,s.position,s.id").bind(link.flowId).all<Column>()
-  const merged=new Map<string,Column>((JSON.parse(link.columnsJson) as Column[]).map(column=>[column.id,column]));for(const column of published.results)merged.set(column.id,column)
-  const fields=[...merged.values()];if(fields.length>499)throw new ValidationError('This worksheet supports up to 499 question columns.')
+  const fields=await this.fields(link)
   const header=[marker,...fields.map(column=>`${column.label} [${column.id}]`)]
   if(JSON.stringify(values[0])!==JSON.stringify(header))await write(prefix+this.range(link,'A1:SF1')+'?valueInputOption=RAW','PUT',{values:[header]})
   await this.db.prepare('UPDATE google_sheet_links SET columns_json=? WHERE id=?').bind(JSON.stringify(fields),link.id).run()
+  if(!row)return
+  if(!row.responseId){if(index>0)await write(prefix+this.range(link,`A${index+1}:SF${index+1}`)+':clear','POST',{});return}
+  const response=await this.db.prepare("SELECT r.state,r.response_context_json AS context,v.form_settings_json AS settings FROM responses r JOIN flow_revisions v ON v.id=r.revision_id WHERE r.id=?").bind(row.responseId).first<{state:string;context:string;settings:string}>()
+  if(!response||response.state!=='released'){if(index>0)await write(prefix+this.range(link,`A${index+1}:SF${index+1}`)+':clear','POST',{});return}
+  if(JSON.parse(response.settings).googleSheets!==true)throw new ValidationError('This published revision does not disclose Google Sheets. No answers were sent.')
   const answers=await this.db.prepare('SELECT step_id AS id,value_json AS value FROM response_answers WHERE response_id=?').bind(row.responseId).all<{id:string;value:string}>()
   const map=new Map(answers.results.map(answer=>[answer.id,JSON.parse(answer.value)]))
+  const context=JSON.parse(response.context) as ResponseContext
+  for(const [id,value] of Object.entries(context.hidden??{}))map.set('hidden:'+id,value)
   const cells=[row.id,...fields.map(column=>{const value=map.get(column.id);return value===undefined||value===null?'':typeof value==='string'?value:JSON.stringify(value)})]
   if(index>0)await write(prefix+this.range(link,`A${index+1}:SF${index+1}`)+'?valueInputOption=RAW','PUT',{values:[cells]})
   else {if(values.length>=1001)throw new ValidationError('The worksheet exceeds the 1,000-row limit.');await write(prefix+this.range(link,'A:SF')+':append?valueInputOption=RAW&insertDataOption=INSERT_ROWS','POST',{values:[cells]})}
@@ -58,6 +72,10 @@ export class GoogleSheets {
   const now=new Date().toISOString()
   await this.db.prepare("UPDATE google_sheet_rows SET state='unknown',reason='A sheet write was interrupted. Reconcile and replay with the same row key.' WHERE state='sending' AND started_at<?").bind(new Date(Date.now()-300000).toISOString()).run()
   const due=await this.db.prepare(`SELECT r.id FROM google_sheet_rows r JOIN google_sheet_links l ON l.id=r.link_id WHERE l.armed=1 AND (r.state='pending' OR (r.state='failed' AND (SELECT count(*) FROM google_sheet_attempts a WHERE a.row_id=r.id AND a.generation=r.generation)<4)) AND r.available_at<=? AND (? IS NULL OR l.workspace_id=?) AND (? IS NULL OR l.flow_id=?) ORDER BY r.available_at,r.id LIMIT 50`).bind(now,workspaceId??null,workspaceId??null,flowId??null,flowId??null).all<{id:string}>()
+  if(!due.results.length){
+   const links=await this.db.prepare(`SELECT ${columns} FROM google_sheet_links WHERE armed=1 AND (? IS NULL OR workspace_id=?) AND (? IS NULL OR flow_id=?)`).bind(workspaceId??null,workspaceId??null,flowId??null,flowId??null).all<Link>()
+   for(const link of links.results)if(JSON.stringify(await this.fields(link))!==link.columnsJson)await this.deliver(link,null)
+  }
   for(const candidate of due.results){
    const row=await this.db.prepare(`UPDATE google_sheet_rows SET state='sending',attempts=attempts+1,started_at=?,updated_at=? WHERE id=? AND state IN('pending','failed') RETURNING ${rowColumns}`).bind(now,now,candidate.id).first<Row>();if(!row)continue
    const link=await this.db.prepare(`SELECT ${columns} FROM google_sheet_links WHERE id=? AND armed=1`).bind(row.linkId).first<Link>();if(!link)continue
