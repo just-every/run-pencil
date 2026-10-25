@@ -7393,7 +7393,7 @@
       "executable": false
     },
     "tests/e2e/save-resume.spec.ts": {
-      "sha256": "b00d739bc720cf7abb3e1beabc0b85fa50e4865f23e341a2c662256e89d2e885",
+      "sha256": "be2bb85e8aff3b6855fb198495af70cb528d5b050c52e4b4f5b380bd4545280a",
       "executable": false
     },
     "tests/e2e/script-embed.spec.ts": {

@@ -146,7 +146,14 @@ contract(['PART-002','RSLT-013'], 'a respondent saves two answers, resumes priva
     await page.goto(editLink!)
     await expect(page.getByRole('alert')).toContainText(/expired|used|unavailable/)
     await page.goto(`/app/flows/${flow.id}/results`)
+    const revisionQuestions=page.waitForResponse(response=>{
+      const url=new URL(response.url())
+      return url.pathname===`${path}/questions`&&url.searchParams.get('revisionId')===original.revision.id&&response.ok()
+    })
     await page.getByRole('combobox',{name:'Published revision',exact:true}).selectOption(original.revision.id)
+    await revisionQuestions
+    // Switching revisions remounts the ledger; open the row after that update commits.
+    await expect(page.locator('section.results')).toHaveAttribute('aria-busy','false')
     await page.getByRole('button',{name:'View answers',exact:true}).click()
     await page.getByText('Response versions (2)',{exact:true}).click()
     await expect(page.getByRole('region',{name:'Version 2 current'})).toContainText('Jo Updated')
