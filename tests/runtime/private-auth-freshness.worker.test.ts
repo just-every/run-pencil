@@ -64,10 +64,11 @@ async function warmedPrivateRouteDeniesInvalidatedSession(invalidation: 'revocat
   expect((await f.read()).status).toBe(401)
 }
 
-contract(['BASE-ACCESS-001', 'SHELL-001'], 'a warmed private route denies native session revocation', () =>
-  warmedPrivateRouteDeniesInvalidatedSession('revocation'))
-
-contract(['BASE-ACCESS-001', 'SHELL-001'], 'a valid native session without its durable product mapping or operator fails closed', async () => {
+contract(["BASE-ACCESS-001","SHELL-001"], 'a warmed private route denies revoked native sessions and missing durable product identity', async () => {
+  for (const [name, run] of [
+    ["a warmed private route denies native session revocation", () =>
+  warmedPrivateRouteDeniesInvalidatedSession('revocation')],
+    ["a valid native session without its durable product mapping or operator fails closed", async () => {
   const f = await fixture()
   await env.DB.prepare('DELETE FROM operator_auth_links WHERE auth_id=?').bind(f.id).run()
   expect(await f.auth.native.getSession(f.sessionRequest)).not.toBeNull()
@@ -79,4 +80,8 @@ contract(['BASE-ACCESS-001', 'SHELL-001'], 'a valid native session without its d
   expect(await f.auth.native.getSession(f.sessionRequest)).not.toBeNull()
   expect(await f.auth.getSession(f.sessionRequest)).toBeUndefined()
   expect((await f.read()).status).toBe(401)
+}],
+  ] as const) {
+    try { await run() } catch (cause) { throw new Error(`Private authentication case "${name}" failed`, { cause }) }
+  }
 })

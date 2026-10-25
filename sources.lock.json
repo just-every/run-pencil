@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "575613e581659ec672fc941c0b6b47cdb1a672e5de61446193761f9542caf629",
+      "sha256": "38502d75532243826285c1c3b554bdf14dd9a77524b34b8665d72c7e26b5c8e8",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "87bb0efda0bba6a40a6982fd99624d367c1d703fc96bc0ab84f4b3bbacfc5b69",
+      "sha256": "b74c0f02fc7983518f5e3448a55f23b91b94f6a5e83dbcd68d108d47822e8b9e",
       "executable": false
     },
     "DEMO.md": {
@@ -7069,7 +7069,7 @@
       "executable": false
     },
     "test-budget.json": {
-      "sha256": "c8859a0041a4671f9bbcfb833f162c7ba662b674a0f7e0248d27de75b0c8937e",
+      "sha256": "57c834690cfeb744316194cc63e12be60d3598141e51a32d80363defcc3a3a93",
       "executable": false
     },
     "tests/admission/management-edge.mjs": {
@@ -7969,7 +7969,7 @@
       "executable": false
     },
     "tests/runtime/private-auth-freshness.worker.test.ts": {
-      "sha256": "ae1ab7889ffa862d6bf69f2b99cbf643787f2ff6e82fc0bccf49db91f8b2ff7a",
+      "sha256": "d4f48c4ae9ca81d17e13b9f39121a8f1fba391f08a159f4516642218d04fb64d",
       "executable": false
     },
     "tests/runtime/qr.worker.test.ts": {
@@ -8053,7 +8053,7 @@
       "executable": false
     },
     "tests/runtime/transition.worker.test.ts": {
-      "sha256": "4b46e663fa040400d95f2c62d76365fb6ec8d06d322c2802ab312c3edf4bf4ec",
+      "sha256": "95f8a2635d85a67a5d9db5ff81012532602ceae21c8b03767da173eed9417632",
       "executable": false
     },
     "tests/runtime/typeform-definition.worker.test.ts": {
