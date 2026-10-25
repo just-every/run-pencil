@@ -34,7 +34,7 @@ RSLT-006 remains done with a table-only guarantee; its displayed note copy is co
 
 - OPER-001 — Equal operators — done. Tagged tests: `tests/runtime/access-foundation.worker.test.ts`.
 - OPER-002 — Management — done. Tagged tests: `tests/runtime/auth.worker.test.ts`, `tests/runtime/first-owner.worker.test.ts`.
-- OPER-003 — Sign-in depends on mail — done. Tagged tests: `tests/managed-mail.test.ts`, `tests/runtime/base-auth.worker.test.ts`, `tests/runtime/optional-configuration.worker.test.ts`.
+- OPER-003 — Sign-in depends on mail — done. Tagged tests: `tests/managed-mail.test.ts`, `tests/runtime/base-auth.worker.test.ts` — "[BASE-ACCESS-001,OPER-003,BASE-SECRET-001,BASE-INPUT-001,BASE-ACCESS-004,DIST-007] native magic-link admission preserves one-time redemption and refuses malformed or uncertain authorization", `tests/runtime/optional-configuration.worker.test.ts`.
 
 ### Roles, sharing and sign-in (target)
 
@@ -140,7 +140,7 @@ RSLT-006 remains done with a table-only guarantee; its displayed note copy is co
 - DIST-004 — Reminders — done. Tagged tests: `tests/runtime/distribution.worker.test.ts`.
 - DIST-005 — Opt-out — done. Tagged tests: `tests/e2e/distribution-foundation.spec.ts`, `tests/runtime/distribution.worker.test.ts`.
 - DIST-006 — Mail retry — done. Tagged tests: `tests/runtime/distribution.worker.test.ts`, `tests/runtime/feedback-digest.worker.test.ts`, `tests/runtime/notifications.worker.test.ts`.
-- DIST-007 — Adapter isolation — done. Tagged tests: `tests/runtime/base-auth.worker.test.ts`.
+- DIST-007 — Adapter isolation — done. Tagged tests: `tests/runtime/base-auth.worker.test.ts` — "[BASE-ACCESS-001,OPER-003,BASE-SECRET-001,BASE-INPUT-001,BASE-ACCESS-004,DIST-007] native magic-link admission preserves one-time redemption and refuses malformed or uncertain authorization".
 - DIST-008 — Terminal delivery — done. Tagged tests: `tests/e2e/mail-recovery.spec.ts`, `tests/runtime/distribution.worker.test.ts`.
 - DIST-009 — Embed isolation — partial. Evidence: `tests/e2e/embed-security-foundation.spec.ts`, `tests/e2e/rendering-migration.spec.ts`, `tests/e2e/script-embed.spec.ts`, `tests/e2e/calculations.spec.ts` (1440/390). Opaque child isolation, exact origin/source/challenge admission, strict four-event messages, Stripe HTTPS URL/Checkout Session ID projection, exact outbound target and handoff replay refusal have local assertions through the script/payment journeys. Non-HTTPS and non-Stripe provider URLs produce no checkout message or navigation. Missing acknowledgement on an allowed script frame exposes a user-activated same-tab continuation. Gap: disallowed-host checkout fallback cannot occur after the existing pre-render 403; extra payer fields on an application payment receipt have no public-door child rejection proof. Plain iframe payments remain outside this handoff proof.
 - DIST-010 — Ambiguous mail outcome — done. Tagged tests: `tests/e2e/mail-recovery.spec.ts`, `tests/runtime/distribution.worker.test.ts`, `tests/runtime/notification-restore.worker.test.ts`.

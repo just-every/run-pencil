@@ -20,7 +20,9 @@ async function bootstrap() { if (setupCookie) return setupCookie; const response
 async function counts() {
   return (await env.DB.batch(['oa_tokens', 'oa_sessions', 'oa_operators', 'operators', 'operator_auth_links'].map(table => env.DB.prepare(`SELECT * FROM ${table} ORDER BY id`.replace('operator_auth_links ORDER BY id', 'operator_auth_links ORDER BY operator_id'))))).map(row => row.results)
 }
-contract(['BASE-ACCESS-001','OPER-003','BASE-SECRET-001'], 'Base bootstraps once, signs in only existing operators and confirms with a read-only GET before a single-use POST', async () => {
+contract(["BASE-ACCESS-001","OPER-003","BASE-SECRET-001","BASE-INPUT-001","BASE-ACCESS-004","DIST-007"], 'native magic-link admission preserves one-time redemption and refuses malformed or uncertain authorization', async () => {
+  for (const [caseName, executeCase] of [
+    ["Base bootstraps once, signs in only existing operators and confirms with a read-only GET before a single-use POST", async () => {
   const fetcher = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response(null, { status: 202, headers: { 'X-Message-Id': 'synthetic-sendgrid' } }))
   try {
     const incomplete = await worker.fetch(new Request(origin+'/health'), {...bindings(), SETUP_TOKEN:undefined}, {} as ExecutionContext)
@@ -74,8 +76,8 @@ contract(['BASE-ACCESS-001','OPER-003','BASE-SECRET-001'], 'Base bootstraps once
     expect((await run('/api/app/dashboard', undefined, 'pencil_operator_session=old-credential')).status).toBe(401)
     expect((await run('/auth/operator/role', { operatorId: product!.id, role: 'admin' }, first)).status).toBe(404)
   } finally { fetcher.mockRestore() }
-})
-contract(['BASE-ACCESS-001','BASE-INPUT-001','BASE-ACCESS-004'], 'real missing and mismatched headers, duplicate credential sources and absent edge address fail closed without mail or provisioning', async () => {
+}],
+    ["real missing and mismatched headers, duplicate credential sources and absent edge address fail closed without mail or provisioning", async () => {
   await bootstrap()
   const send = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('No provider should be called'))
   const before = await counts()
@@ -101,8 +103,8 @@ contract(['BASE-ACCESS-001','BASE-INPUT-001','BASE-ACCESS-004'], 'real missing a
     expect(await counts()).toEqual(before)
     expect(await env.DB.prepare('SELECT count(*) n FROM oa_operators').first()).toEqual({ n: 1 })
   } finally { send.mockRestore() }
-})
-contract(['DIST-007','OPER-003','BASE-ACCESS-001','BASE-SECRET-001'], 'an uncertain Base SendGrid send revokes its link, leaks no provider error and leaves existing sessions usable', async () => {
+}],
+    ["an uncertain Base SendGrid send revokes its link, leaks no provider error and leaves existing sessions usable", async () => {
   const cookie = await bootstrap()
   const send = vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('synthetic-private-provider-secret'))
   try {
@@ -117,4 +119,10 @@ contract(['DIST-007','OPER-003','BASE-ACCESS-001','BASE-SECRET-001'], 'an uncert
     expect((await run('/health')).status).toBe(200)
     expect(await env.DB.prepare('SELECT count(*) n FROM local_dev_inbox').first()).toEqual({ n: 0 })
   } finally { send.mockRestore() }
+}],
+  ] as const) {
+    try { await executeCase() } catch (cause) {
+      throw new Error(`Native magic-link admission case "${caseName}" failed: ${cause instanceof Error ? cause.message : String(cause)}`, { cause })
+    }
+  }
 })
