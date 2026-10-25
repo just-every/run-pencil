@@ -7,7 +7,9 @@ import { matureLoad } from './load-time-fixture'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB,__PENCIL_CORE_MIGRATIONS__))
 
-contract('RSLT-012','codes twenty answers by hand and twenty by exact AI quotes, rejects without assigning, charts and filters with source custody',async()=>{
+contract(["RSLT-012","FIELD-010"], 'answer coding preserves manual and suggested text custody while refusing ineligible answers', async () => {
+  for (const [caseName, executeCase] of [
+    ["codes twenty answers by hand and twenty by exact AI quotes, rejects without assigning, charts and filters with source custody", async()=>{
   await ai.reset()
   const f=await analysisHttp(),manual:string[]=[],suggested:string[]=[]
   const json=async(path:string,body?:unknown,method?:string,status=200)=>{
@@ -80,9 +82,8 @@ contract('RSLT-012','codes twenty answers by hand and twenty by exact AI quotes,
   expect((await json(`/api/app/flows/${f.flowId}/coding/counts`)).codes.find((c:any)=>c.id===code.id).responseCount).toBe(21)
   expect((await f.call(assign(manual[1]),{},'DELETE')).status).toBe(204)
   expect((await f.call(assign(manual[1]),{},'DELETE')).status).toBe(204)
-})
-
-contract(['RSLT-012','FIELD-010'],'codes retained Other write-ins as text while refusing plain choice labels and quarantined or foreign answers',async()=>{
+}],
+    ["codes retained Other write-ins as text while refusing plain choice labels and quarantined or foreign answers", async()=>{
   const f=await analysisHttp({},'coding-other')
   const created=await f.services.flows.createDraftFlow({workspaceId:f.workspaceId,title:'Other coding',slug:'coding-other-text'})
   const draft=()=>f.services.flows.getBuilderDraft(f.workspaceId,created.id)
@@ -105,4 +106,10 @@ contract(['RSLT-012','FIELD-010'],'codes retained Other write-ins as text while 
   const counts=await (await f.call(`/api/app/flows/${created.id}/coding/counts`)).json() as any
   expect(counts).toMatchObject({responseDenominator:2,answerDenominator:1})
   expect(counts.codes.find((c:any)=>c.id===code.id)).toMatchObject({answerCount:1,responseCount:1})
+}],
+  ] as const) {
+    try { await executeCase() } catch (cause) {
+      throw new Error(`Answer coding eligibility case "${caseName}" failed: ${cause instanceof Error ? cause.message : String(cause)}`, { cause })
+    }
+  }
 })
