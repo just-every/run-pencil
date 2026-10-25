@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "0ad2e801ed9e5a69d6a121de4ba58ee16237fddd666c73d506ee87efb9481b5b",
+      "sha256": "129a1fe20475f92f8d119668096de4a44e437280b5158c6706e7f6988b39556a",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -7069,7 +7069,7 @@
       "executable": false
     },
     "test-budget.json": {
-      "sha256": "595485c7eb57862fb0441cccde78690b8950f6811484b5fd3a6a7d62892f1d04",
+      "sha256": "6066fce26ddd167c2e9feb389a815a63725835444d9d28046615e0e5ef220bfc",
       "executable": false
     },
     "tests/admission/management-edge.mjs": {
@@ -7845,7 +7845,7 @@
       "executable": false
     },
     "tests/runtime/google-form-import.worker.test.ts": {
-      "sha256": "1ef1ca90dab067947d068ccdb8f9f7f36d665d8d6494abdf9b96fa2fd564f5e7",
+      "sha256": "ff1f867b540c065e12791a7b86fee51318e1be3895b14b1167b10aaceb5cb4a7",
       "executable": false
     },
     "tests/runtime/google-import-http.ts": {

@@ -7,7 +7,9 @@ import { ambiguousGoogleCsv, answerCanary, branchDefinition, googleInput, ordina
 import type { ImportInput } from '../../src/core/features/importing/model'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
-contract(['IMPORT-001', 'IMPORT-002', 'IMPORT-003', 'IMPORT-004'], 'Google public commit pins anonymous history, omits every identity copy, replays both files and undoes without mail', async () => {
+contract(["IMPORT-001","IMPORT-002","IMPORT-003","IMPORT-004"], 'Google reviewed-import routes preserve definition and CSV-only custody through replay, refusal and undo', async () => {
+  for (const [caseName, executeCase] of [
+    ["Google public commit pins anonymous history, omits every identity copy, replays both files and undoes without mail", async () => {
   const f = await googleHttp(), before = await counts(), initial = await f.review(googleInput)
   const first = initial.questions.find(question => question.sourceId === 'first')!, second = initial.questions.find(question => question.sourceId === 'second')!
   const input = { ...googleInput, columns: initial.columns.map(column => column.column === 3 ? { ...column, target: first.id } : column.column === 4 ? { ...column, target: second.id } : column) }
@@ -45,8 +47,8 @@ contract(['IMPORT-001', 'IMPORT-002', 'IMPORT-003', 'IMPORT-004'], 'Google publi
   expect((await (await f.call(`/api/app/imports/${job.id}/undo`, {})).json() as ImportJob).state).toBe('undone')
   expect(await env.DB.prepare('SELECT COUNT(*) AS n FROM responses WHERE flow_id=?').bind(report.flowId).first()).toEqual({ n: 0 })
   expect(await env.DB.prepare('SELECT COUNT(*) AS n FROM flows WHERE id=?').bind(report.flowId).first()).toEqual({ n: 0 })
-}, 90_000)
-contract(['IMPORT-002', 'IMPORT-004'], 'CSV-only public route preserves whole labels, prepares privately and resumes custody; revoked sessions cannot continue', async () => {
+}],
+    ["CSV-only public route preserves whole labels, prepares privately and resumes custody; revoked sessions cannot continue", async () => {
   const f = await googleHttp(), input: ImportInput = { source: 'google-forms', definition: '', csv: quoteCsv([['Timestamp', 'Answer', 'Email Address'], ...Array.from({ length: 23 }, (_, i) => ['23/04/2026 ' + String(i).padStart(2, '0') + ':10:11', i === 0 ? answerCanary : `Historical answer ${i}`, skippedIdentity])]), google: { title: 'Flat historical form', timeZone: 'Australia/Brisbane', questions: [{ sourceId: 'csv:1', type: 'short_text' }] } }
   const checkbox: ImportInput = { ...input, csv: quoteCsv([['Timestamp', 'Colors', 'Workspace preference', 'Email address remarks'], ['23/04/2026 09:10:11', 'Red', 'Shared office', 'Work email preferred'], ['24/04/2026 09:10:11', 'Blue', 'Private office', 'Personal email preferred'], ['25/04/2026 09:10:11', 'Red, Blue', 'Remote', 'Either address']]), google: { ...input.google, questions: [{ sourceId: 'csv:1', type: 'multiple_choice', choices: ['Red', 'Blue'] }] } }
   const before = await counts(), refused = await f.review(checkbox)
@@ -91,4 +93,10 @@ contract(['IMPORT-002', 'IMPORT-004'], 'CSV-only public route preserves whole la
   expect(await env.DB.prepare('SELECT COUNT(*) AS n FROM responses WHERE flow_id=?').bind(review.flowId).first()).toEqual({ n: 23 })
   expect((await f.commit(input)).job.id).toBe(job.id)
   expect(await allStoredData()).not.toContain(skippedIdentity)
+}],
+  ] as const) {
+    try { await executeCase() } catch (cause) {
+      throw new Error(`Google reviewed import case "${caseName}" failed: ${cause instanceof Error ? cause.message : String(cause)}`, { cause })
+    }
+  }
 }, 90_000)
