@@ -51,6 +51,23 @@ contract(['NOTIFY-002','NOTIFY-004','NOTIFY-005','BASE-PUBLIC-003'],'notificatio
   await rule.locator('label').filter({hasText:email}).getByRole('checkbox').check()
   await rule.getByRole('checkbox',{name:'Send to Slack',exact:true}).check()
   await rule.getByRole('checkbox',{name:'Send to Teams',exact:true}).check()
+  const alertPanel=page.locator('.answer-alert-settings'),ruleName=rule.getByLabel('Rule name',{exact:true})
+  const validationBeforeRequest=call(`${path}/draft`)
+  const alertWrites:string[]=[]
+  const recordAlertWrite=(request:import('@playwright/test').Request)=>{if(request.method()==='PUT'&&new URL(request.url()).pathname===`${path}/draft/settings`)alertWrites.push(request.url())}
+  page.on('request',recordAlertWrite)
+  await ruleName.fill('')
+  const validationBefore=await validationBeforeRequest
+  await alertPanel.getByRole('button',{name:'Save alert rules',exact:true}).click()
+  const nameAlert=rule.getByRole('alert')
+  await expect(nameAlert).toBeVisible()
+  const [description,describedBy,validationAfter]=await Promise.all([nameAlert.getAttribute('id'),ruleName.getAttribute('aria-describedby'),call(`${path}/draft`),expect(alertPanel.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0)])
+  expect(description).toBeTruthy()
+  expect(describedBy?.split(' ')).toContain(description)
+  expect(alertWrites).toHaveLength(0)
+  expect(validationAfter).toEqual(validationBefore)
+  await ruleName.fill('Detractor follow-up')
+  page.off('request',recordAlertWrite)
   for(const viewport of [{width:1440,height:900},{width:390,height:844}]) {
     await page.setViewportSize(viewport)
     await expect(rule.getByLabel('Rule name',{exact:true})).toBeVisible()
@@ -61,23 +78,6 @@ contract(['NOTIFY-002','NOTIFY-004','NOTIFY-005','BASE-PUBLIC-003'],'notificatio
     expect((await new AxeBuilder({page}).analyze()).violations).toEqual([])
     await page.screenshot({path:capture?join(capture,`answer-alert-settings-${viewport.width}-${info.project.name}.png`):info.outputPath(`answer-alert-settings-${viewport.width}.png`),fullPage:true,scale:'css'})
   }
-  const alertPanel=page.locator('.answer-alert-settings'),ruleName=rule.getByLabel('Rule name',{exact:true})
-  const validationBefore=await call(`${path}/draft`)
-  const alertWrites:string[]=[]
-  const recordAlertWrite=(request:import('@playwright/test').Request)=>{if(request.method()==='PUT'&&new URL(request.url()).pathname===`${path}/draft/settings`)alertWrites.push(request.url())}
-  page.on('request',recordAlertWrite)
-  await ruleName.fill('')
-  await alertPanel.getByRole('button',{name:'Save alert rules',exact:true}).click()
-  const nameAlert=rule.getByRole('alert')
-  await expect(nameAlert).toBeVisible()
-  const description=await nameAlert.getAttribute('id')
-  expect(description).toBeTruthy()
-  expect((await ruleName.getAttribute('aria-describedby'))?.split(' ')).toContain(description)
-  await expect(alertPanel.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0)
-  expect(alertWrites).toHaveLength(0)
-  expect(await call(`${path}/draft`)).toEqual(validationBefore)
-  await ruleName.fill('Detractor follow-up')
-  page.off('request',recordAlertWrite)
   const builderUrl=page.url()
   const beforeSave=await call(`${path}/draft`)
   let leaveDialog:string|undefined

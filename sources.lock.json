@@ -7301,7 +7301,7 @@
       "executable": false
     },
     "tests/e2e/notifications.spec.ts": {
-      "sha256": "97d6272468d7bd9e5ca563f1f1a619703b251066c0058226b3ebefc383dead88",
+      "sha256": "4d51e1dee8a1c4e99d1182936386454c696ad8f21ea7a739607fa39f3b0f0561",
       "executable": false
     },
     "tests/e2e/operator-custody.spec.ts": {
