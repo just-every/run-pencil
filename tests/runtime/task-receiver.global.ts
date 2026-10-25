@@ -9,6 +9,7 @@ type Captured = { path: string; authorization: string | null; idempotencyKey: st
 
 export default async function setup(project: TestProject) {
   let mode: Mode = 'ok', delayMilliseconds = 0
+  let smsDrop=false
   let chatDown=false,chatDrop=false
   const chatPosts=new Map<string,string>()
   let googleDown=false, googleTabs=1, googleBytes=0, googleDropWrite=false
@@ -18,8 +19,9 @@ export default async function setup(project: TestProject) {
   const json = (response: ServerResponse, status: number, value: unknown) => { response.writeHead(status, { 'content-type': 'application/json' }); response.end(JSON.stringify(value)) }
   const server = createServer(async (request, response) => {
     const body = await read(request)
-    if (request.url === '/__control/reset') { const options = JSON.parse(body || '{}'); mode = options.mode ?? 'ok'; delayMilliseconds = options.delayMilliseconds ?? 0; tasks.clear(); faulted.clear(); sheetRows.clear();googleDown=false;googleTabs=1;googleBytes=0;googleDropWrite=false;requests.length = 0;chatDown=false;chatDrop=false;chatPosts.clear(); return json(response, 200, { reset: true }) }
+    if (request.url === '/__control/reset') { const options = JSON.parse(body || '{}'); mode = options.mode ?? 'ok'; delayMilliseconds = options.delayMilliseconds ?? 0; tasks.clear(); faulted.clear(); sheetRows.clear();googleDown=false;googleTabs=1;googleBytes=0;googleDropWrite=false;requests.length = 0;chatDown=false;chatDrop=false;chatPosts.clear();smsDrop=false; return json(response, 200, { reset: true }) }
     if (request.url === '/__control/state') return json(response, 200, { tasks: Object.fromEntries(tasks), requests,chatPosts:Object.fromEntries(chatPosts),sheets:Object.fromEntries(sheetRows) })
+    if(request.url==='/__control/sms-mode'){smsDrop=JSON.parse(body).drop===true;return json(response,200,{configured:true})}
     if(request.url==='/__control/chat-mode'){const options=JSON.parse(body);chatDown=options.down===true;chatDrop=options.drop===true;return json(response,200,{down:chatDown})}
     if(request.url==='/__control/google-mode'){const options=JSON.parse(body);googleDown=options.down??false;googleTabs=options.tabs??1;googleBytes=options.bytes??0;googleDropWrite=options.dropWrite??false;if(options.book&&options.rows)sheetRows.set(options.book,options.rows);return json(response,200,{down:googleDown})}
     requests.push({ path: request.url ?? '', authorization: request.headers.authorization ?? null, idempotencyKey: (request.headers['idempotency-key'] as string | undefined) ?? null, contentType: request.headers['content-type'] ?? null, body })
@@ -58,7 +60,7 @@ export default async function setup(project: TestProject) {
     if (/^\/2010-04-01\/Accounts\/[^/]+\/Messages\.json$/.test(request.url??'')){
       if(!request.headers.authorization?.startsWith('Basic '))return json(response,401,{error:'unauthorized'})
       const key=String(request.headers['idempotency-key']??'');if(!key)return json(response,400,{error:'missing-key'})
-      const sid=tasks.get(key)??`synthetic-pencil-${tasks.size+1}`;tasks.set(key,sid);return json(response,201,{sid,status:'queued'})
+      const sid=tasks.get(key)??`synthetic-pencil-${tasks.size+1}`;tasks.set(key,sid);if(smsDrop){smsDrop=false;return request.socket.destroy()}return json(response,201,{sid,status:'queued'})
     }
     if (request.url !== '/tasks') return json(response, 404, { error: 'not found' })
     if (mode === 'redirect') { response.writeHead(307, { location: '/redirected-tasks' }); return response.end() }

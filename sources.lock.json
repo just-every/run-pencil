@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "7a70a974d0934585caa31126ff81a7902714609b5cb7434b235f85ea4c3420ba",
+      "sha256": "357aed8ec7c25d0498d671dc24cae45305ee8acf1b180abf35a830a7e7719df4",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "c5ba7bc6a5fe32361332530e6a5a4f0a442a0f4567e225f9172d053a639d0d54",
+      "sha256": "1eb6f874873b56aa1ae6df56554794d9b69d0d992ff6db2df7d0ea8bf7411bed",
       "executable": false
     },
     "DEMO.md": {
@@ -6241,11 +6241,11 @@
       "executable": false
     },
     "src/core/features/sms/routes.ts": {
-      "sha256": "9c5c9b2507fa72fa835687ac044538a2fcdd16f21e5da082027a781d34f422fa",
+      "sha256": "8aed0b007415a715f638e91c90d5d481519763bd33da79786db003069c79214b",
       "executable": false
     },
     "src/core/features/sms/service.ts": {
-      "sha256": "0af8bbc3ae174a0c73f1cf254bfbb6794b58e89cd22d3c9a2b408668849f339e",
+      "sha256": "abc7d683f00445189214e48315654ad2b9e6c7071079f54dd6f9c88e3e13ede5",
       "executable": false
     },
     "src/core/features/sms/ui/index.ts": {
@@ -6489,7 +6489,7 @@
       "executable": false
     },
     "src/core/platform/config/connections.ts": {
-      "sha256": "31a9b6f6fda204f30ae20e5d74cddd0c251f2470a7aa6d0435a1c67b66f9eed4",
+      "sha256": "a214d5dc2ae5722d0268585e888a34bfa588a6578d7f3aaf13fd42457b635b37",
       "executable": false
     },
     "src/core/platform/config/runtime.ts": {
@@ -7869,7 +7869,7 @@
       "executable": false
     },
     "tests/runtime/google-sheets.worker.test.ts": {
-      "sha256": "65331d9ff26cb8f2221694b2daac073e82207800f627b77723c435ab973f9959",
+      "sha256": "b44872a2304d3c9c338d6b2509af56126d1dcf76c0a6f4d389d0cb4e77a71d7b",
       "executable": false
     },
     "tests/runtime/graph-reachability.worker.test.ts": {
@@ -8041,7 +8041,7 @@
       "executable": false
     },
     "tests/runtime/sms.worker.test.ts": {
-      "sha256": "e3533230ffd1bfad4b9e937306fcf148812ba105635ab5ef6c0a0a0059381530",
+      "sha256": "cae51ab9493fd5ff6539af9a12d38f4956203e57df38686faea3f26cce39ca42",
       "executable": false
     },
     "tests/runtime/stripe-receiver.global.ts": {
@@ -8057,7 +8057,7 @@
       "executable": false
     },
     "tests/runtime/task-receiver.global.ts": {
-      "sha256": "95b25496a53fa2cbfb9b1d09f89f2f8d986c03c95298f7c445754205f97b9a8c",
+      "sha256": "4bb619dba04e403cdde047018cfe40b234515a3e638162eb56e9018836d3017b",
       "executable": false
     },
     "tests/runtime/team-templates.worker.test.ts": {

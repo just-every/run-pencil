@@ -150,6 +150,9 @@ contract(['INTEG-001','INTEG-015'],'Google OAuth seals owner tokens and Sheets b
   // Archive/history fixture: retained columns from prior publications count toward the bound too.
   const columns=[...savedColumns,...Array.from({length:count-savedColumns.length},(_,i)=>({id:'synthetic-pencil-prior-question-'+i,label:'Previous question '+i}))]
   await env.DB.prepare('UPDATE google_sheet_links SET columns_json=? WHERE id=?').bind(JSON.stringify(columns),link.id).run()
+  const boundary=await f.call(base+'/google-sheet',{spreadsheetId:book,tab:'Synthetic responses'},{method:'PUT'})
+  expect(boundary.status).toBe(count===499?200:400)
+  if(count===500)expect(await boundary.json()).toMatchObject({error:'VALIDATION_ERROR',message:expect.stringContaining('499 question columns, including hidden fields')})
   await replayRow();expect((await rowState()).state).toBe(count===499?'confirmed':'failed')
   if(count===499)expect((await sheet())[0]).toHaveLength(500)
   else expect((await rowState()).attempts.at(-1).reason).toContain('499 question columns')

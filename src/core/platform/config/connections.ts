@@ -63,13 +63,21 @@ export class IntegrationConnections {
     validateAddress(input.url, this.platform.configuration.isLocalDevelopment)
     await this.save('task', input)
   }
-  async saveSms(input:SmsConnection) {
+  async saveSms(input:SmsConnection,workspaceId:string) {
     validateAddress(input.apiOrigin,this.platform.configuration.isLocalDevelopment)
     if(input.apiOrigin!=='https://api.twilio.com' && !(this.platform.configuration.isLocalDevelopment && ['localhost','127.0.0.1','[::1]'].includes(new URL(input.apiOrigin).hostname)))throw new ValidationError('Twilio uses https://api.twilio.com.')
     if(new URL(input.apiOrigin).origin!==input.apiOrigin)throw new ValidationError('Use the Twilio API origin without a path.')
-    await this.save('sms',input)
+    await this.save('sms',{...input,workspaceId})
   }
-  async sms(){return this.read<SmsConnection>('sms')}
+  async sms(){
+    const saved=await this.read<SmsConnection&{workspaceId?:string}>('sms')
+    if(saved&&!saved.workspaceId){
+      // Older sealed settings predate the explicit binding. Their owner save already recorded its workspace in the audit.
+      const audit=await this.platform.databaseBinding.prepare("SELECT workspace_id AS workspaceId FROM audit_entries WHERE kind='connection.saved' AND json_extract(details_json,'$.connection')='sms' ORDER BY created_at DESC,id DESC LIMIT 1").first<{workspaceId:string}>()
+      if(audit)saved.workspaceId=audit.workspaceId
+    }
+    return saved
+  }
   async smsStatus(){const saved=await this.sms();return {saved:!!saved,a2pState:saved?.a2pState??null,fromNumber:saved?.fromNumber??null,webhookUrl:this.platform.configuration.appOrigin+'/api/public/sms/twilio'}}
   validateGoogle(input:GoogleConnection){
     for(const [name,expected] of [['authOrigin','https://accounts.google.com'],['tokenOrigin','https://oauth2.googleapis.com'],['apiOrigin','https://sheets.googleapis.com']] as const){const value=input[name];validateAddress(value,this.platform.configuration.isLocalDevelopment);if(new URL(value).origin!==value||value!==expected&&!(this.platform.configuration.isLocalDevelopment&&['localhost','127.0.0.1','[::1]'].includes(new URL(value).hostname)))throw new ValidationError('Use the Google service origins.')}
