@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "357aed8ec7c25d0498d671dc24cae45305ee8acf1b180abf35a830a7e7719df4",
+      "sha256": "d30ea9a7c2d6c5fa26f17787b903ff0f43ecf39f3382f8c0257ea4e290407bef",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "ac9e814de1fa99d977f2b006368eea0b62d43c731b8766557eb0ef43f91bd7bb",
+      "sha256": "fd8d6cad2411cebe3f7c2188134bfbca9854b056b83a9aeb193f7bbf52b38104",
       "executable": false
     },
     "DEMO.md": {
@@ -7141,7 +7141,7 @@
       "executable": false
     },
     "tests/e2e/client-secrets.spec.ts": {
-      "sha256": "c690cb45b35c2d5d73f948621166a641a9fa1c847cd3da849c5fd88d8ef28dae",
+      "sha256": "976b9cfb46ab13cdc625a04888d261e12158bc3b5351e23cafd5b40f7b5788e3",
       "executable": false
     },
     "tests/e2e/closed-flow.spec.ts": {
@@ -7317,7 +7317,7 @@
       "executable": false
     },
     "tests/e2e/public-flow.spec.ts": {
-      "sha256": "6f3077f7cc25f9a63229b4d4e9e31612c3f5653e8b823f736bb2e737f49d40b2",
+      "sha256": "c614e64bd04ff983a664860702bd0294937d8491b7f4ef02145def833025888f",
       "executable": false
     },
     "tests/e2e/public-rate.spec.ts": {
@@ -7325,7 +7325,7 @@
       "executable": false
     },
     "tests/e2e/publication-zone.spec.ts": {
-      "sha256": "e05471b1576d731efb41cc7a1a1eeaacc656581183d234111fca58b10859cef4",
+      "sha256": "f1d88cdfa7aa950a4d89fdeaa79f5d38dcb815f63e87ac0d9468d848ad65342e",
       "executable": false
     },
     "tests/e2e/question-accessibility-foundation.spec.ts": {
@@ -7413,7 +7413,7 @@
       "executable": false
     },
     "tests/e2e/site-page.spec.ts": {
-      "sha256": "58ba30abab732276e9410578877f26ad0f54e4dff6852cb03fe0566942f19531",
+      "sha256": "5e0d712685d59902806225184200b8314cca6d4a133ca19dacc61bb50e269327",
       "executable": false
     },
     "tests/e2e/state-database.ts": {

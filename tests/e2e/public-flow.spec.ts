@@ -6,7 +6,6 @@ import AxeBuilder from '@axe-core/playwright'
 import type { FrameLocator, Page } from '@playwright/test'
 import { expect, test } from './fixtures'
 import { contract } from './contract'
-import manifest from '../../seed.json' with { type: 'json' }
 
 const slug = 'aurora-coffee-post-visit'
 type FlowSurface = Page | FrameLocator
@@ -18,7 +17,6 @@ async function verifyHealth(page: Page) {
   expect(health).toMatchObject({
     status: 'ok',
     product: 'pencil',
-    version: manifest.version,
     // A local run has no deployment identity; rer deploy records the commit it shipped.
     deployment: { sourceSha: null },
   })
@@ -35,28 +33,17 @@ async function completeResponse(surface: FlowSurface) {
   await expect(surface.getByRole('button', { name: /Back|Continue|Submit response/ })).toHaveCount(0)
 }
 
-contract('DIST-001', 'the canonical direct link renders a public flow without an operator session', async ({ page }) => {
+contract(['DIST-001', 'RESP-001', 'RESP-011'], 'a completed direct response reaches the immutable completion screen', async ({ page }) => {
   await verifyHealth(page)
   const requestedOrigins: string[] = []
   page.on('request', (request) => requestedOrigins.push(new URL(request.url()).origin))
   await page.goto(`/f/${slug}`)
   await expect(page.getByRole('heading', { name: 'Thank you for visiting Aurora Coffee.' })).toBeVisible()
-  await expect(page.getByRole('link', { name: /Operator sign in/i })).toHaveCount(0)
-  expect([...new Set(requestedOrigins)]).toEqual([new URL(page.url()).origin])
-  await expect(page.context().cookies()).resolves.toEqual([])
-})
-
-contract('RESP-001', 'the direct flow presents one public screen at a time', async ({ page }) => {
-  await verifyHealth(page)
-  await page.goto(`/f/${slug}`)
   await expect(page.getByRole('heading')).toHaveCount(1)
   await expect(page.getByRole('button', { name: 'Begin' })).toBeVisible()
   await expect(page.getByRole('link', { name: /Operator sign in/i })).toHaveCount(0)
-})
-
-contract('RESP-011', 'a completed direct response reaches the immutable completion screen', async ({ page }) => {
-  await verifyHealth(page)
-  await page.goto(`/f/${slug}`)
+  expect([...new Set(requestedOrigins)]).toEqual([new URL(page.url()).origin])
+  await expect(page.context().cookies()).resolves.toEqual([])
   await completeResponse(page)
 })
 

@@ -134,7 +134,7 @@ RSLT-006 remains done with a table-only guarantee; its displayed note copy is co
 
 ### Distribution
 
-- DIST-001 — Public link — done. Tagged tests: `tests/e2e/public-flow.spec.ts`, `tests/e2e/review-corrections.spec.ts`.
+- DIST-001 — Public link — done. Tagged tests: `tests/e2e/public-flow.spec.ts` — "a completed direct response reaches the immutable completion screen", `tests/e2e/review-corrections.spec.ts`.
 - DIST-002 — Embed — partial. Evidence: `tests/e2e/public-flow.spec.ts`, `tests/e2e/script-embed.spec.ts`, `tests/e2e/calculations.spec.ts`, `tests/e2e/closed-flow.spec.ts` (1440/390). Opaque script/iframe collection and exact host/frame admission have local browser proof. Checkout carries only its Stripe HTTPS URL and Checkout Session ID plus the transport challenge, targets the configured allowed origin, and is consumed once in child and host. The four permitted events include loaded acknowledgements; other message shapes are refused. An allowed script frame without acknowledgement offers an explicit user-activated same-tab continuation. Gap: a disallowed embedding host is refused with 403 before any payment can start, so its checkout same-tab fallback is not implemented; child rejection of an application receipt with extra payer fields is not asserted through a public door. Payment in a plain iframe remains PAY-001's named gap.
 - DIST-003 — Invitations — done. Tagged tests: `tests/runtime/distribution.worker.test.ts`.
 - DIST-004 — Reminders — done. Tagged tests: `tests/runtime/distribution.worker.test.ts`.
@@ -162,7 +162,7 @@ RSLT-006 remains done with a table-only guarantee; its displayed note copy is co
 
 ### Responding
 
-- RESP-001 — One question at a time — done. The layout requirement names one question per screen, classic pages (FIELD-008: shared conditions, visible-question validation and progress by page), and question groups (FIELD-012: per-question validation and progress). One-question screens, classic pages and grouped questions ship; FIELD-012 remains partial for optional media (FIELD-005) and statement blocks (FIELD-011). Tagged tests: `tests/e2e/public-flow.spec.ts`.
+- RESP-001 — One question at a time — done. The layout requirement names one question per screen, classic pages (FIELD-008: shared conditions, visible-question validation and progress by page), and question groups (FIELD-012: per-question validation and progress). One-question screens, classic pages and grouped questions ship; FIELD-012 remains partial for optional media (FIELD-005) and statement blocks (FIELD-011). Tagged tests: `tests/e2e/public-flow.spec.ts` — "a completed direct response reaches the immutable completion screen".
 - RESP-002 — Truthful progress — done. Tagged tests: `tests/e2e/question-progress.spec.ts`.
 - RESP-003 — Answers — done. Tagged tests: `tests/e2e/new-question-types.spec.ts`, `tests/e2e/question-accessibility-foundation.spec.ts`, `tests/e2e/question-progress.spec.ts`, `tests/e2e/review-corrections.spec.ts`, `tests/runtime/new-question-types.worker.test.ts`. Other-answer validation, exclusive None and lossless stored/exported shapes are also exercised by `tests/runtime/other-choices.worker.test.ts` and `tests/e2e/other-choices.spec.ts`.
 - RESP-004 — Back navigation — done. Tagged tests: `tests/e2e/journey.spec.ts`, `tests/e2e/question-progress.spec.ts`, `tests/runtime/journey.worker.test.ts`.
@@ -172,7 +172,7 @@ RSLT-006 remains done with a table-only guarantee; its displayed note copy is co
 - RESP-008 — Admission per invitation — done. Tagged tests: `tests/e2e/distribution-foundation.spec.ts`, `tests/runtime/distribution.worker.test.ts`.
 - RESP-009 — Concurrent closure — done. Tagged tests: `tests/e2e/closed-flow.spec.ts`, `tests/runtime/journey.worker.test.ts`.
 - RESP-010 — No silent partials — done. Tagged tests: `tests/runtime/foundation.worker.test.ts`, `tests/runtime/journey.worker.test.ts`, `tests/runtime/resuming.worker.test.ts`, `tests/e2e/save-resume.spec.ts`. Acceptance: abandon or reload after answering without choosing Save and prove no retained answer, operator-visible partial, result, response export or completion. Explicitly choose Save after two steps, resume the original revision and answers on another device, verify that the save remains absent from completed counts, results, analysis and default response exports, then complete once and reopen the link to its receipt. Both the no-silent-capture rule and respondent-chosen save exception ship; PART-001 automatic step capture remains unbuilt.
-- RESP-011 — Completion — done. Tagged tests: `tests/e2e/public-flow.spec.ts`.
+- RESP-011 — Completion — done. Tagged tests: `tests/e2e/public-flow.spec.ts` — "a completed direct response reaches the immutable completion screen".
 - RESP-012 — Submission retry — done. Tagged tests: `tests/runtime/journey.worker.test.ts`.
 - RESP-013 — Session metrics — done. Tagged tests: `tests/runtime/distribution.worker.test.ts`, `tests/runtime/journey.worker.test.ts`, `tests/runtime/transition.worker.test.ts`.
 - RESP-014 — Submit failure — done. Tagged tests: `tests/e2e/journey.spec.ts`, `tests/runtime/journey.worker.test.ts`.

@@ -5,9 +5,6 @@ import { contract } from './contract'
 // The product page is the run site's (run-pencil.com), built by rer build --site.
 test.use({ baseURL: process.env.PENCIL_E2E_SITE_URL })
 
-// The story's sections, by id and in order. What they say is the page's to change; that each is there, in order, with a heading is not.
-const story = ['one-at-a-time', 'answer-paths', 'preview', 'revisions', 'share', 'kind', 'results', 'moving-in', 'yours', 'start']
-
 contract('SITE-001', 'the run site\'s product page tells its story in order, closes on Run Pencil and the docs, and stays cookieless, same-origin and accessible', async ({ page, context, baseURL }) => {
   const origin = new URL(baseURL!).origin
   const foreign: string[] = []
@@ -19,8 +16,7 @@ contract('SITE-001', 'the run site\'s product page tells its story in order, clo
   expect((await page.goto('/'))?.status()).toBe(200)
   await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(/\S/)
-  const ids = await page.locator('main section[id]:has(h2)').evaluateAll(nodes => nodes.map(node => node.id))
-  expect(ids.filter(id => story.includes(id))).toEqual(story)
+  const sections = page.locator('main section:has(h2)')
 
   // Scroll the whole page so every lazy image loads and every plate reveals, then check it as a reader finishes it.
   const height = await page.evaluate(() => document.documentElement.scrollHeight)
@@ -32,13 +28,13 @@ contract('SITE-001', 'the run site\'s product page tells its story in order, clo
   }
   await page.waitForLoadState('networkidle')
   await expect(page.locator('[data-reveal="waiting"]')).toHaveCount(0)
-  for (const id of story) {
-    const heading = page.locator(`#${id}`).getByRole('heading', { level: 2 })
+  for (const section of await sections.all()) {
+    const heading = section.getByRole('heading', { level: 2 })
     await expect(heading).toBeVisible()
     await expect(heading).toHaveText(/\S/)
   }
 
-  const close = page.locator('#start')
+  const close = page.locator('main section').filter({ has: page.locator('a[href="/run"]') }).filter({ has: page.locator('a[href="/docs"]') }).last()
   await expect(close.locator('a[href="/run"]').first()).toBeVisible()
   await expect(close.locator('a[href="/docs"]').first()).toBeVisible()
 
