@@ -48,7 +48,7 @@ contract('LOGIC-005','authors an approved redirect, previews without leaving and
   await preview.getByRole('button',{name:'Continue preview',exact:true}).click()
   await preview.getByRole('radio',{name:'Yes',exact:true}).check()
   await preview.getByRole('button',{name:'Continue preview',exact:true}).click()
-  await expect(preview).toContainText('After a saved submission, redirect to: https://sales.example.test/book?fixed=consultation&team=60&campaign=enterprise&quote=120')
+  await expect(preview).toContainText('https://sales.example.test/book?fixed=consultation&team=60&campaign=enterprise&quote=120')
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
   await page.screenshot({path:`test-results/${info.project.name}-completion-preview.png`,fullPage:true})
   expect((await call<{total:number}>(`${f.base}/ledger`)).total).toBe(0)

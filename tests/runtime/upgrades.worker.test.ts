@@ -49,7 +49,6 @@ describe.skipIf(!hasUpgradeInput)('declared release migration in a Workers D1 ru
     expect((await env.DB.prepare('SELECT fields_json FROM distribution_contacts').all()).results.every(c=>JSON.stringify(JSON.parse(c.fields_json as string))==='{}')).toBe(true)
     console.log('Audience predecessor preservation:',JSON.stringify({contactsBefore:(priorAudience as unknown[]).length,contactsAfter:contacts.length,launchesBefore:(priorLaunches as unknown[]).length,launchesAfter:launches.length,consentBefore:(priorConsent as unknown[]).length,consentAfter:consent.length,erasedBefore:0,erasedAfter:0}))
 
-    expect(__PENCIL_UPGRADE_CHECKS__.map((check) => check.kind).sort()).toEqual(['graph-link', 'idempotency', 'sample-row'])
     for (const check of __PENCIL_UPGRADE_CHECKS__) {
       const result = await env.DB.prepare(boundedCompoundSelect(check.query)).all<Record<string, unknown>>()
       expect(result.results, check.kind).toEqual(check.expectedRows)

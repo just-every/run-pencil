@@ -7097,7 +7097,7 @@
       "executable": false
     },
     "tests/e2e/analysis.spec.ts": {
-      "sha256": "b66895244fbf24b2bc48ebd5a71ad2969aa43b1ba1bc23b30b05e6a4c442a273",
+      "sha256": "3be1de0049bf620c68ecaaf6617d5c7391694ca8118e047415cfbe4bbcc615d2",
       "executable": false
     },
     "tests/e2e/answer-recall.spec.ts": {
@@ -7153,7 +7153,7 @@
       "executable": false
     },
     "tests/e2e/completion-redirects.spec.ts": {
-      "sha256": "1fd0d8b1f6c946cbde273c5686f84d73bd9d4b7571e28693dea0ab78cd02846a",
+      "sha256": "6caddb2afdb5a9e1f8051dcc440f52522f8e7e66a92ffbc6d6339001f6e18850",
       "executable": false
     },
     "tests/e2e/conditions.spec.ts": {
@@ -8077,7 +8077,7 @@
       "executable": false
     },
     "tests/runtime/upgrades.worker.test.ts": {
-      "sha256": "1b234b154aef410b34542fe0f31141fbce46b51493d0b76f55f897d94c2a780c",
+      "sha256": "5d4d66337ba3ddced6af0d075089cd32c9c65ea2687f696ae021af0e9bd474a9",
       "executable": false
     },
     "tests/runtime/upgrades/0.6.0.json": {
