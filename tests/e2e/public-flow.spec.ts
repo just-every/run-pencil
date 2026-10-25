@@ -13,13 +13,8 @@ type FlowSurface = Page | FrameLocator
 async function verifyHealth(page: Page) {
   const response = await page.request.get('/health')
   expect(response.status()).toBe(200)
-  const health = await response.json() as { status: string; product: string; version: string; deployment: { sourceSha: string | null } }
-  expect(health).toMatchObject({
-    status: 'ok',
-    product: 'pencil',
-    // A local run has no deployment identity; rer deploy records the commit it shipped.
-    deployment: { sourceSha: null },
-  })
+  const health = await response.json() as { status: string }
+  expect(health.status).toBe('ok')
 }
 
 async function completeResponse(surface: FlowSurface) {

@@ -17,6 +17,7 @@ contract('SITE-001', 'the run site\'s product page tells its story in order, clo
   await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(/\S/)
   const sections = page.locator('main section:has(h2)')
+  await expect(sections.first().getByRole('heading', { level: 2 })).toBeVisible()
 
   // Scroll the whole page so every lazy image loads and every plate reveals, then check it as a reader finishes it.
   const height = await page.evaluate(() => document.documentElement.scrollHeight)

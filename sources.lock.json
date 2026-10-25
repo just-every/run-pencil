@@ -7317,7 +7317,7 @@
       "executable": false
     },
     "tests/e2e/public-flow.spec.ts": {
-      "sha256": "c614e64bd04ff983a664860702bd0294937d8491b7f4ef02145def833025888f",
+      "sha256": "8ece1dd0161f61e82205046906ff6e81a4f416124960f2b6c0655b0081878a9b",
       "executable": false
     },
     "tests/e2e/public-rate.spec.ts": {
@@ -7413,7 +7413,7 @@
       "executable": false
     },
     "tests/e2e/site-page.spec.ts": {
-      "sha256": "5e0d712685d59902806225184200b8314cca6d4a133ca19dacc61bb50e269327",
+      "sha256": "e05a964b31af9423dd8247f59d4effa749018ba6da4aa892ee63b2942436b9e3",
       "executable": false
     },
     "tests/e2e/state-database.ts": {
