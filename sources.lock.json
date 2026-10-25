@@ -4353,11 +4353,11 @@
       "executable": false
     },
     "src/core/features/chat-integrations/ui/ChatFormSettings.tsx": {
-      "sha256": "3c80230aa93a8be17990712868e5d642ac0ecba1e59afff2529335bca472536f",
+      "sha256": "9b6c48499845a74feb8276a39f84da0330752a00b86f31745f3b2a581cfb1600",
       "executable": false
     },
     "src/core/features/chat-integrations/ui/client.ts": {
-      "sha256": "174df00bab9d55e392c62255405c6cd8f89189b84cc368e8883d6d4095c002b0",
+      "sha256": "e8525a7f81994e0e60b822e42f909d715920bfaa6c9becd65fa99f038072711d",
       "executable": false
     },
     "src/core/features/chat-integrations/ui/index.ts": {
@@ -5537,7 +5537,7 @@
       "executable": false
     },
     "src/core/features/notifications/AnswerAlertSettings.tsx": {
-      "sha256": "8061cdd95873c1ba6c77ad665fcbc6e44b7da2755bcadbaf4f7be1509e96058c",
+      "sha256": "a82090a6d660d25e2d2accd4c303bfa24cf0b4caf6b44f74b7aef42973e4006c",
       "executable": false
     },
     "src/core/features/notifications/brand-mail-fixture.ts": {
@@ -6561,7 +6561,7 @@
       "executable": false
     },
     "src/core/shared/answerAlerts.ts": {
-      "sha256": "1d80737bcd724462497a859c86cfbda14589b921665eb477f7f6891b287f4609",
+      "sha256": "043053d4f0d6207f6902f47692ffdb1de008fa4fd0a6bdfff34a2956f3aceb06",
       "executable": false
     },
     "src/core/shared/answerRecall.ts": {
@@ -7145,7 +7145,7 @@
       "executable": false
     },
     "tests/e2e/chat-settings-proof.ts": {
-      "sha256": "b6084fd7c4ea27bf948bc28407b7c97dfa89a67305288ba38816383196ed0bc9",
+      "sha256": "9c70247b9bd9c59334b8a4f79a63e5ef210231affa992341874705449f04e0b7",
       "executable": false
     },
     "tests/e2e/client-secrets.spec.ts": {
@@ -7301,7 +7301,7 @@
       "executable": false
     },
     "tests/e2e/notifications.spec.ts": {
-      "sha256": "aaa7e8987e9a42d26a6484d8c95cd60f8d77085d504e44640a2674858d1e241c",
+      "sha256": "97d6272468d7bd9e5ca563f1f1a619703b251066c0058226b3ebefc383dead88",
       "executable": false
     },
     "tests/e2e/operator-custody.spec.ts": {

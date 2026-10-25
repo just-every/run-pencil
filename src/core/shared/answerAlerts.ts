@@ -21,6 +21,14 @@ export function answerAlertsIssue(value: unknown): string | undefined {
     ids.add(rule.id)
   }
 }
+/** Field guidance for the editor; the boundary validator above remains authoritative. */
+export function answerAlertFieldIssues(rule: AnswerAlertRule, draft: Pick<BuilderDraft,'steps'|'choices'|'formSettings'>): Partial<Record<'name'|'recipientIds'|'condition',string>> {
+  const issues: Partial<Record<'name'|'recipientIds'|'condition',string>> = {}
+  if (!rule.name.trim() || rule.name.length > 100) issues.name = 'Name this alert.'
+  if (!rule.recipientIds.length || rule.recipientIds.length > 100 || rule.recipientIds.some(id => !/^[A-Za-z0-9_-]{1,256}$/.test(id)) || new Set(rule.recipientIds).size !== rule.recipientIds.length) issues.recipientIds = 'Choose at least one recipient.'
+  if (!conditionShape(rule.condition) || answerAlertPublicationIssues([rule],draft).length) issues.condition = 'Complete this alert’s condition.'
+  return issues
+}
 export function answerAlertPublicationIssues(rules: AnswerAlertRule[] | undefined, draft: Pick<BuilderDraft,'steps'|'choices'|'formSettings'>) {
   const operands = [...draft.steps, ...hiddenOperands(draft.formSettings?.hiddenFields ?? []), ...calculationOperands(draft.formSettings?.calculations ?? []), paymentStateOperand]
   return (rules ?? []).flatMap(rule => conditionTests(rule.condition).flatMap(test => {

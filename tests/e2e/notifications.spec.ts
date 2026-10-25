@@ -61,6 +61,23 @@ contract(['NOTIFY-002','NOTIFY-004','NOTIFY-005','BASE-PUBLIC-003'],'notificatio
     expect((await new AxeBuilder({page}).analyze()).violations).toEqual([])
     await page.screenshot({path:capture?join(capture,`answer-alert-settings-${viewport.width}-${info.project.name}.png`):info.outputPath(`answer-alert-settings-${viewport.width}.png`),fullPage:true,scale:'css'})
   }
+  const alertPanel=page.locator('.answer-alert-settings'),ruleName=rule.getByLabel('Rule name',{exact:true})
+  const validationBefore=await call(`${path}/draft`)
+  const alertWrites:string[]=[]
+  const recordAlertWrite=(request:import('@playwright/test').Request)=>{if(request.method()==='PUT'&&new URL(request.url()).pathname===`${path}/draft/settings`)alertWrites.push(request.url())}
+  page.on('request',recordAlertWrite)
+  await ruleName.fill('')
+  await alertPanel.getByRole('button',{name:'Save alert rules',exact:true}).click()
+  const nameAlert=rule.getByRole('alert')
+  await expect(nameAlert).toBeVisible()
+  const description=await nameAlert.getAttribute('id')
+  expect(description).toBeTruthy()
+  expect((await ruleName.getAttribute('aria-describedby'))?.split(' ')).toContain(description)
+  await expect(alertPanel.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0)
+  expect(alertWrites).toHaveLength(0)
+  expect(await call(`${path}/draft`)).toEqual(validationBefore)
+  await ruleName.fill('Detractor follow-up')
+  page.off('request',recordAlertWrite)
   const builderUrl=page.url()
   const beforeSave=await call(`${path}/draft`)
   let leaveDialog:string|undefined
