@@ -24,6 +24,7 @@ export function registerChatRoutes(app:Hono<WorkerEnvironment>){
   app.get(base,param,async c=>c.json({links:await c.get('services').chat.list(c.get('operatorSession').workspaceId,c.req.valid('param').flowId)}))
   app.put(base,param,validateInput('json',chatFormSchema),async c=>c.json({links:await c.get('services').chat.save(c.get('operatorSession').workspaceId,c.req.valid('param').flowId,c.req.valid('json'))}))
   app.delete(base+'/:platform',validateInput('param',z.object({flowId:resourceId,platform:z.enum(chatPlatforms)})),emptyMutationBody,async c=>{await c.get('services').chat.remove(c.get('operatorSession').workspaceId,c.req.valid('param').flowId,c.req.valid('param').platform);return c.body(null,204)})
+  app.post('/api/app/chat/deliveries/:id/replay',validateInput('param',z.object({id:resourceId})),emptyMutationBody,async c=>{await requireConnectionOwner(c);await c.get('services').chat.replay(c.get('operatorSession').workspaceId,c.req.valid('param').id);return c.json({replayed:true})})
   app.post('/api/public/chat/slack/interactions',async c=>{
     const result=await c.get('services').chat.interaction({body:await interactionBody(c.req.raw),timestamp:c.req.header('x-slack-request-timestamp')??null,signature:c.req.header('x-slack-signature')??null})
     return c.json({text:'Action created. Sign in to Pencil to review it.',actionId:result.actionId})

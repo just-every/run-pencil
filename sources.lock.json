@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "2bcc862baece869dfa8d2c61f4e66d459d730d2eeb2b1568e7183f27b1f5db80",
+      "sha256": "7a70a974d0934585caa31126ff81a7902714609b5cb7434b235f85ea4c3420ba",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "053c128d20533fa7f4d0c1fca6206a5b944d6137b8aba6b6b8417d7848b19ec5",
+      "sha256": "c5ba7bc6a5fe32361332530e6a5a4f0a442a0f4567e225f9172d053a639d0d54",
       "executable": false
     },
     "DEMO.md": {
@@ -4325,15 +4325,15 @@
       "executable": false
     },
     "src/core/features/chat-integrations/queue.ts": {
-      "sha256": "557c38bd76c14c582739567d2a61e555a484ef2e45885cdc012839b6cd084a87",
+      "sha256": "bebdf16cb3019a996727a6c47ad81be2e054810347105a64569cc7fd93b5538c",
       "executable": false
     },
     "src/core/features/chat-integrations/routes.ts": {
-      "sha256": "406ddb27f89378eacdfca1727b825e92b47b4abaefc16142e6b32095af8377a8",
+      "sha256": "48f817e96ce958a444043385c6b5de80de2e994adacf1c95d75b6084a3600c45",
       "executable": false
     },
     "src/core/features/chat-integrations/service.ts": {
-      "sha256": "16dec2a1b590a786f7c47924c507f17cbf066784202e26d0e230945f14c565e6",
+      "sha256": "e71890358a086b7f25efdb5892d1de381f87b1b877ce0f03ad8b9a2d52463c02",
       "executable": false
     },
     "src/core/features/chat-integrations/signature.ts": {
@@ -7797,7 +7797,7 @@
       "executable": false
     },
     "tests/runtime/chat-integrations-proof.ts": {
-      "sha256": "34650aa097eb41f25180a4a19d98da6caff16612a0d175ae024383ddc0821b3b",
+      "sha256": "70656fe10d40315da9509f71a2cd732d592929871cbde4ef650e9d6fd505ddc3",
       "executable": false
     },
     "tests/runtime/coding.worker.test.ts": {
@@ -8057,7 +8057,7 @@
       "executable": false
     },
     "tests/runtime/task-receiver.global.ts": {
-      "sha256": "71f341d43c76461560fa97cf5a915f9df6a598e027a586080f453b4261ed5816",
+      "sha256": "95b25496a53fa2cbfb9b1d09f89f2f8d986c03c95298f7c445754205f97b9a8c",
       "executable": false
     },
     "tests/runtime/team-templates.worker.test.ts": {

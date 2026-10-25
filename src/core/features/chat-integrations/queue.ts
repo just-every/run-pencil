@@ -3,7 +3,7 @@ import { workspaceToday } from '../actions'
 import { unpaidResponseSql } from '../payments/admission'
 
 export const eligibleChatResponse = `r.state='released' AND r.notification_eligible=1 AND r.source IN('direct','embed','invitation') AND NOT ${unpaidResponseSql('r.id')}`
-export const eligibleChatAction = `a.reminders_enabled=1 AND a.verdict IS NULL AND a.state IN('planned','in_progress','ready_for_review') AND a.owner_operator_id=t.operator_id AND o.id=t.operator_id AND o.workspace_id=a.workspace_id
+export const eligibleChatAction = `a.reminders_enabled=1 AND a.verdict IS NULL AND a.state IN('planned','in_progress','ready_for_review') AND a.owner_operator_id=t.operator_id AND o.id=t.operator_id AND o.workspace_id=a.workspace_id AND json_extract(l.settings_json,'$.operatorId')=t.operator_id AND t.user_id=CASE l.platform WHEN 'slack' THEN json_extract(l.settings_json,'$.slackUserId') ELSE json_extract(l.settings_json,'$.teamsUserId') END
  AND NOT EXISTS(SELECT 1 FROM operator_auth_links authlink JOIN oa_operators auth ON auth.id=authlink.auth_id WHERE authlink.operator_id=o.id AND auth.status='inactive')`
 
 export async function materializeChatResponses(db:D1Database,now:string) {
@@ -14,7 +14,15 @@ export async function materializeChatResponses(db:D1Database,now:string) {
     ORDER BY r.completed_at,r.id LIMIT 100`).bind(now,now).run()
 }
 export async function materializeChatReminders(db:D1Database,now:string) {
-  let cursor=''
+  // App-created actions inherit only the explicitly mapped account on their evidence form.
+  await db.prepare(`INSERT OR IGNORE INTO chat_action_targets(id,action_id,link_id,operator_id,platform,user_id)
+    SELECT 'chat-target:'||a.id||':'||l.platform,a.id,l.id,a.owner_operator_id,l.platform,
+      CASE l.platform WHEN 'slack' THEN json_extract(l.settings_json,'$.slackUserId') ELSE json_extract(l.settings_json,'$.teamsUserId') END
+    FROM actions a JOIN action_evidence e ON e.action_id=a.id JOIN chat_form_links l ON l.flow_id=e.flow_id AND l.workspace_id=a.workspace_id
+    WHERE a.source='manual' AND l.armed=1 AND json_extract(l.settings_json,'$.operatorId')=a.owner_operator_id
+      AND CASE l.platform WHEN 'slack' THEN json_extract(l.settings_json,'$.slackUserId') ELSE json_extract(l.settings_json,'$.teamsUserId') END IS NOT NULL
+    ORDER BY a.id,l.platform`).run()
+  let cursor='' 
   while(true) {
     const rows=await db.prepare(`SELECT t.id,a.id AS actionId,a.review_date AS reviewDate,a.created_at AS createdAt,w.time_zone AS timeZone,
       (SELECT MAX(d.due_date) FROM chat_deliveries d WHERE d.action_target_id=t.id AND d.kind='overdue' AND d.review_date=a.review_date) AS lastOverdue

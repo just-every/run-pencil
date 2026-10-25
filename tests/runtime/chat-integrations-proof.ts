@@ -89,13 +89,82 @@ export async function proveChatIntegrations(){
   expect(await received()).toHaveLength(8)
   const cancelled=await env.DB.prepare("SELECT state FROM chat_deliveries WHERE kind='overdue' AND due_date='2026-12-15'").all()
   expect(cancelled.results).toEqual([{state:'cancelled'},{state:'cancelled'}])
+  // App-created actions use the same calendar and explicit owner account mapping, on both platforms.
+  const manual=await f.create({title:'Synthetic manual mapped action'}),unmapped=await f.create({title:'Synthetic manual unmapped action',ownerOperatorId:f.lead.operatorId})
+  const manualStart=(await received()).length
+  await f.services.chat.run('2026-11-28T08:00:00.000Z')
+  expect(await received()).toHaveLength(manualStart)
+  const manualDeferred=await env.DB.prepare("SELECT d.state,d.available_at AS at FROM chat_deliveries d JOIN chat_action_targets t ON t.id=d.action_target_id WHERE t.action_id=? AND d.kind='before'").bind(manual.id).all()
+  expect(manualDeferred.results).toEqual([expect.objectContaining({state:'pending',at:'2026-11-28T09:00:00.000Z'}),expect.objectContaining({state:'pending',at:'2026-11-28T09:00:00.000Z'})])
+  for(const instant of ['2026-11-28T09:00:00.000Z','2026-12-01T09:00:00.000Z','2026-12-08T09:00:00.000Z']){
+    await Promise.all([f.services.chat.run(instant),f.services.chat.run(instant)])
+    await f.services.chat.run(instant)
+  }
+  const manualPosts=(await received()).slice(manualStart)
+  expect(manualPosts).toHaveLength(6)
+  for(const path of ['/chat.postMessage','/teams']){
+    const sequence=manualPosts.filter(post=>post.path===path)
+    expect(sequence.map(post=>post.body)).toEqual([expect.stringContaining('Action review in three days'),expect.stringContaining('Action review today'),expect.stringContaining('Action review overdue')])
+    expect(new Set(sequence.map(post=>post.idempotencyKey)).size).toBe(3)
+    for(const post of sequence){expect(post.body).toContain('/app/actions/'+manual.id);expect(post.body).not.toContain(unmapped.id);const parsed=JSON.parse(post.body);if(path==='/chat.postMessage')expect(parsed.channel).toBe(slack.slackUserId);else expect(parsed.attachments[0].content.msteams.entities[0].mentioned.id).toBe(teams.teamsUserId)}
+  }
+  expect(await env.DB.prepare('SELECT count(*) AS n FROM chat_action_targets WHERE action_id=?').bind(unmapped.id).first()).toEqual({n:0})
+  await f.services.chat.run('2026-12-15T08:00:00.000Z')
+  for(const state of ['in_progress','ready_for_review','effective'])await accepted(await f.call(`/api/app/actions/${manual.id}/transitions`,{to:state}))
+  await f.services.chat.run('2026-12-15T09:00:00.000Z');await f.services.chat.run('2026-12-22T09:00:00.000Z')
+  expect(await received()).toHaveLength(manualStart+6)
+  expect((await env.DB.prepare("SELECT d.state FROM chat_deliveries d JOIN chat_action_targets t ON t.id=d.action_target_id WHERE t.action_id=? AND d.due_date='2026-12-15'").bind(manual.id).all()).results).toEqual([{state:'cancelled'},{state:'cancelled'}])
   // Failed posts remain visible with attempts in the same INTEG-015 ledger; reconnecting never blindly repeats them.
   await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({down:true})})
   await f.respond('Short','synthetic-pencil-private-second-answer')
   await f.services.chat.run(new Date().toISOString())
-  const failed=await accepted<{deliveries:Array<{kind:string;state:string;attempts:unknown[]}>}>(await f.call('/api/app/integration-deliveries?state=failed'))
+  const failed=await accepted<{deliveries:Array<{id:string;idempotencyKey:string;kind:string;state:string;attempts:unknown[]}>}>(await f.call('/api/app/integration-deliveries?state=failed'))
   expect(failed.deliveries.filter(row=>['slack','teams'].includes(row.kind)&&row.attempts.length)).toEqual([expect.objectContaining({state:'failed',attempts:[expect.objectContaining({outcome:'failed',httpStatus:503})]}),expect.objectContaining({state:'failed',attempts:[expect.objectContaining({outcome:'failed',httpStatus:503})]})])
   const before=(await received()).length;await f.services.chat.run(new Date().toISOString());expect(await received()).toHaveLength(before)
+  const failedPosts=failed.deliveries.filter(row=>['slack','teams'].includes(row.kind)&&row.attempts.length)
+  const replay=(id:string,call=f.call)=>call('/api/app/chat/deliveries/'+id+'/replay',{})
+  expect((await replay(failedPosts[0].id,asMember)).status).toBe(403)
+  expect((await f.call('/api/app/chat/deliveries/'+failedPosts[0].id+'/replay',{unexpected:true})).status).toBe(400)
+  await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({down:false})})
+  const replayStart=(await received()).length
+  for(const row of failedPosts)await accepted(await replay(row.id))
+  const replayedPosts=(await received()).slice(replayStart)
+  expect(replayedPosts).toHaveLength(2)
+  expect(replayedPosts.map(post=>post.idempotencyKey).sort()).toEqual(failedPosts.map(row=>row.idempotencyKey).sort())
+  for(const row of failedPosts){
+    expect((await replay(row.id)).status).toBe(409)
+    const ledger=await accepted<{deliveries:Array<{id:string;state:string;attempts:Array<{reason:string|null}>}>}>(await f.call('/api/app/integration-deliveries'))
+    expect(ledger.deliveries.find(item=>item.id===row.id)).toMatchObject({state:'confirmed',attempts:expect.arrayContaining([expect.objectContaining({reason:'Explicit owner replay requested; the same idempotency key is retained.'})])})
+  }
+  // A dropped reply may already be stored by the receiver. A scheduler tick must leave it unknown.
+  await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({drop:true})})
+  await f.respond('Short','synthetic-pencil-unknown-post')
+  await f.services.chat.run()
+  const unknownLedger=await accepted<{deliveries:Array<{id:string;kind:string;state:string;idempotencyKey:string}>}>(await f.call('/api/app/integration-deliveries?state=unknown'))
+  const unknown=unknownLedger.deliveries.find(row=>['slack','teams'].includes(row.kind))!
+  expect(unknown).toBeTruthy()
+  const unknownCalls=(await received()).length
+  await f.services.chat.run();expect(await received()).toHaveLength(unknownCalls)
+  expect((await accepted<{deliveries:Array<{id:string;state:string}>}>(await f.call('/api/app/integration-deliveries?state=unknown'))).deliveries).toContainEqual(expect.objectContaining({id:unknown.id,state:'unknown'}))
+  const storedBefore=(await (await fetch(receiver+'/__control/state')).json() as {chatPosts:Record<string,string>}).chatPosts
+  await accepted(await replay(unknown.id))
+  expect((await received()).at(-1)!.idempotencyKey).toBe(unknown.idempotencyKey)
+  const storedAfter=(await (await fetch(receiver+'/__control/state')).json() as {chatPosts:Record<string,string>}).chatPosts
+  expect(storedAfter).toEqual(storedBefore)
+  // Each stale-door refusal is checked before any network post.
+  await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({down:true})})
+  await f.respond('Short','synthetic-pencil-stale-post');await f.services.chat.run()
+  const staleRows=(await accepted<{deliveries:Array<{id:string;kind:string;idempotencyKey:string}>}>(await f.call('/api/app/integration-deliveries?state=failed'))).deliveries.filter(row=>['slack','teams'].includes(row.kind)&&row.idempotencyKey.startsWith('chat:response:'))
+  const staleSlack=staleRows.find(row=>row.kind==='slack')!,staleTeams=staleRows.find(row=>row.kind==='teams')!
+  const staleCalls=(await received()).length
+  await accepted(await f.call(`/api/app/flows/${f.flowId}/chat`,{...slack,channel:'synthetic-pencil-changed-channel'},{method:'PUT'}))
+  expect(await accepted(await replay(staleSlack.id),409)).toMatchObject({error:'CONFLICT',message:expect.stringContaining('settings changed')})
+  await accepted(await f.call('/api/app/connections/teams',{webhookUrl},{method:'PUT'}))
+  expect(await accepted(await replay(staleTeams.id),409)).toMatchObject({error:'CONFLICT',message:expect.stringContaining('disarmed')})
+  // The restore policy disarms links; exercise the resulting route-level refusal too.
+  await env.DB.prepare("UPDATE chat_form_links SET armed=0 WHERE platform='slack' AND workspace_id=?").bind(f.workspaceId).run()
+  expect(await accepted(await replay(staleSlack.id),409)).toMatchObject({error:'CONFLICT',message:expect.stringContaining('disarmed')})
+  expect(await received()).toHaveLength(staleCalls)
   await accepted(await f.call('/api/app/connections/slack',{}, {method:'DELETE'}));await accepted(await f.call('/api/app/connections/teams',{}, {method:'DELETE'}))
   const links=await accepted<{links:Array<{armed:boolean}>}>(await f.call(`/api/app/flows/${f.flowId}/chat`));expect(links.links.every(link=>!link.armed)).toBe(true)
   await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({down:false})})

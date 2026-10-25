@@ -1,5 +1,5 @@
 import type { IntegrationConnections } from '../../platform/config/connections'
-import { NotFoundError, ValidationError } from '../../shared/errors'
+import { ConflictError, NotFoundError, ValidationError } from '../../shared/errors'
 import { formSettings } from '../../shared/hiddenFields'
 import { insideSendingWindow, nextSendingInstant } from '../distribution'
 import { createSlackAction } from './interaction'
@@ -37,6 +37,23 @@ export class ChatIntegrations {
   async remove(workspaceId:string,flowId:string,platform:ChatPlatform){await this.owned(workspaceId,flowId);await this.db.prepare('DELETE FROM chat_form_links WHERE workspace_id=? AND flow_id=? AND platform=?').bind(workspaceId,flowId,platform).run()}
   async disarm(platform:ChatPlatform){await this.db.batch([this.db.prepare(`UPDATE chat_form_links SET armed=0 WHERE platform=?`).bind(platform),this.db.prepare(`UPDATE chat_deliveries SET state='cancelled',reason='The chat connection was removed.',updated_at=? WHERE state='pending' AND link_id IN(SELECT id FROM chat_form_links WHERE platform=?)`).bind(new Date().toISOString(),platform)])}
   interaction(input:{body:string;timestamp:string|null;signature:string|null},now?:string){return createSlackAction(this.db,this.connections,input,now)}
+  async replay(workspaceId:string,id:string){
+    const row=await this.db.prepare(`SELECT d.state,d.attempts,l.armed,l.updated_at AS settingsAt,d.started_at AS startedAt FROM chat_deliveries d JOIN chat_form_links l ON l.id=d.link_id WHERE d.id=? AND l.workspace_id=?`).bind(id,workspaceId).first<{state:string;attempts:number;armed:number;settingsAt:string;startedAt:string|null}>()
+    if(!row)throw new NotFoundError('This chat delivery is unavailable.')
+    if(!row.armed)throw new ConflictError('The chat connection is disarmed. Retained posts cannot be replayed.')
+    if(!row.startedAt||row.settingsAt>row.startedAt)throw new ConflictError('The form’s chat settings changed. Retained posts cannot be replayed.')
+    if(!['failed','unknown'].includes(row.state))throw new ConflictError('Only failed or unknown chat posts can be replayed.')
+    const now=new Date().toISOString(),claim=crypto.randomUUID()
+    await this.db.batch([
+      this.db.prepare(`INSERT INTO chat_attempts(id,delivery_id,ordinal,outcome,reason,created_at)
+        SELECT ?,d.id,d.attempts,d.state,'Explicit owner replay requested; the same idempotency key is retained.',? FROM chat_deliveries d JOIN chat_form_links l ON l.id=d.link_id
+        WHERE d.id=? AND l.workspace_id=? AND d.state IN('failed','unknown') AND l.armed=1 AND l.updated_at<=d.started_at`).bind(claim,now,id,workspaceId),
+      this.db.prepare(`UPDATE chat_deliveries SET state='pending',available_at=?,reason='Explicit owner replay requested; the same idempotency key is retained.',updated_at=?
+        WHERE id=? AND state IN('failed','unknown') AND EXISTS(SELECT 1 FROM chat_attempts WHERE id=? AND delivery_id=chat_deliveries.id)`).bind(now,now,id,claim),
+    ])
+    if(!await this.db.prepare('SELECT 1 FROM chat_attempts WHERE id=?').bind(claim).first())throw new ConflictError('The chat post or its connection changed. Reload before replaying.')
+    await this.run(now)
+  }
   async run(now=new Date().toISOString()){
     await materializeChatResponses(this.db,now)
     await materializeChatReminders(this.db,now)
