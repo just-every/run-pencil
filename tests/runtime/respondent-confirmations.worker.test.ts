@@ -52,10 +52,26 @@ contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released co
   expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt; {{hidden:campaign}}');expect(html).not.toContain('<script>')
   expect(plain).toContain('hidden Synthetic <campaign>');expect(html).toContain('hidden Synthetic &lt;campaign&gt;')
   expect(plain).toContain('calculated 6');expect(plain).toContain('skipped []');expect(plain).toContain('07/04/2026')
-  expect(plain).toMatch(/http:\/\/localhost\/f\/[^?]+\?edit=[a-f0-9]{64}/)
+  const links=plain.match(/https?:\/\/[^\s<>]+/g)??[]
+  expect(links).toHaveLength(1)
+  expect(links[0]).toMatch(/^http:\/\/localhost\/f\/[^?]+\?edit=[a-f0-9]{64}$/)
+  expect([...html.matchAll(/<a\s[^>]*href="([^"]+)"/g)].map(match=>match[1])).toEqual(links)
+  expect(html).not.toContain('/app/');expect(html).not.toContain('/response')
   expect(plain).not.toContain('2026-07-04');expect(plain).not.toContain('/app/');expect(plain).not.toContain('/response')
   await final(f,completed.session,[{stepId:email.id,value:'synthetic-pencil-receipt@example.test'},{stepId:text.id,value:'<script>alert(1)</script> {{hidden:campaign}}'},{stepId:date.id,value:'2026-07-04'},{stepId:number.id,value:3}]);await dispatcher.run()
   expect(sent).toHaveLength(2)
+  // Consume the capability taken from the delivered receipt through its public door.
+  const editUrl=new URL(links[0]),token=editUrl.searchParams.get('edit')!
+  const editDoor=`http://localhost/api/public/flows/${f.slug}/edit`
+  const readable=await SELF.fetch(`${editDoor}?token=${token}`,{headers:{Host:'localhost'}})
+  expect(readable.status).toBe(200)
+  const editable=await readable.json() as {answers:Array<{stepId:string;value:unknown}>}
+  const use=()=>SELF.fetch(editDoor,{method:'POST',headers:{Host:'localhost',Origin:'http://localhost','Content-Type':'application/json','CF-Connecting-IP':'192.0.2.61'},body:JSON.stringify({token,answers:editable.answers})})
+  expect((await use()).status).toBe(200)
+  expect((await use()).status).toBe(404)
+  expect((await SELF.fetch(`${editDoor}?token=${token}`,{headers:{Host:'localhost'}})).status).toBe(404)
+  expect(await env.DB.prepare('SELECT used_claim AS claim FROM response_edit_links WHERE response_id=?').bind(completed.row!.id).first()).toEqual({claim:expect.any(String)})
+  await dispatcher.run();expect(sent).toHaveLength(2)
   for(const [options,before,after] of [[{immature:true},2,3],[{honeypot:'scanner'},3,4]] as const){
    const held=await submit(options);expect(held.row!.state).toBe('quarantined');await dispatcher.run();expect(sent).toHaveLength(before)
    expect(await env.DB.prepare('SELECT id FROM confirmation_deliveries WHERE response_id=?').bind(held.row!.id).first()).toBeNull()
@@ -99,6 +115,15 @@ contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released co
   const bouncedResponse=await submit({mailbox:'SYNTHETIC-PENCIL-BOUNCED@example.test'});await dispatcher.run()
   expect(sent).toHaveLength(5)
   expect(await env.DB.prepare('SELECT status FROM confirmation_deliveries WHERE response_id=?').bind(bouncedResponse.row!.id).first()).toEqual({status:'cancelled'})
+  // The ordinary receipt remains link-free when editing has not been enabled.
+  const latest=await f.draft(),{responseEdits:_edits,...defaultOff}=settings
+  await f.services.flows.updateFormSettings({...f.flow,expectedVersion:latest.flow.draftVersion,settings:defaultOff});await f.publish()
+  const ordinary=await submit();await dispatcher.run()
+  expect(sent).toHaveLength(6)
+  const ordinaryMessage=sent.at(-1)
+  expect(ordinaryMessage.headers).not.toHaveProperty('Reply-To')
+  for(const content of ordinaryMessage.content)expect(content.value).not.toMatch(/https?:\/\/|<a\s|\?edit=|\/app\/|\/response/)
+  expect(await env.DB.prepare('SELECT hash FROM response_edit_links WHERE response_id=?').bind(ordinary.row!.id).first()).toBeNull()
   await f.services.responses.eraseReleasedResponse({...f.scope,responseId:completed.row!.id,operatorId:f.operatorId})
   expect(await env.DB.prepare('SELECT hash FROM response_edit_links WHERE response_id=?').bind(completed.row!.id).first()).toBeNull()
   expect(await env.DB.prepare('SELECT id FROM confirmation_deliveries WHERE response_id=?').bind(completed.row!.id).first()).toBeNull()
