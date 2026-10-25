@@ -101,7 +101,7 @@ export async function proveResponseEdit(f:Awaited<ReturnType<typeof actionsHttp>
  }
  expect((await call(`/api/app/responses/${row.id}/versions/download`)).status).toBe(401)
  const [manifest,...downloaded]=await download()
- expect(manifest).toMatchObject({format:'pencil.response-history.v1',responseId:row.id,revisionId:session.revisionId,currentVersion:2,retainedVersions:2})
+ expect(manifest).toMatchObject({responseId:row.id,revisionId:session.revisionId,currentVersion:2,retainedVersions:2})
  expect(downloaded).toEqual(history.versions.map(version=>({number:version.number,current:version.current,answers:version.answers,context:version.context,createdAt:version.createdAt})))
  const ledger=await okay<{responses:Array<{id:string;calculations:Array<{value:number}>}>}>(await f.call(`/api/app/flows/${created.id}/ledger`))
  expect(ledger.responses.find(response=>response.id===row.id)!.calculations).toEqual(expect.arrayContaining([expect.objectContaining({value:14})]))

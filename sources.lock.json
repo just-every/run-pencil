@@ -8021,7 +8021,7 @@
       "executable": false
     },
     "tests/runtime/response-edit-proof.ts": {
-      "sha256": "c24bb373f1873b6b2bd4f0586c431ff90e011b513e7787e39740faf2d35f73dd",
+      "sha256": "7c07c0e9359c2dffdbc706c0d69e8db6a37a2396ab2e6bffa32983355cc82754",
       "executable": false
     },
     "tests/runtime/response-paid-edit-proof.ts": {
