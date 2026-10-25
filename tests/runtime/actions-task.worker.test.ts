@@ -26,7 +26,9 @@ async function configured(key = `TASK-KEY-CANARY-${crypto.randomUUID()}`) {
   return { f, key, action, preview, confirm, retry }
 }
 
-contract(['ACT-003', 'ACT-004', 'ACT-007'], 'a 500 fails visibly and a dropped connection is unknown; both keep the local action and a retry on the same key creates one task', async () => {
+contract(["ACT-003","ACT-004","ACT-007","ACT-006"], 'external task confirmation preserves payload custody and one remote task across success, refusal and uncertain delivery', async () => {
+  for (const [caseName, executeCase] of [
+    ["a 500 fails visibly and a dropped connection is unknown; both keep the local action and a retry on the same key creates one task", async () => {
   for (const mode of ['fail-once-500', 'store-then-drop-once'] as const) {
     await reset(mode)
     const t = await configured()
@@ -78,9 +80,8 @@ contract(['ACT-003', 'ACT-004', 'ACT-007'], 'a 500 fails visibly and a dropped c
     expect(requests[0]).toBe(requests[1])
     expect(JSON.parse(requests[0])).toEqual((preview as Status & {request:{commands:unknown}}).request.commands)
   } finally {edge.mockRestore()}
-})
-
-contract(['ACT-006'], 'only the confirmed action fields and report link leave: no answer or respondent-visible text, and a changed action must be confirmed again', async () => {
+}],
+    ["only the confirmed action fields and report link leave: no answer or respondent-visible text, and a changed action must be confirmed again", async () => {
   await reset('ok')
   const t = await configured()
   await t.f.respond('Too long', 'ANSWER-CANARY-9f1 my name is Private Person')
@@ -100,9 +101,8 @@ contract(['ACT-006'], 'only the confirmed action fields and report link leave: n
   const [request] = (await received()).requests
   expect(JSON.parse(request.body)).toEqual(fresh.payload)
   for (const canary of ['ANSWER-CANARY', 'Private Person', 'VISIBLE-CANARY', 'How was the wait', 'Too long']) expect(request.body).not.toContain(canary)
-})
-
-contract(['ACT-004', 'ACT-007'], 'with no adapter configured the external task is unavailable and the action works; redirects are not followed and a plain http URL is refused outside the dev and test runtimes', async () => {
+}],
+    ["with no adapter configured the external task is unavailable and the action works; redirects are not followed and a plain http URL is refused outside the dev and test runtimes", async () => {
   await reset('ok')
   const bare = await actionsHttp()
   const bareAction = await bare.create()
@@ -124,4 +124,10 @@ contract(['ACT-004', 'ACT-007'], 'with no adapter configured the external task i
   expect(status).toMatchObject({ available: false, message: 'TASK_WEBHOOK_URL must use https. Plain http is accepted only for a loopback receiver in local development and tests.' })
   expect((await call(`/api/app/actions/${t.action.id}/task/retry`, {})).status).toBe(409)
   expect((await received()).requests).toEqual([])
+}],
+  ] as const) {
+    try { await executeCase() } catch (cause) {
+      throw new Error(`External task handoff case "${caseName}" failed: ${cause instanceof Error ? cause.message : String(cause)}`, { cause })
+    } finally { vi.restoreAllMocks() }
+  }
 })
