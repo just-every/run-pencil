@@ -7065,7 +7065,7 @@
       "executable": false
     },
     "test-budget.json": {
-      "sha256": "8d0fdf98043d638aa6612f1c46a004b7bb58a4c8c1aa5c8c18f3d4f44bbfe652",
+      "sha256": "759f402f1be3fa63ed2a4ef044e82e9fbccc6335369200a581eda65d22ec9a42",
       "executable": false
     },
     "tests/admission/management-edge.mjs": {
