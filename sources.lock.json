@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "2528843f83341422c1aae95fc715e3a8a0c831154b4fb516627e423e8c74f2ef",
+      "sha256": "04f58cb568e6996505e543ed937684825a40c3f2a222f597e754c924d5c7b8d9",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d7d914415047e53442da6741fab84601344031e4b622d90e9e0277760f6220f5",
+      "sha256": "dc005d50e7093573d0299fd7284c55ff64aaab1bd99eb34725ad7e37cd7ce61c",
       "executable": false
     },
     "DEMO.md": {
@@ -7069,7 +7069,7 @@
       "executable": false
     },
     "test-budget.json": {
-      "sha256": "6a7dbdea205621258888d53cc59b1ccb6e336214c67a428db2117407b41637d8",
+      "sha256": "b47503a37e3309992cf96c5318615090db301ca211ae9324efbe2744c51f2684",
       "executable": false
     },
     "tests/admission/management-edge.mjs": {
@@ -7292,6 +7292,10 @@
       "sha256": "96db27ec4dcd9da9b3fedaf2b49924bf4109a16bd4074516d01344944f1c114b",
       "executable": false
     },
+    "tests/e2e/matrix-page.ts": {
+      "sha256": "3fac6288d22090b5346065f14faad210ea1101620781c048eb2fd457cb575a42",
+      "executable": false
+    },
     "tests/e2e/new-question-types.spec.ts": {
       "sha256": "1cf9fe9bc42a6d3f8984f7e4c009f11659d603b49901ee1fb8023a6ef6ca30f1",
       "executable": false
@@ -7445,7 +7449,7 @@
       "executable": false
     },
     "tests/e2e/templates.spec.ts": {
-      "sha256": "1162443e51da71947b46bfc9235f8869e7aa48caec033654b2653df4eb2911f2",
+      "sha256": "15555efd34e2827d192a6f07eb0a80daa968cff4d95c0a373de35ed390244996",
       "executable": false
     },
     "tests/e2e/text-answer-plurals.spec.ts": {
