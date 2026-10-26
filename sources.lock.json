@@ -933,7 +933,7 @@
       "executable": false
     },
     "docs/evidence/integ006-slack-live-2026-10-26.json": {
-      "sha256": "b0a305784caa19670cd1fd0af96ac065273b31441d835263b8830f2010aa89d1",
+      "sha256": "617d718f9246d49c0fb1d7ad3afa095a73452775558ac54e2d1d6c735651f9f9",
       "executable": false
     },
     "docs/evidence/ledg005-exports-1440.png": {
@@ -1961,7 +1961,7 @@
       "executable": false
     },
     "scripts/proof/payments-stripe-test.mjs": {
-      "sha256": "271c33130366e8b6ae11ff94da0baae1cd7b9f2a0e7e7d7767f6480731ac6c0c",
+      "sha256": "94e60f2956e95b12c15a89965770bc59f1642da7c6c64ac6f16a54410c3995bf",
       "executable": false
     },
     "scripts/proof/sms-twilio-test.mjs": {
