@@ -31,7 +31,7 @@ const step = (name, detail = {}) => { receipt.steps.push({ name, ...detail }); c
 async function stripe(method, path, form) {
   const response = await fetch('https://api.stripe.com' + path, { method, headers: { authorization: `Bearer ${key}`, ...(form ? { 'content-type': 'application/x-www-form-urlencoded' } : {}) }, body: form ? new URLSearchParams(form).toString() : undefined })
   const body = await response.json().catch(() => ({}))
-  receipt.stripeCalls.push({ method, path: path.replace(/(cs|pi|re|ch|evt|txr)_(test_)?[A-Za-z0-9]+/g, m => last4(m)).split('?')[0], status: response.status })
+  receipt.stripeCalls.push({ method, path: path.replace(/(\/v1\/coupons\/)([^/?]+)/g, (_, prefix, id) => prefix + last4(id)).replace(/(cs|pi|re|ch|evt|txr)_(test_)?[A-Za-z0-9]+/g, m => last4(m)).split('?')[0], status: response.status })
   if (receipt.stripeCalls.length > 24) fail('Stripe call budget for the harness exceeded')
   return { status: response.status, body }
 }
