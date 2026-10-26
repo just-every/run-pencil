@@ -8073,7 +8073,7 @@
       "executable": false
     },
     "tests/runtime/sms.worker.test.ts": {
-      "sha256": "8175a5023ddc185c36f7cf566ccdebb89643860db937e24314c976c7105dcd1f",
+      "sha256": "0dc99a7704ca5da7fb8fc5ad0e20d9fc2fbfd549ac89881faa5e88efee87ce97",
       "executable": false
     },
     "tests/runtime/stripe-receiver.global.ts": {
@@ -8089,7 +8089,7 @@
       "executable": false
     },
     "tests/runtime/task-receiver.global.ts": {
-      "sha256": "64b57587e48a86c2ffec9a00ac73bdee86a9061303d445ac6f598bb6db630b7d",
+      "sha256": "4bb619dba04e403cdde047018cfe40b234515a3e638162eb56e9018836d3017b",
       "executable": false
     },
     "tests/runtime/team-templates.worker.test.ts": {
