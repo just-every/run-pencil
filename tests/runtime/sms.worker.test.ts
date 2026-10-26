@@ -1,5 +1,5 @@
 import { applyD1Migrations,env,type D1Migration } from 'cloudflare:test'
-import { beforeAll,expect } from 'vitest'
+import { beforeAll,expect,vi } from 'vitest'
 import { contract } from '../../src/test/contract'
 import { actionsHttp,everyStoredValue } from './actions-fixture'
 import { sealValue } from '../../src/core/platform/config/sealing'
@@ -135,21 +135,37 @@ contract('DIST-011','SMS invitations require recorded consent, use sealed owner 
  await f.services.distribution.dispatcher.run(new Date(Date.now()+14*86400000).toISOString())
  expect(((await (await fetch(receiver+'/__control/state')).json()) as {requests:unknown[]}).requests).toHaveLength(4)
  expect(await env.DB.prepare('SELECT status FROM mail_deliveries WHERE id=?').bind(uncertain!.id).first()).toEqual({status:'unknown'})
- // A definite refusal (a Twilio error code, so no message exists) is failed with that code, never left for reconciliation.
- const refused=await accepted(await f.call(contacts,{name:'Synthetic refused mobile',email:'refused@synthetic.test',mobile:'+15555550105',smsConsent:{given:true,wording},fields:{}}),201)
- await fetch(receiver+'/__control/sms-mode',{method:'POST',body:JSON.stringify({refuse:21211})})
- await accepted(await f.call(path,{channel:'sms',contactIds:[refused.id],commandKey:'synthetic-pencil-refused-send'}),201)
- expect((await accepted(await f.call(path))).participants.filter((p:any)=>p.email==='refused@synthetic.test').map((p:any)=>({kind:p.kind,status:p.status,reason:p.reason}))).toEqual([{kind:'invitation',status:'failed',reason:'Twilio refused the message (error 21211).'}])
- // DIST-006 for SMS: a rate-limited send stays pending and its retry reuses the same idempotency key.
+ // These two one-shot provider responses belong to this SMS registration, not the shared task receiver.
+ const providerFetch=globalThis.fetch.bind(globalThis),smsEdge:Array<{to:string;key:string}>=[]
+ let limitedOnce=false
+ const transport=vi.spyOn(globalThis,'fetch').mockImplementation(async(input,init)=>{
+  const request=new Request(input,init)
+  if(request.url===receiver+'/2010-04-01/Accounts/synthetic-pencil-1/Messages.json'){
+   const to=new URLSearchParams(await request.clone().text()).get('To')??''
+   if(to==='+15555550105'||to==='+15555550106')smsEdge.push({to,key:request.headers.get('Idempotency-Key')??''})
+   if(to==='+15555550105')return Response.json({code:21211},{status:400})
+   if(to==='+15555550106'&&!limitedOnce){limitedOnce=true;return Response.json({code:20429},{status:429})}
+  }
+  return providerFetch(request)
+ })
+ try {
+  // A definite refusal is failed with its code and does not acquire a reminder or a scheduler resend.
+  const refused=await accepted(await f.call(contacts,{name:'Synthetic refused mobile',email:'refused@synthetic.test',mobile:'+15555550105',smsConsent:{given:true,wording},fields:{}}),201)
+  await accepted(await f.call(path,{channel:'sms',contactIds:[refused.id],commandKey:'synthetic-pencil-refused-send'}),201)
+  expect((await accepted(await f.call(path))).participants.filter((p:any)=>p.email==='refused@synthetic.test').map((p:any)=>({kind:p.kind,status:p.status,reason:p.reason}))).toEqual([{kind:'invitation',status:'failed',reason:'Twilio refused the message (error 21211).'}])
+  // DIST-006 for SMS: a rate-limited send stays pending and its retry reuses the same idempotency key.
+  const invitationOf=async(email:string)=>(await accepted(await f.call(path))).participants.find((p:any)=>p.email===email&&p.kind==='invitation')
+  const limited=await accepted(await f.call(contacts,{name:'Synthetic limited mobile',email:'limited@synthetic.test',mobile:'+15555550106',smsConsent:{given:true,wording},fields:{}}),201)
+  await accepted(await f.call(path,{channel:'sms',contactIds:[limited.id],commandKey:'synthetic-pencil-limited-send'}),201)
+  expect(await invitationOf('limited@synthetic.test')).toMatchObject({status:'pending',reason:'Twilio rate limited the message.',attempts:1})
+  await f.services.distribution.dispatcher.run(new Date(Date.now()+2*60_000).toISOString())
+  expect(await invitationOf('limited@synthetic.test')).toMatchObject({status:'sent',attempts:2})
+  const limitedKeys=smsEdge.filter(row=>row.to==='+15555550106').map(row=>row.key)
+  expect(limitedKeys).toHaveLength(2);expect(limitedKeys[0]).not.toBe('');expect(new Set(limitedKeys).size).toBe(1)
+  expect(smsEdge.filter(row=>row.to==='+15555550105')).toHaveLength(1)
+ } finally {transport.mockRestore()}
  const smsRequests=async(to:string)=>((await (await fetch(receiver+'/__control/state')).json()) as {requests:Array<{body:string;idempotencyKey:string}>}).requests.filter(r=>new URLSearchParams(r.body).get('To')===to)
  const invitationOf=async(email:string)=>(await accepted(await f.call(path))).participants.find((p:any)=>p.email===email&&p.kind==='invitation')
- const limited=await accepted(await f.call(contacts,{name:'Synthetic limited mobile',email:'limited@synthetic.test',mobile:'+15555550106',smsConsent:{given:true,wording},fields:{}}),201)
- await fetch(receiver+'/__control/sms-mode',{method:'POST',body:JSON.stringify({limit:true})})
- await accepted(await f.call(path,{channel:'sms',contactIds:[limited.id],commandKey:'synthetic-pencil-limited-send'}),201)
- expect(await invitationOf('limited@synthetic.test')).toMatchObject({status:'pending',reason:'Twilio rate limited the message.',attempts:1})
- await f.services.distribution.dispatcher.run(new Date(Date.now()+2*60_000).toISOString())
- expect(await invitationOf('limited@synthetic.test')).toMatchObject({status:'sent',attempts:2})
- const limitedKeys=(await smsRequests('+15555550106')).map(r=>r.idempotencyKey);expect(limitedKeys).toHaveLength(2);expect(new Set(limitedKeys).size).toBe(1)
  // WS-002 quiet hours for SMS, in the workspace zone: a launch outside the window waits for its opening.
  const hhmm=(hours:number)=>new Date(Date.now()+hours*3600_000).toISOString().slice(11,16)
  await accepted(await f.call('/api/app/workspace',{timeZone:'UTC',sendingWindowStart:hhmm(2),sendingWindowEnd:hhmm(3)},{method:'PUT'}))
