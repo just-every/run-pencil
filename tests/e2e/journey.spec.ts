@@ -2,7 +2,7 @@ import { httpExport } from '../helpers/report-download'
 import { operatorEmail } from './auth-identity'
 import { contract } from './contract'
 import AxeBuilder from '@axe-core/playwright'
-import { expect, test, openMailLink } from './fixtures'
+import { expect, test, openMailLink, recordSignInClick } from './fixtures'
 import { mkdir } from 'node:fs/promises'
 
 contract(['FLOW-002','FLOW-005','RESP-004','RESP-007','RESP-014','LEDG-004','BASE-PUBLIC-003'], 'an operator builds and previews an adaptive form, a respondent changes branches, and the report retains only final reachable answers', async ({ page, request }, info) => {
@@ -12,6 +12,7 @@ contract(['FLOW-002','FLOW-005','RESP-004','RESP-007','RESP-014','LEDG-004','BAS
   page.on('pageerror', (error) => errors.push(error.message))
   await page.goto('/signin')
   await page.getByLabel('Operator email').fill(operatorEmail())
+  recordSignInClick()
   await page.getByRole('button', { name: /Send.*link/i }).click()
   await openMailLink(page, operatorEmail())
   await page.getByRole('button', { name: 'Confirm', exact: true }).click()

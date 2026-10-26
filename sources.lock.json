@@ -7197,7 +7197,7 @@
       "executable": false
     },
     "tests/e2e/fixtures.ts": {
-      "sha256": "71af552a3c3f9f55dc225cf86aa8c136dd1e27a003be3585b3d3157951413fce",
+      "sha256": "485f90c65e1f211020b1f7ca41666e5b1337d4068a059c9520d32942ab80f7c6",
       "executable": false
     },
     "tests/e2e/form-import.spec.ts": {
@@ -7269,7 +7269,7 @@
       "executable": false
     },
     "tests/e2e/journey.spec.ts": {
-      "sha256": "11bbe6e9b987968895a1b524aac50eb974db670557fbb49ed244691c88f6c5e8",
+      "sha256": "101892c749a2b2b8c0901f809299904ede607c01c6e76dac8925bc35b619fda3",
       "executable": false
     },
     "tests/e2e/kiosk.spec.ts": {
@@ -7605,7 +7605,7 @@
       "executable": false
     },
     "tests/helpers/mail-capture.mjs": {
-      "sha256": "f79c8e3593e1b416de0129887f35eaccd27d138444f2685048fdd4e0211e3923",
+      "sha256": "a0ce43c144d0d2076a9af29dbf3e2cbd4f81d25bfa89549785ca953b7d81c5af",
       "executable": false
     },
     "tests/helpers/mail-edge.ts": {
