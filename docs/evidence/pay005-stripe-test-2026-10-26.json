@@ -1,0 +1,271 @@
+{
+  "clause": "PAY-005",
+  "alsoCloses": "the PAY-001/PAY-002 \"real Stripe test-mode receipt is not committed\" sentence",
+  "date": "2026-10-26",
+  "credentials": "Stripe test mode only: STRIPE_RER_TEST_SECRET_KEY injected as STRIPE_API_KEY by briefs/_od08-env.py; the harness refuses any key that is not a Stripe test-mode key; no live key, no live charge",
+  "runtime": "rer dev (not rer demo) at http://127.0.0.1:4931; Pencil calls https://api.stripe.com directly (no STRIPE_API_ORIGIN override)",
+  "webhooks": "real Stripe event payloads from GET /v1/events, locally re-signed with the secret saved in the app; the Stripe CLI (x86_64 build) cannot run on this arm64 host, so stripe listen was not used; no webhook endpoint object was created",
+  "browser": "headless Chromium 156.0.8078.4 (Playwright 1.64.1 chrome-headless-shell 1248); respondent paid with test card 4242 on checkout.stripe.com; owner refunded from /app/payments at 1440",
+  "connection": {
+    "status": {
+      "saved": true,
+      "mode": "test",
+      "restricted": false
+    },
+    "test": "Stripe accepted the secret key in test mode.",
+    "echoesKeyOrSecret": false
+  },
+  "stripeTaxSettings": {
+    "http": 200,
+    "status": "active"
+  },
+  "journey": {
+    "respondentReturned": {
+      "state": "pending",
+      "ledgerId": "cs_\u20269nPp",
+      "completion": "SYNTHETIC-PENCIL-C46 BUSINESS Thank you Thank you. This public link cannot edit a completed response. Stripe is confirming your payment; the business sees it once Stripe confirms. Company website"
+    },
+    "settled": {
+      "beforeWebhook": "pending",
+      "delivered": [
+        {
+          "type": "checkout.session.completed",
+          "event": "evt_\u2026iSxh",
+          "http": 200,
+          "outcome": "applied"
+        },
+        {
+          "type": "charge.succeeded",
+          "event": "evt_\u2026jU6f",
+          "http": 200,
+          "outcome": "applied"
+        },
+        {
+          "type": "checkout.session.completed",
+          "event": "evt_\u2026iSxh",
+          "http": 200,
+          "outcome": "duplicate"
+        }
+      ],
+      "after": {
+        "state": "paid",
+        "total": 4000,
+        "methodType": "card",
+        "methodLast4": "4242",
+        "id": "pi_\u2026ft1M"
+      },
+      "stripeSession": {
+        "id": "cs_\u20269nPp",
+        "status": "complete",
+        "payment_status": "paid",
+        "amount_subtotal": 4000,
+        "amount_discount": 0,
+        "amount_tax": 0,
+        "amount_total": 4000,
+        "livemode": false
+      }
+    },
+    "refund10of40": {
+      "stateBeforeWebhook": "paid",
+      "refundedBeforeWebhook": 0,
+      "delivered": {
+        "type": "charge.refunded",
+        "event": "evt_\u2026w7uX",
+        "http": 200,
+        "outcome": "applied"
+      },
+      "after": {
+        "state": "partially_refunded",
+        "total": 4000,
+        "refundedAmount": 1000,
+        "methodType": "card",
+        "methodLast4": "4242"
+      },
+      "stripeRefunds": [
+        {
+          "id": "re_\u20260ECE",
+          "amount": 1000,
+          "status": "succeeded"
+        }
+      ]
+    },
+    "ledgerFilterExport": {
+      "filterPartiallyRefunded": 1,
+      "filterPaid": 0,
+      "csvHeader": "responseId,provider,id,state,amount,total,refundedAmount,methodType,methodLast4,subscriptionStatus,at",
+      "csvRow": "\"01M5X62110KJ5Y0J2E3V2KS3QH\",\"stripe\",\"pi_\u2026ft1M\",\"partially_refunded\",\"4000\",\"4000\",\"1000\",\"card\",\"4242\",\"\",\"2026-10-26T22:42:46.801Z\"",
+      "csvHasBothAmounts": true
+    },
+    "reconcile": {
+      "period": "2026-10-26",
+      "pencil": 3000,
+      "providerPaid": 4000,
+      "providerRefunded": 1000,
+      "providerNet": 3000,
+      "mismatch": false
+    }
+  },
+  "pay002Coupon": {
+    "settled": {
+      "beforeWebhook": "pending",
+      "delivered": [
+        {
+          "type": "checkout.session.completed",
+          "event": "evt_\u2026wG5A",
+          "http": 200,
+          "outcome": "applied"
+        },
+        {
+          "type": "charge.succeeded",
+          "event": "evt_\u2026l0tX",
+          "http": 200,
+          "outcome": "applied"
+        },
+        {
+          "type": "checkout.session.completed",
+          "event": "evt_\u2026wG5A",
+          "http": 200,
+          "outcome": "duplicate"
+        }
+      ],
+      "after": {
+        "state": "paid",
+        "total": 3500,
+        "methodType": "card",
+        "methodLast4": "4242",
+        "id": "pi_\u2026lWTf"
+      },
+      "stripeSession": {
+        "id": "cs_\u2026bAzY",
+        "status": "complete",
+        "payment_status": "paid",
+        "amount_subtotal": 4000,
+        "amount_discount": 500,
+        "amount_tax": 0,
+        "amount_total": 3500,
+        "livemode": false
+      }
+    },
+    "storedOnResponse": {
+      "source": "POST /api/app/backup/export response_payments row (owner archive door)",
+      "amount": 4000,
+      "provider_amount (subtotal)": 4000,
+      "discount": 500,
+      "tax": 0,
+      "total": 3500
+    },
+    "stripeSession": {
+      "amount_subtotal": 4000,
+      "amount_discount": 500,
+      "amount_tax": 0,
+      "amount_total": 3500
+    },
+    "taxNote": "Stripe Tax reads active on the test account (GET /v1/tax/settings, no change made); this run did not enable automatic tax, so tax stays 0 here and the tax amount path remains fixture-proved"
+  },
+  "responsesQuarantined": "Both synthetic respondents submitted within the form minimum fill time (3 s), so Pencil quarantined both responses (minimum-fill-time). Payment state, the payments ledger, refunds, export and reconciliation were unaffected; the flow response ledger excludes quarantined responses until released.",
+  "cleanup": {
+    "refunds": {
+      "order": {
+        "requested": "succeeded",
+        "delivered": {
+          "type": "charge.refunded",
+          "event": "evt_\u2026hBrg",
+          "http": 200,
+          "outcome": "applied"
+        },
+        "state": "refunded",
+        "refundedAmount": 4000
+      },
+      "coupon": {
+        "requested": "succeeded",
+        "delivered": {
+          "type": "charge.refunded",
+          "event": "evt_\u2026w1sV",
+          "http": 200,
+          "outcome": "applied"
+        },
+        "state": "refunded",
+        "refundedAmount": 3500
+      },
+      "reconcile": {
+        "pencil": 0,
+        "providerNet": 0,
+        "mismatch": false
+      }
+    },
+    "objects": {
+      "couponDeleted": true,
+      "couponReadBack": 404,
+      "openSessionsOfThisRun": 0
+    },
+    "connectionRemoved": {
+      "saved": false
+    }
+  },
+  "providerObjects": [
+    {
+      "kind": "coupon",
+      "id": "\u2026LRio",
+      "created": true,
+      "cleanup": {
+        "deleted": true,
+        "readBack": 404
+      }
+    },
+    {
+      "kind": "checkout_session",
+      "id": "cs_\u20269nPp",
+      "status": "complete"
+    },
+    {
+      "kind": "payment_intent",
+      "id": "pi_\u2026ft1M",
+      "cleanup": "refunded in full below (a test-mode payment cannot be deleted)"
+    },
+    {
+      "kind": "refund",
+      "id": "re_\u20260ECE",
+      "amount": 1000,
+      "status": "succeeded"
+    },
+    {
+      "kind": "checkout_session",
+      "id": "cs_\u2026bAzY",
+      "status": "complete"
+    },
+    {
+      "kind": "payment_intent",
+      "id": "pi_\u2026lWTf",
+      "cleanup": "refunded in full below (a test-mode payment cannot be deleted)"
+    },
+    {
+      "kind": "refund",
+      "id": "re_\u202676dM",
+      "amount": 3500,
+      "status": "succeeded"
+    },
+    {
+      "kind": "refund",
+      "id": "re_\u2026fK4H",
+      "amount": 3000,
+      "status": "succeeded"
+    },
+    {
+      "kind": "checkout_session",
+      "id": "cs_\u2026yzw0",
+      "cleanup": "expired (first attempt; Checkout pre-ticked Link and the harness had not declined it, so it was never paid)"
+    },
+    {
+      "kind": "coupon",
+      "id": "\u2026jclJ",
+      "cleanup": "deleted (first attempt)"
+    }
+  ],
+  "stripeCalls": {
+    "harness": 14,
+    "diagnosticsAndFirstAttempt": 8,
+    "total": 22,
+    "pencilOwnCalls": "connection test, two Checkout Sessions (plus one in the first attempt), three refunds, two reconciliations (charges and refunds lists each)"
+  },
+  "redaction": "Stripe ids keep their prefix and last 4 characters; no key, signing secret, Stripe-Signature header or provider body is kept"
+}

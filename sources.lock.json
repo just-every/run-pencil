@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "357aed8ec7c25d0498d671dc24cae45305ee8acf1b180abf35a830a7e7719df4",
+      "sha256": "27f1db908ff2700716fde7b0c5cfc8d7097d6bf6cf37e0464edb619635dd4e51",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "5bb8f93cccedd8f5f6fcf406184cc89325ff5bfd3d4757ffbf172c3ae1923f70",
+      "sha256": "d741b1d87222b41a519a479442f659594ec779d09e0122292f113a1b87e368a1",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "ac9e814de1fa99d977f2b006368eea0b62d43c731b8766557eb0ef43f91bd7bb",
+      "sha256": "e89d8a83b400214252d2c4cb4a61a4f482c21fad07bd7d1a2e454f6d1956f5ca",
       "executable": false
     },
     "DEMO.md": {
@@ -928,6 +928,14 @@
       "sha256": "2947855af78bec44ed8fd8c9ca3b7979b743f653a5271967c867d846f782321d",
       "executable": false
     },
+    "docs/evidence/dist011-twilio-test-2026-10-26.json": {
+      "sha256": "33dcf5860c64abab271ddca1099b787786c6c67847e0c58d9d720af5fa864527",
+      "executable": false
+    },
+    "docs/evidence/integ006-slack-live-2026-10-26.json": {
+      "sha256": "617d718f9246d49c0fb1d7ad3afa095a73452775558ac54e2d1d6c735651f9f9",
+      "executable": false
+    },
     "docs/evidence/ledg005-exports-1440.png": {
       "sha256": "b5331bb457e30117d6f9ce78834401949eaf25f456b34429574d00b9a50e42d5",
       "executable": false
@@ -970,6 +978,10 @@
     },
     "docs/evidence/pay001-response-390.png": {
       "sha256": "f95b3273db3043394891efb77d461443c7f7940e04067089910eb0b3df6198ab",
+      "executable": false
+    },
+    "docs/evidence/pay005-stripe-test-2026-10-26.json": {
+      "sha256": "61e07fc19cd0210340c522c38bc3f2ce1373572d3d603504cc123aad66f24958",
       "executable": false
     },
     "docs/evidence/resp024-builder-desktop.png": {
@@ -1942,6 +1954,18 @@
     },
     "scripts/progress-recovery.test.mjs": {
       "sha256": "8a74b6dabaaf706629af57889dadef3b0ba5e22b90aca7935e81be14819adab9",
+      "executable": false
+    },
+    "scripts/proof/chat-slack-live.mjs": {
+      "sha256": "e35821e9175cb1916ceba249aa156910da59f0ead72d77176d292d05542019c9",
+      "executable": false
+    },
+    "scripts/proof/payments-stripe-test.mjs": {
+      "sha256": "94e60f2956e95b12c15a89965770bc59f1642da7c6c64ac6f16a54410c3995bf",
+      "executable": false
+    },
+    "scripts/proof/sms-twilio-test.mjs": {
+      "sha256": "a7e3d5c6e9b6a982b408cdf40352efb836ac1f0bcfe7040030fc27bd906887fe",
       "executable": false
     },
     "scripts/release-upgrade-inputs.mjs": {
@@ -6253,7 +6277,7 @@
       "executable": false
     },
     "src/core/features/sms/service.ts": {
-      "sha256": "abc7d683f00445189214e48315654ad2b9e6c7071079f54dd6f9c88e3e13ede5",
+      "sha256": "2f9b7e4bd569482ad7e165da43362d986952a101769874285f6802b741f14bb4",
       "executable": false
     },
     "src/core/features/sms/ui/index.ts": {
@@ -8049,7 +8073,7 @@
       "executable": false
     },
     "tests/runtime/sms.worker.test.ts": {
-      "sha256": "cae51ab9493fd5ff6539af9a12d38f4956203e57df38686faea3f26cce39ca42",
+      "sha256": "0dc99a7704ca5da7fb8fc5ad0e20d9fc2fbfd549ac89881faa5e88efee87ce97",
       "executable": false
     },
     "tests/runtime/stripe-receiver.global.ts": {
