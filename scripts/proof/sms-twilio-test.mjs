@@ -96,9 +96,10 @@ const providerCount = () => provider.length
 // 1. Workspace ready to send: first-run setup and an open sending window (WS-002 quiet hours would defer otherwise).
 const setup = await fetch(origin + '/setup', { method: 'POST', redirect: 'manual', headers: { cookie: [...jar].map(([k, v]) => `${k}=${v}`).join('; '), origin, 'content-type': 'application/json' }, body: JSON.stringify({ name: 'synthetic-pencil-c46 business', timeZone: 'America/New_York' }) })
 step('setup', { status: setup.status })
-const workspace = (await call('/api/app/workspace', { expect: 200 })).json
-await call('/api/app/workspace', { method: 'PUT', body: { timeZone: workspace.timeZone ?? 'America/New_York', sendingWindowStart: '00:00', sendingWindowEnd: '00:00' }, expect: 200 })
-step('sending-window', { timeZone: workspace.timeZone ?? 'America/New_York', window: '00:00-00:00 (always open on this scratch installation)' })
+const hhmm = hours => new Date(Date.now() + hours * 3600_000).toISOString().slice(11, 16)
+const window = { timeZone: 'UTC', sendingWindowStart: hhmm(-1), sendingWindowEnd: hhmm(5) }
+await call('/api/app/workspace', { method: 'PUT', body: window, expect: 200 })
+step('sending-window', { ...window, note: 'opened around the proof window on this scratch installation' })
 
 // 2. The owner saves the Twilio test connection; status never echoes the token or the account SID.
 const connection = from => ({ accountId: sid, authToken: token, fromNumber: from, a2pState: 'approved', apiOrigin: forwarderOrigin })

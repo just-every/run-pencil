@@ -1,0 +1,544 @@
+{
+  "clause": "DIST-011",
+  "date": "2026-10-26",
+  "credentials": "Twilio test credentials (RER_TWILIO_TEST_ACCOUNT_SID / RER_TWILIO_TEST_AUTH_TOKEN via briefs/_od08-env.py); no live credential, no message sent, no charge, no status callback",
+  "account": "AC\u20265b1e",
+  "runtime": "rer dev (not rer demo) at http://127.0.0.1:4931; the SMS connection apiOrigin was a loopback forwarder relaying POST Messages.json for the test account unchanged to https://api.twilio.com and counting each request",
+  "doors": [
+    "POST /setup",
+    "PUT /api/app/workspace",
+    "PUT|GET|DELETE /api/app/connections/sms",
+    "POST /api/app/flows",
+    "GET /api/app/flows/:id/draft",
+    "POST /api/app/flows/:id/publish",
+    "POST /api/app/distribution/contacts",
+    "POST|GET /api/app/flows/:id/distribution",
+    "POST /api/app/backup/export (read-back of mail_deliveries and mail_delivery_attempts)"
+  ],
+  "a2p": "a2pState recorded approved on a scratch installation; Twilio test credentials involve no carrier registration; no A2P claim",
+  "runs": {
+    "a_main_7afa2501_sms_code": {
+      "code": "main 7afa2501 src/core/features/sms/service.ts",
+      "connectionSaved": {
+        "saved": true,
+        "a2pState": "approved",
+        "fromNumber": "+15005550006"
+      },
+      "connectionEchoesTokenOrSid": false,
+      "sendingWindow": {
+        "timeZone": "UTC",
+        "sendingWindowStart": "21:35",
+        "sendingWindowEnd": "03:35"
+      },
+      "unconsentedLaunch": {
+        "status": 400,
+        "message": "Every SMS recipient needs a mobile number and current recorded SMS consent.",
+        "providerRequests": 0
+      },
+      "replayOfSuccessLaunchKey": {
+        "status": 201,
+        "providerRequests": 0
+      },
+      "scheduledRerun": {
+        "name": "scheduled-rerun",
+        "scheduledRunsSeen": 1,
+        "providerRequestsBefore": 7,
+        "providerRequestsAfter": 7,
+        "attemptRowsBefore": 14,
+        "attemptRowsAfter": 14
+      },
+      "consentRecord": {
+        "given": "1",
+        "source": "operator-recorded",
+        "actorKind": "operator",
+        "actorRecorded": true,
+        "at": "2026-10-26T22:35:02.907Z",
+        "wording": "I agree to receive survey invitations and reminders by SMS from synthetic-pencil-c46 business. Reply STOP to opt out."
+      },
+      "connectionRemoved": false,
+      "cases": [
+        {
+          "case": "S1",
+          "to": "+15005550006",
+          "from": "+15005550006",
+          "twilioDocumented": "All others: number is validated normally (no error)",
+          "twilioAnchor": "https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-To",
+          "launch": 201,
+          "providerRequests": 1,
+          "twilioHttp": 201,
+          "twilioCode": null,
+          "messageSid": "\u20266df3",
+          "pencilDelivery": {
+            "status": "sent",
+            "reason": null,
+            "providerId": "\u20266df3"
+          },
+          "pencilAttempts": [
+            {
+              "ordinal": "1",
+              "event": "started",
+              "providerId": null,
+              "reason": null
+            },
+            {
+              "ordinal": "1",
+              "event": "sent",
+              "providerId": "\u20266df3",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "case": "F1",
+          "to": "+15005550001",
+          "from": "+15005550006",
+          "twilioDocumented": "21211 phone number is invalid",
+          "twilioAnchor": "https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-To",
+          "launch": 201,
+          "providerRequests": 1,
+          "twilioHttp": 400,
+          "twilioCode": 21211,
+          "messageSid": null,
+          "pencilDelivery": {
+            "status": "failed",
+            "reason": "Twilio answered 400. Reconcile uncertain delivery before retrying.",
+            "providerId": null
+          },
+          "pencilAttempts": [
+            {
+              "ordinal": "1",
+              "event": "started",
+              "providerId": null,
+              "reason": null
+            },
+            {
+              "ordinal": "1",
+              "event": "permanent",
+              "providerId": null,
+              "reason": "Twilio answered 400. Reconcile uncertain delivery before retrying."
+            }
+          ]
+        },
+        {
+          "case": "F2",
+          "to": "+15005550002",
+          "from": "+15005550006",
+          "twilioDocumented": "21612 Twilio can't route to this number",
+          "twilioAnchor": "https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-To",
+          "launch": 201,
+          "providerRequests": 1,
+          "twilioHttp": 400,
+          "twilioCode": 21612,
+          "messageSid": null,
+          "pencilDelivery": {
+            "status": "failed",
+            "reason": "Twilio answered 400. Reconcile uncertain delivery before retrying.",
+            "providerId": null
+          },
+          "pencilAttempts": [
+            {
+              "ordinal": "1",
+              "event": "started",
+              "providerId": null,
+              "reason": null
+            },
+            {
+              "ordinal": "1",
+              "event": "permanent",
+              "providerId": null,
+              "reason": "Twilio answered 400. Reconcile uncertain delivery before retrying."
+            }
+          ]
+        },
+        {
+          "case": "F3",
+          "to": "+15005550003",
+          "from": "+15005550006",
+          "twilioDocumented": "21408 account lacks international permissions",
+          "twilioAnchor": "https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-To",
+          "launch": 201,
+          "providerRequests": 1,
+          "twilioHttp": 400,
+          "twilioCode": 21408,
+          "messageSid": null,
+          "pencilDelivery": {
+            "status": "failed",
+            "reason": "Twilio answered 400. Reconcile uncertain delivery before retrying.",
+            "providerId": null
+          },
+          "pencilAttempts": [
+            {
+              "ordinal": "1",
+              "event": "started",
+              "providerId": null,
+              "reason": null
+            },
+            {
+              "ordinal": "1",
+              "event": "permanent",
+              "providerId": null,
+              "reason": "Twilio answered 400. Reconcile uncertain delivery before retrying."
+            }
+          ]
+        },
+        {
+          "case": "F4",
+          "to": "+15005550004",
+          "from": "+15005550006",
+          "twilioDocumented": "21610 number is blocked for your account",
+          "twilioAnchor": "https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-To",
+          "launch": 201,
+          "providerRequests": 1,
+          "twilioHttp": 400,
+          "twilioCode": 21610,
+          "messageSid": null,
+          "pencilDelivery": {
+            "status": "failed",
+            "reason": "Twilio answered 400. Reconcile uncertain delivery before retrying.",
+            "providerId": null
+          },
+          "pencilAttempts": [
+            {
+              "ordinal": "1",
+              "event": "started",
+              "providerId": null,
+              "reason": null
+            },
+            {
+              "ordinal": "1",
+              "event": "permanent",
+              "providerId": null,
+              "reason": "Twilio answered 400. Reconcile uncertain delivery before retrying."
+            }
+          ]
+        },
+        {
+          "case": "F5",
+          "to": "+15005550009",
+          "from": "+15005550006",
+          "twilioDocumented": "21614 number can't receive SMS",
+          "twilioAnchor": "https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-To",
+          "launch": 201,
+          "providerRequests": 1,
+          "twilioHttp": 400,
+          "twilioCode": 21614,
+          "messageSid": null,
+          "pencilDelivery": {
+            "status": "failed",
+            "reason": "Twilio answered 400. Reconcile uncertain delivery before retrying.",
+            "providerId": null
+          },
+          "pencilAttempts": [
+            {
+              "ordinal": "1",
+              "event": "started",
+              "providerId": null,
+              "reason": null
+            },
+            {
+              "ordinal": "1",
+              "event": "permanent",
+              "providerId": null,
+              "reason": "Twilio answered 400. Reconcile uncertain delivery before retrying."
+            }
+          ]
+        },
+        {
+          "case": "F6",
+          "to": "+15005550006",
+          "from": "+15005550001",
+          "twilioDocumented": "21212 phone number is invalid",
+          "twilioAnchor": "https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-From",
+          "launch": 201,
+          "providerRequests": 1,
+          "twilioHttp": 400,
+          "twilioCode": 21212,
+          "messageSid": null,
+          "pencilDelivery": {
+            "status": "failed",
+            "reason": "Twilio answered 400. Reconcile uncertain delivery before retrying.",
+            "providerId": null
+          },
+          "pencilAttempts": [
+            {
+              "ordinal": "1",
+              "event": "started",
+              "providerId": null,
+              "reason": null
+            },
+            {
+              "ordinal": "1",
+              "event": "permanent",
+              "providerId": null,
+              "reason": "Twilio answered 400. Reconcile uncertain delivery before retrying."
+            }
+          ]
+        }
+      ],
+      "providerRequestsTotal": 7,
+      "requestsRefusedByForwarder": 0
+    },
+    "b_candidate": {
+      "code": "candidate fix: a 4xx with a Twilio error code is recorded as failed with that code",
+      "connectionSaved": {
+        "saved": true,
+        "a2pState": "approved",
+        "fromNumber": "+15005550006"
+      },
+      "connectionEchoesTokenOrSid": false,
+      "sendingWindow": {
+        "timeZone": "UTC",
+        "sendingWindowStart": "21:36",
+        "sendingWindowEnd": "03:36"
+      },
+      "unconsentedLaunch": {
+        "status": 400,
+        "message": "Every SMS recipient needs a mobile number and current recorded SMS consent.",
+        "providerRequests": 0
+      },
+      "replayOfSuccessLaunchKey": {
+        "status": 201,
+        "providerRequests": 0
+      },
+      "scheduledRerun": {
+        "name": "scheduled-rerun",
+        "scheduledRunsSeen": 1,
+        "providerRequestsBefore": 7,
+        "providerRequestsAfter": 7,
+        "attemptRowsBefore": 14,
+        "attemptRowsAfter": 14
+      },
+      "consentRecord": {
+        "given": "1",
+        "source": "operator-recorded",
+        "actorKind": "operator",
+        "actorRecorded": true,
+        "at": "2026-10-26T22:36:13.529Z",
+        "wording": "I agree to receive survey invitations and reminders by SMS from synthetic-pencil-c46 business. Reply STOP to opt out."
+      },
+      "connectionRemoved": false,
+      "cases": [
+        {
+          "case": "S1",
+          "to": "+15005550006",
+          "from": "+15005550006",
+          "twilioDocumented": "All others: number is validated normally (no error)",
+          "twilioAnchor": "https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-To",
+          "launch": 201,
+          "providerRequests": 1,
+          "twilioHttp": 201,
+          "twilioCode": null,
+          "messageSid": "\u2026226f",
+          "pencilDelivery": {
+            "status": "sent",
+            "reason": null,
+            "providerId": "\u2026226f"
+          },
+          "pencilAttempts": [
+            {
+              "ordinal": "1",
+              "event": "started",
+              "providerId": null,
+              "reason": null
+            },
+            {
+              "ordinal": "1",
+              "event": "sent",
+              "providerId": "\u2026226f",
+              "reason": null
+            }
+          ]
+        },
+        {
+          "case": "F1",
+          "to": "+15005550001",
+          "from": "+15005550006",
+          "twilioDocumented": "21211 phone number is invalid",
+          "twilioAnchor": "https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-To",
+          "launch": 201,
+          "providerRequests": 1,
+          "twilioHttp": 400,
+          "twilioCode": 21211,
+          "messageSid": null,
+          "pencilDelivery": {
+            "status": "failed",
+            "reason": "Twilio refused the message (error 21211).",
+            "providerId": null
+          },
+          "pencilAttempts": [
+            {
+              "ordinal": "1",
+              "event": "started",
+              "providerId": null,
+              "reason": null
+            },
+            {
+              "ordinal": "1",
+              "event": "permanent",
+              "providerId": null,
+              "reason": "Twilio refused the message (error 21211)."
+            }
+          ]
+        },
+        {
+          "case": "F2",
+          "to": "+15005550002",
+          "from": "+15005550006",
+          "twilioDocumented": "21612 Twilio can't route to this number",
+          "twilioAnchor": "https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-To",
+          "launch": 201,
+          "providerRequests": 1,
+          "twilioHttp": 400,
+          "twilioCode": 21612,
+          "messageSid": null,
+          "pencilDelivery": {
+            "status": "failed",
+            "reason": "Twilio refused the message (error 21612).",
+            "providerId": null
+          },
+          "pencilAttempts": [
+            {
+              "ordinal": "1",
+              "event": "started",
+              "providerId": null,
+              "reason": null
+            },
+            {
+              "ordinal": "1",
+              "event": "permanent",
+              "providerId": null,
+              "reason": "Twilio refused the message (error 21612)."
+            }
+          ]
+        },
+        {
+          "case": "F3",
+          "to": "+15005550003",
+          "from": "+15005550006",
+          "twilioDocumented": "21408 account lacks international permissions",
+          "twilioAnchor": "https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-To",
+          "launch": 201,
+          "providerRequests": 1,
+          "twilioHttp": 400,
+          "twilioCode": 21408,
+          "messageSid": null,
+          "pencilDelivery": {
+            "status": "failed",
+            "reason": "Twilio refused the message (error 21408).",
+            "providerId": null
+          },
+          "pencilAttempts": [
+            {
+              "ordinal": "1",
+              "event": "started",
+              "providerId": null,
+              "reason": null
+            },
+            {
+              "ordinal": "1",
+              "event": "permanent",
+              "providerId": null,
+              "reason": "Twilio refused the message (error 21408)."
+            }
+          ]
+        },
+        {
+          "case": "F4",
+          "to": "+15005550004",
+          "from": "+15005550006",
+          "twilioDocumented": "21610 number is blocked for your account",
+          "twilioAnchor": "https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-To",
+          "launch": 201,
+          "providerRequests": 1,
+          "twilioHttp": 400,
+          "twilioCode": 21610,
+          "messageSid": null,
+          "pencilDelivery": {
+            "status": "failed",
+            "reason": "Twilio refused the message (error 21610).",
+            "providerId": null
+          },
+          "pencilAttempts": [
+            {
+              "ordinal": "1",
+              "event": "started",
+              "providerId": null,
+              "reason": null
+            },
+            {
+              "ordinal": "1",
+              "event": "permanent",
+              "providerId": null,
+              "reason": "Twilio refused the message (error 21610)."
+            }
+          ]
+        },
+        {
+          "case": "F5",
+          "to": "+15005550009",
+          "from": "+15005550006",
+          "twilioDocumented": "21614 number can't receive SMS",
+          "twilioAnchor": "https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-To",
+          "launch": 201,
+          "providerRequests": 1,
+          "twilioHttp": 400,
+          "twilioCode": 21614,
+          "messageSid": null,
+          "pencilDelivery": {
+            "status": "failed",
+            "reason": "Twilio refused the message (error 21614).",
+            "providerId": null
+          },
+          "pencilAttempts": [
+            {
+              "ordinal": "1",
+              "event": "started",
+              "providerId": null,
+              "reason": null
+            },
+            {
+              "ordinal": "1",
+              "event": "permanent",
+              "providerId": null,
+              "reason": "Twilio refused the message (error 21614)."
+            }
+          ]
+        },
+        {
+          "case": "F6",
+          "to": "+15005550006",
+          "from": "+15005550001",
+          "twilioDocumented": "21212 phone number is invalid",
+          "twilioAnchor": "https://www.twilio.com/docs/iam/test-credentials#test-sms-messages-parameters-From",
+          "launch": 201,
+          "providerRequests": 1,
+          "twilioHttp": 400,
+          "twilioCode": 21212,
+          "messageSid": null,
+          "pencilDelivery": {
+            "status": "failed",
+            "reason": "Twilio refused the message (error 21212).",
+            "providerId": null
+          },
+          "pencilAttempts": [
+            {
+              "ordinal": "1",
+              "event": "started",
+              "providerId": null,
+              "reason": null
+            },
+            {
+              "ordinal": "1",
+              "event": "permanent",
+              "providerId": null,
+              "reason": "Twilio refused the message (error 21212)."
+            }
+          ]
+        }
+      ],
+      "providerRequestsTotal": 7,
+      "requestsRefusedByForwarder": 0
+    }
+  },
+  "redaction": "Account and message SIDs keep their last 4 characters; every phone number is a Twilio magic number; no token, header or provider body is kept"
+}

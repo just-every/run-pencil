@@ -11,7 +11,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { parseArgs } from 'node:util'
 import { setTimeout as sleep } from 'node:timers/promises'
-import { chromium } from 'playwright'
+import { chromium } from '@playwright/test'
 
 const { values: args } = parseArgs({ options: { origin: { type: 'string' }, 'dev-log': { type: 'string' }, out: { type: 'string' }, screens: { type: 'string' } } })
 const fail = message => { console.error(`payments-stripe-test: ${message}`); process.exit(1) }
@@ -197,7 +197,6 @@ const csv = await call('/api/app/payments?state=partially_refunded&format=csv', 
 const csvRow = csv.text.split('\r\n').find(line => line.includes(paid.row.responseId)) ?? ''
 step('ledger-filter-export', { filterPartiallyRefunded: filtered.filter(r => r.responseId === paid.row.responseId).length, filterPaid: paidOnly.filter(r => r.responseId === paid.row.responseId).length,
   csvHeader: csv.text.split('\r\n')[0], csvRow: csvRow.replace(/"(pi|cs)_[^"]+"/g, m => `"${last4(m.slice(1, -1))}"`), csvHasBothAmounts: csvRow.includes('"4000","4000","1000","card","4242"') })
-await page.goto(`${origin}/api/app/payments?state=partially_refunded&format=csv`).catch(() => null)
 await page.goto(`${origin}/app/payments`)
 
 // 6. Reconciliation for today's UTC period against Stripe.
