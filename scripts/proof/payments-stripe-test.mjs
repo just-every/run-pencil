@@ -67,7 +67,7 @@ async function deliver(event) {
 // Real events about our own objects only; other systems share this test account.
 async function events(types, belongs, want) {
   for (let poll = 0; poll < 5; poll++) {
-    await sleep(poll ? 6000 : 4000)
+    await sleep(poll ? 6000 : 7000)
     const query = types.map(type => `types[]=${encodeURIComponent(type)}`).join('&')
     const { body } = await stripe('GET', `/v1/events?${query}&created[gte]=${runStart}&limit=100`)
     const found = (body.data ?? []).filter(event => belongs(event.data?.object ?? {})).reverse()
@@ -128,8 +128,12 @@ async function respond(form, total) {
   await page.locator('#cardCvc').fill('123')
   await page.locator('#billingName').fill('synthetic-pencil-c46 respondent')
   if (await page.locator('#billingPostalCode').isVisible().catch(() => false)) await page.locator('#billingPostalCode').fill('10001')
+  // Checkout pre-ticks saving the card with Link, which then requires a phone number; the respondent declines it.
+  if (await page.locator('#enableStripePass').isChecked().catch(() => false)) await page.locator('#enableStripePass').setChecked(false, { force: true })
   await page.locator('button[type="submit"]').first().click()
-  await page.waitForURL(url => url.origin === origin, { timeout: 90_000 })
+  try { await page.waitForURL(url => url.origin === origin, { timeout: 90_000 }) } catch (error) {
+    await page.screenshot({ path: join(args.screens, 'pay005-checkout-failure.png'), fullPage: true }); throw error
+  }
   await page.getByRole('heading', { name: 'Thank you', exact: true }).waitFor({ timeout: 30_000 })
   await page.screenshot({ path: join(args.screens, `pay005-${form === forms.order ? 'order' : 'coupon'}-returned-1440.png`) })
   const text = await page.locator('main').innerText()
