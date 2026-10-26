@@ -4353,11 +4353,11 @@
       "executable": false
     },
     "src/core/features/chat-integrations/ui/ChatFormSettings.tsx": {
-      "sha256": "9b6c48499845a74feb8276a39f84da0330752a00b86f31745f3b2a581cfb1600",
+      "sha256": "c0a5b7a1fb5dcb4c7bf001bf4bf556bd8343035cd44071b8c7efbed6a0bfc80c",
       "executable": false
     },
     "src/core/features/chat-integrations/ui/client.ts": {
-      "sha256": "27f80b1b96a02c49654f2957ca688f2af629e10b2e91b0af1be17fc4e9061da1",
+      "sha256": "6f189fc7bad34459a50029486435b1634d46004d134ea46dde99a294dd322285",
       "executable": false
     },
     "src/core/features/chat-integrations/ui/index.ts": {
@@ -5537,7 +5537,7 @@
       "executable": false
     },
     "src/core/features/notifications/AnswerAlertSettings.tsx": {
-      "sha256": "a82090a6d660d25e2d2accd4c303bfa24cf0b4caf6b44f74b7aef42973e4006c",
+      "sha256": "10dd5e0d6a6cd66d60c0e0db0368a4e1ccc3a0b1ea9b1d26abf117f793265cd6",
       "executable": false
     },
     "src/core/features/notifications/brand-mail-fixture.ts": {
@@ -7145,7 +7145,7 @@
       "executable": false
     },
     "tests/e2e/chat-settings-proof.ts": {
-      "sha256": "9c70247b9bd9c59334b8a4f79a63e5ef210231affa992341874705449f04e0b7",
+      "sha256": "23f9c17fe600d6e226d4ff3a85b6bbb4c739ad46a959cc510b6c4d19c9faccfe",
       "executable": false
     },
     "tests/e2e/client-secrets.spec.ts": {
@@ -7301,7 +7301,7 @@
       "executable": false
     },
     "tests/e2e/notifications.spec.ts": {
-      "sha256": "4d51e1dee8a1c4e99d1182936386454c696ad8f21ea7a739607fa39f3b0f0561",
+      "sha256": "948d80f5e0ef87143113055103ae3a90c66a7644c959e1fd2e0645bc2fb0f3e0",
       "executable": false
     },
     "tests/e2e/operator-custody.spec.ts": {
