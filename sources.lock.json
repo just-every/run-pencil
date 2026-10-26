@@ -7676,10 +7676,6 @@
       "sha256": "17336727db0cafac567e77221d96467b6b27f7595752ae64962e99e2ac5c8137",
       "executable": false
     },
-    "tests/native/closure-recovery.mjs": {
-      "sha256": "7bb949fdb6e5ceca0ab577b93b88ce08133633604304b09a1ec32fbc64b1d9e2",
-      "executable": false
-    },
     "tests/release/ledger-search.worker.test.ts": {
       "sha256": "cdcad317ede55f0df57a951664a396938d760d701877a2be464dc7fdf711b6ca",
       "executable": false
