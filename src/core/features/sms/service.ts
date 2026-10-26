@@ -23,6 +23,9 @@ export class SmsService {
     try {
       const response=await fetch(`${saved.apiOrigin}/2010-04-01/Accounts/${encodeURIComponent(saved.accountId)}/Messages.json`,{method:'POST',redirect:'manual',signal:AbortSignal.timeout(10_000),headers:{Authorization:`Basic ${btoa(`${saved.accountId}:${saved.authToken}`)}`,'Content-Type':'application/x-www-form-urlencoded','Idempotency-Key':key},body:new URLSearchParams({To:to,From:saved.fromNumber,Body:text,StatusCallback:new URL('/api/public/sms/twilio/status',this.origin).href})})
       if(response.status===429)return {kind:'transient',reason:'Twilio rate limited the message.'}
+      // A 4xx carrying a Twilio error code is a definite refusal: Twilio created no message (DIST-008 keeps the provider reason).
+      const refusal=response.status>=400&&response.status<500?await response.json().then(body=>(body as {code?:unknown})?.code,()=>null):null
+      if(typeof refusal==='number'&&Number.isInteger(refusal)&&refusal>0&&refusal<1_000_000)return {kind:'permanent',reason:`Twilio refused the message (error ${refusal}).`}
       if(!response.ok)return {kind:response.status>=500?'unknown':'permanent',reason:`Twilio answered ${response.status}. Reconcile uncertain delivery before retrying.`}
       const receipt=await response.json() as {sid?:unknown}
       if(typeof receipt.sid!=='string'||receipt.sid.length>200)return {kind:'unknown',reason:'Twilio returned no usable delivery receipt. Reconcile before retrying.'}

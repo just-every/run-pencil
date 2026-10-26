@@ -135,6 +135,11 @@ contract('DIST-011','SMS invitations require recorded consent, use sealed owner 
  await f.services.distribution.dispatcher.run(new Date(Date.now()+14*86400000).toISOString())
  expect(((await (await fetch(receiver+'/__control/state')).json()) as {requests:unknown[]}).requests).toHaveLength(4)
  expect(await env.DB.prepare('SELECT status FROM mail_deliveries WHERE id=?').bind(uncertain!.id).first()).toEqual({status:'unknown'})
+ // A definite refusal (a Twilio error code, so no message exists) is failed with that code, never left for reconciliation.
+ const refused=await accepted(await f.call(contacts,{name:'Synthetic refused mobile',email:'refused@synthetic.test',mobile:'+15555550105',smsConsent:{given:true,wording},fields:{}}),201)
+ await fetch(receiver+'/__control/sms-mode',{method:'POST',body:JSON.stringify({refuse:21211})})
+ await accepted(await f.call(path,{channel:'sms',contactIds:[refused.id],commandKey:'synthetic-pencil-refused-send'}),201)
+ expect((await accepted(await f.call(path))).participants.filter((p:any)=>p.email==='refused@synthetic.test').map((p:any)=>({kind:p.kind,status:p.status,reason:p.reason}))).toEqual([{kind:'invitation',status:'failed',reason:'Twilio refused the message (error 21211).'}])
  expect((await everyStoredValue()).join('\n')).not.toContain(token)
  const backup=await accepted(await f.call('/api/app/backup/export',{}));expect(JSON.stringify(backup)).not.toContain(token)
  const archivedAttempts=backup.payload.tables.find((table:any)=>table.name==='mail_delivery_attempts')
