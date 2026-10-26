@@ -335,6 +335,22 @@ contract('FLOW-007', 'previews the current draft and incomplete branches with te
   const unchangedPublic = await ok<PublicFlow>('/api/public/flows/preview-read-only')
   expect(unchangedPublic.steps.some(step => step.id === previewOnly.id)).toBe(false)
   expect(unchangedPublic.branchRules[0].destinationStepId).toBe(f.end.id)
+  // Adding questions must leave both the existing default and conditional paths alone.
+  const routed = draft
+  for (const prompt of ['What made it great?', 'What would make it great?']) {
+    const current = await f.draft()
+    await ok(`${f.path}/draft/steps`, { expectedVersion: current.flow.draftVersion, step: { kind: 'question', questionType: 'long_text', prompt } })
+  }
+  draft = await f.draft()
+  const routes = (value: BuilderDraft) => value.steps.filter(step => routed.steps.some(old => old.id === step.id)).map(step => ({ id: step.id, nextStepId: step.nextStepId }))
+  expect(routes(draft)).toEqual(routes(routed))
+  expect(draft.branchRules).toEqual(routed.branchRules)
+  expect(draft.steps.find(step => step.id === f.detail.id)?.nextStepId).toBe(f.end.id)
+  for (const [answers, expected] of [[{}, [f.route.id, f.detail.id, f.end.id]], [{ [f.route.id]: f.skip.id }, [f.route.id, previewOnly.id]]] as const) {
+    const preview = await ok<{ complete: boolean; screens: Array<{ stepId: string }> }>(`${f.path}/draft/preview`, { answers })
+    expect(preview.complete).toBe(true)
+    expect(preview.screens.map(screen => screen.stepId)).toEqual(expected)
+  }
   const tables = ['workspaces', 'operators', 'flows', 'flow_revisions', 'flow_steps', 'choice_options', 'flow_branch_rules', 'respondent_sessions', 'respondent_session_step_events', 'responses', 'response_answers', 'response_outbox', 'revision_metric_counters', 'revision_step_metric_counters', 'audit_entries', 'auth_magic_links', 'local_dev_inbox', 'local_fixture_initializations']
   const snapshot = async () => (await env.DB.batch(tables.map(table => env.DB.prepare(`SELECT * FROM ${table} ORDER BY id`)))).map(result => result.results)
   const before = await snapshot()
