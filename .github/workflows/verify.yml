@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   checks:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -35,7 +35,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
 
   runtime:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -66,7 +66,7 @@ jobs:
           retention-days: 1
 
   browser:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     strategy:
       fail-fast: false
@@ -123,7 +123,7 @@ jobs:
           retention-days: 1
 
   admission:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -168,7 +168,7 @@ jobs:
       - run: pnpm verify:admission
 
   hosted:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -217,7 +217,7 @@ jobs:
     # Slow copied-checkout installer and README journeys retain their complete
     # assertions nightly and on release tags, outside the push budget.
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
@@ -269,7 +269,7 @@ jobs:
   verify:
     if: always()
     needs: [checks, runtime, browser, admission, hosted, journeys]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - name: Require every verification lane
