@@ -93,7 +93,7 @@ for (const body of [
 const [choice, note] = (await read()).steps
 await call(`${base}/publish`, { method: 'POST', body: { expectedVersion: (await read()).flow.draftVersion }, expect: 201 })
 const operators = (await call('/api/app/operators', { expect: 200 })).json
-const ownerId = (Array.isArray(operators) ? operators : operators.operators ?? []).find(operator => operator.role === 'owner')?.id
+const ownerId = (Array.isArray(operators) ? operators : operators.operators ?? []).find(operator => operator.isSetupOperator)?.id
 if (!ownerId) fail('no owner operator listed')
 
 // 3. A free-text summary field is refused at save; the closed-choice link is saved.
