@@ -15,6 +15,15 @@ const valuesFor = (platform: ChatPlatform, links: ChatFormLink[]) => {
 type Failure = { message: string; retry?: boolean; operation: 'load' | 'save' | 'remove' }
 type Field = 'channel' | 'owner' | 'userId' | 'actionOwner'
 type FieldErrors = Partial<Record<Field,string>>
+// The route's own input check answers with these; they are not written for owners, so the panel says it plainly instead.
+const inputRefusals=new Set(['Invalid request body.','Invalid request path parameters.'])
+/** Retry only where sending again can succeed: no answer or a server failure. An answered refusal shows the server's reason. */
+const saveFailure=(reason:unknown):Failure=>{
+  if(!(reason instanceof ChatRequestError))return {message:'Chat settings could not be saved. Check the connection and try again.',operation:'save'}
+  if(reason.status>=500)return {message:'Chat settings could not be saved. Try again.',operation:'save'}
+  if(reason.status===401)return {message:'Your session ended, so sign in again to save.',operation:'save',retry:false}
+  return {message:inputRefusals.has(reason.message)?'Chat settings were refused, so reload the page and save again.':reason.message,operation:'save',retry:false}
+}
 export function ChatFormSettings({draft,disabled,onDirtyChange,discardVersion}:{draft:BuilderDraft;disabled:boolean;onDirtyChange:(dirty:boolean)=>void;discardVersion:number}) {
   const [links,setLinks]=useState<ChatFormLink[]>([]),[operators,setOperators]=useState<Operator[]>([]),[zone,setZone]=useState('UTC')
   const [platform,setPlatform]=useState<ChatPlatform>('slack'),[values,setValues]=useState(()=>valuesFor('slack',[]))
@@ -22,7 +31,7 @@ export function ChatFormSettings({draft,disabled,onDirtyChange,discardVersion}:{
   const [actionRead,setActionRead]=useState(0),[actionDirty,setActionDirty]=useState(false)
   const actionRoot=useRef<HTMLDivElement>(null),actionBaseline=useRef(''),pendingAction=useRef<ActionFieldsInput|undefined>(undefined)
   const [fieldErrors,setFieldErrors]=useState<FieldErrors>({}),[actionOwnerField,setActionOwnerField]=useState<HTMLSelectElement|null>(null)
-  const root=useRef<HTMLDetailsElement>(null),focusError=useRef(false)
+  const root=useRef<HTMLDetailsElement>(null),actions=useRef<HTMLDivElement>(null),focusError=useRef(false)
   const scrollAfterSave=useRef<number|undefined>(undefined)
   const path=`/api/app/flows/${encodeURIComponent(draft.flow.id)}/chat`
   const dirty=actionDirty||JSON.stringify(values)!==JSON.stringify(valuesFor(platform,links))
@@ -42,6 +51,13 @@ export function ChatFormSettings({draft,disabled,onDirtyChange,discardVersion}:{
   useLayoutEffect(()=>{actionBaseline.current=actionSnapshot()},[actionRead,actionEnabled,platform])
   useLayoutEffect(()=>{onDirtyChange(dirty);return()=>onDirtyChange(false)},[dirty,onDirtyChange])
   useLayoutEffect(()=>{if(notice&&scrollAfterSave.current!==undefined){const y=scrollAfterSave.current;window.scrollTo(0,y);const frame=requestAnimationFrame(()=>window.scrollTo(0,y));return()=>cancelAnimationFrame(frame)}},[notice,dirty])
+  // After a failure, the line, Save and Discard share the viewport.
+  useLayoutEffect(()=>{
+    const line=error?root.current?.querySelector('#chat-refusal'):null,row=actions.current
+    if(!line?.getClientRects().length||!row)return
+    const a=line.getBoundingClientRect(),b=row.getBoundingClientRect(),top=Math.min(a.top,b.top),bottom=Math.max(a.bottom,b.bottom)
+    if(top<16)window.scrollBy(0,top-16);else if(bottom>window.innerHeight-16)window.scrollBy(0,Math.min(bottom-window.innerHeight+16,top-16))
+  },[error])
   const load=async()=>{
     setLoading(true);setError(undefined)
     try { const [data,people,workspace]=await Promise.all([chatRequest<{links:ChatFormLink[]}>(path),api.operators(),api.workspace()]);setLinks(data.links);setOperators(people);setZone(workspace.timeZone);apply(platform,data.links) }
@@ -68,10 +84,8 @@ export function ChatFormSettings({draft,disabled,onDirtyChange,discardVersion}:{
     try {
       const data=await chatRequest<{links:ChatFormLink[]}>(path,'PUT',input)
       setLinks(data.links);apply(platform,data.links);setNotice(true)
-    } catch (reason) {
-      const status=reason instanceof ChatRequestError?reason.status:undefined
-      setError({message:status!==undefined&&status>=400&&status<500?'Chat settings were refused. Check the fields above.':status!==undefined?'Chat settings could not be saved. Try again.':'Chat settings could not be saved. Check the connection and try again.',operation:'save',retry:status===undefined||status>=500})
-    } finally {setBusy(false)}
+    } catch (reason) {setError(saveFailure(reason))}
+    finally {setBusy(false)}
   }
   const remove=async()=>{
     scrollAfterSave.current=window.scrollY;setBusy(true);setError(undefined);setNotice(false)
@@ -79,8 +93,9 @@ export function ChatFormSettings({draft,disabled,onDirtyChange,discardVersion}:{
     catch {setError({message:'The chat connection could not be removed. Try again.',operation:'remove'})}
     finally {setBusy(false)}
   }
+  const discard=()=>{apply(platform,links);setError(undefined);setNotice(false)}
   const retry=()=>{if(error?.operation==='load')void load();else if(error?.operation==='remove')void remove();else void save(pendingAction.current)}
-  const failure=error?<div role="alert">{error.message} {error.retry!==false?<button className="quiet-button focus-ring" type="button" disabled={locked} onClick={retry}>Retry</button>:null}</div>:null
+  const failure=error?<div id="chat-refusal" role="alert">{error.message} {error.retry!==false?<button className="quiet-button focus-ring" type="button" disabled={locked} onClick={retry}>Retry</button>:null}</div>:null
   return <details className="chat-form-settings" ref={root}><summary className="focus-ring">Slack and Teams notifications</summary><div aria-busy={busy||loading}>
     <label className="toggle-row"><input type="checkbox" disabled={locked} checked={postResponses} onChange={event=>update({postResponses:event.target.checked})}/><span>Post every released response</span></label>
     <label className="inspector-field">Chat service<select className="text-input" value={platform} disabled={locked} onChange={event=>{if(dirty&&!window.confirm('Discard unsaved chat changes and switch service?'))return;apply(event.target.value as ChatPlatform,links);setNotice(false);setError(undefined)}}><option value="slack">Slack</option><option value="teams">Microsoft Teams</option></select></label>
@@ -94,8 +109,9 @@ export function ChatFormSettings({draft,disabled,onDirtyChange,discardVersion}:{
     <fieldset disabled={locked} aria-describedby="chat-summary-limits"><legend>Allowed answer summary (optional)</legend><span id="chat-summary-limits">Choices, ratings, yes/no and numbers only; no contact details, free text or uploads.</span>{draft.steps.filter(step=>step.kind==='question'&&safeSummaryTypes.has(step.questionType??'')).map(step=><label className="toggle-row" key={step.id}><input type="checkbox" checked={fields.includes(step.id)} onChange={event=>update({fields:event.target.checked?[...fields,step.id]:fields.filter(id=>id!==step.id)})}/><span>{step.prompt}</span></label>)}</fieldset>
     {platform==='slack'?<label className="toggle-row"><input type="checkbox" disabled={locked} checked={actionEnabled} onChange={event=>update({actionEnabled:event.target.checked})}/><span>Allow the mapped owner to create an action from each post</span></label>:null}
     {platform==='slack'&&actionEnabled?<div ref={actionRoot} onInvalidCapture={event=>{if((event.target as unknown)===actionOwnerField){event.preventDefault();focusError.current=true;setFieldErrors({actionOwner:'Choose the action owner.'})}}} onChange={event=>{if((event.target as unknown)===actionOwnerField)clearField('actionOwner');setActionDirty(actionSnapshot()!==actionBaseline.current);setNotice(false)}}><ActionForm key={actionRead} initial={saved?.action?{...saved.action,ownerOperatorId:owner}:{...emptyAction,ownerOperatorId:owner}} operators={operators} timeZone={zone} busy={locked} submitLabel="Save chat and action template" onSubmit={values=>void save(values)}/>{actionOwnerField?.parentElement&&fieldErrors.actionOwner?createPortal(fieldLine('actionOwner'),actionOwnerField.parentElement):null}</div>:null}
-    <div className="builder-actions">
+    <div className="builder-actions" ref={actions}>
       {!(platform==='slack'&&actionEnabled)?<button className="secondary-button focus-ring" type="button" disabled={locked} onClick={()=>void save()}>Save chat settings</button>:null}
+      {dirty?<button className="quiet-button focus-ring" type="button" disabled={busy} onClick={discard}>Discard changes</button>:null}
       {notice?<span role="status">Saved</span>:null}
       {saved?<button className="quiet-button focus-ring" type="button" disabled={locked} onClick={()=>void remove()}>Remove form chat connection</button>:null}
     </div>
