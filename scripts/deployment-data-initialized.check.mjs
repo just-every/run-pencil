@@ -10,7 +10,7 @@ import { restoreStatements } from './deployment-data-sql.mjs';
 import { fixture, sqliteTransport } from './deployment-data-test-helpers.mjs';
 const toHex = value => Buffer.from(value, 'base64').toString('hex');
 
-test('[DATA-001,BASE-OPS-002,IMPORT-004] initialized system rows are explicitly source-bound and archived monotonic state replaces them exactly', async () => {
+test('[DATA-001,BASE-OPS-002,IMPORT-004,BASE-OPS-003] initialized restore replaces source-bound monotonic state exactly and refuses changed initialization or owner rows without writes', async () => {
   const f = fixture(), core = new DatabaseSync(':memory:'), direct = new DatabaseSync(':memory:'), remote = new DatabaseSync(':memory:');
   let file;
   try {
@@ -35,13 +35,9 @@ test('[DATA-001,BASE-OPS-002,IMPORT-004] initialized system rows are explicitly 
       assert.equal(db.prepare('SELECT revision FROM form_import_native_clock WHERE id=1').get().revision, 7);
       assert.equal(db.prepare('SELECT count(*) n FROM response_outbox WHERE notification_eligible<>0').get().n, 0);
     }
-  } finally { f.db.close(); core.close(); direct.close(); remote.close(); file?.close(); }
-});
-
-test('[DATA-001,BASE-OPS-003] missing changed or mistyped initialization and every nonbaseline owner row refuse without writes', async () => {
-  const f = fixture();
-  try {
-    const archive = snapshot(f.db); exportData(f.source, f.archive);
+    // The exported source has non-default monotonic state; every refused
+    // target must retain its own exact state rather than partially importing it.
+    const archive = expected;
     for (const mutation of [
       'DELETE FROM form_import_native_clock',
       'UPDATE form_import_native_clock SET revision=2',
@@ -64,5 +60,5 @@ test('[DATA-001,BASE-OPS-003] missing changed or mistyped initialization and eve
         assert.equal(db.prepare('SELECT total_changes() n').get().n, changes);
       } finally { db.close(); }
     }
-  } finally { f.db.close(); }
+  } finally { f.db.close(); core.close(); direct.close(); remote.close(); file?.close(); }
 });

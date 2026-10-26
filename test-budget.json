@@ -1,9 +1,10 @@
 {
-  "maxTests": 277,
+  "maxTests": 200,
   "counting": "One test registration, expanding registration loops and contract wrappers; describe blocks do not count. Re-running the same registration at desktop/mobile widths is one behavior registration.",
-  "reason": "DIST-020 round, 22 October 2026: Pencil already contains 265 actual registrations, not the historic 215/234 wrapper-site counts. Preserve all existing business assertions. This bounded rider allows the preview custody, upload validation, indexing admission and emitted-Worker document behaviors plus archive custody, while keeping the suite in the low hundreds. No assertion is deleted or weakened to meet the cap.",
+  "reason": "sd-pencil-tprune-e2e merges public respondent and archive restore journeys while preserving every protected assertion.",
   "baselineRegistrations": 265,
   "baselineProjectExpandedCases": 363,
   "currentRegistrations": 277,
-  "currentProjectExpandedCases": 380
+  "currentProjectExpandedCases": 380,
+  "cap": 200
 }

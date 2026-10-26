@@ -12,8 +12,8 @@ import { custodyGraph } from './custody-test-graph.mjs';
 import { verifyCustodyReadback, custodyTriggerCanaries } from './custody-test-canaries.mjs';
 import { custodySignIn } from './custody-test-targets.mjs';
 
-test('[DATA-001,BASE-DATA-001,IMPORT-004] real typed custody replays through core, file and remote SQL without capture or seal invalidation', async () => {
-  const f = fixture(), core = new DatabaseSync(':memory:'), remote = new DatabaseSync(':memory:');
+test('[DATA-001,BASE-DATA-001,IMPORT-004,BASE-OPS-003] real typed custody roundtrips through core, file and remote SQL and refuses populated or incompatible targets without writes', async () => {
+  const f = fixture(), core = new DatabaseSync(':memory:'), remote = new DatabaseSync(':memory:'), target = new DatabaseSync(':memory:');
   let file;
   try {
     f.db.exec('PRAGMA foreign_keys=ON');
@@ -37,13 +37,6 @@ test('[DATA-001,BASE-DATA-001,IMPORT-004] real typed custody replays through cor
       await verifyCustodyReadback(sqliteD1(database), graph);
       await custodyTriggerCanaries(sqliteD1(database), graph);
     }
-  } finally { core.close(); remote.close(); file?.close(); f.db.close(); rmSync(f.dir, { recursive: true }); }
-});
-
-test('[DATA-001,BASE-OPS-003] custody restore refuses populated and incompatible targets without destination writes', async () => {
-  const f = fixture(), target = new DatabaseSync(':memory:');
-  try {
-    await custodyGraph(sqliteD1(f.db)); exportData(f.source, f.archive);
     const sourceBytes = readFileSync(f.source);
     assert.throws(() => restoreData(f.archive, f.source), /contains application records/);
     assert.deepEqual(readFileSync(f.source), sourceBytes);
@@ -57,5 +50,5 @@ test('[DATA-001,BASE-OPS-003] custody restore refuses populated and incompatible
     await assert.rejects(importRemote(f.archive, invalid.query));
     assert.equal(target.prepare('SELECT total_changes() n').get().n, prior);
     assert.ok(invalid.calls.flat().every(statement => statement.sql.startsWith('SELECT')));
-  } finally { target.close(); f.db.close(); rmSync(f.dir, { recursive: true }); }
+  } finally { core.close(); remote.close(); file?.close(); target.close(); f.db.close(); rmSync(f.dir, { recursive: true }); }
 });
