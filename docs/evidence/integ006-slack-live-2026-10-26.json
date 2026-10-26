@@ -1,0 +1,99 @@
+{
+  "clause": "INTEG-006",
+  "date": "2026-10-26",
+  "destination": "the private, unshared rer-slate-test channel (SLACK_CHANNEL_ID, channel id ending 09B9), the only authorized Slack destination",
+  "credentials": "SLACK_BOT_TOKEN, SLACK_SIGNING_SECRET and SLACK_CHANNEL_ID injected by name through briefs/_od08-env.py; nothing posted outside that channel and no answer text",
+  "runtime": "rer dev (not rer demo) at http://127.0.0.1:4931; the Slack connection apiOrigin was a loopback relay passing chat.postMessage for that channel only, unchanged, to https://slack.com/api and refusing anything else",
+  "doors": [
+    "PUT|GET|DELETE /api/app/connections/slack",
+    "POST /api/app/flows",
+    "POST /api/app/flows/:id/draft/steps",
+    "POST /api/app/flows/:id/publish",
+    "PUT /api/app/flows/:id/chat",
+    "POST /api/public/flows/:slug/sessions",
+    "POST /api/public/flows/:slug/responses",
+    "GET /api/app/integration-deliveries"
+  ],
+  "connection": {
+    "saved": true,
+    "echoesCredential": false
+  },
+  "sensitiveFieldRefusedAtSave": {
+    "status": 400,
+    "message": "Sensitive or free-text fields cannot be posted to chat. Select only closed choices, ratings, yes/no or numeric questions.",
+    "relayRequests": 0
+  },
+  "linkSaved": {
+    "links": [
+      {
+        "platform": "slack",
+        "armed": true,
+        "answerStepIds": 1
+      }
+    ]
+  },
+  "post": {
+    "relayRequests": 1,
+    "refusedByRelay": 0,
+    "slackHttp": 200,
+    "slackOk": true,
+    "ts": "\u20269019",
+    "postedText": "synthetic-pencil-c46-chat\nSubmitted 2026-10-26T22:47:04.766Z\nsynthetic-pencil-c46 preferred window: Afternoon\n<link>",
+    "ledger": [
+      {
+        "kind": "slack",
+        "subject": "chat.response",
+        "state": "confirmed",
+        "idempotencyKey": "chat:response:47691805-37dd-4374-9bc1-726cae6c5d6d:01M5X6AP9Y1MM0NFVJS44088VZ"
+      }
+    ],
+    "scheduledRunsAfterPost": 1,
+    "botScopesRelevant": [
+      "channels:history",
+      "channels:read",
+      "groups:read",
+      "chat:write",
+      "chat:write.customize",
+      "channels:manage"
+    ]
+  },
+  "slackRead": {
+    "method": "conversations.history",
+    "ok": false,
+    "error": "missing_scope",
+    "needed": "groups:history",
+    "found": false
+  },
+  "deleted": {
+    "deleted": true,
+    "error": null,
+    "readBack": {
+      "method": "chat.delete (second call)",
+      "error": "message_not_found"
+    }
+  },
+  "connectionRemoved": false,
+  "slackCalls": [
+    {
+      "method": "conversations.history",
+      "ok": false,
+      "error": "missing_scope"
+    },
+    {
+      "method": "chat.delete",
+      "ok": true,
+      "error": null
+    },
+    {
+      "method": "chat.delete",
+      "ok": false,
+      "error": "message_not_found"
+    }
+  ],
+  "notRun": [
+    "live Teams post: needs a Teams incoming webhook on a licensed Microsoft 365 tenant (TEAMS_WEBHOOK_URL and MS_TEAMS_WEBHOOK_URL are not held)",
+    "live signed Slack interaction creating an action: needs the Slack app Interactivity Request URL pointed at a public Pencil origin (owner console step)",
+    "Nook: needs the sibling Nook receiving door"
+  ],
+  "redaction": "channel id and message ts keep their last 4 characters; the flow link in the posted text is replaced by <link>; no token, signing secret, header or provider body is kept"
+}
