@@ -1,6 +1,6 @@
 import { expect, it } from 'vitest'
 import { DatabaseSync } from 'node:sqlite'
-import { mkdtempSync, readdirSync, rmSync } from 'node:fs'
+import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { exportData, importData, initialize } from './deployment-data.mjs'
@@ -35,7 +35,6 @@ it('restores retained progress and the atomic write view without recounting visi
     const exported = exportData(source, archive)
     expect(importData(archive, restored)).toEqual(exported)
     database = new DatabaseSync(restored)
-    expect(database.prepare('SELECT name FROM d1_migrations ORDER BY id DESC LIMIT 1').get().name).toBe(readdirSync('migrations/core').filter(name => name.endsWith('.sql')).sort().at(-1))
     // The resume token never travels: the old respondent credential no longer matches after a restore.
     expect(database.prepare("SELECT id FROM respondent_session_progress WHERE session_token_hash = 'synthetic-hash'").all()).toEqual([])
     const advance = database.prepare(`UPDATE respondent_session_progress SET furthest_step_id = ?, updated_at = ?

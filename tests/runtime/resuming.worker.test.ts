@@ -32,7 +32,9 @@ async function form(prefix:string){
   return f
 }
 
-contract('PART-002','explicit saves resume a pinned response through public doors, scrub private state on completion, and cannot resurrect erased or closed responses',async()=>{
+contract(["PART-002"], 'explicit response saves preserve pinned custody through resume, mail failure, expiry and invitation continuation', async () => {
+  for (const [caseName, executeCase] of [
+    ["explicit saves resume a pinned response through public doors, scrub private state on completion, and cannot resurrect erased or closed responses", async()=>{
   const f=await form('resume-public')
   const start=()=>ok<Session>(f.slug,'sessions',{deviceClass:'desktop',source:'direct'})
   const session=await start(), [first,second,last,done]=session.flow.steps
@@ -78,9 +80,8 @@ contract('PART-002','explicit saves resume a pinned response through public door
   await closed.services.flows.closeFlow(closed.scope.workspaceId,closed.flow.flowId,closed.operatorId)
   expect(await ok(closed.slug,'resume',{token:closedToken})).toMatchObject({state:'unavailable'})
   expect(await env.DB.prepare('SELECT session_id FROM respondent_saves WHERE session_id=?').bind(closedSession.sessionId).first()).toBeNull()
-},90_000)
-
-contract('PART-002','save mail failures retry one durable state, expiry purges it, and invitation resume preserves its original identity and collector',async()=>{
+}],
+    ["save mail failures retry one durable state, expiry purges it, and invitation resume preserves its original identity and collector", async()=>{
   const f=await form('resume-failures'), session=await ok<Session>(f.slug,'sessions',{deviceClass:'tablet',source:'embed'})
   const email=`failure-${session.sessionId}@example.test`, commandKey=crypto.randomUUID()
   const input={sessionId:session.sessionId,sessionToken:session.sessionToken,email,commandKey,currentStepId:session.flow.steps[0].id,answers:[]}
@@ -116,4 +117,10 @@ contract('PART-002','save mail failures retry one durable state, expiry purges i
   const result=await ok<{responseId:string}>(invited.slug,'responses',{sessionId:resumed.sessionId,sessionToken:resumed.sessionToken,loadTime:resumed.loadTime,invitationToken:resumed.invitationToken,idempotencyKey:crypto.randomUUID(),answers:invitedSession.flow.steps.filter(step=>step.kind==='question').map(step=>({stepId:step.id,value:'Invited retained answer'}))})
   expect(await env.DB.prepare('SELECT participant_id,source FROM responses WHERE id=?').bind(result.responseId).first()).toEqual({participant_id:participant!.id,source:'invitation'})
   expect(await env.DB.prepare('SELECT collector_id FROM response_collector WHERE response_id=?').bind(result.responseId).first()).toEqual(await env.DB.prepare('SELECT collector_id FROM invitation_launch_collector WHERE launch_id=?').bind(launch.id).first())
-},90_000)
+}],
+  ] as const) {
+    try { await executeCase() } catch (cause) {
+      throw new Error(`Saved-response continuation case "${caseName}" failed: ${cause instanceof Error ? cause.message : String(cause)}`, { cause })
+    }
+  }
+}, 90_000)

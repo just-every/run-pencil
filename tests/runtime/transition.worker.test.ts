@@ -35,7 +35,9 @@ async function progress(session: Session) {
   }
 }
 
-contract(['RESP-013', 'RESP-019', 'RSLT-002'], 'profiles native transition SQL and counts concurrent distinct visits once while retaining ordered backtracking', async () => {
+contract(["RESP-013","RESP-019","RSLT-002","RESP-015"], 'session advance admission preserves distinct visits, refuses invalid state and rolls failed event persistence back', async () => {
+  for (const [name, run] of [
+    ["profiles native transition SQL and counts concurrent distinct visits once while retaining ordered backtracking", async () => {
   const f = await fixture('transition-profile')
   const session = await f.start()
   const batches: D1Result[][] = []
@@ -65,9 +67,8 @@ contract(['RESP-013', 'RESP-019', 'RSLT-002'], 'profiles native transition SQL a
   await f.services.responses.expireSessions(new Date().toISOString(), 1000)
   expect(await sessionRow(session.sessionId)).toBeNull()
   expect(await env.DB.prepare('SELECT dropped FROM revision_step_metric_counters WHERE revision_id = ? AND step_stable_id = ?').bind(session.revisionId, welcome.id).first()).toEqual({ dropped: 1 })
-})
-
-contract(['RESP-013', 'RESP-015'], 'refuses invalid credentials, foreign screens and expired sessions with no progress mutation', async () => {
+}],
+    ["refuses invalid credentials, foreign screens and expired sessions with no progress mutation", async () => {
   const f = await fixture('transition-refusal')
   const foreign = await fixture('transition-foreign')
   const session = await f.start()
@@ -94,9 +95,8 @@ contract(['RESP-013', 'RESP-015'], 'refuses invalid credentials, foreign screens
   const before = await progress(session)
   expect(await (await advance(f.slug, session, session.flow.steps[1].id)).json()).toMatchObject({ error: 'SESSION_UNAVAILABLE' })
   expect(await progress(session)).toEqual(before)
-})
-
-contract('RESP-019', 'rolls session progress and reach counts back when event persistence fails', async () => {
+}],
+    ["rolls session progress and reach counts back when event persistence fails", async () => {
   const f = await fixture('transition-rollback')
   const session = await f.start()
   const step = session.flow.steps[1].id
@@ -109,4 +109,8 @@ contract('RESP-019', 'rolls session progress and reach counts back when event pe
   } finally { await env.DB.exec('DROP TRIGGER transition_test_abort') }
   expect((await advance(f.slug, session, step)).status).toBe(204)
   expect(await env.DB.prepare('SELECT reached FROM revision_step_metric_counters WHERE revision_id = ? AND step_stable_id = ?').bind(session.revisionId, step).first()).toEqual({ reached: 1 })
+}],
+  ] as const) {
+    try { await run() } catch (cause) { throw new Error(`Session advance case "${name}" failed`, { cause }) }
+  }
 })

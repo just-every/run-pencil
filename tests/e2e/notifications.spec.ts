@@ -51,6 +51,23 @@ contract(['NOTIFY-002','NOTIFY-004','NOTIFY-005','BASE-PUBLIC-003'],'notificatio
   await rule.locator('label').filter({hasText:email}).getByRole('checkbox').check()
   await rule.getByRole('checkbox',{name:'Send to Slack',exact:true}).check()
   await rule.getByRole('checkbox',{name:'Send to Teams',exact:true}).check()
+  const alertPanel=page.locator('.answer-alert-settings'),ruleName=rule.getByLabel('Rule name',{exact:true})
+  const validationBeforeRequest=call(`${path}/draft`)
+  const alertWrites:string[]=[]
+  const recordAlertWrite=(request:import('@playwright/test').Request)=>{if(request.method()==='PUT'&&new URL(request.url()).pathname===`${path}/draft/settings`)alertWrites.push(request.url())}
+  page.on('request',recordAlertWrite)
+  await ruleName.fill('')
+  const validationBefore=await validationBeforeRequest
+  await alertPanel.getByRole('button',{name:'Save alert rules',exact:true}).click()
+  const nameAlert=rule.getByRole('alert')
+  await expect(nameAlert).toBeVisible()
+  const [description,describedBy,validationAfter]=await Promise.all([nameAlert.getAttribute('id'),ruleName.getAttribute('aria-describedby'),call(`${path}/draft`),expect(alertPanel.getByRole('button',{name:'Retry',exact:true})).toHaveCount(0)])
+  expect(description).toBeTruthy()
+  expect(describedBy?.split(' ')).toContain(description)
+  expect(alertWrites).toHaveLength(0)
+  expect(validationAfter).toEqual(validationBefore)
+  await ruleName.fill('Detractor follow-up')
+  page.off('request',recordAlertWrite)
   for(const viewport of [{width:1440,height:900},{width:390,height:844}]) {
     await page.setViewportSize(viewport)
     await expect(rule.getByLabel('Rule name',{exact:true})).toBeVisible()

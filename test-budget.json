@@ -1,9 +1,9 @@
 {
-  "maxTests": 277,
+  "maxTests": 254,
   "counting": "One test registration, expanding registration loops and contract wrappers; describe blocks do not count. Re-running the same registration at desktop/mobile widths is one behavior registration.",
-  "reason": "DIST-020 round, 22 October 2026: Pencil already contains 265 actual registrations, not the historic 215/234 wrapper-site counts. Preserve all existing business assertions. This bounded rider allows the preview custody, upload validation, indexing admission and emitted-Worker document behaviors plus archive custody, while keeping the suite in the low hundreds. No assertion is deleted or weakened to meet the cap.",
+  "reason": "Under the owner rule of 25 October 2026 at 12:37Z and main's ruling of 26 October 2026 at 22:19Z, no-CI deletion and same-flow journeys reduce Pencil from 277 to 254 registrations: 41 ordinary and 213 contract registrations over 187 clause ids.",
   "baselineRegistrations": 265,
   "baselineProjectExpandedCases": 363,
-  "currentRegistrations": 277,
-  "currentProjectExpandedCases": 380
+  "currentRegistrations": 254,
+  "currentProjectExpandedCases": 354
 }
