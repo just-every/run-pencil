@@ -7472,6 +7472,10 @@
       "sha256": "e9d14a9cc90f1b40aea32f81c78845d56a6cceed716c593f99de0a034cc44e73",
       "executable": false
     },
+    "tests/e2e/zzz-diagnostic.spec.ts": {
+      "sha256": "92dc14e8d59ffae9b2c20144554054241d4122e8cefc470a4de9addd764eecd4",
+      "executable": false
+    },
     "tests/fixtures/completion-redirects.ts": {
       "sha256": "d78a496b173c22f5290ee434c92be8fe5fa98edd1847ba1864b22c32153ca6c4",
       "executable": false
