@@ -72,7 +72,9 @@
       "error": "message_not_found"
     }
   },
-  "connectionRemoved": false,
+  "connectionRemoved": {
+    "saved": false
+  },
   "slackCalls": [
     {
       "method": "conversations.history",
