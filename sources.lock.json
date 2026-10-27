@@ -4593,7 +4593,7 @@
       "executable": false
     },
     "src/core/features/distribution/ui/DistributionPanel.tsx": {
-      "sha256": "4098e7181ef744231e57068ec090f2ccb1d58f093dac21a4182f118a984aeeee",
+      "sha256": "efd6e703d64e2379f595a6d1a739bd772ce3a76f741db54a340fa74745a44016",
       "executable": false
     },
     "src/core/features/docs/build/hast.ts": {
