@@ -1,7 +1,11 @@
 import { expect, test } from './fixtures'
 import { checkAuthoringLayout, signInEmptyWorkspace } from './authoring-helpers'
 
-for (const template of ['Customer feedback', 'NPS', 'Contact/lead']) test(`${template}: empty dashboard to publication, response and counted result`, async ({ page }, info) => {
+test('built-in templates each progress from an empty dashboard to publication, response and counted result', async ({ page }, info) => {
+  test.setTimeout(90_000)
+  for (const template of ['Customer feedback', 'NPS', 'Contact/lead']) {
+    await test.step(template, async () => {
+      await page.context().clearCookies()
   test.setTimeout(90_000)
   await page.context().newCDPSession(page).then(session => session.send('Emulation.setCPUThrottlingRate', { rate: 4 }))
   await signInEmptyWorkspace(page)
@@ -91,5 +95,7 @@ for (const template of ['Customer feedback', 'NPS', 'Contact/lead']) test(`${tem
     await expect(page.getByRole('heading', { name: 'Thank you. Your response has been received.' })).toBeVisible()
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await page.screenshot({ path: info.outputPath(`${info.project.name}-gallery-branch-response.png`), fullPage: true })
+  }
+    })
   }
 })

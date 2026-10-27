@@ -37,14 +37,15 @@ async function form(request: APIRequestContext, slug: string, target?: number, t
   return { id, path, title, published }
 }
 
-contract('RESP-009', 'a respondent losing manual or final target admission sees a named closed page and saves no response', async ({ page }, info) => {
-  test.setTimeout(90_000)
-  const cdp = await page.context().newCDPSession(page)
-  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
-  await login(page.request)
-  const errors: string[] = []
-  page.on('pageerror', (error) => errors.push(error.message))
-  for (const reason of ['manual', 'target'] as const) {
+contract(["RESP-009"], "closed flows refuse late submissions, retain their named document and embed boundaries, and disappear after archival", async ({ page, browser }, info) => {
+  await test.step("a respondent losing manual or final target admission sees a named closed page and saves no response", async () => {
+    test.setTimeout(90_000)
+    const cdp = await page.context().newCDPSession(page)
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+    await login(page.request)
+    const errors: string[] = []
+    page.on('pageerror', (error) => errors.push(error.message))
+    for (const reason of ['manual', 'target'] as const) {
     const slug = `closed-${reason}-${info.project.name}-${Date.now()}`
     // LANG-002: this form's published Submit label and closed or response-limit message replace Pencil's wording.
     const label = `Send my ${reason} feedback`, message = reason === 'target' ? 'All places for this survey are taken.' : 'We have paused this survey.'
@@ -124,21 +125,21 @@ contract('RESP-009', 'a respondent losing manual or final target admission sees 
       await page.screenshot({ path: info.outputPath(`consent-records-${info.project.name}.png`), fullPage: true })
     }
   }
-  expect(errors).toEqual([])
-})
-
-test('closed documents render their business and flow without JavaScript, honor embed hosts, and archive to a genuine 404', async ({ page, browser }, info) => {
-  test.setTimeout(90_000)
-  const cdp = await page.context().newCDPSession(page)
-  await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
-  await login(page.request)
-  const slug = `closed-document-${info.project.name}-${Date.now()}`
-  const f = await form(page.request, slug)
-  expect((await page.request.post(`${f.path}/close`, { headers: mutationHeaders })).status()).toBe(204)
-  const workspace = await (await page.request.get('/api/app/workspace')).json() as WorkspaceSettings
-  const settings = { timeZone: workspace.timeZone, sendingWindowStart: workspace.sendingWindowStart, sendingWindowEnd: workspace.sendingWindowEnd, embedAllowedOrigins: [origin] }
-  const noScript = await browser.newContext({ javaScriptEnabled: false })
-  try {
+    expect(errors).toEqual([])
+  });
+  await test.step("closed documents render their business and flow without JavaScript, honor embed hosts, and archive to a genuine 404", async () => {
+    await page.context().clearCookies();
+    test.setTimeout(90_000)
+    const cdp = await page.context().newCDPSession(page)
+    await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
+    await login(page.request)
+    const slug = `closed-document-${info.project.name}-${Date.now()}`
+    const f = await form(page.request, slug)
+    expect((await page.request.post(`${f.path}/close`, { headers: mutationHeaders })).status()).toBe(204)
+    const workspace = await (await page.request.get('/api/app/workspace')).json() as WorkspaceSettings
+    const settings = { timeZone: workspace.timeZone, sendingWindowStart: workspace.sendingWindowStart, sendingWindowEnd: workspace.sendingWindowEnd, embedAllowedOrigins: [origin] }
+    const noScript = await browser.newContext({ javaScriptEnabled: false })
+    try {
     const view = await noScript.newPage()
     expect((await view.goto(`${origin}/f/${slug}`))?.status()).toBe(200)
     await expect(view.getByRole('heading', { name: 'This feedback flow is closed.' })).toBeVisible()
@@ -163,4 +164,5 @@ test('closed documents render their business and flow without JavaScript, honor 
     expect((await page.request.put('/api/app/workspace', { headers: mutationHeaders, data: { ...settings, embedAllowedOrigins: workspace.embedAllowedOrigins } })).status()).toBe(200)
     await noScript.close()
   }
+  });
 })
