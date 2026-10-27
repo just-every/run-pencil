@@ -88,20 +88,8 @@ contract('DIST-020', 'settings API preserves preview overrides and publication f
   expect((await other.save({ ...other.settings, linkPreview: { image: storedImage } })).status).toBe(400)
   expect((await other.call(other.base + '/preview-image?key=' + encodeURIComponent(storedImage.key))).status).toBe(400)
   expect((await f.save({ ...stored, linkPreview: { ...stored.linkPreview, image: { ...storedImage, mime: 'image/jpeg' } } })).status).toBe(400)
-  const replacement = { ...previewImage, base64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', alt: 'Our updated studio mark' }
-  expect((await f.save({ ...stored, linkPreview: { ...stored.linkPreview, image: replacement } })).status).toBe(200)
-  const replacementPublication = await f.publish()
-  expect(replacementPublication.status).toBe(201)
-  const third = await replacementPublication.json() as { revision: { id: string } }
-  await f.publicImage(third.revision.id, replacement.base64)
-  await f.publicImage(second.revision.id, previewImage.base64)
-  await f.publicImage(first.revision.id, previewImage.base64)
-})
-
-contract('DIST-020', 'duplicates and team templates retain share images under their own form custody', async () => {
-  const f = await previewFixture()
-  expect((await f.save({ ...f.settings, linkPreview: { image: previewImage } })).status).toBe(200)
-  const sourceImage = (await f.read()).formSettings!.linkPreview!.image as LinkPreviewReference
+  // The published image is also the source for independent duplicate/template custody.
+  const sourceImage = storedImage
   const copiedResponse = await f.call(f.base + '/duplicate', { title: 'Copied preview', slug: `copy-${f.slug}` })
   expect(copiedResponse.status).toBe(201)
   const copied = await copiedResponse.json() as { id: string }
@@ -127,7 +115,16 @@ contract('DIST-020', 'duplicates and team templates retain share images under th
     const result = await publish.json() as { revision: { id: string } }
     await f.publicImage(result.revision.id, previewImage.base64)
   }
+  const replacement = { ...previewImage, base64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=', alt: 'Our updated studio mark' }
+  expect((await f.save({ ...stored, linkPreview: { ...stored.linkPreview, image: replacement } })).status).toBe(200)
+  const replacementPublication = await f.publish()
+  expect(replacementPublication.status).toBe(201)
+  const third = await replacementPublication.json() as { revision: { id: string } }
+  await f.publicImage(third.revision.id, replacement.base64)
+  await f.publicImage(second.revision.id, previewImage.base64)
+  await f.publicImage(first.revision.id, previewImage.base64)
 })
+
 
 contract('DIST-020', 'settings API rejects recalled preview text and invalid, oversized or unlabelled image uploads without mutating the draft, and publication rejects indexing on restricted and identified forms while preserving their existing admission rules', async () => {
   {
