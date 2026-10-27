@@ -1,19 +1,71 @@
 name: Verify candidate
 on:
   push:
-    branches: [main]
+    branches: [main, 'cloud/**']
     tags: ['v*']
   pull_request:
   schedule:
-    - cron: '23 16 * * *'
+    - cron: '23 3 * * 1'
+    - cron: '23 6 * * 4'
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
-  group: verify-${{ github.ref }}-${{ github.sha }}
-  cancel-in-progress: false
+  group: verify-${{ github.workflow }}-${{ github.event_name }}-${{ github.ref == 'refs/heads/main' && github.run_id || github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      skip: ${{ steps.reuse.outputs.skip }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - id: reuse
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          SAME_REPO: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          WF_REF: ${{ github.workflow_ref }}
+        run: |
+          set -euo pipefail
+          wf="${WF_REF%@*}"; wf="${wf##*/}"
+          # Only the newest same-repository push of this workflow is evidence.
+          # A PR may itself be a skip; a dispatch may run only a subset.
+          newest_push() {
+            gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$wf/runs?head_sha=$1&event=push&per_page=100" \
+              --jq "[.workflow_runs[] | select(.head_repository.full_name == \"$GITHUB_REPOSITORY\" and .id != $GITHUB_RUN_ID)] | max_by(.id) | select(. != null) | \"\(.status) \(.conclusion)\"" || true
+          }
+          green() { [ "$(newest_push "$1")" = "completed success" ]; }
+          skip=false
+          if [ "$EVENT" = push ] && [ "$REF" = refs/heads/main ] && green "$GITHUB_SHA"; then skip=true; fi
+          # Tags keep their release journeys even if their tree matches a parent.
+          if [ "$skip" = false ] && [ "$EVENT" = push ] && [[ "$REF" = refs/heads/* ]] \
+             && parent=$(git rev-parse -q --verify HEAD~1) \
+             && [ "$(git rev-parse 'HEAD^{tree}')" = "$(git rev-parse 'HEAD~1^{tree}')" ] && green "$parent"; then skip=true; fi
+          if [ "$EVENT" = pull_request ] && [ "$SAME_REPO" = true ]; then
+            for _ in $(seq 1 50); do
+              state=$(newest_push "$PR_HEAD")
+              case "$state" in
+                'completed success') skip=true; break ;;
+                ''|completed\ *) break ;;
+                *) sleep 30 ;;
+              esac
+            done
+          fi
+          echo "skip=$skip" >> "$GITHUB_OUTPUT"
+
   checks:
+    needs: plan
+    if: needs.plan.outputs.skip != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -34,13 +86,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
-  runtime:
+  builds:
+    needs: plan
+    if: needs.plan.outputs.skip != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        lane: [unit, archive-stream, archive-graph, archive-recovery, archive-restore, archive-delivery, worker-1, worker-2]
+    env:
+      PENCIL_CI_BUILDS: .rer/ci-builds
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,28 +102,53 @@ jobs:
           node-version: 22.20.0
       - run: npm install --global pnpm@10.12.4
       - run: pnpm install --frozen-lockfile
-      - name: Build the production Worker for native Managed mail proof
-        if: matrix.lane == 'unit'
-        run: pnpm build:delivery
-      - name: Prove all released migration cases
-        if: matrix.lane == 'worker-1'
-        run: pnpm verify:migrations
-      - run: node scripts/run-contract-lane.mjs "${{ matrix.lane }}" "$RUNNER_TEMP/contract-evidence"
+      # These profiles are different products: production, captured-mail browser,
+      # captured-mail admission, and the static run site. Build each exactly once.
+      - run: pnpm build:delivery
+      - run: node scripts/ci-builds.mjs save production
+      - run: node scripts/run-e2e-server.mjs 4173 --build-only
+      - run: node scripts/ci-builds.mjs save browser
+      - run: node scripts/run-e2e-server.mjs 4173 --management --build-only
+      - run: node scripts/ci-builds.mjs save admission
+      - run: pnpm exec rer build --site --non-interactive
+      - run: node scripts/ci-builds.mjs save site
       - uses: actions/upload-artifact@v4
-        if: always()
         with:
-          name: contract-${{ matrix.lane }}
-          path: ${{ runner.temp }}/contract-evidence/*.json
+          name: ci-builds
+          path: .rer/ci-builds
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 1
 
-  browser:
+  shards:
+    needs: [plan, builds]
+    if: needs.plan.outputs.skip != 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    env:
+      PENCIL_CI_BUILDS: .rer/ci-builds
     strategy:
       fail-fast: false
       matrix:
-        lane: [desktop-1, desktop-2, desktop-3, desktop-4, desktop-5, desktop-6, desktop-7, desktop-8, mobile-1, mobile-2, mobile-3, mobile-4, mobile-5, mobile-6, mobile-7, mobile-8]
+        include:
+          # Group existing lanes to balance the push wall. Each original lane
+          # retains its own fresh migrated state and evidence identity.
+          - shard: 1
+            lanes: desktop-1 archive-graph
+          - shard: 2
+            lanes: mobile-1 mobile-5
+          - shard: 3
+            lanes: worker-2 mobile-6 hosted
+          - shard: 4
+            lanes: worker-1 desktop-7 archive-delivery
+          - shard: 5
+            lanes: desktop-4 mobile-7 desktop-5 admission
+          - shard: 6
+            lanes: mobile-2 desktop-3 mobile-8 unit
+          - shard: 7
+            lanes: mobile-4 desktop-6 mobile-3 archive-restore
+          - shard: 8
+            lanes: desktop-2 archive-recovery desktop-8 archive-stream
     steps:
       - uses: actions/checkout@v4
         with:
@@ -81,142 +158,49 @@ jobs:
           node-version: 22.20.0
       - run: npm install --global pnpm@10.12.4
       - run: pnpm install --frozen-lockfile
-      - name: Install Chromium with apt mirror fallback
+      - uses: actions/download-artifact@v4
+        with:
+          name: ci-builds
+          path: .rer/ci-builds
+      - name: Install Chromium
         run: |
-          # The runner's default Azure mirror can serve package indexes while
-          # its package downloads hang, so retrying the same host does not
-          # help: attempts 2 and 3 use other mirrors of the same Ubuntu-signed
-          # archive (apt still verifies every Release signature). Same mirror
-          # order and attempt budget as Base's verify workflow.
-          mirrors=(runner-default http://mirrors.edge.kernel.org/ubuntu http://us-east-1.ec2.archive.ubuntu.com/ubuntu)
-          started=$SECONDS
-          for attempt in 1 2 3; do
-            mirror=${mirrors[attempt - 1]}
-            if [[ $mirror != runner-default ]]; then
-              sudo sed -i -E "s@^(URIs:[[:space:]]*)(mirror\+file:/etc/apt/apt-mirrors\.txt|https?://(([a-z0-9.-]+\.)?archive\.ubuntu\.com|security\.ubuntu\.com|mirrors\.edge\.kernel\.org)/ubuntu/?)@\1${mirror}/@" /etc/apt/sources.list.d/ubuntu.sources
-            fi
-            printf 'Chromium apt: attempt %s/3 (90s deadline; mirror %s; sources %s)\n' "$attempt" "$mirror" "$(grep -h '^URIs:' /etc/apt/sources.list.d/ubuntu.sources | sort -u | tr '\n' ' ')"
-            # Root owns the timeout so a stalled apt, dpkg and their locks die
-            # with the attempt instead of blocking the next mirror.
-            if sudo env "PATH=$PATH" HOME=/root timeout --kill-after=5s 90s bash -ec '
-              dpkg --configure -a
-              pnpm exec playwright install-deps chromium
-            '; then
-              printf 'Chromium apt: complete (attempts=%s mirror=%s seconds=%s)\n' "$attempt" "$mirror" "$((SECONDS - started))"
-              break
-            else
-              status=$?
-              printf 'Chromium apt: attempt %s/3 failed (mirror %s, exit %s, seconds=%s)\n' "$attempt" "$mirror" "$status" "$((SECONDS - started))" >&2
-            fi
-            if (( attempt == 3 )); then exit "$status"; fi
-            sleep "$((attempt * 2))"
-          done
+          set -euo pipefail
           pnpm exec playwright install chromium
-      # Each shard still owns fresh migrated runtimes and the original rate limits.
-      - run: node scripts/run-contract-lane.mjs "${{ matrix.lane }}" "$RUNNER_TEMP/contract-evidence"
+          pnpm exec node scripts/chromium-probe.mjs || \
+            sudo env "PATH=$PATH" "APT_ARCHIVES=$RUNNER_TEMP/rer-apt/archives" python3 scripts/install-chromium-deps.py
+          pnpm exec node scripts/chromium-probe.mjs
+      - name: Run every original lane and retain every result
+        env:
+          LANES: ${{ matrix.lanes }}
+        run: |
+          set -uo pipefail
+          status=0
+          for lane in $LANES; do
+            case "$lane" in
+              hosted)
+                (node scripts/ci-builds.mjs restore production && node scripts/verify-hosted-output.mjs) || status=1 ;;
+              admission)
+                (node scripts/ci-builds.mjs restore production && node scripts/sync-integration.mjs --check && node --test scripts/delivery-artifact.check.mjs && pnpm exec playwright test --config playwright.admission.config.ts --workers=1) || status=1 ;;
+              unit)
+                (node scripts/ci-builds.mjs restore production && node scripts/run-contract-lane.mjs "$lane" "$RUNNER_TEMP/contract-evidence") || status=1 ;;
+              worker-1)
+                (pnpm verify:migrations && node scripts/run-contract-lane.mjs "$lane" "$RUNNER_TEMP/contract-evidence") || status=1 ;;
+              *)
+                node scripts/run-contract-lane.mjs "$lane" "$RUNNER_TEMP/contract-evidence" || status=1 ;;
+            esac
+          done
+          exit "$status"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: contract-${{ matrix.lane }}
+          name: contract-${{ matrix.shard }}
           path: ${{ runner.temp }}/contract-evidence/*.json
           if-no-files-found: error
           retention-days: 1
-
-  admission:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22.20.0
-      - run: npm install --global pnpm@10.12.4
-      - run: pnpm install --frozen-lockfile
-      - name: Install Chromium with apt mirror fallback
-        run: |
-          # The runner's default Azure mirror can serve package indexes while
-          # its package downloads hang, so retrying the same host does not
-          # help: attempts 2 and 3 use other mirrors of the same Ubuntu-signed
-          # archive (apt still verifies every Release signature). Same mirror
-          # order and attempt budget as Base's verify workflow.
-          mirrors=(runner-default http://mirrors.edge.kernel.org/ubuntu http://us-east-1.ec2.archive.ubuntu.com/ubuntu)
-          started=$SECONDS
-          for attempt in 1 2 3; do
-            mirror=${mirrors[attempt - 1]}
-            if [[ $mirror != runner-default ]]; then
-              sudo sed -i -E "s@^(URIs:[[:space:]]*)(mirror\+file:/etc/apt/apt-mirrors\.txt|https?://(([a-z0-9.-]+\.)?archive\.ubuntu\.com|security\.ubuntu\.com|mirrors\.edge\.kernel\.org)/ubuntu/?)@\1${mirror}/@" /etc/apt/sources.list.d/ubuntu.sources
-            fi
-            printf 'Chromium apt: attempt %s/3 (90s deadline; mirror %s; sources %s)\n' "$attempt" "$mirror" "$(grep -h '^URIs:' /etc/apt/sources.list.d/ubuntu.sources | sort -u | tr '\n' ' ')"
-            # Root owns the timeout so a stalled apt, dpkg and their locks die
-            # with the attempt instead of blocking the next mirror.
-            if sudo env "PATH=$PATH" HOME=/root timeout --kill-after=5s 90s bash -ec '
-              dpkg --configure -a
-              pnpm exec playwright install-deps chromium
-            '; then
-              printf 'Chromium apt: complete (attempts=%s mirror=%s seconds=%s)\n' "$attempt" "$mirror" "$((SECONDS - started))"
-              break
-            else
-              status=$?
-              printf 'Chromium apt: attempt %s/3 failed (mirror %s, exit %s, seconds=%s)\n' "$attempt" "$mirror" "$status" "$((SECONDS - started))" >&2
-            fi
-            if (( attempt == 3 )); then exit "$status"; fi
-            sleep "$((attempt * 2))"
-          done
-          pnpm exec playwright install chromium
-      - run: pnpm verify:admission
-
-  hosted:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22.20.0
-      - run: npm install --global pnpm@10.12.4
-      - run: pnpm install --frozen-lockfile
-      - name: Install Chromium with apt mirror fallback
-        run: |
-          # The runner's default Azure mirror can serve package indexes while
-          # its package downloads hang, so retrying the same host does not
-          # help: attempts 2 and 3 use other mirrors of the same Ubuntu-signed
-          # archive (apt still verifies every Release signature). Same mirror
-          # order and attempt budget as Base's verify workflow.
-          mirrors=(runner-default http://mirrors.edge.kernel.org/ubuntu http://us-east-1.ec2.archive.ubuntu.com/ubuntu)
-          started=$SECONDS
-          for attempt in 1 2 3; do
-            mirror=${mirrors[attempt - 1]}
-            if [[ $mirror != runner-default ]]; then
-              sudo sed -i -E "s@^(URIs:[[:space:]]*)(mirror\+file:/etc/apt/apt-mirrors\.txt|https?://(([a-z0-9.-]+\.)?archive\.ubuntu\.com|security\.ubuntu\.com|mirrors\.edge\.kernel\.org)/ubuntu/?)@\1${mirror}/@" /etc/apt/sources.list.d/ubuntu.sources
-            fi
-            printf 'Chromium apt: attempt %s/3 (90s deadline; mirror %s; sources %s)\n' "$attempt" "$mirror" "$(grep -h '^URIs:' /etc/apt/sources.list.d/ubuntu.sources | sort -u | tr '\n' ' ')"
-            # Root owns the timeout so a stalled apt, dpkg and their locks die
-            # with the attempt instead of blocking the next mirror.
-            if sudo env "PATH=$PATH" HOME=/root timeout --kill-after=5s 90s bash -ec '
-              dpkg --configure -a
-              pnpm exec playwright install-deps chromium
-            '; then
-              printf 'Chromium apt: complete (attempts=%s mirror=%s seconds=%s)\n' "$attempt" "$mirror" "$((SECONDS - started))"
-              break
-            else
-              status=$?
-              printf 'Chromium apt: attempt %s/3 failed (mirror %s, exit %s, seconds=%s)\n' "$attempt" "$mirror" "$status" "$((SECONDS - started))" >&2
-            fi
-            if (( attempt == 3 )); then exit "$status"; fi
-            sleep "$((attempt * 2))"
-          done
-          pnpm exec playwright install chromium
-      - run: pnpm build:app
-      - run: node scripts/verify-hosted-output.mjs
 
   journeys:
-    # Slow copied-checkout installer and README journeys retain their complete
-    # assertions nightly and on release tags, outside the push budget.
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+    needs: plan
+    if: needs.plan.outputs.skip != 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/'))
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
@@ -228,69 +212,47 @@ jobs:
           node-version: 22.20.0
       - run: npm install --global pnpm@10.12.4
       - run: pnpm install --frozen-lockfile
-      - name: Install Chromium with apt mirror fallback
+      - name: Install Chromium
         run: |
-          # The runner's default Azure mirror can serve package indexes while
-          # its package downloads hang, so retrying the same host does not
-          # help: attempts 2 and 3 use other mirrors of the same Ubuntu-signed
-          # archive (apt still verifies every Release signature). Same mirror
-          # order and attempt budget as Base's verify workflow.
-          mirrors=(runner-default http://mirrors.edge.kernel.org/ubuntu http://us-east-1.ec2.archive.ubuntu.com/ubuntu)
-          started=$SECONDS
-          for attempt in 1 2 3; do
-            mirror=${mirrors[attempt - 1]}
-            if [[ $mirror != runner-default ]]; then
-              sudo sed -i -E "s@^(URIs:[[:space:]]*)(mirror\+file:/etc/apt/apt-mirrors\.txt|https?://(([a-z0-9.-]+\.)?archive\.ubuntu\.com|security\.ubuntu\.com|mirrors\.edge\.kernel\.org)/ubuntu/?)@\1${mirror}/@" /etc/apt/sources.list.d/ubuntu.sources
-            fi
-            printf 'Chromium apt: attempt %s/3 (90s deadline; mirror %s; sources %s)\n' "$attempt" "$mirror" "$(grep -h '^URIs:' /etc/apt/sources.list.d/ubuntu.sources | sort -u | tr '\n' ' ')"
-            # Root owns the timeout so a stalled apt, dpkg and their locks die
-            # with the attempt instead of blocking the next mirror.
-            if sudo env "PATH=$PATH" HOME=/root timeout --kill-after=5s 90s bash -ec '
-              dpkg --configure -a
-              pnpm exec playwright install-deps chromium
-            '; then
-              printf 'Chromium apt: complete (attempts=%s mirror=%s seconds=%s)\n' "$attempt" "$mirror" "$((SECONDS - started))"
-              break
-            else
-              status=$?
-              printf 'Chromium apt: attempt %s/3 failed (mirror %s, exit %s, seconds=%s)\n' "$attempt" "$mirror" "$status" "$((SECONDS - started))" >&2
-            fi
-            if (( attempt == 3 )); then exit "$status"; fi
-            sleep "$((attempt * 2))"
-          done
+          set -euo pipefail
           pnpm exec playwright install chromium
-      - name: Reclaim unused SDK space for real local runtimes
-        run: |
-          df -h . /tmp
-          sudo rm -rf -- /usr/share/dotnet /usr/local/lib/android
-          df -h . /tmp
+          pnpm exec node scripts/chromium-probe.mjs || \
+            sudo env "PATH=$PATH" "APT_ARCHIVES=$RUNNER_TEMP/rer-apt/archives" python3 scripts/install-chromium-deps.py
+          pnpm exec node scripts/chromium-probe.mjs
       - run: pnpm verify:setup
 
   verify:
     if: always()
-    needs: [checks, runtime, browser, admission, hosted, journeys]
+    needs: [plan, checks, builds, shards, journeys]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - name: Require every verification lane
+      - name: Require the plan and every verification lane
         env:
           VERIFICATION_RESULTS: ${{ toJSON(needs) }}
+          JOURNEYS_REQUIRED: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') }}
         run: |
-          node -e 'const lanes = Object.entries(JSON.parse(process.env.VERIFICATION_RESULTS)); if (lanes.some(([name, lane]) => lane.result !== "success" && !(name === "journeys" && lane.result === "skipped"))) process.exit(1)'
+          node -e 'const lanes = JSON.parse(process.env.VERIFICATION_RESULTS); if (lanes.plan.result !== "success") process.exit(1); if (lanes.plan.outputs.skip === "true") process.exit(0); if (Object.entries(lanes).some(([name, lane]) => lane.result !== "success" && !(name === "journeys" && lane.result === "skipped" && process.env.JOURNEYS_REQUIRED !== "true"))) process.exit(1)'
       - uses: actions/checkout@v4
+        if: needs.plan.outputs.skip != 'true'
         with:
           fetch-depth: 0
       - uses: actions/setup-node@v4
+        if: needs.plan.outputs.skip != 'true'
         with:
           node-version: 22.20.0
       - run: npm install --global pnpm@10.12.4
+        if: needs.plan.outputs.skip != 'true'
       - run: pnpm install --frozen-lockfile
+        if: needs.plan.outputs.skip != 'true'
       - uses: actions/download-artifact@v4
+        if: needs.plan.outputs.skip != 'true'
         with:
           pattern: contract-*
           path: ${{ runner.temp }}/contract-evidence
           merge-multiple: true
       - name: Evaluate the complete existing contract wall from this run
+        if: needs.plan.outputs.skip != 'true'
         run: pnpm verify:contract
         env:
           PENCIL_CONTRACT_EVIDENCE_DIR: ${{ runner.temp }}/contract-evidence
