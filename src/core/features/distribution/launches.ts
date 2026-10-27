@@ -1,5 +1,5 @@
 import { smsDeliveryMobile } from './deliveries'
-import { deliveryRetryAction, smsRefusal, smsRefusalReason } from '../sms/refusals'
+import { deliveryRetryAction, smsRefusal, smsRefusalReason } from '../sms'
 import { admittedResponseSql } from '../payments/admission'
 import { bindInvitationCollectorSql, collectorAdmissionSql, invitationCollectorAdmissionSql, collectorId as collectorIdSchema, throwCollectorAdmissionFailure, type CollectorService } from '../collectors'
 import { ulid } from 'ulid'
