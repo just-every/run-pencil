@@ -172,16 +172,14 @@ contract(['HOME-001'], 'public HTML follows changed D1 rather than build-time or
   } finally { db.close() }
 })
 
-contract(["DIST-020","BASE-DATA-001"], "published revision previews preserve admission and restore their exact preview image bytes", async ({ page, request }, info) => {
-  await test.step("emitted Worker serves revision previews and canonical-only indexing without weakening respondent admission", async () => {
-    test.setTimeout(120_000)
-    const {publishedPreviewJourney}=await import('./link-preview-http')
-    await publishedPreviewJourney(page,request,await login(request),info.project.name)
-  });
-  await test.step("owner browser backup restores preview image bytes with the same archive checksum", async () => {
-    await page.context().clearCookies();
-    test.setTimeout(120_000)
-    const {previewBackupJourney}=await import('./preview-backup-journey')
-    await previewBackupJourney(page,request,await login(request),info.project.name)
-  });
+contract('DIST-020', 'emitted Worker serves revision previews and canonical-only indexing without weakening respondent admission', async ({page,request}, info) => {
+  test.setTimeout(120_000)
+  const {publishedPreviewJourney}=await import('./link-preview-http')
+  await publishedPreviewJourney(page,request,await login(request),info.project.name)
+})
+
+contract(['DIST-020','BASE-DATA-001'], 'owner browser backup restores preview image bytes with the same archive checksum', async ({page,request},info) => {
+  test.setTimeout(120_000)
+  const {previewBackupJourney}=await import('./preview-backup-journey')
+  await previewBackupJourney(page,request,await login(request),info.project.name)
 })
