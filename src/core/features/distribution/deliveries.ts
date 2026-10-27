@@ -1,4 +1,4 @@
-import { deliveryRetryAction } from '../sms/refusals'
+import { deliveryRetryAction } from '../sms'
 import { emailFirstQuestion } from '../../shared/emailFirstQuestion'
 import { formSettings } from '../../shared/hiddenFields'
 import { revisionBranchSelection } from '../../shared/flowPolicies'
