@@ -1,5 +1,5 @@
 import { applyD1Migrations,env,type D1Migration } from 'cloudflare:test'
-import { beforeAll,expect } from 'vitest'
+import { beforeAll,expect,vi } from 'vitest'
 import { contract } from '../../src/test/contract'
 import { actionsHttp,everyStoredValue } from './actions-fixture'
 import { sealValue } from '../../src/core/platform/config/sealing'
@@ -96,35 +96,35 @@ contract('DIST-011','SMS invitations require recorded consent, use sealed owner 
  expect(await deliveryFacts()).toEqual(beforeUnsigned)
  expect((await receipt(await statusSign(),new URLSearchParams({padding:'x'.repeat(8193)}))).status).toBe(413)
  expect(await deliveryFacts()).toEqual(beforeUnsigned)
- const deliveryBySid=(sid:string)=>env.DB.prepare('SELECT id,status,reason FROM mail_deliveries WHERE provider_id=?').bind(sid).first<{id:string;status:string;reason:string|null}>()
+ const deliveryBySid=(sid:string)=>env.DB.prepare('SELECT id,status,refusal_code FROM mail_deliveries WHERE provider_id=?').bind(sid).first<{id:string;status:string;refusal_code:number|null}>()
  for(const status of ['queued','delivered']){
   statusParams.set('MessageStatus',status)
   expect((await receipt(await statusSign())).status).toBe(204)
-  expect(await deliveryBySid(sids[0])).toMatchObject({status:'sent',reason:'Twilio '+status+'.'})
+  expect(await deliveryBySid(sids[0])).toMatchObject({status:'sent',refusal_code:null})
   const once=await deliveryFacts();expect((await receipt(await statusSign())).status).toBe(204);expect(await deliveryFacts()).toEqual(once)
  }
  // The exact public query string also participates in the signature.
  statusParams.set('MessageStatus','sent')
  expect((await receipt(await statusSign(),statusParams,statusUrl+'?receipt=synthetic-pencil-1')).status).toBe(403)
  expect((await receipt(await statusSign(statusUrl+'?receipt=synthetic-pencil-1'),statusParams,statusUrl+'?receipt=synthetic-pencil-1')).status).toBe(204)
- expect(await deliveryBySid(sids[0])).toMatchObject({status:'sent',reason:'Twilio delivered.'})
+ expect(await deliveryBySid(sids[0])).toMatchObject({status:'sent',refusal_code:null})
  expect((await env.DB.prepare("SELECT event FROM mail_delivery_attempts WHERE provider_id=? AND event LIKE 'sms-status:%' ORDER BY event").bind(sids[0]).all()).results).toEqual([{event:'sms-status:delivered'},{event:'sms-status:queued'},{event:'sms-status:sent'}])
  statusParams.set('MessageSid',sids[1]);statusParams.set('MessageStatus','sent')
- expect((await receipt(await statusSign())).status).toBe(204);expect(await deliveryBySid(sids[1])).toMatchObject({status:'sent',reason:'Twilio sent.'})
+ expect((await receipt(await statusSign())).status).toBe(204);expect(await deliveryBySid(sids[1])).toMatchObject({status:'sent',refusal_code:null})
  for(const [sid,status,code] of [[sids[1],'undelivered','30003'],[sids[2],'failed','30005']]){
   statusParams.set('MessageSid',sid);statusParams.set('MessageStatus',status);statusParams.set('ErrorCode',code)
   expect((await receipt(await statusSign())).status).toBe(204)
-  expect(await deliveryBySid(sid)).toMatchObject({status:'failed',reason:'Twilio '+status+' (error '+code+').'})
-  expect((await env.DB.prepare('SELECT event,reason FROM mail_delivery_attempts WHERE provider_id=? AND event=?').bind(sid,'sms-status:'+status).first())).toEqual({event:'sms-status:'+status,reason:'Twilio '+status+' (error '+code+').'})
+  expect(await deliveryBySid(sid)).toMatchObject({status:'failed',refusal_code:Number(code)})
+  expect((await env.DB.prepare('SELECT event,provider_id AS provider FROM mail_delivery_attempts WHERE provider_id=? AND event=?').bind(sid,'sms-status:'+status).first())).toEqual({event:'sms-status:'+status,provider:sid})
   statusParams.set('MessageStatus','sent');statusParams.delete('ErrorCode')
   expect((await receipt(await statusSign())).status).toBe(204)
-  expect(await deliveryBySid(sid)).toMatchObject({status:'failed',reason:'Twilio '+status+' (error '+code+').'})
+  expect(await deliveryBySid(sid)).toMatchObject({status:'failed',refusal_code:Number(code)})
  }
  const beforeMissing=await deliveryFacts()
  statusParams.set('MessageSid','synthetic-pencil-unknown')
- const unknownReceipt=await receipt(await statusSign());expect(unknownReceipt.status).toBe(404);expect(await unknownReceipt.json()).toEqual({error:'NOT_FOUND',message:'The SMS receipt is unavailable.'})
+ const unknownReceipt=await receipt(await statusSign());expect(unknownReceipt.status).toBe(404);expect(await unknownReceipt.json()).toMatchObject({error:'NOT_FOUND'})
  statusParams.set('MessageSid','synthetic-pencil-other-unknown')
- const otherUnknown=await receipt(await statusSign());expect(otherUnknown.status).toBe(404);expect(await otherUnknown.json()).toEqual({error:'NOT_FOUND',message:'The SMS receipt is unavailable.'})
+ const otherUnknown=await receipt(await statusSign());expect(otherUnknown.status).toBe(404);expect(await otherUnknown.json()).toMatchObject({error:'NOT_FOUND'})
  expect(await deliveryFacts()).toEqual(beforeMissing)
  // A provider can store a send and drop its reply: the ambiguous attempt remains unknown across scheduler ticks.
  await accepted(await f.call(contacts+'/'+unconsented.id,{name:'Synthetic unconsented',email:'unconsented@synthetic.test',mobile:'+15555550102',smsConsent:{given:true,wording},fields:{}},{method:'PUT'}))
@@ -135,13 +135,105 @@ contract('DIST-011','SMS invitations require recorded consent, use sealed owner 
  await f.services.distribution.dispatcher.run(new Date(Date.now()+14*86400000).toISOString())
  expect(((await (await fetch(receiver+'/__control/state')).json()) as {requests:unknown[]}).requests).toHaveLength(4)
  expect(await env.DB.prepare('SELECT status FROM mail_deliveries WHERE id=?').bind(uncertain!.id).first()).toEqual({status:'unknown'})
+ // Provider refusals drive server actions; assertions inspect requests rather than rendered words.
+ const providerFetch=globalThis.fetch.bind(globalThis),smsEdge:Array<{to:string;key:string}>=[]
+ const refusalNumbers=new Map([['+15555550211',21211],['+15555550212',21612],['+15555550214',21614],['+15555550210',21610],['+15555550312',21212],['+15555550408',21408],['+15555550003',20003]])
+ const repairedOwners=new Set<string>(),correctedContacts:Array<{id:string;mobile:string}>=[]
+ let limitedOnce=false
+ const transport=vi.spyOn(globalThis,'fetch').mockImplementation(async(input,init)=>{
+  const request=new Request(input,init)
+  if(request.url===receiver+'/2010-04-01/Accounts/synthetic-pencil-1/Messages.json'){
+   const to=(await request.clone().formData()).get('To')?.toString()??''
+   smsEdge.push({to,key:request.headers.get('Idempotency-Key')??''})
+   const code=refusalNumbers.get(to)
+   if(code&&!repairedOwners.has(to))return Response.json({code},{status:400})
+   if(to==='+15555550106'&&!limitedOnce){limitedOnce=true;return Response.json({code:20429},{status:429})}
+  }
+  return providerFetch(request)
+ })
+ try {
+  const invitationOf=async(email:string)=>(await accepted(await f.call(path))).participants.find((p:any)=>p.email===email&&p.kind==='invitation')
+  for(const [number,code] of refusalNumbers){
+   const email=`refused-${code}@synthetic.test`,name=`Synthetic refusal ${code}`
+   const refused=await accepted(await f.call(contacts,{name,email,mobile:number,smsConsent:{given:true,wording},fields:{}}),201)
+   await accepted(await f.call(path,{channel:'sms',contactIds:[refused.id],commandKey:'synthetic-pencil-refusal-'+code}),201)
+   const row=await invitationOf(email),retryPath='/api/app/distribution/deliveries/'+row.deliveryId+'/retry'
+   const kind=code===21610?'opted-out':[21211,21612,21614].includes(code)?'recipient-number':'sender-settings'
+   expect(row).toMatchObject({kind:'invitation',status:'failed',attempts:1,refusal:{code,kind},retryAction:kind==='opted-out'?'none':kind==='recipient-number'?'edit-number':'retry'})
+   expect((await accepted(await f.call(path))).participants.filter((p:any)=>p.email===email)).toHaveLength(1)
+   const before=smsEdge.length
+   if(kind==='opted-out'){
+    expect((await f.call(retryPath,{duplicateRiskAccepted:false})).status).toBe(400)
+    // Even a subsequent owner edit cannot bypass this recipient's STOP refusal.
+    await accepted(await f.call(contacts+'/'+refused.id,{name,email,mobile:'+15555550610',smsConsent:{given:true,wording},fields:{}},{method:'PUT'}))
+    expect((await invitationOf(email)).retryAction).toBe('none')
+    expect((await f.call(retryPath,{duplicateRiskAccepted:false})).status).toBe(400)
+    expect(smsEdge).toHaveLength(before)
+    continue
+   }
+   const original=smsEdge.at(-1)!
+   if(kind==='recipient-number'){
+    expect((await f.call(retryPath,{duplicateRiskAccepted:false})).status).toBe(400)
+    expect(smsEdge).toHaveLength(before)
+    const corrected='+155555506'+String(code).slice(-2)
+    correctedContacts.push({id:refused.id,mobile:corrected})
+    await accepted(await f.call(contacts+'/'+refused.id,{name,email,mobile:corrected,fields:{}},{method:'PUT'}))
+    expect((await invitationOf(email)).retryAction).toBe('edit-number')
+    expect((await f.call(retryPath,{duplicateRiskAccepted:false})).status).toBe(400)
+    expect(smsEdge).toHaveLength(before)
+    await accepted(await f.call(contacts+'/'+refused.id,{name,email,mobile:corrected,smsConsent:{given:true,wording},fields:{}},{method:'PUT'}))
+    expect((await invitationOf(email)).retryAction).toBe('retry')
+    expect((await f.call(retryPath,{duplicateRiskAccepted:false})).status).toBe(204)
+    expect(smsEdge.at(-1)?.to).toBe(corrected)
+    expect(smsEdge.at(-1)?.key).not.toBe(original.key)
+    expect(smsEdge.at(-1)?.key).not.toBe('')
+    expect(await env.DB.prepare('SELECT sms_mobile_snapshot AS mobile FROM invitation_participants WHERE id=?').bind(row.id).first()).toEqual({mobile:number})
+    const history=await env.DB.prepare("SELECT reason FROM mail_delivery_attempts WHERE delivery_id=? AND event='operator-retry'").bind(row.deliveryId).first<{reason:string}>()
+    expect(JSON.parse(history!.reason)).toMatchObject({previousMobile:number,mobile:corrected,previousKey:original.key,key:smsEdge.at(-1)?.key})
+   }else{
+    repairedOwners.add(number)
+    expect((await f.call(retryPath,{duplicateRiskAccepted:false})).status).toBe(204)
+    expect(smsEdge.at(-1)).toEqual(original)
+   }
+   expect(await invitationOf(email)).toMatchObject({status:'sent',attempts:2,refusal:null,retryAction:'none'})
+   const sentCount=smsEdge.length
+   expect((await f.call(retryPath,{duplicateRiskAccepted:false})).status).toBe(400)
+   expect(smsEdge).toHaveLength(sentCount)
+  }
+  // DIST-006: transient retries preserve the same destination and idempotency key.
+  const limited=await accepted(await f.call(contacts,{name:'Synthetic limited mobile',email:'limited@synthetic.test',mobile:'+15555550106',smsConsent:{given:true,wording},fields:{}}),201)
+  await accepted(await f.call(path,{channel:'sms',contactIds:[limited.id],commandKey:'synthetic-pencil-limited-send'}),201)
+  expect(await invitationOf('limited@synthetic.test')).toMatchObject({status:'pending',attempts:1,refusal:null,retryAction:'none'})
+  await f.services.distribution.dispatcher.run(new Date(Date.now()+2*60_000).toISOString())
+  expect(await invitationOf('limited@synthetic.test')).toMatchObject({status:'sent',attempts:2})
+  const limitedKeys=smsEdge.filter(row=>row.to==='+15555550106').map(row=>row.key)
+  expect(limitedKeys).toHaveLength(2);expect(limitedKeys[0]).not.toBe('');expect(new Set(limitedKeys).size).toBe(1)
+  for(const number of refusalNumbers.keys())expect(smsEdge.filter(row=>row.to===number)).toHaveLength(repairedOwners.has(number)?2:1)
+ } finally {transport.mockRestore()}
+
+ const smsRequests=async(to:string)=>((await (await fetch(receiver+'/__control/state')).json()) as {requests:Array<{body:string;idempotencyKey:string}>}).requests.filter(r=>new URLSearchParams(r.body).get('To')===to)
+ const invitationOf=async(email:string)=>(await accepted(await f.call(path))).participants.find((p:any)=>p.email===email&&p.kind==='invitation')
+ // WS-002 quiet hours for SMS, in the workspace zone: a launch outside the window waits for its opening.
+ const hhmm=(hours:number)=>new Date(Date.now()+hours*3600_000).toISOString().slice(11,16)
+ await accepted(await f.call('/api/app/workspace',{timeZone:'UTC',sendingWindowStart:hhmm(2),sendingWindowEnd:hhmm(3)},{method:'PUT'}))
+ const quiet=await accepted(await f.call(contacts,{name:'Synthetic quiet hours',email:'quiet@synthetic.test',mobile:'+15555550107',smsConsent:{given:true,wording},fields:{}}),201)
+ await accepted(await f.call(path,{channel:'sms',contactIds:[quiet.id],commandKey:'synthetic-pencil-quiet-hours'}),201)
+ expect(await invitationOf('quiet@synthetic.test')).toMatchObject({status:'pending',attempts:0});expect(await smsRequests('+15555550107')).toHaveLength(0)
+ await f.services.distribution.dispatcher.run(new Date(Date.now()+2*3600_000+90_000).toISOString())
+ expect(await invitationOf('quiet@synthetic.test')).toMatchObject({status:'sent',attempts:1});expect(await smsRequests('+15555550107')).toHaveLength(1)
  expect((await everyStoredValue()).join('\n')).not.toContain(token)
  const backup=await accepted(await f.call('/api/app/backup/export',{}));expect(JSON.stringify(backup)).not.toContain(token)
+ const archivedDeliveries=backup.payload.tables.find((table:any)=>table.name==='mail_deliveries')
+ for(const corrected of correctedContacts)expect(JSON.stringify(archivedDeliveries)).toContain(corrected.mobile)
  const archivedAttempts=backup.payload.tables.find((table:any)=>table.name==='mail_delivery_attempts')
  expect(JSON.stringify(archivedAttempts)).toContain('sms-status:delivered');expect(JSON.stringify(archivedAttempts)).toContain('30003')
  await accepted(await f.call(contacts+'/'+contact.id+'/erase',{confirm:true}))
  expect(await env.DB.prepare('SELECT count(*) AS n FROM sms_consent_events WHERE contact_id=?').bind(contact.id).first()).toEqual({n:0})
  expect((await everyStoredValue()).join('\n')).not.toContain(mobile)
+ for(const corrected of correctedContacts){
+  await accepted(await f.call(contacts+'/'+corrected.id+'/erase',{confirm:true}))
+  expect((await everyStoredValue()).join('\n')).not.toContain(corrected.mobile)
+ }
  const erasedReceipt=await env.DB.prepare("SELECT reason,provider_id AS provider FROM mail_delivery_attempts WHERE event='sms-status:delivered'").first()
  expect(erasedReceipt).toEqual({reason:null,provider:null})
 })
