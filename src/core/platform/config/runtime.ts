@@ -32,6 +32,19 @@ export function isLoopbackRequest(requestUrl: string) {
   return loopbackHostnames.has(new URL(requestUrl).hostname)
 }
 
+export function localRuntimeBindings(environment: WorkerBindings): WorkerBindings {
+  if (environment.PENCIL_LOCAL_DEVELOPMENT !== 'true' || !environment.RER_DEV_ORIGIN) return environment
+  try {
+    const origin = new URL(environment.RER_DEV_ORIGIN)
+    if (origin.protocol === 'http:' && loopbackHostnames.has(origin.hostname) && origin.origin === environment.RER_DEV_ORIGIN) {
+      return { ...environment, APP_ORIGIN: environment.RER_DEV_ORIGIN }
+    }
+  } catch {
+    // An invalid dev origin leaves the configured origin and its checks intact.
+  }
+  return environment
+}
+
 export function isLocalDevelopmentRequest(requestUrl: string, environment: WorkerBindings) {
   return isLoopbackRequest(requestUrl)
     && environment.PENCIL_LOCAL_DEVELOPMENT === 'true'

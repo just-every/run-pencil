@@ -1,5 +1,9 @@
 # Release notes
 
+## Unreleased
+
+A checkout set up on one port now opens its app when `rer dev` or `rer demo` serves it on another.
+
 ## 0.7.0 - 2026-10-19
 
 **Back up first.** Locally: stop dev, create the ignored exports folder (`mkdir -p exports`), export (`rer export --output exports/before-0.7.0.rer`), pull, then run `rer install`, `rer setup` and `rer dev`. Hosted: open **Backup** (`/app/backup`), download a backup, choose **Check backup** and then **Test restoration**, and only then run `rer deploy` on the same environment. Upgrading from 0.6.0 applies the additive migrations `0051_presentation_order.sql` and `0052_retention.sql`.
