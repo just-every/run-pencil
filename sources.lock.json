@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "6f933ed7648e59ca0e77731b974d90f4c6d699eac6fc945c6cfc7e3098c67e1c",
+      "sha256": "12d251dd4dee45f65cc07c30c68e3366d986dfe2d616c04cc1ed25abc703a29f",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "5bb8f93cccedd8f5f6fcf406184cc89325ff5bfd3d4757ffbf172c3ae1923f70",
+      "sha256": "2d2115b2df878ef2ecd3a2b5150d30a0fbbede64307850be1f78cbca955b0c79",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "9fa1bc55c0a9567a8302f036213b9410cebcd3ee7ed540685b65969fcd0711a5",
+      "sha256": "f8dc92a21dbbd32f497edd2d66e3250a8a70e29a3fd56e902c74010aa401fe5d",
       "executable": false
     },
     "DEMO.md": {
@@ -7085,7 +7085,7 @@
       "executable": false
     },
     "test-budget.json": {
-      "sha256": "5fbfa35f3bbe28acbb531b33c85d16822a75a51e8de4cfb0aee080a17c36fb8e",
+      "sha256": "3aef4bab9deebb483607013a37455e75a06cffacb7f70af45268ae28c0e5fec1",
       "executable": false
     },
     "tests/admission/management-edge.mjs": {
@@ -7809,7 +7809,7 @@
       "executable": false
     },
     "tests/runtime/brand.worker.test.ts": {
-      "sha256": "26aba81f4a8b6058ad403af035299c40bf9f1d7bd19b42740932546a1251a100",
+      "sha256": "cb3f617bbc9dd83ef22073209f4884b6cd2c981685a369b555e7a4c0736be1a2",
       "executable": false
     },
     "tests/runtime/calculations.worker.test.ts": {
@@ -7877,7 +7877,7 @@
       "executable": false
     },
     "tests/runtime/foundation.worker.test.ts": {
-      "sha256": "4a0b20cf134a796b159a3e6db93edae06ceb1930c2306ca7dfa8846ac492bd7a",
+      "sha256": "59c3bd896a77c77c47945a4a4300c63f2ce57db2960e50a629979c97dcf44a6a",
       "executable": false
     },
     "tests/runtime/google-form-import.worker.test.ts": {
@@ -7929,7 +7929,7 @@
       "executable": false
     },
     "tests/runtime/journey.worker.test.ts": {
-      "sha256": "763e3fa5bc227d44aca82801a59dd2f0fe278e326852a685af968de026bf5a7f",
+      "sha256": "c31a3a352bb03d450370eb50337a4bb4178a595fe92092afa967d37da15351f2",
       "executable": false
     },
     "tests/runtime/ledger-filters.worker.test.ts": {
@@ -8016,10 +8016,6 @@
       "sha256": "dc9bccd463a2592536b7b9483e06f73e8422c9877b6577524aefa8befc11467c",
       "executable": false
     },
-    "tests/runtime/question-insertion.worker.test.ts": {
-      "sha256": "e0b3809e5e50baf3eca9d98df586070b26de688ab6e568a8c159df3dc78cd2b1",
-      "executable": false
-    },
     "tests/runtime/randomized-order.worker.test.ts": {
       "sha256": "5751b6fc300b17a1772f11f0949ed243d6ecb803f5d2eb8c633d2fb62d50c02e",
       "executable": false
@@ -8085,7 +8081,7 @@
       "executable": false
     },
     "tests/runtime/traffic.worker.test.ts": {
-      "sha256": "e9ca55b1ccdf4382450141c79e5d8d6fd2ec9ed761dc6e669a0280b8504675e0",
+      "sha256": "7ad2f9192fed7f70e6f17bef7b545767af97aaffcad8e7d943246b0f8e197f53",
       "executable": false
     },
     "tests/runtime/transition.worker.test.ts": {

@@ -105,8 +105,12 @@ contract('RSLT-013','anonymous view and durable start buckets report native conv
 })
 
 contract(['RSLT-013','RESP-016'],'signed form-load timing and retained bot exclusions leave anonymous view and start counters unchanged on review',async()=>{
-  const {id}=await call<{id:string}>('/api/app/flows',{title:'Training evaluation',slug:'traffic-load-time',template:'feedback'})
+  const {id}=await call<{id:string}>('/api/app/flows',{title:'Training evaluation',slug:'traffic-load-time'})
   const root=`/api/app/flows/${id}`
+  for (const step of [
+    {kind:'question',questionType:'short_text',prompt:'Answer',required:true},
+    {kind:'completion',questionType:null,prompt:'Done'},
+  ]) await call(root+'/draft/steps',{expectedVersion:(await call<BuilderDraft>(root+'/draft')).flow.draftVersion,step})
   const draft=await call<BuilderDraft>(root+'/draft')
   await call(root+'/publish',{expectedVersion:draft.flow.draftVersion})
   const revision=await call<{revision:{id:string}}>('/api/public/flows/traffic-load-time')
@@ -114,7 +118,7 @@ contract(['RSLT-013','RESP-016'],'signed form-load timing and retained bot exclu
   const load=()=>call<{loadTime:string}>(view,{revisionId,source:'direct'})
   const start=()=>call<{sessionId:string;sessionToken:string;revisionId:string;loadTime:string}>('/api/public/flows/traffic-load-time/sessions',{source:'direct',deviceClass:'desktop'})
   const submit=(session:Awaited<ReturnType<typeof start>>,loadTime:string,honeypot='')=>request('/api/public/flows/traffic-load-time/responses',{
-    ...session,loadTime,honeypot,idempotencyKey:'time-'+session.sessionId,answers:[{stepId:draft.steps[0].id,value:draft.choices[0].id}],
+    ...session,loadTime,honeypot,idempotencyKey:'time-'+session.sessionId,answers:[{stepId:draft.steps[0].id,value:'Keep this answer for human review'}],
   })
   const firstLoad=await load()
   await new Promise(resolve=>setTimeout(resolve,3200))
@@ -137,20 +141,28 @@ contract(['RSLT-013','RESP-016'],'signed form-load timing and retained bot exclu
   const earlyReply=await submit(early,newLoad.loadTime)
   const earlyReceipt=await earlyReply.json<{responseId:string;disposition:string}>()
   expect(earlyReceipt.disposition).toBe('quarantined')
+  const counters=async()=>{
+    const result=await env.DB.batch(['revision_view_counters','revision_start_counters'].map(table=>env.DB.prepare(`SELECT * FROM ${table} ORDER BY revision_id,source,day`)))
+    return result.map(item=>item.results)
+  }
   const bot=await start(), botLoad=await load()
+  const beforeBot=await counters()
   const botReply=await submit(bot,botLoad.loadTime,'automated website')
   const botReceipt=await botReply.json<{responseId:string;disposition:string}>()
   expect(botReceipt.disposition).toBe('quarantined')
-  const held=await call<Array<{id:string;quarantineReason:string;answers:unknown[]}>>(`/api/app/revisions/${revisionId}/quarantine`)
+  expect(await (await submit(bot,botLoad.loadTime,'automated website')).json()).toMatchObject({responseId:botReceipt.responseId,idempotent:true,disposition:'quarantined'})
+  expect(await counters()).toEqual(beforeBot)
+  const held=await call<Array<{id:string;quarantineReason:string;answers:Array<{stepId:string;value:unknown}>}>>(`/api/app/revisions/${revisionId}/quarantine`)
   expect(held.map(row=>row.quarantineReason).sort()).toEqual(['honeypot','minimum-fill-time'])
   expect(held.every(row=>row.answers.length===1)).toBe(true)
+  expect(held.find(row=>row.id===botReceipt.responseId)).toMatchObject({id:botReceipt.responseId,quarantineReason:'honeypot',answers:[{stepId:draft.steps[0].id,value:'Keep this answer for human review'}]})
+  const audit=await env.DB.prepare("SELECT actor_operator_id,subject_id,details_json FROM audit_entries WHERE kind='response.quarantined' AND subject_id=? ORDER BY created_at DESC LIMIT 1").bind(revisionId).first()
+  expect(audit).not.toBeNull()
+  expect(JSON.stringify(audit)).not.toContain('Keep this answer for human review')
+  expect(audit!.actor_operator_id).toBeNull()
   expect((await env.DB.prepare('SELECT id FROM response_outbox WHERE response_id IN (?,?)').bind(earlyReceipt.responseId,botReceipt.responseId).all()).results).toEqual([])
   const report=()=>call<{totals:{views:number;starts:number;submissions:number}}>(root+'/traffic?revisionId='+revisionId)
   expect((await report()).totals).toEqual({views:3,starts:3,submissions:1})
-  const counters=async()=>{
-    const result=await env.DB.batch(['revision_view_counters','revision_start_counters'].map(table=>env.DB.prepare(`SELECT * FROM ${table} WHERE revision_id=? ORDER BY source,day`).bind(revisionId)))
-    return result.map(item=>item.results)
-  }
   // Response exports have a separate explicit opt-in; review and counters are untouched.
   const exportStart = async (format: 'json'|'csv', includeAutomatedExclusions = false, extra = {}) => call<{token:string;total:number;includedQuarantined:number;excludedQuarantined:number}>(root+'/responses/export/start',{format,includeAutomatedExclusions,...extra})
   const readExport = async (token:string) => {
@@ -188,6 +200,35 @@ contract(['RSLT-013','RESP-016'],'signed form-load timing and retained bot exclu
   const retried=await submit(bot,botLoad.loadTime,'automated website')
   expect(await retried.json()).toMatchObject({responseId:botReceipt.responseId,idempotent:true,disposition:'released'})
   expect((await call<{total:number}>(root+'/ledger')).total).toBe(3)
+  const released=JSON.parse(await readExport((await exportStart('json')).token)).responses as Array<{id:string;answers:Array<{value:unknown}>}>
+  expect(released.filter(row=>row.id===botReceipt.responseId)).toHaveLength(1)
+  expect(released.find(row=>row.id===botReceipt.responseId)!.answers[0].value).toBe('Keep this answer for human review')
   const privateRows=JSON.stringify(await env.DB.prepare('SELECT * FROM revision_view_counters WHERE revision_id=?').bind(revisionId).all())
   for(const privateValue of [human.sessionId,early.sessionId,bot.sessionToken,humanReceipt.responseId,firstLoad.loadTime])expect(privateRows).not.toContain(privateValue)
+
+  // Keep the mature honeypot path as well as the fresh-load precedence case above.
+  const matureBot=await start()
+  await matureLoad(matureBot)
+  const matureTime=await issueLoadTime(env.SESSION_SECRET,revisionId,Date.now()-5000)
+  const matureBefore=await counters()
+  const matureReply=await submit(matureBot,matureTime,'bot')
+  expect(matureReply.status).toBe(201)
+  const matureReceipt=await matureReply.json<{responseId:string;disposition:string}>()
+  expect(matureReceipt).toMatchObject({disposition:'quarantined'})
+  expect(await (await submit(matureBot,matureTime,'bot')).json()).toMatchObject({responseId:matureReceipt.responseId,idempotent:true})
+  expect(await counters()).toEqual(matureBefore)
+  const ordinaryAfter=JSON.parse(await readExport((await exportStart('json')).token)).responses as Array<{id:string;answers:Array<{value:unknown}>}>
+  expect(ordinaryAfter.some(row=>row.id===matureReceipt.responseId)).toBe(false)
+  expect((await env.DB.prepare('SELECT id FROM response_outbox WHERE response_id=?').bind(matureReceipt.responseId).all()).results).toEqual([])
+  const matureHeld=await call<Array<{id:string;quarantineReason:string;answers:Array<{stepId:string;value:unknown}>}>>(`/api/app/revisions/${revisionId}/quarantine`)
+  expect(matureHeld).toMatchObject([{id:matureReceipt.responseId,quarantineReason:'honeypot',answers:[{stepId:draft.steps[0].id,value:'Keep this answer for human review'}]}])
+  const matureAudit=await env.DB.prepare("SELECT actor_operator_id,subject_id,details_json FROM audit_entries WHERE kind='response.quarantined' AND subject_id=? ORDER BY created_at DESC LIMIT 1").bind(revisionId).first()
+  expect(matureAudit).not.toBeNull()
+  expect(JSON.stringify(matureAudit)).not.toContain('Keep this answer for human review')
+  expect(matureAudit!.actor_operator_id).toBeNull()
+  await call(`/api/app/responses/${matureReceipt.responseId}/release`,{})
+  expect(await counters()).toEqual(matureBefore)
+  const matureExport=JSON.parse(await readExport((await exportStart('json')).token)).responses as Array<{id:string;answers:Array<{value:unknown}>}>
+  expect(matureExport.filter(row=>row.id===matureReceipt.responseId)).toHaveLength(1)
+  expect(matureExport.find(row=>row.id===matureReceipt.responseId)!.answers[0].value).toBe('Keep this answer for human review')
 })
