@@ -1053,7 +1053,7 @@
       "executable": false
     },
     "docs/guide/invitations.md": {
-      "sha256": "b52a32958566b4536255b35fddd49cd1a9267cdb50e0a38a3abdf8df8fb5d97e",
+      "sha256": "780fbcc5f215d661f68e852f71e49a425a2fd9c10d750de805394e2b64ad547a",
       "executable": false
     },
     "docs/guide/moving-in.md": {
@@ -4529,7 +4529,7 @@
       "executable": false
     },
     "src/core/features/distribution/contact-model.ts": {
-      "sha256": "54a593496d023a6850f5b28da21515793f59f92e09cda144dd88314fb9d3963b",
+      "sha256": "e5c58e143aec2ad4105dbab8ec2e1f1314d5525632493c072d7f273de646bc73",
       "executable": false
     },
     "src/core/features/distribution/contacts.ts": {
@@ -4589,7 +4589,7 @@
       "executable": false
     },
     "src/core/features/distribution/ui/ContactImport.tsx": {
-      "sha256": "b13dcbaa2da97b216490f40c4c75566901ee590175fd6cf3c58a0432a79a8c3d",
+      "sha256": "9364c1d96470bc10cded3b34bf2de808025f04eee834b25141ef0f89c3df5ce6",
       "executable": false
     },
     "src/core/features/distribution/ui/DistributionPanel.tsx": {
@@ -8069,7 +8069,7 @@
       "executable": false
     },
     "tests/runtime/sms.worker.test.ts": {
-      "sha256": "5f196e6e9db7131f858f4a4bead009381cc06e6cffdee2d8181453d6f4138d3c",
+      "sha256": "de2cc3cbd5ad414a5a4ad5ac9a0b8fe7ee10e8799d5b4c24a78adcaa85ea7cd5",
       "executable": false
     },
     "tests/runtime/stripe-receiver.global.ts": {
