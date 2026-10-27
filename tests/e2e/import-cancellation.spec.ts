@@ -4,8 +4,9 @@ import { contract } from './contract'
 import { expect, test } from './fixtures'
 import { signInEmptyWorkspace } from './authoring-helpers'
 
-for (const actions of [['cancel', 'review'], ['new-file', 'replacement']] as const) {
-contract(['IMPORT-002', 'IMPORT-004', 'BASE-PUBLIC-003'], `publication winning pending cancellation preserves actual progress until explicit undo: ${actions.join(', ')}`, async ({ page }, info) => {
+for (const group of ['cancel, review', 'new-file, replacement'] as const) {
+const actions = group.split(', ')
+contract(['IMPORT-002', 'IMPORT-004', 'BASE-PUBLIC-003'], `publication winning pending cancellation preserves actual progress until explicit undo: ${group}`, async ({ page }, info) => {
   for (const action of actions) {
     await test.step(action, async () => {
     await page.context().clearCookies();

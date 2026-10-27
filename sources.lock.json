@@ -6881,7 +6881,7 @@
       "executable": false
     },
     "src/routes/__root.tsx": {
-      "sha256": "c2d3db400865fdb9aa796b5dca4325e834dfb7d49623cf2c857484f58acef96d",
+      "sha256": "92c93f105431a2483676e8fed42289b44b4f8519f6c4cf9cc7d070ac571f9224",
       "executable": false
     },
     "src/routes/app.actions.$actionId.tsx": {
@@ -7049,7 +7049,7 @@
       "executable": false
     },
     "test-budget.json": {
-      "sha256": "2d4ca00e9ba850d131c0caf3692cb5a3223d87b05b38ba21688614c9a85c24a6",
+      "sha256": "3aef4bab9deebb483607013a37455e75a06cffacb7f70af45268ae28c0e5fec1",
       "executable": false
     },
     "tests/admission/management-edge.mjs": {
@@ -7205,7 +7205,7 @@
       "executable": false
     },
     "tests/e2e/import-cancellation.spec.ts": {
-      "sha256": "9c39f42217fb6ee51bae7444f8134bba59f2584ce6535b072fce01b8060619f4",
+      "sha256": "913171ce5f27723b61a37e5c00e4ebf2cdd85300215222926b23e4f050129280",
       "executable": false
     },
     "tests/e2e/import-native-inventory.ts": {
@@ -7325,7 +7325,7 @@
       "executable": false
     },
     "tests/e2e/rendering-migration.spec.ts": {
-      "sha256": "f79d584f19e6bd94269cd4e85e38d18ea2490f577aa4167b45c02ed58dfc75e9",
+      "sha256": "9913bf911f97242a1cb132ed02aaa6651557b2ee336ec4ce6ef5f9507e9ce08e",
       "executable": false
     },
     "tests/e2e/reporting-bounded.spec.ts": {
