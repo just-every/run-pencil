@@ -436,6 +436,12 @@
       "name": "0070_sms_refusal_retry.sql",
       "sha256": "16654637c6fc1766898fad3961d51e0ef63ef7f6fe7d8414858e839fc2810df0",
       "sql": "ALTER TABLE mail_deliveries ADD COLUMN sms_mobile TEXT;\nALTER TABLE mail_deliveries ADD COLUMN refusal_code INTEGER;\n-- Preserve existing Twilio refusals as structured state, including pre-upgrade rows.\nUPDATE mail_deliveries SET refusal_code = CAST(substr(reason, instr(reason, '(error ') + 7) AS INTEGER)\nWHERE status = 'failed' AND instr(reason, '(error ') > 0 AND participant_id IN (\n SELECT p.id FROM invitation_participants p JOIN invitation_launches l ON l.id = p.launch_id\n WHERE json_extract(l.policy_json, '$.channel') = 'sms'\n);\nCREATE TRIGGER erase_sms_retry_target AFTER UPDATE OF contact_id ON invitation_participants\nWHEN NEW.contact_id IS NULL AND OLD.contact_id IS NOT NULL\nBEGIN\n UPDATE mail_deliveries SET sms_mobile = NULL WHERE participant_id = OLD.id;\nEND;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0071_contact_time_zones.sql",
+      "sha256": "491d41da089bbf79731086cb65b9dfb5ae37cae04f8ccbce4c2ce361523d91a8",
+      "sql": "ALTER TABLE distribution_contacts ADD COLUMN time_zone TEXT;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

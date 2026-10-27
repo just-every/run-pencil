@@ -22,6 +22,7 @@ export class DistributionContacts {
         if (!result.meta.changes) throw new ValidationError('Contact limit reached.')
       }
     } catch(error) { if (String(error).includes('UNIQUE constraint')) throw new ConflictError('A contact with this email address already exists.'); throw error }
+    if(data.timeZone!==undefined)await this.db.prepare('UPDATE distribution_contacts SET time_zone=?,updated_at=? WHERE id=? AND workspace_id=?').bind(data.timeZone,now,contactId,workspaceId).run()
     if(data.mobile!==undefined)await this.db.prepare('UPDATE distribution_contacts SET mobile=?,updated_at=? WHERE id=? AND workspace_id=?').bind(data.mobile,now,contactId,workspaceId).run()
     if(data.smsConsent&&data.mobile&&this.sms)await this.sms.consent(contactId,data.mobile,data.smsConsent.given,data.smsConsent.wording,'operator-recorded',actor)
     return decodeContact((await this.db.prepare(`SELECT ${contactColumns} FROM distribution_contacts WHERE id=?`).bind(contactId).first<ContactRow>())!)
