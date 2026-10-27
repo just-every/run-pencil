@@ -271,11 +271,13 @@ contract(['DIST-011','RESP-020','DIST-014','LOGIC-002','AUD-001','AUD-002','AUD-
   const remaining = await call(`${path}/ledger`)
   expect(remaining.total).toBe(0)
   // The saved SMS Settings, recorded consent and invitation channel use the existing loopback Twilio receiver.
+  await page.getByRole('button',{name:'Sign out',exact:true}).click()
+  await expect(page.locator('.operator-shell')).toHaveCount(0)
   await signInEmptyWorkspace(page)
   let smsOrigin=''
   const closeSms=await startSmsReceiver({provide(name:string,value:unknown){if(name==='taskReceiverOrigin')smsOrigin=String(value)}} as Parameters<typeof startSmsReceiver>[0])
   try {
-    const token='synthetic-pencil-c47-browser-token'
+    const token='synthetic-pencil-c47-19'
     const saved=await request.put('/api/app/connections/sms',{headers,data:{accountId:'synthetic-pencil-c47-8',authToken:token,fromNumber:'+15555550111',a2pState:'pending',apiOrigin:smsOrigin}})
     expect(saved.status()).toBe(200)
     await page.goto('/app/settings');await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
@@ -292,7 +294,10 @@ contract(['DIST-011','RESP-020','DIST-014','LOGIC-002','AUD-001','AUD-002','AUD-
     await expect(page.getByText('SMS consent recorded '+contact.smsConsentAt,{exact:true})).toBeVisible()
     await expect(page.getByLabel('Contact mobile',{exact:true})).toHaveValue(contact.mobile)
     await audienceScreen(page,info,'sms-consent')
-    const smsFlow=await call('/api/app/flows',{title:'synthetic-pencil-c47-10',slug:'synthetic-pencil-c47-'+info.project.name+'-'+crypto.randomUUID()})
+    const smsFlow=await call('/api/app/flows',{title:'synthetic-pencil-c47-10',slug:'synthetic-pencil-c47-'+Date.now()})
+    const smsPath=`/api/app/flows/${smsFlow.id}`
+    for(const step of [{kind:'question',questionType:'short_text',prompt:'synthetic-pencil-c47-11',required:true},{kind:'completion',questionType:null,prompt:'synthetic-pencil-c47-12'}])await call(smsPath+'/draft/steps',{expectedVersion:(await call(smsPath+'/draft')).flow.draftVersion,step})
+    await call(smsPath+'/publish',{expectedVersion:(await call(smsPath+'/draft')).flow.draftVersion})
     await page.goto(`/app/flows/${smsFlow.id}/builder`);await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
     await page.getByRole('button',{name:'Share',exact:true}).click()
     const channel=page.getByLabel('Invitation channel',{exact:true})

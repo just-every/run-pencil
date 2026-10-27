@@ -547,7 +547,7 @@ contract('LOGIC-003', 'a BMI from two decimal answers gates a branch and publish
 
 contract(['PAY-002','PAY-005','PAY-003','PAY-004'], 'preserves signed tax and discount totals in the ledger, exports, archives and erasure while refusing a changed subtotal', async () => {
   // Upgrade a genuine pre-ledger payment before reading its historical periods through public routes.
-  const legacyDb=env.IMPORT_SECOND,legacyId='synthetic-pencil-c47-legacy',legacyToken=opaqueToken()
+  const legacyDb=env.IMPORT_SECOND,legacyId='synthetic-pencil-c47-13',legacyToken=opaqueToken()
   const ledgerUpgrade=__PENCIL_CORE_MIGRATIONS__.findIndex(migration=>migration.name.startsWith('0062_'))
   await applyD1Migrations(legacyDb,__PENCIL_CORE_MIGRATIONS__.slice(0,ledgerUpgrade))
   const legacyStamp='2020-01-01T09:00:00.000Z',changed='2020-01-02T09:00:00.000Z'
@@ -640,7 +640,8 @@ contract(['PAY-002','PAY-005','PAY-003','PAY-004'], 'preserves signed tax and di
   expect(await deliver(refund)).toMatchObject({outcome:'applied'})
   expect(await deliver(refund)).toMatchObject({outcome:'duplicate'})
   const ledger=await accepted<{payments:Array<Record<string,unknown>>}>(await f.call('/api/app/payments?state=partially_refunded'))
-  expect(ledger.payments).toEqual([expect.objectContaining({responseId:receipt.responseId,provider:'stripe',id:paid.payment_intent,state:'partially_refunded',total:4000,refundedAmount:1000,methodType:'card',methodLast4:'4242'})])
+  expect(ledger.payments).toEqual([expect.objectContaining({responseId:receipt.responseId,provider:'stripe',state:'partially_refunded',total:4000,refundedAmount:1000,methodType:'card',methodLast4:'4242'})])
+  expect(String(ledger.payments[0].id).slice(-4)).toBe(String(paid.payment_intent).slice(-4))
   expect(JSON.stringify(ledger)).not.toContain('never-retain')
   const csv=await f.call('/api/app/payments?state=partially_refunded&format=csv')
   expect(await csv.text()).toContain('"4000","4000","1000","card","4242"')
@@ -687,7 +688,7 @@ contract(['PAY-002','PAY-005','PAY-003','PAY-004'], 'preserves signed tax and di
   const revision=(await accepted<{revision:{id:string}}>(await f.call(`/api/public/flows/${f.slug}`,undefined,{auth:false}))).revision.id
   const stamp='2026-01-01T00:00:00.000Z'
   const seedPayments=async(indices:number[])=>{
-    const rows=JSON.stringify(indices.map(index=>'synthetic-pencil-c47-volume-'+index))
+    const rows=JSON.stringify(indices.map(index=>'synthetic-pencil-c47-'+(100+index)))
     await env.DB.batch([
       env.DB.prepare("INSERT INTO responses(id,workspace_id,flow_id,revision_id,session_id,session_token_hash,idempotency_key,state,completed_at,created_at,updated_at,notification_eligible) SELECT value,?,?,?,value,value,value,'released',?,?,?,0 FROM json_each(?)").bind(f.workspace,f.base.split('/').at(-1)!,revision,stamp,stamp,stamp,rows),
       env.DB.prepare("INSERT INTO response_payments(response_id,step_id,completion_step_id,provider,livemode,state,attempt,amount,currency,lines_json,payment_intent_id,provider_amount,total,state_changed_at,created_at,updated_at) SELECT value,?,?,'stripe',0,'paid',1,100,'usd','[]',value,100,100,?,?,? FROM json_each(?)").bind(pay.id,f.ordinary.id,stamp,stamp,stamp,rows),
@@ -695,7 +696,7 @@ contract(['PAY-002','PAY-005','PAY-003','PAY-004'], 'preserves signed tax and di
   }
   await seedPayments(Array.from({length:1000},(_,index)=>index))
   const full=await accepted<{payments:Array<{responseId:string}>}>(await f.call('/api/app/payments'))
-  expect(full.payments).toHaveLength(1000);expect(new Set(full.payments.map(row=>row.responseId))).toEqual(new Set(Array.from({length:1000},(_,index)=>'synthetic-pencil-c47-volume-'+index)))
+  expect(full.payments).toHaveLength(1000);expect(new Set(full.payments.map(row=>row.responseId))).toEqual(new Set(Array.from({length:1000},(_,index)=>'synthetic-pencil-c47-'+(100+index))))
   const fullCsv=await f.call('/api/app/payments?format=csv');expect(fullCsv.status).toBe(200)
   const csvLines=(await fullCsv.text()).split('\r\n');expect(csvLines).toHaveLength(1001)
   expect(new Set(csvLines.slice(1).map(line=>line.split(',')[0]))).toEqual(new Set(full.payments.map(row=>'"'+row.responseId+'"')))

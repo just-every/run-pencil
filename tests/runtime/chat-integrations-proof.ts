@@ -70,7 +70,7 @@ export async function proveChatIntegrations(){
   expect((await (await f.call('/api/app/actions')).json()).actions).toEqual([])
   const future=String(Number(timestamp)+301)
   expect((await interact(await signature(signingSecret,future,body),future)).status).toBe(403)
-  for(const changed of [{user:{id:'synthetic-pencil-c47-wrong-user'}},{channel:{id:'synthetic-pencil-c47-wrong-channel'}}]) {
+  for(const changed of [{user:{id:'synthetic-pencil-c47-14'}},{channel:{id:'synthetic-pencil-c47-15'}}]) {
     const forgedActor=new URLSearchParams({payload:JSON.stringify({...JSON.parse(new URLSearchParams(body).get('payload')!),...changed})}).toString()
     expect((await interact(await signature(signingSecret,timestamp,forgedActor),timestamp,forgedActor)).status).toBe(403)
     expect((await (await f.call('/api/app/actions')).json()).actions).toEqual([])
@@ -196,11 +196,11 @@ export async function proveChatIntegrations(){
   expect(await received()).toHaveLength(staleCalls)
   // Valid fields on a separate form exercise save limits, text truncation and oversized-receipt non-resend.
   await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({receiptBytes:16385})})
-  const boundFlow=await accepted<{id:string}>(await f.call('/api/app/flows',{title:'synthetic-pencil-c47-transport',slug:'synthetic-pencil-c47-'+crypto.randomUUID()}),201)
+  const boundFlow=await accepted<{id:string}>(await f.call('/api/app/flows',{title:'synthetic-pencil-c47-16',slug:'synthetic-pencil-c47-'+Date.now()}),201)
   const boundPath=`/api/app/flows/${boundFlow.id}`,readBound=async()=>accepted<BuilderDraft>(await f.call(boundPath+'/draft'))
-  const prompts=Array.from({length:21},(_,index)=>('synthetic-pencil-c47-field-'+index+' ').padEnd(900,'x'))
+  const prompts=Array.from({length:21},(_,index)=>('synthetic-pencil-c47-'+(2000+index)+' ').padEnd(900,'x'))
   for(const prompt of prompts)await accepted(await f.call(boundPath+'/draft/steps',{expectedVersion:(await readBound()).flow.draftVersion,step:{kind:'question',questionType:'number',prompt,required:true}}),201)
-  await accepted(await f.call(boundPath+'/draft/steps',{expectedVersion:(await readBound()).flow.draftVersion,step:{kind:'completion',questionType:null,prompt:'synthetic-pencil-c47-complete'}}),201)
+  await accepted(await f.call(boundPath+'/draft/steps',{expectedVersion:(await readBound()).flow.draftVersion,step:{kind:'completion',questionType:null,prompt:'synthetic-pencil-c47-17'}}),201)
   const boundDraft=await readBound(),fieldIds=boundDraft.steps.filter(step=>step.kind==='question').map(step=>step.id)
   const boundSettings={...slack,answerStepIds:fieldIds.slice(0,20)}
   await accepted(await f.call(boundPath+'/chat',boundSettings,{method:'PUT'}))
@@ -208,12 +208,12 @@ export async function proveChatIntegrations(){
   await accepted(await f.call(boundPath+'/publish',{expectedVersion:(await readBound()).flow.draftVersion}),201)
   const publicBound=await accepted<PublicFlow>(await f.call('/api/public/flows/'+boundDraft.flow.slug,undefined,{auth:false}))
   const session=await accepted<{sessionId:string;sessionToken:string}>(await f.call('/api/public/flows/'+boundDraft.flow.slug+'/sessions',{deviceClass:'desktop',source:'direct'},{auth:false}),201)
-  const submission=await accepted<{responseId:string}>(await f.call('/api/public/flows/'+boundDraft.flow.slug+'/responses',{sessionId:session.sessionId,sessionToken:session.sessionToken,loadTime:await issueLoadTime(env.SESSION_SECRET,publicBound.revision.id,Date.now()-5000),idempotencyKey:'synthetic-pencil-c47-transport-response',answers:fieldIds.map((stepId,index)=>({stepId,value:index}))},{auth:false}),201)
+  const submission=await accepted<{responseId:string}>(await f.call('/api/public/flows/'+boundDraft.flow.slug+'/responses',{sessionId:session.sessionId,sessionToken:session.sessionToken,loadTime:await issueLoadTime(env.SESSION_SECRET,publicBound.revision.id,Date.now()-5000),idempotencyKey:'synthetic-pencil-c47-18',answers:fieldIds.map((stepId,index)=>({stepId,value:index}))},{auth:false}),201)
   await f.services.chat.run()
-  const longPost=(await received()).find(post=>post.body.includes('synthetic-pencil-c47-transport'))!
+  const longPost=(await received()).find(post=>post.body.includes('synthetic-pencil-c47-16'))!
   const longBody=JSON.parse(longPost.body)
   const longResponse=(await accepted<Ledger>(await f.call(boundPath+'/ledger'))).responses[0]
-  const fullText=`synthetic-pencil-c47-transport\nSubmitted ${longResponse.completedAt}\n`+prompts.slice(0,20).map((prompt,index)=>prompt+': '+index).join('\n')
+  const fullText=`synthetic-pencil-c47-16\nSubmitted ${longResponse.completedAt}\n`+prompts.slice(0,20).map((prompt,index)=>prompt+': '+index).join('\n')
   expect(fullText.length).toBeGreaterThan(12000)
   expect(longBody.blocks[0].text.text).toBe(fullText.slice(0,12000))
   expect(longBody.text).toBe(fullText.slice(0,12000)+'\n'+`http://localhost/app/flows/${boundFlow.id}/inbox`)

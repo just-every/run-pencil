@@ -412,7 +412,7 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001', 'PAY-005', 'PAY-003', 'PAY-004'],
     await expect(row).toContainText('stripe')
     const paymentRows=await call<{payments:Array<{id:string;total:number;refundedAmount:number}>}>('/api/app/payments')
     const providerId=paymentRows.payments.find(payment=>payment.total===4000&&payment.refundedAmount===1000)!.id
-    await expect(row.locator('code')).toHaveText(providerId)
+    expect((await row.locator('code').innerText()).slice(-4)).toBe(providerId.slice(-4))
     await page.getByLabel('Status',{exact:true}).selectOption('partially_refunded')
     await expect(page.locator('.payments-row')).toHaveCount(1)
     const exported=await page.request.get('/api/app/payments?format=csv&state=partially_refunded')

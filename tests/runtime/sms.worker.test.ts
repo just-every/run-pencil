@@ -184,14 +184,15 @@ contract('DIST-011','SMS invitations require recorded consent, use sealed owner 
  expect(await invitationOf('quiet@synthetic.test')).toMatchObject({status:'sent',attempts:1});expect(await smsRequests('+15555550107')).toHaveLength(1)
  // Known contact zones govern SMS; unknown zones retain the workspace window on the same launch.
  await accepted(await f.call('/api/app/workspace',{timeZone:'UTC',sendingWindowStart:'09:00',sendingWindowEnd:'12:00'},{method:'PUT'}))
- const zoned=await accepted(await f.call(contacts,{name:'synthetic-pencil-c47-2',email:'synthetic-pencil-c47-2@synthetic.test',mobile:'+15555550109',timeZone:'America/New_York',smsConsent:{given:true,wording}}),201)
+ const initialZone=await accepted(await f.call(contacts,{name:'synthetic-pencil-c47-2',email:'synthetic-pencil-c47-2@synthetic.test',mobile:'+15555550109',timeZone:'UTC',smsConsent:{given:true,wording}}),201)
+ const zoned=await accepted(await f.call(contacts+'/'+initialZone.id,{name:initialZone.name,email:initialZone.email,timeZone:'America/New_York'},{method:'PUT'}))
  const unknownZone=await accepted(await f.call(contacts,{name:'synthetic-pencil-c47-3',email:'synthetic-pencil-c47-3@synthetic.test',mobile:'+15555550110',smsConsent:{given:true,wording}}),201)
  expect(zoned.timeZone).toBe('America/New_York');expect(unknownZone.timeZone).toBeNull()
  for(const method of ['POST','PUT']) {
-  const invalid=await f.call(contacts+(method==='PUT'?'/'+zoned.id:''),{name:zoned.name,email:zoned.email,timeZone:'synthetic-pencil-c47-invalid-zone'},{method})
+  const invalid=await f.call(contacts+(method==='PUT'?'/'+zoned.id:''),{name:zoned.name,email:zoned.email,timeZone:'synthetic-pencil-c47-20'},{method})
   expect(invalid.status).toBe(400);expect(await invalid.json()).toMatchObject({message:'The contact time zone is invalid.'})
  }
- const invalidImport=await accepted(await f.call(contacts+'/import',{csv:'name,email,time_zone\nsynthetic-pencil-c47-4,synthetic-pencil-c47-4@synthetic.test,synthetic-pencil-c47-invalid-zone',commit:true}))
+ const invalidImport=await accepted(await f.call(contacts+'/import',{csv:'name,email,time_zone\nsynthetic-pencil-c47-4,synthetic-pencil-c47-4@synthetic.test,synthetic-pencil-c47-20',commit:true}))
  expect(invalidImport.rows).toEqual([{row:2,status:'invalid',message:'The contact time zone is invalid.'}])
  const zoneImport=await accepted(await f.call(contacts+'/import',{csv:'name,email,time_zone\nsynthetic-pencil-c47-5,synthetic-pencil-c47-5@synthetic.test,America/Los_Angeles',commit:true}))
  expect(zoneImport.counts.added).toBe(1)
