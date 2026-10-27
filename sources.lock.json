@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "6f933ed7648e59ca0e77731b974d90f4c6d699eac6fc945c6cfc7e3098c67e1c",
+      "sha256": "79ffb749d0307223ce34127fd46c3fd5cee50d058130a747aa43b1c116da82e2",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "5bb8f93cccedd8f5f6fcf406184cc89325ff5bfd3d4757ffbf172c3ae1923f70",
+      "sha256": "c0cb6496134920efff03b6c5c3c22e0f797ebaa2ec9c1b9ba30e77674b7f8bd8",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "9fa1bc55c0a9567a8302f036213b9410cebcd3ee7ed540685b65969fcd0711a5",
+      "sha256": "552bf6354dd76ce68cfb589a162141c7674aac4a20fa99c6ca5df387f2cec20b",
       "executable": false
     },
     "DEMO.md": {
@@ -7797,11 +7797,11 @@
       "executable": false
     },
     "tests/runtime/brand.worker.test.ts": {
-      "sha256": "26aba81f4a8b6058ad403af035299c40bf9f1d7bd19b42740932546a1251a100",
+      "sha256": "f23b4cb56c799e1591362f54308017d35cce0b73b65e67f727e9219d82ace2bd",
       "executable": false
     },
     "tests/runtime/calculations.worker.test.ts": {
-      "sha256": "802ce64b5c1ffe1c6f38e53d530e3b77749eb2b2576c74ee69a675675b1e4c2f",
+      "sha256": "743e2160b652c2f08cf3d8703797c708d77a2bdb0e079c689da6aa11b7280b2f",
       "executable": false
     },
     "tests/runtime/chat-integrations-proof.ts": {
@@ -7817,7 +7817,7 @@
       "executable": false
     },
     "tests/runtime/completion-redirects.worker.test.ts": {
-      "sha256": "52f6c00d411853293920059c20cd1a2a465acc7fbffb29530b8d99e77937d1da",
+      "sha256": "bb71e4f24bf79b72f0991f0ec6d1c6a0badb1b50726d4d0895e53960060cecc9",
       "executable": false
     },
     "tests/runtime/conditions.worker.test.ts": {
@@ -7889,7 +7889,7 @@
       "executable": false
     },
     "tests/runtime/hidden-fields.worker.test.ts": {
-      "sha256": "d84c9a04c287017e0ceb09fd93cba287b771494a77de278daac5bed2e5d0375d",
+      "sha256": "60374b373ad9fe40c868605145442d0860ee4c6556654089b99d6a47cc047985",
       "executable": false
     },
     "tests/runtime/import-custody-commit-boundary.ts": {
@@ -7909,7 +7909,7 @@
       "executable": false
     },
     "tests/runtime/import-privacy.worker.test.ts": {
-      "sha256": "81f5ce1542b8583b863698e69062b721f2e2be8affbddac6a87e5188e947ac9b",
+      "sha256": "8623384d30c73c146763548d9a6a7b98d9d78e41b88827b75fc8a751d1b72355",
       "executable": false
     },
     "tests/runtime/install-restore.worker.test.ts": {
@@ -8077,7 +8077,7 @@
       "executable": false
     },
     "tests/runtime/transition.worker.test.ts": {
-      "sha256": "4b46e663fa040400d95f2c62d76365fb6ec8d06d322c2802ab312c3edf4bf4ec",
+      "sha256": "4502bd0092e9c04db167b1f8e961e564a820548c65ec1884ef5903dca55e6af8",
       "executable": false
     },
     "tests/runtime/typeform-definition.worker.test.ts": {
