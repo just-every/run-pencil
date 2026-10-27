@@ -1,3 +1,5 @@
+import { smsDeliveryMobile } from './deliveries'
+import { deliveryRetryAction, smsRefusal, smsRefusalReason } from '../sms/refusals'
 import { admittedResponseSql } from '../payments/admission'
 import { bindInvitationCollectorSql, collectorAdmissionSql, invitationCollectorAdmissionSql, collectorId as collectorIdSchema, throwCollectorAdmissionFailure, type CollectorService } from '../collectors'
 import { ulid } from 'ulid'
@@ -106,11 +108,13 @@ export class InvitationLaunches {
   }
   async list(workspaceId: string, flowId: string) {
     if (!await this.db.prepare('SELECT id FROM flows WHERE id = ? AND workspace_id = ?').bind(flowId, workspaceId).first()) throw new NotFoundError('This flow is not in your workspace.')
-    return (await this.db.prepare(`SELECT p.id, p.name_snapshot AS name, p.email_snapshot AS email, p.revision_id AS revisionId,
-      p.delivery_status AS deliveryStatus, p.response_status AS responseStatus, c.opted_out_at AS optedOutAt,
+    const rows = (await this.db.prepare(`SELECT p.id, p.name_snapshot AS name, p.email_snapshot AS email, p.revision_id AS revisionId,
+      p.contact_id AS contactId, COALESCE(json_extract(l.policy_json,'$.channel'),'email') AS channel, ${smsDeliveryMobile} AS mobile, c.mobile AS currentMobile, d.refusal_code AS refusalCode,
+      (c.mobile IS NOT NULL AND c.sms_consent_at IS NOT NULL AND c.sms_stopped_at IS NULL AND c.mobile=c.sms_consent_mobile) AS smsConsented, p.delivery_status AS deliveryStatus, p.response_status AS responseStatus, c.opted_out_at AS optedOutAt,
       d.id AS deliveryId, d.kind, d.status, d.reason, d.attempts, d.available_at AS availableAt FROM invitation_participants p
-      JOIN flow_revisions r ON r.id = p.revision_id LEFT JOIN distribution_contacts c ON c.id = p.contact_id
+      JOIN flow_revisions r ON r.id = p.revision_id JOIN invitation_launches l ON l.id=p.launch_id LEFT JOIN distribution_contacts c ON c.id = p.contact_id
       JOIN mail_deliveries d ON d.participant_id = p.id WHERE p.workspace_id = ? AND r.flow_id = ? ORDER BY p.created_at DESC, d.kind`)
-      .bind(workspaceId, flowId).all()).results
+      .bind(workspaceId, flowId).all<{status:string;channel:string;refusalCode:number|null;mobile:string|null;currentMobile:string|null;smsConsented:number;reason:string|null}>()).results
+    return rows.map(row => ({...row, refusal:smsRefusal(row.refusalCode), retryAction:deliveryRetryAction(row), reason:[21610,21211,21612,21614].includes(row.refusalCode ?? 0) ? smsRefusalReason(row.refusalCode!) : row.reason}))
   }
 }

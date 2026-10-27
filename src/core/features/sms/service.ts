@@ -1,4 +1,5 @@
 import { ulid } from 'ulid'
+import { smsRefusalReason } from './refusals'
 import type { IntegrationConnections } from '../../platform/config/connections'
 import { ForbiddenError, NotFoundError, ValidationError } from '../../shared/errors'
 import type { MailDeliveries } from '../distribution'
@@ -26,10 +27,7 @@ export class SmsService {
       // A 4xx carrying a Twilio error code is a definite refusal: Twilio created no message (DIST-008 keeps the provider reason).
       const refusal=response.status>=400&&response.status<500?await response.json().then(body=>(body as {code?:unknown})?.code,()=>null):null
       if(typeof refusal==='number'&&Number.isInteger(refusal)&&refusal>0&&refusal<1_000_000){
-        const contactSide=[21211,21612,21610,21614].includes(refusal)
-        return {kind:'permanent',reason:contactSide
-          ?`Twilio refused the contact's number (error ${refusal}). Check the number with the contact; a retry sends the same number.`
-          :`Twilio refused the sending number, credentials or country permission (error ${refusal}). Fix it in Settings or Twilio, then queue a retry.`}
+        return {kind:'permanent',refusalCode:refusal,reason:smsRefusalReason(refusal)}
       }
       if(!response.ok)return {kind:response.status>=500?'unknown':'permanent',reason:`Twilio answered ${response.status}. Reconcile uncertain delivery before retrying.`}
       const receipt=await response.json() as {sid?:unknown}
@@ -67,13 +65,13 @@ export class SmsService {
     const hash=await crypto.subtle.digest('SHA-256',encoder.encode(JSON.stringify([sid,status])))
     const id='sms-status:'+Array.from(new Uint8Array(hash),byte=>byte.toString(16).padStart(2,'0')).join(''),event='sms-status:'+status,now=new Date().toISOString()
     const failure=['undelivered','failed'].includes(status),terminal=status==='delivered'||failure
-    const reason='Twilio '+status+(error?' (error '+error+')':'')+'.'
+    const reason=failure && [21610,21211,21612,21614].includes(Number(error)) ? smsRefusalReason(Number(error)) : 'Twilio '+status+(error?' (error '+error+')':'')+'.'
     // Once a terminal receipt exists, late queued/sent receipts are history only. Delivery confirmation wins over late failures.
-    const mayAdvance=`NOT EXISTS(SELECT 1 FROM mail_delivery_attempts WHERE delivery_id=mail_deliveries.id AND event='sms-status:delivered')
-      AND (? OR NOT EXISTS(SELECT 1 FROM mail_delivery_attempts WHERE delivery_id=mail_deliveries.id AND event IN('sms-status:failed','sms-status:undelivered')))`
+    const mayAdvance=`NOT EXISTS(SELECT 1 FROM mail_delivery_attempts WHERE delivery_id=mail_deliveries.id AND provider_id=mail_deliveries.provider_id AND event='sms-status:delivered')
+      AND (? OR NOT EXISTS(SELECT 1 FROM mail_delivery_attempts WHERE delivery_id=mail_deliveries.id AND provider_id=mail_deliveries.provider_id AND event IN('sms-status:failed','sms-status:undelivered')))`
     await this.db.batch([
-      this.db.prepare(`UPDATE mail_deliveries SET status=?,reason=?,updated_at=? WHERE id=? AND provider_id=? AND status<>'cancelled'
-        AND NOT EXISTS(SELECT 1 FROM mail_delivery_attempts WHERE id=?) AND ${mayAdvance}`).bind(failure?'failed':'sent',reason,now,delivery.id,sid,id,status==='delivered'?1:0),
+      this.db.prepare(`UPDATE mail_deliveries SET status=?,reason=?,refusal_code=?,updated_at=? WHERE id=? AND provider_id=? AND status<>'cancelled'
+        AND NOT EXISTS(SELECT 1 FROM mail_delivery_attempts WHERE id=?) AND ${mayAdvance}`).bind(failure?'failed':'sent',reason,failure&&error?Number(error):null,now,delivery.id,sid,id,status==='delivered'?1:0),
       this.db.prepare(`UPDATE invitation_participants SET delivery_status=(SELECT status FROM mail_deliveries WHERE id=?) WHERE id=? AND ?='invitation'
         AND EXISTS(SELECT 1 FROM mail_deliveries WHERE id=? AND status IN('sent','failed')) AND NOT EXISTS(SELECT 1 FROM mail_delivery_attempts WHERE id=?)`).bind(delivery.id,delivery.participantId,delivery.kind,delivery.id,id),
       this.db.prepare(`UPDATE mail_deliveries SET status='cancelled',reason='The SMS invitation failed; its reminder is cancelled.',updated_at=? WHERE participant_id=? AND kind='reminder' AND status='pending'
