@@ -809,7 +809,7 @@
       "executable": false
     },
     ".github/workflows/verify.yml": {
-      "sha256": "b83ac58508fa4261e9cde4330f2e9af95ea0ad31d199a920bb68323dea3ad309",
+      "sha256": "1b5ca85c40d5a3e41ba2cc6e3a271684009bbe581b7a277ccc600d5dcb54075e",
       "executable": false
     },
     ".gitignore": {
@@ -1488,6 +1488,14 @@
       "sha256": "840cbdc3544faf83e887fcbba14b2291636019ccaa84783ae98be50f5dbb496f",
       "executable": false
     },
+    "scripts/chromium-probe.mjs": {
+      "sha256": "cf0ce8b941d2dc5afb795b48a8ab6eeced074eb478a770cb42e4971607c218e6",
+      "executable": false
+    },
+    "scripts/ci-builds.mjs": {
+      "sha256": "6ae7e9df4014447f8c68928a68ee0bc4326ad4509db777ae51dc37e7033d6fe3",
+      "executable": false
+    },
     "scripts/ci-contract-evidence.mjs": {
       "sha256": "ab48b252f9bb86b4cb38eee94f7a5a80efc641e222cf5d3cc9a0fe6d0d37f355",
       "executable": false
@@ -1860,6 +1868,10 @@
       "sha256": "5285d97517b2f3ee148a96775c41161456e3893a10125fc6cd83bbd14246f3e0",
       "executable": false
     },
+    "scripts/install-chromium-deps.py": {
+      "sha256": "0e63ab24d0e2b85a359092f2dcc101fef46e690f8ed0fb8c8018560020846df9",
+      "executable": false
+    },
     "scripts/install-gitleaks.sh": {
       "sha256": "749e4620cc20ae8a42da92bca6cc7c5f52dd6d16c80d67bb58e3b907cfd35e80",
       "executable": true
@@ -1933,11 +1945,11 @@
       "executable": false
     },
     "scripts/run-e2e-server.mjs": {
-      "sha256": "bf56473dd5144e11b6e0fd7d01d2a4bd92f1fcd31da8fe54d16151f1cd7509f5",
+      "sha256": "a8a49ab922ab3abb487a542f3a095455f92378fc3aa93a7c36873d02574d9cc0",
       "executable": false
     },
     "scripts/run-site-server.mjs": {
-      "sha256": "f1275bf83605b8c0222f81c3887bc678e5abb63ac7c5e53bdb31f0fafefe8fdf",
+      "sha256": "719c8197dfd570a4cddc6ae49f64118c0c33e2058d6faad25f1c2c219947d686",
       "executable": false
     },
     "scripts/schema/json-schema.mjs": {
@@ -7057,7 +7069,7 @@
       "executable": false
     },
     "tests/admission/owner-editor.spec.ts": {
-      "sha256": "47417b46a9c9eb1c5cab38444c0c4076937ba56bb348a824b111159ecb313e5f",
+      "sha256": "05c6dc27a3b045f13e77b0f8f3675610ce571b2e507d44b30ca194c3c954a12d",
       "executable": false
     },
     "tests/contract/data-release.contract.test.ts": {
@@ -7345,7 +7357,7 @@
       "executable": false
     },
     "tests/e2e/response-search.spec.ts": {
-      "sha256": "46d4a86bf5de25f64a35814188370c770c7e5b78b551e9a567482951a1837152",
+      "sha256": "7a4d18ffdde275f4229751ffcd7f2e98ffc0b9345d5f9cf59ddc5d271e90be32",
       "executable": false
     },
     "tests/e2e/response-webhooks.spec.ts": {
