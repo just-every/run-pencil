@@ -3,6 +3,7 @@ import { spawn } from 'node:child_process'
 import { resolve } from 'node:path'
 import { managementEdge } from '../tests/admission/management-edge.mjs'
 import { testDevKey } from '../tests/helpers/dev-key.mjs'
+import { restoreCiBuild } from './ci-builds.mjs'
 
 const root = resolve(new URL('..', import.meta.url).pathname)
 const port = process.argv[2]
@@ -65,10 +66,13 @@ const common = { ...process.env, PENCIL_WRANGLER_CONFIG: config, CI: '1', WRANGL
 let management
 let exitCode
 try {
-  const built = await run('pnpm', ['exec', 'vite', 'build', '--config', 'tests/helpers/vite-mail.config.ts'], common)
+  const profile = process.argv.includes('--management') ? 'admission' : 'browser'
+  const reused = !process.argv.includes('--build-only') && await restoreCiBuild(root, profile)
+  const built = reused ? 0 : await run('pnpm', ['exec', 'vite', 'build', '--config', 'tests/helpers/vite-mail.config.ts'], common)
   if (built !== 0) console.error(`Pencil browser setup: app build exited ${built}`)
   if (receivedSignal) exitCode = 0
   else if (built !== 0) exitCode = built
+  else if (process.argv.includes('--build-only')) exitCode = 0
   else {
     const migrated = await run('pnpm', ['exec', 'wrangler', 'd1', 'migrations', 'apply', 'pencil-local', '--local', '--persist-to', state, '--config', config], common)
     if (migrated !== 0) console.error(`Pencil browser setup: app migrations exited ${migrated}`)

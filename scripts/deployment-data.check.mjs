@@ -80,7 +80,7 @@ function rewritten(path, mutate) {
   writeFileSync(path, JSON.stringify(archive));
 }
 
-test('complete archive restores R2 bytes and ownership metadata with D1, re-exports identically, and standalone proof keeps actual attachment custody', async () => {
+const archiveCase0 = { name: "complete archive restores R2 bytes and ownership metadata with D1, re-exports identically, and standalone proof keeps actual attachment custody", run: async () => {
   const f = fixture(); let proxy;
   const config = join(f.directory,'wrangler.json');
   writeFileSync(config,JSON.stringify({name:'synthetic-pencil-archive',compatibility_date:'2026-09-08',r2_buckets:[{binding:'SOURCE',bucket_name:'synthetic-pencil-source'},{binding:'TARGET',bucket_name:'synthetic-pencil-target'}]}));
@@ -126,9 +126,10 @@ test('complete archive restores R2 bytes and ownership metadata with D1, re-expo
     await assert.rejects(exportWithObjects(f.source,join(f.directory,'missing.rer'),proxy.env.SOURCE),{recoveryCode:'ATTACHMENT_REQUIRED'});
     assert.equal(existsSync(join(f.directory,'missing.rer')),false);
   } finally {await proxy?.dispose();rmSync(f.directory,{recursive:true});}
-});
+} };
 
-test('full current-data roundtrip preserves prefill markers, disabled confirmation history, webhook endpoints without their signing secret, stable revisions, quarantine, receipts, historical actors, auth, effects, exact text and int64', () => {
+
+const archiveCase1 = { name: "full current-data roundtrip preserves prefill markers, disabled confirmation history, webhook endpoints without their signing secret, stable revisions, quarantine, receipts, historical actors, auth, effects, exact text and int64", run: () => {
   const f = fixture();
   try {
     const exported = exportData(f.source, f.archive);
@@ -177,9 +178,10 @@ test('full current-data roundtrip preserves prefill markers, disabled confirmati
     assert.equal(database.prepare('SELECT started_at FROM traffic_tracking').get().started_at, stamp);
     database.close();
   } finally { rmSync(f.directory, { recursive: true }); }
-});
+} };
 
-test('existing archive/database files are untouched; malformed and foreign-key-invalid archives create no target', () => {
+
+const archiveCase2 = { name: "existing archive/database files are untouched; malformed and foreign-key-invalid archives create no target", run: () => {
   const f = fixture();
   try {
     exportData(f.source, f.archive);
@@ -217,9 +219,10 @@ test('existing archive/database files are untouched; malformed and foreign-key-i
     assert.throws(() => importData(f.archive, f.restored));
     assert.equal(existsSync(f.restored), false);
   } finally { rmSync(f.directory, { recursive: true }); }
-});
+} };
 
-test('snapshot preserves blob and real storage types without executing archive SQL', () => {
+
+const archiveCase3 = { name: "snapshot preserves blob and real storage types without executing archive SQL", run: () => {
   const database = new DatabaseSync(':memory:');
   try {
     initialize(database);
@@ -230,10 +233,11 @@ test('snapshot preserves blob and real storage types without executing archive S
     const table = readTable(database, { name: 'extra_values', columns: ['binary','amount'] });
     assert.deepEqual(table.rows, [[{ type: 'blob', value: 'AP+ACg==' }, { type: 'real', value: 1.25 }]]);
   } finally { database.close(); }
-});
+} };
 
 
-test('unknown non-provider source tables cannot hide behind provider/reserved prefix matching', () => {
+
+const archiveCase4 = { name: "unknown non-provider source tables cannot hide behind provider/reserved prefix matching", run: () => {
   const f = fixture();
   try {
     const database = new DatabaseSync(f.source);
@@ -242,9 +246,10 @@ test('unknown non-provider source tables cannot hide behind provider/reserved pr
     assert.throws(() => exportData(f.source, f.archive), /schema differs/);
     assert.equal(existsSync(f.archive), false);
   } finally { rmSync(f.directory, { recursive: true }); }
-});
+} };
 
-test('a target appearing during private staging is never overwritten and only owned staging is removed', () => {
+
+const archiveCase5 = { name: "a target appearing during private staging is never overwritten and only owned staging is removed", run: () => {
   const f = fixture();
   let interception;
   try {
@@ -260,4 +265,12 @@ test('a target appearing during private staging is never overwritten and only ow
     assert.equal(readFileSync(f.restored, 'utf8'), 'Existing target appeared during staging');
     assert.deepEqual(readdirSync(f.directory).filter(name => name.startsWith('.pencil-restore-')), []);
   } finally { interception?.mock.restore(); rmSync(f.directory, { recursive: true }); }
+} };
+
+
+test('complete archive recovery retains exact data and attachment custody and refuses unsafe sources, archives and destinations without overwrites', async () => {
+  for (const entry of [archiveCase0, archiveCase1, archiveCase2, archiveCase3, archiveCase4, archiveCase5]) {
+    try { await entry.run(); }
+    catch (cause) { throw new Error(entry.name, { cause }); }
+  }
 });

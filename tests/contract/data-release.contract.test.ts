@@ -11,7 +11,7 @@ const groups = {
   graph: ['deployment-data'],
   recovery: ['deployment-data-hosted'],
   restore: ['deployment-data-initialized'],
-  delivery: ['deployment-data-custody-replay', 'deployment-data-install', 'deployment-data-notification', 'deployment-data-reporting', 'distribution-data', 'action-data', 'analysis-data'],
+  delivery: ['deployment-data-custody-replay'],
 }
 
 const selectedGroup = process.env.PENCIL_ARCHIVE_GROUP

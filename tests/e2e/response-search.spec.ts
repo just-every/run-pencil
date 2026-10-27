@@ -24,14 +24,27 @@ contract('LEDG-006', 'operators search responses, see matching answers and downl
   const scenario = await collectResponseSearchScenario(call, `search-${info.project.name}-${Date.now()}`)
   await page.goto(`/app/flows/${scenario.flowId}/results`)
   const ledger = page.getByRole('region', { name: 'Response ledger' })
+  const selectRevision = async (revision: string) => {
+    const report = page.waitForResponse(response => {
+      const url = new URL(response.url())
+      return url.pathname === `${scenario.path}/results` && (revision === 'all'
+        ? url.searchParams.get('allRevisions') === 'true'
+        : url.searchParams.get('revisionId') === revision)
+    })
+    await page.getByLabel('Published revision').selectOption(revision)
+    expect((await report).ok()).toBe(true)
+    // The ledger loads independently, then remounts when the combined report's
+    // revision arrives. Wait for that report before opening or searching rows.
+    await expect(page.locator('section.results')).toHaveAttribute('aria-busy', 'false')
+  }
   // The static "All published revisions" option exists before the client loads results; choose it once the ledger has.
   await expect(ledger.getByText('matching completed responses', { exact: false })).toBeVisible()
-  await page.getByLabel('Published revision').selectOption('all')
+  await selectRevision('all')
   await ledger.getByRole('searchbox', { name: 'Search responses', exact: true }).fill('queue')
   await ledger.getByRole('button', { name: 'Search', exact: true }).click()
   await expect(ledger.getByRole('button', { name: 'View answers', exact: true })).toHaveCount(2)
   await expect(ledger.locator('mark')).toHaveCount(2)
-  await page.getByLabel('Published revision').selectOption(scenario.firstRevision)
+  await selectRevision(scenario.firstRevision)
   await expect(ledger.getByRole('button', { name: 'View answers', exact: true })).toHaveCount(1)
   await ledger.getByRole('button', { name: 'View answers', exact: true }).click()
   await expect(ledger.locator('.ledger-answer mark')).toHaveText('queue')
@@ -48,7 +61,7 @@ contract('LEDG-006', 'operators search responses, see matching answers and downl
   }
   await ledger.getByRole('button', { name: 'Clear search' }).click()
   await expect(ledger.getByRole('button', { name: 'View answers', exact: true })).toHaveCount(2)
-  await page.getByLabel('Published revision').selectOption('all')
+  await selectRevision('all')
   await ledger.getByRole('searchbox', { name: 'Search responses', exact: true }).fill('café et la STRASSE')
   await ledger.getByRole('button', { name: 'Search', exact: true }).click()
   await expect(ledger.getByRole('button', { name: 'View answers', exact: true })).toHaveCount(1)

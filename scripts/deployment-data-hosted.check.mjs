@@ -15,7 +15,7 @@ import { sqliteTransport } from './deployment-data-test-helpers.mjs';
 
 const directory=()=>mkdtempSync(join(process.env.PENCIL_VERIFICATION_TMPDIR??tmpdir(),'pencil-kit-recovery-'));
 
-test('owner recovery command round-trips a kit-created installation filled through app routes, preserves custody and delivery, never revives sign-in authorization, refuses a second restore without writes', async () => {
+const recoveryCase0 = { name: "owner recovery command round-trips a kit-created installation filled through app routes, preserves custody and delivery, never revives sign-in authorization, refuses a second restore without writes", run: async () => {
   const dir=directory(), source=await kitDatabase(join(dir,'source.sqlite')), target=await kitDatabase(join(dir,'target.sqlite'));
   const network=[];
   const mail=mock.method(globalThis,'fetch',async(url,options)=>{assert.equal(String(url),'https://api.sendgrid.com/v3/mail/send');network.push(options.body);return new Response(null,{status:202,headers:{'X-Message-Id':'recovery-delivery'}});});
@@ -111,9 +111,10 @@ test('owner recovery command round-trips a kit-created installation filled throu
     const evidence=process.env.PENCIL_RECOVERY_EVIDENCE;
     if(evidence){mkdirSync(evidence,{recursive:true,mode:0o700});for(const file of ['source.rer','restored.rer','before-erasure.rer'])copyFileSync(join(dir,file),join(evidence,file));writeFileSync(join(evidence,'roundtrip.json'),JSON.stringify({exported,archiveBytes:Buffer.byteLength(bytes),semanticEquality:true,byteEquality:true,kitLedger:history,secondRestore:{code:'NONEMPTY_TARGET',databaseBytesUnchanged:true,totalChangesUnchanged:true,onlyReads:true},journalRefusal:'ERASURE_EPOCH',providerCalls:network.length,mailReplayed:0,sourceSnapshot:snapshot(source).sha256},null,2));}
   } finally {mail.mock.restore();source.close();target.close();rmSync(dir,{recursive:true});}
-});
+} };
 
-test('kit recovery refuses incomplete, uncertain, altered and mixed migration ledgers before archive publication or destination writes', async () => {
+
+const recoveryCase1 = { name: "kit recovery refuses incomplete, uncertain, altered and mixed migration ledgers before archive publication or destination writes", run: async () => {
   const dir=directory(), source=await kitDatabase(':memory:');
   try {
     // Empty source still exercises the ledger contract independently of app data.
@@ -130,7 +131,8 @@ test('kit recovery refuses incomplete, uncertain, altered and mixed migration le
       }finally{db.close();rmSync(path);}
     }
   }finally{source.close();rmSync(dir,{recursive:true});}
-});
+} };
+
 
 // Platform's installer ledger, verbatim from runeditrun/platform src/integrations/cloudflare-migrations.ts.
 const platformLedgerDDL='CREATE TABLE IF NOT EXISTS rer_migrations (name TEXT PRIMARY KEY, sha256 TEXT NOT NULL, applied_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP)';
@@ -140,7 +142,7 @@ function platformDatabase(path,appliedAt,ddl=platformLedgerDDL){
   db.exec('PRAGMA foreign_keys=ON');return db;
 }
 
-test('[BASE-DATA-001,DATA-001] owner recovery command exports and restores a Platform-installed database: rer_migrations is validated and kept, never rewritten or dropped', async () => {
+const recoveryCase2 = { name: "[BASE-DATA-001,DATA-001] owner recovery command exports and restores a Platform-installed database: rer_migrations is validated and kept, never rewritten or dropped", run: async () => {
   const dir=directory(), source=platformDatabase(join(dir,'source.sqlite'),'2026-10-01 09:00:00'), target=platformDatabase(join(dir,'target.sqlite'),'2026-10-19 06:00:00');
   const mail=mock.method(globalThis,'fetch',async url=>{assert.equal(String(url),'https://api.sendgrid.com/v3/mail/send');return new Response(null,{status:202,headers:{'X-Message-Id':'platform-delivery'}});});
   try {
@@ -205,4 +207,14 @@ test('[BASE-DATA-001,DATA-001] owner recovery command exports and restores a Pla
       }
     } finally {altered.close();reshaped.close();}
   } finally {mail.mock.restore();source.close();target.close();rmSync(dir,{recursive:true});}
+} };
+
+
+test('owner recovery preserves product data and refuses unsafe migration histories across kit and Platform installations', async () => {
+  // One recovery contract, exercised through each supported installer controller.
+  // Keep every refusal and round-trip assertion within the original archive group.
+  for (const entry of [recoveryCase0, recoveryCase1, recoveryCase2]) {
+    try { await entry.run(); }
+    catch (cause) { throw new Error(entry.name, { cause }); }
+  }
 });
