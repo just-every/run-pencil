@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "6f933ed7648e59ca0e77731b974d90f4c6d699eac6fc945c6cfc7e3098c67e1c",
+      "sha256": "12d251dd4dee45f65cc07c30c68e3366d986dfe2d616c04cc1ed25abc703a29f",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "9fa1bc55c0a9567a8302f036213b9410cebcd3ee7ed540685b65969fcd0711a5",
+      "sha256": "f8dc92a21dbbd32f497edd2d66e3250a8a70e29a3fd56e902c74010aa401fe5d",
       "executable": false
     },
     "DEMO.md": {
@@ -7073,7 +7073,7 @@
       "executable": false
     },
     "test-budget.json": {
-      "sha256": "5fbfa35f3bbe28acbb531b33c85d16822a75a51e8de4cfb0aee080a17c36fb8e",
+      "sha256": "3aef4bab9deebb483607013a37455e75a06cffacb7f70af45268ae28c0e5fec1",
       "executable": false
     },
     "tests/admission/management-edge.mjs": {
