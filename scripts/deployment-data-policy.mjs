@@ -114,7 +114,7 @@ const retained = {
   local_dev_inbox: 'id to_email expires_at created_at',
   local_fixture_initializations: 'id initialized_at',
   local_mail_outbox: 'delivery_id created_at',
-  mail_deliveries: 'id participant_id kind status idempotency_key available_at first_attempt_at last_attempt_at attempts provider_id reason created_at updated_at',
+  mail_deliveries: 'sms_mobile refusal_code id participant_id kind status idempotency_key available_at first_attempt_at last_attempt_at attempts provider_id reason created_at updated_at',
   mail_delivery_attempts: 'id delivery_id ordinal event actor_operator_id reason provider_id created_at',
   oa_bootstrap: 'singleton claim_id claimed_at',
   // Local dev identity bookkeeping: its rows never travel (deployment-data-dev.mjs).
