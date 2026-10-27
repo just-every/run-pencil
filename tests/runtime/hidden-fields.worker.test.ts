@@ -40,7 +40,7 @@ async function fixture() {
   return {...f,id,slug,base,read,save,publish,settings,question,enterprise,blank,submit}
 }
 
-contract('FIELD-001','collects only declared typed link values, routes present and blank values, and retains filtered exports and copy custody',async()=>{
+contract('FIELD-001', "collects declared typed link values through publication, filtered exports, copies and identified or anonymous custody", async () => {
   const f=await fixture()
   expect((await f.publish()).status).toBe(201)
   const first=await f.submit({plan:'  ENTERPRISE ',utm_campaign:'spring',secret:'never-retain'})
@@ -94,21 +94,22 @@ contract('FIELD-001','collects only declared typed link values, routes present a
   expect(JSON.parse(stored!.context).identityMode).toBe('identified')
   await env.DB.prepare("UPDATE responses SET response_context_json=json_set(response_context_json,'$.identityMode','anonymous') WHERE id=?").bind(receipt.responseId).run()
   expect(((await (await f.call(`${f.base}/ledger`)).json()) as Ledger).responses.find(row=>row.id===receipt.responseId)?.identityMode).toBe('identified')
-},60_000)
 
-contract('FIELD-001','requires identified publication for identity fields and rejects merge tags, invalid values and anonymous click IDs',async()=>{
-  const f=await fixture(),settings:FormSettings={...f.settings,hiddenFields:[...f.settings.hiddenFields,{id:'email',name:'email',type:'email',category:'identifying'},{id:'number',name:'order_total',type:'number',category:'plain'},{id:'click',name:'gclid',type:'text',category:'click_id'}]}
-  expect((await f.save(settings)).status).toBe(200)
-  const refused=await f.publish();expect(refused.status).toBe(400);expect(await refused.text()).toContain('email')
-  settings.identityMode='identified';expect((await f.save(settings)).status).toBe(200);expect((await f.publish()).status).toBe(201)
-  const identified=await f.submit({email:'jo@example.com',plan:'enterprise',order_total:'12.50'})
-  const row=await env.DB.prepare('SELECT response_context_json AS context FROM responses WHERE id=?').bind(identified.receipt.responseId).first<{context:string}>()
-  expect(JSON.parse(row!.context)).toMatchObject({identityMode:'identified',hidden:{email:'jo@example.com',number:12.5}})
-  const invalid=await f.submit({email:'*|EMAIL|*',order_total:'NaN',plan:'basic'})
-  const bad=await env.DB.prepare('SELECT response_context_json AS context FROM responses WHERE id=?').bind(invalid.receipt.responseId).first<{context:string}>()
-  expect(JSON.parse(bad!.context)).toEqual({hidden:{plan:'basic'},discarded:2,identityMode:'identified'})
-  const anonymous={...settings,identityMode:'anonymous' as const,hiddenFields:settings.hiddenFields.filter(field=>field.id!=='email')}
-  expect((await f.save(anonymous)).status).toBe(200);expect((await f.publish()).status).toBe(201)
-  const click=await f.submit({gclid:'do-not-store',email:'jo@example.com'})
-  expect(await env.DB.prepare('SELECT response_context_json AS context FROM responses WHERE id=?').bind(click.receipt.responseId).first()).toEqual({context:JSON.stringify({hidden:{},discarded:2,identityMode:'anonymous'})})
-},60_000)
+  // Reconfigure this published form: identity-bearing fields require explicit identification.
+  {
+    const settings:FormSettings={...f.settings,hiddenFields:[...f.settings.hiddenFields,{id:'email',name:'email',type:'email',category:'identifying'},{id:'number',name:'order_total',type:'number',category:'plain'},{id:'click',name:'gclid',type:'text',category:'click_id'}]}
+    expect((await f.save(settings)).status).toBe(200)
+    const refused=await f.publish();expect(refused.status).toBe(400);expect(await refused.text()).toContain('email')
+    settings.identityMode='identified';expect((await f.save(settings)).status).toBe(200);expect((await f.publish()).status).toBe(201)
+    const identified=await f.submit({email:'jo@example.com',plan:'enterprise',order_total:'12.50'})
+    const row=await env.DB.prepare('SELECT response_context_json AS context FROM responses WHERE id=?').bind(identified.receipt.responseId).first<{context:string}>()
+    expect(JSON.parse(row!.context)).toMatchObject({identityMode:'identified',hidden:{email:'jo@example.com',number:12.5}})
+    const invalid=await f.submit({email:'*|EMAIL|*',order_total:'NaN',plan:'basic'})
+    const bad=await env.DB.prepare('SELECT response_context_json AS context FROM responses WHERE id=?').bind(invalid.receipt.responseId).first<{context:string}>()
+    expect(JSON.parse(bad!.context)).toEqual({hidden:{plan:'basic'},discarded:2,identityMode:'identified'})
+    const anonymous={...settings,identityMode:'anonymous' as const,hiddenFields:settings.hiddenFields.filter(field=>field.id!=='email')}
+    expect((await f.save(anonymous)).status).toBe(200);expect((await f.publish()).status).toBe(201)
+    const click=await f.submit({gclid:'do-not-store',email:'jo@example.com'})
+    expect(await env.DB.prepare('SELECT response_context_json AS context FROM responses WHERE id=?').bind(click.receipt.responseId).first()).toEqual({context:JSON.stringify({hidden:{},discarded:2,identityMode:'anonymous'})})
+  }
+}, 60_000)

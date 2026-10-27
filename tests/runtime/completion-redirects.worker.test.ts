@@ -16,8 +16,23 @@ async function fixture() {
   }
   return {...await completionFixture(call,slug),http,slug}
 }
-contract('LOGIC-005','chooses screen or approved redirect from accepted answer, hidden, calculation and score conditions; replay and copies preserve revision custody',async()=>{
-  const f=await fixture(), mappings=[{name:'team',operand:f.size.id},{name:'campaign',operand:'hidden:plan'},{name:'quote',operand:'variable:total'}]
+contract('LOGIC-005', "publishes only approved completion redirects and preserves accepted routing, replay and copied revision custody", async () => {
+  const f=await fixture()
+  // Refused drafts must stay unpublished before the accepted redirect is configured.
+  {
+    for(const [url,parameters] of [
+      ['https://unapproved.example.test/book',[]],['http://sales.example.test/book',[]],['https://user:password@sales.example.test/book',[]],['https://sales.example.test/{{hidden:plan}}',[]],['https://sales.example.test/book',[{name:'value',operand:'deleted-question'}]],['https://sales.example.test/book',[{name:'x',operand:f.size.id},{name:'x',operand:f.score.id}]],
+    ] as const) {
+      await f.call(`${f.base}/draft`,{expectedVersion:(await f.read()).flow.draftVersion,stepId:f.redirect.id,prompt:f.redirect.prompt,required:false,questionSettings:{redirect:{url,parameters}}},'PUT')
+      const publish=await f.http.call(`${f.base}/publish`,{expectedVersion:(await f.read()).flow.draftVersion})
+      expect(publish.status).toBe(400);expect(await publish.text()).toContain(f.redirect.id)
+      expect((await f.http.call(`/api/public/flows/${f.slug}`,undefined,{auth:false})).status).toBe(404)
+  }
+  expect((await f.http.call(`${f.base}/draft/settings`,{expectedVersion:(await f.read()).flow.draftVersion,settings:{...f.settings,redirectOrigins:['https://sales.example.test/path']}},{method:'PUT'})).status).toBe(400)
+
+  }
+
+  const mappings=[{name:'team',operand:f.size.id},{name:'campaign',operand:'hidden:plan'},{name:'quote',operand:'variable:total'}]
   await f.call(`${f.base}/draft`,{expectedVersion:(await f.read()).flow.draftVersion,stepId:f.redirect.id,prompt:f.redirect.prompt,required:false,questionSettings:{redirect:{url:'https://sales.example.test/book?fixed=consultation',parameters:mappings}}},'PUT')
   await f.call(`${f.base}/publish`,{expectedVersion:(await f.read()).flow.draftVersion})
   let original:{input:unknown;receipt:unknown}|undefined
@@ -49,16 +64,5 @@ contract('LOGIC-005','chooses screen or approved redirect from accepted answer, 
   expect(copyMappings.every(item=>draft.steps.some(step=>step.id===item.operand)||draft.formSettings?.hiddenFields.some(field=>`hidden:${field.id}`===item.operand)||draft.formSettings?.calculations?.some(value=>`variable:${value.id}`===item.operand))).toBe(true)
   await f.call(`/api/app/flows/${copied.id}/publish`,{expectedVersion:draft.flow.draftVersion})
   expect((await f.http.call(`${f.base}/ledger`).then(response=>response.json()) as {total:number}).total).toBe(5)
-},60_000)
-contract('LOGIC-005','refuses unapproved, insecure, credential-bearing and invalid operand redirects at publish without changing the live revision',async()=>{
-  const f=await fixture()
-  for(const [url,parameters] of [
-    ['https://unapproved.example.test/book',[]],['http://sales.example.test/book',[]],['https://user:password@sales.example.test/book',[]],['https://sales.example.test/{{hidden:plan}}',[]],['https://sales.example.test/book',[{name:'value',operand:'deleted-question'}]],['https://sales.example.test/book',[{name:'x',operand:f.size.id},{name:'x',operand:f.score.id}]],
-  ] as const) {
-    await f.call(`${f.base}/draft`,{expectedVersion:(await f.read()).flow.draftVersion,stepId:f.redirect.id,prompt:f.redirect.prompt,required:false,questionSettings:{redirect:{url,parameters}}},'PUT')
-    const publish=await f.http.call(`${f.base}/publish`,{expectedVersion:(await f.read()).flow.draftVersion})
-    expect(publish.status).toBe(400);expect(await publish.text()).toContain(f.redirect.id)
-    expect((await f.http.call(`/api/public/flows/${f.slug}`,undefined,{auth:false})).status).toBe(404)
-  }
-  expect((await f.http.call(`${f.base}/draft/settings`,{expectedVersion:(await f.read()).flow.draftVersion,settings:{...f.settings,redirectOrigins:['https://sales.example.test/path']}},{method:'PUT'})).status).toBe(400)
-})
+
+}, 60_000)

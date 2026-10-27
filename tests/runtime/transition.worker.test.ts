@@ -35,7 +35,7 @@ async function progress(session: Session) {
   }
 }
 
-contract(['RESP-013', 'RESP-019', 'RSLT-002'], 'profiles native transition SQL and counts concurrent distinct visits once while retaining ordered backtracking', async () => {
+contract(['RESP-013', 'RESP-019', 'RSLT-002', 'RESP-015'], "counts native concurrent visits once and preserves progress across backtracking, credential refusals and expiry", async () => {
   const f = await fixture('transition-profile')
   const session = await f.start()
   const batches: D1Result[][] = []
@@ -61,39 +61,42 @@ contract(['RESP-013', 'RESP-019', 'RSLT-002'], 'profiles native transition SQL a
   expect(state.session).toMatchObject({ furthest_step_id: welcome.id })
   expect(state.events).toHaveLength(3)
   expect(state.metrics.map(row => row.reached)).toEqual([1, 1, 1])
+
+  const activeExpiry = (await sessionRow(session.sessionId))!.expires_at
+  // Refusals cannot alter the same session whose visit counts were just proved.
+  {
+    const foreign = await fixture('transition-foreign')
+    const other = await foreign.start()
+    expect((await advance(f.slug, session, session.flow.steps[1].id)).status).toBe(204)
+    for (const [slug, input, stepId, code] of [
+      [f.slug, { ...session, sessionToken: 'x'.repeat(64) }, session.flow.steps[1].id, 'SESSION_UNAVAILABLE'],
+      [f.slug, { ...session, sessionId: 'missing-session' }, session.flow.steps[1].id, 'SESSION_UNAVAILABLE'],
+      [foreign.slug, session, session.flow.steps[1].id, 'VALIDATION_ERROR'],
+      [f.slug, session, other.flow.steps[1].id, 'VALIDATION_ERROR'],
+      [f.slug, session, 'missing-step', 'VALIDATION_ERROR'],
+    ] as const) {
+      const before = await progress(session)
+      const response = await advance(slug, input, stepId)
+      expect(response.status).toBe(400)
+      expect(await response.json()).toMatchObject({ error: code })
+      expect(await progress(session)).toEqual(before)
+    }
+    await env.DB.prepare('UPDATE respondent_sessions SET completed_at = ? WHERE id = ?').bind(new Date().toISOString(), session.sessionId).run()
+    const completed = await progress(session)
+    expect(await (await advance(f.slug, session, session.flow.steps[2].id)).json()).toMatchObject({ error: 'SESSION_UNAVAILABLE' })
+    expect(await progress(session)).toEqual(completed)
+    await env.DB.prepare('UPDATE respondent_sessions SET completed_at = NULL, expires_at = ? WHERE id = ?').bind('2000-01-01T00:00:00.000Z', session.sessionId).run()
+    const before = await progress(session)
+    expect(await (await advance(f.slug, session, session.flow.steps[1].id)).json()).toMatchObject({ error: 'SESSION_UNAVAILABLE' })
+    expect(await progress(session)).toEqual(before)
+  }
+  // Restore the fixture's original validity before backtracking and expiring it.
+  await env.DB.prepare('UPDATE respondent_sessions SET expires_at = ? WHERE id = ?').bind(activeExpiry, session.sessionId).run()
+  expect((await advance(f.slug, session, welcome.id)).status).toBe(204)
   await env.DB.prepare('UPDATE respondent_sessions SET expires_at = ? WHERE id = ?').bind('2000-01-01T00:00:00.000Z', session.sessionId).run()
   await f.services.responses.expireSessions(new Date().toISOString(), 1000)
   expect(await sessionRow(session.sessionId)).toBeNull()
   expect(await env.DB.prepare('SELECT dropped FROM revision_step_metric_counters WHERE revision_id = ? AND step_stable_id = ?').bind(session.revisionId, welcome.id).first()).toEqual({ dropped: 1 })
-})
-
-contract(['RESP-013', 'RESP-015'], 'refuses invalid credentials, foreign screens and expired sessions with no progress mutation', async () => {
-  const f = await fixture('transition-refusal')
-  const foreign = await fixture('transition-foreign')
-  const session = await f.start()
-  const other = await foreign.start()
-  expect((await advance(f.slug, session, session.flow.steps[1].id)).status).toBe(204)
-  for (const [slug, input, stepId, code] of [
-    [f.slug, { ...session, sessionToken: 'x'.repeat(64) }, session.flow.steps[1].id, 'SESSION_UNAVAILABLE'],
-    [f.slug, { ...session, sessionId: 'missing-session' }, session.flow.steps[1].id, 'SESSION_UNAVAILABLE'],
-    [foreign.slug, session, session.flow.steps[1].id, 'VALIDATION_ERROR'],
-    [f.slug, session, other.flow.steps[1].id, 'VALIDATION_ERROR'],
-    [f.slug, session, 'missing-step', 'VALIDATION_ERROR'],
-  ] as const) {
-    const before = await progress(session)
-    const response = await advance(slug, input, stepId)
-    expect(response.status).toBe(400)
-    expect(await response.json()).toMatchObject({ error: code })
-    expect(await progress(session)).toEqual(before)
-  }
-  await env.DB.prepare('UPDATE respondent_sessions SET completed_at = ? WHERE id = ?').bind(new Date().toISOString(), session.sessionId).run()
-  const completed = await progress(session)
-  expect(await (await advance(f.slug, session, session.flow.steps[2].id)).json()).toMatchObject({ error: 'SESSION_UNAVAILABLE' })
-  expect(await progress(session)).toEqual(completed)
-  await env.DB.prepare('UPDATE respondent_sessions SET completed_at = NULL, expires_at = ? WHERE id = ?').bind('2000-01-01T00:00:00.000Z', session.sessionId).run()
-  const before = await progress(session)
-  expect(await (await advance(f.slug, session, session.flow.steps[1].id)).json()).toMatchObject({ error: 'SESSION_UNAVAILABLE' })
-  expect(await progress(session)).toEqual(before)
 })
 
 contract('RESP-019', 'rolls session progress and reach counts back when event persistence fails', async () => {

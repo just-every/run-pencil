@@ -53,7 +53,7 @@ contract(['BRAND-001', 'HOME-001', 'BASE-ACCESS-004', 'BASE-INPUT-001'], 'produc
   expect(workspace).toMatchObject({ name: brand.name, timeZone: 'UTC', sendingWindowStart: '09:00', sendingWindowEnd: '17:00' })
 })
 
-contract('DIST-020', 'settings API preserves preview overrides and publication freezes defaults and images across later edits', async () => {
+contract('DIST-020', "published share images retain immutable revision and copied form custody", async () => {
   const f = await previewFixture()
   await env.DB.prepare('UPDATE workspaces SET name=?,brand_configured=1,brand_logo_base64=?,brand_logo_mime=?,brand_logo_version=? WHERE id=?').bind('Synthetic studio', previewImage.base64, previewImage.mime, crypto.randomUUID(), f.workspace).run()
   const initial = await f.publish()
@@ -96,36 +96,36 @@ contract('DIST-020', 'settings API preserves preview overrides and publication f
   await f.publicImage(third.revision.id, replacement.base64)
   await f.publicImage(second.revision.id, previewImage.base64)
   await f.publicImage(first.revision.id, previewImage.base64)
-})
 
-contract('DIST-020', 'duplicates and team templates retain share images under their own form custody', async () => {
-  const f = await previewFixture()
-  expect((await f.save({ ...f.settings, linkPreview: { image: previewImage } })).status).toBe(200)
-  const sourceImage = (await f.read()).formSettings!.linkPreview!.image as LinkPreviewReference
-  const copiedResponse = await f.call(f.base + '/duplicate', { title: 'Copied preview', slug: `copy-${f.slug}` })
-  expect(copiedResponse.status).toBe(201)
-  const copied = await copiedResponse.json() as { id: string }
-  const templateResponse = await f.call(f.base + '/templates', { name: 'Preview template', source: 'draft', expectedVersion: (await f.read()).flow.draftVersion })
-  expect(templateResponse.status).toBe(201)
-  const template = await templateResponse.json() as { id: string }
-  const fromTemplate = await f.call(`/api/app/templates/${template.id}/flows`, { title: 'Templated preview', slug: `template-${f.slug}` })
-  expect(fromTemplate.status).toBe(201)
-  const templated = await fromTemplate.json() as { id: string }
-  for (const flowId of [copied.id, templated.id]) {
-    const base = `/api/app/flows/${flowId}`
-    const draft = await (await f.call(base + '/draft')).json() as import('../../src/core/app/api').BuilderDraft
-    const settings = draft.formSettings!, image = settings.linkPreview!.image as LinkPreviewReference
-    expect(image).toMatchObject({ mime: previewImage.mime, alt: previewImage.alt })
-    expect(image.key).not.toBe(sourceImage.key)
-    expect(image).not.toHaveProperty('base64')
-    const imageResponse = await f.call(base + '/preview-image?key=' + encodeURIComponent(image.key))
-    expect(imageResponse.status).toBe(200)
-    expect(new Uint8Array(await imageResponse.arrayBuffer())).toEqual(decodeLogo(previewImage.base64))
-    expect((await f.call(base + '/draft/settings', { expectedVersion: draft.flow.draftVersion, settings }, { method: 'PUT' })).status).toBe(200)
-    const publish = await f.call(base + '/publish', { expectedVersion: draft.flow.draftVersion + 1 })
-    expect(publish.status).toBe(201)
-    const result = await publish.json() as { revision: { id: string } }
-    await f.publicImage(result.revision.id, previewImage.base64)
+  // Continue with the same source form; copied images must acquire independent custody.
+  {
+    expect((await f.save({ ...f.settings, linkPreview: { image: previewImage } })).status).toBe(200)
+    const sourceImage = (await f.read()).formSettings!.linkPreview!.image as LinkPreviewReference
+    const copiedResponse = await f.call(f.base + '/duplicate', { title: 'Copied preview', slug: `copy-${f.slug}` })
+    expect(copiedResponse.status).toBe(201)
+    const copied = await copiedResponse.json() as { id: string }
+    const templateResponse = await f.call(f.base + '/templates', { name: 'Preview template', source: 'draft', expectedVersion: (await f.read()).flow.draftVersion })
+    expect(templateResponse.status).toBe(201)
+    const template = await templateResponse.json() as { id: string }
+    const fromTemplate = await f.call(`/api/app/templates/${template.id}/flows`, { title: 'Templated preview', slug: `template-${f.slug}` })
+    expect(fromTemplate.status).toBe(201)
+    const templated = await fromTemplate.json() as { id: string }
+    for (const flowId of [copied.id, templated.id]) {
+      const base = `/api/app/flows/${flowId}`
+      const draft = await (await f.call(base + '/draft')).json() as import('../../src/core/app/api').BuilderDraft
+      const settings = draft.formSettings!, image = settings.linkPreview!.image as LinkPreviewReference
+      expect(image).toMatchObject({ mime: previewImage.mime, alt: previewImage.alt })
+      expect(image.key).not.toBe(sourceImage.key)
+      expect(image).not.toHaveProperty('base64')
+      const imageResponse = await f.call(base + '/preview-image?key=' + encodeURIComponent(image.key))
+      expect(imageResponse.status).toBe(200)
+      expect(new Uint8Array(await imageResponse.arrayBuffer())).toEqual(decodeLogo(previewImage.base64))
+      expect((await f.call(base + '/draft/settings', { expectedVersion: draft.flow.draftVersion, settings }, { method: 'PUT' })).status).toBe(200)
+      const publish = await f.call(base + '/publish', { expectedVersion: draft.flow.draftVersion + 1 })
+      expect(publish.status).toBe(201)
+      const result = await publish.json() as { revision: { id: string } }
+      await f.publicImage(result.revision.id, previewImage.base64)
+    }
   }
 })
 
@@ -214,4 +214,3 @@ contract(['BASE-DATA-001','DATA-001','DIST-020'], 'owner backup carries immutabl
     await bucket.put(image.key,Uint8Array.from(atob(image.data),character=>character.charCodeAt(0)),{httpMetadata:{contentType:image.mime},customMetadata:image.customMetadata})
   }
 })
-

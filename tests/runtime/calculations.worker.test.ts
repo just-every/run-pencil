@@ -77,7 +77,7 @@ async function csvRows(call: Awaited<ReturnType<typeof googleHttp>>['call'], bas
   return lines.map(line => Object.fromEntries(cells(line).map((value, index) => [names[index], value])))
 }
 
-contract('LOGIC-003', 'agrees across preview, collection, recall and exports for ten quotes and preserves committed values on replay', async () => {
+contract('LOGIC-003', "agrees across preview, collection, recall and exports, preserves committed quotes and copies typed dependent calculations", async () => {
   const f = await fixture()
   const cases = [[1, false], [4, false], [5, false], [6, false], [100, false], [1, true], [5, true], [6, true], [7, true], [100, true]] as const
   for (const [quantity, discount] of cases) {
@@ -117,6 +117,47 @@ contract('LOGIC-003', 'agrees across preview, collection, recall and exports for
   const replay = await accepted<Receipt>(await f.call(`/api/public/flows/${f.slug}/responses`, { ...original.input, answers: [{ stepId: f.quantity.id, value: 100 }, { stepId: f.discount.id, value: true }] }, { auth: false }), 201)
   expect(replay).toMatchObject({ ...original.receipt, idempotent: true })
   assertValues((await f.ledger()).responses)
+
+  // Keep the same form and add typed hidden and dependent calculations after the replay proof.
+  {
+    const hidden = (fieldId: string): CalculationExpression => ({ kind: 'hidden', fieldId })
+    const variable = (variableId: string): CalculationExpression => ({ kind: 'variable', variableId })
+    const calculations: Calculation[] = [f.calculation,
+      { id: 'net', name: 'Net unit price', type: 'number', expression: { kind: 'add', left: { kind: 'subtract', left: hidden('base'), right: literal(2) }, right: { kind: 'divide', left: literal(3), right: literal(2) } } },
+      { id: 'rounded', name: 'Rounded unit price', type: 'number', expression: { kind: 'round', value: variable('net'), decimalPlaces: 2 } },
+      { id: 'extended', name: 'Quantity price', type: 'number', expression: { kind: 'multiply', left: variable('rounded'), right: { kind: 'answer', stepId: f.quantity.id } } },
+      { id: 'product', name: 'Product name', type: 'text', expression: hidden('product') },
+      ...(['days', 'months', 'years'] as const).map(unit => ({ id: unit, name: `Calendar ${unit}`, type: 'number' as const, expression: { kind: 'date_difference' as const, start: hidden('start'), end: hidden('end'), unit } })),
+      { id: 'missing', name: 'Missing adjustment', type: 'number', expression: { kind: 'add', left: hidden('adjustment'), right: literal(1) } },
+      { id: 'dependent', name: 'Dependent blank', type: 'number', expression: { kind: 'divide', left: variable('missing'), right: literal(2) } },
+    ]
+    const settings = { identityMode: 'anonymous', hiddenFields: [
+      { id: 'base', name: 'base_price', type: 'number', category: 'plain' },
+      { id: 'product', name: 'product', type: 'text', category: 'plain' },
+      { id: 'start', name: 'period_start', type: 'date', category: 'plain' },
+      { id: 'end', name: 'period_end', type: 'date', category: 'plain' },
+      { id: 'adjustment', name: 'adjustment', type: 'number', category: 'plain' },
+    ], calculations }
+    await accepted(await f.call(`${f.base}/draft/settings`, { settings, expectedVersion: (await f.read()).flow.draftVersion }, { method: 'PUT' }))
+    await accepted(await f.publish(), 201)
+    const inputs = { base_price: '12.375', product: 'Widget', period_start: '2024-02-29', period_end: '2025-03-01' }
+    const expected = { 'Order total': 40, 'Net unit price': 11.875, 'Rounded unit price': 11.88, 'Quantity price': 23.76, 'Product name': 'Widget', 'Calendar days': 366, 'Calendar months': 12, 'Calendar years': 1, 'Missing adjustment': null, 'Dependent blank': null }
+    const submitted = await f.submit([{ stepId: f.quantity.id, value: 2 }, { stepId: f.discount.id, value: false }], undefined, { hidden: inputs })
+    const original = (await f.ledger()).responses.find(response => response.id === submitted.receipt.responseId)!
+    expect(Object.fromEntries(original.calculations.map(value => [value.name, value.value]))).toEqual(expected)
+    expect((await f.ledger(new URLSearchParams({ search: 'Widget' }).toString())).responses.map(response => response.id)).toEqual([original.id])
+    const duplicate = await accepted<{ id: string }>(await f.call(`${f.base}/duplicate`, { title: 'Copied pricing calculator', slug: `copy-${f.slug}` }), 201)
+    const copyBase = `/api/app/flows/${duplicate.id}`, copy = await accepted<BuilderDraft>(await f.call(`${copyBase}/draft`))
+    await accepted(await f.call(`${copyBase}/publish`, { expectedVersion: copy.flow.draftVersion }), 201)
+    const copySlug = copy.flow.slug, copySession = await accepted<Session>(await f.call(`/api/public/flows/${copySlug}/sessions`, { deviceClass: 'mobile', source: 'direct' }, { auth: false }), 201)
+    const completed = await accepted<Receipt>(await f.call(`/api/public/flows/${copySlug}/responses`, {
+      ...copySession, hidden: inputs, loadTime: await issueLoadTime(env.SESSION_SECRET, copySession.revisionId, Date.now() - 5000), idempotencyKey: crypto.randomUUID(),
+      answers: [{ stepId: copy.steps[0].id, value: 2 }, { stepId: copy.steps[1].id, value: false }],
+    }, { auth: false }), 201)
+    const copied = (await accepted<Ledger>(await f.call(`${copyBase}/ledger`))).responses.find(response => response.id === completed.responseId)!
+    expect(Object.fromEntries(copied.calculations.map(value => [value.name, value.value]))).toEqual(expected)
+    expect(copied.calculations.every(value => !original.calculations.some(source => source.id === value.id))).toBe(true)
+  }
 }, 60_000)
 
 contract(['LOGIC-003', 'PAY-001', 'FLOW-006'], 'refuses cyclic, deleted, mistyped and zero-denominator calculations, and misplaced or out-of-range payment steps, without publishing the draft', async () => {
@@ -455,46 +496,7 @@ contract(['LOGIC-003', 'PAY-001', 'NOTIFY-003', 'DIST-017', 'GOV-003'], 'exclude
   } finally { vi.useRealTimers() }
 }, 90_000)
 
-contract('LOGIC-003', 'calculates typed hidden inputs, arithmetic, calendar differences and dependent blanks after duplication', async () => {
-  const f = await fixture()
-  const hidden = (fieldId: string): CalculationExpression => ({ kind: 'hidden', fieldId })
-  const variable = (variableId: string): CalculationExpression => ({ kind: 'variable', variableId })
-  const calculations: Calculation[] = [f.calculation,
-    { id: 'net', name: 'Net unit price', type: 'number', expression: { kind: 'add', left: { kind: 'subtract', left: hidden('base'), right: literal(2) }, right: { kind: 'divide', left: literal(3), right: literal(2) } } },
-    { id: 'rounded', name: 'Rounded unit price', type: 'number', expression: { kind: 'round', value: variable('net'), decimalPlaces: 2 } },
-    { id: 'extended', name: 'Quantity price', type: 'number', expression: { kind: 'multiply', left: variable('rounded'), right: { kind: 'answer', stepId: f.quantity.id } } },
-    { id: 'product', name: 'Product name', type: 'text', expression: hidden('product') },
-    ...(['days', 'months', 'years'] as const).map(unit => ({ id: unit, name: `Calendar ${unit}`, type: 'number' as const, expression: { kind: 'date_difference' as const, start: hidden('start'), end: hidden('end'), unit } })),
-    { id: 'missing', name: 'Missing adjustment', type: 'number', expression: { kind: 'add', left: hidden('adjustment'), right: literal(1) } },
-    { id: 'dependent', name: 'Dependent blank', type: 'number', expression: { kind: 'divide', left: variable('missing'), right: literal(2) } },
-  ]
-  const settings = { identityMode: 'anonymous', hiddenFields: [
-    { id: 'base', name: 'base_price', type: 'number', category: 'plain' },
-    { id: 'product', name: 'product', type: 'text', category: 'plain' },
-    { id: 'start', name: 'period_start', type: 'date', category: 'plain' },
-    { id: 'end', name: 'period_end', type: 'date', category: 'plain' },
-    { id: 'adjustment', name: 'adjustment', type: 'number', category: 'plain' },
-  ], calculations }
-  await accepted(await f.call(`${f.base}/draft/settings`, { settings, expectedVersion: (await f.read()).flow.draftVersion }, { method: 'PUT' }))
-  await accepted(await f.publish(), 201)
-  const inputs = { base_price: '12.375', product: 'Widget', period_start: '2024-02-29', period_end: '2025-03-01' }
-  const expected = { 'Order total': 40, 'Net unit price': 11.875, 'Rounded unit price': 11.88, 'Quantity price': 23.76, 'Product name': 'Widget', 'Calendar days': 366, 'Calendar months': 12, 'Calendar years': 1, 'Missing adjustment': null, 'Dependent blank': null }
-  const submitted = await f.submit([{ stepId: f.quantity.id, value: 2 }, { stepId: f.discount.id, value: false }], undefined, { hidden: inputs })
-  const original = (await f.ledger()).responses.find(response => response.id === submitted.receipt.responseId)!
-  expect(Object.fromEntries(original.calculations.map(value => [value.name, value.value]))).toEqual(expected)
-  expect((await f.ledger(new URLSearchParams({ search: 'Widget' }).toString())).responses.map(response => response.id)).toEqual([original.id])
-  const duplicate = await accepted<{ id: string }>(await f.call(`${f.base}/duplicate`, { title: 'Copied pricing calculator', slug: `copy-${f.slug}` }), 201)
-  const copyBase = `/api/app/flows/${duplicate.id}`, copy = await accepted<BuilderDraft>(await f.call(`${copyBase}/draft`))
-  await accepted(await f.call(`${copyBase}/publish`, { expectedVersion: copy.flow.draftVersion }), 201)
-  const copySlug = copy.flow.slug, copySession = await accepted<Session>(await f.call(`/api/public/flows/${copySlug}/sessions`, { deviceClass: 'mobile', source: 'direct' }, { auth: false }), 201)
-  const completed = await accepted<Receipt>(await f.call(`/api/public/flows/${copySlug}/responses`, {
-    ...copySession, hidden: inputs, loadTime: await issueLoadTime(env.SESSION_SECRET, copySession.revisionId, Date.now() - 5000), idempotencyKey: crypto.randomUUID(),
-    answers: [{ stepId: copy.steps[0].id, value: 2 }, { stepId: copy.steps[1].id, value: false }],
-  }, { auth: false }), 201)
-  const copied = (await accepted<Ledger>(await f.call(`${copyBase}/ledger`))).responses.find(response => response.id === completed.responseId)!
-  expect(Object.fromEntries(copied.calculations.map(value => [value.name, value.value]))).toEqual(expected)
-  expect(copied.calculations.every(value => !original.calculations.some(source => source.id === value.id))).toBe(true)
-}, 60_000)
+
 
 contract('LOGIC-003', 'a BMI from two decimal answers gates a branch and publishes', async () => {
   const f = await googleHttp(), slug = `bmi-${crypto.randomUUID()}`
@@ -737,5 +739,4 @@ contract(['PAY-002','PAY-005','PAY-003','PAY-004'], 'preserves signed tax and di
     expect((await b.call(`/api/app/responses/${receipt.responseId}`,{},{method:'DELETE'})).status).toBe(204)
     expect(await env.DB.prepare('SELECT response_id FROM response_payments WHERE response_id=?').bind(receipt.responseId).first()).toBeNull()
   }
-
 })
