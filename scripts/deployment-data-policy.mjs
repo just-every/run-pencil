@@ -100,7 +100,7 @@ const retained = {
   auth_magic_links: 'id operator_id token_hash expires_at consumed_at created_at revoked_at',
   choice_options: 'id step_id value label position created_at updated_at stable_id',
   contact_consent_events: 'id contact_id workspace_id consent actor source created_at',
-  distribution_contacts: 'id workspace_id email name opted_out_at created_at updated_at fields_json mobile sms_consent_at sms_consent_mobile sms_stopped_at',
+  distribution_contacts: 'id workspace_id email name opted_out_at created_at updated_at fields_json mobile sms_consent_at sms_consent_mobile sms_stopped_at time_zone',
   distribution_segments: 'id workspace_id name rules_json created_at updated_at',
   invitation_candidates: 'id launch_id contact_id email_snapshot name_snapshot outcome sms_mobile_snapshot',
   flow_branch_rules: 'id revision_id source_step_stable_id predicate_kind expected_value_json condition_json destination_step_stable_id position created_at updated_at',

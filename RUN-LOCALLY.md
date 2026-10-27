@@ -10,7 +10,7 @@ npx -y @runeditrun/rer dev just-every/run-pencil
 Set up only: `npx -y @runeditrun/rer setup just-every/run-pencil`. Without Node:
 `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-pencil`.
 rer installs the project's pinned Node and pnpm for its commands; no global pnpm
-install is required. The Node/npm prerequisite is for the npx line above. Local `rer setup` is optional after the zero-setup
+install is required. The npx line above needs Node and npm on your shell PATH. Local `rer setup` is optional after the zero-setup
 `rer dev` launch.
 `rer` runs every verb with the checkout's own pinned copy: a vendored
 `scripts/rer.mjs`, or in package mode the exact `@runeditrun/rer` devDependency in
@@ -77,6 +77,8 @@ its SHA-256 against `SHASUMS256.txt`. It does not change global Node installatio
 Set `RER_NODE_AUTO=0` to disable automatic selection. If selection is disabled
 or acquisition fails, the command reports a repair invocation in this form:
 `npm exec --yes --package=node@VERSION -- node SCRIPT VERB --cwd PROJECT`.
+That repair needs Node.js 22 or later with npm on your shell PATH; the no-Node
+installer does not put npm there. Retry an interrupted installation with `rer dev` first.
 Help, check, describe, doctor and stop do not select or acquire Node.
 A runtime that has just verified also drops its stale `.quarantine-` copies and
 Node's unused `include/` headers, which saves about 250 MB per Node release;
@@ -227,7 +229,8 @@ export/import accept their target, file and restore options. `check` accepts
 `--profile first-party`. Heavy commands accept `--no-queue` only when the
 original caller has `CI=true`. Release retains its own compatibility flags.
 
-The package-script aliases remain available from the same runnable root:
+The package-script aliases below need pnpm on your shell PATH. Installer users
+can run `rer install`, `rer setup` and `rer dev` directly instead:
 
 ```sh
 pnpm run deps

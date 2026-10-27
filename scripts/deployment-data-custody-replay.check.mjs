@@ -221,7 +221,7 @@ test('[DATA-001,BASE-DATA-001,IMPORT-004,BASE-OPS-003,LEDG-006,PAY-001] whole-da
           insert('flow_steps', { id: 'question-row', revision_id: 'r', position: 0, kind: 'question', question_type: 'long_text', prompt, required: 1, stable_id: 'stable-question', created_at: stamp, updated_at: stamp })
           const conditionTree = {kind:'group',join:'and',conditions:[{kind:'test',stepId:'stable-question',operator:'is_answered'}]}
           insert('flow_branch_rules', {id:'condition-rule',revision_id:'r',source_step_stable_id:'stable-question',predicate_kind:'equals',expected_value_json:'null',condition_json:JSON.stringify(conditionTree),destination_step_stable_id:'historical-end',position:0,created_at:stamp,updated_at:stamp})
-          insert('distribution_contacts', { id: 'c', workspace_id: 'w', email: 'synthetic@example.test', name: 'Synthetic recipient', fields_json: JSON.stringify({team:'Archive field'}), created_at: stamp, updated_at: stamp })
+          insert('distribution_contacts', { id: 'c', workspace_id: 'w', email: 'synthetic@example.test', name: 'Synthetic recipient', time_zone: 'America/New_York', fields_json: JSON.stringify({team:'Archive field'}), created_at: stamp, updated_at: stamp })
           insert('invitation_launches', { id: 'l', workspace_id: 'w', revision_id: 'r', command_key: 'synthetic-command', policy_json: JSON.stringify({reminderDelayHours:48,'flow.reminder-schedule.v1':{delayHours:48},'flow.audience-eligibility.v1':{excludePreviouslyInvitedToFlow:false},participantIds:['p']}), resume_enabled:1, actor_operator_id: 'historical-erased-actor', created_at: stamp })
           insert('distribution_segments',{id:'segment',workspace_id:'w',name:'Archive segment',rules_json:JSON.stringify([{field:'custom',key:'team',operator:'is',value:'Archive field'}]),created_at:stamp,updated_at:stamp})
           insert('invitation_candidates',{id:'p',launch_id:'l',contact_id:'c',email_snapshot:'synthetic@example.test',name_snapshot:'Original name',outcome:'invited'})
@@ -266,6 +266,7 @@ test('[DATA-001,BASE-DATA-001,IMPORT-004,BASE-OPS-003,LEDG-006,PAY-001] whole-da
             assert.equal(restored.prepare('SELECT response_context_json FROM responses').get().response_context_json,responseContext)
             assert.equal(restored.prepare('SELECT response_context_json FROM respondent_saves').get().response_context_json,responseContext)
             assert.deepEqual(JSON.parse(restored.prepare('SELECT condition_json FROM flow_branch_rules WHERE id=\'condition-rule\'').get().condition_json),conditionTree)
+            assert.equal(restored.prepare('SELECT time_zone FROM distribution_contacts').get().time_zone,'America/New_York')
             assert.equal(restored.prepare('SELECT fields_json FROM distribution_contacts').get().fields_json,JSON.stringify({team:'Archive field'}))
             assert.deepEqual({...restored.prepare('SELECT token,opt_out_token FROM invitation_participants').get()},{token:null,opt_out_token:null})
             assert.equal(restored.prepare('SELECT resume_enabled FROM invitation_launches').get().resume_enabled,0)

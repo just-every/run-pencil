@@ -11,6 +11,7 @@ export default async function setup(project: TestProject) {
   const sessions = new Map<string, StripeSession>(), keys = new Map<string, string>(), requests: StripeRequest[] = []
   const prices=new Map<string,{id:string;active:boolean;currency:string;unit_amount:number|null;recurring:{interval:string;interval_count:number}|null;preset?:number}>()
   let origin = ''
+  let refundMode='ok'
   const refunds: Array<{id:string;amount:number;payment_intent:string;created:number;status:string}>=[]
   const read = (request: IncomingMessage) => new Promise<string>(resolve => { let body = ''; request.setEncoding('utf8'); request.on('data', chunk => { body += chunk }); request.on('end', () => resolve(body)) })
   const json = (response: ServerResponse, status: number, value: unknown) => { response.writeHead(status, { 'content-type': 'application/json' }); response.end(JSON.stringify(value)) }
@@ -18,7 +19,8 @@ export default async function setup(project: TestProject) {
   const intentFor=(session:StripeSession)=>session.payment_intent??(session.invoice?'synthetic-pencil-'+(Number(session.invoice.split('-').at(-1))+1000):null)
   const server = createServer(async (request, response) => {
     const body = await read(request), url = new URL(request.url ?? '/', origin)
-    if (url.pathname === '/__control/reset') { sessions.clear(); keys.clear(); requests.length = 0; return json(response, 200, { reset: true }) }
+    if (url.pathname === '/__control/refund-mode') {refundMode=JSON.parse(body).mode;return json(response,200,{configured:true})}
+    if (url.pathname === '/__control/reset') { refundMode='ok';sessions.clear(); keys.clear(); requests.length = 0; return json(response, 200, { reset: true }) }
     if (url.pathname === '/__control/state') return json(response, 200, { requests, sessions: Object.fromEntries(sessions) })
     const control = /^\/__control\/(complete|expire)\/(cs_test_\w+)$/.exec(url.pathname)
     if (control) {
@@ -47,6 +49,8 @@ export default async function setup(project: TestProject) {
       prices.set(id,price);return json(response,200,price)
     }
     if (url.pathname==='/v1/refunds' && request.method==='POST') {
+      if(refundMode==='server-error')return json(response,503,{error:{message:'synthetic-pencil-c47-6'}})
+      if(refundMode==='drop')return request.socket.destroy()
       const amount=Number(form.amount), intent=form.payment_intent
       const session=[...sessions.values()].find(row=>intentFor(row)===intent)
       if(!session || !Number.isSafeInteger(amount) || amount<1 || refunds.filter(row=>intentFor(row)===intent).reduce((sum,row)=>sum+row.amount,0)+amount>session.amount_total)return refuse(response,400,'Refund exceeds capture.')

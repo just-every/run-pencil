@@ -1,7 +1,9 @@
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect, vi } from 'vitest'
 import { createScheduledController } from 'cloudflare:test'
-import worker from '../../src/core/app/worker'
+import worker, { createWorkerApp } from '../../src/core/app/worker'
+import { createPencilPlatform } from '../../src/core/platform/runtime'
+import { hashToken, opaqueToken } from '../../src/base/operator-auth/crypto.mjs'
 import { contract } from '../../src/test/contract'
 import { googleHttp } from './google-import-http'
 import { httpExport } from '../helpers/report-download'
@@ -544,6 +546,29 @@ contract('LOGIC-003', 'a BMI from two decimal answers gates a branch and publish
 }, 60_000)
 
 contract(['PAY-002','PAY-005','PAY-003','PAY-004'], 'preserves signed tax and discount totals in the ledger, exports, archives and erasure while refusing a changed subtotal', async () => {
+  // Upgrade a genuine pre-ledger payment before reading its historical periods through public routes.
+  const legacyDb=env.IMPORT_SECOND,legacyId='synthetic-pencil-c47-13',legacyToken=opaqueToken()
+  const ledgerUpgrade=__PENCIL_CORE_MIGRATIONS__.findIndex(migration=>migration.name.startsWith('0062_'))
+  await applyD1Migrations(legacyDb,__PENCIL_CORE_MIGRATIONS__.slice(0,ledgerUpgrade))
+  const legacyStamp='2020-01-01T09:00:00.000Z',changed='2020-01-02T09:00:00.000Z'
+  await legacyDb.batch([
+    legacyDb.prepare('INSERT INTO workspaces(id,name,time_zone,created_at,updated_at) VALUES(?,?,?,?,?)').bind(legacyId,legacyId,'UTC',legacyStamp,legacyStamp),
+    legacyDb.prepare("INSERT INTO operators(id,workspace_id,email,display_name,is_setup_operator,created_at,updated_at) VALUES(?,?,?,'synthetic-pencil-c47-7',0,?,?)").bind(legacyId,legacyId,'synthetic-pencil-c47-7@synthetic.test',legacyStamp,legacyStamp),
+    legacyDb.prepare("INSERT INTO flows(id,workspace_id,title,slug,status,draft_version,last_activity_at,created_at,updated_at) VALUES(?,?,?,?,'open',1,?,?,?)").bind(legacyId,legacyId,legacyId,legacyId,legacyStamp,legacyStamp,legacyStamp),
+    legacyDb.prepare("INSERT INTO flow_revisions(id,flow_id,number,state,title,is_current,created_at,updated_at) VALUES(?,?,1,'published',?,1,?,?)").bind(legacyId,legacyId,legacyId,legacyStamp,legacyStamp),
+    legacyDb.prepare("INSERT INTO responses(id,workspace_id,flow_id,revision_id,session_id,session_token_hash,idempotency_key,state,completed_at,created_at,updated_at,notification_eligible) VALUES(?,?,?,?,?,?,?,'released',?,?,?,0)").bind(legacyId,legacyId,legacyId,legacyId,legacyId,legacyId,legacyId,legacyStamp,legacyStamp,changed),
+    legacyDb.prepare("INSERT INTO response_payments(response_id,step_id,completion_step_id,provider,livemode,state,attempt,amount,currency,lines_json,payment_intent_id,provider_amount,state_changed_at,created_at,updated_at) VALUES(?,?,?,'stripe',0,'paid',1,900,'usd','[]',?,900,?,?,?)").bind(legacyId,legacyId,legacyId,legacyId,changed,legacyStamp,changed),
+  ])
+  await applyD1Migrations(legacyDb,__PENCIL_CORE_MIGRATIONS__)
+  await legacyDb.prepare("UPDATE oa_operators SET role='owner' WHERE id=?").bind(legacyId).run()
+  await legacyDb.prepare("INSERT INTO oa_sessions(id,token_hash,operator_id,operator_version,kind,created_at,expires_at) SELECT ?,?,id,version,'native',?,? FROM oa_operators WHERE id=?").bind(legacyId,await hashToken(env.SESSION_SECRET,'session',legacyToken),Date.now(),Date.now()+3600000,legacyId).run()
+  const legacyApp=createWorkerApp(undefined,createPencilPlatform('http://localhost',{...env,DB:legacyDb}))
+  const legacyCall=(path:string,data:unknown,method='POST')=>legacyApp.request('http://localhost'+path,{method,headers:{Host:'localhost',Origin:'http://localhost',Cookie:'operator_session_local_80='+legacyToken,'Content-Type':'application/json'},body:JSON.stringify(data)})
+  await accepted(await legacyCall('/api/app/connections/payment',{secretKey:stripeKey,webhookSecret},'PUT'))
+  const disclosure='Historical payments from before the ledger upgrade use their recorded last-change date; verify those periods in Stripe.'
+  expect(await accepted(await legacyCall('/api/app/payments/reconcile',{period:'2020-01-01'}))).toMatchObject({pencil:0,gap:disclosure})
+  expect(await accepted(await legacyCall('/api/app/payments/reconcile',{period:'2020-01-02'}))).toMatchObject({pencil:900,mismatch:true,gap:disclosure})
+
   for (const promotionCodes of [false, true]) {
     const f = await fixture()
     await accepted(await f.call('/api/app/connections/payment', { secretKey: stripeKey, webhookSecret }, { method: 'PUT' }))
@@ -605,6 +630,9 @@ contract(['PAY-002','PAY-005','PAY-003','PAY-004'], 'preserves signed tax and di
   expect((await f.call('/api/app/payments/reconcile',{period:new Date().toISOString().slice(0,10)})).status).toBe(403)
   expect((await f.call('/api/app/payments')).status).toBe(200)
   await role('owner')
+  const requestsBeforeConfirmation=(await stripe.state()).requests.length
+  expect((await f.call(refundPath,{amount:1000})).status).toBe(400)
+  expect((await stripe.state()).requests).toHaveLength(requestsBeforeConfirmation)
   await accepted(await f.call(refundPath,{amount:1000,confirm:true}))
   expect((await f.ledger()).responses.find(row=>row.id===receipt.responseId)!.payment!.state).toBe('paid')
   expect((await f.call(refundPath,{amount:1000,confirm:true})).status).toBe(400)
@@ -612,7 +640,8 @@ contract(['PAY-002','PAY-005','PAY-003','PAY-004'], 'preserves signed tax and di
   expect(await deliver(refund)).toMatchObject({outcome:'applied'})
   expect(await deliver(refund)).toMatchObject({outcome:'duplicate'})
   const ledger=await accepted<{payments:Array<Record<string,unknown>>}>(await f.call('/api/app/payments?state=partially_refunded'))
-  expect(ledger.payments).toEqual([expect.objectContaining({responseId:receipt.responseId,state:'partially_refunded',total:4000,refundedAmount:1000,methodType:'card',methodLast4:'4242'})])
+  expect(ledger.payments).toEqual([expect.objectContaining({responseId:receipt.responseId,provider:'stripe',state:'partially_refunded',total:4000,refundedAmount:1000,methodType:'card',methodLast4:'4242'})])
+  expect(String(ledger.payments[0].id).slice(-4)).toBe(String(paid.payment_intent).slice(-4))
   expect(JSON.stringify(ledger)).not.toContain('never-retain')
   const csv=await f.call('/api/app/payments?state=partially_refunded&format=csv')
   expect(await csv.text()).toContain('"4000","4000","1000","card","4242"')
@@ -635,6 +664,50 @@ contract(['PAY-002','PAY-005','PAY-003','PAY-004'], 'preserves signed tax and di
   expect((await f.call(`/api/app/responses/${receipt.responseId}`,{},{method:'DELETE'})).status).toBe(204)
   expect(await env.DB.prepare('SELECT response_id FROM response_payments WHERE response_id=?').bind(receipt.responseId).first()).toBeNull()
   expect((await env.DB.prepare('SELECT id FROM payment_movements WHERE response_id=?').bind(receipt.responseId).all()).results).toEqual([])
+
+  // Each ambiguous provider outcome retains its reservation and blocks a second public refund request.
+  const stripeOrigin=(env as unknown as {STRIPE_API_ORIGIN:string}).STRIPE_API_ORIGIN
+  for(const mode of ['server-error','drop']) {
+    const pending=await f.submit([{stepId:f.quantity.id,value:2},{stepId:f.discount.id,value:false}])
+    const session=Object.values((await stripe.state()).sessions).find(row=>row.client_reference_id===pending.receipt.responseId)!
+    expect(await deliver(await stripeEvent('checkout.session.completed',await stripe.settle('complete',session.id)))).toMatchObject({outcome:'applied'})
+    await fetch(stripeOrigin+'/__control/refund-mode',{method:'POST',body:JSON.stringify({mode})})
+    try {
+      const path=`/api/app/payments/${pending.receipt.responseId}/refund`
+      const failed=await f.call(path,{amount:1000,confirm:true})
+      expect(failed.status).toBe(400);expect(await failed.json()).toMatchObject({message:expect.stringContaining('reservation is retained')})
+      expect(await env.DB.prepare('SELECT refund_requested,state,refunded_amount FROM response_payments WHERE response_id=?').bind(pending.receipt.responseId).first()).toEqual({refund_requested:1000,state:'paid',refunded_amount:0})
+      const before=(await stripe.state()).requests.length
+      expect((await f.call(path,{amount:1000,confirm:true})).status).toBe(400)
+      expect((await stripe.state()).requests).toHaveLength(before)
+      expect((await accepted<{payments:Array<Record<string,unknown>>}>(await f.call('/api/app/payments'))).payments.find(row=>row.responseId===pending.receipt.responseId)).toMatchObject({state:'paid',refundedAmount:0})
+    } finally {await fetch(stripeOrigin+'/__control/refund-mode',{method:'POST',body:JSON.stringify({mode:'ok'})})}
+    expect((await f.call(`/api/app/responses/${pending.receipt.responseId}`,{},{method:'DELETE'})).status).toBe(204)
+  }
+  // Native bulk fixtures enter through storage; ledger, CSV and reconciliation observations use public routes only.
+  const revision=(await accepted<{revision:{id:string}}>(await f.call(`/api/public/flows/${f.slug}`,undefined,{auth:false}))).revision.id
+  const stamp='2026-01-01T00:00:00.000Z'
+  const seedPayments=async(indices:number[])=>{
+    const rows=JSON.stringify(indices.map(index=>'synthetic-pencil-c47-'+(100+index)))
+    await env.DB.batch([
+      env.DB.prepare("INSERT INTO responses(id,workspace_id,flow_id,revision_id,session_id,session_token_hash,idempotency_key,state,completed_at,created_at,updated_at,notification_eligible) SELECT value,?,?,?,value,value,value,'released',?,?,?,0 FROM json_each(?)").bind(f.workspace,f.base.split('/').at(-1)!,revision,stamp,stamp,stamp,rows),
+      env.DB.prepare("INSERT INTO response_payments(response_id,step_id,completion_step_id,provider,livemode,state,attempt,amount,currency,lines_json,payment_intent_id,provider_amount,total,state_changed_at,created_at,updated_at) SELECT value,?,?,'stripe',0,'paid',1,100,'usd','[]',value,100,100,?,?,? FROM json_each(?)").bind(pay.id,f.ordinary.id,stamp,stamp,stamp,rows),
+    ])
+  }
+  await seedPayments(Array.from({length:1000},(_,index)=>index))
+  const full=await accepted<{payments:Array<{responseId:string}>}>(await f.call('/api/app/payments'))
+  expect(full.payments).toHaveLength(1000);expect(new Set(full.payments.map(row=>row.responseId))).toEqual(new Set(Array.from({length:1000},(_,index)=>'synthetic-pencil-c47-'+(100+index))))
+  const fullCsv=await f.call('/api/app/payments?format=csv');expect(fullCsv.status).toBe(200)
+  const csvLines=(await fullCsv.text()).split('\r\n');expect(csvLines).toHaveLength(1001)
+  expect(new Set(csvLines.slice(1).map(line=>line.split(',')[0]))).toEqual(new Set(full.payments.map(row=>'"'+row.responseId+'"')))
+  expect(await accepted(await f.call('/api/app/payments/reconcile',{period:'2026-01-01'}))).toMatchObject({pencil:0,mismatch:false})
+  await seedPayments([1000])
+  for(const query of ['', '?format=csv']) {
+    const refused=await f.call('/api/app/payments'+query);expect(refused.status).toBe(400)
+    expect(await refused.json()).toMatchObject({message:'This payment view exceeds 1,000 rows. Export responses or narrow the status.'})
+  }
+  const refusedReconcile=await f.call('/api/app/payments/reconcile',{period:'2026-01-01'})
+  expect(refusedReconcile.status).toBe(400);expect(await refusedReconcile.json()).toMatchObject({message:'Reconciliation exceeds 1,000 payments; use Stripe reporting.'})
 
   // A subscription Checkout from another system is acknowledged without reading its invoice.
   const beforeInvoices=(await stripe.state()).requests.filter(row=>row.path.startsWith('/v1/invoices/')).length

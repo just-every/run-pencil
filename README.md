@@ -55,6 +55,8 @@ Keep `.dev.vars` private. Use `--port PORT` for an explicit loopback port. Stop 
 
 To upgrade a local install to newer source, stop dev, export, pull, then run `rer install`, `rer setup` and `rer dev`; [Upgrading a local install](docs/guide/install.md#upgrading-a-local-install) has the steps. `rer dev` also applies pending migrations before it serves, and refuses to start with "run rer setup" if it cannot.
 
+The source checks below need Node.js 22 or later with npm on your shell PATH, including when you started with the no-Node installer. Check `node --version` and `npm --version` before continuing. To retry an interrupted first launch with the installer-provided command, run `cd run-pencil && rer dev`.
+
 ```sh
 npx --no-install playwright install chromium --only-shell
 rer verify

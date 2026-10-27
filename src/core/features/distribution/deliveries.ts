@@ -23,7 +23,7 @@ export class MailDeliveries {
       (SELECT COALESCE(MAX(ordinal), 0) FROM mail_delivery_attempts WHERE delivery_id = d.id AND event = 'operator-retry') AS retryBase,
       CASE WHEN EXISTS (SELECT 1 FROM mail_delivery_attempts WHERE delivery_id = d.id AND event = 'operator-retry' AND ordinal = d.attempts)
         THEN NULL ELSE d.first_attempt_at END AS firstAttempt, d.available_at AS availableAt, p.workspace_id AS workspaceId, p.email_snapshot AS email,
-      p.token, p.opt_out_token AS optOutToken, p.revision_id AS revisionId, r.form_settings_json AS formSettingsJson, r.policy_snapshot_json AS policySnapshotJson, r.title, w.time_zone AS timeZone,
+      p.token, p.opt_out_token AS optOutToken, p.revision_id AS revisionId, r.form_settings_json AS formSettingsJson, r.policy_snapshot_json AS policySnapshotJson, r.title, CASE WHEN COALESCE(json_extract(l.policy_json,'$.channel'),'email')='sms' THEN COALESCE(c.time_zone, w.time_zone) ELSE w.time_zone END AS timeZone,
       w.sending_window_start AS sendingWindowStart, w.sending_window_end AS sendingWindowEnd,
       json_extract(l.policy_json, '$.reminderDelayHours') AS reminderDelayHours,
       (c.id IS NOT NULL AND c.opted_out_at IS NULL AND (COALESCE((SELECT json_extract(policy_json,'$.channel') FROM invitation_launches WHERE id=p.launch_id),'email')!='sms' OR (c.mobile IS NOT NULL AND c.sms_consent_at IS NOT NULL AND c.sms_stopped_at IS NULL AND c.mobile=c.sms_consent_mobile)) AND p.token IS NOT NULL AND f.status IN ('open', 'closed') AND r.admission_closed_at IS NULL
