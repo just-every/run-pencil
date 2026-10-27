@@ -1,7 +1,7 @@
 {
   "maxTests": 200,
   "counting": "One test registration, expanding registration loops and contract wrappers; describe blocks do not count. Re-running the same registration at desktop/mobile widths is one behavior registration.",
-  "reason": "sd-pencil-tprune-e2e merges public respondent and archive restore journeys while preserving every protected assertion.",
+  "reason": "sd-pencil-tprune-e2e merges public respondent and archive restore journeys, and sd-pencil-tprune-runtime consolidates overlapping runtime proof through existing public form journeys; every protected assertion and independent contract assertion is retained.",
   "baselineRegistrations": 265,
   "baselineProjectExpandedCases": 363,
   "currentRegistrations": 277,
