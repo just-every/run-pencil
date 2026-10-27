@@ -182,11 +182,14 @@ export async function proveChatIntegrations(){
   const staleSlack=staleRows.find(row=>row.kind==='slack')!,staleTeams=staleRows.find(row=>row.kind==='teams')!
   const staleCalls=(await received()).length
   vi.setSystemTime(new Date('2026-10-27T10:00:01.000Z'))
-  await accepted(await f.call(`/api/app/flows/${f.flowId}/chat`,{...slack,channel:'synthetic-pencil-changed-channel'},{method:'PUT'}))
+  const oldPost=JSON.parse(replayedPosts.find(post=>post.path==='/chat.postMessage')!.body)
+  const oldBody=new URLSearchParams({payload:JSON.stringify({...JSON.parse(new URLSearchParams(body).get('payload')!),actions:[{action_id:'pencil_create_action',value:oldPost.blocks[1].elements.find((item:{action_id?:string})=>item.action_id==='pencil_create_action').value}]})}).toString()
+  await accepted(await f.call(`/api/app/flows/${f.flowId}/chat`,{...slack,action:{...actionTemplate,title:'synthetic-pencil-c47-21'}},{method:'PUT'}))
   const actionsBeforeOld=(await (await f.call('/api/app/actions')).json()).actions
   const oldTimestamp=String(Math.floor(Date.now()/1000))
-  expect((await interact(await signature(signingSecret,oldTimestamp,body),oldTimestamp)).status).toBe(404)
+  expect((await interact(await signature(signingSecret,oldTimestamp,oldBody),oldTimestamp,oldBody)).status).toBe(404)
   expect((await (await f.call('/api/app/actions')).json()).actions).toEqual(actionsBeforeOld)
+  await accepted(await f.call(`/api/app/flows/${f.flowId}/chat`,{...slack,channel:'synthetic-pencil-changed-channel'},{method:'PUT'}))
   expect(await accepted(await replay(staleSlack.id),409)).toMatchObject({error:'CONFLICT',message:expect.stringContaining('settings changed')})
   await accepted(await f.call('/api/app/connections/teams',{webhookUrl},{method:'PUT'}))
   expect(await accepted(await replay(staleTeams.id),409)).toMatchObject({error:'CONFLICT',message:expect.stringContaining('disarmed')})

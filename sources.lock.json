@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "426e769a8a0df15fa5fc8d4ee7d5d24c371ce4c32f043460997f5e8538a1d22e",
+      "sha256": "7eb362a70303f5bb92f9258a42f6938ba9c0b6c397f88bbc1f70b0efa88334d8",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "cb8686536c7f4f6c30d8b37a0913d5ae59385bbf5a2e86ffbe173d32b4d57432",
+      "sha256": "77775b80aec529b34e368f742716cb86568d827ed54e794bfef104eeb03e6e9e",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "4380df5e712774d8d7a705c7bb8c04a3e7569df2d8fbe3bca27e5be0bf7e4538",
+      "sha256": "b14cb5e498c448a4ce64670e08ed04a12adaaffc06b87bf52a3f5a2a0d2b1ee0",
       "executable": false
     },
     "DEMO.md": {
@@ -7833,7 +7833,7 @@
       "executable": false
     },
     "tests/runtime/chat-integrations-proof.ts": {
-      "sha256": "5a97fd4507df527d0d6f3c5aa2337351902b06bee99d065eb46166b8a96de8fd",
+      "sha256": "ab1f1d848a6f9a93ce0fce78deba395fb4f7e278e679656563094c37358329f3",
       "executable": false
     },
     "tests/runtime/coding.worker.test.ts": {
