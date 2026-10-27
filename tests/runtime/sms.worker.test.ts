@@ -137,13 +137,13 @@ contract('DIST-011','SMS invitations require recorded consent, use sealed owner 
  expect(await env.DB.prepare('SELECT status FROM mail_deliveries WHERE id=?').bind(uncertain!.id).first()).toEqual({status:'unknown'})
  // These two one-shot provider responses belong to this SMS registration, not the shared task receiver.
  const providerFetch=globalThis.fetch.bind(globalThis),smsEdge:Array<{to:string;key:string}>=[]
- let limitedOnce=false
+ let limitedOnce=false,refusalCode=21211
  const transport=vi.spyOn(globalThis,'fetch').mockImplementation(async(input,init)=>{
   const request=new Request(input,init)
   if(request.url===receiver+'/2010-04-01/Accounts/synthetic-pencil-1/Messages.json'){
    const to=new URLSearchParams(await request.clone().text()).get('To')??''
    if(to==='+15555550105'||to==='+15555550106')smsEdge.push({to,key:request.headers.get('Idempotency-Key')??''})
-   if(to==='+15555550105')return Response.json({code:21211},{status:400})
+   if(to==='+15555550105')return Response.json({code:refusalCode},{status:400})
    if(to==='+15555550106'&&!limitedOnce){limitedOnce=true;return Response.json({code:20429},{status:429})}
   }
   return providerFetch(request)
@@ -152,7 +152,25 @@ contract('DIST-011','SMS invitations require recorded consent, use sealed owner 
   // A definite refusal is failed with its code and does not acquire a reminder or a scheduler resend.
   const refused=await accepted(await f.call(contacts,{name:'Synthetic refused mobile',email:'refused@synthetic.test',mobile:'+15555550105',smsConsent:{given:true,wording},fields:{}}),201)
   await accepted(await f.call(path,{channel:'sms',contactIds:[refused.id],commandKey:'synthetic-pencil-refused-send'}),201)
-  expect((await accepted(await f.call(path))).participants.filter((p:any)=>p.email==='refused@synthetic.test').map((p:any)=>({kind:p.kind,status:p.status,reason:p.reason}))).toEqual([{kind:'invitation',status:'failed',reason:'Twilio refused the message (error 21211).'}])
+  const refusedRows=(await accepted(await f.call(path))).participants.filter((p:any)=>p.email==='refused@synthetic.test')
+  expect(refusedRows).toHaveLength(1)
+  const refusedInvitation=refusedRows[0]
+  expect(refusedInvitation).toMatchObject({kind:'invitation',status:'failed',reason:expect.stringContaining('(error 21211)')})
+  expect(refusedInvitation.reason).toMatch(/check.*number.*contact/i)
+  expect(refusedInvitation.reason).toMatch(/retry.*same number/i)
+  // Reuse the same failed delivery and edge fixture: each code must preserve refusal state and explain who can act.
+  for(const code of [21612,21610,21614,21212,21408,20003]){
+   refusalCode=code
+   expect((await f.call('/api/app/distribution/deliveries/'+refusedInvitation.deliveryId+'/retry',{duplicateRiskAccepted:false})).status).toBe(204)
+   await f.services.distribution.dispatcher.run(new Date().toISOString())
+   const row=(await accepted(await f.call(path))).participants.find((p:any)=>p.deliveryId===refusedInvitation.deliveryId)
+   expect(row).toMatchObject({kind:'invitation',status:'failed',reason:expect.stringContaining('(error '+code+')')})
+   if([21612,21610,21614].includes(code)){
+    expect(row.reason).toMatch(/check.*number.*contact/i);expect(row.reason).toMatch(/retry.*same number/i)
+   }else{
+    expect(row.reason).toMatch(/fix.*settings.*twilio/i);expect(row.reason).toMatch(/then.*queue.*retry/i)
+   }
+  }
   // DIST-006 for SMS: a rate-limited send stays pending and its retry reuses the same idempotency key.
   const invitationOf=async(email:string)=>(await accepted(await f.call(path))).participants.find((p:any)=>p.email===email&&p.kind==='invitation')
   const limited=await accepted(await f.call(contacts,{name:'Synthetic limited mobile',email:'limited@synthetic.test',mobile:'+15555550106',smsConsent:{given:true,wording},fields:{}}),201)
@@ -162,7 +180,7 @@ contract('DIST-011','SMS invitations require recorded consent, use sealed owner 
   expect(await invitationOf('limited@synthetic.test')).toMatchObject({status:'sent',attempts:2})
   const limitedKeys=smsEdge.filter(row=>row.to==='+15555550106').map(row=>row.key)
   expect(limitedKeys).toHaveLength(2);expect(limitedKeys[0]).not.toBe('');expect(new Set(limitedKeys).size).toBe(1)
-  expect(smsEdge.filter(row=>row.to==='+15555550105')).toHaveLength(1)
+  expect(smsEdge.filter(row=>row.to==='+15555550105')).toHaveLength(7)
  } finally {transport.mockRestore()}
  const smsRequests=async(to:string)=>((await (await fetch(receiver+'/__control/state')).json()) as {requests:Array<{body:string;idempotencyKey:string}>}).requests.filter(r=>new URLSearchParams(r.body).get('To')===to)
  const invitationOf=async(email:string)=>(await accepted(await f.call(path))).participants.find((p:any)=>p.email===email&&p.kind==='invitation')

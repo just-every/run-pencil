@@ -25,7 +25,12 @@ export class SmsService {
       if(response.status===429)return {kind:'transient',reason:'Twilio rate limited the message.'}
       // A 4xx carrying a Twilio error code is a definite refusal: Twilio created no message (DIST-008 keeps the provider reason).
       const refusal=response.status>=400&&response.status<500?await response.json().then(body=>(body as {code?:unknown})?.code,()=>null):null
-      if(typeof refusal==='number'&&Number.isInteger(refusal)&&refusal>0&&refusal<1_000_000)return {kind:'permanent',reason:`Twilio refused the message (error ${refusal}).`}
+      if(typeof refusal==='number'&&Number.isInteger(refusal)&&refusal>0&&refusal<1_000_000){
+        const contactSide=[21211,21612,21610,21614].includes(refusal)
+        return {kind:'permanent',reason:contactSide
+          ?`Twilio refused the contact's number (error ${refusal}). Check the number with the contact; a retry sends the same number.`
+          :`Twilio refused the sending number, credentials or country permission (error ${refusal}). Fix it in Settings or Twilio, then queue a retry.`}
+      }
       if(!response.ok)return {kind:response.status>=500?'unknown':'permanent',reason:`Twilio answered ${response.status}. Reconcile uncertain delivery before retrying.`}
       const receipt=await response.json() as {sid?:unknown}
       if(typeof receipt.sid!=='string'||receipt.sid.length>200)return {kind:'unknown',reason:'Twilio returned no usable delivery receipt. Reconcile before retrying.'}
