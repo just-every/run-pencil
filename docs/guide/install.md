@@ -6,11 +6,11 @@ This page takes you from the Pencil source code to a working copy on your own co
 
 Use macOS, Linux or Windows with WSL2, as on the Run page. Git is required; rer brings Node and pnpm.
 
-- **Git, for the one line below.** The line installs rer with its own Node when Node 22 or later is missing. Some commands further down use npm or npx: those need Node.js 22 or later on your `PATH` (check `node --version` and `npm --version`).
+- **Git, for the one line below.** The line installs rer with its own Node when Node 22 or later is missing. The installer does not put npm on your shell PATH. Retry an interrupted first launch with `cd run-pencil && rer dev`; the source checks below require a separate Node.js 22 or later installation with npm.
 - **rer, the Run Edit Run command.** The one line below fetches it for you. In the source folder it runs the exact `@runeditrun/rer` version in Pencil's `package.json` and lockfile. `rer --version` can show the global launcher and checkout versions separately; a difference does not change the checkout pin. Do not change that pin to match your global launcher.
 - **The source code.** The one line below clones it from https://github.com/just-every/run-pencil into `run-pencil`.
 
-rer installs Pencil's pinned runtime and pnpm for its own commands. It does not put pnpm on your shell's `PATH`; the commands below use npm or npx when needed. Starting Pencil prepares a local owner automatically; choosing your own local owner details first is optional (below).
+rer installs Pencil's pinned runtime and pnpm for its own commands. It does not put Node, npm or pnpm on your shell PATH. Ordinary install, setup, build and dev commands below use the installed rer command. Starting Pencil prepares a local owner automatically; choosing your own local owner details first is optional (below).
 
 ## Start Pencil on your computer
 
@@ -83,7 +83,7 @@ To start again from nothing, run `rer reset --yes`. It prints what it will remov
 
 ## Changing the source
 
-Pencil is the complete product source. You may change the code, the database schema, the interface and the setup. If you do:
+Pencil is the complete product source. You may change the code, the database schema, the interface and the setup. The source checks in this section require Node.js 22 or later with npm on your shell PATH, even after a no-Node installation. Check `node --version` and `npm --version` before continuing. If you change the source:
 
 - After `rer install` or the first `rer dev`, install the test browser once with `npx --no-install playwright install chromium --only-shell`, then run `rer verify`. It is the full local check: types, unit and Worker tests, the command-line journeys, data export and import round trips, migrations, source boundaries, the build and browser journeys on desktop and mobile. The capacity and load workloads are separate: they run with `npm run verify:release` before a release. These source checks are separate from deploying an unchanged checkout.
 - Record your changes before you check them. Stage them with `git add`, run `node scripts/edition-authoring/cli.mjs changes` to inspect what changed, then `node scripts/edition-authoring/cli.mjs lock` to record the new file hashes in `sources.lock.json`. Commit your changes together with `sources.lock.json`, and only then run `npm run source:check`. It checks that the source still matches its recorded provenance, and it fails with "Stale lock" if you skipped `lock`.

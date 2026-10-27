@@ -1,3 +1,5 @@
+import startSmsReceiver from '../runtime/task-receiver.global'
+import { signInEmptyWorkspace } from './authoring-helpers'
 import { httpExport } from '../helpers/report-download'
 import { developmentInbox } from '../helpers/development-outbox'
 import { audienceOutboxHeaders, audienceScreen, invitationMail, inviteAudienceOperator } from './distribution-helpers'
@@ -15,7 +17,7 @@ contract('BASE-PUBLIC-003', 'production invitation capability paths reject malfo
   }
   expect((await page.request.get('/i/' + '0'.repeat(64))).status()).toBe(404)
 })
-contract(['RESP-020','DIST-014','LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-005','RESP-008','DIST-005','LEDG-001','LEDG-003','RSLT-001','RSLT-003','RSLT-004','BASE-PUBLIC-003'], 'Audience CSV review, saved segment, email score 9, editable invitation prefill, confirmation receipt, identified ledger, cancellation, opt-out and erasure are keyboard accessible', async ({ page }, info) => {
+contract(['DIST-011','RESP-020','DIST-014','LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-005','RESP-008','DIST-005','LEDG-001','LEDG-003','RSLT-001','RSLT-003','RSLT-004','BASE-PUBLIC-003'], 'Audience CSV review, saved segment, email score 9, editable invitation prefill, confirmation receipt, identified ledger, cancellation, opt-out and erasure are keyboard accessible', async ({ page }, info) => {
   test.setTimeout(120000)
   page.setDefaultTimeout(15000)
   const request = page.request, headers = { Origin: new URL(info.project.use.baseURL!).origin }
@@ -268,4 +270,39 @@ contract(['RESP-020','DIST-014','LOGIC-002','AUD-001','AUD-002','AUD-003','RESP-
   expect((await request.get(new URL(mail.invitation).pathname)).status()).toBe(404)
   const remaining = await call(`${path}/ledger`)
   expect(remaining.total).toBe(0)
+  // The saved SMS Settings, recorded consent and invitation channel use the existing loopback Twilio receiver.
+  await signInEmptyWorkspace(page)
+  let smsOrigin=''
+  const closeSms=await startSmsReceiver({provide(name:string,value:unknown){if(name==='taskReceiverOrigin')smsOrigin=String(value)}} as Parameters<typeof startSmsReceiver>[0])
+  try {
+    const token='synthetic-pencil-c47-browser-token'
+    const saved=await request.put('/api/app/connections/sms',{headers,data:{accountId:'synthetic-pencil-c47-8',authToken:token,fromNumber:'+15555550111',a2pState:'pending',apiOrigin:smsOrigin}})
+    expect(saved.status()).toBe(200)
+    await page.goto('/app/settings');await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
+    const sms=page.getByRole('region',{name:'SMS invitations',exact:true})
+    await expect(sms).toContainText('Connected')
+    await expect(sms).toContainText('Owner-reported A2P registration: pending')
+    await expect(sms.getByLabel('Twilio auth token',{exact:true})).toHaveValue('')
+    expect(await page.content()).not.toContain(token)
+    await audienceScreen(page,info,'sms-settings')
+    const contact=await call('/api/app/distribution/contacts',{name:'synthetic-pencil-c47-9',email:'synthetic-pencil-c47-9@synthetic.test',mobile:'+15555550112',smsConsent:{given:true,wording:'I agree to receive SMS invitations. Reply STOP to opt out.'}})
+    await page.goto('/app/audience');await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
+    await page.getByLabel('Search contacts').fill(contact.email)
+    await page.getByRole('button',{name:'Edit contact synthetic-pencil-c47-9',exact:true}).click()
+    await expect(page.getByText('SMS consent recorded '+contact.smsConsentAt,{exact:true})).toBeVisible()
+    await expect(page.getByLabel('Contact mobile',{exact:true})).toHaveValue(contact.mobile)
+    await audienceScreen(page,info,'sms-consent')
+    const smsFlow=await call('/api/app/flows',{title:'synthetic-pencil-c47-10',slug:'synthetic-pencil-c47-'+info.project.name+'-'+crypto.randomUUID()})
+    await page.goto(`/app/flows/${smsFlow.id}/builder`);await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
+    await page.getByRole('button',{name:'Share',exact:true}).click()
+    const channel=page.getByLabel('Invitation channel',{exact:true})
+    await channel.selectOption('sms');await expect(channel).toHaveValue('sms')
+    await expect(channel.locator('option:checked')).toHaveText('SMS · recorded consent required')
+    await audienceScreen(page,info,'sms-channel')
+    expect((await (await request.get(smsOrigin+'/__control/state')).json()).requests).toEqual([])
+  } finally {
+    expect((await request.delete('/api/app/connections/sms',{headers,data:{}})).status()).toBe(200)
+    await closeSms()
+  }
+
 })

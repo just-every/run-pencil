@@ -1,15 +1,21 @@
 import { collectorId, CollectorClosedError } from '../collectors'
 import type { Hono } from 'hono'
 import { z } from 'zod'
-import { contactSchema, contactLimits } from './contact-model'
+import { zValidator } from '@hono/zod-validator'
+import { contactSchema, contactLimits, contactTimeZoneMessage } from './contact-model'
 import { segmentSchema } from './segments'
-import { validateInput, resourceId } from '../../shared/validation'
+import { validateInput, resourceId, invalidInput } from '../../shared/validation'
 import type { WorkerEnvironment } from '../../app/environment'
 import type { RequestServices } from '../../app/request-context'
+const validateContact = () => zValidator('json', contactSchema, (result, context) => {
+  if (!result.success) return result.error.issues.some(issue => issue.path[0] === 'timeZone')
+    ? context.json({ error: 'VALIDATION_ERROR', message: contactTimeZoneMessage }, 400)
+    : invalidInput(context, 'json')
+})
 export function registerDistributionRoutes(app: Hono<WorkerEnvironment>, services: RequestServices) {
   app.get('/api/app/distribution/contacts',validateInput('query',z.object({q:z.string().max(200).optional(),offset:z.coerce.number().int().min(0).max(contactLimits.total).default(0),limit:z.coerce.number().int().min(1).max(1000).default(250)})), async c => c.json(await services(c).distribution.contacts.list(c.get('operatorSession').workspaceId,c.req.valid('query').q ?? '',c.req.valid('query').offset,c.req.valid('query').limit)))
-  app.post('/api/app/distribution/contacts', validateInput('json', contactSchema), async c => c.json(await services(c).distribution.contacts.save(c.get('operatorSession').workspaceId, c.req.valid('json'),c.get('operatorSession').operatorId), 201))
-  app.put('/api/app/distribution/contacts/:id',validateInput('param',z.object({id:resourceId})),validateInput('json',contactSchema),async c=>c.json(await services(c).distribution.contacts.edit(c.get('operatorSession').workspaceId,c.req.param('id'),c.req.valid('json'),c.get('operatorSession').operatorId)))
+  app.post('/api/app/distribution/contacts', validateContact(), async c => c.json(await services(c).distribution.contacts.save(c.get('operatorSession').workspaceId, c.req.valid('json'),c.get('operatorSession').operatorId), 201))
+  app.put('/api/app/distribution/contacts/:id',validateInput('param',z.object({id:resourceId})),validateContact(),async c=>c.json(await services(c).distribution.contacts.edit(c.get('operatorSession').workspaceId,c.req.param('id'),c.req.valid('json'),c.get('operatorSession').operatorId)))
   app.post('/api/app/distribution/contacts/import',validateInput('json',z.object({csv:z.string().max(contactLimits.csvBytes),commit:z.boolean().optional(),updateMatches:z.boolean().optional()})),async c=>{
     const op=c.get('operatorSession');return c.json(await services(c).distribution.importer.run(op.workspaceId,op.operatorId,c.req.valid('json')))
   })

@@ -409,6 +409,10 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001', 'PAY-005', 'PAY-003', 'PAY-004'],
     await expect(row).toContainText('Partially refunded')
     await expect(row).toContainText('Refunded $10.00')
     await expect(row).toContainText('Card · ending 4242')
+    await expect(row).toContainText('stripe')
+    const paymentRows=await call<{payments:Array<{id:string;total:number;refundedAmount:number}>}>('/api/app/payments')
+    const providerId=paymentRows.payments.find(payment=>payment.total===4000&&payment.refundedAmount===1000)!.id
+    await expect(row.locator('code')).toHaveText(providerId)
     await page.getByLabel('Status',{exact:true}).selectOption('partially_refunded')
     await expect(page.locator('.payments-row')).toHaveCount(1)
     const exported=await page.request.get('/api/app/payments?format=csv&state=partially_refunded')
@@ -419,6 +423,7 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001', 'PAY-005', 'PAY-003', 'PAY-004'],
     await page.getByText('Reconcile with Stripe',{exact:true}).click()
     await page.getByRole('button',{name:'Reconcile period',exact:true}).click()
     await expect(page.getByText('Totals match.',{exact:true})).toBeVisible()
+    await expect(page.getByText('Historical payments from before the ledger upgrade use their recorded last-change date; verify those periods in Stripe.',{exact:true})).toBeVisible()
     await page.screenshot({path:info.outputPath(`reconcile-${info.project.name}.png`),fullPage:true})
     // PAY-003: author both modes in the payment-owned settings and read their public response records.
     for(const mode of ['subscription','donation'] as const) {

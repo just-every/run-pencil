@@ -10,7 +10,7 @@ type Captured = { path: string; authorization: string | null; idempotencyKey: st
 export default async function setup(project: TestProject) {
   let mode: Mode = 'ok', delayMilliseconds = 0
   let smsDrop=false
-  let chatDown=false,chatDrop=false
+  let chatDown=false,chatDrop=false,chatReceiptBytes=0
   const chatPosts=new Map<string,string>()
   let googleDown=false, googleTabs=1, googleBytes=0, googleDropWrite=false
   const sheetRows=new Map<string,string[][]>()
@@ -19,10 +19,10 @@ export default async function setup(project: TestProject) {
   const json = (response: ServerResponse, status: number, value: unknown) => { response.writeHead(status, { 'content-type': 'application/json' }); response.end(JSON.stringify(value)) }
   const server = createServer(async (request, response) => {
     const body = await read(request)
-    if (request.url === '/__control/reset') { const options = JSON.parse(body || '{}'); mode = options.mode ?? 'ok'; delayMilliseconds = options.delayMilliseconds ?? 0; tasks.clear(); faulted.clear(); sheetRows.clear();googleDown=false;googleTabs=1;googleBytes=0;googleDropWrite=false;requests.length = 0;chatDown=false;chatDrop=false;chatPosts.clear();smsDrop=false; return json(response, 200, { reset: true }) }
+    if (request.url === '/__control/reset') { const options = JSON.parse(body || '{}'); mode = options.mode ?? 'ok'; delayMilliseconds = options.delayMilliseconds ?? 0; tasks.clear(); faulted.clear(); sheetRows.clear();googleDown=false;googleTabs=1;googleBytes=0;googleDropWrite=false;requests.length = 0;chatDown=false;chatDrop=false;chatReceiptBytes=0;chatPosts.clear();smsDrop=false; return json(response, 200, { reset: true }) }
     if (request.url === '/__control/state') return json(response, 200, { tasks: Object.fromEntries(tasks), requests,chatPosts:Object.fromEntries(chatPosts),sheets:Object.fromEntries(sheetRows) })
     if(request.url==='/__control/sms-mode'){smsDrop=JSON.parse(body).drop===true;return json(response,200,{configured:true})}
-    if(request.url==='/__control/chat-mode'){const options=JSON.parse(body);chatDown=options.down===true;chatDrop=options.drop===true;return json(response,200,{down:chatDown})}
+    if(request.url==='/__control/chat-mode'){const options=JSON.parse(body);chatDown=options.down===true;chatDrop=options.drop===true;chatReceiptBytes=options.receiptBytes??0;return json(response,200,{down:chatDown})}
     if(request.url==='/__control/google-mode'){const options=JSON.parse(body);googleDown=options.down??false;googleTabs=options.tabs??1;googleBytes=options.bytes??0;googleDropWrite=options.dropWrite??false;if(options.book&&options.rows)sheetRows.set(options.book,options.rows);return json(response,200,{down:googleDown})}
     requests.push({ path: request.url ?? '', authorization: request.headers.authorization ?? null, idempotencyKey: (request.headers['idempotency-key'] as string | undefined) ?? null, contentType: request.headers['content-type'] ?? null, body })
     const url=new URL(request.url??'/',`http://127.0.0.1:${(server.address() as AddressInfo).port}`)
@@ -32,7 +32,7 @@ export default async function setup(project: TestProject) {
       const key=String(request.headers['idempotency-key']??'');if(!key)return json(response,400,{error:'missing-key'})
       chatPosts.set(key,chatPosts.get(key)??body)
       if(chatDrop){chatDrop=false;return request.socket.destroy()}
-      return json(response,200,url.pathname==='/teams'?{accepted:true}:{ok:true,ts:'synthetic-pencil-1'})
+      return json(response,200,url.pathname==='/teams'?{accepted:true}:{ok:true,ts:'synthetic-pencil-1',...(chatReceiptBytes?{padding:' '.repeat(chatReceiptBytes)}:{})})
     }
     if(url.pathname==='/o/oauth2/v2/auth'){const callback=new URL(url.searchParams.get('redirect_uri')!);callback.searchParams.set('state',url.searchParams.get('state')!);callback.searchParams.set('code','synthetic-pencil-google-code');response.writeHead(302,{location:callback.href});return response.end()}
     if(url.pathname==='/token')return json(response,200,{access_token:'synthetic-pencil-google-access',refresh_token:'synthetic-pencil-google-refresh',expires_in:3600,token_type:'Bearer'})

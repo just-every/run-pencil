@@ -1,7 +1,7 @@
 import { ulid } from 'ulid'
 import { csvRows, type CsvRow } from '../importing'
 import { ValidationError } from '../../shared/errors'
-import { contactLimits, contactSchema } from './contact-model'
+import { contactLimits, contactSchema, contactTimeZoneMessage } from './contact-model'
 type Status='added'|'matched'|'updated'|'invalid'|'over-limit'
 type ReportRow={row:number;status:Status;match?:'existing'|'file';message?:string}
 export class ContactImport {
@@ -11,29 +11,31 @@ export class ContactImport {
     const source=csvRows(input.csv),first=source.next()
     const header:CsvRow|undefined=first.done?undefined:first.value
     if(!header || header.errors.length) throw new ValidationError('Provide a CSV header with name and email columns.')
-    const keys=header.cells.map(k=>k.trim()),nameIndex=keys.findIndex(k=>k.toLowerCase()==='name'),emailIndex=keys.findIndex(k=>k.toLowerCase()==='email')
+    const keys=header.cells.map(k=>k.trim()),nameIndex=keys.findIndex(k=>k.toLowerCase()==='name'),emailIndex=keys.findIndex(k=>k.toLowerCase()==='email'),timeZoneIndex=keys.findIndex(k=>k.toLowerCase()==='time_zone')
     if(nameIndex<0||emailIndex<0||new Set(keys.map(k=>k.toLowerCase())).size!==keys.length) throw new ValidationError('CSV requires distinct headers including name and email.')
     const existing=(await this.db.prepare('SELECT id,email FROM distribution_contacts WHERE workspace_id=?').bind(workspaceId).all<{id:string;email:string}>()).results
     const seen=new Map(existing.map(c=>[c.email.toLowerCase(),{id:c.id,from:'existing' as 'existing'|'file'}]))
-    const rows:ReportRow[]=[],writes=new Map<string,{id:string;name:string;email:string;fields:string;existing:boolean}>(),now=new Date().toISOString()
+    const rows:ReportRow[]=[],writes=new Map<string,{id:string;name:string;email:string;fields:string;timeZone?:string|null;existing:boolean}>(),now=new Date().toISOString()
     let total=existing.length
     for(const row of source) {
       if(rows.length>=contactLimits.csvRows) throw new ValidationError('CSV exceeds the 5000 row limit.')
-      const fields=Object.fromEntries(keys.flatMap((key,i)=>i===nameIndex||i===emailIndex?[]:[[key,row.cells[i]??'']]))
+      const fields=Object.fromEntries(keys.flatMap((key,i)=>i===nameIndex||i===emailIndex||i===timeZoneIndex?[]:[[key,row.cells[i]??'']]))
       const email=row.cells[emailIndex]??'', name=row.cells[nameIndex]??''
-      const valid=contactSchema.safeParse({name,email,fields})
+      const timeZone=timeZoneIndex<0?undefined:(row.cells[timeZoneIndex]?.trim()||null)
+      const valid=contactSchema.safeParse({name,email,fields,timeZone})
       if(row.errors.length||!valid.success) {
         const badEmail=!contactSchema.shape.email.safeParse(email).success
+        if(!contactSchema.shape.timeZone.safeParse(timeZone).success){rows.push({row:row.row,status:'invalid',message:contactTimeZoneMessage});continue}
         rows.push({row:row.row,status:badEmail||row.errors.length?'invalid':'over-limit',message:badEmail?'Missing or invalid email.':row.errors.length?'Malformed CSV row.':'Name or custom fields exceed limits.'});continue
       }
       const data=valid.data,match=seen.get(data.email)
       if(match) {
         rows.push({row:row.row,status:input.updateMatches?'updated':'matched',match:match.from})
-        if(input.updateMatches) writes.set(match.id,{id:match.id,name:data.name,email:data.email,fields:JSON.stringify(data.fields),existing:match.from==='existing'})
+        if(input.updateMatches) writes.set(match.id,{id:match.id,name:data.name,email:data.email,fields:JSON.stringify(data.fields),timeZone:data.timeZone,existing:match.from==='existing'})
       } else if(total>=contactLimits.total) rows.push({row:row.row,status:'over-limit',message:'Workspace contact limit reached.'})
       else {
         const id=ulid();total++;seen.set(data.email,{id,from:'file'});rows.push({row:row.row,status:'added'})
-        writes.set(id,{id,name:data.name,email:data.email,fields:JSON.stringify(data.fields),existing:false})
+        writes.set(id,{id,name:data.name,email:data.email,fields:JSON.stringify(data.fields),timeZone:data.timeZone,existing:false})
       }
     }
     const counts={added:0,matched:0,updated:0,invalid:0,overLimit:0}
@@ -53,9 +55,9 @@ export class ContactImport {
         SELECT 1 FROM json_each(?) j WHERE json_extract(j.value,'$.existing')=1 AND NOT EXISTS(
         SELECT 1 FROM distribution_contacts c WHERE c.id=json_extract(j.value,'$.id') AND c.workspace_id=? AND c.email=json_extract(j.value,'$.email') COLLATE NOCASE))
         THEN 1 ELSE json('Matching contact changed; preview again') END`).bind(chunk,workspaceId))
-      for(const chunk of chunks) statements.push(this.db.prepare(`INSERT INTO distribution_contacts(id,workspace_id,name,email,fields_json,created_at,updated_at)
-        SELECT json_extract(value,'$.id'),?,json_extract(value,'$.name'),json_extract(value,'$.email'),json_extract(value,'$.fields'),?,? FROM json_each(?) WHERE 1
-        ON CONFLICT(id) DO UPDATE SET name=excluded.name,fields_json=excluded.fields_json,updated_at=excluded.updated_at`).bind(workspaceId,now,now,chunk))
+      for(const chunk of chunks) statements.push(this.db.prepare(`INSERT INTO distribution_contacts(id,workspace_id,name,email,fields_json,time_zone,created_at,updated_at)
+        SELECT json_extract(value,'$.id'),?,json_extract(value,'$.name'),json_extract(value,'$.email'),json_extract(value,'$.fields'),json_extract(value,'$.timeZone'),?,? FROM json_each(?) WHERE 1
+        ON CONFLICT(id) DO UPDATE SET name=excluded.name,fields_json=excluded.fields_json,time_zone=CASE WHEN ? THEN excluded.time_zone ELSE distribution_contacts.time_zone END,updated_at=excluded.updated_at`).bind(workspaceId,now,now,chunk,timeZoneIndex>=0?1:0))
       // Every statement is one atomic D1 transaction. A competing writer never silently wins.
       statements.push(this.db.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at) VALUES(?,?,'contacts.imported',?,'contact',NULL,?,?)`).bind(ulid(),workspaceId,operatorId,JSON.stringify(counts),now))
       try { await this.db.batch(statements) } catch(error) { if(String(error).includes('UNIQUE constraint')||String(error).includes('malformed JSON')) throw new ValidationError('Contacts changed while importing. Preview the CSV again.');throw error }

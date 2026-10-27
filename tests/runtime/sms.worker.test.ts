@@ -7,6 +7,8 @@ declare const __PENCIL_CORE_MIGRATIONS__:D1Migration[]
 beforeAll(()=>applyD1Migrations(env.DB,__PENCIL_CORE_MIGRATIONS__))
 const receiver=(env as unknown as {TASK_RECEIVER_ORIGIN:string}).TASK_RECEIVER_ORIGIN
 contract('DIST-011','SMS invitations require recorded consent, use sealed owner custody, and signed STOP cancels the reminder while HELP names the business',async()=>{
+ vi.useFakeTimers({toFake:['Date']});vi.setSystemTime(new Date('2026-10-27T10:00:00.000Z'))
+ try {
  await fetch(receiver+'/__control/reset',{method:'POST',body:'{}'})
  const f=await actionsHttp({},'sms-'+crypto.randomUUID().slice(0,8)),token='synthetic-pencil-27',mobile='+15555550101'
  const connection={accountId:'synthetic-pencil-1',authToken:token,fromNumber:'+15555550100',a2pState:'approved',apiOrigin:receiver}
@@ -32,6 +34,12 @@ contract('DIST-011','SMS invitations require recorded consent, use sealed owner 
  expect((await f.call(path,{channel:'sms',contactIds:[contact.id,unconsented.id],commandKey:'synthetic-pencil-mixed-consent'})).status).toBe(400)
  expect(await accepted(await f.call(path))).toEqual(beforeMixed)
  expect(((await (await fetch(receiver+'/__control/state')).json()) as {requests:unknown[]}).requests).toHaveLength(0)
+ const a2pContact=await accepted(await f.call(contacts,{name:'synthetic-pencil-c47-1',email:'synthetic-pencil-c47-1@synthetic.test',mobile:'+15555550108',smsConsent:{given:true,wording}}),201)
+ await accepted(await f.call('/api/app/connections/sms',{...connection,a2pState:'pending'},{method:'PUT'}))
+ await accepted(await f.call(path,{channel:'sms',contactIds:[a2pContact.id],commandKey:'synthetic-pencil-c47-1'}),201)
+ expect(((await (await fetch(receiver+'/__control/state')).json()) as {requests:unknown[]}).requests).toHaveLength(0)
+ expect((await accepted(await f.call(path))).participants.find((p:any)=>p.email===a2pContact.email)).toMatchObject({status:'failed',reason:'The owner must complete A2P registration before sending SMS.'})
+ await accepted(await f.call('/api/app/connections/sms',connection,{method:'PUT'}))
  await env.DB.prepare("UPDATE workspaces SET name='Synthetic pencil business',sending_window_start='00:00',sending_window_end='00:00' WHERE id=?").bind(f.workspaceId).run()
  await accepted(await f.call(path,{channel:'sms',contactIds:[contact.id],commandKey:'synthetic-pencil-consented'}),201)
  const state=await (await fetch(receiver+'/__control/state')).json() as {requests:Array<{body:string;authorization:string;idempotencyKey:string}>}
@@ -174,6 +182,29 @@ contract('DIST-011','SMS invitations require recorded consent, use sealed owner 
  expect(await invitationOf('quiet@synthetic.test')).toMatchObject({status:'pending',attempts:0});expect(await smsRequests('+15555550107')).toHaveLength(0)
  await f.services.distribution.dispatcher.run(new Date(Date.now()+2*3600_000+90_000).toISOString())
  expect(await invitationOf('quiet@synthetic.test')).toMatchObject({status:'sent',attempts:1});expect(await smsRequests('+15555550107')).toHaveLength(1)
+ // Known contact zones govern SMS; unknown zones retain the workspace window on the same launch.
+ await accepted(await f.call('/api/app/workspace',{timeZone:'UTC',sendingWindowStart:'09:00',sendingWindowEnd:'12:00'},{method:'PUT'}))
+ const zoned=await accepted(await f.call(contacts,{name:'synthetic-pencil-c47-2',email:'synthetic-pencil-c47-2@synthetic.test',mobile:'+15555550109',timeZone:'America/New_York',smsConsent:{given:true,wording}}),201)
+ const unknownZone=await accepted(await f.call(contacts,{name:'synthetic-pencil-c47-3',email:'synthetic-pencil-c47-3@synthetic.test',mobile:'+15555550110',smsConsent:{given:true,wording}}),201)
+ expect(zoned.timeZone).toBe('America/New_York');expect(unknownZone.timeZone).toBeNull()
+ for(const method of ['POST','PUT']) {
+  const invalid=await f.call(contacts+(method==='PUT'?'/'+zoned.id:''),{name:zoned.name,email:zoned.email,timeZone:'synthetic-pencil-c47-invalid-zone'},{method})
+  expect(invalid.status).toBe(400);expect(await invalid.json()).toMatchObject({message:'The contact time zone is invalid.'})
+ }
+ const invalidImport=await accepted(await f.call(contacts+'/import',{csv:'name,email,time_zone\nsynthetic-pencil-c47-4,synthetic-pencil-c47-4@synthetic.test,synthetic-pencil-c47-invalid-zone',commit:true}))
+ expect(invalidImport.rows).toEqual([{row:2,status:'invalid',message:'The contact time zone is invalid.'}])
+ const zoneImport=await accepted(await f.call(contacts+'/import',{csv:'name,email,time_zone\nsynthetic-pencil-c47-5,synthetic-pencil-c47-5@synthetic.test,America/Los_Angeles',commit:true}))
+ expect(zoneImport.counts.added).toBe(1)
+ expect((await accepted(await f.call(contacts+'?q=synthetic-pencil-c47-5')))[0]).toMatchObject({timeZone:'America/Los_Angeles',fields:{}})
+ await accepted(await f.call(path,{channel:'sms',contactIds:[zoned.id,unknownZone.id],commandKey:'synthetic-pencil-c47-2'}),201)
+ expect(await invitationOf(zoned.email)).toMatchObject({status:'pending',attempts:0});expect(await smsRequests(zoned.mobile)).toHaveLength(0)
+ expect(await invitationOf(unknownZone.email)).toMatchObject({status:'sent',attempts:1});expect(await smsRequests(unknownZone.mobile)).toHaveLength(1)
+ await f.services.distribution.dispatcher.run('2026-10-27T13:00:00.000Z')
+ await f.services.distribution.dispatcher.run('2026-10-27T13:01:00.000Z')
+ expect(await invitationOf(zoned.email)).toMatchObject({status:'sent',attempts:1});expect(await smsRequests(zoned.mobile)).toHaveLength(1)
+ expect(await smsRequests(unknownZone.mobile)).toHaveLength(1)
+ await accepted(await f.call(contacts+'/'+zoned.id+'/erase',{confirm:true}))
+ expect(await env.DB.prepare('SELECT time_zone FROM distribution_contacts WHERE id=?').bind(zoned.id).first()).toBeNull()
  expect((await everyStoredValue()).join('\n')).not.toContain(token)
  const backup=await accepted(await f.call('/api/app/backup/export',{}));expect(JSON.stringify(backup)).not.toContain(token)
  const archivedAttempts=backup.payload.tables.find((table:any)=>table.name==='mail_delivery_attempts')
@@ -183,4 +214,5 @@ contract('DIST-011','SMS invitations require recorded consent, use sealed owner 
  expect((await everyStoredValue()).join('\n')).not.toContain(mobile)
  const erasedReceipt=await env.DB.prepare("SELECT reason,provider_id AS provider FROM mail_delivery_attempts WHERE event='sms-status:delivered'").first()
  expect(erasedReceipt).toEqual({reason:null,provider:null})
+ } finally {vi.useRealTimers()}
 })
