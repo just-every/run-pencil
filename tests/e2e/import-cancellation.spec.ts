@@ -1,11 +1,15 @@
 import { appHeaders } from './api-headers'
 import AxeBuilder from '@axe-core/playwright'
 import { contract } from './contract'
-import { expect } from './fixtures'
+import { expect, test } from './fixtures'
 import { signInEmptyWorkspace } from './authoring-helpers'
 
-for (const action of ['cancel', 'review', 'new-file', 'replacement'] as const) {
-  contract(['IMPORT-002', 'IMPORT-004', 'BASE-PUBLIC-003'], `publication winning pending ${action} shows actual progress and waits for explicit undo on both screens`, async ({ page }, info) => {
+for (const group of ['cancel, review', 'new-file, replacement'] as const) {
+const actions = group.split(', ')
+contract(['IMPORT-002', 'IMPORT-004', 'BASE-PUBLIC-003'], `publication winning pending cancellation preserves actual progress until explicit undo: ${group}`, async ({ page }, info) => {
+  for (const action of actions) {
+    await test.step(action, async () => {
+    await page.context().clearCookies();
     await page.setViewportSize(info.project.name === 'desktop' ? { width: 1440, height: 900 } : { width: 390, height: 844 })
     await signInEmptyWorkspace(page)
     const definition = JSON.stringify({ title: 'Cancellation race form', fields: [{ ref: 'answer', title: 'Answer', type: 'short_text' }] })
@@ -75,5 +79,7 @@ for (const action of ['cancel', 'review', 'new-file', 'replacement'] as const) {
     await expect(page.getByRole('heading', { name: /undone/ })).toBeVisible({ timeout: 90_000 })
     await page.reload()
     await expect(page.getByRole('heading', { name: /undone/ })).toBeVisible()
-  })
+    })
+  }
+})
 }

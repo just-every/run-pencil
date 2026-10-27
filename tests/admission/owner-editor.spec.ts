@@ -11,6 +11,13 @@ test('native owner editor mounts, survives navigation, obeys framing policy and 
   const document = await page.request.get('/app')
   expect(document.headers()['content-security-policy']).toContain(`frame-ancestors 'self' ${edge}`)
   const host = page.locator('[data-rer-editor]')
+  const sendEditorMessage = async (type: string, value: unknown) => {
+    // Closing or navigating rotates the protocol session. Wait for the current
+    // handshake before sending once; messages from the old session are refused.
+    await expect(host).toHaveAttribute('data-connection', 'connected')
+    await host.locator('iframe').contentFrame().locator('body').evaluate((_body, { type, value }) =>
+      (window as unknown as { edgeSend: (type: string, value: unknown) => void }).edgeSend(type, value), { type, value })
+  }
   await expect(host).toHaveAttribute('data-connection', 'connected')
   await host.getByRole('button', { name: 'Open Run Edit Run' }).click()
   await expect(host.locator('iframe')).toBeVisible()
@@ -31,9 +38,8 @@ test('native owner editor mounts, survives navigation, obeys framing policy and 
     }
     return { selector: parts.join(' > '), tag: element.tagName.toLowerCase(), role: element.getAttribute('role') ?? '', beforeText: element.textContent!.replace(/\s+/g, ' ').trim() }
   })
-  const frame = page.frames().find(frame => frame.url().startsWith(edge))!
   const snapshot = { revision: 1, edits: [{ id: 'synthetic-pencil-edit', revision: 1, parentOrigin: new URL(page.url()).origin, path: '/app/settings', target, change: { text: 'Synthetic managed edit' } }] }
-  await frame.evaluate(snapshot => (window as unknown as { edgeSend: (type: string, value: unknown) => void }).edgeSend('live-edits', { snapshot }), snapshot)
+  await sendEditorMessage('live-edits', { snapshot })
   await expect(page.getByRole('heading', { name: 'Synthetic managed edit' })).toBeVisible()
   await host.getByRole('button', { name: 'Close Run Edit Run' }).click()
   await page.getByRole('link', { name: 'Flows', exact: true }).click()
@@ -41,7 +47,7 @@ test('native owner editor mounts, survives navigation, obeys framing policy and 
   await page.getByRole('link', { name: 'Settings', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Synthetic managed edit' })).toBeVisible()
   await host.getByRole('button', { name: 'Open Run Edit Run' }).click()
-  await frame.evaluate(() => (window as unknown as { edgeSend: (type: string, value: unknown) => void }).edgeSend('undo-live-edit', { id: 'synthetic-pencil-edit', revision: 1 }))
+  await sendEditorMessage('undo-live-edit', { id: 'synthetic-pencil-edit', revision: 1 })
   await expect(page.getByRole('heading', { name: 'Workspace settings' })).toBeVisible()
   await host.getByRole('button', { name: 'Close Run Edit Run' }).click()
   await request.post(edge + '/deny')

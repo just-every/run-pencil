@@ -103,6 +103,12 @@ contract(['SHELL-001','HOME-001','DIST-009','BASE-PUBLIC-002'], 'fresh public SS
   expect(html).toContain('Thank you for visiting Aurora Coffee.')
   expect(html).not.toContain('Loading this feedback flow')
   expect(html).toContain('<script')
+  const iconPath = html.match(/<link[^>]*rel="icon"[^>]*href="([^"]+)"/)?.[1]
+  expect(iconPath, 'the public document declares its favicon').toBeTruthy()
+  const icon = await request.get(iconPath!)
+  expect(icon.status(), 'the declared favicon is served').toBe(200)
+  expect(icon.headers()['content-type']).toContain('image/svg+xml')
+  expect(icon.headers()['x-content-type-options']).toBe('nosniff')
   const assetPath = html.match(/(?:src|href)="([^"]*\/assets\/[^" ]+\.js)"/)?.[1]
   expect(assetPath).toBeTruthy()
   const asset = await request.get(assetPath!)

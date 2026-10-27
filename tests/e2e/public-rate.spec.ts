@@ -23,10 +23,12 @@ function seedWindow(db: DatabaseSync, address: string, count: number) {
   return hash
 }
 
-contract(['BASE-ACCESS-003'], 'every declared native public surface shares actual 429 enforcement and an expired window recovers', async ({ request }, info) => {
-  test.skip(!emitted, 'Requires emitted dispatcher and its declared D1 state.')
-  const db = database(); const hashes: string[] = []
-  try {
+contract(["BASE-ACCESS-003","RESP-015"], "public request and final submission limits refuse excess traffic without retaining invalid answers and recover after expiry", async ({ request }, info) => {
+  await test.step("every declared native public surface shares actual 429 enforcement and an expired window recovers", async () => {
+    test.skip(!emitted, 'Requires emitted dispatcher and its declared D1 state.')
+    const db = database();
+    const hashes: string[] = []
+    try {
     // Keep the concrete logo workload even though the public API prefix covers it.
     const publicSurfaces = [...new Set([...manifest.deploy.publicPaths, '/api/public/brand/logo'])]
     for (const [index, path] of publicSurfaces.entries()) {
@@ -68,15 +70,14 @@ contract(['BASE-ACCESS-003'], 'every declared native public surface shares actua
     for (const hash of hashes) db.prepare('DELETE FROM public_rate_limit_windows WHERE address_hash=?').run(hash)
     db.close()
   }
-})
-
-contract(['BASE-ACCESS-003','RESP-015'], 'final submissions enforce the manifest cap without saving refused or invalid answers', async ({ request }, info) => {
-  test.skip(!emitted, 'Requires emitted runtime and its declared D1 state.')
-  const db = database()
-  const address = `198.18.${info.project.name === 'mobile' ? 157 : 156}.220`
-  const hash = createHash('sha256').update(`public-rate:${address}`).digest('hex')
-  const before = db.prepare('SELECT COUNT(*) AS n FROM responses').get()
-  try {
+  });
+  await test.step("final submissions enforce the manifest cap without saving refused or invalid answers", async () => {
+    test.skip(!emitted, 'Requires emitted runtime and its declared D1 state.')
+    const db = database()
+    const address = `198.18.${info.project.name === 'mobile' ? 157 : 156}.220`
+    const hash = createHash('sha256').update(`public-rate:${address}`).digest('hex')
+    const before = db.prepare('SELECT COUNT(*) AS n FROM responses').get()
+    try {
     const began = Math.floor(Date.now() / 60000) * 60000
     for (const start of [began, began + 60000]) {
       const date = new Date(start).toISOString()
@@ -93,4 +94,5 @@ contract(['BASE-ACCESS-003','RESP-015'], 'final submissions enforce the manifest
     expect(await denied.json()).toMatchObject({ error: 'RATE_LIMITED' })
     expect(db.prepare('SELECT COUNT(*) AS n FROM responses').get()).toEqual(before)
   } finally { db.prepare('DELETE FROM public_rate_limit_windows WHERE address_hash=?').run(hash); db.close() }
+  });
 })
