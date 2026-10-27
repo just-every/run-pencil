@@ -3,7 +3,7 @@
 import worker from './server'
 import { withDevIdentity } from './base/operator-auth/dev/index.mjs'
 import type { WorkerBindings } from './core/app/environment'
-import { isLocalDevelopmentRequest, readRuntimeConfiguration } from './core/platform/config/runtime'
+import { isLocalDevelopmentRequest, localRuntimeBindings, readRuntimeConfiguration } from './core/platform/config/runtime'
 import { nativeAuthConfiguration } from './core/features/auth/native-config'
 import { devPersonas } from './core/features/auth/dev-personas'
 import { admitDevPersonas } from './core/features/auth/dev-operators'
@@ -33,7 +33,7 @@ const devAi: DevAiFactory = env => {
   const client = createDevAiClient(aiConfig({ ...env }), { request, key: env.RER_DEV_KEY, origin, local: true, outbox: createAiOutbox({ db: env.DB }), live })
   return { client, transport: live ? 'models' : 'dev', origin: live ? new URL(live.baseUrl).origin : `${new URL(origin).origin} (Base AI dev double)` }
 }
-const withDevAi = (env: WorkerBindings): WorkerBindings => ({ ...env, ...(env.RER_DEV_ORIGIN ? {APP_ORIGIN: env.RER_DEV_ORIGIN} : {}), PENCIL_DEV_AI: devAi })
+const withDevAi = (env: WorkerBindings): WorkerBindings => ({ ...localRuntimeBindings(env), PENCIL_DEV_AI: devAi })
 
 export default {
   ...dev,
