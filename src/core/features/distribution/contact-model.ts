@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { canonicalTimeZone } from '../../shared/ianaTimeZone'
-export const contactTimeZoneMessage = 'The contact time zone is invalid.'
-const contactTimeZone = z.string().trim().min(1).max(100).refine(value => !!canonicalTimeZone(value), contactTimeZoneMessage).transform(value => canonicalTimeZone(value)!)
+export const contactTimeZoneMessage = 'The contact time zone is invalid. Use an IANA time zone name such as America/New_York, or leave it empty.'
+const contactTimeZone = z.string().trim().max(100).refine(value => !value || !!canonicalTimeZone(value), contactTimeZoneMessage).transform(value => value ? canonicalTimeZone(value)! : null)
 import seed from '../../../../seed.json'
 export const contactLimits = seed.limits.contacts
 export const fieldsSchema = z.record(z.string().trim().min(1).max(contactLimits.fieldKeyCharacters).refine(k => !['__proto__','constructor','prototype'].includes(k)), z.string().max(contactLimits.fieldValueCharacters)).refine(v => Object.keys(v).length <= contactLimits.customFields, 'Use at most 20 custom fields.')

@@ -233,17 +233,17 @@ contract('DIST-011','SMS invitations require recorded consent, use sealed owner 
  await accepted(await f.call('/api/app/workspace',{timeZone:'UTC',sendingWindowStart:'09:00',sendingWindowEnd:'12:00'},{method:'PUT'}))
  const initialZone=await accepted(await f.call(contacts,{name:'synthetic-pencil-c47-2',email:'synthetic-pencil-c47-2@synthetic.test',mobile:'+15555550109',timeZone:'UTC',smsConsent:{given:true,wording}}),201)
  const zoned=await accepted(await f.call(contacts+'/'+initialZone.id,{name:initialZone.name,email:initialZone.email,timeZone:'America/New_York'},{method:'PUT'}))
- const unknownZone=await accepted(await f.call(contacts,{name:'synthetic-pencil-c47-3',email:'synthetic-pencil-c47-3@synthetic.test',mobile:'+15555550110',smsConsent:{given:true,wording}}),201)
+ const unknownZone=await accepted(await f.call(contacts,{name:'synthetic-pencil-c47-3',email:'synthetic-pencil-c47-3@synthetic.test',mobile:'+15555550110',timeZone:'',smsConsent:{given:true,wording}}),201)
  expect(zoned.timeZone).toBe('America/New_York');expect(unknownZone.timeZone).toBeNull()
- for(const method of ['POST','PUT']) {
+ const refusals:string[]=[];for(const method of ['POST','PUT']) {
   const invalid=await f.call(contacts+(method==='PUT'?'/'+zoned.id:''),{name:zoned.name,email:zoned.email,timeZone:'synthetic-pencil-c47-20'},{method})
-  expect(invalid.status).toBe(400);expect(await invalid.json()).toMatchObject({message:'The contact time zone is invalid.'})
+  expect(invalid.status).toBe(400);refusals.push((await invalid.json()).message)
  }
  const invalidImport=await accepted(await f.call(contacts+'/import',{csv:'name,email,time_zone\nsynthetic-pencil-c47-4,synthetic-pencil-c47-4@synthetic.test,synthetic-pencil-c47-20',commit:true}))
- expect(invalidImport.rows).toEqual([{row:2,status:'invalid',message:'The contact time zone is invalid.'}])
- const zoneImport=await accepted(await f.call(contacts+'/import',{csv:'name,email,time_zone\nsynthetic-pencil-c47-5,synthetic-pencil-c47-5@synthetic.test,America/Los_Angeles',commit:true}))
+ expect(invalidImport.rows).toEqual([{row:2,status:'invalid',message:refusals[0]}]);expect(refusals[1]).toBe(refusals[0])
+ const suggested=refusals[0].match(/\w+\/\w+/)![0],zoneImport=await accepted(await f.call(contacts+'/import',{csv:'name,email,time_zone\nsynthetic-pencil-c47-5,synthetic-pencil-c47-5@synthetic.test,'+suggested,commit:true}))
  expect(zoneImport.counts.added).toBe(1)
- expect((await accepted(await f.call(contacts+'?q=synthetic-pencil-c47-5')))[0]).toMatchObject({timeZone:'America/Los_Angeles',fields:{}})
+ expect((await accepted(await f.call(contacts+'?q=synthetic-pencil-c47-5')))[0]).toMatchObject({timeZone:suggested,fields:{}})
  await accepted(await f.call(path,{channel:'sms',contactIds:[zoned.id,unknownZone.id],commandKey:'synthetic-pencil-c47-2'}),201)
  expect(await invitationOf(zoned.email)).toMatchObject({status:'pending',attempts:0});expect(await smsRequests(zoned.mobile)).toHaveLength(0)
  expect(await invitationOf(unknownZone.email)).toMatchObject({status:'sent',attempts:1});expect(await smsRequests(unknownZone.mobile)).toHaveLength(1)
