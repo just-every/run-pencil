@@ -1,8 +1,14 @@
+import { ContactEditor } from './ContactEditor'
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { audienceRequest as request, launchSummary, segmentsPath, type Contact, type Segment, type Launch } from './audienceApi'
-type Delivery = { id: string; name: string | null; email: string | null; revisionId: string; deliveryId: string; kind: string; status: string; reason: string | null; attempts: number; responseStatus: string; optedOutAt: string | null }
+type Delivery = { contactId:string|null; mobile:string|null; currentMobile:string|null; retryAction:'none'|'edit-number'|'retry'; id: string; name: string | null; email: string | null; revisionId: string; deliveryId: string; kind: string; status: string; reason: string | null; attempts: number; responseStatus: string; optedOutAt: string | null }
+const savedNotice = (row?: Delivery) => row?.retryAction === 'retry' ? 'Contact saved. Queue a retry to send to the corrected, consented number.'
+  : row?.retryAction !== 'edit-number' ? 'Contact saved.'
+  : row.currentMobile && row.currentMobile !== row.mobile ? 'Contact saved. The new number has no recorded SMS consent: use Edit number and record consent before queuing a retry.'
+  : 'Contact saved. The number still needs correcting: use Edit number to enter a corrected number and record consent before queuing a retry.'
 export function DistributionPanel({ flowId }: { flowId: string }) {
+  const [editing,setEditing]=useState<{contact:Contact;deliveryId:string}>()
   const [channel,setChannel]=useState<'email'|'sms'>('email')
   const [contacts, setContacts] = useState<Contact[]>([])
   const [contactSearch, setContactSearch] = useState(''), [contactOffset, setContactOffset] = useState(0)
@@ -17,6 +23,7 @@ export function DistributionPanel({ flowId }: { flowId: string }) {
   const load = async () => {
     const [nextContacts, nextSegments, distribution] = await Promise.all([request<Contact[]>(`/api/app/distribution/contacts?q=${encodeURIComponent(contactSearch)}&offset=${contactOffset}&limit=250`), request<Segment[]>(segmentsPath), request<{ sender: { message: string }; participants: Delivery[]; launches: Launch[] }>(`/api/app/flows/${encodeURIComponent(flowId)}/distribution`)])
     setContacts(nextContacts); setSegments(nextSegments); setLaunches(distribution.launches); setDeliveries(distribution.participants); setSender(distribution.sender.message)
+    return distribution.participants
   }
   useEffect(() => { void load().catch(e => setError((e as Error).message)) }, [flowId])
   useEffect(() => { let current = true; void request<Contact[]>(`/api/app/distribution/contacts?q=${encodeURIComponent(contactSearch)}&offset=${contactOffset}&limit=250`).then(people => { if (current) setContacts(people) }).catch(e => { if (current) setError((e as Error).message) }); return () => { current = false } }, [contactSearch, contactOffset])
@@ -53,9 +60,11 @@ export function DistributionPanel({ flowId }: { flowId: string }) {
     {pendingLaunch ? <p><button className="secondary-button focus-ring" disabled={busy} type="button" onClick={() => void launch(pendingLaunch.selector, pendingLaunch.commandKey)}>Resume invitation launch</button> The saved command resumes the same frozen audience.</p> : null}
     {launches.length ? <section aria-label="Invitation launch counts"><h3>Launch outcomes</h3><ul>{launches.map(item => <li key={item.id}>{launchSummary(item)} · {item.state === 'recovery-required' ? 'Restored unfinished launch cannot resume. Publish a new revision and start a new launch; restored links stay inactive.' : item.state}{item.resumable ? <button className="quiet-button focus-ring" disabled={busy} type="button" onClick={() => void launch(undefined, item.commandKey)}>Resume saved launch</button> : null}</li>)}</ul></section> : null}
     {deliveries.length ? <ul>{deliveries.map(delivery => <li key={delivery.deliveryId} style={{ overflowWrap: 'anywhere' }}>
-      <strong>{delivery.name ?? 'Erased recipient'}</strong>{delivery.email ? ` · ${delivery.email}` : ''} · {delivery.kind}: {delivery.status} · response: {delivery.responseStatus} · {delivery.attempts} attempts
+      <strong>{delivery.name ?? 'Erased recipient'}</strong>{delivery.email ? ` · ${delivery.email}` : ''}{delivery.mobile && delivery.reason ? ` · ${delivery.mobile}` : ''} · {delivery.kind}: {delivery.status} · response: {delivery.responseStatus} · {delivery.attempts} attempts
       {delivery.reason ? <p>{delivery.reason}</p> : null}
-      {['failed','unknown'].includes(delivery.status) ? <button className="quiet-button focus-ring" disabled={busy} type="button" onClick={() => { const accepted = delivery.status === 'unknown' && window.confirm('The provider outcome is unknown. Resending can deliver a duplicate. Explicitly accept that risk?'); if (delivery.status !== 'unknown' || accepted) void act(() => request(`/api/app/distribution/deliveries/${delivery.deliveryId}/retry`, { duplicateRiskAccepted: accepted }), 'Retry requested with the original delivery key. Review its recorded outcome below.') }}>Queue retry{delivery.status === 'unknown' ? ' (duplicate risk)' : ''}</button> : null}
+      {delivery.retryAction === 'edit-number' ? <button className="quiet-button focus-ring" disabled={busy} type="button" onClick={() => void act(async () => { const people=await request<Contact[]>(`/api/app/distribution/contacts?q=${encodeURIComponent(delivery.email ?? '')}`); const contact=people.find(person=>person.id===delivery.contactId); if(!contact)throw new Error('This contact is no longer available.'); setEditing({contact,deliveryId:delivery.deliveryId}) }, 'Correct the number and record its SMS consent below.')}>Edit number</button> : null}
+      {delivery.retryAction === 'retry' ? <button className="quiet-button focus-ring" disabled={busy} type="button" onClick={() => { const accepted = delivery.status === 'unknown' && window.confirm('The provider outcome is unknown. Resending can deliver a duplicate. Explicitly accept that risk?'); if (delivery.status !== 'unknown' || accepted) void act(() => request(`/api/app/distribution/deliveries/${delivery.deliveryId}/retry`, { duplicateRiskAccepted: accepted }), 'Retry requested. Review its recorded outcome below.') }}>Queue retry{delivery.status === 'unknown' ? ' (duplicate risk)' : ''}</button> : null}
+      {editing?.deliveryId===delivery.deliveryId ? <ContactEditor contact={editing.contact} cancel={()=>setEditing(undefined)} saved={async()=>{setEditing(undefined);setNotice(savedNotice((await load()).find(row=>row.deliveryId===delivery.deliveryId)))}}/> : null}
     </li>)}</ul> : <p>No invitations have been launched for this flow.</p>}
   </section>
 }

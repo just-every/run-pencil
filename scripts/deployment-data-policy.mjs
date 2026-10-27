@@ -100,7 +100,7 @@ const retained = {
   auth_magic_links: 'id operator_id token_hash expires_at consumed_at created_at revoked_at',
   choice_options: 'id step_id value label position created_at updated_at stable_id',
   contact_consent_events: 'id contact_id workspace_id consent actor source created_at',
-  distribution_contacts: 'id workspace_id email name opted_out_at created_at updated_at fields_json mobile sms_consent_at sms_consent_mobile sms_stopped_at',
+  distribution_contacts: 'id workspace_id email name opted_out_at created_at updated_at fields_json mobile sms_consent_at sms_consent_mobile sms_stopped_at time_zone',
   distribution_segments: 'id workspace_id name rules_json created_at updated_at',
   invitation_candidates: 'id launch_id contact_id email_snapshot name_snapshot outcome sms_mobile_snapshot',
   flow_branch_rules: 'id revision_id source_step_stable_id predicate_kind expected_value_json condition_json destination_step_stable_id position created_at updated_at',
@@ -114,7 +114,7 @@ const retained = {
   local_dev_inbox: 'id to_email expires_at created_at',
   local_fixture_initializations: 'id initialized_at',
   local_mail_outbox: 'delivery_id created_at',
-  mail_deliveries: 'id participant_id kind status idempotency_key available_at first_attempt_at last_attempt_at attempts provider_id reason created_at updated_at',
+  mail_deliveries: 'sms_mobile refusal_code id participant_id kind status idempotency_key available_at first_attempt_at last_attempt_at attempts provider_id reason created_at updated_at',
   mail_delivery_attempts: 'id delivery_id ordinal event actor_operator_id reason provider_id created_at',
   oa_bootstrap: 'singleton claim_id claimed_at',
   // Local dev identity bookkeeping: its rows never travel (deployment-data-dev.mjs).

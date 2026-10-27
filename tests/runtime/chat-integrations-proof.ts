@@ -1,5 +1,8 @@
 import { env } from 'cloudflare:test'
-import { expect } from 'vitest'
+import { expect, vi } from 'vitest'
+import type { BuilderDraft, PublicFlow, Ledger } from '../../src/core/app/api'
+import type { ActionDetail } from '../../src/core/features/actions/model'
+import { issueLoadTime } from '../../src/core/features/traffic/loadTime'
 import { actionsHttp, everyStoredValue } from './actions-fixture'
 
 const receiver=(env as unknown as {TASK_RECEIVER_ORIGIN:string}).TASK_RECEIVER_ORIGIN
@@ -10,6 +13,8 @@ async function signature(secret:string,timestamp:string,body:string){const key=a
 
 /** One connected response journey across both real loopback network edges, signed action creation and their shared review schedule. */
 export async function proveChatIntegrations(){
+  vi.useFakeTimers({toFake:['Date']});vi.setSystemTime(new Date('2026-10-27T10:00:00.000Z'))
+  try {
   await fetch(receiver+'/__control/reset',{method:'POST',body:JSON.stringify({mode:'ok'})})
   const f=await actionsHttp({},'chat-'+crypto.randomUUID().slice(0,6))
   await env.DB.prepare("UPDATE oa_operators SET role='owner' WHERE id=?").bind(f.lead.operatorId).run()
@@ -49,6 +54,10 @@ export async function proveChatIntegrations(){
   expect(slackBody.text).toContain('How was the wait?: Too long')
   expect(teamsPost.body).toContain('How was the wait?: Too long')
   for(const post of posts){expect(post.body).toContain(`/app/flows/${f.flowId}/inbox`);expect(post.body).toContain('Submitted');expect(post.body).not.toContain('synthetic-pencil-private-answer');expect(post.body).not.toContain(signingSecret);expect(post.idempotencyKey).toBeTruthy()}
+  const postedResponse=(await accepted<Ledger>(await f.call(`/api/app/flows/${f.flowId}/ledger`))).responses[0]
+  const authoredMessage=`${draft.flow.title}\nSubmitted ${postedResponse.completedAt}\nHow was the wait?: Too long`
+  expect(slackBody.blocks[0].text.text).toBe(authoredMessage)
+  expect(teamsBody.attachments[0].content.body[0].text).toBe(authoredMessage)
   expect(teamsBody.attachments[0].content.actions[0].url).toContain('/app/flows/')
   const deliveryId=slackBody.blocks[1].elements.find((element:{action_id?:string})=>element.action_id==='pencil_create_action').value as string
   const body=new URLSearchParams({payload:JSON.stringify({type:'block_actions',user:{id:slack.slackUserId},channel:{id:slack.channel},actions:[{action_id:'pencil_create_action',value:deliveryId}]})}).toString()
@@ -59,10 +68,25 @@ export async function proveChatIntegrations(){
   const stale=String(Number(timestamp)-301)
   expect((await interact(await signature(signingSecret,stale,body),stale)).status).toBe(403)
   expect((await (await f.call('/api/app/actions')).json()).actions).toEqual([])
+  const future=String(Number(timestamp)+301)
+  expect((await interact(await signature(signingSecret,future,body),future)).status).toBe(403)
+  for(const changed of [{user:{id:'synthetic-pencil-c47-14'}},{channel:{id:'synthetic-pencil-c47-15'}}]) {
+    const forgedActor=new URLSearchParams({payload:JSON.stringify({...JSON.parse(new URLSearchParams(body).get('payload')!),...changed})}).toString()
+    expect((await interact(await signature(signingSecret,timestamp,forgedActor),timestamp,forgedActor)).status).toBe(403)
+    expect((await (await f.call('/api/app/actions')).json()).actions).toEqual([])
+  }
   const valid=await signature(signingSecret,timestamp,body)
-  const created=await accepted<{actionId:string}>(await interact(valid))
+  const boundary=String(Number(timestamp)-300)
+  const created=await accepted<{actionId:string}>(await interact(await signature(signingSecret,boundary,body),boundary))
+  const padded=body+'&padding='+'x'.repeat(32768-new TextEncoder().encode(body+'&padding=').length)
+  expect(new TextEncoder().encode(padded)).toHaveLength(32768)
+  expect(await accepted(await interact(await signature(signingSecret,timestamp,padded),timestamp,padded))).toEqual(expect.objectContaining(created))
+  const oversized=padded+'x'
+  const refusedSize=await interact(await signature(signingSecret,timestamp,oversized),timestamp,oversized)
+  expect(refusedSize.status).toBe(400);expect(await refusedSize.json()).toMatchObject({message:'Slack interaction is too large.'})
   expect(await accepted(await interact(valid))).toEqual(expect.objectContaining(created))
-  const action=await accepted<{id:string;state:string;verdict:null;owner:{id:string};evidence:{figures:{completedResponses:number}}}>(await f.call('/api/app/actions/'+created.actionId))
+  const action=await accepted<ActionDetail>(await f.call('/api/app/actions/'+created.actionId))
+  expect(action).toMatchObject(actionTemplate)
   expect(action).toMatchObject({id:created.actionId,state:'planned',verdict:null,owner:{id:f.owner.operatorId},evidence:{figures:{completedResponses:1}}})
   expect((await (await f.call('/api/app/actions')).json()).actions).toHaveLength(1)
   // The shared ACT-009 calendar uses the explicit fake Cron instant, including before/open/on/weekly and concurrent ticks.
@@ -157,6 +181,14 @@ export async function proveChatIntegrations(){
   const staleRows=(await accepted<{deliveries:Array<{id:string;kind:string;idempotencyKey:string}>}>(await f.call('/api/app/integration-deliveries?state=failed'))).deliveries.filter(row=>['slack','teams'].includes(row.kind)&&row.idempotencyKey.startsWith('chat:response:'))
   const staleSlack=staleRows.find(row=>row.kind==='slack')!,staleTeams=staleRows.find(row=>row.kind==='teams')!
   const staleCalls=(await received()).length
+  vi.setSystemTime(new Date('2026-10-27T10:00:01.000Z'))
+  const oldPost=JSON.parse(replayedPosts.find(post=>post.path==='/chat.postMessage')!.body)
+  const oldBody=new URLSearchParams({payload:JSON.stringify({...JSON.parse(new URLSearchParams(body).get('payload')!),actions:[{action_id:'pencil_create_action',value:oldPost.blocks[1].elements.find((item:{action_id?:string})=>item.action_id==='pencil_create_action').value}]})}).toString()
+  await accepted(await f.call(`/api/app/flows/${f.flowId}/chat`,{...slack,action:{...actionTemplate,title:'synthetic-pencil-c47-21'}},{method:'PUT'}))
+  const actionsBeforeOld=(await (await f.call('/api/app/actions')).json()).actions
+  const oldTimestamp=String(Math.floor(Date.now()/1000))
+  expect((await interact(await signature(signingSecret,oldTimestamp,oldBody),oldTimestamp,oldBody)).status).toBe(404)
+  expect((await (await f.call('/api/app/actions')).json()).actions).toEqual(actionsBeforeOld)
   await accepted(await f.call(`/api/app/flows/${f.flowId}/chat`,{...slack,channel:'synthetic-pencil-changed-channel'},{method:'PUT'}))
   expect(await accepted(await replay(staleSlack.id),409)).toMatchObject({error:'CONFLICT',message:expect.stringContaining('settings changed')})
   await accepted(await f.call('/api/app/connections/teams',{webhookUrl},{method:'PUT'}))
@@ -165,7 +197,35 @@ export async function proveChatIntegrations(){
   await env.DB.prepare("UPDATE chat_form_links SET armed=0 WHERE platform='slack' AND workspace_id=?").bind(f.workspaceId).run()
   expect(await accepted(await replay(staleSlack.id),409)).toMatchObject({error:'CONFLICT',message:expect.stringContaining('disarmed')})
   expect(await received()).toHaveLength(staleCalls)
+  // Valid fields on a separate form exercise save limits, text truncation and oversized-receipt non-resend.
+  await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({receiptBytes:16385})})
+  const boundFlow=await accepted<{id:string}>(await f.call('/api/app/flows',{title:'synthetic-pencil-c47-16',slug:'synthetic-pencil-c47-'+Date.now()}),201)
+  const boundPath=`/api/app/flows/${boundFlow.id}`,readBound=async()=>accepted<BuilderDraft>(await f.call(boundPath+'/draft'))
+  const prompts=Array.from({length:21},(_,index)=>('synthetic-pencil-c47-'+(2000+index)+' ').padEnd(900,'x'))
+  for(const prompt of prompts)await accepted(await f.call(boundPath+'/draft/steps',{expectedVersion:(await readBound()).flow.draftVersion,step:{kind:'question',questionType:'number',prompt,required:true}}),201)
+  await accepted(await f.call(boundPath+'/draft/steps',{expectedVersion:(await readBound()).flow.draftVersion,step:{kind:'completion',questionType:null,prompt:'synthetic-pencil-c47-17'}}),201)
+  const boundDraft=await readBound(),fieldIds=boundDraft.steps.filter(step=>step.kind==='question').map(step=>step.id)
+  const boundSettings={...slack,answerStepIds:fieldIds.slice(0,20)}
+  await accepted(await f.call(boundPath+'/chat',boundSettings,{method:'PUT'}))
+  expect((await f.call(boundPath+'/chat',{...boundSettings,answerStepIds:fieldIds},{method:'PUT'})).status).toBe(400)
+  await accepted(await f.call(boundPath+'/publish',{expectedVersion:(await readBound()).flow.draftVersion}),201)
+  const publicBound=await accepted<PublicFlow>(await f.call('/api/public/flows/'+boundDraft.flow.slug,undefined,{auth:false}))
+  const session=await accepted<{sessionId:string;sessionToken:string}>(await f.call('/api/public/flows/'+boundDraft.flow.slug+'/sessions',{deviceClass:'desktop',source:'direct'},{auth:false}),201)
+  const submission=await accepted<{responseId:string}>(await f.call('/api/public/flows/'+boundDraft.flow.slug+'/responses',{sessionId:session.sessionId,sessionToken:session.sessionToken,loadTime:await issueLoadTime(env.SESSION_SECRET,publicBound.revision.id,Date.now()-5000),idempotencyKey:'synthetic-pencil-c47-18',answers:fieldIds.map((stepId,index)=>({stepId,value:index}))},{auth:false}),201)
+  await f.services.chat.run()
+  const longPost=(await received()).find(post=>post.body.includes('synthetic-pencil-c47-16'))!
+  const longBody=JSON.parse(longPost.body)
+  const longResponse=(await accepted<Ledger>(await f.call(boundPath+'/ledger'))).responses[0]
+  const fullText=`synthetic-pencil-c47-16\nSubmitted ${longResponse.completedAt}\n`+prompts.slice(0,20).map((prompt,index)=>prompt+': '+index).join('\n')
+  expect(fullText.length).toBeGreaterThan(12000)
+  expect(longBody.blocks[0].text.text).toBe(fullText.slice(0,12000))
+  expect(longBody.text).toBe(fullText.slice(0,12000)+'\n'+`http://localhost/app/flows/${boundFlow.id}/inbox`)
+  const receiptLedger=await accepted<{deliveries:Array<{responseId:string;state:string;attempts:Array<{reason:string|null}>}>}>(await f.call('/api/app/integration-deliveries'))
+  expect(receiptLedger.deliveries.find(row=>row.responseId===submission.responseId)).toMatchObject({state:'unknown',attempts:expect.arrayContaining([expect.objectContaining({reason:'Chat service returned an oversized receipt.'})])})
+  const boundedPosts=(await received()).length
+  await f.services.chat.run();expect(await received()).toHaveLength(boundedPosts)
   await accepted(await f.call('/api/app/connections/slack',{}, {method:'DELETE'}));await accepted(await f.call('/api/app/connections/teams',{}, {method:'DELETE'}))
   const links=await accepted<{links:Array<{armed:boolean}>}>(await f.call(`/api/app/flows/${f.flowId}/chat`));expect(links.links.every(link=>!link.armed)).toBe(true)
   await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({down:false})})
+  } finally {vi.useRealTimers()}
 }
