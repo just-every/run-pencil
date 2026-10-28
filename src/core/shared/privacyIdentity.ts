@@ -16,4 +16,3 @@ export async function privacyEmailHash(email: string) {
   const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`privacy-email.v1:${email.trim().toLowerCase()}`))
   return Array.from(new Uint8Array(bytes), byte => byte.toString(16).padStart(2, '0')).join('')
 }
-

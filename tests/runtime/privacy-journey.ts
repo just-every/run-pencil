@@ -1,3 +1,4 @@
+import { seedPrivacyForm } from './privacy-fixture'
 import { env } from 'cloudflare:test'
 import { expect } from 'vitest'
 import { actionsHttp } from './actions-fixture'
@@ -22,16 +23,7 @@ export async function privacyRequestJourney(f: Fixture, receiver: string) {
   const contact = await accepted(await f.call('/api/app/distribution/contacts', { name: 'Privacy request person', email: mailbox, mobile: phone, fields: { reference: 'synthetic-pencil-private-contact' } }), 201)
   const flows: Array<{ id: string; slug: string; steps: any[]; responseId: string; session: any; answers: any[]; book: string }> = []
   for (let index = 0; index < 3; index++) {
-    const slug = 'privacy-' + crypto.randomUUID().slice(0, 8)
-    const flow = await accepted(await f.call('/api/app/flows', { title: `Privacy form ${index + 1}`, slug }), 201), base = `/api/app/flows/${flow.id}`
-    const draft = () => call(base + '/draft')
-    for (const questionType of ['email', 'phone', 'long_text']) {
-      await accepted(await f.call(base + '/draft/steps', { expectedVersion: (await draft()).flow.draftVersion, step: { kind: 'question', questionType, prompt: `Privacy ${questionType}`, required: true } }), 201)
-    }
-    await accepted(await f.call(base + '/draft/steps', { expectedVersion: (await draft()).flow.draftVersion, step: { kind: 'completion', questionType: null, prompt: 'Recorded.' } }), 201)
-    const current = await draft()
-    await call(base + '/draft/settings', { expectedVersion: current.flow.draftVersion, settings: { ...current.formSettings, googleSheets: true } }, 'PUT')
-    await accepted(await f.call(base + '/publish', { expectedVersion: (await draft()).flow.draftVersion }), 201)
+    const flow = await seedPrivacyForm(f.workspaceId, index), slug = flow.slug, base = `/api/app/flows/${flow.id}`
     const session = await accepted(await f.call(`/api/public/flows/${slug}/sessions`, { source: 'direct', deviceClass: 'desktop' }), 201)
     await matureLoad(session, 5000)
     const answers = session.flow.steps.filter((step: any) => step.kind === 'question').map((step: any) => ({ stepId: step.id, value: step.questionType === 'email' ? mailbox : step.questionType === 'phone' ? { number: phone } : `synthetic-pencil-private-answer-${index}` }))
@@ -90,6 +82,7 @@ export async function privacyRequestJourney(f: Fixture, receiver: string) {
   for (const flow of flows) {
     await call(`/api/app/flows/${flow.id}/google-sheet/sync`, {})
     expect((await sheet(flow.book)).flat()).not.toContain(mailbox)
+    expect((await call(`/api/app/flows/${flow.id}/results`)).completedResponses).toBe(flow.id === first.id ? 1 : 0)
     expect((await call(`/api/app/flows/${flow.id}/ledger`)).rows.map((row: any) => row.id)).not.toContain(flow.responseId)
     const replay = await f.call(`/api/public/flows/${flow.slug}/responses`, { ...flow.session, answers: flow.answers, idempotencyKey: 'synthetic-pencil-privacy-' + flows.indexOf(flow), honeypot: '' }, { auth: false })
     expect(replay.status).toBe(400)
@@ -110,7 +103,7 @@ export async function privacyRequestJourney(f: Fixture, receiver: string) {
   expect(audits.length).toBeGreaterThanOrEqual(3)
   expect(JSON.stringify(audits)).not.toContain(mailbox)
   // Revoked credentials cannot use the new private doors or restart erased work.
-  await env.DB.prepare('UPDATE oa_sessions SET revoked_at=? WHERE id=?').bind(Date.now(), f.lead.sessionId).run()
-  for (const action of ['lookup', 'export', 'erase']) expect((await f.call('/api/app/privacy/' + action, { identifier: controlMailbox, ...(action === 'erase' ? { confirm: true } : {}) })).status).toBe(401)
+  await env.DB.prepare('UPDATE oa_sessions SET revoked_at=? WHERE id=?').bind(Date.now(), f.owner.sessionId).run()
+  for (const action of ['lookup', 'export', 'erase']) expect((await member('/api/app/privacy/' + action, { identifier: controlMailbox, ...(action === 'erase' ? { confirm: true } : {}) })).status).toBe(401)
   expect(await env.DB.prepare('SELECT id FROM responses WHERE id=?').bind(controlResponse.responseId).first()).toBeTruthy()
 }

@@ -1077,7 +1077,7 @@
       "executable": false
     },
     "docs/guide/results.md": {
-      "sha256": "77c8902302e6cc558d079449a249c4708b0bfe5f4c726b9cf1da5e1b73d1ac3b",
+      "sha256": "30bb99e081afb69e1e2ed0c9046aabdaf467782ffd76267ac9d843b7e3139fab",
       "executable": false
     },
     "docs/HOSTING.md": {
@@ -6785,7 +6785,7 @@
       "executable": false
     },
     "src/core/shared/privacyIdentity.ts": {
-      "sha256": "ad1de80fe16dfd1e2e74fd884919da8ff06a02e054cdf262d17bd6ca0df871b0",
+      "sha256": "efa6b63d40a16ec36d841fdd08759401b24035ae10103b802ca2d8b267dc37c6",
       "executable": false
     },
     "src/core/shared/questionKinds.ts": {
@@ -7957,7 +7957,7 @@
       "executable": false
     },
     "tests/runtime/google-sheets.worker.test.ts": {
-      "sha256": "c82729a933614b98e47c69e058dc1a26b791a67c3f25c1d3d917dd9817236759",
+      "sha256": "a4c0aa17e9bc02ef090078c5e32ab92c21214e794b6148f0980d113404f9e916",
       "executable": false
     },
     "tests/runtime/graph-reachability.worker.test.ts": {
@@ -8072,8 +8072,12 @@
       "sha256": "b3097d0c9fc2434b2f0f14abda0ceb64f6879d288d09bb091d1bb4ec8828cfc2",
       "executable": false
     },
+    "tests/runtime/privacy-fixture.ts": {
+      "sha256": "99dcf80bfa7d0474bc1af4d0e4fac96550d3bd96364fac4d5c8eee19e8d1b9dc",
+      "executable": false
+    },
     "tests/runtime/privacy-journey.ts": {
-      "sha256": "d30457863ecc900c686c092ea5c04a3d95d59867b1c34cad87377c89a1562322",
+      "sha256": "97f1bd440563e327bf50432895f6e0b8f185374d2146974764f14f9443f78b24",
       "executable": false
     },
     "tests/runtime/private-auth-freshness.worker.test.ts": {

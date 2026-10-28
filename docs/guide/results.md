@@ -82,6 +82,14 @@ Quarantined responses appear in **Quarantined responses**, under **Human review*
 
 Open a response in the ledger with **View answers**, choose **Erase response**, then **Confirm erasure**. Pencil removes the response and all its answers, and updates your totals and answer reports. Anonymous start and device counts remain, because they cannot be traced to anyone. Only an anonymous record that an erasure happened is kept. To remove an invited person and everything they gave, use **Erase contact and responses** in [Invitations, reminders and consent](invitations.md#opt-outs-and-consent).
 
+## Handle a privacy request
+
+In **Settings**, open **Privacy requests**. An Admin or the installation owner can find linked data across forms using an exact email address or a complete phone number. Matching contacts connect their email and phone; anonymous answers are matched only when they contain that exact contact value, never a name or a substring.
+
+Review the forms and counts, then choose **Download portable JSON** for the person's access bundle. It includes linked answers, saved responses, contact and consent records, and local payment references. It excludes sign-in credentials, resume links, edit links and connection secrets. File-upload answers and signatures are not collected yet.
+
+To delete the linked data, check **I confirm erasure of all linked data** and choose **Confirm privacy erasure**. Local erasure also revokes saved-response and invitation capabilities, redacts affected analysis and updates reports. Google Sheets row clears and supported response-webhook deletion notices enter the durable integration queues; check delivery status and retry failures in the integration ledger. The result lists destinations needing separate follow-up. Local erasure does not refund payments, cancel subscriptions, recall delivered messages, erase financial provider records or remove earlier downloaded copies.
+
 ## Get an email for new responses
 
 At the bottom of the results page, **Response notifications** lets each operator choose whether to be emailed about new completed responses on that flow.
