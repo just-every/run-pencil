@@ -3,6 +3,7 @@ import { flowTemplates } from '../../features/flows/templates'
 import type { PencilServices } from '../services'
 import { nativeActor, nativeCall, nativeScope } from './native'
 import { formContext } from './form-context'
+import { questionTypes, type QuestionType } from '../../shared/questionKinds'
 
 const id = { type: 'string', minLength: 1, maxLength: 256 }
 const text = (maxLength: number) => ({ type: 'string', minLength: 1, maxLength })
@@ -37,10 +38,16 @@ export function formTools(db: D1Database, services: PencilServices): ToolDefinit
     defineTool({ ...base, name: 'pencil.forms.templates', title: 'List templates', description: 'Read the native template gallery.', readOnly: true, inputSchema: schema({}), clauses: ['TMPL-001'], async run(_args, ctx) { await scope(ctx); return result({ templates: flowTemplates }) } }),
     edit('create', 'Create a private form draft', schema({ title: text(200), slug: text(120), template: { enum: flowTemplates.map(item => item.id) } }, ['title']), ['FLOW-001', 'TMPL-001'], async (args, ctx) => services.flows.attributed(nativeActor(ctx)).createDraftFlow({ ...await scope(ctx), title: String(args.title), slug: typeof args.slug === 'string' ? args.slug : `study-${crypto.randomUUID()}`, template: args.template as string | undefined })),
     edit('duplicate', 'Duplicate a form into a private draft', schema({ formId: id, title: text(200), slug: text(120) }, ['formId', 'title']), ['FLOW-011'], async (args, ctx) => services.flows.attributed(nativeActor(ctx)).duplicateFlow({ ...await scope(ctx), flowId: String(args.formId), expectedVersion: await prepared.version(args, ctx), title: String(args.title), slug: typeof args.slug === 'string' ? args.slug : `study-${crypto.randomUUID()}` })),
-    edit('edit', 'Edit one saved draft question', schema({ formId: id, stepId: id, prompt: text(1000), required: { type: 'boolean' } }, ['formId', 'stepId', 'prompt', 'required']), ['FLOW-004', 'FLOW-009'], async (args, ctx) => {
+    edit('edit', 'Edit one saved draft question', schema({ formId: id, stepId: id, prompt: text(1000), required: { type: 'boolean' }, helperText: { anyOf: [{ type: 'string', maxLength: 1000 }, { type: 'null' }] }, nextStepId: { anyOf: [id, { type: 'null' }] }, questionType: { anyOf: [{ enum: questionTypes }, { type: 'null' }] }, questionSettings: { anyOf: [{ type: 'object' }, { type: 'null' }] }, choices: { type: 'array', maxItems: 500, items: schema({ id, newId: id, value: { type: 'string', maxLength: 200 }, label: { type: 'string', maxLength: 300 } }, ['value', 'label']) } }, ['formId', 'stepId', 'prompt', 'required']), ['FLOW-004', 'FLOW-009'], async (args, ctx) => {
       const saved = await draft(args, ctx)
       if (!saved.steps.some(step => step.id === args.stepId)) throw new ToolRefusal('not_found')
-      return services.flows.attributed(nativeActor(ctx)).updateBuilderDraft({ ...await scope(ctx), flowId: String(args.formId), stepId: String(args.stepId), prompt: String(args.prompt), required: Boolean(args.required), expectedVersion: await prepared.version(args, ctx) })
+      return services.flows.attributed(nativeActor(ctx)).updateBuilderDraft({ ...await scope(ctx), flowId: String(args.formId), stepId: String(args.stepId), prompt: String(args.prompt), required: Boolean(args.required), expectedVersion: await prepared.version(args, ctx),
+        ...(args.helperText !== undefined ? { helperText: args.helperText as string | null } : {}),
+        ...(args.nextStepId !== undefined ? { nextStepId: args.nextStepId as string | null } : {}),
+        ...(args.questionType !== undefined ? { questionType: args.questionType as QuestionType | null } : {}),
+        ...(args.questionSettings !== undefined ? { questionSettings: args.questionSettings as Record<string, unknown> | null } : {}),
+        ...(args.choices !== undefined ? { choices: args.choices as Array<{ id?: string; newId?: string; value: string; label: string }> } : {}),
+      })
     }),
     defineTool({ ...base, name: 'pencil.forms.preview', title: 'Preview a draft path', description: 'Evaluate answers against the native draft without recording a response or publishing.', readOnly: true, inputSchema: schema({ formId: id, answers: { type: 'object', additionalProperties: true } }, ['formId', 'answers']), clauses: ['FLOW-007'], async run(args, ctx) { const who = await scope(ctx); return result(await nativeCall(() => services.flows.previewDraft({ workspaceId: who.workspaceId, flowId: String(args.formId), answers: args.answers as Record<string, unknown> }))) } }),
   ]

@@ -30,6 +30,11 @@ export class DistributionContacts {
   async list(workspaceId: string, query = '', offset = 0, limit = 250) {
     return (await this.db.prepare(`SELECT ${contactColumns} FROM distribution_contacts WHERE workspace_id=? AND (instr(lower(name),lower(?))>0 OR instr(lower(email),lower(?))>0) ORDER BY name,id LIMIT ? OFFSET ?`).bind(workspaceId,query,query,limit,offset).all<ContactRow>()).results.map(decodeContact)
   }
+  async get(workspaceId: string, id: string) {
+    const row = await this.db.prepare(`SELECT ${contactColumns} FROM distribution_contacts WHERE workspace_id=? AND id=?`).bind(workspaceId, id).first<ContactRow>()
+    if (!row) throw new NotFoundError('This contact is not in your workspace.')
+    return decodeContact(row)
+  }
   async consent(input: { workspaceId: string; contactId: string; actor: string; source: string; renewed: boolean }) {
     if (!input.actor.trim() || !input.source.trim() || input.source.length > 200) throw new ValidationError('Consent requires its actor and source.')
     const id = ulid(), now = new Date().toISOString()

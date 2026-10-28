@@ -27,10 +27,24 @@ The current registry supports native form preparation, Study Studio and form pub
 | `pencil.studies.read` | Read the saved plan, advisory flags and calculated sample size | standard |
 | `pencil.studies.update` | Save the study plan at the native draft version | standard |
 | `pencil.forms.preview` | Evaluate a draft path without collecting a response | standard |
+| `pencil.forms.settings` | Save private form settings through native validation | standard |
+| `pencil.forms.layout` | Save a native private page or group layout | standard |
+| `pencil.contacts.list` | Read native contacts | standard |
+| `pencil.segments.list` | Read saved segments and current matching counts | standard |
+| `pencil.analyses.list` | Read native runs and recorded provider usage | standard |
+| `pencil.analyses.options` | Read current published revisions and eligible questions | standard |
+| `pencil.actions.list` | Read accountable actions | standard |
+| `pencil.responses.list` | Read the filtered native response ledger | standard |
+| `pencil.results.questions` | Read native question reports | standard |
+| `pencil.results.compare` | Compare native published revisions | standard |
+| `pencil.deliveries.list` | Read actual invitation and reminder outcomes | standard |
+| `pencil.collectors.list` | Read native collectors | standard |
+| `pencil.settings.read` | Read native workspace settings | standard |
+| `pencil.operators.list` | Read the native equal-operator roster | standard |
 | `pencil.workspace.read` | Read the saved form workspace | standard |
 | `pencil.events.list` | Read retained visible events | standard |
 
-Form and result jobs require `pencil:forms`; Studio jobs require `pencil:studies`; events require `events:read`. `pencil://forms/{id}` reads the native draft under the same person visibility and company read policy. Form text is untrusted. Missing and inaccessible forms have the same result.
+Form and result jobs require `pencil:forms`; Studio jobs require `pencil:studies`; events require `events:read`. `pencil://forms/{id}` reads the native draft under the same person visibility and company read policy. Record list tools use their named area scope (`pencil:contacts`, `pencil:segments`, `pencil:analyses`, `pencil:actions`, `pencil:responses`, `pencil:results`, `pencil:deliveries`, `pencil:collectors`, `pencil:settings`, or `pencil:operators`). Resources also expose native revisions, released responses, contacts, analyses, visible findings, actions and deliveries under those same area scopes; revision resources use `pencil:forms`. Form and external record text is untrusted. Missing and inaccessible forms have the same result.
 
 Writes require an `idempotency_key`. Reusing it with different arguments conflicts. `expected_revision` can bind a draft write to the native draft version returned by `pencil.forms.read`. Lifecycle writes accept its opaque `lifecycleRevision`; Study Studio updates accept the version from `pencil.studies.read`. Native version conflicts keep the saved draft unchanged. A duplicate's editable copy has new native record IDs. An omitted slug receives a fresh `study-` address. No draft operation publishes it.
 
@@ -45,3 +59,5 @@ Invitations, response analysis, payments/refunds, integration changes, response 
 The registry declares no provider cost. Study generation uses the installation's existing AI connection and native validation; absent or broken configuration remains unavailable. The conformance journey configures that connection through the native person API and uses a declared isolated OpenAI network edge. It proves native request/response handling, not provider quality or live availability. The shared door does not enforce provider spend caps. Import preview/apply/undo remains the reviewed import door; respondent, browser and device interactions keep their own native admission.
 
 Backups retain agent audit, event and idempotency history. Signed policy, Business identity bindings, pending approvals/reviews and active agent registration are excluded. After restoration, establish current identity and policy again; restoration cannot execute held work.
+
+Native provider-setting changes remain on the person API and are not in this registry.

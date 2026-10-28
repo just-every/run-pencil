@@ -1,4 +1,5 @@
 import { pencilAgentDoor, isAgentDoorPath } from './agent-door/index.server'
+import { personResourceEvents } from './agent-door/person-events'
 import { pencilPeople } from './agent-door/people'
 import { registerChatRoutes } from '../features/chat-integrations'
 import { registerGoogleRoutes } from '../features/google-sheets'
@@ -107,18 +108,19 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
   app.use('*', async (context, next) => {
     await next()
     const match = /^\/api\/app\/flows(?:\/([A-Za-z0-9_-]+))?(?:\/(draft(?:\/.*)?|duplicate|publish|close|reopen|archive))?$/.exec(context.req.path)
-    if (!match || !isCookieMutation(context.req.method) || context.res.status < 200 || context.res.status >= 300) return
-    let body: { id?: string; kind?: string } = {}
+    if (!isCookieMutation(context.req.method) || context.res.status < 200 || context.res.status >= 300) return
+    let body: Record<string, unknown> = {}
     if (context.res.headers.get('content-type')?.includes('application/json')) body = await context.res.clone().json()
     if (body.kind === 'conflict' || body.kind === 'invalid') return
     const session = context.get('operatorSession')
     if (!session) return
     const services = context.get('services'), platform = context.get('platform')
     const person = await pencilPeople(platform.databaseBinding, services.auth).read(session.operatorId)
-    const formId = body.id ?? match[1]
-    if (!person || !formId) return
-    const type = match[2] === 'publish' ? 'form.published' : match[2] === 'close' ? 'form.closed' : 'form.draft-changed'
-    await pencilAgentDoor(platform, services).door.emit({ type, uri: `pencil://forms/${formId}`, person })
+    if (!person) return
+    const events = personResourceEvents(context.req.path, body)
+    const formId = body.id ?? match?.[1]
+    if (match && typeof formId === 'string') events.push({ type: match[2] === 'publish' ? 'form.published' : match[2] === 'close' ? 'form.closed' : 'form.draft-changed', uri: `pencil://forms/${formId}` })
+    for (const event of events) await pencilAgentDoor(platform, services).door.emit({ ...event, person })
   })
 
 

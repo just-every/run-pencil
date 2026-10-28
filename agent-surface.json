@@ -250,6 +250,168 @@
       ]
     },
     {
+      "name": "pencil.contacts.list",
+      "scope": "pencil:contacts",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "DIST-003"
+      ]
+    },
+    {
+      "name": "pencil.segments.list",
+      "scope": "pencil:segments",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "DIST-003"
+      ]
+    },
+    {
+      "name": "pencil.analyses.list",
+      "scope": "pencil:analyses",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "ANLY-001",
+        "ANLY-010"
+      ]
+    },
+    {
+      "name": "pencil.analyses.options",
+      "scope": "pencil:analyses",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "ANLY-002"
+      ]
+    },
+    {
+      "name": "pencil.actions.list",
+      "scope": "pencil:actions",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "ACT-001",
+        "ACT-002"
+      ]
+    },
+    {
+      "name": "pencil.responses.list",
+      "scope": "pencil:responses",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "LEDG-001",
+        "LEDG-006"
+      ]
+    },
+    {
+      "name": "pencil.results.questions",
+      "scope": "pencil:results",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-001"
+      ]
+    },
+    {
+      "name": "pencil.results.compare",
+      "scope": "pencil:results",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-005"
+      ]
+    },
+    {
+      "name": "pencil.deliveries.list",
+      "scope": "pencil:deliveries",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "DIST-004",
+        "DIST-008"
+      ]
+    },
+    {
+      "name": "pencil.collectors.list",
+      "scope": "pencil:collectors",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "DIST-017"
+      ]
+    },
+    {
+      "name": "pencil.settings.read",
+      "scope": "pencil:settings",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "WS-001",
+        "WS-002"
+      ]
+    },
+    {
+      "name": "pencil.operators.list",
+      "scope": "pencil:operators",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "OPER-001"
+      ]
+    },
+    {
+      "name": "pencil.forms.settings",
+      "scope": "pencil:forms",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "FLOW-004",
+        "FIELD-001",
+        "LOGIC-003"
+      ]
+    },
+    {
+      "name": "pencil.forms.layout",
+      "scope": "pencil:forms",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "FIELD-008",
+        "FIELD-012"
+      ]
+    },
+    {
       "name": "pencil.workspace.read",
       "scope": "pencil:forms",
       "readOnly": true,
@@ -274,7 +436,14 @@
     }
   ],
   "resources": [
-    "pencil://forms/{id}"
+    "pencil://forms/{id}",
+    "pencil://revisions/{id}",
+    "pencil://responses/{id}",
+    "pencil://contacts/{id}",
+    "pencil://analyses/{id}",
+    "pencil://findings/{id}",
+    "pencil://actions/{id}",
+    "pencil://deliveries/{id}"
   ],
   "notTools": [
     {
@@ -687,6 +856,51 @@
       ]
     },
     {
+      "id": "settings",
+      "tool": "pencil.forms.settings",
+      "args": {
+        "formId": {
+          "$from": "create",
+          "pointer": "/id"
+        },
+        "settings": {
+          "$from": "read",
+          "pointer": "/formSettings"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "layout",
+      "tool": "pencil.forms.layout",
+      "args": {
+        "formId": {
+          "$from": "create",
+          "pointer": "/id"
+        },
+        "stepId": {
+          "$from": "read",
+          "pointer": "/steps/0/id"
+        },
+        "layout": null
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
       "id": "publish",
       "tool": "pencil.forms.publish",
       "args": {
@@ -720,6 +934,192 @@
           "pointer": "/id"
         }
       },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "contacts-list",
+      "tool": "pencil.contacts.list",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "segments-list",
+      "tool": "pencil.segments.list",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "analyses-list",
+      "tool": "pencil.analyses.list",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "analyses-options",
+      "tool": "pencil.analyses.options",
+      "args": {
+        "formId": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "actions-list",
+      "tool": "pencil.actions.list",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "responses-list",
+      "tool": "pencil.responses.list",
+      "args": {
+        "formId": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "results-questions",
+      "tool": "pencil.results.questions",
+      "args": {
+        "formId": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "results-compare",
+      "tool": "pencil.results.compare",
+      "args": {
+        "formId": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "deliveries-list",
+      "tool": "pencil.deliveries.list",
+      "args": {
+        "formId": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "collectors-list",
+      "tool": "pencil.collectors.list",
+      "args": {
+        "formId": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "settings-read",
+      "tool": "pencil.settings.read",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "operators-list",
+      "tool": "pencil.operators.list",
+      "args": {},
       "expect": [
         {
           "class": "standard",
@@ -855,6 +1255,10 @@
       "origins": [
         "https://api.openai.com"
       ]
-    }
+    },
+    "journey": "tests/agent-surface/native-journey.mjs"
+  },
+  "spend": {
+    "none": true
   }
 }

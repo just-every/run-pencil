@@ -12,5 +12,11 @@ export default async function initialize({ request, origin, claim, displayName }
   });
   if (!saved.ok) throw new Error('Native provider connection setup failed');
   await saved.body?.cancel();
+  const contact = await request(new URL('/api/app/distribution/contacts', origin).href, {
+    method: 'POST', headers: { Cookie: cookie, Origin: origin, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: 'Morgan Lee', email: 'synthetic-visitor@example.com', fields: { cohort: 'Recent visitors' } }),
+  });
+  if (contact.status !== 201) throw new Error('Native audience fixture setup failed');
+  await contact.body?.cancel();
   return bootstrap;
 }
