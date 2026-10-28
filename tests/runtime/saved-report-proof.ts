@@ -78,8 +78,12 @@ export async function proveSavedReports(call: ScenarioCall, request: Request, db
   expect((await call<SavedViewDetail>('/api/app/saved-views/' + created.view.id)).report).toEqual(report)
   const current = await call<{ cells: Array<Array<{ suppressed: boolean; count?: number }>> }>(exposure.path + '/crosstab?' + new URLSearchParams({ revisionId: exposure.revisionId, rows: `question:${exposure.planId}`, columns: `question:${exposure.renewalId}` }))
   expect(current.cells[2][0]).toMatchObject({ suppressed: false, count: 3 })
-  const rawLedger = await call<{ total: number; responses: Array<{ id: string }> }>(exposure.path + '/ledger?' + new URLSearchParams(exposure.filter))
+  const rawLedger = await call<{ total: number; responses: Array<{ id: string; hiddenFields: Array<{ id: string; value: unknown }> }> }>(exposure.path + '/ledger?' + new URLSearchParams(exposure.filter))
   expect(rawLedger.total).toBe(3); expect(rawLedger.responses.map(row => row.id).sort()).toEqual([...exposure.exposedIds].sort())
+  for (const response of rawLedger.responses) {
+    expect(response.hiddenFields).toContainEqual(expect.objectContaining({ id: exposure.identityFieldId, value: exposure.identityValue }))
+    expect(response.hiddenFields).toContainEqual(expect.objectContaining({ id: exposure.observedFieldId, value: exposure.rareValue }))
+  }
   let { token: exportToken } = await call<{ token: string }>(exposure.path + '/responses/export/start?' + new URLSearchParams({ format: 'json', ...exposure.filter }))
   let exported = ''
   while (exportToken) {
