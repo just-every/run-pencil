@@ -8021,7 +8021,7 @@
       "executable": false
     },
     "tests/runtime/matrix-scenario.ts": {
-      "sha256": "db0c69b0a4003577f9f5797c0ce18e9c35083ee55d93d4d3bffffdcf52a93ca3",
+      "sha256": "2216ffedbae38725a9a911673396007d85a9d3f01f45601b66aa293d5bad91c2",
       "executable": false
     },
     "tests/runtime/new-question-types.worker.test.ts": {

@@ -20,7 +20,7 @@ export async function matrixScenario() {
     expect(response.ok, response.ok ? path : await response.text()).toBe(true)
     return response.status === 204 ? undefined as T : response.json<T>()
   }
-  const owner = await env.DB.prepare('SELECT email FROM operators WHERE is_setup_operator = 1 LIMIT 1').first<{ email: string }>()
+  const owner = await env.DB.prepare('SELECT email FROM operators ORDER BY created_at, id LIMIT 1').first<{ email: string }>()
   await call('/auth/magic-link', { email: owner!.email })
   const inbox = await developmentInbox(path => SELF.fetch('http://localhost' + path, { headers: { Host: 'localhost', ...devKeyHeaders } }), owner!.email)
   const login = await request('/auth/confirm', { token: inbox.messages[0].magicLinkToken })
