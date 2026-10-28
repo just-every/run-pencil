@@ -3,6 +3,7 @@ import { expect } from 'vitest'
 import { collectSharedReportScenario } from '../shared-report-scenario'
 import type { ScenarioCall } from '../results-scenario'
 import type { SavedViewDetail, SavedReportShare, SharedReport, SavedDashboard } from '../../src/core/features/reporting/savedModel'
+import { proveSharedCodes } from './shared-code-proof'
 
 type ShareResult = { share: SavedReportShare; token: string; url: string }
 type Request = (path: string, data?: unknown, method?: string) => Promise<Response>
@@ -15,6 +16,7 @@ const anonymous = (token: string, password?: string) => SELF.fetch(`http://local
 
 export async function proveSavedReports(call: ScenarioCall, request: Request, db: D1Database) {
   const exposure = await collectSharedReportScenario(call, 'synthetic-pencil-12')
+  await proveSharedCodes(call, anonymous, exposure)
   const definition = {
     name: 'synthetic-pencil-2', revisionId: exposure.revisionId, filter: {},
     cohorts: [{ id: 'synthetic-pencil-3', name: 'synthetic-pencil-3', filter: { collectorId: exposure.subsetCollectorId } }],
@@ -76,6 +78,16 @@ export async function proveSavedReports(call: ScenarioCall, request: Request, db
   expect((await call<SavedViewDetail>('/api/app/saved-views/' + created.view.id)).report).toEqual(report)
   const current = await call<{ cells: Array<Array<{ suppressed: boolean; count?: number }>> }>(exposure.path + '/crosstab?' + new URLSearchParams({ revisionId: exposure.revisionId, rows: `question:${exposure.planId}`, columns: `question:${exposure.renewalId}` }))
   expect(current.cells[2][0]).toMatchObject({ suppressed: false, count: 3 })
+  const rawLedger = await call<{ total: number; responses: Array<{ id: string }> }>(exposure.path + '/ledger?' + new URLSearchParams(exposure.filter))
+  expect(rawLedger.total).toBe(3); expect(rawLedger.responses.map(row => row.id).sort()).toEqual([...exposure.exposedIds].sort())
+  let { token: exportToken } = await call<{ token: string }>(exposure.path + '/responses/export/start?' + new URLSearchParams({ format: 'json', ...exposure.filter }))
+  let exported = ''
+  while (exportToken) {
+    const part = await request(exposure.path + '/responses/export', { token: exportToken }); expect(part.status).toBe(200)
+    exported += await part.text(); exportToken = part.headers.get('x-export-next') ?? ''
+  }
+  expect((JSON.parse(exported) as { responses: Array<{ id: string }> }).responses.map(row => row.id).sort()).toEqual([...exposure.exposedIds].sort())
+  expect(created.report.cohorts[0].questions.find(question => question.id === exposure.textId)).toMatchObject({ answered: 43, distribution: [] })
 
   const signedOutSave = await SELF.fetch('http://localhost' + exposure.path + '/saved-views', { method: 'POST', headers: { Host: 'localhost', Origin: 'http://localhost', 'content-type': 'application/json' }, body: JSON.stringify(definition) })
   expect(signedOutSave.status).toBe(401)

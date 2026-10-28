@@ -1,10 +1,10 @@
 import { z } from 'zod'
 import { resourceId } from '../../shared/validation'
 import { ledgerFilterSchema } from './filter'
-import { dimensionPattern } from './crosstabDimensions'
+import { sharedDimensionPattern } from './sharedDimensions'
 
 const name = z.string().trim().min(1).max(200)
-const dimension = z.string().regex(dimensionPattern)
+const dimension = z.string().regex(sharedDimensionPattern)
 export const savedViewInput = z.object({
   name, revisionId: resourceId, filter: ledgerFilterSchema.default({ offset: 0 }),
   cohorts: z.array(z.object({ id: resourceId, name, filter: ledgerFilterSchema })).max(8).default([]),

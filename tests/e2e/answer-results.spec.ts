@@ -1,3 +1,4 @@
+import { savedReportsJourney } from './saved-reports-journey'
 import { operatorDisclosureExposure } from './disclosure-exposure'
 import { appHeaders } from './api-headers'
 import { mkdir } from 'node:fs/promises'
@@ -8,8 +9,8 @@ import { expect, test, openMailLink } from './fixtures'
 import AxeBuilder from '@axe-core/playwright'
 import { collectAnswerScenario, type ScenarioCall } from '../results-scenario'
 import type { FlowResults } from '../../src/core/app/api'
-contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006', 'LEDG-001', 'DATA-002', 'BASE-PUBLIC-003'], 'answers first across every type, an RSLT-006 crosstab states shares and suppression, comparison replaces results and ledger confirms erasure', async ({ page }, info) => {
-  test.setTimeout(180000)
+contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006', 'RSLT-008', 'RSLT-009', 'LEDG-001', 'DATA-002', 'BASE-PUBLIC-003'], 'answers first across every type, an RSLT-006 crosstab states shares and suppression, comparison replaces results and ledger confirms erasure', async ({ page }, info) => {
+  test.setTimeout(300000)
   const hydrationErrors:string[]=[]
   page.on('pageerror',error=>{if(/hydrat/i.test(error.message))hydrationErrors.push(error.message)})
   page.on('console',message=>{if(message.type()==='error' && /hydrat/i.test(message.text()))hydrationErrors.push(message.text())})
@@ -194,4 +195,5 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   expect((await new AxeBuilder({ page }).include('.operator-content').analyze()).violations).toEqual([])
   await operatorDisclosureExposure(page, call, `disclosure-${info.project.name}-${Date.now()}`, capture)
+  await savedReportsJourney(page, call, `shared-${info.project.name}-${Date.now()}`, capture)
 })

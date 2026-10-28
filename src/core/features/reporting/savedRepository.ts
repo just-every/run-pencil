@@ -1,7 +1,7 @@
 import { NotFoundError, ValidationError } from '../../shared/errors'
 import type { SavedView, SavedViewDefinition, SavedDashboard } from './savedModel'
 
-type SavedRow = { id: string; workspaceId: string; flowId: string; revisionId: string; name: string; definitionJson: string; cutoff: string; threshold: number; savedById: string; savedByName: string; createdAt: string }
+type SavedRow = { id: string; workspaceId: string; flowId: string; revisionId: string; name: string; definitionJson: string; cutoff: string; threshold: number; savedById: string | null; savedByName: string; createdAt: string }
 export type StoredSavedView = SavedView & { workspaceId: string }
 const viewColumns = 'id,workspace_id AS workspaceId,flow_id AS flowId,revision_id AS revisionId,name,definition_json AS definitionJson,cutoff,threshold,saved_by AS savedById,saved_by_name AS savedByName,created_at AS createdAt'
 function view(row: SavedRow): StoredSavedView {
@@ -21,7 +21,7 @@ export async function listSavedViews(db: D1Database, workspaceId: string, flowId
   return (await db.prepare(`SELECT ${viewColumns} FROM saved_report_views WHERE workspace_id=?${flowId ? ' AND flow_id=?' : ''} ORDER BY created_at DESC,id`).bind(workspaceId, ...(flowId ? [flowId] : [])).all<SavedRow>()).results.map(row => viewMetadata(view(row)))
 }
 
-type DashboardRow = { id: string; name: string; scope: 'form' | 'program'; flowId: string | null; viewIdsJson: string; savedById: string; savedByName: string; createdAt: string; updatedAt: string }
+type DashboardRow = { id: string; name: string; scope: 'form' | 'program'; flowId: string | null; viewIdsJson: string; savedById: string | null; savedByName: string; createdAt: string; updatedAt: string }
 const dashboardColumns = 'id,name,scope,flow_id AS flowId,view_ids_json AS viewIdsJson,saved_by AS savedById,saved_by_name AS savedByName,created_at AS createdAt,updated_at AS updatedAt'
 function dashboard(row: DashboardRow): SavedDashboard {
   const { viewIdsJson, savedById, savedByName, ...rest } = row

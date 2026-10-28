@@ -1,5 +1,6 @@
 import { disclosureThreshold } from '../analysis'
 import { crosstab } from './crosstab'
+import { sharedCodeCrosstab } from './sharedCodeCrosstab'
 import { reportCohorts } from './sharedCohorts'
 import { aggregateDimensions, sharedSummaries } from './sharedSummaries'
 import type { StoredSavedView } from './savedRepository'
@@ -16,10 +17,12 @@ export async function sharedReport(db: D1Database, view: StoredSavedView, thresh
     const base = { id: cohort.id, name: cohort.name, responseCount: cohort.responseCount }
     if (cohort.reason) return { ...base, breakdownWithheld: true, reason: cohort.reason, questions: [], crosstabs: [] }
     const revisionId = cohort.filter.revisionId!
-    const dimensions = await aggregateDimensions(db, view.flowId, revisionId)
+    const codeKeys = [...new Set(view.definition.crosstabs.flatMap(cross => [cross.rows, cross.columns]).filter(key => key.startsWith('code:')))]
+    const dimensions = await aggregateDimensions(db, view.workspaceId, view.flowId, revisionId, view.cutoff, codeKeys)
     const questions = await sharedSummaries(db, { workspaceId: view.workspaceId, flowId: view.flowId, revisionId, filter: cohort.filter, cutoff: view.cutoff, threshold, responseCount: cohort.responseCount }, dimensions.dimensions)
     const tables: SharedCrosstab[] = await Promise.all(view.definition.crosstabs.filter(cross => dimensions.permitted.includes(cross.rows) && dimensions.permitted.includes(cross.columns)).map(async cross => {
-      const table = await crosstab(db, { workspaceId: view.workspaceId, flowId: view.flowId, revisionId, filter: cohort.filter, rows: cross.rows, columns: cross.columns, cutoff: view.cutoff, thresholdFloor: threshold })
+      const crossReport = cross.rows.startsWith('code:') || cross.columns.startsWith('code:') ? sharedCodeCrosstab : crosstab
+      const table = await crossReport(db, { workspaceId: view.workspaceId, flowId: view.flowId, revisionId, filter: cohort.filter, rows: cross.rows, columns: cross.columns, cutoff: view.cutoff, thresholdFloor: threshold })
       if (table.suppressedCells) return { id: cross.id, withheld: true as const, reason: recoveryReason }
       const { filter: _filter, ...safeTable } = table
       return { id: cross.id, withheld: false as const, table: { ...safeTable, filter: { revisionId, offset: undefined } } }

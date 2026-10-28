@@ -28,6 +28,7 @@ import { Route as EmbedSlugRouteImport } from './routes/embed.$slug'
 import { Route as FSlugRouteImport } from './routes/f.$slug'
 import { Route as ITokenRouteImport } from './routes/i.$token'
 import { Route as OptoutTokenRouteImport } from './routes/optout.$token'
+import { Route as ReportsTokenRouteImport } from './routes/reports.$token'
 import { Route as AppActionsIndexRouteImport } from './routes/app.actions.index'
 import { Route as AppActionsActionIdRouteImport } from './routes/app.actions.$actionId'
 import { Route as AppActionsNewRouteImport } from './routes/app.actions.new'
@@ -133,6 +134,11 @@ const OptoutTokenRoute = OptoutTokenRouteImport.update({
   path: '/optout/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReportsTokenRoute = ReportsTokenRouteImport.update({
+  id: '/reports/$token',
+  path: '/reports/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppActionsIndexRoute = AppActionsIndexRouteImport.update({
   id: '/actions/',
   path: '/actions/',
@@ -197,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/f/$slug': typeof FSlugRoute
   '/i/$token': typeof ITokenRoute
   '/optout/$token': typeof OptoutTokenRoute
+  '/reports/$token': typeof ReportsTokenRoute
   '/app/': typeof AppIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/app/actions/$actionId': typeof AppActionsActionIdRoute
@@ -226,6 +233,7 @@ export interface FileRoutesByTo {
   '/f/$slug': typeof FSlugRoute
   '/i/$token': typeof ITokenRoute
   '/optout/$token': typeof OptoutTokenRoute
+  '/reports/$token': typeof ReportsTokenRoute
   '/app': typeof AppIndexRoute
   '/docs': typeof DocsIndexRoute
   '/app/actions/$actionId': typeof AppActionsActionIdRoute
@@ -257,6 +265,7 @@ export interface FileRoutesById {
   '/f/$slug': typeof FSlugRoute
   '/i/$token': typeof ITokenRoute
   '/optout/$token': typeof OptoutTokenRoute
+  '/reports/$token': typeof ReportsTokenRoute
   '/app/': typeof AppIndexRoute
   '/docs/': typeof DocsIndexRoute
   '/app/actions/$actionId': typeof AppActionsActionIdRoute
@@ -289,6 +298,7 @@ export interface FileRouteTypes {
     | '/f/$slug'
     | '/i/$token'
     | '/optout/$token'
+    | '/reports/$token'
     | '/app/'
     | '/docs/'
     | '/app/actions/$actionId'
@@ -318,6 +328,7 @@ export interface FileRouteTypes {
     | '/f/$slug'
     | '/i/$token'
     | '/optout/$token'
+    | '/reports/$token'
     | '/app'
     | '/docs'
     | '/app/actions/$actionId'
@@ -348,6 +359,7 @@ export interface FileRouteTypes {
     | '/f/$slug'
     | '/i/$token'
     | '/optout/$token'
+    | '/reports/$token'
     | '/app/'
     | '/docs/'
     | '/app/actions/$actionId'
@@ -373,6 +385,7 @@ export interface RootRouteChildren {
   FSlugRoute: typeof FSlugRoute
   ITokenRoute: typeof ITokenRoute
   OptoutTokenRoute: typeof OptoutTokenRoute
+  ReportsTokenRoute: typeof ReportsTokenRoute
   DocsIndexRoute: typeof DocsIndexRoute
 }
 
@@ -511,6 +524,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OptoutTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/reports/$token': {
+      id: '/reports/$token'
+      path: '/reports/$token'
+      fullPath: '/reports/$token'
+      preLoaderRoute: typeof ReportsTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app/actions/': {
       id: '/app/actions/'
       path: '/actions'
@@ -629,17 +649,9 @@ const rootRouteChildren: RootRouteChildren = {
   FSlugRoute: FSlugRoute,
   ITokenRoute: ITokenRoute,
   OptoutTokenRoute: OptoutTokenRoute,
+  ReportsTokenRoute: ReportsTokenRoute,
   DocsIndexRoute: DocsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}

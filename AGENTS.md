@@ -21,3 +21,7 @@ Preserve applied migration filenames and bytes. Export before upgrades and verif
 Use OPERATIONS.md and docs/HOSTING.md for setup, deployment and recovery. Remote deployment and provider activity require the intended account and explicit resource configuration. No command name, push or pull request implies deployment.
 
 `rer-project.json` declares the editable project, its operations and verification scope; `sources.lock.json` retains source provenance and bytes. Source may be adapted locally. Stage intentional changes, inspect `node scripts/edition-authoring/cli.mjs changes`, run `node scripts/edition-authoring/cli.mjs lock`, commit, then run `pnpm source:check`. Retain provenance and verify real behavior after adopting upstream changes. Preserve contract IDs and explain intentional requirement changes in release metadata.
+
+# Lander-Regenerate
+
+Keep the current contract format until ct's judged cleanup. After resolving CONTRACT.md, run `node scripts/contract-docs.mjs write RSLT-008 RSLT-009` and `node scripts/contract-docs.mjs check RSLT-008 RSLT-009` for these touched clauses. The generator preserves other clauses' acceptance entries, updates summary counts and generates `docs/CLAIMS.md`; use the IDs of the clauses touched in a later round. Regenerate the edition source lock last.

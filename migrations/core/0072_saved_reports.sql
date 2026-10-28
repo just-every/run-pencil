@@ -7,7 +7,7 @@ CREATE TABLE saved_report_views (
  definition_json TEXT NOT NULL CHECK(json_valid(definition_json)),
  cutoff TEXT NOT NULL,
  threshold INTEGER NOT NULL CHECK(threshold >= 1),
- saved_by TEXT NOT NULL REFERENCES operators(id),
+ saved_by TEXT REFERENCES operators(id) ON DELETE SET NULL,
  saved_by_name TEXT NOT NULL,
  created_at TEXT NOT NULL
 );
@@ -33,10 +33,15 @@ CREATE TABLE saved_report_dashboards (
  scope TEXT NOT NULL CHECK(scope IN ('form','program')),
  flow_id TEXT REFERENCES flows(id) ON DELETE CASCADE,
  view_ids_json TEXT NOT NULL CHECK(json_valid(view_ids_json)),
- saved_by TEXT NOT NULL REFERENCES operators(id),
+ saved_by TEXT REFERENCES operators(id) ON DELETE SET NULL,
  saved_by_name TEXT NOT NULL,
  created_at TEXT NOT NULL,
  updated_at TEXT NOT NULL,
  CHECK((scope = 'form' AND flow_id IS NOT NULL) OR (scope = 'program' AND flow_id IS NULL))
 );
 CREATE INDEX saved_report_dashboards_workspace ON saved_report_dashboards(workspace_id,created_at,id);
+
+CREATE TRIGGER saved_report_operator_erasure BEFORE DELETE ON operators BEGIN
+ UPDATE saved_report_views SET saved_by_name='Removed operator' WHERE saved_by=OLD.id;
+ UPDATE saved_report_dashboards SET saved_by_name='Removed operator' WHERE saved_by=OLD.id;
+END;

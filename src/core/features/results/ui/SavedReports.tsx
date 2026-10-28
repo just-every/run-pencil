@@ -4,6 +4,7 @@ import type { SavedView, SavedViewDefinition, SavedViewDetail } from '../../repo
 import { savedReportApi } from './savedReportApi'
 import { ReportFigures } from './ReportFigures'
 import { ReportSharing } from './ReportSharing'
+import { ReportCodeCrossing } from './ReportCodeCrossing'
 import { ReportDashboards } from './ReportDashboards'
 import './saved-reports.css'
 export type ReportCrossSelection = { rows: string; columns: string; collectorId?: string }
@@ -33,6 +34,7 @@ export function SavedReports({ flowId, revisionId, filter, questions, crossing }
       <button className="secondary-button focus-ring" type="submit" disabled={busy}>Save current view</button>
     </form>
     <details><summary>Compared cohorts</summary><div className="report-form"><label className="inspector-field">Comparison name<input className="text-input" maxLength={160} value={cohortName} onChange={event => setCohortName(event.target.value)} /></label><button className="quiet-button focus-ring" type="button" onClick={addCohort} disabled={!cohortName.trim()}>Add current cohort</button></div><ul className="report-list">{cohorts.map(cohort => <li key={cohort.id}><span>{cohort.name}</span><button className="quiet-button focus-ring" type="button" onClick={() => setCohorts(current => current.filter(item => item.id !== cohort.id))}>Remove cohort</button></li>)}</ul></details>
+    <ReportCodeCrossing onAdd={cross => setCrosses(current => current.some(item => item.rows === cross.rows && item.columns === cross.columns) ? current : [...current, cross])} />
     <p>{crosses.length} crosstabs included</p>
     {error ? <p role="alert">{error}</p> : null}
     <ul className="report-list" aria-label="Saved views">{views.map(view => <li key={view.id}><button className="quiet-button focus-ring" type="button" onClick={() => void open(view.id)}>{view.name}</button><span className="report-provenance">Saved by {view.savedBy.name} · {view.cutoff}</span></li>)}</ul>

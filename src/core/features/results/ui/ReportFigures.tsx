@@ -1,9 +1,8 @@
-import type { SharedReport } from '../../reporting/savedModel'
-import type { Crosstab } from '../../reporting'
+import type { SharedReport, SharedCrosstabTable } from '../../reporting/savedModel'
 import './saved-reports.css'
 
-function CrossFigures({ table }: { table: Crosstab }) {
-  const total = (value: Crosstab['total']) => value.withheld ? 'withheld' : value.count
+function CrossFigures({ table }: { table: SharedCrosstabTable }) {
+  const total = (value: SharedCrosstabTable['total']) => value.withheld ? 'withheld' : value.count
   return <><div className="crosstab-scroll" role="region" aria-label="Saved crosstab table" tabIndex={0}><table className="crosstab-table">
     <caption>{table.rowDimension.label} by {table.columnDimension.label}</caption>
     <thead><tr><th scope="col">{table.rowDimension.label}</th>{table.columns.map(column => <th key={column.key} scope="col">{column.label}</th>)}<th scope="col">Row total</th></tr></thead>

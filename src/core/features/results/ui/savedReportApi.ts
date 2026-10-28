@@ -9,6 +9,7 @@ export async function reportRequest<T>(path: string, data?: unknown, method = da
   return response.status === 204 ? undefined as T : response.json() as Promise<T>
 }
 export const savedReportApi = {
+  allViews: () => reportRequest<SavedView[]>('/api/app/saved-views'),
   list: (flowId: string) => reportRequest<SavedView[]>(`/api/app/flows/${flowId}/saved-views`),
   save: (flowId: string, definition: SavedViewDefinition) => reportRequest<SavedViewDetail>(`/api/app/flows/${flowId}/saved-views`, definition),
   open: (id: string) => reportRequest<SavedViewDetail>(`/api/app/saved-views/${id}`),
