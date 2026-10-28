@@ -548,7 +548,7 @@ are data, compiled into the owned source and applied by one local runtime.
 
 ## Status
 
-Judged from the code and tests at commit `2d8c539c6ddc499905ce328fed5c427ff8125a8a` (28 October 2026). WORK-001 is the only new completion in this round; other clause judgments carry forward unchanged.
+Judged from the code and tests at commit `f2b11fd2d58cbe33b5803a7dbe4accf2e7dca18a` (28 October 2026). WORK-001 is the only new completion in this round; other clause judgments carry forward unchanged.
 
 ct reviewed `dd63975478b100f7df5e52799eea1e5663da6a0e` on 27 October 2026 for PAY-005, INTEG-006 and DIST-011 scope only, crediting no completion. Applying ct’s 05:00Z contract rulings; these text-only corrections claim no new DONE evidence. Subsequent target completions are maintained alongside their cited clause-tagged tests. RSLT-001, RSLT-003 and RSLT-004 include the combined-filter and response device-class implementation with native and browser journeys from sd-pencil-c10, repaired in sd-pencil-c12; they remain PARTIAL under ct's 05:00Z wording and no restoration is counted DONE. Release 0.7.0 was cut before these completions: on top of 0.6.0 it adds FIELD-006 and GOV-003 and fixes backup and restore on a database installed by Run Edit Run Platform (CHANGELOG.md). Each done row's evidence is its tagged tests, which `rer verify` runs.
 
