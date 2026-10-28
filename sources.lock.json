@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "0093163e4b750d5a3e6fb6919e5bde9b919cf90c49af81e238bbf4be12b47950",
+      "sha256": "5921d48ef1d601a7599afc1059a0e4b44f3320ccc2d0b1b3e5f8545680f9ae16",
       "executable": false
     },
     "agent-surface.json": {
@@ -837,7 +837,7 @@
       "executable": false
     },
     "AGENTS.md": {
-      "sha256": "1a9c5dd8f034dd1875aa71eada731ace275bc99e83ed7ef6c9064a4b8709fda3",
+      "sha256": "8aacd261f2717231df6407efb75e5359f55a66d82ed27b7f67ead5c756ae8246",
       "executable": false
     },
     "ASSET-PROVENANCE.md": {
@@ -869,7 +869,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d1d2a455e29377f6f0df083ce1ea328f18be65527bfe5b21773bc73aa59d9d34",
+      "sha256": "307eab5ad10f47933b7b20dfbf191c804ea064c8fe8373f19a7962b4dad46010",
       "executable": false
     },
     "DEMO.md": {
@@ -894,6 +894,10 @@
     },
     "DIVERGENCE.md": {
       "sha256": "f3c53d093b88f530d46efb676374f40260ecd89be2b57b4dad5086f80d28d01e",
+      "executable": false
+    },
+    "docs/CLAIMS.md": {
+      "sha256": "c141f3be86093c207bebadaf08b850f1ece4c2ac185c31773dd4ff972572dbe1",
       "executable": false
     },
     "docs/contract-changes-20261002.json": {
@@ -1538,6 +1542,10 @@
     },
     "scripts/ci-contract-evidence.mjs": {
       "sha256": "ab48b252f9bb86b4cb38eee94f7a5a80efc641e222cf5d3cc9a0fe6d0d37f355",
+      "executable": false
+    },
+    "scripts/contract-docs.mjs": {
+      "sha256": "e9644037a5e252131c50bbb9f8bca4ce90687837a6c52d52b87ee45c0eccd901",
       "executable": false
     },
     "scripts/contract-evidence.mjs": {
@@ -6677,11 +6685,11 @@
       "executable": false
     },
     "src/core/features/submissions/ui/inbox.css": {
-      "sha256": "366c9147fb24f71162ca8dd4423392946e2d0939aa6ba182e999ed897c297caa",
+      "sha256": "026c577f9932c5b756794989627541b878d430aa5aa0d2e23c94e76da1518878",
       "executable": false
     },
     "src/core/features/submissions/ui/InboxList.tsx": {
-      "sha256": "77ddfcca11c627d2d7fc62eee74f7db97bd863aa718b9cfab47c81e5ab5481f3",
+      "sha256": "4cbae365c928f273a808168040af3a8669e73ba4df312d7065bfe68369375982",
       "executable": false
     },
     "src/core/features/submissions/ui/InboxPage.tsx": {
@@ -7713,7 +7721,7 @@
       "executable": false
     },
     "tests/e2e/response-search.spec.ts": {
-      "sha256": "7a4d18ffdde275f4229751ffcd7f2e98ffc0b9345d5f9cf59ddc5d271e90be32",
+      "sha256": "25a3e5aad1f6fabc90b88feddeb6699df24762df19aaf1db6ebc58e6c6833b40",
       "executable": false
     },
     "tests/e2e/response-webhooks.spec.ts": {
@@ -7778,6 +7786,10 @@
     },
     "tests/e2e/studio-journey.ts": {
       "sha256": "f8daf22c31c11f79583ac21afe04f244aa8383e6067141d8edb765d75204e6c8",
+      "executable": false
+    },
+    "tests/e2e/submission-inbox-journey.ts": {
+      "sha256": "067dc44c26195b649d556a1659c7bfd8597f773035d984a838f388a95a8b045c",
       "executable": false
     },
     "tests/e2e/surveymonkey-import.spec.ts": {
@@ -8401,7 +8413,7 @@
       "executable": false
     },
     "tests/runtime/submissions.worker.test.ts": {
-      "sha256": "e8be85ee9a2946a0ef5102122038a47cb676ccfd0edad673e62ec14832381c42",
+      "sha256": "8a933a5f18f78aa349ca62b4a431699ee37a36538987ae81c8f0d6543a8f76b8",
       "executable": false
     },
     "tests/runtime/task-receiver.global.ts": {

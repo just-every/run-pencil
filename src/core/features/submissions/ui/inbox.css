@@ -9,7 +9,7 @@
 .submission-inbox .filters{display:flex;gap:15px;padding-top:3px}
 .submission-inbox .filter{position:relative;width:210px}
 .submission-inbox .filter:last-child{width:199px}
-.submission-inbox .filter label{position:absolute;left:13px;top:-7px;padding:0 4px;background:#faf9f6;color:#6b7077;font-size:12px}
+.submission-inbox .filter label{position:absolute;left:13px;top:-7px;padding:0 4px;background:#faf9f6;color:#6b7077;font-size:13px}
 .submission-inbox .filter select{width:100%;height:48px;border:1px solid #c4c5c7;border-radius:16px;padding:0 15px;background-color:#ffffffb8;font-size:13px}
 .submission-inbox .filter select:not([multiple],[size]:not([size="1"])){padding-inline-end:40px}
 .submission-inbox .bulk{display:flex;align-items:center;gap:10px;margin-top:-8px;font-size:13px}
@@ -20,7 +20,7 @@
 .submission-inbox .layout{display:grid;grid-template-columns:minmax(0,831fr) minmax(0,529fr);gap:16px}
 .submission-inbox .panel{border:1px solid #dcdddf;border-radius:12px;background:#ffffffa8}
 .submission-inbox .inbox{padding:0 20px;overflow:hidden}
-.submission-inbox .table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px}
+.submission-inbox .table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px}
 .submission-inbox .table col:nth-child(1){width:43px}
 .submission-inbox .table col:nth-child(2){width:120px}
 .submission-inbox .table col:nth-child(3){width:218px}
@@ -28,18 +28,16 @@
 .submission-inbox .table col:nth-child(5){width:150px}
 .submission-inbox .table col:nth-child(6){width:129px}
 .submission-inbox .table col:nth-child(7){width:21px}
-.submission-inbox .table th{text-align:left;font-size:10px;letter-spacing:1.35px;font-weight:600;color:#69717c;height:47px}
+.submission-inbox .table th{text-align:left;font-size:13px;letter-spacing:1.35px;font-weight:600;color:#69717c;height:47px}
 .submission-inbox .table td{height:72px;border-bottom:1px solid #e9e9eb;vertical-align:middle;padding:10px 0}
 .submission-inbox .table th:first-child,.submission-inbox .table td:first-child{padding-left:2px}
 .submission-inbox .table thead{border-bottom:1px solid #e1e2e5}
 .submission-inbox .table tr.selected{background:#f7f6f2}
-.submission-inbox .table tr.selected td:first-child{box-shadow:-8px 0 #f7f6f2;border-radius:12px 0 0 12px}
-.submission-inbox .table tr.selected td:last-child{box-shadow:9px 0 #f7f6f2;border-radius:0 12px 12px 0}
 .submission-inbox .table .preview{padding-right:27px;line-height:22px}
 .submission-inbox .date{color:#5c6470}
 .submission-inbox .person{display:flex;align-items:center;gap:11px}
-.submission-inbox .avatar{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(130deg,#dedede,#e8e8e7);flex-shrink:0;font-size:12px}
-.submission-inbox .workflow-badge{display:inline-block;border-radius:20px;padding:4px 14px;line-height:17px;font-size:12px;background:#efede6}
+.submission-inbox .avatar{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border-radius:50%;background:linear-gradient(130deg,#dedede,#e8e8e7);flex-shrink:0;font-size:13px}
+.submission-inbox .workflow-badge{display:inline-block;border-radius:20px;padding:4px 14px;line-height:17px;font-size:13px;background:#efede6}
 .submission-inbox .review{background:#fff0cd}
 .submission-inbox .approved{background:#d9efdf;color:#294d40}
 .submission-inbox .done{background:#dbe0e3}
@@ -50,8 +48,8 @@
 .submission-inbox .rowlink{font-size:24px;font-weight:400;color:#626a73;display:inline-block;line-height:30px}
 .submission-inbox .table input{appearance:none;width:16px;height:16px;margin:0;border:1px solid #a7aaad;border-radius:4px;background:white;vertical-align:middle}
 .submission-inbox .table input:checked{background:#282d30;border-color:#282d30}
-.submission-inbox .table input:checked:after{content:'✓';color:white;display:block;text-align:center;font-size:12px;line-height:14px}
-.submission-inbox .foot{font-size:12px;color:#626a75;padding:28px 0}
+.submission-inbox .table input:checked:after{content:'✓';color:white;display:block;text-align:center;font-size:13px;line-height:14px}
+.submission-inbox .foot{font-size:13px;color:#626a75;padding:28px 0}
 .submission-inbox .detail{padding:14px 20px 21px}
 .submission-inbox .detail-top{display:flex;align-items:center;gap:11px}
 .submission-inbox .detail h2{font:700 26px/1.3 Georgia,serif;letter-spacing:-.5px;margin:0}
@@ -65,23 +63,23 @@
 .submission-inbox .answers{border-bottom:1px solid #e2e4e7;padding-bottom:2px}
 .submission-inbox .tags{display:flex;align-items:center;gap:9px;padding:20px 0 19px;border-bottom:1px solid #e2e4e7}
 .submission-inbox .tags h3{margin:0 9px 0 0}
-.submission-inbox .tags .tag{background:transparent;border:1px solid #c5c7ca;padding:3px 10px;font-size:12px}
+.submission-inbox .tags .tag{background:transparent;border:1px solid #c5c7ca;padding:3px 10px;font-size:13px}
 .submission-inbox .note-title{display:flex;align-items:center;justify-content:space-between;margin-top:19px;margin-bottom:8px}
 .submission-inbox .note-title h3{margin:0}
-.submission-inbox .privacy{font-size:10px;color:#69717d;display:flex;align-items:center;gap:6px}
+.submission-inbox .privacy{font-size:13px;color:#69717d;display:flex;align-items:center;gap:6px}
 .submission-inbox .privacy svg{width:12px;height:13px}
 .submission-inbox .note-entry{position:relative;border:1px solid #cfd2d7;border-radius:9px;height:78px;background:#ffffff70}
 .submission-inbox .note-entry textarea{resize:none;width:100%;height:43px;border:0;background:transparent;padding:11px;font-size:13px;outline-offset:-3px}
 .submission-inbox .note-entry textarea::placeholder{color:#7a828e}
-.submission-inbox .note-entry button{position:absolute;right:9px;bottom:7px;border:0;background:#efede9;padding:6px 13px;font-size:12px}
+.submission-inbox .note-entry button{position:absolute;right:9px;bottom:7px;border:0;background:#efede9;padding:6px 13px;font-size:13px}
 .submission-inbox .history{margin-top:25px}
 .submission-inbox .history h3{margin-bottom:13px}
 .submission-inbox .note{display:flex;gap:14px}
 .submission-inbox .note .avatar{width:32px;height:32px}
 .submission-inbox .note-body{flex:1;min-width:0;padding:3px 0 13px;border-bottom:1px solid #e6e7e9}
-.submission-inbox .note-head{display:flex;justify-content:space-between;gap:10px;font-size:12px}
-.submission-inbox .note-head time{font-size:11px;color:#747d88}
-.submission-inbox .note p{font-size:12px;color:#59616c;line-height:19px;margin:6px 0 0}
+.submission-inbox .note-head{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+.submission-inbox .note-head time{font-size:13px;color:#747d88}
+.submission-inbox .note p{font-size:13px;color:#59616c;line-height:19px;margin:6px 0 0}
 .submission-inbox .note+.note{margin-top:13px}
 .submission-inbox .note:last-child .note-body{border:0;padding-bottom:0}
 .submission-inbox .mobile-label{display:none}
@@ -130,7 +128,7 @@
 .submission-inbox .table td:first-child{position:absolute;left:3px;top:14px;width:20px}
 .submission-inbox .table tr.selected td:first-child,.submission-inbox .table tr.selected td:last-child{box-shadow:none}
 .submission-inbox .table .preview{padding-right:0;font-size:13px}
-.submission-inbox .mobile-label{display:inline;font-size:12px;color:#747b83;margin-right:8px}
+.submission-inbox .mobile-label{display:inline;font-size:13px;color:#747b83;margin-right:8px}
 .submission-inbox .person{display:inline-flex}
 .submission-inbox .table td:last-child{position:absolute;right:3px;top:8px;width:20px}
 .submission-inbox .table td.date{padding-right:20px}
@@ -139,13 +137,13 @@
 .submission-inbox .detail h2{font-size:24px}
 .submission-inbox .detail-top{gap:7px}
 .submission-inbox .detail-top .workflow-badge{padding:4px 9px}
-.submission-inbox .meta{font-size:12px}
-.submission-inbox .privacy{font-size:12px}
+.submission-inbox .meta{font-size:13px}
+.submission-inbox .privacy{font-size:13px}
 .submission-inbox .note-title{align-items:flex-start;gap:12px}
 .submission-inbox .note-head{flex-wrap:wrap;gap:4px}
-.submission-inbox .note-head time{font-size:12px}
+.submission-inbox .note-head time{font-size:13px}
 .submission-inbox .answer{font-size:14px}
-.submission-inbox .note p{font-size:12px}
+.submission-inbox .note p{font-size:13px}
 .submission-inbox .tags{flex-wrap:wrap}
 }
 
@@ -171,7 +169,7 @@
 
 .submission-inbox .tag { margin: 2px; overflow-wrap: anywhere; }
 
-.submission-inbox .workflow-badge { display: inline-block; border-radius: 20px; padding: 4px 12px; font-size: 12px; background: #efede6; }
+.submission-inbox .workflow-badge { display: inline-block; border-radius: 20px; padding: 4px 12px; font-size: 13px; background: #efede6; }
 
 .submission-inbox .workflow-badge[data-status='in-review'] { background: #fff0cd; }
 
@@ -227,3 +225,5 @@
 @media(max-width:599px) { .submission-inbox thead { display: table-header-group; position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } }
 
 .submission-inbox .primary-button { color: white; background: var(--ink); border-color: var(--ink); }
+
+.submission-inbox .control-tooltip-label { font-size: 13px; }
