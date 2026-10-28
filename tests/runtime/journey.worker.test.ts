@@ -546,4 +546,31 @@ contract(['RSLT-001','RSLT-003','RSLT-004','DASH-002'], 'retains factual zero, q
   const emptyRevision = await ok<{revision:{id:string}}>(`${f.path}/publish`,{expectedVersion:(await f.draft()).flow.draftVersion})
   expect(await ok(`${f.path}/devices?revisionId=${emptyRevision.revision.id}&deviceClass=mobile`)).toMatchObject({total:0})
   expect(await ok(`${f.path}/results?revisionId=${emptyRevision.revision.id}&deviceClass=mobile`)).toMatchObject({completedResponses:0,starts:0,rateDenominator:0})
+
+  vi.useFakeTimers({ toFake: ['Date'] })
+  try {
+    const timed = await fixture('summary-revision-durations')
+    const complete = async (milliseconds: number, key: string) => {
+      const session = await timed.start(true)
+      await matureLoad(session, milliseconds)
+      const submitted = await timed.submit(session, [{ stepId: timed.route.id, value: timed.skip.id }], key)
+      expect(submitted.status).toBe(201)
+      expect(await submitted.json()).toMatchObject({ disposition: 'released' })
+    }
+    await complete(10000, 'synthetic-pencil-duration-1')
+    await complete(30000, 'synthetic-pencil-duration-2')
+    expect(await ok(`${timed.path}/results?revisionId=${timed.publicFlow.revision.id}`)).toMatchObject({
+      totalCompletionMilliseconds: 40000, durationSamples: 2, averageCompletionMilliseconds: 20000,
+    })
+    const revisionB = await ok<{ revision: { id: string } }>(`${timed.path}/publish`, { expectedVersion: (await timed.draft()).flow.draftVersion })
+    await complete(90000, 'synthetic-pencil-duration-3')
+    expect(await ok(`${timed.path}/results?revisionId=${revisionB.revision.id}`)).toMatchObject({
+      totalCompletionMilliseconds: 90000, durationSamples: 1, averageCompletionMilliseconds: 90000,
+    })
+    // Three native completions average 130000 / 3, rather than the two revision means.
+    expect(await ok(`${timed.path}/results?allRevisions=true`)).toMatchObject({
+      completedResponses: 3, liveCompletedResponses: 3, importedResponses: 0,
+      totalCompletionMilliseconds: 130000, durationSamples: 3, averageCompletionMilliseconds: 43333,
+    })
+  } finally { vi.useRealTimers() }
 })
