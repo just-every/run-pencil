@@ -23,7 +23,7 @@ export async function readAuditRows(db: D1Database, snapshot: AuditSnapshot, lim
     params.push(snapshot.after.createdAt, snapshot.after.createdAt, snapshot.after.id)
   }
   const result = await db.prepare(`SELECT a.id, a.kind, a.created_at AS createdAt,
-    o.id AS actorId, o.display_name AS actorName, f.id AS flowId, f.title AS flowName, a.details_json AS detailsJson
+    o.id AS actorId, CASE WHEN json_type(a.details_json,'$.prepared_by.agent.name')='text' THEN json_extract(a.details_json,'$.prepared_by.agent.name') || ' for ' || o.display_name ELSE o.display_name END AS actorName, f.id AS flowId, f.title AS flowName, a.details_json AS detailsJson
     FROM audit_entries a LEFT JOIN operators o ON o.id = a.actor_operator_id AND o.workspace_id = a.workspace_id
     ${formJoin} WHERE ${clauses.join(' AND ')} ORDER BY a.created_at DESC, a.id DESC LIMIT ?`).bind(...params, limit).all<ReadRow>()
   return result.results.map(row => ({

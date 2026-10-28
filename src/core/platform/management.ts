@@ -3,6 +3,7 @@ import type { WorkerBindings } from '../app/environment'
 
 export function readManagementConfiguration(bindings: WorkerBindings) {
   return {
+    businessTrust: bindings.RER_BUSINESS_TRUST,
     editor: { managementOrigin: bindings.RER_MANAGEMENT_ORIGIN, installationId: bindings.RER_INSTALLATION_ID },
     ownerClaim: {
       issuer: bindings.RER_OWNER_CLAIM_ISSUER, installationId: bindings.RER_OWNER_CLAIM_INSTALLATION_ID,

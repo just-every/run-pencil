@@ -70,6 +70,10 @@ export class FlowService {
     private readonly previewAssets?: LinkPreviewAssetStore,
   ) {}
 
+  attributed(attribution: Record<string, unknown>) {
+    return new FlowService(this.repository.attributed(attribution), this.responseRepository, this.policyConfiguration, this.access, this.previewDefaults, this.previewAssets)
+  }
+
   async ensureSampleFlow(input: {
     workspaceId: string
     flow: { id: string; slug: string; title: string; status: 'draft' | 'open' | 'closed' | 'archived'; draftVersion: number; lastActivityAt: string; createdAt: string; updatedAt: string }
@@ -133,7 +137,7 @@ export class FlowService {
     }))
   }
 
-  async createDraftFlow(input: { workspaceId: string; title: string; slug: string; template?: FlowTemplateId }) {
+  async createDraftFlow(input: { operatorId?: string; workspaceId: string; title: string; slug: string; template?: FlowTemplateId }) {
     const title = input.title.trim()
     const slug = input.slug.trim().toLowerCase()
     if (!title || title.length > 200) throw new ValidationError('A flow title must be between 1 and 200 characters.')
@@ -142,6 +146,7 @@ export class FlowService {
     const flowId = ulid()
     const revisionId = ulid()
     const created = await this.repository.createStructure({
+      ...(input.operatorId ? { audit: { id: ulid(), operatorId: input.operatorId, feature: 'flow-builder' } } : {}),
       flow: { id: flowId, workspaceId: input.workspaceId, title, slug, status: 'draft', draftVersion: 0, lastActivityAt: now, createdAt: now, updatedAt: now },
       revision: { id: revisionId, flowId, number: 1, state: 'draft', title, publishedAt: null, isCurrent: false, admissionClosedAt: null, admissionCloseReason: null, deadlineAt: null, deadlineTimeZone: null, targetCompletedResponses: null, policySnapshotJson: null, createdAt: now, updatedAt: now },
       ...(input.template ? templateStructure(input.template, revisionId, now) : {}),
@@ -181,6 +186,7 @@ export class FlowService {
     copiedSettings.answerAlerts=remapAnswerAlerts(copiedSettings.answerAlerts,stableIdByOldStableId,choiceStableIdByOldStableId)
     copiedSettings.calculations=remapCalculations(copiedSettings.calculations ?? [],stableIdByOldStableId,fieldIds,variableIds,choiceStableIdByOldStableId)
     const created = await this.repository.createStructure({
+      ...(input.operatorId ? { audit: { id: ulid(), operatorId: input.operatorId, feature: 'flow-builder' } } : {}),
       flow: { id: flowId, workspaceId: input.workspaceId, title, slug, status: 'draft', draftVersion: 0, lastActivityAt: now, createdAt: now, updatedAt: now },
       revision: { formSettingsJson: JSON.stringify(copiedSettings), id: revisionId, flowId, number: 1, state: 'draft', title, publishedAt: null, isCurrent: false, admissionClosedAt: null, admissionCloseReason: null, deadlineAt: null, deadlineTimeZone: null, targetCompletedResponses: null, policySnapshotJson: null, createdAt: now, updatedAt: now },
       steps: sourceSteps.map((step) => ({ ...step, id: rowIdByOldRowId.get(step.id)!, revisionId, stableId: stableIdByOldStableId.get(step.stableId)!, prompt: remapAnswerRecall(step.prompt, stableIdByOldStableId), helperText: step.helperText === null ? null : remapAnswerRecall(step.helperText, stableIdByOldStableId), questionSettingsJson: remapLayoutSettings(remapChoiceSettings(step.questionSettingsJson, choiceStableIdByOldStableId), stableIdByOldStableId, choiceStableIdByOldStableId), nextStepStableId: step.nextStepStableId ? stableIdByOldStableId.get(step.nextStepStableId) ?? null : null, createdAt: now, updatedAt: now })),

@@ -19,13 +19,16 @@ export class FlowRepository {
   constructor(
     private readonly database: PencilDatabase,
     private readonly binding: D1Database,
+    private readonly attribution?: Record<string, unknown>,
   ) {}
+
+  attributed(attribution: Record<string, unknown>) { return new FlowRepository(this.database, this.binding, attribution) }
 
   private async auditedDraft(input: DraftVersion, statements: D1PreparedStatement[]) {
     const result = await this.binding.batch([
       this.binding.prepare(`INSERT INTO audit_entries (id, workspace_id, kind, actor_operator_id, subject_type, subject_id, details_json, created_at)
-        SELECT ?, workspace_id, 'flow.draft-mutated', (SELECT id FROM operators WHERE id = ? AND workspace_id = flows.workspace_id), 'flow', id, '{"feature":"flow-builder"}', ?
-        FROM flows WHERE id = ? AND draft_version = ?`).bind(crypto.randomUUID(), input.operatorId ?? null, input.now, input.flowId, input.expectedVersion),
+        SELECT ?, workspace_id, 'flow.draft-mutated', (SELECT id FROM operators WHERE id = ? AND workspace_id = flows.workspace_id), 'flow', id, ?, ?
+        FROM flows WHERE id = ? AND draft_version = ?`).bind(crypto.randomUUID(), input.operatorId ?? null, JSON.stringify({ feature: 'flow-builder', ...this.attribution }), input.now, input.flowId, input.expectedVersion),
       ...statements,
     ])
     return result.slice(1)
@@ -48,7 +51,7 @@ export class FlowRepository {
       .bind(workspaceId,flowId,JSON.stringify(platforms)).all<{platform:string}>()
     return platforms.every(platform=>rows.results.some(row=>row.platform===platform))
   }
-  async createStructure(input: FlowStructure) { return createFlowStructure(this.binding, input) }
+  async createStructure(input: FlowStructure) { return createFlowStructure(this.binding, { ...input, ...(input.audit ? { audit: { ...input.audit, details: this.attribution } } : {}) }) }
 
   async updateScreen(input: DraftVersion & {changes:Array<{id:string;settings:Record<string,unknown>|null;nextStepId:string|null}>}) {
     const result = await this.auditedDraft(input,[
