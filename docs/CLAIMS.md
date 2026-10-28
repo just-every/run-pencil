@@ -147,7 +147,7 @@ Acceptance journeys and remaining obligations are recorded in CONTRACT.md and AC
 | RSLT-005 | Results across revisions | published | done | `tests/e2e/answer-results.spec.ts`; `tests/e2e/reporting-bounded.spec.ts`; `tests/e2e/revision-comparison-http.spec.ts` |
 | RSLT-006 | Crosstabs | target | done | `src/core/features/reporting/crosstab.ts`; `src/core/features/reporting/crosstabDimensions.ts`; `src/core/features/reporting/crosstabStats.ts`; `src/core/features/results/ui/CrosstabPanel.tsx`; `tests/runtime/collectors-trends.worker.test.ts`; `tests/e2e/answer-results.spec.ts`; `docs/evidence/rslt006-crosstab-1440.png`; `docs/evidence/rslt006-crosstab-390.png` |
 | RSLT-007 | Trends over time | target | partial | `src/core/features/reporting/trends.ts`; `src/core/features/reporting/trendPeriods.ts`; `src/core/features/results/ui/TrendsPanel.tsx`; `tests/runtime/collectors-trends.worker.test.ts` |
-| RSLT-008 | Saved views and dashboards | target | done | `tests/runtime/collectors-trends.worker.test.ts`; `tests/e2e/answer-results.spec.ts`; `scripts/deployment-data-custody-replay.check.mjs` |
+| RSLT-008 | Saved views and dashboards | target | partial | `tests/runtime/collectors-trends.worker.test.ts`; `tests/e2e/answer-results.spec.ts`; `scripts/deployment-data-custody-replay.check.mjs` |
 | RSLT-009 | Shared report links | target | partial | `tests/runtime/collectors-trends.worker.test.ts`; `tests/e2e/answer-results.spec.ts`; `scripts/deployment-data-custody-replay.check.mjs` |
 | RSLT-010 | Report exports | target | missing |  |
 | RSLT-011 | Scheduled report email | target | missing |  |
