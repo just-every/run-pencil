@@ -1,3 +1,4 @@
+import { matrixAnswerIssue } from './matrix'
 import { otherChoiceIssue } from './otherChoices'
 import type { QuestionType } from './questionKinds'
 import { contactQuestionTypes, contactAnswerIssue } from './contactAnswers'
@@ -25,6 +26,7 @@ export function answerIssue(step: AnswerQuestion, choiceIds: string[], value: un
   if ((contactQuestionTypes as readonly string[]).includes(step.questionType ?? '')) return contactAnswerIssue(step.questionType!, value)
   if ((scoreQuestionTypes as readonly string[]).includes(step.questionType ?? '')) return scoreAnswerIssue(step.questionType!, value)
   switch (step.questionType) {
+    case 'matrix': return matrixAnswerIssue(settings, choiceIds, value, step.required)
     case 'short_text':
     case 'long_text': return textAnswerIssue(step.questionType, settings, value)
     case 'email': return typeof value === 'string' && value.length <= 200 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? undefined : 'Enter a valid email address.'

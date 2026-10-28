@@ -1,3 +1,5 @@
+import { matrixValidity } from './matrixValidity'
+import { matrixSummary, type MatrixBucket } from './matrixReport'
 import { choiceValidity } from './choiceValidity'
 import { choiceIdsSql } from '../../shared/otherChoices'
 import { ratingScale } from '../../shared/ratingScale'
@@ -24,6 +26,7 @@ const valid = `CASE s.question_type
  WHEN 'single_choice' THEN ${choiceValidity(false)}
  WHEN 'dropdown' THEN ${choiceValidity(false)}
  WHEN 'multiple_choice' THEN ${choiceValidity(true)}
+ WHEN 'matrix' THEN ${matrixValidity()}
  WHEN 'priority' THEN ${kind} = 'array' AND ${arrayValid} AND json_array_length(a.value_json) = (SELECT COUNT(*) FROM choice_options c WHERE c.step_id = s.id)
  WHEN 'yes_no' THEN ${kind} IN ('true','false')
  WHEN 'thumbs_rating' THEN ${kind} IN ('true','false')
@@ -45,7 +48,7 @@ export async function aggregateRevision(db: D1Database, selection: { workspaceId
   const evidence = `FROM response_answers a JOIN responses r ON r.id = a.response_id
     LEFT JOIN flow_steps s ON s.revision_id = r.revision_id AND s.stable_id = a.step_id
     WHERE ${scope.where} AND ${retainedRevision}`
-  const [counts, buckets, medians] = await db.batch([
+  const [counts, buckets, medians, matrixBuckets] = await db.batch([
     db.prepare(`SELECT s.stable_id AS stepId, COUNT(*) AS answered, SUM(r.source = 'imported') AS imported,
       SUM(CASE WHEN (${valid}) THEN 0 ELSE 1 END) AS invalid,
       AVG(CASE WHEN s.question_type = 'rating' THEN ${value} END) AS average,
@@ -68,6 +71,14 @@ export async function aggregateRevision(db: D1Database, selection: { workspaceId
       ROW_NUMBER() OVER (PARTITION BY s.stable_id ORDER BY ${value}) AS n,
       COUNT(*) OVER (PARTITION BY s.stable_id) AS total ${evidence} AND s.question_type = 'number')
       SELECT stepId, value AS middle FROM ranked WHERE n IN ((total+1)/2, (total+2)/2) ORDER BY stepId,n`).bind(...scope.bindings),
+    db.prepare(`WITH row_answers AS (SELECT s.stable_id AS stepId, m.key AS rowId, m.type, m.value,
+      COUNT(*) OVER (PARTITION BY s.stable_id,m.key) AS answered
+      FROM response_answers a JOIN responses r ON r.id=a.response_id
+      JOIN flow_steps s ON s.revision_id=r.revision_id AND s.stable_id=a.step_id, json_each(a.value_json) m
+      WHERE ${scope.where} AND ${retainedRevision} AND s.question_type='matrix' AND (${matrixValidity()}))
+      SELECT stepId,rowId,picked.value AS value,COUNT(*) AS count,MAX(answered) AS answered
+      FROM row_answers, json_each(CASE WHEN row_answers.type='array' THEN row_answers.value ELSE json_array(row_answers.value) END) picked
+      GROUP BY stepId,rowId,picked.value`).bind(...scope.bindings),
   ])
   const stats = new Map((counts.results as Aggregate[]).map(row => [row.stepId, row]))
   const median = new Map<string,number>()
@@ -93,6 +104,7 @@ export async function aggregateRevision(db: D1Database, selection: { workspaceId
       if (type === 'date') summary = { earliest: row.earliest, latest: row.latest }
       if (type === 'nps') summary = { score: (row.promoters-row.detractors)/answered*100, promoters: row.promoters, detractors: row.detractors, passives: answered-row.promoters-row.detractors }
     }
+    if (type === 'matrix') summary = { matrixRows: matrixSummary(JSON.parse(step.settingsJson ?? '{}'), options, (matrixBuckets.results as MatrixBucket[]).filter(bucket => bucket.stepId === step.id)) }
     if (type === 'priority') summary = { positions: options.map(choice => ({ ...choice, average: entries.find(bucket => bucket.value === choice.id)?.average ?? 0 })) }
     const distribution: Array<{ value: unknown; label: string; count: number }> = []
     if (['single_choice','dropdown','multiple_choice','priority'].includes(type ?? '')) for (const choice of options) distribution.push({value: choice.id, label: choice.label, count: (type === 'priority' ? entries.find(bucket => bucket.value === choice.id)?.first : entries.find(bucket => bucket.value === choice.id)?.count) ?? 0})

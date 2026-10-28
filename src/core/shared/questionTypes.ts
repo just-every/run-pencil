@@ -1,3 +1,4 @@
+import { matrixSettingsValid } from './matrix'
 import { consentQuestionPurposeValid } from './marketingConsent'
 import { randomizableChoices } from './presentationOrder'
 import { layoutSettingsValid } from './screenLayout'
@@ -29,6 +30,7 @@ export function typeSettingsValid(type: string | null, settings: Record<string, 
   if (['single_choice', 'multiple_choice', 'dropdown'].includes(type ?? '')) return choiceSettingsValid(type!, settings)
   if (settings.otherChoiceId !== undefined || settings.noneChoiceId !== undefined || settings.otherValidation !== undefined) return false
   if ((scoreQuestionTypes as readonly string[]).includes(type ?? '')) return Object.keys(settings).length === 0
+  if (type === 'matrix') return matrixSettingsValid(settings)
   if (type === 'rating') return ratingSettingsValid(settings)
   if (type === 'nps') return ['lowLabel', 'highLabel'].every(key => settings[key] === undefined || text(settings[key]))
   if (type === 'number') return ['min', 'max'].every(key => settings[key] === undefined || (typeof settings[key] === 'number' && Number.isFinite(settings[key]))) && (settings.min === undefined || settings.max === undefined || (settings.min as number) <= (settings.max as number)) && (settings.decimalPlaces === undefined || (Number.isInteger(settings.decimalPlaces) && (settings.decimalPlaces as number) >= 0 && (settings.decimalPlaces as number) <= 15))

@@ -9,6 +9,7 @@ import { numericCandidates, dateCandidates } from './ordered-answer-domain'
 import { selectionIsPossible } from './selection-constraints'
 import { priorityIsPossible } from './priority-constraints'
 import type { StoredStep } from './repository'
+import { matrixRows, matrixMultiple } from '../../shared/matrix'
 
 type Test = Extract<Condition, { kind: 'test' }>
 type LeafRequirement = { condition: Test; matched: boolean }
@@ -21,8 +22,21 @@ export function spendConditionProof(budget: ConditionProofBudget) {
   if (--budget.remaining < 0) throw new ConditionProofError('The condition graph exceeds the exact reachability proof limit. Simplify its branching before publishing.')
 }
 
-function localAnswerExists(question: ConditionQuestion, requirements: LeafRequirement[]) {
+function localAnswerExists(question: ConditionQuestion, requirements: LeafRequirement[]): boolean {
   const { step, choices, settings } = question
+  if (step.questionType === 'matrix') {
+    const rows = matrixRows(settings)
+    if (!rows.length || !choices.length || rows.some(row => !row || typeof row.id !== 'string') || requirements.some(({ condition }) => !rows.some(row => row.id === condition.rowId))) return false
+    // Rows share a scale but have independent answers. Solve each row's full
+    // conjunction, keeping repeated tests correlated without a product domain.
+    return rows.every(row => localAnswerExists({
+      step: { ...step, questionType: matrixMultiple(settings) ? 'multiple_choice' : 'single_choice' },
+      choices, settings: {},
+    }, requirements.filter(({ condition }) => condition.rowId === row.id).map(({ condition, matched }) => {
+      const { rowId: _rowId, ...rowTest } = condition
+      return { condition: rowTest, matched }
+    })))
+  }
   const satisfies = (value: unknown) => requirements.every(({ condition, matched }) => evaluateCondition(condition, { [step.stableId]: value }).matched === matched)
   if (!step.required && satisfies(undefined)) return true
   // A present answer cannot satisfy a blank test, or a negated answered test.

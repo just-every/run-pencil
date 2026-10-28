@@ -1,7 +1,12 @@
+import { matrixAnswerIssue } from '../../shared/matrix'
 import { answerIssue, type AnswerQuestion } from '../../shared/answers'
 import { isContactType, retainedContactAnswer } from './contactReports'
 export function retainedAnswer(type: string, value: unknown, choices: string[], settings: Record<string,unknown>, required: boolean) {
   const fail = () => { throw new Error('Invalid retained answer. It cannot be exported faithfully.') }
+  if (type === 'matrix') {
+    if (matrixAnswerIssue(settings, choices, value, required)) fail()
+    return
+  }
   if (isContactType(type)) return retainedContactAnswer(type, value)
   if (['csat', 'ces', 'emoji_rating'].includes(type)) {
     if (typeof value !== 'number' || !Number.isInteger(value) || value < 1 || value > (type === 'ces' ? 7 : 5)) fail()

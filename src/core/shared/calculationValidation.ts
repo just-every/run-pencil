@@ -98,7 +98,7 @@ export function validateCalculations(value: unknown, questions: readonly Calcula
           const id = kind === 'answer' ? test.stepId : test.stepId.slice(test.stepId.indexOf(':') + 1)
           const type = reference(calculation, kind, id, conditionPath)
           const questionType = kind === 'answer' ? questionMap.get(id)?.questionType : type === 'text' ? 'short_text' : type === 'boolean' ? 'yes_no' : type
-          const step: FlowStep = { id: test.stepId, questionType: (questionType ?? null) as QuestionType | null, position: 0, kind: 'question', prompt: '', helperText: null, required: false, nextStepId: null, questionSettings: null }
+          const step: FlowStep = { id: test.stepId, questionType: (questionType ?? null) as QuestionType | null, position: 0, kind: 'question', prompt: '', helperText: null, required: false, nextStepId: null, questionSettings: kind === 'answer' ? questionMap.get(id)?.questionSettings ?? null : null }
           if (!conditionValueValid(test, step, choices)) error(calculation, conditionPath, 'type_mismatch', `Condition operator or value does not fit “${test.stepId}”.`)
         }
         const left = infer(calculation, node.then, `${path}.then`), right = infer(calculation, node.else, `${path}.else`)

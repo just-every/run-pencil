@@ -1,3 +1,4 @@
+import { matrixRows } from '../../shared/matrix'
 import { formSettings, type HiddenField } from '../../shared/hiddenFields'
 import type { Calculation } from '../../shared/calculations'
 import { responseScope, type ResponseSelection } from './scope'
@@ -9,8 +10,8 @@ import type { LedgerFilter } from './repository'
  * choices are keyed by stable choice ID, so one choice keeps one code in every revision.
  */
 export type InventoryChoice = { id: string; label: string; value: string; code: number; revisions: Set<string> }
-export type InventoryQuestion = { key: string; id: string; type: string; prompt: string; settings: Record<string, unknown>; name: string; choices: InventoryChoice[]; revisions: Set<string> }
-export type InventoryStep = { revisionId: string; revisionNumber: number; id: string; position: number; type: string; prompt: string; question: InventoryQuestion }
+export type InventoryQuestion = { key: string; id: string; type: string; prompt: string; settings: Record<string, unknown>; name: string; choices: InventoryChoice[]; matrixRows?: Array<{ id: string; label: string; revisions: Set<string> }>; revisions: Set<string> }
+export type InventoryStep = { revisionId: string; revisionNumber: number; id: string; position: number; type: string; prompt: string; matrixRows?: Array<{id:string;label:string}>; question: InventoryQuestion }
 export type ExportInventory = { revisions: Array<{ id: string; number: number }>; questions: InventoryQuestion[]; steps: InventoryStep[]; hiddenFields: Array<Pick<HiddenField, 'id' | 'name' | 'type'>>; calculations: Array<Pick<Calculation, 'id' | 'name' | 'type'>>; revisionIds: string[] }
 
 export async function exportInventory(db: D1Database, workspaceId: string, flowId: string, filter: LedgerFilter, cutoff: string, state: ResponseSelection): Promise<ExportInventory> {
@@ -28,9 +29,17 @@ export async function exportInventory(db: D1Database, workspaceId: string, flowI
   const questions = new Map<string, InventoryQuestion>(), inventorySteps: InventoryStep[] = []
   for (const step of (steps.results as Array<{ revisionId: string; id: string; prompt: string; type: string; settingsJson: string | null; position: number }>).sort(order)) {
     const key = `${step.id}\0${step.type}`
-    const question = questions.get(key) ?? { key, id: step.id, type: step.type, prompt: step.prompt, settings: JSON.parse(step.settingsJson ?? '{}') as Record<string, unknown>, name: '', choices: [], revisions: new Set<string>() }
+    const question: InventoryQuestion = questions.get(key) ?? { key, id: step.id, type: step.type, prompt: step.prompt, settings: JSON.parse(step.settingsJson ?? '{}') as Record<string, unknown>, name: '', choices: [], revisions: new Set<string>() }
+    if (step.type === 'matrix') {
+      question.matrixRows ??= []
+      for (const row of matrixRows(JSON.parse(step.settingsJson ?? '{}'))) {
+        const existing = question.matrixRows.find(known => known.id === row.id)
+        if (existing) existing.revisions.add(step.revisionId)
+        else question.matrixRows.push({ ...row, revisions: new Set([step.revisionId]) })
+      }
+    }
     question.revisions.add(step.revisionId); questions.set(key, question)
-    inventorySteps.push({ revisionId: step.revisionId, revisionNumber: number.get(step.revisionId)!, id: step.id, position: step.position, type: step.type, prompt: step.prompt, question })
+    inventorySteps.push({ revisionId: step.revisionId, revisionNumber: number.get(step.revisionId)!, id: step.id, position: step.position, type: step.type, prompt: step.prompt, ...(step.type === 'matrix' ? { matrixRows: matrixRows(JSON.parse(step.settingsJson ?? '{}')) } : {}), question })
   }
   const byStep = new Map<string, InventoryQuestion[]>()
   for (const question of questions.values()) byStep.set(question.id, [...byStep.get(question.id) ?? [], question])
@@ -58,6 +67,12 @@ export function* questionMetadata(inventory: ExportInventory): Generator<Array<s
   for (const step of inventory.steps) {
     const offered = step.question.choices.filter(choice => choice.revisions.has(step.revisionId))
     const base = [step.revisionId, step.revisionNumber, step.id, step.position, step.type, step.prompt]
+    if (step.type === 'matrix') {
+      for (const row of step.matrixRows ?? []) {
+        for (const choice of offered) yield [step.revisionId, step.revisionNumber, `${step.id}.${row.id}`, step.position, step.type, `${step.prompt}: ${row.label}`, choice.id, choice.value, choice.label, `${step.id}.${row.id}`, '']
+      }
+      continue
+    }
     if (!offered.length) yield [...base, '', '', '', step.question.name, '']
     for (const choice of offered) yield [...base, choice.id, choice.value, choice.label, step.question.name, choice.code]
   }

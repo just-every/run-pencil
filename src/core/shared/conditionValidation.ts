@@ -1,6 +1,7 @@
 import type { FlowStep, ChoiceOption } from '../app/api'
 import { calendarDate } from './questionTypes'
 import { conditionOperators, type Condition, type ConditionOperator } from './conditions'
+import { matrixRows, matrixMultiple } from './matrix'
 import manifest from '../../../seed.json' with { type: 'json' }
 
 export function operatorsFor(type: string | null): ConditionOperator[] {
@@ -20,12 +21,20 @@ export function conditionShape(value: unknown): value is Condition {
     if (!item || typeof item !== 'object' || Array.isArray(item) || depth > manifest.limits.logic.groupDepth) return false
     const node = item as Record<string, unknown>
     if (node.kind === 'group') return Object.keys(node).every(key => ['kind','join','conditions'].includes(key)) && ['and','or'].includes(String(node.join)) && Array.isArray(node.conditions) && node.conditions.length > 0 && node.conditions.every(child => visit(child, depth + 1))
-    return node.kind === 'test' && ++count <= manifest.limits.logic.conditionsPerRule && Object.keys(node).every(key => ['kind','stepId','operator','value'].includes(key)) && typeof node.stepId === 'string' && node.stepId.length > 0 && node.stepId.length <= 200 && conditionOperators.includes(node.operator as ConditionOperator)
+    const id = (value: unknown) => typeof value === 'string' && value.length > 0 && value.length <= 200 && !/[\u0000-\u001f\u007f]/.test(value)
+    return node.kind === 'test' && ++count <= manifest.limits.logic.conditionsPerRule && Object.keys(node).every(key => ['kind','stepId','rowId','operator','value'].includes(key)) && id(node.stepId) && (node.rowId === undefined || id(node.rowId)) && conditionOperators.includes(node.operator as ConditionOperator)
   }
   return visit(value, 0)
 }
 
 export function conditionValueValid(test: Extract<Condition, { kind: 'test' }>, step: FlowStep, choices: ChoiceOption[]): boolean {
+  if (step.questionType === 'matrix') {
+    const settings = step.questionSettings ?? {}
+    if (!matrixRows(settings).some(row => row && row.id === test.rowId)) return false
+    const { rowId: _rowId, ...rowTest } = test
+    return conditionValueValid(rowTest, { ...step, questionType: matrixMultiple(settings) ? 'multiple_choice' : 'single_choice' }, choices)
+  }
+  if (test.rowId !== undefined) return false
   if (!operatorsFor(step.questionType).includes(test.operator)) return false
   if (['is_blank','is_answered'].includes(test.operator)) return test.value === undefined || test.value === null
   const value = test.value, ids = choices.filter(choice => choice.stepId === step.id).map(choice => choice.id)

@@ -1,3 +1,5 @@
+import { matrixRows, matrixMultiple } from '../../shared/matrix'
+import { matrixValidity } from './matrixValidity'
 import { ValidationError } from '../../shared/errors'
 import { choiceIdsSql } from '../../shared/otherChoices'
 import { ratingScale } from '../../shared/ratingScale'
@@ -5,14 +7,14 @@ import { scoreOptions } from '../../shared/scoreQuestions'
 import { formSettings } from '../../shared/hiddenFields'
 import type { CrosstabCategory } from './crosstabStats'
 
-/** `question:<stable step ID>`, `hidden:<field ID>`, `variable:<calculation ID>` or `collector`. */
+/** `question:<stable step ID>`, `hidden:<field ID>`, `variable:<calculation ID>` `matrix:<stable step ID>:<stable row ID>` or `collector`. */
 export type DimensionKey = string
-export type DimensionKind = 'question' | 'hidden' | 'variable' | 'collector'
+export type DimensionKind = 'question' | 'matrix' | 'hidden' | 'variable' | 'collector'
 /** Fixed categories come from the published revision; observed ones are the distinct retained values. */
 export type Dimension = { key: DimensionKey; kind: DimensionKind; label: string; questionType?: string; multipleSelect: boolean; categories?: CrosstabCategory[]; observed?: 'text' | 'number' | 'mixed'; omitEmpty?: boolean; valueSql: string; bindings: unknown[]; note?: string }
 export const observedCategoryLimit = 50
 export const crossableQuestionTypes = ['single_choice', 'dropdown', 'multiple_choice', 'priority', 'yes_no', 'consent', 'thumbs_rating', 'rating', 'nps', 'csat', 'ces', 'emoji_rating', 'number', 'date']
-export const dimensionPattern = /^(?:(?:question|hidden|variable):[^\u0000-\u001f\u007f]{1,200}|collector)$/
+export const dimensionPattern = /^(?:(?:question|hidden|variable):[^\u0000-\u001f\u007f]{1,200}|matrix:[^:\u0000-\u001f\u007f]{1,200}:[^:\u0000-\u001f\u007f]{1,200}|collector)$/
 
 const answerJoin = 'LEFT JOIN response_answers a ON a.response_id = s.rid AND a.step_id = ?'
 const integerKey = "CAST(CAST(json_extract(a.value_json, '$') AS INTEGER) AS TEXT)"
@@ -37,9 +39,22 @@ export async function resolveDimension(db: D1Database, flowId: string, revisionI
       note: numeric ? 'Each distinct calculated or numeric value is its own category, in numeric order.' : undefined,
       valueSql: `SELECT s.rid, ${contextKey('c')} AS v FROM scoped s LEFT JOIN json_each(s.ctx, '$.${kind === 'hidden' ? 'hidden' : 'calculations'}') c ON c.key = ?`, bindings: [id] }
   }
-  if (kind !== 'question') throw new ValidationError('Choose a question, hidden field, calculated value or collector.')
-  const step = await db.prepare("SELECT id AS rowId, prompt, question_type AS type, question_settings_json AS settingsJson FROM flow_steps WHERE revision_id = ? AND stable_id = ? AND kind = 'question'").bind(revisionId, id).first<{ rowId: string; prompt: string; type: string; settingsJson: string | null }>()
+  const [stepId, matrixRowId] = kind === 'matrix' ? id.split(':') : [id, undefined]
+  if (kind !== 'question' && kind !== 'matrix') throw new ValidationError('Choose a question, hidden field, calculated value or collector.')
+  const step = await db.prepare("SELECT id AS rowId, prompt, question_type AS type, question_settings_json AS settingsJson FROM flow_steps WHERE revision_id = ? AND stable_id = ? AND kind = 'question'").bind(revisionId, stepId).first<{ rowId: string; prompt: string; type: string; settingsJson: string | null }>()
   if (!step) throw new ValidationError('This question is not part of the selected revision.')
+  if (kind === 'matrix') {
+    const settings = JSON.parse(step.settingsJson ?? '{}') as Record<string, unknown>
+    const row = matrixRows(settings).find(row => row.id === matrixRowId)
+    if (step.type !== 'matrix' || !row) throw new ValidationError('This matrix row is not part of the selected revision.')
+    const options = (await db.prepare('SELECT stable_id AS key, label FROM choice_options WHERE step_id=? ORDER BY position').bind(step.rowId).all<CrosstabCategory>()).results
+    return { key, kind, label: `${step.prompt}: ${row.label}`, questionType: 'matrix', multipleSelect: matrixMultiple(settings), categories: options,
+      valueSql: `SELECT s.rid, CASE WHEN a.value_json IS NOT NULL AND NOT COALESCE((${matrixValidity('a.value_json', "COALESCE(q.question_settings_json, '{}')", 'q.required', 'q')}),0) THEN char(0) ELSE picked.value END AS v
+        FROM scoped s ${answerJoin} JOIN flow_steps q ON q.id=?
+        LEFT JOIN json_each(a.value_json) m ON m.key=?
+        LEFT JOIN json_each(CASE WHEN m.type='array' THEN m.value ELSE json_array(m.value) END) picked`,
+      bindings: [stepId, step.rowId, row.id] }
+  }
   if (!crossableQuestionTypes.includes(step.type)) throw new ValidationError('Open-text and contact answers are not crossed. Choose a structured question.')
   const base = { key, kind, label: step.prompt, questionType: step.type, multipleSelect: step.type === 'multiple_choice', bindings: [id] }
   const settings = JSON.parse(step.settingsJson ?? '{}') as Record<string, unknown>

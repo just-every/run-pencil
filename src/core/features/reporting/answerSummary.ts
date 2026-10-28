@@ -1,7 +1,8 @@
+import { summarizeMatrixAnswers, type MatrixRowSummary } from './matrixReport'
 import { finiteMidpoint } from './finiteMidpoint'
 import { retainedContactAnswer, isContactType } from './contactReports'
 
-export type SummaryType = 'short_text' | 'long_text' | 'email' | 'single_choice' | 'multiple_choice' | 'dropdown' | 'rating' | 'nps' | 'csat' | 'ces' | 'emoji_rating' | 'thumbs_rating' | 'phone' | 'postal_address' | 'full_name' | 'url' | 'currency' | 'number' | 'date' | 'yes_no' | 'consent' | 'priority'
+export type SummaryType = 'short_text' | 'long_text' | 'email' | 'single_choice' | 'multiple_choice' | 'dropdown' | 'rating' | 'nps' | 'csat' | 'ces' | 'emoji_rating' | 'thumbs_rating' | 'phone' | 'postal_address' | 'full_name' | 'url' | 'currency' | 'number' | 'date' | 'yes_no' | 'consent' | 'priority' | 'matrix'
 export type AnswerSummary = {
   average?: number; minimum?: number; median?: number; maximum?: number
   earliest?: string; latest?: string; score?: number
@@ -9,10 +10,12 @@ export type AnswerSummary = {
   csat?: { satisfied: number; answered: number; percentage: number }
   ces?: { total: number; answered: number; mean: number }
   positions?: Array<{ id: string; label: string; average: number }>
+  matrixRows?: MatrixRowSummary[]
   texts?: string[]
 }
 /** Values are validated at collection; invalid retained data fails visibly. */
-export function summarizeAnswers(type: string | null, values: unknown[], choices: Array<{ id: string; label: string }>): AnswerSummary {
+export function summarizeAnswers(type: string | null, values: unknown[], choices: Array<{ id: string; label: string }>, settings: Record<string, unknown> = {}): AnswerSummary {
+  if (type === 'matrix') return { matrixRows: summarizeMatrixAnswers(settings, choices, values) }
   if (isContactType(type)) {
     for (const value of values) retainedContactAnswer(type, value)
     return {}

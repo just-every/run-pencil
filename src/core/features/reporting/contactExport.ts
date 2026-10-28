@@ -1,3 +1,4 @@
+import { matrixColumns, matrixRecord } from './matrixExport'
 import { isOtherAnswer } from '../../shared/otherChoices'
 import { deflateRawSync, inflateRawSync } from 'node:zlib'
 import { Buffer } from 'node:buffer'
@@ -10,7 +11,7 @@ import type { LedgerFilter, LedgerResponse } from './repository'
 /** The selected revision inventory is frozen even when an optional answer is blank. */
 export async function contactColumnInventory(db: D1Database, workspaceId: string, flowId: string, filter: LedgerFilter, cutoff: string, signal?: AbortSignal, state: ResponseSelection = 'released') {
   const { where, bindings } = responseScope(workspaceId, flowId, filter, cutoff, state)
-  const columns = new Set<string>()
+  const columns = new Set(await matrixColumns(db, workspaceId, flowId, filter, cutoff, state, signal))
   let after = ''
   for (;;) {
     signal?.throwIfAborted()
@@ -30,9 +31,9 @@ export async function contactColumnInventory(db: D1Database, workspaceId: string
   if (!columns.size) return undefined
   const bytes = Buffer.from(JSON.stringify([...columns].sort()))
   // The cursor transport has an explicit 64 KiB limit. Never return a partial inventory.
-  if (bytes.length > 4 * 1024 * 1024) throw new ValidationError('This CSV has too many contact columns. Select fewer published revisions and export again.')
+  if (bytes.length > 4 * 1024 * 1024) throw new ValidationError('This CSV has too many answer columns. Select fewer published revisions and export again.')
   const inventory = Buffer.from(deflateRawSync(bytes)).toString('base64')
-  if (inventory.length > 40000) throw new ValidationError('This CSV has too many contact columns for one export. Select fewer published revisions and export again.')
+  if (inventory.length > 40000) throw new ValidationError('This CSV has too many answer columns for one export. Select fewer published revisions and export again.')
   return inventory
 }
 
@@ -41,7 +42,7 @@ export function contactColumns(inventory?: string): string[] {
 }
 
 export function contactRecord(row: LedgerResponse, columns: string[]): Array<string | number> {
-  const values = new Map<string, string | number>()
+  const values = new Map<string, string | number>(matrixRecord(row))
   for (const answer of row.answers) {
     if (isOtherAnswer(answer.value)) values.set(`${answer.stepId}.other_text`, answer.value.otherText)
     if (!isContactType(answer.questionType)) continue

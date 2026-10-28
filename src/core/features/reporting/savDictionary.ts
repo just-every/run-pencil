@@ -29,6 +29,11 @@ function questionVariables(question: InventoryQuestion): SavVariable[] {
   const { name, prompt, type } = question
   const choiceIds = (value: unknown) => isOtherAnswer(value) ? value.choiceIds : Array.isArray(value) ? value as string[] : typeof value === 'string' ? [value] : []
   const other = question.choices.length && question.settings.otherChoiceId !== undefined ? [{ name: `${name}_other`, label: `${prompt}: Other text`, string: true, bound: `other:${question.key}`, read: (row: LedgerResponse) => { const value = answerOf(row, question)?.value; return isOtherAnswer(value) ? value.otherText : '' } }] : []
+  if (type === 'matrix') return (question.matrixRows ?? []).map(matrixRow => ({ name: `${question.id}.${matrixRow.id}`, label: `${prompt}: ${matrixRow.label}`, string: true, bound: `matrix:${question.key}\0${matrixRow.id}`,
+    read: (row: LedgerResponse) => {
+      const value = (answerOf(row, question)?.value as Record<string, string | string[]> | undefined)?.[matrixRow.id]
+      return value === undefined ? '' : Array.isArray(value) ? JSON.stringify(value) : value
+    } }))
   if (type === 'single_choice' || type === 'dropdown') return [{ name, label: prompt, string: false, valueLabels: question.choices.map(choice => [choice.code, choice.label]), read: row => {
     const answer = answerOf(row, question); if (!answer) return null
     const code = question.choices.find(choice => choice.id === choiceIds(answer.value)[0])?.code
@@ -84,27 +89,31 @@ export async function savWidths(db: D1Database, inventory: ExportInventory, vari
   const bytes = (sql: string) => `MAX(length(CAST(${sql} AS BLOB)))`
   const ctx = (path: string) => bytes(`COALESCE(json_extract(r.response_context_json, '$.${path}'), '')`)
   const marks = inventory.revisionIds.map(() => '?').join(',') || "''"
-  const [base, collector, participant, omitted, answers, hidden, calculations] = await db.batch([
+  const [base, collector, participant, omitted, answers, hidden, matrix, calculations] = await db.batch([
     db.prepare(`SELECT ${bytes('r.id')} AS id, ${bytes('r.revision_id')} AS revision, ${bytes('r.source')} AS source, ${bytes("COALESCE(r.started_at,'')")} AS started, ${bytes('r.completed_at')} AS completed, ${bytes("COALESCE(r.released_at,'')")} AS released, ${bytes('r.state')} AS state, ${bytes("COALESCE(r.quarantine_reason,'')")} AS reason, ${ctx('verifiedEmail')} AS verifiedEmail, ${ctx('verifiedSubject')} AS verifiedSubject, ${ctx('presentedOrder')} AS presented FROM responses r WHERE ${where}`).bind(...bindings),
     db.prepare(`SELECT ${bytes('c.id')} AS collectorId, ${bytes('c.name')} AS collectorName, ${bytes('c.channel')} AS collectorChannel FROM responses r JOIN response_collector rc ON rc.response_id = r.id JOIN collectors c ON c.id = rc.collector_id WHERE ${where}`).bind(...bindings),
     db.prepare(`SELECT ${bytes('p.id')} AS participantId, ${bytes("COALESCE(p.name_snapshot,'')")} AS participantName, ${bytes("COALESCE(p.email_snapshot,'')")} AS participantEmail FROM responses r JOIN invitation_participants p ON p.id = r.participant_id WHERE ${where}`).bind(...bindings),
     db.prepare(`SELECT MAX(total) AS omitted FROM (SELECT 2 + SUM(length(CAST(json_object('stepId', s.stable_id, 'label', s.prompt, 'position', s.position, 'questionType', s.question_type) AS BLOB)) + 1) AS total FROM flow_steps s WHERE s.kind = 'question' AND s.revision_id IN (${marks}) GROUP BY s.revision_id)`).bind(...inventory.revisionIds),
     db.prepare(`SELECT a.step_id AS stepId, s.question_type AS type, ${bytes("COALESCE(json_extract(a.value_json, '$'), '')")} AS text, ${bytes("COALESCE(json_extract(a.value_json, '$.otherText'), '')")} AS other, ${bytes('a.value_json')} AS raw FROM response_answers a JOIN responses r ON r.id = a.response_id JOIN flow_steps s ON s.revision_id = r.revision_id AND s.stable_id = a.step_id WHERE ${where} GROUP BY a.step_id, s.question_type`).bind(...bindings),
     db.prepare(`SELECT h.key AS id, ${bytes('h.value')} AS width FROM responses r, json_each(r.response_context_json, '$.hidden') h WHERE ${where} GROUP BY h.key`).bind(...bindings),
+    db.prepare(`SELECT a.step_id||char(0)||'matrix'||char(0)||m.key AS id, ${bytes('m.value')} AS width
+      FROM response_answers a JOIN responses r ON r.id=a.response_id
+      JOIN flow_steps s ON s.revision_id=r.revision_id AND s.stable_id=a.step_id, json_each(a.value_json) m
+      WHERE ${where} AND s.question_type='matrix' GROUP BY a.step_id,m.key`).bind(...bindings),
     db.prepare(`SELECT c.key AS id, ${bytes('c.value')} AS width FROM responses r, json_each(r.response_context_json, '$.calculations') c WHERE ${where} GROUP BY c.key`).bind(...bindings),
   ])
   const first = (result: D1Result) => (result.results[0] ?? {}) as Record<string, number | null>
   const named: Record<string, number | null> = { ...first(base), ...first(collector), ...first(participant), ...first(omitted), cutoff: 24, identity: 10 }
   const answerRows = answers.results as Array<{ stepId: string; type: string; text: number; other: number; raw: number }>
   const keyed = (rows: D1Result) => new Map((rows.results as Array<{ id: string; width: number }>).map(row => [row.id, row.width]))
-  const hiddenWidths = keyed(hidden), calculationWidths = keyed(calculations)
+  const hiddenWidths = keyed(hidden), calculationWidths = keyed(calculations), matrixWidths = keyed(matrix)
   return variables.map(variable => {
     if (!variable.string) return 0
     const [kind, key] = [variable.bound!.slice(0, variable.bound!.indexOf(':')), variable.bound!.slice(variable.bound!.indexOf(':') + 1)]
     const answer = (questionKey: string) => answerRows.find(row => `${row.stepId}\0${row.type}` === questionKey)
     // Contact fields are derived from the stored answer; a formatted field may add separators.
     const width = !variable.bound!.includes(':') ? named[variable.bound!] : kind === 'hidden' ? hiddenWidths.get(key) : kind === 'calc' ? calculationWidths.get(key)
-      : kind === 'other' ? answer(key)?.other : kind === 'text' ? answer(key)?.text : kind === 'contact' ? (answer(key)?.raw ?? 0) * 2 + 64 : undefined
+      : kind === 'other' ? answer(key)?.other : kind === 'text' ? answer(key)?.text : kind === 'matrix' ? matrixWidths.get(key) : kind === 'contact' ? (answer(key)?.raw ?? 0) * 2 + 64 : undefined
     const bounded = Math.max(8, width ?? 0)
     if (bounded > savStringLimit) throw new ValidationError(`${variable.name} holds text longer than the SPSS string limit of ${savStringLimit} bytes. Export CSV, JSON or XLSX for this selection.`)
     return bounded

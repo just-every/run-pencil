@@ -1,3 +1,4 @@
+import { MatrixQuestionInput } from './MatrixQuestionInput'
 import { useAnswerAccessibility } from './AnswerFieldset'
 import { ChoiceQuestionInput } from './ChoiceQuestionInput'
 import { contactQuestionTypes } from '../contactAnswers'
@@ -12,6 +13,7 @@ import type { FlowStep, ChoiceOption } from '../../app/api'
 export function QuestionInput({ step, choices, value, onChange }: { step: FlowStep; choices: ChoiceOption[]; value: unknown; onChange: (value: unknown) => void }) {
   const accessibility = useAnswerAccessibility()
   const required = step.required
+  if (step.questionType === 'matrix') return <MatrixQuestionInput step={step} choices={choices} value={value} onChange={onChange} />
   if ((contactQuestionTypes as readonly string[]).includes(step.questionType ?? '')) return <ContactQuestionInput step={step} value={value} onChange={onChange} />
   if ((scoreQuestionTypes as readonly string[]).includes(step.questionType ?? '')) return <ScoreQuestionInput step={step} value={value} onChange={onChange} />
   if (['yes_no', 'nps', 'number', 'date', 'consent'].includes(step.questionType ?? '')) return <ExtendedQuestionInput step={step} choices={choices} value={value} onChange={onChange} />

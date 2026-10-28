@@ -6,7 +6,7 @@ import manifest from '../../../seed.json' with { type: 'json' }
 
 export const resourceId = z.string().min(1).max(200).refine(value => !/[\u0000-\u001f\u007f]/.test(value))
 export const flowSlug = z.string().min(1).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
-export const answerValue = z.union([z.object({ choiceIds: z.array(resourceId).min(1).max(manifest.limits.steps.choiceOptionsPerStep), otherText: z.string().max(manifest.limits.responses.shortTextCharactersPerAnswer) }).strict(), contactAnswerObject, z.string().max(manifest.limits.responses.openTextCharactersPerAnswer), z.number().finite(), z.boolean(), z.array(resourceId).max(manifest.limits.steps.choiceOptionsPerStep), z.null()])
+export const answerValue = z.union([z.object({ choiceIds: z.array(resourceId).min(1).max(manifest.limits.steps.choiceOptionsPerStep), otherText: z.string().max(manifest.limits.responses.shortTextCharactersPerAnswer) }).strict(), contactAnswerObject, z.record(z.string().regex(/^[A-Za-z0-9_-]{1,100}$/), z.union([resourceId, z.array(resourceId).min(1).max(manifest.limits.steps.choiceOptionsPerStep)])).refine(value => Object.keys(value).length <= 50), z.string().max(manifest.limits.responses.openTextCharactersPerAnswer), z.number().finite(), z.boolean(), z.array(resourceId).max(manifest.limits.steps.choiceOptionsPerStep), z.null()])
 
 export function invalidInput(context: Context, target: string) {
   return context.json({ error: 'VALIDATION_ERROR', message: `Invalid request ${target === 'json' ? 'body' : target === 'param' ? 'path parameters' : target}.` }, 400)

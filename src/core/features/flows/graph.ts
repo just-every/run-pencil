@@ -1,3 +1,4 @@
+import { matrixScaleIssue } from '../../shared/matrix'
 import { completionRedirectIssues } from '../../shared/completionRedirect'
 import { calculationOperands, calculationInputs } from '../../shared/calculationInputs'
 import { validateCalculations } from '../../shared/calculationValidation'
@@ -68,6 +69,7 @@ function validSettings(step: StoredStep, choices: StoredChoice[]) {
     if ((minSelections !== undefined && (!Number.isInteger(minSelections) || (minSelections as number) < 0)) || (maxSelections !== undefined && (!Number.isInteger(maxSelections) || (maxSelections as number) < (minSelections as number ?? 1) || (maxSelections as number) > choices.length))) return { valid: false, value: {} as Record<string, unknown> }
   }
   const special = value as Record<string, unknown>
+  if (step.questionType === 'matrix' && matrixScaleIssue(special, choices.map(choice => choice.stableId))) return { valid: false, value: special }
   if (['otherChoiceId', 'noneChoiceId'].some(key => special[key] !== undefined && !choices.some(choice => choice.stableId === special[key]))) return { valid: false, value: special }
   return { valid: true, value: special }
 }
@@ -128,7 +130,7 @@ export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice
     if (step.kind === 'question' && (!step.questionType || step.prompt.trim().length === 0 || step.prompt.length > 1000)) issues.push({ stepId: step.stableId, reason: 'Every question needs a prompt within the configured text limit.' })
     if (step.kind !== 'question' && step.questionType) issues.push({ stepId: step.stableId, reason: 'Only questions can have a question type.' })
     const stepChoices = choicesByStep.get(step.id) ?? []
-    const structured = ['single_choice', 'multiple_choice', 'priority', 'dropdown'].includes(step.questionType ?? '')
+    const structured = ['single_choice', 'multiple_choice', 'priority', 'dropdown', 'matrix'].includes(step.questionType ?? '')
     if (structured && stepChoices.length === 0) issues.push({ stepId: step.stableId, reason: 'This structured question needs at least one choice.' })
     if (new Set(stepChoices.map((choice) => choice.label.trim().toLocaleLowerCase())).size !== stepChoices.length) issues.push({ stepId: step.stableId, reason: 'Each choice needs a different label.' })
     if (new Set(stepChoices.map((choice) => choice.value)).size !== stepChoices.length) issues.push({ stepId: step.stableId, reason: 'Each choice needs a different answer value.' })

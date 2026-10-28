@@ -1,3 +1,4 @@
+import { MatrixSettings } from './MatrixSettings'
 import { ChatFormSettings } from '../../chat-integrations/ui'
 import { ResponseEditSettings } from './ResponseEditSettings'
 import { AnswerAlertSettings } from '../../notifications/ui'
@@ -308,10 +309,12 @@ export function FlowBuilderPage() {
               setQuestionType(nextType)
               setCanvasAnswer(undefined)
               setSettingsText('')
-              if (!['single_choice', 'multiple_choice', 'priority', 'dropdown'].includes(nextType ?? '')) setChoices([])
+              if (!['single_choice', 'multiple_choice', 'priority', 'dropdown', 'matrix'].includes(nextType ?? '')) setChoices([])
+              if (nextType === 'matrix' && questionType !== 'matrix') { setSettingsText(JSON.stringify({ matrixMode: 'single', matrixRows: [{ id: crypto.randomUUID(), label: 'Row 1' }] })); setChoices([{ newId: crypto.randomUUID(), value: '1', label: 'Disagree' }, { newId: crypto.randomUUID(), value: '2', label: 'Agree' }]) }
               if (nextType !== questionType) { setCanvasAnswer(undefined); setRules([]) }
             }} value={questionType ?? ''}>{questionTypes.map(type => <option value={type} key={type}>{questionTypeLabels[type]}</option>)}</select></label> : null}
-            {selected.kind === 'question' && ['single_choice', 'multiple_choice', 'priority', 'dropdown'].includes(questionType ?? '') ? <ChoiceEditor key={selected.id} disabled={saving} choices={choices} onChange={setChoices} /> : null}
+            {selected.kind === 'question' && ['single_choice', 'multiple_choice', 'priority', 'dropdown', 'matrix'].includes(questionType ?? '') ? <ChoiceEditor key={selected.id} disabled={saving} choices={choices} onChange={setChoices} /> : null}
+            {selected.kind === 'question' && questionType === 'matrix' ? <MatrixSettings settings={settings} disabled={saving} choices={choices} onChoices={setChoices} onSettings={next => setSettingsText(JSON.stringify(next, null, 2))} /> : null}
             <SpecialChoicesEditor type={questionType} choices={choices} settings={settings} disabled={saving} onChoices={setChoices} onSettings={next => setSettingsText(JSON.stringify(next, null, 2))} />
             {selected.kind === 'payment' ? <PaymentStepSettings key={`${draftRead}-${selected.id}`} draft={draft} step={selected} value={settings.payment} disabled={saving} onChange={payment => setSettingsText(JSON.stringify({ ...settings, payment }, null, 2))} /> : null}
             {selected.kind==='completion'?<CompletionSettings draft={draft} stepId={selected.id} value={settings.redirect} disabled={saving} onChange={redirect=>{const next={...settings};if(redirect)next.redirect=redirect;else delete next.redirect;setSettingsText(JSON.stringify(next,null,2))}}/>:null}

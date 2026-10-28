@@ -5,7 +5,7 @@ import { isOtherAnswer } from './otherChoices'
 export const conditionOperators = ['equals', 'not_equals', 'greater_than', 'greater_than_or_equal', 'less_than', 'less_than_or_equal', 'any_of', 'all_of', 'none_of', 'exactly', 'is_blank', 'is_answered'] as const
 export type ConditionOperator = typeof conditionOperators[number]
 export type ConditionValue = string | number | boolean | string[] | { choiceId: string; rank: number } | null
-export type Condition = { kind: 'group'; join: 'and' | 'or'; conditions: Condition[] } | { kind: 'test'; stepId: string; operator: ConditionOperator; value?: ConditionValue }
+export type Condition = { kind: 'group'; join: 'and' | 'or'; conditions: Condition[] } | { kind: 'test'; stepId: string; rowId?: string; operator: ConditionOperator; value?: ConditionValue }
 export type ConditionTrace = { matched: boolean; condition: Condition; value?: unknown; children?: ConditionTrace[] }
 
 export function evaluateCondition(condition: Condition, answers: Record<string, unknown>): ConditionTrace {
@@ -14,6 +14,7 @@ export function evaluateCondition(condition: Condition, answers: Record<string, 
     return { condition, children, matched: condition.join === 'and' ? children.every(child => child.matched) : children.some(child => child.matched) }
   }
   let value = answers[condition.stepId]
+  if (condition.rowId !== undefined) value = value && typeof value === 'object' && !Array.isArray(value) && Object.hasOwn(value, condition.rowId) ? (value as Record<string, unknown>)[condition.rowId] : undefined
   if (value && typeof value === 'object' && 'accepted' in value) value = (value as { accepted: unknown }).accepted
   const blank = isUnanswered(value)
   let matched = false

@@ -11,6 +11,7 @@ const percent = (value: number) => `${value.toFixed(1)}%`
 export function CrosstabPanel({ flowId, revision, questions }: { flowId: string; revision: Ledger['revisions'][number]; questions: QuestionReport[] }) {
   const dimensions = [
     ...questions.filter(question => crossable.includes(question.questionType ?? '')).map(question => ({ key: `question:${question.id}`, label: question.prompt })),
+    ...questions.filter(question => question.questionType === 'matrix').flatMap(question => (question.summary.matrixRows ?? []).map(row => ({ key: `matrix:${question.id}:${row.id}`, label: `${question.prompt}: ${row.label}` }))),
     ...revision.hiddenFields.map(field => ({ key: `hidden:${field.id}`, label: `Hidden field ${field.name}` })),
     ...revision.calculations.map(calculation => ({ key: `variable:${calculation.id}`, label: `Calculated ${calculation.name}` })),
     { key: 'collector', label: 'Collector' },

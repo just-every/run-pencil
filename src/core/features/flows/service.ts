@@ -271,7 +271,7 @@ export class FlowService {
     if (!typeSettingsValid(selectedQuestionType, input.questionSettings === undefined ? selected.questionSettings ?? {} : input.questionSettings ?? {})) throw new ValidationError('This question has invalid type-specific settings.')
     const paymentIssue = paymentStepSettingsIssue(selected.kind, input.questionSettings === undefined ? selected.questionSettings : input.questionSettings)
     if (paymentIssue) throw new ValidationError(paymentIssue)
-    const structured = ['single_choice', 'multiple_choice', 'priority', 'dropdown'].includes(selectedQuestionType ?? '')
+    const structured = ['single_choice', 'multiple_choice', 'priority', 'dropdown', 'matrix'].includes(selectedQuestionType ?? '')
     if (input.choices !== undefined && !structured && input.choices.length > 0) throw new ValidationError('Only structured questions can have choices.')
     const requestedChoices = input.choices ?? currentChoices.map((choice) => ({ id: choice.stableId, value: choice.value, label: choice.label }))
     if (input.choices !== undefined && input.choices.some((choice) => !choice.value.trim() || !choice.label.trim())) throw new ValidationError('Every choice needs a value and label.')

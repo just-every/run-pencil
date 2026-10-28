@@ -1,3 +1,4 @@
+import { matrixRows } from '../../shared/matrix'
 import type { Calculation, CalculationValue } from '../../shared/calculations'
 import { formSettings, hiddenValue, type HiddenField, type ResponseContext } from '../../shared/hiddenFields'
 import { choiceIdsSql, isOtherAnswer } from '../../shared/otherChoices'
@@ -71,6 +72,7 @@ export class ReportingRepository {
           'id', json_extract(calculation.value, '$.id'), 'name', json_extract(calculation.value, '$.name'), 'type', json_extract(calculation.value, '$.type')
         )) AS BLOB)) FROM json_each(revision.form_settings_json, '$.calculations') calculation) - 2))
       + 12 * COALESCE((SELECT SUM(length(CAST(a.value_json AS BLOB))) FROM response_answers a WHERE a.response_id = r.id),0)
+      + 12 * COALESCE((SELECT SUM(length(CAST(s.question_settings_json AS BLOB)) + COALESCE((SELECT SUM(length(CAST(c.label AS BLOB))+length(CAST(c.value AS BLOB))) FROM choice_options c WHERE c.step_id=s.id),0)) FROM response_answers a JOIN flow_steps s ON s.revision_id=r.revision_id AND s.stable_id=a.step_id WHERE a.response_id=r.id AND s.question_type='matrix'),0)
       + 12 * COALESCE((SELECT SUM(length(CAST(s.prompt AS BLOB))) FROM flow_steps s WHERE s.revision_id = r.revision_id),0)
       + 12 * COALESCE((SELECT SUM(length(CAST(c.label AS BLOB))+length(CAST(c.value AS BLOB))) FROM response_answers a JOIN flow_steps s ON s.revision_id=r.revision_id AND s.stable_id=a.step_id JOIN json_each(${choiceIdsSql('a.value_json')}) j JOIN choice_options c ON c.step_id=s.id AND c.stable_id=j.value WHERE a.response_id=r.id AND s.question_type IN ('single_choice','dropdown','multiple_choice','priority')),0) AS cost
       FROM responses r JOIN flow_revisions revision ON revision.id = r.revision_id AND revision.flow_id = r.flow_id
@@ -80,7 +82,7 @@ export class ReportingRepository {
     signal?.throwIfAborted()
     const participants = rows.length ? (await this.binding.prepare(`SELECT r.id AS responseId, p.id, p.name_snapshot AS name, p.email_snapshot AS email FROM responses r JOIN invitation_participants p ON p.id = r.participant_id WHERE p.workspace_id = r.workspace_id AND r.id IN (${rows.map(() => '?').join(',')})`).bind(...rows.map(row => row.id)).all<{ responseId: string; id: string; name: string | null; email: string | null }>()).results : []
     signal?.throwIfAborted()
-    const answers = rows.length ? (await this.binding.prepare(`SELECT a.response_id AS responseId, a.step_id AS stepId, s.prompt AS label, s.question_type AS questionType, s.position, s.question_settings_json AS settingsJson, s.required, CASE WHEN length(CAST(a.value_json AS BLOB)) <= 30002 THEN a.value_json ELSE 'null' END AS valueJson
+    const answers = rows.length ? (await this.binding.prepare(`SELECT a.response_id AS responseId, a.step_id AS stepId, s.prompt AS label, s.question_type AS questionType, s.position, s.question_settings_json AS settingsJson, s.required, CASE WHEN s.question_type='matrix' OR length(CAST(a.value_json AS BLOB)) <= 30002 THEN a.value_json ELSE 'null' END AS valueJson
       FROM response_answers a JOIN responses r ON r.id = a.response_id LEFT JOIN flow_steps s ON s.revision_id = r.revision_id AND s.stable_id = a.step_id
       WHERE a.response_id IN (${rows.map(() => '?').join(',')}) ORDER BY s.position`).bind(...rows.map((row) => row.id)).all<{ responseId: string; stepId: string; label: string; position: number; questionType: string; settingsJson: string | null; required: number; valueJson: string }>()).results : []
     signal?.throwIfAborted()
@@ -88,7 +90,7 @@ export class ReportingRepository {
       SELECT id,revision_id FROM responses WHERE id IN (${rows.map(()=>'?').join(',')})),
       selected_questions AS (SELECT DISTINCT r.revision_id,a.step_id FROM response_answers a JOIN selected_responses r ON r.id=a.response_id),
       selected_choices AS (SELECT DISTINCT r.revision_id,a.step_id,j.value FROM response_answers a JOIN selected_responses r ON r.id=a.response_id JOIN json_each(${choiceIdsSql('a.value_json')}) j)
-      SELECT c.stable_id AS id, CASE WHEN picked.value IS NOT NULL THEN c.label END AS label, CASE WHEN picked.value IS NOT NULL THEN c.value END AS value, s.stable_id AS stepId,s.revision_id AS revisionId
+      SELECT c.stable_id AS id, CASE WHEN picked.value IS NOT NULL OR s.question_type='matrix' THEN c.label END AS label, CASE WHEN picked.value IS NOT NULL OR s.question_type='matrix' THEN c.value END AS value, s.stable_id AS stepId,s.revision_id AS revisionId
       FROM choice_options c JOIN flow_steps s ON s.id=c.step_id JOIN selected_questions q ON q.revision_id=s.revision_id AND q.step_id=s.stable_id
       LEFT JOIN selected_choices picked ON picked.revision_id=s.revision_id AND picked.step_id=s.stable_id AND picked.value=c.stable_id`).bind(...rows.map(row=>row.id)).all<{id:string;label:string|null;value:string|null;stepId:string;revisionId:string}>()).results : []
     signal?.throwIfAborted()
@@ -123,6 +125,13 @@ export class ReportingRepository {
         if (label === undefined) throw new Error('A retained answer is missing its published choice label')
         return label
       }
+      if (questionType === 'matrix') {
+        const answers = value as Record<string, string | string[]>
+        return matrixRows(settings).filter(row => Object.hasOwn(answers, row.id)).map(row => {
+          const selected = answers[row.id]
+          return `${row.label}: ${Array.isArray(selected) ? selected.map(label).join(', ') : label(selected)}`
+        }).join('\n')
+      }
       if (isOtherAnswer(value)) return value.choiceIds.map(id => `${label(id)}${id === settings.otherChoiceId ? `: ${value.otherText}` : ''}`).join('\n')
       if (['single_choice', 'multiple_choice', 'dropdown', 'priority'].includes(questionType)) return Array.isArray(value) ? value.map((id, index) => `${questionType === 'priority' ? `${index + 1}. ` : ''}${label(id)}`).join('\n') : label(value)
       if (questionType === 'yes_no') return booleanAnswer(value) ? 'Yes' : 'No'
@@ -154,7 +163,7 @@ export class ReportingRepository {
 
   async revisionComparison(workspaceId: string, flowId: string, offset = 0) {
     const revisions = (await this.binding.prepare(`SELECT v.id, v.number, v.is_current AS isCurrent, COUNT(r.id) AS releasedResponses,
-      32768 + 12 * COALESCE((SELECT SUM(length(CAST(s.prompt AS BLOB)) + COALESCE((SELECT SUM(length(CAST(c.label AS BLOB))+128) FROM choice_options c WHERE c.step_id=s.id),0)) FROM flow_steps s WHERE s.revision_id=v.id),0) AS bytes FROM flow_revisions v
+      32768 + 12 * COALESCE((SELECT SUM(length(CAST(s.prompt AS BLOB)) + CASE WHEN s.question_type='matrix' THEN 50 * (length(CAST(s.question_settings_json AS BLOB)) + COALESCE((SELECT SUM(length(CAST(c.label AS BLOB))+128) FROM choice_options c WHERE c.step_id=s.id),0)) ELSE 0 END + COALESCE((SELECT SUM(length(CAST(c.label AS BLOB))+128) FROM choice_options c WHERE c.step_id=s.id),0)) FROM flow_steps s WHERE s.revision_id=v.id),0) AS bytes FROM flow_revisions v
       JOIN flows f ON f.id = v.flow_id LEFT JOIN responses r ON r.revision_id = v.id AND r.state = 'released' AND r.workspace_id = f.workspace_id AND r.flow_id = f.id
       WHERE f.id = ? AND f.workspace_id = ? AND v.state = 'published' GROUP BY v.id ORDER BY v.number DESC`).bind(flowId,workspaceId).all<{id:string;number:number;isCurrent:number;releasedResponses:number;bytes:number}>()).results
     const groups = new Map<string, { id: string; versions: Array<Awaited<ReturnType<ReportingRepository['questionReport']>>[number] & { eligibleResponses: number }> }>()
