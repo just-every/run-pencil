@@ -1,0 +1,24 @@
+.saved-reports { margin-block: 28px; font-size: 15px; }
+.saved-reports > summary { cursor: pointer; font-size: 20px; font-weight: 600; }
+.report-form { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,220px),1fr)); gap: 16px; align-items: end; margin-block: 20px; }
+.report-form .inspector-field { margin: 0; min-width: 0; }
+.report-form fieldset { border: 1px solid var(--line); border-radius: 10px; padding: 12px; min-width: 0; }
+.report-form fieldset label { display: flex; gap: 8px; align-items: center; padding: 5px 0; }
+.report-list { display: grid; gap: 8px; padding: 0; list-style: none; }
+.report-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; }
+.report-list li > span { flex: 1; min-width: 160px; }
+.report-provenance { color: var(--subtle); font-size: 14px; overflow-wrap: anywhere; }
+.saved-report { margin-top: 24px; min-width: 0; }
+.saved-report > h2 { margin-bottom: 8px; }
+.report-cohort, .report-cross, .report-boundary { margin-block: 20px; }
+.report-response-count strong { font-size: 26px; margin-left: 8px; }
+.report-charts { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,260px),1fr)); gap: 16px; }
+.report-question { padding: 20px; border: 1px solid var(--line); border-radius: 12px; min-width: 0; }
+.report-question h4 { margin: 0 0 12px; font-size: 19px; }
+.report-bucket { margin-block: 14px; display: grid; gap: 8px; }
+.report-bucket strong { font-size: 14px; }
+.report-link { overflow-wrap: anywhere; }
+.shared-report-shell { max-width: 1100px; margin-inline: auto; padding: 40px 28px; min-height: 100vh; font-size: 15px; }
+.shared-report-shell h1 { font-size: 24px; }
+.shared-report-shell .report-form { max-width: 440px; }
+@media (max-width: 600px) { .shared-report-shell { padding: 24px 18px; } .report-question { padding: 16px; } }

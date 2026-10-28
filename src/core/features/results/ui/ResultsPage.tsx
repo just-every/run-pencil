@@ -1,3 +1,4 @@
+import { SavedReports, type ReportCrossSelection } from './SavedReports'
 import { ResultMetrics } from './ResultMetrics'
 import { DeviceSplit } from './DeviceSplit'
 import type { DeviceReport } from '../../reporting'
@@ -18,6 +19,7 @@ import { LoadProblem } from '../../../app/ui/LoadProblem'
 
 export function ResultsPage() {
   const { flowId } = useParams({ from: '/app/flows/$flowId/results' })
+  const [crossing, setCrossing] = useState<ReportCrossSelection>()
   const [results, setResults] = useState<FlowResults>()
   const [comparing, setComparing] = useState(false)
   const [questions, setQuestions] = useState<QuestionReport[]>([])
@@ -85,7 +87,8 @@ export function ResultsPage() {
       <p className="muted">Traffic panel: revision {results.revision.number}. Its view-based rates are unfiltered by response filters.</p>
       <TrafficPanel key={`traffic:${results.revision.id}`} flowId={flowId} revisionId={results.revision.id} />
       <CollectorComparison flowId={flowId} />
-      {revisions.find(revision => revision.id === results.revision.id) ? <CrosstabPanel key={`crosstab:${results.revision.id}`} flowId={flowId} revision={revisions.find(revision => revision.id === results.revision.id)!} questions={questions.filter(question=>question.revisionId===results.revision.id)} /> : null}
+      {revisions.find(revision => revision.id === results.revision.id) ? <CrosstabPanel key={`crosstab:${results.revision.id}`} flowId={flowId} revision={revisions.find(revision => revision.id === results.revision.id)!} questions={questions.filter(question=>question.revisionId===results.revision.id)} onSelection={setCrossing} /> : null}
+      <SavedReports key={`saved:${results.revision.id}`} flowId={flowId} revisionId={results.revision.id} filter={filter} questions={questions.filter(question=>question.revisionId===results.revision.id)} crossing={crossing} />
       <TrendsPanel key={`trends:${results.revision.id}`} flowId={flowId} questions={questions.filter(question=>question.revisionId===results.revision.id)} timeZone={timeZone} revisionId={results.revision.id} />
       <ResponseLedger key={`${results.revision.id}:${refresh}`} flowId={flowId} timeZone={timeZone} questions={questions} filter={filter} onFilterChange={setResponseFilter} onChanged={() => setRefresh((value) => value + 1)} exportSlot={exportSlot} />
       <QuarantineReview key={`quarantine:${results.revision.id}`} revisionId={results.revision.id} timeZone={timeZone} questions={questions} onChanged={() => setRefresh((value) => value + 1)} />

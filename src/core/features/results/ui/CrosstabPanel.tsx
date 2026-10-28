@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { reportingApi, type Ledger, type QuestionReport } from '../../../app/api'
 import type { Crosstab } from '../../reporting'
+import type { ReportCrossSelection } from './SavedReports'
 import './crosstab.css'
 
 type CollectorOption = { id: string; name: string }
@@ -8,7 +9,7 @@ const crossable = ['single_choice', 'dropdown', 'multiple_choice', 'priority', '
 const percent = (value: number) => `${value.toFixed(1)}%`
 
 /** RSLT-006: two dimensions of one revision, with stated shares, ANLY-005 suppression and a chi-square. */
-export function CrosstabPanel({ flowId, revision, questions }: { flowId: string; revision: Ledger['revisions'][number]; questions: QuestionReport[] }) {
+export function CrosstabPanel({ flowId, revision, questions, onSelection }: { onSelection?: (selection: ReportCrossSelection) => void; flowId: string; revision: Ledger['revisions'][number]; questions: QuestionReport[] }) {
   const dimensions = [
     ...questions.filter(question => crossable.includes(question.questionType ?? '')).map(question => ({ key: `question:${question.id}`, label: question.prompt })),
     ...revision.hiddenFields.map(field => ({ key: `hidden:${field.id}`, label: `Hidden field ${field.name}` })),
@@ -21,7 +22,7 @@ export function CrosstabPanel({ flowId, revision, questions }: { flowId: string;
   useEffect(() => { void fetch(`/api/app/flows/${flowId}/collectors`).then(response => response.ok ? response.json() as Promise<CollectorOption[]> : []).then(setCollectors) }, [flowId])
   const load = async (event: FormEvent) => {
     event.preventDefault(); setBusy(true); setError(undefined); setTable(undefined)
-    try { setTable(await reportingApi.crosstab(flowId, { revisionId: revision.id, rows, columns, ...(collectorId ? { collectorId } : {}) })) }
+    try { setTable(await reportingApi.crosstab(flowId, { revisionId: revision.id, rows, columns, ...(collectorId ? { collectorId } : {}) })); onSelection?.({ rows, columns, ...(collectorId ? { collectorId } : {}) }) }
     catch (reason) { setError(reason instanceof Error ? reason.message : 'The crosstab could not load.') } finally { setBusy(false) }
   }
   const select = (label: string, value: string, change: (value: string) => void) => <label className="inspector-field">{label}<select className="text-input" value={value} onChange={event => change(event.target.value)}>{dimensions.map(dimension => <option key={dimension.key} value={dimension.key}>{dimension.label}</option>)}</select></label>

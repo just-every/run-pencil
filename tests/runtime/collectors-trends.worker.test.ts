@@ -5,6 +5,7 @@ import { contract } from '../../src/test/contract'
 import { developmentInbox } from '../helpers/mail-capture.mjs'
 import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { collectDisclosureScenario } from '../disclosure-scenario'
+import { proveSavedReports } from './saved-report-proof'
 import { csvRows } from '../e2e/export-helpers'
 import type { FlowResults, QuestionReport, LedgerResponse, BuilderDraft, Ledger, WorkspaceSettings } from '../../src/core/app/api'
 import type { CollectorService } from '../../src/core/features/collectors'
@@ -22,7 +23,7 @@ beforeAll(async()=>{
   await call('/auth/magic-link',{email:owner!.email});const inbox=await developmentInbox(path=>SELF.fetch('http://localhost'+path,{headers:{Host:'localhost',...devKeyHeaders}}),owner!.email)
   const login=await request('/auth/confirm',{token:inbox.messages[0].magicLinkToken});expect(login.status).toBe(303);cookie=login.headers.get('set-cookie')!.split(';')[0]
 })
-contract(['DIST-017','RSLT-007','RSLT-006','LEDG-005'],'named collectors enforce independent atomic limits and retain attribution in zoned, revision-marked score trends, exports, RSLT-006 crosstabs with stated shares, chi-square and suppression, and multi-part LEDG-005 XLSX and SAV exports',async()=>{
+contract(['DIST-017','RSLT-007','RSLT-006','LEDG-005','RSLT-008','RSLT-009'],'named collectors enforce independent atomic limits and retain attribution in zoned, revision-marked score trends, exports, RSLT-006 crosstabs with stated shares, chi-square and suppression, and multi-part LEDG-005 XLSX and SAV exports',async()=>{
   const workspace=await call<WorkspaceSettings>('/api/app/workspace')
   await call('/api/app/workspace',{timeZone:'America/New_York',sendingWindowStart:workspace.sendingWindowStart,sendingWindowEnd:workspace.sendingWindowEnd},'PUT')
   const slug='northstar-collector-trends',flow=await call<{id:string}>('/api/app/flows',{title:'Northstar customer feedback',slug}),root=`/api/app/flows/${flow.id}`
@@ -185,4 +186,5 @@ contract(['DIST-017','RSLT-007','RSLT-006','LEDG-005'],'named collectors enforce
   }
   const raw = JSON.parse(new TextDecoder().decode(await exposureExport('json', { revisionId: exposure.revisionId }))) as { responses: LedgerResponse[] }
   expect(raw.responses.map(row => row.id).sort()).toEqual([...exposure.receipts].sort())
+  await proveSavedReports(call, request, env.DB)
 },120000)

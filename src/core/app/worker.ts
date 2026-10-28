@@ -28,6 +28,7 @@ import { DeploymentConfigurationError } from '../platform/config/runtime'
 import { runScheduledMaintenance } from './maintenance'
 import { publicRequestRateLimitResponse } from './public-paths'
 import { registerCodingRoutes } from '../features/coding'
+import { registerSavedReportRoutes } from '../features/reporting/savedRoutes'
 import { registerReportingRoutes } from '../features/reporting/routes'
 import { Hono, type MiddlewareHandler } from 'hono'
 import { HTTPException } from 'hono/http-exception'
@@ -152,6 +153,7 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
   registerAuditRoutes(app)
   registerSubmissionRoutes(app, context => new SubmissionService(context.get('platform').databaseBinding))
   registerCodingRoutes(app)
+  registerSavedReportRoutes(app)
   registerReportingRoutes(app, context => context.get('services'))
   registerCollectorRoutes(app, context => context.get('services'))
   registerQrRoutes(app, context => context.get('services'))
