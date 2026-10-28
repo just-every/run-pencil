@@ -1569,7 +1569,7 @@
       "executable": false
     },
     "scripts/custody-test-saved-reports.mjs": {
-      "sha256": "9cbddd84ca5edd3ad41d0b6fcd0bd39a11691ab3dbc611773e08a2c29178b36c",
+      "sha256": "6b238a0a13f9d949658002970a10d85bfad2cd2894213ea8cb82655372a36c13",
       "executable": false
     },
     "scripts/custody-test-targets.mjs": {
@@ -7533,7 +7533,7 @@
       "executable": false
     },
     "tests/e2e/saved-reports-journey.ts": {
-      "sha256": "ebbe2bdb7dc0b8b4a51e9590389dda465e8450ea0abfa359ec1a1883f17c4a00",
+      "sha256": "c4ab1e301135f5b8d6d51e6aa9018a2c489b7be3f9b430e5de4f9b1a66ce7632",
       "executable": false
     },
     "tests/e2e/script-embed.spec.ts": {

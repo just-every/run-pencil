@@ -122,6 +122,8 @@ export async function savedReportsJourney(page: Page, call: ScenarioCall, slug: 
     expect(await anonymous.cookies()).toEqual([])
     expect(await reader.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     expect(await reader.locator('main').evaluate(root => [...root.querySelectorAll('*')].filter(element => element.textContent?.trim() && element.getClientRects().length).every(element => parseFloat(getComputedStyle(element).fontSize) >= 13))).toBe(true)
+    await publicReport.getByText('About this report’s protection', { exact: true }).click()
+    await expect(publicReport.getByText(/separate links/)).toBeVisible()
     await captureReader('open')
     await call('/api/app/analysis/policies', { autorunEnabled: true, autorunMinimum: 5, selection: 'highest-impact', disclosureThreshold: 1 }, 'PUT')
     await reader.reload(); expect(await (await reader.request.get(base + `/api/public/reports/${shared.token}`)).json()).toEqual(report)

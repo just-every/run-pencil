@@ -61,14 +61,14 @@ export async function savedReportCustody(database, actor) {
   for (const name of ['Synthetic first selection', 'Synthetic second selection']) views.push(await create(`/api/app/flows/${flowId}/saved-views`, { name, revisionId, filter: { search: 'synthetic private identity search' } }));
   const dashboard = await create('/api/app/report-dashboards', { name: 'Synthetic retained order', scope: 'form', flowId, viewIds: views.map(item => item.view.id).reverse() });
   const shares = [];
-  for (const body of [{}, { password: 'synthetic-private-report-password' }]) shares.push(await create(`/api/app/saved-views/${views[0].view.id}/shares`, body));
+  for (const body of [{}, { password: 'synthetic-pencil-28' }]) shares.push(await create(`/api/app/saved-views/${views[0].view.id}/shares`, body));
   assert.equal((await request(app, `/api/public/reports/${shares[0].token}`)).status, 200);
-  const protectedReport = await request(app, `/api/public/reports/${shares[1].token}`, 'POST', { password: 'synthetic-private-report-password' });
+  const protectedReport = await request(app, `/api/public/reports/${shares[1].token}`, 'POST', { password: 'synthetic-pencil-28' });
   assert.equal(protectedReport.status, 200);
   assert.equal((await protectedReport.text()).includes('synthetic private identity search'), false);
   const shareRows = (await database.prepare('SELECT token_hash,password_verifier FROM saved_report_shares WHERE workspace_id=?').bind(actor.workspaceId).all()).results;
   return {
-    secrets: [...shares.map(share => share.token), ...shareRows.flatMap(row => [row.token_hash, row.password_verifier].filter(Boolean)), 'synthetic-private-report-password'],
+    secrets: [...shares.map(share => share.token), ...shareRows.flatMap(row => [row.token_hash, row.password_verifier].filter(Boolean)), 'synthetic-pencil-28'],
     async revoke() {
       for (const share of shares) {
         assert.equal((await request(app, `/api/app/report-shares/${share.share.id}`, 'DELETE')).status, 204);
@@ -87,7 +87,7 @@ export async function savedReportCustody(database, actor) {
       assert.deepEqual(await response.json(), { dashboard, views: [...views].reverse() });
       for (const share of shares) {
         assert.equal((await request(restored, `/api/public/reports/${share.token}`)).status, 404);
-        assert.equal((await request(restored, `/api/public/reports/${share.token}`, 'POST', { password: 'synthetic-private-report-password' })).status, 404);
+        assert.equal((await request(restored, `/api/public/reports/${share.token}`, 'POST', { password: 'synthetic-pencil-28' })).status, 404);
       }
       assert.equal((await transport.prepare('SELECT count(*) n FROM saved_report_shares').first()).n, 0);
     },
