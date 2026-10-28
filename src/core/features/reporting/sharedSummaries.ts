@@ -1,4 +1,5 @@
 import { formSettings } from '../../shared/hiddenFields'
+import { matrixRows } from '../../shared/matrix'
 import { crossableQuestionTypes, dimensionCategories } from './crosstabDimensions'
 import { resolveSharedDimension } from './sharedDimensions'
 import { responseScope } from './scope'
@@ -9,11 +10,13 @@ import { sharedQuestionCounts } from './sharedQuestionCounts'
 export async function aggregateDimensions(db: D1Database, workspaceId: string, flowId: string, revisionId: string, cutoff: string, codeKeys: string[] = []) {
   const [revision, questions] = await Promise.all([
     db.prepare("SELECT form_settings_json AS json FROM flow_revisions WHERE id=? AND flow_id=? AND state='published'").bind(revisionId, flowId).first<{ json: string }>(),
-    db.prepare("SELECT stable_id AS id,question_type AS type FROM flow_steps WHERE revision_id=? AND kind='question' ORDER BY position").bind(revisionId).all<{ id: string; type: string }>(),
+    db.prepare("SELECT stable_id AS id,question_type AS type,question_settings_json AS settingsJson FROM flow_steps WHERE revision_id=? AND kind='question' ORDER BY position").bind(revisionId).all<{ id: string; type: string; settingsJson: string | null }>(),
   ])
   const settings = formSettings(revision?.json)
   const permitted = [
-    ...questions.results.filter(question => crossableQuestionTypes.includes(question.type)).map(question => `question:${question.id}`),
+    ...questions.results.flatMap(question => question.type === 'matrix'
+      ? matrixRows(JSON.parse(question.settingsJson ?? '{}')).map(row => `matrix:${question.id}:${row.id}`)
+      : crossableQuestionTypes.includes(question.type) ? [`question:${question.id}`] : []),
     ...settings.hiddenFields.filter(field => !['identifying', 'click_id'].includes(field.category)).map(field => `hidden:${field.id}`),
     ...(settings.calculations ?? []).map(calculation => `variable:${calculation.id}`),
     ...codeKeys,
