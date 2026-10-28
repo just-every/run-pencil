@@ -1,3 +1,5 @@
+import { pencilAgentDoor, isAgentDoorPath } from './agent-door/index.server'
+import { pencilPeople } from './agent-door/people'
 import { registerChatRoutes } from '../features/chat-integrations'
 import { registerGoogleRoutes } from '../features/google-sheets'
 import { registerSmsRoutes } from '../features/sms'
@@ -82,6 +84,17 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
     await next()
   })
 
+  app.use('*', async (context, next) => {
+    if (!isAgentDoorPath(context.req.path)) return next()
+    try {
+      const response = await pencilAgentDoor(context.get('platform'), context.get('services')).handle(context.req.raw)
+      if (response) return response
+    } catch {
+      return context.json({ code: 'agent_door_unavailable' }, 503)
+    }
+    return next()
+  })
+
   const enforcePublicRateLimit: MiddlewareHandler<WorkerEnvironment> = async (context, next) => {
     const denied = await publicRequestRateLimitResponse(context.req.raw, context.get('services').responses)
     if (denied) return denied
@@ -90,6 +103,23 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
 
   app.use('*', enforcePublicRateLimit)
   app.use('/api/public/*', opaqueEmbedCors)
+
+  app.use('*', async (context, next) => {
+    await next()
+    const match = /^\/api\/app\/flows(?:\/([A-Za-z0-9_-]+))?(?:\/(draft(?:\/.*)?|duplicate|publish|close|reopen|archive))?$/.exec(context.req.path)
+    if (!match || !isCookieMutation(context.req.method) || context.res.status < 200 || context.res.status >= 300) return
+    let body: { id?: string; kind?: string } = {}
+    if (context.res.headers.get('content-type')?.includes('application/json')) body = await context.res.clone().json()
+    if (body.kind === 'conflict' || body.kind === 'invalid') return
+    const session = context.get('operatorSession')
+    if (!session) return
+    const services = context.get('services'), platform = context.get('platform')
+    const person = await pencilPeople(platform.databaseBinding, services.auth).read(session.operatorId)
+    const formId = body.id ?? match[1]
+    if (!person || !formId) return
+    const type = match[2] === 'publish' ? 'form.published' : match[2] === 'close' ? 'form.closed' : 'form.draft-changed'
+    await pencilAgentDoor(platform, services).door.emit({ type, uri: `pencil://forms/${formId}`, person })
+  })
 
 
   app.get('/health', async (context) => {

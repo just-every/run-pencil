@@ -2,6 +2,8 @@
 
 Pencil's product guarantees. Every clause has a stable ID. `rer verify` reports runtime coverage and explicit deferrals under the first-release profile; `pnpm verify:contract:full` retains every TODO obligation. Security, privacy, and operational guarantees are in `BASELINE.md`; a clause here may supersede one of them by naming its `BASE-` ID (WS-003 supersedes `BASE-SECRET-002` for optional externals; BRAND-001 supersedes `BASE-INPUT-003` for public business logos). Capacity and rate limits are in `seed.json → limits`. Times are p95 at those limits. Clauses marked *Policy* have a default that buyers may replace through the named extension point.
 
+The shared agent transport's retained event tool inherits `BASE-AGENT-010`. The currently wired native subset and its limits are declared in `agent-surface.json`; this reference does not complete any Agent target clause.
+
 ## Run and first setup
 
 Use the rer installation route in README.md, then `rer dev`; it prepares a local owner automatically. `rer setup --owner-email EMAIL --owner-name NAME` is optional when choosing local owner details. Open the private one-click RER_OPEN link. A fresh owner finishes the business name and IANA time zone at `/setup`; other app routes send an unfinished owner there. Finished setup enters the app, and established workspaces retain their completed state. Setup preserves existing owner, data and exact private settings, then exits with no app running. Native authentication and session policy follow BASELINE.md. Use `rer describe` for verification, reset, data movement and owner deployment commands; OPERATIONS.md records their effects.
