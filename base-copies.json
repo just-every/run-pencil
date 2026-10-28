@@ -13,29 +13,6 @@
       }
     },
     {
-      "path": ".github/workflows/verify.yml",
-      "originPath": "export/verify.yml",
-      "revision": "7ce44fa5b70b68b21d270ba54760dae28b4a37a7",
-      "files": {
-        ".github/workflows/verify.yml": "09fe6d2a0b274d4925950ef0ddde9c8c7099e15edb5333a601ead2bbcec73a86"
-      },
-      "modes": {
-        ".github/workflows/verify.yml": "100644"
-      },
-      "originFiles": [
-        "export/verify.yml"
-      ],
-      "adapted": {
-        ".github/workflows/verify.yml": "7ce44fa5b70b68b21d270ba54760dae28b4a37a7"
-      },
-      "acknowledged": {
-        ".github/workflows/verify.yml": {
-          "sha256": "1b5ca85c40d5a3e41ba2cc6e3a271684009bbe581b7a277ccc600d5dcb54075e",
-          "mode": "100644"
-        }
-      }
-    },
-    {
       "path": "SEED-COMMAND-CONTRACT.md",
       "originPath": "export/SEED-COMMAND-CONTRACT.md",
       "revision": "9d371985250abd531495a9d8752e1c291a778308",
