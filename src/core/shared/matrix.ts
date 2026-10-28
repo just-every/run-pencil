@@ -21,7 +21,7 @@ export function matrixAnswerIssue(settings: Record<string, unknown>, choices: st
   const answer = value as Record<string, unknown>, rows = matrixRows(settings)
   if (Object.keys(answer).some(id => !rows.some(row => row.id === id))) return 'This matrix answer contains an unknown row.'
   for (const row of rows) {
-    const selected = answer[row.id]
+    const selected = Object.hasOwn(answer, row.id) ? answer[row.id] : undefined
     if (selected === undefined || selected === null || Array.isArray(selected) && !selected.length) {
       if (required) return `Choose an answer for “${row.label}”.`
       if (selected !== undefined) return `Omit unanswered row “${row.label}”.`

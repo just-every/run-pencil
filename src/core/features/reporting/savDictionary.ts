@@ -31,7 +31,8 @@ function questionVariables(question: InventoryQuestion): SavVariable[] {
   const other = question.choices.length && question.settings.otherChoiceId !== undefined ? [{ name: `${name}_other`, label: `${prompt}: Other text`, string: true, bound: `other:${question.key}`, read: (row: LedgerResponse) => { const value = answerOf(row, question)?.value; return isOtherAnswer(value) ? value.otherText : '' } }] : []
   if (type === 'matrix') return (question.matrixRows ?? []).map(matrixRow => ({ name: `${question.id}.${matrixRow.id}`, label: `${prompt}: ${matrixRow.label}`, string: true, bound: `matrix:${question.key}\0${matrixRow.id}`,
     read: (row: LedgerResponse) => {
-      const value = (answerOf(row, question)?.value as Record<string, string | string[]> | undefined)?.[matrixRow.id]
+      const answer = answerOf(row, question)?.value as Record<string, string | string[]> | undefined
+      const value = answer && Object.hasOwn(answer, matrixRow.id) ? answer[matrixRow.id] : undefined
       return value === undefined ? '' : Array.isArray(value) ? JSON.stringify(value) : value
     } }))
   if (type === 'single_choice' || type === 'dropdown') return [{ name, label: prompt, string: false, valueLabels: question.choices.map(choice => [choice.code, choice.label]), read: row => {

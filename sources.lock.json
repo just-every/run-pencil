@@ -5801,7 +5801,7 @@
       "executable": false
     },
     "src/core/features/reporting/matrixReport.ts": {
-      "sha256": "68f024049a44388c14a38c7772403463ba171da0942ef99126fdabd7ad100ee6",
+      "sha256": "aa210533bae6ceb1cf798e27a580070db051db50f0e46f2a40bf38b75bef9bdb",
       "executable": false
     },
     "src/core/features/reporting/matrixValidity.ts": {
@@ -5825,7 +5825,7 @@
       "executable": false
     },
     "src/core/features/reporting/savDictionary.ts": {
-      "sha256": "f3e1b0e8429e4e50b725d56526dc8de4858f8da908e4d1abe1dcada0ac0b3995",
+      "sha256": "30ab9abe5afaee5851e6244eff8ce56206f6f77a3d9a83d3569b18a7ac7c33aa",
       "executable": false
     },
     "src/core/features/reporting/savWriter.ts": {
@@ -6761,7 +6761,7 @@
       "executable": false
     },
     "src/core/shared/matrix.ts": {
-      "sha256": "47556632579606c9abbfe23bc44a016a4e6752c9475d345adadf4a3e23148ff4",
+      "sha256": "d149ac31aa8bfb5bf7f365975fc797e027c57134756b62bcdcbc204a6ce4bc2d",
       "executable": false
     },
     "src/core/shared/otherChoices.ts": {
@@ -7365,7 +7365,7 @@
       "executable": false
     },
     "tests/e2e/matrix-journey.ts": {
-      "sha256": "15a284e3912f9277a97bc18b96eda27a6aff9398ac6ab75cee570e48d2bcca05",
+      "sha256": "c123f06ba4efe84f9252cb411a86cf9d3355d8fe80e4203c899aede8349ce184",
       "executable": false
     },
     "tests/e2e/new-question-types.spec.ts": {
@@ -8021,7 +8021,7 @@
       "executable": false
     },
     "tests/runtime/matrix-scenario.ts": {
-      "sha256": "f5a7eb14a4dd3f20bb450540e1d77adf3926a870c967b96e637d691e93482f20",
+      "sha256": "7da189e7a92c561c28910c2e94496ec23839ecb657d6cfddbf547b6ba5df9bf6",
       "executable": false
     },
     "tests/runtime/new-question-types.worker.test.ts": {

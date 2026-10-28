@@ -18,7 +18,7 @@ export function matrixSummary(settings: Record<string, unknown>, choices: Array<
 export function summarizeMatrixAnswers(settings: Record<string, unknown>, choices: Array<{ id: string; label: string }>, values: unknown[]): MatrixRowSummary[] {
   for (const value of values) if (matrixAnswerIssue(settings, choices.map(choice => choice.id), value, false)) throw new Error('Invalid stored matrix answer')
   return matrixRows(settings).map(row => {
-    const answers = values.map(value => (value as Record<string, string | string[]>)[row.id]).filter(value => value !== undefined)
+    const answers = values.map(value => Object.hasOwn(value as object, row.id) ? (value as Record<string, string | string[]>)[row.id] : undefined).filter(value => value !== undefined)
     return { ...row, answered: answers.length, multipleSelect: matrixMultiple(settings),
       distribution: choices.map(choice => ({ value: choice.id, label: choice.label, count: answers.filter(value => Array.isArray(value) ? value.includes(choice.id) : value === choice.id).length })) }
   })

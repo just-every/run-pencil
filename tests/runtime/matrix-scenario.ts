@@ -31,7 +31,7 @@ export async function matrixScenario() {
   const scale = ['Strongly disagree', 'Disagree', 'Neutral', 'Agree', 'Strongly agree'].map((label, index) => ({ label, value: String(index + 1) }))
   const add = async (step: unknown) => call(root + '/draft/steps', { expectedVersion: (await read()).flow.draftVersion, step })
   await add({ kind: 'question', questionType: 'matrix', prompt: 'Rate your experience', required: true, questionSettings: { matrixRows: rows, matrixMode: 'likert5' }, choices: scale })
-  await add({ kind: 'question', questionType: 'matrix', prompt: 'What helped?', required: false, questionSettings: { matrixRows: rows.slice(0, 2), matrixMode: 'multiple' }, choices: scale })
+  await add({ kind: 'question', questionType: 'matrix', prompt: 'What helped?', required: false, questionSettings: { matrixRows: [...rows.slice(0, 2), { id: 'constructor', label: 'Optional support' }], matrixMode: 'multiple' }, choices: scale })
   await add({ kind: 'completion', questionType: null, prompt: 'Thank you' })
   await add({ kind: 'completion', questionType: null, prompt: 'We will follow up' })
   let draft = await read()
@@ -73,7 +73,7 @@ export async function matrixScenario() {
     [rows[0].id, 29, [9, 5, 5, 5, 5]], [rows[1].id, 29, [9, 5, 5, 5, 5]], [rows[2].id, 29, [0, 0, 29, 0, 0]], [rows[3].id, 29, [0, 0, 29, 0, 0]],
   ])
   const multigrid = report.find(question => question.id === multiple.id)!.summary.matrixRows!
-  expect(multigrid.map(row => [row.answered, row.multipleSelect, row.distribution.map(bucket => bucket.count)])).toEqual([[5, true, [5, 5, 0, 0, 0]], [0, true, [0, 0, 0, 0, 0]]])
+  expect(multigrid.map(row => [row.answered, row.multipleSelect, row.distribution.map(bucket => bucket.count)])).toEqual([[5, true, [5, 5, 0, 0, 0]], [0, true, [0, 0, 0, 0, 0]], [0, true, [0, 0, 0, 0, 0]]])
   const exportBytes = async (format: string) => {
     let { token } = await call<{ token: string }>(root + '/responses/export/start?format=' + format)
     const parts: Uint8Array[] = []
@@ -84,6 +84,7 @@ export async function matrixScenario() {
   const [head, ...records] = csvRows(await exportText('csv'))
   for (const row of rows) expect(head).toContain(`${matrix.id}.${row.id}`)
   for (const row of rows.slice(0, 2)) expect(head).toContain(`${multiple.id}.${row.id}`)
+  expect(head).toContain(`${multiple.id}.constructor`)
   expect(records).toHaveLength(29)
   const original = records.find(record => record[0] === receipts[0].responseId)!
   expect(original[head.indexOf(`${matrix.id}.${rows[0].id}`)]).toBe(options[0].id)
@@ -108,6 +109,8 @@ export async function matrixScenario() {
     const mapping = metadata.find(item => item[metadataHead.indexOf('step_id')] === `${matrix.id}.${row.id}`)!
     expect(savRow[String(mapping[metadataHead.indexOf('sav_variable')])]).toBe(answer(0, 0)[row.id])
   }
+  const optionalMapping = metadata.find(item => item[metadataHead.indexOf('step_id')] === `${multiple.id}.constructor`)!
+  expect(savRow[String(optionalMapping[metadataHead.indexOf('sav_variable')])]).toBe('')
   const { policies } = await call<{ policies: Record<string, unknown> }>('/api/app/analysis')
   await call('/api/app/analysis/policies', { ...policies, disclosureThreshold: 1 }, 'PUT')
   const crossPath = root + '/crosstab?' + new URLSearchParams({ revisionId: published.revision.id, rows: `matrix:${matrix.id}:${rows[0].id}`, columns: `matrix:${matrix.id}:${rows[1].id}` })
