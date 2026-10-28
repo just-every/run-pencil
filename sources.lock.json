@@ -7329,7 +7329,7 @@
       "executable": false
     },
     "tests/e2e/answer-results.spec.ts": {
-      "sha256": "b60c4a462fd4cddf0878b71d48fc9a0c96b1a6dd591fdd7f160f0eab064d95af",
+      "sha256": "a3be728a7e610f2d732f498ab6e0e130c2e75a5e630e5d3dc7fc850483d8b378",
       "executable": false
     },
     "tests/e2e/api-headers.ts": {
@@ -7941,7 +7941,7 @@
       "executable": false
     },
     "tests/results-scenario.ts": {
-      "sha256": "a53cb1212cac791a7289e3a68f17afabe44fb564c50182c8a2d163c8149b0bbd",
+      "sha256": "f9cad4a5a2a550b6caf9be471ef04d7925ab1d5e054e0b27c3e83241e4e71129",
       "executable": false
     },
     "tests/runtime/access-foundation.worker.test.ts": {
