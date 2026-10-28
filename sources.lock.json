@@ -6117,7 +6117,7 @@
       "executable": false
     },
     "src/core/features/results/ui/ReportDashboards.tsx": {
-      "sha256": "772ad65e7e1ed7030f40172877842ffc13c1332f386e19ff14d3847f652ece0f",
+      "sha256": "d1f4eacfe87ddaa6ce8a3db90a309188583da8924d235051023b6ebcc637adef",
       "executable": false
     },
     "src/core/features/results/ui/ReportFigures.tsx": {
@@ -7541,7 +7541,7 @@
       "executable": false
     },
     "tests/e2e/saved-reports-journey.ts": {
-      "sha256": "dcce606d5a7704338b73b2fcfdca5a2e1506da406498f80b8a46b2585468edec",
+      "sha256": "c0feb2c476fb7016d50127fb2da21b40796d3f7bea4d60246f752d85d319e14e",
       "executable": false
     },
     "tests/e2e/script-embed.spec.ts": {

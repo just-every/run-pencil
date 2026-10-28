@@ -73,8 +73,8 @@ export async function savedReportsJourney(page: Page, call: ScenarioCall, slug: 
   await page.reload(); await saved.locator(':scope > summary').click()
   await saved.getByText('Arrange a dashboard', { exact: true }).click()
   await saved.getByLabel('Dashboard name', { exact: true }).fill('Renewal board')
-  await saved.getByRole('group', { name: 'Views in this dashboard' }).getByLabel(created.view.name, { exact: true }).check()
-  await saved.getByRole('group', { name: 'Views in this dashboard' }).getByLabel(second.view.name, { exact: true }).check()
+  await saved.getByRole('group', { name: 'Views in this dashboard' }).locator(`input[value="${created.view.id}"]`).check()
+  await saved.getByRole('group', { name: 'Views in this dashboard' }).locator(`input[value="${second.view.id}"]`).check()
   await saved.getByRole('button', { name: 'Move view 2 earlier', exact: true }).click()
   await saved.getByRole('button', { name: 'Save dashboard', exact: true }).click()
   await expect(saved.getByRole('button', { name: 'New dashboard', exact: true })).toBeVisible()
@@ -83,8 +83,8 @@ export async function savedReportsJourney(page: Page, call: ScenarioCall, slug: 
   await saved.getByRole('button', { name: 'New dashboard', exact: true }).click()
   await saved.getByLabel('Dashboard name', { exact: true }).fill('Program renewal board')
   await saved.getByRole('combobox', { name: 'Dashboard scope', exact: true }).selectOption('program')
-  await saved.getByRole('group', { name: 'Views in this dashboard' }).getByLabel(created.view.name, { exact: true }).check()
-  await saved.getByRole('group', { name: 'Views in this dashboard' }).getByLabel(second.view.name, { exact: true }).check()
+  await saved.getByRole('group', { name: 'Views in this dashboard' }).locator(`input[value="${created.view.id}"]`).check()
+  await saved.getByRole('group', { name: 'Views in this dashboard' }).locator(`input[value="${second.view.id}"]`).check()
   const programSaved = page.waitForResponse(response => new URL(response.url()).pathname === '/api/app/report-dashboards' && response.request().method() === 'POST')
   await saved.getByRole('button', { name: 'Save dashboard', exact: true }).click()
   expect(await (await programSaved).json()).toMatchObject({ scope: 'program', flowId: null, viewIds: [created.view.id, second.view.id] })
@@ -129,7 +129,13 @@ export async function savedReportsJourney(page: Page, call: ScenarioCall, slug: 
     await call('/api/app/analysis/policies', { autorunEnabled: true, autorunMinimum: 5, selection: 'highest-impact', disclosureThreshold: 1 }, 'PUT')
     await reader.reload(); expect(await (await reader.request.get(base + `/api/public/reports/${shared.token}`)).json()).toEqual(report)
     await expect(publicReport.getByText(/suppressed cell would be recoverable/).first()).toBeVisible()
-    const raw = await call<{ responses: Array<{ id: string }> }>(scenario.path + '/responses/export?' + new URLSearchParams(scenario.filter))
+    let { token: exportToken } = await call<{ token: string }>(scenario.path + '/responses/export/start?' + new URLSearchParams({ format: 'json', ...scenario.filter }))
+    let exported = ''
+    while (exportToken) {
+      const part = await page.request.post(scenario.path + '/responses/export', { headers: appHeaders, data: { token: exportToken } })
+      expect(part.status()).toBe(200); exported += await part.text(); exportToken = part.headers()['x-export-next'] ?? ''
+    }
+    const raw = JSON.parse(exported) as { responses: Array<{ id: string }> }
     expect(raw.responses.map(response => response.id).sort()).toEqual([...scenario.exposedIds].sort())
     const operatorCross = await call<{ cells: Array<Array<{ count?: number; suppressed: boolean }>> }>(scenario.path + '/crosstab?' + new URLSearchParams({ revisionId: scenario.revisionId, rows: `question:${scenario.planId}`, columns: `question:${scenario.renewalId}` }))
     expect(operatorCross.cells[2][0]).toMatchObject({ count: 3, suppressed: false })

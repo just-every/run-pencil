@@ -25,7 +25,7 @@ export function ReportDashboards({ flowId, views }: { flowId: string; views: Sav
     <form className="report-form" onSubmit={save}>
       <label className="inspector-field">Dashboard name<input className="text-input" required maxLength={160} value={name} onChange={event => setName(event.target.value)} /></label>
       <label className="inspector-field">Dashboard scope<select className="text-input" value={scope} onChange={event => setScope(event.target.value as 'form' | 'program')}><option value="form">This form</option><option value="program">Program</option></select></label>
-      <fieldset><legend>Views in this dashboard</legend>{availableViews.map(view => <label key={view.id}><input type="checkbox" checked={viewIds.includes(view.id)} onChange={event => setViewIds(current => event.target.checked ? [...current, view.id] : current.filter(id => id !== view.id))} />{view.name}</label>)}</fieldset>
+      <fieldset><legend>Views in this dashboard</legend>{availableViews.map(view => <label key={view.id}><input type="checkbox" value={view.id} checked={viewIds.includes(view.id)} onChange={event => setViewIds(current => event.target.checked ? [...current, view.id] : current.filter(id => id !== view.id))} />{view.name}</label>)}</fieldset>
       <button className="secondary-button focus-ring" type="submit">Save dashboard</button>
       {selected ? <button className="quiet-button focus-ring" type="button" onClick={() => { setSelected(undefined); setName(''); setViewIds([]); setReports([]) }}>New dashboard</button> : null}
     </form>
