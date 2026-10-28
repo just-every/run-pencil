@@ -1,4 +1,4 @@
-import { eraseContact } from '../distribution'
+import { eraseContact } from '../distribution/server'
 import { eraseResponseAndImportCustody } from '../importing/server'
 import { responseErasureStatements } from '../responses'
 import { restoreCheckpoint } from '../../platform/restore/checkpoint'
