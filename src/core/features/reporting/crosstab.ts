@@ -1,11 +1,11 @@
 import { NotFoundError, ValidationError } from '../../shared/errors'
-import { disclosureThreshold } from '../analysis'
+import { disclosureThreshold } from '../analysis/disclosure'
 import { ReportingRepository, type LedgerFilter } from './repository'
 import { responseScope } from './scope'
 import { dimensionCategories, resolveDimension, type Dimension } from './crosstabDimensions'
 import { crosstabTable, type CrosstabCategory } from './crosstabStats'
 
-export type CrosstabRequest = { workspaceId: string; flowId: string; revisionId: string; rows: string; columns: string; filter: LedgerFilter }
+export type CrosstabRequest = { workspaceId: string; flowId: string; revisionId: string; rows: string; columns: string; filter: LedgerFilter; cutoff?: string; thresholdFloor?: number }
 const unanswered: CrosstabCategory = { key: '', label: 'Unanswered', unanswered: true }
 const describe = (dimension: Dimension) => ({ key: dimension.key, kind: dimension.kind, label: dimension.label, questionType: dimension.questionType, multipleSelect: dimension.multipleSelect, note: dimension.note })
 
@@ -21,7 +21,7 @@ export async function crosstab(db: D1Database, input: CrosstabRequest) {
   if (input.filter.revisionId && input.filter.revisionId !== input.revisionId) throw new ValidationError('A crosstab reads one revision. Choose the same revision in the filter.')
   if (input.rows === input.columns) throw new ValidationError('Choose two different dimensions to cross.')
   const [rows, columns] = await Promise.all([resolveDimension(db, input.flowId, input.revisionId, input.rows), resolveDimension(db, input.flowId, input.revisionId, input.columns)])
-  const cutoff = new Date().toISOString()
+  const cutoff = input.cutoff ?? new Date().toISOString()
   const filter = { ...input.filter, revisionId: input.revisionId, offset: undefined }
   const scope = responseScope(input.workspaceId, input.flowId, filter, cutoff, 'released')
   const cte = `WITH scoped AS (SELECT r.id AS rid, r.response_context_json AS ctx FROM responses r WHERE ${scope.where}), a AS (${rows.valueSql}), b AS (${columns.valueSql})`
@@ -47,7 +47,7 @@ export async function crosstab(db: D1Database, input: CrosstabRequest) {
     rowTotals: rowCategories.map(row => rowTotals.get(row.key) ?? 0),
     columnTotals: columnCategories.map(column => columnTotals.get(column.key) ?? 0),
     total: (totalRows.results[0] as { n: number }).n,
-  }, await disclosureThreshold(db, input.workspaceId), rows.multipleSelect || columns.multipleSelect)
+  }, Math.max(input.thresholdFloor ?? 1, await disclosureThreshold(db, input.workspaceId)), rows.multipleSelect || columns.multipleSelect)
   const notes = [...table.notes]
   for (const [side, dimension, totals] of [['Rows', rows, rowTotals], ['Columns', columns, columnTotals]] as const) {
     if (!totals.get('')) notes.push(`${side} (${dimension.label}): Unanswered — none in this selection.`)
