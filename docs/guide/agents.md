@@ -2,7 +2,7 @@
 
 Pencil serves its shared MCP door at `/mcp`. Discovery supports MCP 2026-07-28 and 2025-11-25. The canonical resource metadata is `/.well-known/oauth-protected-resource/mcp`. Signed-in operators can open `/agents` to inspect decisions, reviews and local Pause.
 
-The current registry supports private form preparation:
+The current registry supports native form preparation, Study Studio and form publication under company policy:
 
 | Tool | Native job | Class |
 | --- | --- | --- |
@@ -12,13 +12,27 @@ The current registry supports private form preparation:
 | `pencil.forms.create` | Create a private draft, optionally from a gallery template | standard |
 | `pencil.forms.duplicate` | Copy a form into a new private draft | standard |
 | `pencil.forms.edit` | Edit one draft question at the current native version | standard |
+| `pencil.forms.add_question` | Add a private draft question or screen | standard |
+| `pencil.forms.duplicate_question` | Duplicate a draft question | standard |
+| `pencil.forms.remove_question` | Remove a draft question | standard |
+| `pencil.forms.reorder` | Reorder the current draft screens | standard |
+| `pencil.forms.branches` | Replace the native draft branch graph | standard |
+| `pencil.forms.publish` | Publish the current validated draft | external, live |
+| `pencil.forms.close` | Close a published form | external, live |
+| `pencil.forms.reopen` | Reopen a closed form subject to its native deadline and target | external, live |
+| `pencil.forms.archive` | Archive a draft or published form while retaining history | standard for drafts; external, live for published forms |
+| `pencil.results.read` | Read the current published results | standard |
+| `pencil.studies.list` | Read preparation options and provider readiness | standard |
+| `pencil.studies.generate` | Generate and validate an editable private study using the configured provider | standard, external |
+| `pencil.studies.read` | Read the saved plan, advisory flags and calculated sample size | standard |
+| `pencil.studies.update` | Save the study plan at the native draft version | standard |
 | `pencil.forms.preview` | Evaluate a draft path without collecting a response | standard |
 | `pencil.workspace.read` | Read the saved form workspace | standard |
 | `pencil.events.list` | Read retained visible events | standard |
 
-Form jobs require `pencil:forms`; events require `events:read`. `pencil://forms/{id}` reads the native draft under the same person visibility and company read policy. Form text is untrusted. Missing and inaccessible forms have the same result.
+Form and result jobs require `pencil:forms`; Studio jobs require `pencil:studies`; events require `events:read`. `pencil://forms/{id}` reads the native draft under the same person visibility and company read policy. Form text is untrusted. Missing and inaccessible forms have the same result.
 
-Writes require an `idempotency_key`. Reusing it with different arguments conflicts. `expected_revision` can bind a write to the draft version returned by `pencil.forms.read`. Native version conflicts keep the saved draft unchanged. A duplicate's editable copy has new native record IDs. An omitted slug receives a fresh `study-` address. No draft operation publishes it.
+Writes require an `idempotency_key`. Reusing it with different arguments conflicts. `expected_revision` can bind a draft write to the native draft version returned by `pencil.forms.read`. Lifecycle writes accept its opaque `lifecycleRevision`; Study Studio updates accept the version from `pencil.studies.read`. Native version conflicts keep the saved draft unchanged. A duplicate's editable copy has new native record IDs. An omitted slug receives a fresh `study-` address. No draft operation publishes it.
 
 Business sends signed settings to `/api/rer/business-settings` and signed company policy to `/api/rer/agent-policy`. An access token's subject binds through the settings owner's `owner_id` or an existing teammate's Business `id`, then through Pencil's current authentication link to its product operator ID. Token email does not select an account. Removal, inactivity or a missing native link denies access. Existing accounts remain in their native workspace.
 
@@ -26,8 +40,8 @@ Pencil currently has equal native operators. Team reconciliation binds existing 
 
 The company chooses the disposition for every declared class. Missing policy, unanswered classes, expiration, blocked policy and Pause refuse agent work. Review and approval use Base's person doors; an agent token cannot act as a person's decision. Draft history identifies the agent for its sponsor, and real approvers remain separate from the preparer. Private reads and refusals are retained in the door audit.
 
-Publication, invitations, analysis/provider requests, payments/refunds, integrations, response changes, authority management and action verdicts are outside this initial registry. They remain available through their existing native doors. The native study-to-action workflow is not yet completely exposed to company agents. Scheduled delivery additionally needs durable consent and scope custody at its final admission; the current shared callback and embedded-invoke API do not carry that consent. No queued agent execution or substitute provider implementation is shipped here.
+Invitations, response analysis, payments/refunds, integration changes, response changes, authority management and action verdicts are outside this registry. They remain available through their existing native doors. The native study-to-action workflow is not yet completely exposed to company agents. Scheduled delivery additionally needs durable consent and scope custody at its final native admission. The copied door supports consent on embedded invocation; each native queue must retain and recheck it before agent scheduling can be exposed. No queued agent execution or substitute provider implementation is shipped here.
 
-The registry declares no provider cost and reaches no outbound provider, so its conformance journey needs no network-edge module. The shared door does not enforce provider spend caps. Import preview/apply/undo remains the reviewed import door; respondent, browser and device interactions keep their own native admission.
+The registry declares no provider cost. Study generation uses the installation's existing AI connection and native validation; absent or broken configuration remains unavailable. The conformance journey configures that connection through the native person API and uses a declared isolated OpenAI network edge. It proves native request/response handling, not provider quality or live availability. The shared door does not enforce provider spend caps. Import preview/apply/undo remains the reviewed import door; respondent, browser and device interactions keep their own native admission.
 
 Backups retain agent audit, event and idempotency history. Signed policy, Business identity bindings, pending approvals/reviews and active agent registration are excluded. After restoration, establish current identity and policy again; restoration cannot execute held work.

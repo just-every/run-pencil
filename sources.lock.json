@@ -829,7 +829,7 @@
       "executable": false
     },
     "agent-surface.json": {
-      "sha256": "a3c2d08f8f9a1e365d2dd38f05fcdd6cc2dc60852d493c0a0a2bb545e788bd1e",
+      "sha256": "e6b491ff43da0bafcc6526940f59c026462e48c7ffbbe35261a2984fd2b6e8b3",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -1033,7 +1033,7 @@
       "executable": false
     },
     "docs/guide/agents.md": {
-      "sha256": "82121d2e05dc4bc8350ba7bb8c0e32eedeb35a36da402c1593003db819bc2ef2",
+      "sha256": "ff059f09782aa3d5ff4df03e3bece2559912c2b181746c393f6031709c7e7377",
       "executable": false
     },
     "docs/guide/analysis.md": {
@@ -2081,7 +2081,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "48736f65710eed627f0a4b83c2b9ddcb1561db3d474f89082a066d14aaf90292",
+      "sha256": "72a120eaf47cf48d289a538228230ae2f81376da763f01796d6d2a8bfa612a26",
       "executable": false
     },
     "src/base/agent-door/admission.ts": {
@@ -4136,12 +4136,24 @@
       "sha256": "f4557db5ddee2447178ec263f670cc64a8b607f09ed636d11b8411567d550be7",
       "executable": false
     },
+    "src/core/app/agent-door/form-context.ts": {
+      "sha256": "14f874352baf5ebd05b02cebd01a28385fa614afb3df95fadb3d53436a726954",
+      "executable": false
+    },
+    "src/core/app/agent-door/form-lifecycle.ts": {
+      "sha256": "ba28e8e8b46ec56de576e84502868333c4e0bcca334891aa1dbbf7be87e31dea",
+      "executable": false
+    },
+    "src/core/app/agent-door/form-structure.ts": {
+      "sha256": "788ba248336626372b7784eb376e01a620cd91448275516eecad594b237785db",
+      "executable": false
+    },
     "src/core/app/agent-door/forms.ts": {
-      "sha256": "75a09389a406c4de8ab9f447d9088cab840136b977886c81d8d7f987e6dc83fb",
+      "sha256": "9952853540b6742245243a0a38278f01bea1a52d847b30652298156bd1c567b7",
       "executable": false
     },
     "src/core/app/agent-door/index.server.ts": {
-      "sha256": "e0616e75d5d42a06286331fe211de9ef61e8a52ec8843cb1a87b0952e806e05e",
+      "sha256": "029af6566ac7d31524c0eaf9422a96c6e4cb5370a8e18af3b5c2880cb0279ff1",
       "executable": false
     },
     "src/core/app/agent-door/native.ts": {
@@ -4153,7 +4165,11 @@
       "executable": false
     },
     "src/core/app/agent-door/resources.ts": {
-      "sha256": "01e4b3e023e49f7c495bc96f64ff809c1c202afe0a21407ca5cbd6bed6b97b3a",
+      "sha256": "5b9f2a957dc5b3f58678520732b65569af68e354a331acd83b38ec7687556edf",
+      "executable": false
+    },
+    "src/core/app/agent-door/studies.ts": {
+      "sha256": "c254b751593c1cbb91e3db2871784d68b8342a9fcd06c8c567e58be837a8e77a",
       "executable": false
     },
     "src/core/app/api.ts": {
@@ -5157,7 +5173,7 @@
       "executable": false
     },
     "src/core/features/flows/repository.ts": {
-      "sha256": "7b65ed41bcc4d74815468636bd43b6222cb3daa398f2a120b0e4b1932c8f4c2f",
+      "sha256": "16e7a01e082704839f835fae3038d21d2d8a9a1777aed85f3dbd388eafd09f52",
       "executable": false
     },
     "src/core/features/flows/routes.ts": {
@@ -5181,11 +5197,11 @@
       "executable": false
     },
     "src/core/features/flows/service.ts": {
-      "sha256": "3311b6f320d445cba78c261a52edde907b15100471cd6386a5c03c1ce75c530a",
+      "sha256": "f28478aeb4ff645b372449771b447d27afcc11ad0e0fd56b9ac5a5d93028579d",
       "executable": false
     },
     "src/core/features/flows/structure.ts": {
-      "sha256": "771fd6eb4352c3ade355697b150ad33172436dde6a1630f81dec0a10e647df9f",
+      "sha256": "d5722e8a75368a0ca3e6dbb05d6bbe4b9e73c3fbabcc6a206188c7a8874b69bd",
       "executable": false
     },
     "src/core/features/flows/team-templates.ts": {
@@ -6665,7 +6681,7 @@
       "executable": false
     },
     "src/core/features/studio/service.ts": {
-      "sha256": "82fe6cad7612ecf6e0f4f0e006d449f3a53d6b55513dc03540179d7088da5c8c",
+      "sha256": "7e9a3f8e10edf0cf9d039c914cf9717672f75072f66a6d10399d0a92f7c2651e",
       "executable": false
     },
     "src/core/features/studio/ui/api.ts": {
@@ -7474,6 +7490,14 @@
     },
     "tests/admission/owner-editor.spec.ts": {
       "sha256": "05c6dc27a3b045f13e77b0f8f3675610ce571b2e507d44b30ca194c3c954a12d",
+      "executable": false
+    },
+    "tests/agent-surface/owner.mjs": {
+      "sha256": "0f548c553bf6df893010e12321168081ee4bae78c05caac5aabdba61757844f2",
+      "executable": false
+    },
+    "tests/agent-surface/provider.mjs": {
+      "sha256": "9f8b0a3fe0d657699811945234e42a35a46887a278784ffca7f7eed6580e7a05",
       "executable": false
     },
     "tests/contract/data-release.contract.test.ts": {

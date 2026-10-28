@@ -31,7 +31,9 @@ export function workspaceWitness(db: D1Database, services: PencilServices): Tool
       const who = await nativeScope(db, services, ctx.person.id)
       const forms = await services.flows.listDashboard(who.workspaceId)
       const drafts = await Promise.all(forms.map(form => services.flows.getBuilderDraft(who.workspaceId, form.id)))
-      return { result: { forms: drafts.sort((a, b) => a.flow.id.localeCompare(b.flow.id)) } }
+      const calls = await db.prepare(`SELECT id,feature,provider_origin AS provider,model,outcome,error_code AS error,input_tokens,output_tokens,cost_microusd,receipt_id,created_at
+        FROM analysis_calls WHERE workspace_id=? ORDER BY id`).bind(who.workspaceId).all()
+      return { result: { forms: drafts.sort((a, b) => a.flow.id.localeCompare(b.flow.id)), providerCalls: calls.results } }
     },
   }
 }

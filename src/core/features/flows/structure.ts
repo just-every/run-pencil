@@ -1,10 +1,12 @@
 import type { flows, flowRevisions, flowSteps, choiceOptions, flowBranchRules } from '../../platform/db/schema'
-export type FlowStructure = { audit?: {id:string;operatorId:string;feature:string;details?:Record<string,unknown>}; flow: typeof flows.$inferInsert; revision: typeof flowRevisions.$inferInsert; steps?: Array<typeof flowSteps.$inferInsert>; choices?: Array<typeof choiceOptions.$inferInsert>; rules?: Array<typeof flowBranchRules.$inferInsert> }
+export type FlowStructure = { source?: {id:string;version:number}; audit?: {id:string;operatorId:string;feature:string;details?:Record<string,unknown>}; flow: typeof flows.$inferInsert; revision: typeof flowRevisions.$inferInsert; steps?: Array<typeof flowSteps.$inferInsert>; choices?: Array<typeof choiceOptions.$inferInsert>; rules?: Array<typeof flowBranchRules.$inferInsert> }
 export async function createFlowStructure(binding: D1Database, input: FlowStructure) {
   const f = input.flow, r = input.revision
   const statements = [
     binding.prepare(`INSERT INTO flows (id, workspace_id, slug, title, status, draft_version, last_activity_at, created_at, updated_at)
-      SELECT ?, ?, ?, ?, 'draft', 0, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM flows WHERE slug = ?) ON CONFLICT(workspace_id, slug) DO NOTHING RETURNING id`).bind(f.id, f.workspaceId, f.slug, f.title, f.lastActivityAt, f.createdAt, f.updatedAt, f.slug),
+      SELECT ?, ?, ?, ?, 'draft', 0, ?, ?, ? WHERE NOT EXISTS (SELECT 1 FROM flows WHERE slug = ?)
+      AND (? IS NULL OR EXISTS (SELECT 1 FROM flows source WHERE source.id = ? AND source.workspace_id = ? AND source.draft_version = ?))
+      ON CONFLICT(workspace_id, slug) DO NOTHING RETURNING id`).bind(f.id, f.workspaceId, f.slug, f.title, f.lastActivityAt, f.createdAt, f.updatedAt, f.slug, input.source?.id ?? null, input.source?.id ?? null, f.workspaceId, input.source?.version ?? null),
     binding.prepare(`INSERT INTO flow_revisions (id, flow_id, number, state, title, published_at, is_current, admission_closed_at, admission_close_reason, deadline_at, deadline_time_zone, target_completed_responses, policy_snapshot_json, form_settings_json, created_at, updated_at)
       SELECT ?, ?, 1, 'draft', ?, NULL, 0, NULL, NULL, NULL, NULL, NULL, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM flows WHERE id = ?)`).bind(r.id, f.id, r.title, r.policySnapshotJson ?? null, r.formSettingsJson ?? '{}', r.createdAt, r.updatedAt, f.id),
     ...(input.steps ?? []).map((s) => binding.prepare(`INSERT INTO flow_steps (id, revision_id, position, stable_id, kind, question_type, prompt, helper_text, required, next_step_stable_id, question_settings_json, created_at, updated_at)

@@ -33,10 +33,18 @@ export class FlowRepository {
     ])
     return result.slice(1)
   }
-  private lifecycleAudit(flowId: string, now: string, operatorId: string | undefined, kind: string) {
-    return this.binding.prepare(`INSERT INTO audit_entries (id, workspace_id, kind, actor_operator_id, subject_type, subject_id, details_json, created_at)
-      SELECT ?, workspace_id, ?, (SELECT id FROM operators WHERE id = ? AND workspace_id = flows.workspace_id), 'flow', id, '{"feature":"flow-lifecycle"}', ? FROM flows WHERE id = ?`)
-      .bind(crypto.randomUUID(), kind, operatorId ?? null, now, flowId)
+  private async lifecycleChange(flowId: string, now: string, operatorId: string | undefined, target: 'closed' | 'archived', expectedVersion?: number) {
+    const auditId = crypto.randomUUID()
+    const result = await this.binding.batch<{id: string}>([
+      this.binding.prepare(`INSERT INTO audit_entries (id, workspace_id, kind, actor_operator_id, subject_type, subject_id, details_json, created_at)
+        SELECT ?,workspace_id,?,(SELECT id FROM operators WHERE id=? AND workspace_id=flows.workspace_id),'flow',id,?,?
+        FROM flows WHERE id=? AND (? IS NULL OR draft_version=?) AND ${target === 'closed' ? "status IN ('open','closed')" : "status != 'archived'"}`)
+        .bind(auditId, `flow.${target}`, operatorId ?? null, JSON.stringify({feature:'flow-lifecycle',...this.attribution}), now, flowId, expectedVersion ?? null, expectedVersion ?? null),
+      ...(target === 'closed' ? [this.binding.prepare(`UPDATE flow_revisions SET admission_closed_at=?,admission_close_reason='manual',updated_at=?
+        WHERE flow_id=? AND state='published' AND admission_closed_at IS NULL AND EXISTS(SELECT 1 FROM audit_entries WHERE id=?)`).bind(now,now,flowId,auditId)] : []),
+      this.binding.prepare(`UPDATE flows SET status=?,last_activity_at=?,updated_at=? WHERE id=? AND EXISTS(SELECT 1 FROM audit_entries WHERE id=?) RETURNING id`).bind(target,now,now,flowId,auditId),
+    ])
+    return result.at(-1)!.results.some(row => row.id === flowId)
   }
 
   async validAlertRecipients(workspaceId:string,ids:string[]) {
@@ -383,21 +391,18 @@ export class FlowRepository {
     return results[0].results.length === 1 && results[results.length - 1].results.length === 1
   }
 
-  async closeFlow(flowId: string, now: string, operatorId?: string) {
-    await this.binding.batch([this.lifecycleAudit(flowId, now, operatorId, 'flow.closed'),
-      this.binding.prepare(`UPDATE flow_revisions SET admission_closed_at = ?, admission_close_reason = 'manual', updated_at = ? WHERE flow_id = ? AND state = 'published' AND admission_closed_at IS NULL`).bind(now, now, flowId),
-      this.binding.prepare(`UPDATE flows SET status = 'closed', last_activity_at = ?, updated_at = ? WHERE id = ? AND status = 'open'`).bind(now, now, flowId),
-    ])
+  async closeFlow(flowId: string, now: string, operatorId?: string, expectedVersion?: number) {
+    return this.lifecycleChange(flowId, now, operatorId, 'closed', expectedVersion)
   }
 
-  async reopenFlow(flowId: string, now: string, operatorId: string) {
+  async reopenFlow(flowId: string, now: string, operatorId: string, expectedVersion?: number) {
     const auditId = crypto.randomUUID()
     const results = await this.binding.batch([
       this.binding.prepare(`INSERT INTO audit_entries (id, workspace_id, kind, actor_operator_id, subject_type, subject_id, details_json, created_at)
-        SELECT ?, workspace_id, 'flow.reopened', (SELECT id FROM operators WHERE id = ? AND workspace_id = flows.workspace_id), 'flow', id, '{}', ? FROM flows
-        WHERE id = ? AND status = 'closed' AND EXISTS (SELECT 1 FROM flow_revisions r WHERE r.flow_id = flows.id AND r.state = 'published' AND r.is_current = 1
+        SELECT ?, workspace_id, 'flow.reopened', (SELECT id FROM operators WHERE id = ? AND workspace_id = flows.workspace_id), 'flow', id, ?, ? FROM flows
+        WHERE id = ? AND status = 'closed' AND (? IS NULL OR draft_version=?) AND EXISTS (SELECT 1 FROM flow_revisions r WHERE r.flow_id = flows.id AND r.state = 'published' AND r.is_current = 1
           AND (r.deadline_at IS NULL OR r.deadline_at > ?) AND (r.target_completed_responses IS NULL OR
-            (SELECT COUNT(*) FROM responses admitted WHERE admitted.revision_id = r.id AND ${admittedResponseSql('admitted')}) < r.target_completed_responses))`).bind(auditId, operatorId, now, flowId, now),
+            (SELECT COUNT(*) FROM responses admitted WHERE admitted.revision_id = r.id AND ${admittedResponseSql('admitted')}) < r.target_completed_responses))`).bind(auditId, operatorId, JSON.stringify({feature:'flow-lifecycle',...this.attribution}), now, flowId, expectedVersion ?? null, expectedVersion ?? null, now),
       this.binding.prepare(`UPDATE flow_revisions SET admission_closed_at = NULL, admission_close_reason = NULL, updated_at = ? WHERE flow_id = ? AND state = 'published' AND is_current = 1 AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`).bind(now, flowId, auditId),
       this.binding.prepare(`UPDATE flows SET status = 'open', last_activity_at = ?, updated_at = ? WHERE id = ? AND status = 'closed' AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?) RETURNING id`).bind(now, now, flowId, auditId),
     ])
@@ -415,11 +420,8 @@ export class FlowRepository {
     ])
   }
 
-  async archiveFlow(flowId: string, now: string, operatorId?: string) {
-    await this.binding.batch([this.lifecycleAudit(flowId, now, operatorId, 'flow.archived'),
-      this.binding.prepare(`UPDATE flow_revisions SET admission_closed_at = COALESCE(admission_closed_at, ?), admission_close_reason = 'archive', updated_at = ? WHERE flow_id = ? AND state = 'published'`).bind(now, now, flowId),
-      this.binding.prepare(`UPDATE flows SET status = 'archived', last_activity_at = ?, updated_at = ? WHERE id = ? AND status != 'archived'`).bind(now, now, flowId),
-    ])
+  async archiveFlow(flowId: string, now: string, operatorId?: string, expectedVersion?: number) {
+    return this.lifecycleChange(flowId, now, operatorId, 'archived', expectedVersion)
   }
 
   private async findDraftStep(revisionId: string, stableId: string) {
