@@ -9,7 +9,7 @@ import { expect, test } from './fixtures'
 import type { BuilderDraft } from '../../src/core/app/api'
 // Isolate this new journey's API traffic; actual per-address rate limits stay enabled.
 test.use({ locale: 'en-GB', extraHTTPHeaders: { 'CF-Connecting-IP': '198.18.240.31' } })
-contract(['FLOW-003', 'RESP-003', 'LEDG-004', 'BASE-PUBLIC-003', 'FIELD-002'], 'six additional question types reject an empty required answer and complete through native controls at both widths', async ({ page }, info) => {
+contract(['FLOW-003', 'RESP-003', 'LEDG-004', 'BASE-PUBLIC-003', 'FIELD-002'], 'native question types and matrix rows retain required validation, routing, reporting and exports at both widths', async ({ page }, info) => {
   const request = page.request
   test.setTimeout(180_000)
   await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })

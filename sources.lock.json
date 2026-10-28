@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "d070f5ba34020d56b7abfdd07ac116aafd9149168bc1bf941ff4433f743787d8",
+      "sha256": "64da83884509b933c6c337d929bc9c0fc65d27d88c38ec8ead804c82f045ce8f",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "0567a84d2df05a34af0c5ceca13db7effa8110fa44e57fd45bcc7fc84bd9861b",
+      "sha256": "51bd38f3d404dd15c777af5155657e31a3d02ad698887a1aa3354c5647a52cea",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "cbe5a665d71987bf741543150aae16df5c9ed233cb6d362c8d88d6ab4b9341de",
+      "sha256": "0c98bef5eb18546b8cd004a5cbe7bcb176fbabbf930b213309654e7c84deaee9",
       "executable": false
     },
     "DEMO.md": {
@@ -893,7 +893,7 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "1d6d5dfdafee4c55becd1ac658a6070bf60a825de43d10494213844a1d144b32",
+      "sha256": "9d0bcaff5a60a350ef8037969d8898b13e9c024b5a83f8a37caaa6e0b2ac7a05",
       "executable": false
     },
     "docs/contract-changes-20261002.json": {
@@ -5813,7 +5813,7 @@
       "executable": false
     },
     "src/core/features/reporting/repository.ts": {
-      "sha256": "336ce10936841ad561579418f37b80c495729b5294f7bf3b5037b126581ff095",
+      "sha256": "ba65f412e5308898a415c4062890c300d30239be0e759e4980867814e35805a1",
       "executable": false
     },
     "src/core/features/reporting/retainedAnswer.ts": {
@@ -7369,7 +7369,7 @@
       "executable": false
     },
     "tests/e2e/new-question-types.spec.ts": {
-      "sha256": "2b6eea5bb0acea8ad8fad757f6b558dd9840cce523a89b19a03341b257b21bb3",
+      "sha256": "e04efd8a061d7cabaec09fb28178fbbe51236dfeb57ae00cdc38d0d90f9beb27",
       "executable": false
     },
     "tests/e2e/notifications.spec.ts": {
@@ -8021,7 +8021,7 @@
       "executable": false
     },
     "tests/runtime/matrix-scenario.ts": {
-      "sha256": "1d582e921c33f7326e552792add0f556af629611223fc5ea9e6abde14a629053",
+      "sha256": "db0c69b0a4003577f9f5797c0ce18e9c35083ee55d93d4d3bffffdcf52a93ca3",
       "executable": false
     },
     "tests/runtime/new-question-types.worker.test.ts": {

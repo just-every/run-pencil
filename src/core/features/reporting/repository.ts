@@ -82,7 +82,7 @@ export class ReportingRepository {
     signal?.throwIfAborted()
     const participants = rows.length ? (await this.binding.prepare(`SELECT r.id AS responseId, p.id, p.name_snapshot AS name, p.email_snapshot AS email FROM responses r JOIN invitation_participants p ON p.id = r.participant_id WHERE p.workspace_id = r.workspace_id AND r.id IN (${rows.map(() => '?').join(',')})`).bind(...rows.map(row => row.id)).all<{ responseId: string; id: string; name: string | null; email: string | null }>()).results : []
     signal?.throwIfAborted()
-    const answers = rows.length ? (await this.binding.prepare(`SELECT a.response_id AS responseId, a.step_id AS stepId, s.prompt AS label, s.question_type AS questionType, s.position, s.question_settings_json AS settingsJson, s.required, CASE WHEN s.question_type='matrix' OR length(CAST(a.value_json AS BLOB)) <= 30002 THEN a.value_json ELSE 'null' END AS valueJson
+    const answers = rows.length ? (await this.binding.prepare(`SELECT a.response_id AS responseId, a.step_id AS stepId, s.prompt AS label, s.question_type AS questionType, s.position, s.question_settings_json AS settingsJson, s.required, CASE WHEN length(CAST(a.value_json AS BLOB)) <= 30002 THEN a.value_json ELSE 'null' END AS valueJson
       FROM response_answers a JOIN responses r ON r.id = a.response_id LEFT JOIN flow_steps s ON s.revision_id = r.revision_id AND s.stable_id = a.step_id
       WHERE a.response_id IN (${rows.map(() => '?').join(',')}) ORDER BY s.position`).bind(...rows.map((row) => row.id)).all<{ responseId: string; stepId: string; label: string; position: number; questionType: string; settingsJson: string | null; required: number; valueJson: string }>()).results : []
     signal?.throwIfAborted()

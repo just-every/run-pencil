@@ -82,9 +82,11 @@ export async function matrixScenario() {
   }
   const [head, ...records] = csvRows(await exportText('csv'))
   for (const row of rows) expect(head).toContain(`${matrix.id}.${row.id}`)
+  for (const row of rows.slice(0, 2)) expect(head).toContain(`${multiple.id}.${row.id}`)
   expect(records).toHaveLength(29)
   const original = records.find(record => record[0] === receipts[0].responseId)!
   expect(original[head.indexOf(`${matrix.id}.${rows[0].id}`)]).toBe(options[0].id)
+  expect(original[head.indexOf(`${multiple.id}.${rows[1].id}`)]).toBe('')
   expect(JSON.parse(original[head.indexOf(`${multiple.id}.${rows[0].id}`)])).toEqual([multiOptions[0].id, multiOptions[1].id])
   const exported = JSON.parse(await exportText('json')) as { responses: Ledger['responses'] }
   expect(exported.responses.find(row => row.id === receipts[0].responseId)!.answers.find(row => row.stepId === matrix.id)!.value).toEqual(answer(0, 0))
