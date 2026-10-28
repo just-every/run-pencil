@@ -482,7 +482,16 @@
       "/_serverFn/",
       "/i/",
       "/optout/",
-      "/embed.js"
+      "/embed.js",
+      "/mcp",
+      "/.well-known/oauth-protected-resource",
+      "/.well-known/oauth-protected-resource/mcp",
+      "/api/rer/agent-policy",
+      "/api/rer/business-settings",
+      "/agents",
+      "/agents/",
+      "/rer-business-logo",
+      "/rer-business.css"
     ],
     "notes": "`/` matches only the literal root document, never as a prefix over the whole deployment: a matcher must compare `/` for exact equality, not `path.startsWith('/')`, which would trivially admit every route. Every other entry ending in `/` is a true prefix \u2014 `/f/` for direct flow links, `/embed/` for the embed script, `/auth/` for the sign-in flow, `/assets/` for static files, `/api/public/` for unauthenticated public API reads \u2014 and covers everything under it. Every other entry is one exact, sessionless document. Everything else, including the rest of `/app` and `/api/`, requires an operator or respondent session. Start owns generated /_serverFn/ transport; each private handler independently validates the native operator session. `/` is the default Pencil product page (or the explicitly selected respondent landing); `/pencil` redirects to `/` and `/docs` is the documentation home, all exact sessionless documents; `/docs/` is the prefix for documentation pages under it, so `/docs` is deliberately declared both exact and as the stem of that prefix. An explicitly selected respondent landing at `/` keeps its existing behavior."
   },
