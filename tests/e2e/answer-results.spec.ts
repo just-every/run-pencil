@@ -1,3 +1,4 @@
+import { privacyRequestBrowser } from './privacy-request'
 import { operatorDisclosureExposure } from './disclosure-exposure'
 import { appHeaders } from './api-headers'
 import { mkdir } from 'node:fs/promises'
@@ -8,7 +9,7 @@ import { expect, test, openMailLink } from './fixtures'
 import AxeBuilder from '@axe-core/playwright'
 import { collectAnswerScenario, type ScenarioCall } from '../results-scenario'
 import type { FlowResults } from '../../src/core/app/api'
-contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006', 'LEDG-001', 'DATA-002', 'BASE-PUBLIC-003'], 'answers first across every type, an RSLT-006 crosstab states shares and suppression, comparison replaces results and ledger confirms erasure', async ({ page }, info) => {
+contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006', 'LEDG-001', 'DATA-002', 'GOV-006', 'BASE-PUBLIC-003'], 'answers first across every type, an RSLT-006 crosstab states shares and suppression, comparison replaces results and ledger confirms erasure', async ({ page }, info) => {
   test.setTimeout(180000)
   const hydrationErrors:string[]=[]
   page.on('pageerror',error=>{if(/hydrat/i.test(error.message))hydrationErrors.push(error.message)})
@@ -193,5 +194,6 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
   await capture('after-erasure')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   expect((await new AxeBuilder({ page }).include('.operator-content').analyze()).violations).toEqual([])
+  await privacyRequestBrowser(page, call, info, capture)
   await operatorDisclosureExposure(page, call, `disclosure-${info.project.name}-${Date.now()}`, capture)
 })

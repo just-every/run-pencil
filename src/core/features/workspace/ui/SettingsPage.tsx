@@ -1,3 +1,4 @@
+import { PrivacyRequests } from '../../privacy/ui'
 import { ChatConnections } from '../../chat-integrations/ui'
 import { GoogleConnection } from '../../google-sheets/ui'
 import { SmsConnection } from '../../sms/ui'
@@ -69,6 +70,7 @@ export function SettingsPage({ operatorId }: { operatorId: string }) {
         <button className="primary-button focus-ring settings-save" disabled={saving} type="submit">{saving ? 'Saving…' : 'Save workspace settings'}</button>
       </form>
       <section className="panel settings-card"><h2 className="display">Backup and restore</h2><p>Download and check a private copy of your forms, answers and workspace history.</p><Link className="secondary-button focus-ring" to="/app/backup">Open backup and restore</Link></section>
+      <PrivacyRequests />
       <ChatConnections/><GoogleConnection/><SmsConnection/><PaymentConnection />
       <ResponseWebhooks />
       <IntegrationLedger />
