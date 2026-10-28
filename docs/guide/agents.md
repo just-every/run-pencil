@@ -62,8 +62,6 @@ The registry declares no provider cost. Study generation uses the installation's
 
 Backups retain agent audit, event and idempotency history. Signed policy, Business identity bindings, pending approvals/reviews and active agent registration are excluded. After restoration, establish current identity and policy again; restoration cannot execute held work.
 
-Native provider-setting changes remain on the person API and are not in this registry.
-
 ## Provider connection tools
 
 `pencil.connections.read_analysis` and `pencil.connections.read_task` report native readiness without returning keys or contacting a provider. The matching `configure_analysis`, `configure_task`, `remove_analysis` and `remove_task` tools require `pencil:connections` and the current native installation owner. Their class is always `security`, computed by the server. They save or remove an encrypted connection record and change no person's or agent's authority. Approval summaries name the connection, provider origin and model without a credential. Saving a connection does not test it or send respondent data. A later provider operation retains its separate policy and native checks.
