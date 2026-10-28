@@ -87,6 +87,15 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
     await next()
   })
 
+  const enforcePublicRateLimit: MiddlewareHandler<WorkerEnvironment> = async (context, next) => {
+    const denied = await publicRequestRateLimitResponse(context.req.raw, context.get('services').responses)
+    if (denied) return denied
+    await next()
+  }
+
+  // Shared discovery, policy and MCP keep the native public request budget.
+  app.use('*', enforcePublicRateLimit)
+
   app.use('*', async (context, next) => {
     if (!isAgentDoorPath(context.req.path)) return next()
     try {
@@ -98,13 +107,6 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
     return next()
   })
 
-  const enforcePublicRateLimit: MiddlewareHandler<WorkerEnvironment> = async (context, next) => {
-    const denied = await publicRequestRateLimitResponse(context.req.raw, context.get('services').responses)
-    if (denied) return denied
-    await next()
-  }
-
-  app.use('*', enforcePublicRateLimit)
   app.use('/api/public/*', opaqueEmbedCors)
 
   app.use('*', async (context, next) => {
