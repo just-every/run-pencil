@@ -1,3 +1,5 @@
+import { privacyGoogleFixture } from './privacy-fixture'
+import { privacyRequestJourney } from './privacy-journey'
 import { matureLoad } from './load-time-fixture'
 import { applyD1Migrations, env, SELF, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
@@ -63,7 +65,7 @@ contract('PART-002','explicit saves resume a pinned response through public door
   await matureLoad(resumed, 5000)
   const receipt=await ok<{responseId:string}>(f.slug,'responses',{sessionId:resumed.sessionId,sessionToken:resumed.sessionToken,loadTime:resumed.loadTime,idempotencyKey:crypto.randomUUID(),answers:[...resumed.answers,{stepId:last.id,value:'Finished on another device'}]})
   expect(await env.DB.prepare('SELECT id FROM respondent_sessions WHERE id=?').bind(session.sessionId).first()).toBeNull()
-  expect(await env.DB.prepare('SELECT answers_json,delivery_email,current_step_id,delivery_state,completion_step_id FROM respondent_saves WHERE session_id=?').bind(session.sessionId).first()).toEqual({answers_json:null,delivery_email:null,current_step_id:null,delivery_state:'completed',completion_step_id:done.id})
+  expect(await env.DB.prepare('SELECT answers_json,delivery_email,privacy_email_hash,current_step_id,delivery_state,completion_step_id FROM respondent_saves WHERE session_id=?').bind(session.sessionId).first()).toEqual({answers_json:null,delivery_email:null,privacy_email_hash:null,current_step_id:null,delivery_state:'completed',completion_step_id:done.id})
   expect(await ok<Resumed>(f.slug,'resume',{token})).toMatchObject({state:'completed',completionStepId:done.id})
   await f.services.flows.closeFlow(f.scope.workspaceId,f.flow.flowId,f.operatorId)
   expect(await ok<Resumed>(f.slug,'resume',{token})).toMatchObject({state:'completed'})
@@ -80,7 +82,7 @@ contract('PART-002','explicit saves resume a pinned response through public door
   expect(await env.DB.prepare('SELECT session_id FROM respondent_saves WHERE session_id=?').bind(closedSession.sessionId).first()).toBeNull()
 },90_000)
 
-contract('PART-002','save mail failures retry one durable state, expiry purges it, and invitation resume preserves its original identity and collector',async()=>{
+contract(['PART-002','GOV-006'],'save mail failures retry one durable state, expiry purges it, and invitation resume preserves its original identity and collector',async()=>{
   const f=await form('resume-failures'), session=await ok<Session>(f.slug,'sessions',{deviceClass:'tablet',source:'embed'})
   const email=`failure-${session.sessionId}@example.test`, commandKey=crypto.randomUUID()
   const input={sessionId:session.sessionId,sessionToken:session.sessionToken,email,commandKey,currentStepId:session.flow.steps[0].id,answers:[]}
@@ -116,4 +118,6 @@ contract('PART-002','save mail failures retry one durable state, expiry purges i
   const result=await ok<{responseId:string}>(invited.slug,'responses',{sessionId:resumed.sessionId,sessionToken:resumed.sessionToken,loadTime:resumed.loadTime,invitationToken:resumed.invitationToken,idempotencyKey:crypto.randomUUID(),answers:invitedSession.flow.steps.filter(step=>step.kind==='question').map(step=>({stepId:step.id,value:'Invited retained answer'}))})
   expect(await env.DB.prepare('SELECT participant_id,source FROM responses WHERE id=?').bind(result.responseId).first()).toEqual({participant_id:participant!.id,source:'invitation'})
   expect(await env.DB.prepare('SELECT collector_id FROM response_collector WHERE response_id=?').bind(result.responseId).first()).toEqual(await env.DB.prepare('SELECT collector_id FROM invitation_launch_collector WHERE launch_id=?').bind(launch.id).first())
+  const receiver=(env as unknown as {TASK_RECEIVER_ORIGIN:string}).TASK_RECEIVER_ORIGIN
+  await privacyRequestJourney(await privacyGoogleFixture(receiver),receiver)
 },90_000)

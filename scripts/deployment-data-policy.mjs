@@ -62,7 +62,7 @@ const retained = {
   traffic_tracking: 'id started_at',
   team_templates: 'id workspace_id name structure_json created_by created_at retired_at',
   // Explicit saves travel as private session history, with no live capability or delivery address.
-  respondent_saves: 'response_context_json session_id revision_id token_hash command_key delivery_id delivery_email delivery_state current_step_id answers_json participant_id response_id completion_step_id expires_at created_at updated_at',
+  respondent_saves: 'privacy_email_hash response_context_json session_id revision_id token_hash command_key delivery_id delivery_email delivery_state current_step_id answers_json participant_id response_id completion_step_id expires_at created_at updated_at',
   // Operator workflow and internal notes are private product history; response erasure cascades all sidecars.
   submission_statuses: 'id flow_id name created_at',
   submission_workflows: 'response_id status_id assignee_id version updated_at',

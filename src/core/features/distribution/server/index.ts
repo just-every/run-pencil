@@ -1,0 +1,1 @@
+export { eraseContact } from '../erasure'
