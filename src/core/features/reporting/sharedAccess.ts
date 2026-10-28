@@ -1,7 +1,7 @@
 import { ulid } from 'ulid'
 import { NotFoundError, ValidationError } from '../../shared/errors'
 import { createPasswordVerifier, verifyPassword, hashCredential } from '../restricted-access'
-import { disclosureThreshold } from '../analysis'
+import { disclosureThreshold } from '../analysis/disclosure'
 import { loadSavedView } from './savedRepository'
 import { sharedReport } from './sharedReport'
 import type { SavedReportShare, SharedReport } from './savedModel'

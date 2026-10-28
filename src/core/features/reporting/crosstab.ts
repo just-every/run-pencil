@@ -1,5 +1,5 @@
 import { NotFoundError, ValidationError } from '../../shared/errors'
-import { disclosureThreshold } from '../analysis'
+import { disclosureThreshold } from '../analysis/disclosure'
 import { ReportingRepository, type LedgerFilter } from './repository'
 import { responseScope } from './scope'
 import { dimensionCategories, resolveDimension, type Dimension } from './crosstabDimensions'

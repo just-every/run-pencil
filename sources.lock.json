@@ -4068,6 +4068,10 @@
       "sha256": "28b9f714f7c6afcdd569daa15b5c22c62ab1a51a70db1d97fcff1aeb17e1ab86",
       "executable": false
     },
+    "src/core/features/analysis/disclosure/index.ts": {
+      "sha256": "fc81256aa3499e146326f66a9b94aae0e65eba3ade328f3e1795f45288bb4402",
+      "executable": false
+    },
     "src/core/features/analysis/erasure.ts": {
       "sha256": "c2c0e9445bbf947f44f423d91bc8979f304d81cce5e705bb1281581c2af22312",
       "executable": false
@@ -5753,7 +5757,7 @@
       "executable": false
     },
     "src/core/features/reporting/crosstab.ts": {
-      "sha256": "c864f15cd7509442454e40dc9586cf351b2d9417e7dbaca9ff1f9a7ce777d0fd",
+      "sha256": "5d3685476da7cd93e749d6b479d4220d2ed2c4f5bc0a94afb75083736953480c",
       "executable": false
     },
     "src/core/features/reporting/crosstabDimensions.ts": {
@@ -5833,7 +5837,7 @@
       "executable": false
     },
     "src/core/features/reporting/savedService.ts": {
-      "sha256": "c88a3744fb2e6b7ba7d60ad2db4bf21002b70116c5664a7f6d0d4fbbffa9fe2a",
+      "sha256": "77d7c8eac3da228e3b4f9c35e6613785d4b3f6c9d197a8cc8818e3460fa24581",
       "executable": false
     },
     "src/core/features/reporting/savedValidation.ts": {
@@ -5861,7 +5865,7 @@
       "executable": false
     },
     "src/core/features/reporting/sharedAccess.ts": {
-      "sha256": "70b3ccb8e268520894a33833ff84985c9f253195e5efa33282d765cad5b47cdc",
+      "sha256": "56b88a6b75d01c3578d66c2e18015546811aa3eaa4c71a6c514db68b9afbf3ac",
       "executable": false
     },
     "src/core/features/reporting/sharedCodeCrosstab.ts": {
@@ -5881,7 +5885,7 @@
       "executable": false
     },
     "src/core/features/reporting/sharedReport.ts": {
-      "sha256": "98d203c04d55099d45166d71ef27785fc371cf3f13982a6ab4eb6d453356f6ac",
+      "sha256": "88b8c874df00268f7e573b890375ae72bfc6fe55237321590614d588df2b9262",
       "executable": false
     },
     "src/core/features/reporting/sharedSummaries.ts": {

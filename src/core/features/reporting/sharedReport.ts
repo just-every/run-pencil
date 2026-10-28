@@ -1,4 +1,4 @@
-import { disclosureThreshold } from '../analysis'
+import { disclosureThreshold } from '../analysis/disclosure'
 import { crosstab } from './crosstab'
 import { sharedCodeCrosstab } from './sharedCodeCrosstab'
 import { reportCohorts } from './sharedCohorts'

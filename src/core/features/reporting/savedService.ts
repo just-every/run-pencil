@@ -1,6 +1,6 @@
 import { ulid } from 'ulid'
 import { ValidationError, NotFoundError } from '../../shared/errors'
-import { disclosureThreshold } from '../analysis'
+import { disclosureThreshold } from '../analysis/disclosure'
 import { ReportingRepository } from './repository'
 import { aggregateDimensions } from './sharedSummaries'
 import { sharedDimensionPattern } from './sharedDimensions'
