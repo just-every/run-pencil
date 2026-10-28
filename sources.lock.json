@@ -1409,7 +1409,7 @@
       "executable": false
     },
     "migrations/core/0072_privacy_save_lookup.sql": {
-      "sha256": "21215c5de43a23cb4bca2d5eb6d54e1981994599e5851c0bad6209530006a2a9",
+      "sha256": "72fb4d44445c6dd47a00aad2146ba62ce75d3f814c9e90b19a36cb551dc7b0c7",
       "executable": false
     },
     "migrations/released-rewrites.json": {
@@ -8125,7 +8125,7 @@
       "executable": false
     },
     "tests/runtime/resuming.worker.test.ts": {
-      "sha256": "fd6ab2791050499552726bad913c4fb450e21595bff2839c7ffb4815517bd9bf",
+      "sha256": "5f16a5cdbc5e2fef1ba7f5e7e7025308bf244720937e56a64a72cc7e8c3d5c16",
       "executable": false
     },
     "tests/runtime/retention-notification-evidence.ts": {

@@ -65,7 +65,7 @@ contract('PART-002','explicit saves resume a pinned response through public door
   await matureLoad(resumed, 5000)
   const receipt=await ok<{responseId:string}>(f.slug,'responses',{sessionId:resumed.sessionId,sessionToken:resumed.sessionToken,loadTime:resumed.loadTime,idempotencyKey:crypto.randomUUID(),answers:[...resumed.answers,{stepId:last.id,value:'Finished on another device'}]})
   expect(await env.DB.prepare('SELECT id FROM respondent_sessions WHERE id=?').bind(session.sessionId).first()).toBeNull()
-  expect(await env.DB.prepare('SELECT answers_json,delivery_email,current_step_id,delivery_state,completion_step_id FROM respondent_saves WHERE session_id=?').bind(session.sessionId).first()).toEqual({answers_json:null,delivery_email:null,current_step_id:null,delivery_state:'completed',completion_step_id:done.id})
+  expect(await env.DB.prepare('SELECT answers_json,delivery_email,privacy_email_hash,current_step_id,delivery_state,completion_step_id FROM respondent_saves WHERE session_id=?').bind(session.sessionId).first()).toEqual({answers_json:null,delivery_email:null,privacy_email_hash:null,current_step_id:null,delivery_state:'completed',completion_step_id:done.id})
   expect(await ok<Resumed>(f.slug,'resume',{token})).toMatchObject({state:'completed',completionStepId:done.id})
   await f.services.flows.closeFlow(f.scope.workspaceId,f.flow.flowId,f.operatorId)
   expect(await ok<Resumed>(f.slug,'resume',{token})).toMatchObject({state:'completed'})
