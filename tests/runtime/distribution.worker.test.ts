@@ -19,7 +19,7 @@ async function launched(slug: string, prefill?: {locked:boolean}, questionType:'
   const delivery = (await f.services.distribution.launches.list(f.scope.workspaceId, f.flow.flowId))[0] as { deliveryId: string }
   return { ...f, contact, input, launch, p, delivery }
 }
-contract(["AUD-003","AUD-006","DIST-003","DIST-005","FLOW-008","DIST-014","DIST-023"], 'invitation score buttons preserve the recipient snapshot, consent blocks sending and renewal records actor and source', async () => {
+contract(["AUD-003","AUD-006","DIST-003","DIST-005","FLOW-008","DIST-014","DIST-024"], 'invitation score buttons preserve the recipient snapshot, consent blocks sending and renewal records actor and source', async () => {
   const f = await launched('distribution-consent',undefined,'nps')
   expect(await f.services.distribution.launches.launch(f.input)).toEqual(f.launch)
   expect((await f.services.distribution.launches.list(f.scope.workspaceId, f.flow.flowId))).toHaveLength(1)

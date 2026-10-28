@@ -122,6 +122,7 @@
         "DIST-001",
         "DIST-002",
         "DIST-022",
+        "DIST-022",
         "DIST-003",
         "DIST-004",
         "DIST-005",
@@ -129,8 +130,10 @@
         "DIST-007",
         "DIST-008",
         "DIST-009",
+        "DIST-022",
         "DIST-010",
         "DIST-012",
+        "DIST-023",
         "DIST-019"
       ]
     },
@@ -141,6 +144,7 @@
         "RESP-001",
         "RESP-002",
         "RESP-003",
+        "RESP-025",
         "RESP-025",
         "RESP-004",
         "RESP-005",
@@ -155,6 +159,7 @@
         "RESP-014",
         "RESP-015",
         "RESP-016",
+        "RESP-026",
         "RESP-026",
         "RESP-017",
         "RESP-018",
@@ -236,6 +241,7 @@
         "DATA-001",
         "DATA-002",
         "GOV-003",
+        "GOV-008",
         "GOV-008"
       ]
     },
@@ -244,6 +250,7 @@
       "description": "Saved business name, supporting line, accessible accent, own-origin logo and public landing selection across respondent surfaces.",
       "clauses": [
         "BRAND-001",
+        "BRAND-003",
         "BRAND-003"
       ]
     },
@@ -270,6 +277,7 @@
       "clauses": [
         "ROLE-001",
         "ROLE-005",
+        "ROLE-005",
         "ROLE-002",
         "ROLE-003",
         "ROLE-004"
@@ -280,6 +288,7 @@
       "description": "Contract target: Target: form design themes. Completion is recorded clause by clause in CONTRACT.md.",
       "clauses": [
         "BRAND-002",
+        "BRAND-004",
         "BRAND-004"
       ]
     },
@@ -306,25 +315,34 @@
         "FIELD-009",
         "FIELD-010",
         "FIELD-017",
+        "FIELD-017",
         "FIELD-011",
+        "FIELD-018",
         "FIELD-018",
         "FIELD-012",
         "FIELD-013",
         "FIELD-014",
         "FIELD-019",
+        "FIELD-019",
         "FIELD-015",
+        "FIELD-020",
         "FIELD-020",
         "FIELD-016",
         "FIELD-021",
+        "FIELD-021",
         "LOGIC-001",
         "LOGIC-002",
+        "LOGIC-007",
         "LOGIC-007",
         "LOGIC-003",
         "LOGIC-004",
         "LOGIC-006",
         "LOGIC-008",
         "LOGIC-009",
+        "LOGIC-008",
+        "LOGIC-009",
         "LANG-001",
+        "LANG-003",
         "LANG-003",
         "AI-002",
         "LANG-002",
@@ -338,13 +356,17 @@
         "DIST-011",
         "DIST-013",
         "DIST-014",
+        "DIST-024",
         "DIST-023",
         "DIST-015",
         "DIST-016",
         "DIST-017",
         "DIST-018",
         "DIST-020",
+        "DIST-026",
         "DIST-021",
+        "DIST-025",
+        "DIST-027",
         "DIST-024"
       ]
     },
@@ -354,11 +376,13 @@
       "clauses": [
         "RESP-020",
         "RESP-027",
+        "RESP-027",
         "RESP-021",
         "PART-001",
         "PART-002",
         "RESP-022",
         "RESP-023",
+        "RESP-028",
         "RESP-028",
         "RESP-024"
       ]
@@ -369,7 +393,9 @@
       "clauses": [
         "LEDG-005",
         "LEDG-007",
+        "LEDG-007",
         "LEDG-006",
+        "LEDG-008",
         "LEDG-008",
         "WORK-001",
         "WORK-002",
@@ -384,14 +410,18 @@
       "clauses": [
         "RSLT-006",
         "RSLT-014",
+        "RSLT-014",
         "RSLT-007",
         "RSLT-008",
         "RSLT-009",
         "RSLT-015",
         "RSLT-016",
+        "RSLT-015",
+        "RSLT-016",
         "RSLT-010",
         "RSLT-011",
         "RSLT-013",
+        "RSLT-017",
         "RSLT-017"
       ]
     },
@@ -400,6 +430,7 @@
       "description": "Contract target: Target: actions that are chased. Completion is recorded clause by clause in CONTRACT.md.",
       "clauses": [
         "ACT-009",
+        "ACT-010",
         "ACT-010"
       ]
     },
@@ -409,6 +440,7 @@
       "clauses": [
         "NOTIFY-005",
         "NOTIFY-006",
+        "NOTIFY-007",
         "NOTIFY-007"
       ]
     },
@@ -440,6 +472,8 @@
       "description": "Contract target: Payments. Completion is recorded clause by clause in CONTRACT.md.",
       "clauses": [
         "PAY-001",
+        "PAY-006",
+        "PAY-007",
         "PAY-006",
         "PAY-007",
         "PAY-002",
@@ -477,10 +511,12 @@
         "INTEG-002",
         "INTEG-003",
         "INTEG-018",
+        "INTEG-018",
         "INTEG-004",
         "INTEG-005",
         "INTEG-006",
         "INTEG-007",
+        "INTEG-019",
         "INTEG-019",
         "INTEG-008",
         "INTEG-009",
@@ -492,6 +528,7 @@
         "INTEG-015",
         "INTEG-016",
         "INTEG-017",
+        "INTEG-020",
         "INTEG-020"
       ]
     },

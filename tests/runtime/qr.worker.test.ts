@@ -14,7 +14,7 @@ beforeAll(async()=>{
   await call('/auth/magic-link',{email:owner!.email});const inbox=await developmentInbox(path=>SELF.fetch('http://localhost'+path,{headers:{Host:'localhost',...devKeyHeaders}}),owner!.email)
   const login=await request('/auth/confirm',{token:inbox.messages[0].magicLinkToken});expect(login.status).toBe(303);cookie=login.headers.get('set-cookie')!.split(';')[0]
 })
-contract('DIST-012','QR downloads require operator authority, retain the exact collection link and reject unrelated collectors and formats',async()=>{
+contract(["DIST-012","DIST-023"],'QR downloads require operator authority, retain the exact collection link and reject unrelated collectors and formats',async()=>{
   const flow=await call('/api/app/flows',{title:'Aurora counter survey',slug:'aurora-qr'})
   const root=`/api/app/flows/${flow.id}`,collector=await call(root+'/collectors',{name:'Counter <east>',channel:'qr'})
   const path=root+`/collectors/${collector.id}/qr`

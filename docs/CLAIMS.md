@@ -16,7 +16,7 @@ A claim is done when every clause behind it is done, missing when every one is m
 | 8 | Every publish is a numbered revision. People already answering finish the version they started. | `FLOW-008` partial; `FLOW-009` done; `FLOW-017` partial | partial |
 | 9 | Share a link, embed it on your site, or email invitations. One reminder follows two days later, inside your sending hours. | `DIST-001` done; `DIST-002` partial; `DIST-022` partial; `DIST-003` partial; `DIST-004` partial; `WS-002` partial | partial |
 | 10 | an opt-out in every message | `DIST-005` partial | partial |
-| 11 | No cookies, no trackers, no third-party requests. | `RESP-006` partial; `DIST-009` partial | partial |
+| 11 | No cookies, no trackers, no third-party requests. | `RESP-006` partial; `DIST-009` partial; `DIST-022` partial | partial |
 | 12 | Before the first answer, people are told who will see it. | `RESP-005` partial | partial |
 | 13 | If someone stops halfway, Pencil keeps how far they got, never what they typed. | `RESP-010` partial; `RESP-013` partial | partial |
 | 14 | Answers to every question, where people stopped, and starts and completions for each revision, with exports of exactly what you filtered. | `RSLT-001` partial; `RSLT-002` partial; `RSLT-003` partial; `RSLT-005` done; `LEDG-004` partial | partial |

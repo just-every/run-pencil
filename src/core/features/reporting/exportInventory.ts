@@ -4,7 +4,7 @@ import { responseScope, type ResponseSelection } from './scope'
 import type { LedgerFilter } from './repository'
 
 /**
- * The question inventory of the revisions an export selects (LEDG-005), newest revision first.
+ * The question inventory of the revisions an export selects (LEDG-005, LEDG-007), newest revision first.
  * Questions are keyed by stable step ID and type and never merged across different IDs (RSLT-005);
  * choices are keyed by stable choice ID, so one choice keeps one code in every revision.
  */

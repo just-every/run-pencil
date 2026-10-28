@@ -520,9 +520,10 @@
       ]
     },
     "DIST-009": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "DIST-009"
+        "DIST-009",
+        "DIST-022"
       ]
     },
     "DIST-010": {
@@ -538,9 +539,10 @@
       ]
     },
     "DIST-012": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "DIST-012"
+        "DIST-012",
+        "DIST-023"
       ]
     },
     "DIST-013": {
@@ -553,7 +555,7 @@
       "how": "split",
       "to": [
         "DIST-014",
-        "DIST-023"
+        "DIST-024"
       ]
     },
     "DIST-015": {
@@ -587,16 +589,18 @@
       ]
     },
     "DIST-020": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "DIST-020"
+        "DIST-020",
+        "DIST-026"
       ]
     },
     "DIST-021": {
       "how": "split",
       "to": [
         "DIST-021",
-        "DIST-024"
+        "DIST-025",
+        "DIST-027"
       ]
     },
     "RESP-001": {

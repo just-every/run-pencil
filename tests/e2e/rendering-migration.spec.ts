@@ -92,7 +92,7 @@ contract('BASE-ACCESS-002', 'native document/API/generated transport session mat
   expect(await (await request.get('/api/app/dashboard', { headers: { Cookie: valid } })).json()).toEqual(before)
 })
 
-contract(['SHELL-001','HOME-001','DIST-009','BASE-PUBLIC-002'], 'fresh public SSR, genuine 404s, declared assets, hydration and private client navigation', async ({ page, request }) => {
+contract(["SHELL-001","HOME-001","DIST-009","DIST-022","BASE-PUBLIC-002"], 'fresh public SSR, genuine 404s, declared assets, hydration and private client navigation', async ({ page, request }) => {
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()) })
@@ -178,13 +178,13 @@ contract(['HOME-001'], 'public HTML follows changed D1 rather than build-time or
   } finally { db.close() }
 })
 
-contract('DIST-020', 'emitted Worker serves revision previews and canonical-only indexing without weakening respondent admission', async ({page,request}, info) => {
+contract(["DIST-020","DIST-026"], 'emitted Worker serves revision previews and canonical-only indexing without weakening respondent admission', async ({page,request}, info) => {
   test.setTimeout(120_000)
   const {publishedPreviewJourney}=await import('./link-preview-http')
   await publishedPreviewJourney(page,request,await login(request),info.project.name)
 })
 
-contract(['DIST-020','BASE-DATA-001'], 'owner browser backup restores preview image bytes with the same archive checksum', async ({page,request},info) => {
+contract(["DIST-020","DIST-026","BASE-DATA-001"], 'owner browser backup restores preview image bytes with the same archive checksum', async ({page,request},info) => {
   test.setTimeout(120_000)
   const {previewBackupJourney}=await import('./preview-backup-journey')
   await previewBackupJourney(page,request,await login(request),info.project.name)

@@ -5,7 +5,7 @@ import { expect } from './fixtures'
 import { contract } from './contract'
 import { signInEmptyWorkspace } from './authoring-helpers'
 
-contract('DIST-012','download labelled QR codes and collect isolated shared-device responses with idle clearing',async({page},info)=>{
+contract(["DIST-012","DIST-023"],'download labelled QR codes and collect isolated shared-device responses with idle clearing',async({page},info)=>{
   info.setTimeout(120000)
   await signInEmptyWorkspace(page)
   await page.getByRole('button',{name:'Customer feedback',exact:true}).click()

@@ -8,12 +8,12 @@ The primary journey: Build and preview a branching form, publish and distribute 
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 60 | 154 | 58 | 272 |
+| Core | 61 | 154 | 60 | 275 |
 | Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 60 | 154 | 63 | 277 |
+| Full target | 61 | 154 | 65 | 280 |
 
-Judged from the code and tests at commit `712c770c14264668f9380c1b67190cefbaf4820a` (23 October 2026). ct reviewed `dd63975478b100f7df5e52799eea1e5663da6a0e` on 27 October 2026 for PAY-005, INTEG-006 and DIST-011 scope only, crediting no completion. Applying ct’s 05:00Z contract rulings; these text-only corrections claim no new DONE evidence. Subsequent target completions are maintained alongside their cited clause-tagged tests. RSLT-001, RSLT-003 and RSLT-004 include the combined-filter and response device-class implementation with native and browser journeys from sd-pencil-c10, repaired in sd-pencil-c12; they remain PARTIAL under ct's 05:00Z wording and no restoration is counted DONE. Release 0.7.0 was cut before these completions: on top of 0.6.0 it adds FIELD-006 and GOV-003 and fixes backup and restore on a database installed by Run Edit Run Platform (CHANGELOG.md). Each done row's evidence is its tagged tests, which `rer verify` runs. Field proof register: 11 rows; 0 passed, 0 failed, 11 not run.
+Judged from the code and tests at commit `712c770c14264668f9380c1b67190cefbaf4820a` (23 October 2026). Field proof register: 11 rows; 0 passed, 0 failed, 11 not run.
 
 ## Core
 
@@ -21,17 +21,14 @@ Judged from the code and tests at commit `712c770c14264668f9380c1b67190cefbaf482
 
 #### HOME-001 — Public landing
 
-Core · published · **partial** · Cites BASE-DATA-005, BASE-PUBLIC-001
+Core · published · **partial** · Cites BASE-PUBLIC-001, BASE-DATA-005
 
-**Requirement.** Pencil supports public landing. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#home-001).
+**Requirement.** The installed home page opens the owner’s selected form or the shared Lobby. Branding follows BRAND-001 and BRAND-003. Details are in [the operating rules](docs/contract/MECHANISM.md#home-001).
 
 **Acceptance.**
-1. By the owner's 12 October 2026 decision, the public home page serves Base's shared Lobby when no public landing flow is selected (Finish setup until the owner confirms first-run setup, then Sign in; `GET /setup/state` answers the same claim state), and the documented page or route redirects to the public home page.
-2. An explicitly selected open published flow keeps its canonical respondent experience and admission checks at the public home page.
-3. A later closed flow shows the standard closed page; an archived or missing flow returns 404, just as its direct link does.
-4. Business branding follows BRAND-001, BRAND-003.
-5. The optional default-off static `Powered by Pencil · runeditrun.com` credit remains available.
-6. A selected respondent landing contains no vendor marketing, pricing, invented metrics, testimonials, or third-party requests.
+1. With no selected public form, the Lobby offers Finish setup until the owner completes first-run setup, then Sign in; the installation’s claim-state read gives the same answer. The legacy Pencil address redirects to this home page.
+2. A selected open published form keeps its canonical respondent experience and admission checks at the home page; closing shows its standard closed state, and an archived or missing selection is unavailable just as its direct link is.
+3. An optional, initially disabled static Powered by Pencil credit is available. A selected respondent landing contains no vendor marketing, pricing, invented metrics or testimonials.
 
 **Evidence.** `tests/e2e/accessibility-foundation.spec.ts`, `tests/e2e/business-brand.spec.ts`, `tests/e2e/installed-home.spec.ts`
 **Gap.** Missing a cited browser journey that follows the legacy Pencil redirect and enables then reads the optional public credit. Cited journeys show Lobby and selected-form lifecycle with the credit absent by default.
@@ -40,55 +37,54 @@ Core · published · **partial** · Cites BASE-DATA-005, BASE-PUBLIC-001
 
 #### SITE-001 — Product page
 
-Core · published · **partial** · Cites BASE-DATA-005, BASE-PUBLIC-001
+Core · published · **partial** · Cites BASE-PUBLIC-001, BASE-DATA-005
 
-**Requirement.** Pencil supports product page. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#site-001).
+**Requirement.** Pencil’s run site explains the software to prospective buyers; HOME-001 governs installed home pages. Details are in [the operating rules](docs/contract/MECHANISM.md#site-001).
 
 **Acceptance.**
-1. The run site's the public home page (run-pencil.com, written by `rer build --site`) renders Pencil's own product page for people evaluating the software: what Pencil does, its Run Pencil action to the documented page or route, and links to the source repository and the documentation.
-2. The installed the public home page is governed by HOME-001.
-3. The product page links no installed-instance route and makes claims only about delivered clauses: no invented metrics, customers, testimonials or pricing.
+1. The product page explains Pencil, offers Run Pencil to its Run page, and links to the source and product documentation.
+2. Its links do not open installed-instance routes. Its claims refer only to delivered clauses, without invented metrics, customers, testimonials, pricing or deferred analysis, action and notification features.
 
 **Evidence.** `tests/e2e/site-page.spec.ts`
 **Gap.** Missing a cited reader journey that follows the source link and reads claim content for the contract-only publication boundary. Cited journey reads headings, Run/Docs links and privacy, but never source link or claim content.
 
 #### SITE-002 — Live answer path
 
-Core · published · **done** · Cites BASE-PUBLIC-003
+Core · published · **done** · Cites BASE-ACCESSIBILITY-001
 
-**Requirement.** Pencil supports live answer path. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#site-002).
+**Requirement.** The product page demonstrates an adaptive answer path in its first screen.
 
 **Acceptance.**
-1. The product page's first screen demonstrates an answer path: choosing an answer on the illustrated card shows the follow-up question that answer leads to, works by keyboard, announces the change to assistive technology, and respects reduced motion.
-2. Without JavaScript the card shows one complete question, answer and follow-up.
+1. Choosing an illustrated-card answer shows the corresponding follow-up; the choice works by keyboard, announces the changed follow-up and respects reduced motion.
+2. Without JavaScript, the card shows one complete question, answer and follow-up.
 
 **Evidence.** `tests/e2e/site-hero.spec.ts` — "the note card retains its complete question and answer follow-ups without JavaScript, by pointer and keyboard, and with reduced motion"
 **Gap.** None.
 
-#### DOCS-001 — Documentation
+#### DOCS-001 — Product documentation
 
-Core · published · **partial** · Cites BASE-PUBLIC-001
+Core · published · **partial** · Cites BASE-DOCS-001, BASE-PUBLIC-001
 
-**Requirement.** Pencil supports documentation. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#docs-001).
+**Requirement.** Strangers can read Pencil’s Markdown guidance through its documentation pages.
 
 **Acceptance.**
-1. the documentation and the documented page or route render the product documentation from Markdown in this repository at build time, with navigation, an on-page table of contents and previous/next links.
-2. Unknown slugs return 404.
-3. The analysis guide states that withheld themes affect the analysis view, Results crosstabs use the same small-cell threshold, and answer summaries, the ledger and exports are unchanged.
+1. Documentation pages provide navigation, an on-page contents list and previous/next links; an unknown page returns not found.
+2. The analysis guide explains that withholding changes the analysis view, Results crosstabs use the same small-cell threshold, and answer summaries, the ledger and exports remain unchanged.
 
 **Evidence.** `tests/e2e/docs-site.spec.ts`
 **Gap.** Missing a cited docs journey that reads analysis-guide withholding, crosstab threshold and unchanged summary/ledger/export statements. Cited journey visits overview/build/branch/results guides and checks shell/navigation/404, not analysis-guide content.
 
 ### Application shell
 
-#### SHELL-001 — Operator shell
+#### SHELL-001 — Operator navigation
 
-Core · published · **done** · Cites BASE-ACCESS-002, BASE-PUBLIC-003
+Core · published · **done** · Cites BASE-ACCESS-002, BASE-ACCESSIBILITY-001
 
-**Requirement.** Pencil supports operator shell. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#shell-001).
+**Requirement.** The private operator shell connects Pencil’s implemented work surfaces.
 
 **Acceptance.**
-1. A valid session receives labeled, keyboard-operable navigation to the implemented operator surfaces; the public respondent experience is never an operator navigation destination. sign-in remains sessionless and is the only entry point to the operator session flow, so an unauthenticated request never receives the operator shell as a fallback.
+1. Signed-in operators can navigate between the implemented operator surfaces; the public respondent experience is never an operator-navigation destination.
+2. Sign-in is sessionless and is the only entry to operator sign-in; an unauthenticated request never receives the operator shell as a fallback.
 
 **Evidence.** `tests/e2e/accessibility-foundation.spec.ts` — "keyboard and axe cover the landing, sign-in, operator navigation, builder and reports at declared viewports"; `tests/e2e/rendering-migration.spec.ts` — "native document/API/generated transport session matrix preserves private data boundaries"; `tests/runtime/private-auth-freshness.worker.test.ts` — "a warmed private route denies native session revocation"
 **Gap.** None.
@@ -99,38 +95,34 @@ Core · published · **done** · Cites BASE-ACCESS-002, BASE-PUBLIC-003
 
 Core · published · **done** · Cites BASE-ACCESS-004
 
-**Requirement.** Pencil supports equal operators. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#oper-001).
+**Requirement.** Pencil’s equal-operator model gives each operator the same workspace authority.
 
 **Acceptance.**
-1. Every operator can see and act on every flow, audience, response, analysis, and action.
-2. There are no roles.
+1. Every operator can see and act on every flow, audience, response, analysis and action; this model has no distinct roles.
 
 **Evidence.** `tests/runtime/access-foundation.worker.test.ts` — "a second equal operator edits another operators flow while foreign workspace IDs never become ownership authority"
 **Gap.** None.
 
-#### OPER-002 — Management
+#### OPER-002 — Manage equal operators
 
 Core · published · **partial** · Cites BASE-ACCESS-004
 
-**Requirement.** Pencil supports management. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#oper-002).
+**Requirement.** Operators invite and remove peers in settings under OPER-001’s equal authority.
 
 **Acceptance.**
-1. Operators are invited and removed in settings.
-2. Any operator may invite another and may remove any other operator, except that the setup operator can be removed only by themselves and the last operator cannot be removed.
-3. There are no roles (OPER-001), so there is no seam that narrows who may do this.
+1. Any operator may invite another and remove another operator, except that only the setup operator may remove themselves and the last operator cannot be removed.
 
 **Evidence.** `tests/runtime/auth.worker.test.ts`, `tests/runtime/first-owner.worker.test.ts`
 **Gap.** Missing a cited settings or HTTP journey that refuses another operator removing the setup operator with credentials unchanged, then permits setup self-removal. Cited public journeys show invitation and peer-removal races; setup/last guards run directly on the repository.
 
 #### OPER-003 — Sign-in depends on mail
 
-Core · published · **done** · Cites BASE-ACCESS-001
+Core · published · **done** · Cites BASE-ACCESS-001, BASE-SECRET-002
 
-**Requirement.** Pencil supports sign-in depends on mail. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#oper-003).
+**Requirement.** Magic-link sign-in makes configured mail a required external under WS-003. Details are in [the operating rules](docs/contract/MECHANISM.md#oper-003).
 
 **Acceptance.**
-1. `BASE-ACCESS-001` magic links are delivered through mail sender adapter, so mail is a required external, not an optional one: startup fails under WS-003 naming the missing variable when the documented field or setting, the documented field or setting, or the documented field or setting is absent.
-2. No deployment starts in a state where no operator can sign in.
+1. Starting with any required mail-provider, credential or sender setting missing refuses startup and names the missing setting, rather than starting where no operator can sign in.
 
 **Evidence.** `tests/runtime/optional-configuration.worker.test.ts` — "native startup still names every missing required variable while absent deferred adapters do not block health"; `tests/runtime/base-auth.worker.test.ts` — "Base bootstraps once, signs in only existing operators and confirms with a read-only GET before a single-use POST"; `tests/managed-mail.test.ts` — "Managed mail uses its assigned sender for sign-in, response notifications and digests, queues rate limits and shows rejected mail to its owner"
 **Gap.** None.
@@ -141,13 +133,12 @@ Core · published · **done** · Cites BASE-ACCESS-001
 
 Core · published · **partial**
 
-**Requirement.** Pencil supports workspace time zone. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#ws-001).
+**Requirement.** The workspace uses one saved IANA time zone for business time.
 
 **Acceptance.**
-1. Settings hold one IANA time zone for the workspace.
-2. First-run setup offers the browser's IANA time zone as an editable default; existing configured workspaces retain their saved zone.
-3. Every deadline, sending window, digest send time, and operator-facing date and time is evaluated and displayed in it.
-4. A revision records the zone in force when its deadline was set, so changing the workspace zone later cannot move a deadline on an open revision.
+1. First-run setup offers the browser’s IANA zone as an editable starting value; established workspaces retain their configured zone.
+2. Deadlines, sending windows, digest sends and operator-facing dates and times are evaluated and displayed in the saved workspace zone.
+3. A published revision records the zone used for its deadline; later workspace-zone changes cannot move that open revision’s deadline.
 
 **Evidence.** `tests/e2e/publication-zone.spec.ts`, `tests/runtime/access-foundation.worker.test.ts`, `tests/runtime/analysis-safety.worker.test.ts`
 **Gap.** Missing a cited public journey that changes workspace zone after publication and reads unchanged open-revision deadline/zone. Cited journeys show settings, publication conversion and historical usage. The deadline-retention service journey is in uncited foundation.worker.test.ts.
@@ -156,27 +147,25 @@ Core · published · **partial**
 
 Core · published · **partial**
 
-**Requirement.** Pencil supports sending hours. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#ws-002).
+**Requirement.** Scheduled mail respects the workspace’s daily sending window in the WS-001 time zone.
 
 **Acceptance.**
-1. Settings hold a daily sending window in the WS-001 zone, defaulting to 09:00–17:00 every day.
-2. Scheduled mail — reminders and digests — that falls due outside the window is held and sent when the window next opens; nothing is dropped for falling outside it.
-3. Mail an operator triggers directly, and every magic link, is sent immediately regardless of the window.
+1. Settings hold the daily window, initially 09:00–17:00 every day.
+2. Reminders and digests due outside the window are retained and sent when it next opens.
+3. Operator-triggered mail and magic links send immediately, regardless of the window.
 
 **Evidence.** `tests/runtime/access-foundation.worker.test.ts`, `tests/runtime/distribution.worker.test.ts`, `tests/runtime/feedback-digest.worker.test.ts`
 **Gap.** Missing a cited public scheduling journey that holds reminders/digests outside the window, releases at opening, and sends operator-triggered mail and magic links immediately outside it. Cited files show settings through HTTP and scheduling through direct services/maintenance; the immediate exception is never exercised under an out-of-window clock.
 
-#### WS-003 — Optional externals are configuration, not degradation
+#### WS-003 — Optional analysis and task connections
 
 Core · published · **partial** · Cites BASE-SECRET-002
 
-**Requirement.** Pencil supports optional externals are configuration, not degradation. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#ws-003).
+**Requirement.** Supersedes `BASE-SECRET-002` for the optional analysis and task connections only. Their absence does not prevent the rest of Pencil from starting and serving. Details are in [the operating rules](docs/contract/MECHANISM.md#ws-003).
 
 **Acceptance.**
-1. Supersedes `BASE-SECRET-002`.
-2. Pencil starts only when every variable marked required in the declared env limits is present, and fails at startup naming the first missing one. ai provider adapter and task destination adapter are declared optional: with either absent the deployment starts and serves, every clause that does not name that adapter holds in full, and each feature offered by the implemented profile that does name it is shown as unavailable alongside page-local connection setup, with deployment variables retained as an alternative.
-3. Features deferred by the declared contract profile are omitted from the interface until implemented.
-4. No feature silently produces a reduced result instead.
+1. With either connection absent, every capability that does not depend on it remains available. A dependent feature in the implemented profile shows its unavailable state and page-local connection setup, with deployment configuration retained as an alternative.
+2. Features deferred by the declared contract profile are omitted until implemented; an absent connection never silently produces a reduced successful result.
 
 **Evidence.** `tests/e2e/review-corrections.spec.ts`, `tests/runtime/optional-configuration.worker.test.ts`
 **Gap.** Missing a cited browser journey with absent AI/task adapters that reads unavailable feature states and page-local connection setup while independent collection/results work. Startup proves optional absence permits health; cited browser does not configure absent-adapter cases.
@@ -185,36 +174,31 @@ Core · published · **partial** · Cites BASE-SECRET-002
 
 #### BRAND-001 — Saved business identity
 
-Core · published · **partial** · From BRAND-001 · Cites BASE-INPUT-002, BASE-INPUT-003
+Core · published · **partial** · From BRAND-001 · Cites BASE-INPUT-002, BASE-INPUT-003, BASE-PUBLIC-001, BASE-ACCESSIBILITY-001
 
-**Requirement.** Pencil supports saved business identity. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#brand-001).
-
-**Acceptance.**
-1. Supersedes `BASE-INPUT-003` for business logos only.
-2. Operators save the business name, one supporting line, an accent in #rrggbb format, and an optional PNG, JPEG or WebP logo within the declared limits brand limits.
-3. A fresh workspace asks its owner for the business name at first-run setup and uses neutral defaults until saved.
-4. The same saved brand appears in preview, direct and embedded forms, completion and closed states, the selected public landing, and new-response email.
-5. Email includes the saved name and supporting line as literal text and escaped HTML, the saved accent, and any validated logo as inline CID bytes with no remote resources; removing the logo affects the next dispatch run.
-6. The accent's button text has at least 4.5:1 contrast; a readable foreground is selected for other accent text.
-7. Logo removal takes effect everywhere.
-8. Authenticated server uploads check size, declared MIME and content signatures, refusing SVG.
-
-**Evidence.** `tests/e2e/business-brand.spec.ts`, `tests/runtime/brand.worker.test.ts`
-**Gap.** Missing a cited journey that dispatches and opens branded new-response mail, checks literal/escaped identity/accent/inline logo, then removes the logo and reads next mail. Cited journeys cover screens/public states/uploads/removal; neither opens new-response email.
-
-#### BRAND-003 — Saved business identity: Logos are served from this installation with the validated Content-Type and nosniff
-
-Core · published · **partial** · From BRAND-001 · Cites BASE-INPUT-002, BASE-INPUT-003
-
-**Requirement.** This part of BRAND-001 covers logos are served from this installation with the validated Content-Type and nosniff, with no third-party request.. Detailed field, format and door rules remain in [the operating rules](docs/contract/MECHANISM.md#brand-001).
+**Requirement.** Operators save business identity independently of operator-authentication branding. Supersedes `BASE-INPUT-003` for business logos only: validated business logos are public inline images included in installation exports. Details are in [the operating rules](docs/contract/MECHANISM.md#brand-001).
 
 **Acceptance.**
-1. Logos are served from this installation with the validated Content-Type and nosniff, with no third-party request.
-2. This clause supersedes BASE-INPUT-003 for business logos only: their bytes live in D1 and are deliberately public inline images, included in deployment exports, rather than private R2 downloads.
-3. Business identity is independent of Pencil's operator authentication branding.
+1. Save a business name, supporting line, hexadecimal RGB accent and optional PNG, JPEG or WebP logo within branding limits. A fresh workspace asks for the name at setup and uses neutral defaults until saved.
+2. The saved brand appears in preview, direct/embedded forms, completion/closed states and the selected public landing. Logo removal takes effect everywhere.
+3. Uploads validate size, declared type and content signature, refusing SVG. The installation serves the validated image type with content-sniffing disabled.
+4. Readable foregrounds are selected for saved-accent buttons and other accent text.
 
 **Evidence.** `tests/e2e/business-brand.spec.ts`, `tests/runtime/brand.worker.test.ts`
-**Gap.** Missing a cited journey that dispatches and opens branded new-response mail, checks literal/escaped identity/accent/inline logo, then removes the logo and reads next mail. Cited journeys cover screens/public states/uploads/removal; neither opens new-response email.
+**Gap.** Missing a cited fresh-workspace browser journey that reads neutral branding, completes the requested business name and then reads saved identity. The cited journeys cover existing-workspace branding across screens and public states, invalid uploads and complete removal; the neutral default is read only through a configuration helper.
+
+#### BRAND-003 — Branded response email
+
+Core · published · **partial** · From BRAND-001 · Cites BASE-INPUT-002, BASE-PUBLIC-001
+
+**Requirement.** New-response mail carries the saved business identity from BRAND-001. Details are in [the operating rules](docs/contract/MECHANISM.md#brand-001).
+
+**Acceptance.**
+1. The message includes the saved name/supporting line as literal text and escaped HTML, the saved accent and any validated logo embedded inline rather than loaded remotely.
+2. Removing the logo affects the next dispatch.
+
+**Evidence.** `tests/e2e/business-brand.spec.ts`, `tests/runtime/brand.worker.test.ts`
+**Gap.** Missing a cited mail journey dispatching and opening the saved name, line, accent and inline logo, then removing the logo and reading the next dispatch. Existing cited journeys show screen/logo behavior but never open new-response email.
 
 ### Dashboard
 
@@ -222,14 +206,12 @@ Core · published · **partial** · From BRAND-001 · Cites BASE-INPUT-002, BASE
 
 Core · published · **partial**
 
-**Requirement.** Pencil supports first flow. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dash-001).
+**Requirement.** A fresh workspace guides an operator from an empty dashboard to an ordinary editable form.
 
 **Acceptance.**
-1. A fresh deployment has no sample flows or responses.
-2. A workspace with no flows shows an empty state that explains Ask → Signal → Act.
-3. The empty dashboard and New flow offer Customer feedback, NPS and Contact/lead templates alongside a blank flow.
-4. Templates create ordinary editable drafts and can be duplicated under FLOW-011.
-5. Synthetic sample data is an explicit local development option.
+1. A new deployment has no sample flows or responses; its empty dashboard explains Ask → Signal → Act.
+2. The empty state and New flow offer Customer feedback, NPS, Contact/lead and a blank form. A template creates an editable draft that can be duplicated under FLOW-011.
+3. Synthetic sample data is available only as an explicit local-development choice.
 
 **Evidence.** `tests/runtime/first-owner.worker.test.ts`
 **Gap.** Missing a cited dashboard browser journey that reads empty Ask → Signal → Act and chooses Customer feedback/NPS/Contact-lead or blank drafts. First-owner journey checks zero flows and creates templates through API, never the empty dashboard or its choices.
@@ -238,41 +220,41 @@ Core · published · **partial**
 
 Core · published · **partial**
 
-**Requirement.** Pencil supports flow list. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dash-002).
+**Requirement.** Operators see the state and current activity of their flows.
 
 **Acceptance.**
-1. Operators can list flows by draft, open, closed, or archived state, sorted by last activity, with completed-response count, audience, and analysis status visible.
-2. An invited flow also shows completions divided by launched participants not bounced or opted out; zero eligible participants shows `0 / 0` with no percentage.
-3. An anonymous public flow shows starts and completions without inventing a target denominator.
+1. List draft, open, closed or archived flows by last activity, with completion count, audience and analysis state visible.
+2. Invited flows show completions divided by launched participants who neither bounced nor opted out; zero eligible participants shows 0 / 0 without a percentage.
+3. Anonymous public flows show starts and completions without inventing a target denominator.
 
 **Evidence.** `tests/runtime/feedback-attention.worker.test.ts`, `tests/runtime/foundation.worker.test.ts`, `tests/runtime/journey.worker.test.ts`
 **Gap.** Missing a cited dashboard journey that reads last-activity ordering and invited-audience completion denominators, including zero eligible participants, across state filters. Cited HTTP journeys show counts/analysis; archive filter is service-level.
 
 ### Flows
 
-#### FLOW-001 — Lifecycle
+#### FLOW-001 — Flow lifecycle
 
 Core · published · **partial**
 
-**Requirement.** Pencil supports lifecycle. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-001).
+**Requirement.** A flow moves from draft through publication and closure while retaining collected history.
 
 **Acceptance.**
-1. A new flow is draft; publishing makes it open; an open flow can close; a closed flow can reopen the same published revision only after no deadline or target condition remains satisfied, or it can archive; a draft can archive; and an archived flow cannot reopen.
-2. Draft public URLs return 404, closed revisions show the standard closed page, and archived public URLs return 404.
-3. Archiving removes the flow from default operator views without deleting its revisions, responses, analyses, or actions.
+1. A new flow is draft; publishing opens it, and an open flow may close. A closed flow may reopen the same revision only when no deadline or target remains satisfied, or may archive. Drafts may archive; archived flows cannot reopen.
+2. Draft and archived public addresses return not found; closed revisions show their closed page.
+3. Archiving removes the flow from default views while preserving revisions, responses, analyses and actions.
 
 **Evidence.** `tests/runtime/foundation.worker.test.ts`
 **Gap.** Missing a cited public lifecycle journey that completes allowed close/reopen/archive, refuses archived reopen and reads unchanged history. The cited test calls services directly; foundation-fixture methods are not HTTP proxies.
 
-#### FLOW-002 — Ordered steps
+#### FLOW-002 — Ordered form steps
 
 Core · published · **partial**
 
-**Requirement.** Pencil supports ordered steps. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-002).
+**Requirement.** Operators build an ordered form of questions and named completion screens.
 
 **Acceptance.**
-1. A draft contains an ordered list of steps: at most one welcome screen, which is optional and can only be first; one or more questions; and one or more named completion screens.
-2. Operators can add, edit, duplicate, reorder, and delete them.
+1. A draft has at most one optional welcome screen, first when present, at least one question and at least one named completion screen.
+2. Operators can add, edit, duplicate, reorder and delete these steps.
 
 **Evidence.** `tests/e2e/journey.spec.ts`
 **Gap.** Missing a cited builder journey that duplicates, reorders and deletes steps and reads the resulting order while preserving welcome/completion constraints. Cited journey adds/edits, but never performs those three operations.
@@ -281,11 +263,11 @@ Core · published · **partial**
 
 Core · published · **partial**
 
-**Requirement.** Pencil supports question types. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-003).
+**Requirement.** The builder provides standard question types using the respondent’s controls.
 
 **Acceptance.**
-1. A question is short text, long text, email, single choice, multiple choice, rating, priority, dropdown, yes/no, NPS, number, date, or consent; it has a prompt, optional why-we-ask text, required flag, and applicable editable type-specific options within the limits in `seed.json`.
-2. The builder canvas uses the same respondent controls.
+1. Choose short text, long text, email, single choice, multiple choice, rating, priority, dropdown, yes/no, NPS, number, date or consent. Each has a prompt, optional why-we-ask text, required setting and editable type-specific options within declared limits.
+2. The builder canvas uses the same controls respondents see.
 
 **Evidence.** `tests/e2e/new-question-types.spec.ts`, `tests/runtime/new-question-types.worker.test.ts`
 **Gap.** Missing a cited builder/respondent journey covering original short/long text, email, single/multiple choice, rating and priority alongside the six added types. Cited browser covers dropdown/yes-no/NPS/number/date/consent; wider type work in runtime file is largely direct services.
@@ -294,41 +276,40 @@ Core · published · **partial**
 
 Core · published · **partial** · Cites BASE-INPUT-001
 
-**Requirement.** Pencil supports saved edits. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-004).
+**Requirement.** One Save preserves content, choices and answer paths together without losing another operator’s changes.
 
 **Acceptance.**
-1. A field-valid builder write includes the draft version it read and may leave the graph incomplete until publication.
-2. One Save per step acknowledges a single version-checked transaction containing its content, choices and answer paths.
-3. Invalid writes change none of those fields.
-4. A current-version edit is persisted before the builder shows it as saved; a stale edit is rejected with the latest version and cannot overwrite another operator's edit.
-5. Leaving or reloading after the saved indicator cannot lose the accepted edit.
+1. An edit names the draft version it read. Field-valid drafts may remain incomplete until publication.
+2. A Save changes content, choices and paths together; invalid writes change none.
+3. A current edit is durably saved before Saved appears. A stale edit returns the latest version without overwriting another edit.
+4. Leaving or reloading after Saved preserves the accepted edit.
 
 **Evidence.** `tests/e2e/review-corrections.spec.ts`
 **Gap.** Missing a cited save journey that commits content/choices/paths, reloads after Saved, and attempts a stale competing edit without overwriting. Cited journey shows invalid-label refusal and editing controls, without stale-write or accepted-save reload readback.
 
-#### FLOW-005 — Branching
+#### FLOW-005 — Answer branching
 
 Core · published · **partial**
 
-**Requirement.** Pencil supports branching. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-005).
+**Requirement.** The published form and preview choose the next step from the same ordered answer rules. Details are in [the operating rules](docs/contract/MECHANISM.md#flow-005).
 
 **Acceptance.**
-1. A single-choice or dropdown answer can match equality against a stable choice ID; yes/no and consent answers can match boolean equality; rating, priority, NPS, number and calendar-date answers can match equality or ordered comparison; and a multiple-choice answer can match any or all selected stable choice IDs.
-2. Priority equality compares the complete ordering and ordered comparisons use a choice's rank.
-3. Preview shows the ordered rule evaluations and chosen next step used by the published runtime, using the same predicates. *Policy: flow branch-selection adapter; default: first matching rule in displayed order, then the required default path.
+1. Single-choice and dropdown rules compare a stable choice ID; yes/no and consent compare booleans; rating, priority, NPS, number and calendar-date rules support equality and ordered comparison; multiple choice supports any or all selected stable IDs.
+2. Priority equality compares the complete ordering; ordered comparison uses a choice’s rank.
+3. Preview shows ordered rule evaluations and the chosen next step. The replaceable branch-selection policy starts with the first displayed matching rule, then the required default path.
 
 **Evidence.** `tests/e2e/journey.spec.ts`, `tests/e2e/publication-zone.spec.ts`, `tests/e2e/review-corrections.spec.ts`
 **Gap.** Missing a cited branching journey that exercises boolean, numeric/date comparisons, priority ranking and multiple-choice any/all predicates through builder, preview and collection. Cited browser set demonstrates single-choice branching only.
 
-#### FLOW-006 — Publish validation
+#### FLOW-006 — Publication validation
 
 Core · published · **partial** · Cites BASE-INPUT-001
 
-**Requirement.** Pencil supports publish validation. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-006).
+**Requirement.** Publication checks references, termination, questions and payment placement before creating a revision.
 
 **Acceptance.**
-1. Publishing runs every FLOW-012 through FLOW-014 validation and is rejected with all offending stable step IDs and reasons; rejection creates no revision and leaves the draft editable.
-2. This clause inherits PAY-001, PAY-006, PAY-007: publishing refuses misplaced PAY-001, PAY-006, PAY-007 payment steps by step ID.
+1. A refusal under FLOW-012, FLOW-013 or FLOW-014 lists every offending stable step ID and reason, creates no revision and leaves the draft editable.
+2. Misplaced payment steps under PAY-001 are refused by step ID.
 
 **Evidence.** `tests/runtime/calculations.worker.test.ts`, `tests/runtime/foundation.worker.test.ts`, `tests/runtime/graph-reachability.worker.test.ts`
 **Gap.** Missing a cited HTTP publication journey refusing invalid graph references, unreachable/cyclic screens and invalid questions, reading stable IDs/reasons, then editing/publishing same draft. Cited HTTP journey proves payment/calculation refusal; general graph paths use services.
@@ -337,87 +318,84 @@ Core · published · **partial** · Cites BASE-INPUT-001
 
 Core · published · **done**
 
-**Requirement.** Pencil supports preview isolation. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-007).
+**Requirement.** Operators try current draft paths without collecting responses or causing external effects.
 
 **Acceptance.**
-1. Preview runs the current draft with test answers, identifies itself as preview, sends no invitations or external effects, and never creates a response or changes result counts.
+1. Preview uses test answers, identifies itself as preview, sends no invitations or other external effects and creates no response or result-count change.
 
 **Evidence.** `tests/runtime/journey.worker.test.ts` — "previews the current draft and incomplete branches with test answers while preserving every product record and effect"
 **Gap.** None.
 
 #### FLOW-008 — Published revisions
 
-Core · published · **partial**
+Core · published · **partial** · Cites BASE-PUBLIC-001
 
-**Requirement.** Pencil supports published revisions. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-008).
+**Requirement.** Publication creates an immutable numbered revision and makes it current for canonical direct and embedded addresses.
 
 **Acceptance.**
-1. Publishing creates an immutable numbered revision and makes it the current revision resolved by the flow's canonical direct and embed URL.
-2. Every invitation, first-interaction session permitted by RESP-013, completed response, analysis, and export records the revision it used; merely loading the page creates no session or visitor record.
-3. The only load-time recording is RSLT-013, RSLT-017’s anonymous aggregate counter increment, with no identifier or cookie and no link to a response.
+1. Invitations, first-interaction sessions under RESP-013, completed responses, analyses and exports each record their revision.
+2. Page load alone creates no session or visitor record; only RSLT-013’s anonymous aggregate view count is recorded, without an identifier, cookie or response link.
 
 **Evidence.** `tests/runtime/distribution.worker.test.ts`, `tests/runtime/journey.worker.test.ts`
 **Gap.** Missing a cited public revision journey that reads launched-invitation and analysis revisions and verifies load creates no session before interaction. Cited native journey proves anonymous revisions/exported answers; invitation pinning is service-level and load-only/analysis revision are not read.
 
-#### FLOW-009 — Live edits
+#### FLOW-009 — Edits to live forms
 
 Core · published · **done**
 
-**Requirement.** Pencil supports live edits. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-009).
+**Requirement.** Editing an open form prepares a new draft while its published revision stays stable.
 
 **Acceptance.**
-1. Editing an open flow changes a new draft only.
-2. Existing invitations and first-interaction sessions stay pinned to their recorded revision; publishing the draft affects only later direct or embedded sessions and later invitation launches.
+1. Existing invitations and first-interaction sessions stay pinned to their recorded revision. Publishing affects only later direct/embedded sessions and invitation launches.
 
 **Evidence.** `tests/runtime/journey.worker.test.ts` — "builds, previews, publishes and reports a branching form without preview effects; pins live revisions and exact answers"
 **Gap.** None.
 
-#### FLOW-010 — Closure
+#### FLOW-010 — Close a form
 
 Core · published · **partial**
 
-**Requirement.** Pencil supports closure. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-010).
+**Requirement.** Operators may close a form immediately or set a revision deadline or completion target.
 
 **Acceptance.**
-1. An operator may close a flow immediately or configure a revision-specific deadline or completed-response target.
-2. A deadline is an instant in the WS-001 zone recorded with that revision.
-3. A manual flow close closes every revision's admission; a deadline or target closes only that revision's admission atomically.
+1. A deadline records its instant and the WS-001 zone used to set it.
+2. Manual close stops admission on every revision. A deadline or completed-response target stops only its own revision’s admission atomically.
 
 **Evidence.** `tests/e2e/publication-zone.spec.ts`
 **Gap.** Missing a cited closure journey that reaches deadline/target and manually closes a flow, then reads admission across revisions. Cited browser sets/publishes values and stops before either closure condition or manual close.
 
-#### FLOW-011 — Duplication
+#### FLOW-011 — Duplicate a form
 
 Core · published · **partial**
 
-**Requirement.** Pencil supports duplication. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-011).
+**Requirement.** Duplication creates an independent draft from the latest draft or published structure and settings.
 
 **Acceptance.**
-1. Duplicating a flow creates an unlinked draft containing its latest draft or published structure and settings, but no audience members, invitations, responses, analyses, actions, delivery history, or external IDs.
+1. The copy has no audience, invitations, responses, analyses, actions, delivery history or external identifiers.
 
 **Evidence.** `tests/runtime/foundation.worker.test.ts`
 **Gap.** Missing a cited public duplication journey that duplicates populated data and opens the independent draft and empty audience/response/analysis/action/delivery views. Cited lifecycle test duplicates/reads directly through services.
 
-#### FLOW-012 — Valid references
+#### FLOW-012 — Valid branch references
 
 Core · published · **partial** · Cites BASE-INPUT-001
 
-**Requirement.** Pencil supports valid references. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-012).
+**Requirement.** Branch rules refer only to questions, choices and destinations in the form being published.
 
 **Acceptance.**
-1. Every branch predicate references an existing structured question and stable choice when applicable, and every branch destination references an existing question or completion screen.
+1. Each predicate names an existing structured question and, where applicable, one of its stable choices; its destination is an existing question or completion screen.
 
 **Evidence.** `src/core/features/flows/graph.contract.test.ts`
 **Gap.** Missing a cited publication-door journey accepting valid references and refusing missing/incompatible branch references without revision writes. Only cited file directly calls the graph validator.
 
-#### FLOW-013 — Reachable termination
+#### FLOW-013 — Reachable completion
 
 Core · published · **partial** · Cites BASE-INPUT-001
 
-**Requirement.** Pencil supports reachable termination. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-013).
+**Requirement.** Every published path terminates in a completion screen.
 
 **Acceptance.**
-1. The flow's first step is its welcome screen or its first question, every step is reachable from it on at least one path, and every possible path reaches one completion screen without a cycle.
+1. The first step is the optional welcome screen or first question. Every step is reachable on some path; every possible path reaches a completion screen without a cycle.
 
 **Evidence.** `tests/runtime/graph-reachability.worker.test.ts`
 **Gap.** Missing a cited publication-door journey refusing unreachable/cyclic graphs without writes, then publishing/completing reachable paths. Cited fixture calls services; cycle outcome is not exercised in this file.
@@ -426,23 +404,23 @@ Core · published · **partial** · Cites BASE-INPUT-001
 
 Core · published · **partial** · Cites BASE-INPUT-001
 
-**Requirement.** Pencil supports valid questions. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-014).
+**Requirement.** A published form has at least one valid question.
 
 **Acceptance.**
-1. Every question has a non-empty prompt within the text limit, every structured question has valid distinct options within its type limits, and the flow contains at least one question.
+1. Each question has a nonempty prompt within its text limit; structured questions have valid, distinct options within type limits.
 
 **Evidence.** `tests/e2e/review-corrections.spec.ts`
 **Gap.** Missing a cited builder/publication journey refusing empty/over-limit prompts, invalid type options and a form with no question, then publishing a valid question. Cited browser proves duplicate-label refusal, not these missing conditions.
 
-#### FLOW-015 — Stable structure IDs
+#### FLOW-015 — Stable question and choice identities
 
 Core · published · **partial**
 
-**Requirement.** Pencil supports stable structure IDs. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-015).
+**Requirement.** Question and choice identities remain stable as the form evolves.
 
 **Acceptance.**
-1. A step and each of its choices receive stable IDs when created; editing, reordering, publishing, exporting, and importing preserve them, while duplication creates new IDs.
-2. Operators enter choice labels; answer values are generated from them, remain unchanged when a saved label is renamed, and can be edited under Advanced.
+1. Creating a step or choice gives it a stable ID. Editing, reordering, publishing, exporting and importing preserve it; duplication gives the copy new IDs.
+2. Labels generate initial answer values. Renaming a saved label preserves its answer value, editable under Advanced.
 
 **Evidence.** `tests/contract/data-release.contract.test.ts`, `tests/runtime/foundation.worker.test.ts`
 **Gap.** Missing a cited authoring journey reading stable IDs through saved label rename/reorder/publication, then public duplication with new IDs and editable Advanced values. Cited archive command preserves recovery IDs; lifecycle services prove duplication without authoring door.
@@ -451,10 +429,10 @@ Core · published · **partial**
 
 Core · published · **partial**
 
-**Requirement.** Pencil supports published policy snapshot. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-016).
+**Requirement.** Each revision retains its evaluated branch-selection, response-identity and response-admission policies. Details are in [the operating rules](docs/contract/MECHANISM.md#flow-016).
 
 **Acceptance.**
-1. A published revision stores the evaluated configuration for flow branch-selection adapter, response identity adapter, and flow response-admission adapter; later policy changes affect only a newly published revision.
+1. Policy changes affect only a later publication, never a published revision.
 
 **Evidence.** `tests/runtime/graph-reachability.worker.test.ts`, `tests/runtime/policy-snapshot.worker.test.ts`
 **Gap.** Missing a cited public publish/session journey that changes policy and reads old identity/admission/branch settings on existing invitations/sessions while later publication adopts new policy. Both cited files test policy changes through direct services.
@@ -463,66 +441,67 @@ Core · published · **partial**
 
 Core · published · **partial**
 
-**Requirement.** Pencil supports revision admission. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-017).
+**Requirement.** Visits, invitations and returning sessions enter their correct revision.
 
 **Acceptance.**
-1. A new direct or embedded visit starts the current revision; an invitation starts its recorded revision; and a returning first-interaction session resumes its recorded revision.
-2. A superseded revision cannot start a new anonymous session and remains reachable only through an existing invitation or session until its admission closes.
+1. New direct/embedded visits start the current revision; invitations start their recorded revision; returning first-interaction sessions resume their recorded revision.
+2. Superseded revisions admit no new anonymous sessions; only existing invitations/sessions can reach them until admission closes.
 
 **Evidence.** `tests/runtime/distribution.worker.test.ts`, `tests/runtime/journey.worker.test.ts`
 **Gap.** Missing a cited public admission journey that refuses a fresh anonymous start on a superseded revision, resumes a returning first-interaction session and opens an old invitation until closure. Native journey shows old submission/new current session; invitation/resume admission is service-level.
 
-#### FLOW-018 — Revision counts
+#### FLOW-018 — Revision completion counts
 
 Core · published · **partial**
 
-**Requirement.** Pencil supports revision counts. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-018).
+**Requirement.** Deadline and target checks use completed responses from their own revision only.
 
 **Acceptance.**
-1. Deadline and target admission checks use completed responses for that revision only.
-2. Reaching either condition cannot close another revision, while manual close and archive close all revisions.
+1. Reaching either condition cannot close another revision; manual close and archive close every revision.
 
 **Evidence.** `tests/runtime/journey.worker.test.ts`
 **Gap.** Missing a cited two-revision count journey reaching deadline/target on one while the other stays open, then manually closing/archiving both and reading refusals. Cited native target-race journey has only one revision.
 
-#### FLOW-019 — Answer values by type
+#### FLOW-019 — Typed answer values
 
 Core · published · **partial** · Cites BASE-INPUT-001
 
-**Requirement.** Pencil supports answer values by type. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-019).
+**Requirement.** Only these typed values are valid; wire formats and limits are in the answer operating rules. Details are in [the operating rules](docs/contract/MECHANISM.md#flow-019).
 
 **Acceptance.**
-1. A stored answer is exactly one of: for short text and long text, a string within that type's character limit in the declared limits limits; for email, a syntactically valid address stored as the respondent typed it and compared case-insensitively; for single choice and dropdown without Other selected, one stable choice ID belonging to that question; for multiple choice without Other selected, a set of distinct stable choice IDs belonging to that question, within its configured minimum and maximum selections, except that the configured None option alone satisfies the minimum; when Other is selected on any of these types, exactly `{choiceIds: string[], otherText: string}`, with distinct IDs belonging to the question and including its configured Other ID, exactly one ID for single choice or dropdown, and non-blank Other text within the short-text limit and configured FIELD-013 validation.
-2. None cannot be combined with another choice or an Other-answer object, and Other text without the Other selection is invalid; for rating, an integer within the question's configured scale; for priority, a complete ordering of that question's stable choice IDs with no repetition and no omission; for yes/no, a boolean; for NPS, an integer from 0 through 10; for number, a finite number within optional minimum, maximum and decimal precision; for date, a true calendar YYYY-MM-DD value within optional earliest/latest bounds without timezone conversion; for consent, `{accepted: boolean, statement: string}` retaining the immutable published statement, with required consent accepting only true.
-3. For FIELD-003 score and FIELD-004 contact questions, the stored values are the typed, normalized values those clauses define.
-4. Nothing else is a valid answer.
+1. Short and long text stay within character limits. Email is syntactically valid, stored as typed and compared without case sensitivity.
+2. Single choice/dropdown store one stable choice of that question. Multiple choice stores distinct choices within minimum/maximum, except None alone satisfies the minimum.
+3. Other contains only selected choice IDs and write-in text: IDs belong to the question and include Other; single choice/dropdown has one ID; text is nonblank within short-text and FIELD-013 limits. None cannot combine with another choice or Other; text without Other is invalid.
+4. Rating is an integer within its scale. Priority orders every choice exactly once.
+5. Yes/no is boolean; NPS an integer 0–10; number finite within any minimum, maximum and decimal precision.
+6. Date is a true calendar YYYY-MM-DD value within any earliest/latest bounds, without time-zone conversion.
+7. Consent retains boolean acceptance and its immutable published statement; required consent accepts only true.
+8. Scores and contact answers retain typed, normalized values under FIELD-003 and FIELD-004.
 
 **Evidence.** `tests/e2e/ledger-filters.spec.ts`, `tests/runtime/foundation.worker.test.ts`, `tests/runtime/ledger-filters.worker.test.ts`
 **Gap.** Missing a cited answer-submission journey for configured Other/None objects and their exclusive selection/text refusal rules with accepted-value readback. Cited typed-filter fixture has ordinary typed answers only; Other/None objects and normalized contact/score cases never occur.
 
-#### FLOW-020 — Required applies to the path taken
+#### FLOW-020 — Required questions follow the chosen path
 
 Core · published · **done**
 
-**Requirement.** Pencil supports required applies to the path taken. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-020).
+**Requirement.** Required questions apply only to the chosen path.
 
 **Acceptance.**
-1. A required question blocks progress only on a path that reaches it.
-2. A question that the respondent's answers route around is never asked, never recorded as unanswered or missing, and never blocks final submission; publish validation does not require a required question to appear on every path.
+1. A reached required question blocks progress without an answer. A routed-around question is not asked or recorded as unanswered/missing and cannot block submission; publication need not put every required question on every path.
 
 **Evidence.** `tests/runtime/journey.worker.test.ts` — "builds, previews, publishes and reports a branching form without preview effects; pins live revisions and exact answers"
 **Gap.** None.
 
-#### FLOW-021 — Deleting a question keeps its answers
+#### FLOW-021 — Retain answers after question changes
 
 Core · published · **partial** · Cites BASE-DATA-002
 
-**Requirement.** Pencil supports deleting a question keeps its answers. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-021).
+**Requirement.** Draft changes never rewrite previously collected answers.
 
 **Acceptance.**
-1. Deleting a step in a draft changes only that draft.
-2. Answers already collected keep their stable step ID and the revision that asked them, stay in the ledger, results, exports, and existing analyses, and are never rewritten or removed by a later publication.
-3. A question first added in a later revision is never reported as unanswered by responses to an earlier revision that did not contain it.
+1. Deleting a step changes only that draft. Collected answers retain stable question ID and revision in the ledger, results, exports and existing analyses after later publication.
+2. Earlier responses are never reported as missing answers to a question introduced later.
 
 **Evidence.** `tests/runtime/journey.worker.test.ts`
 **Gap.** Missing a cited question-deletion journey collecting answers/analysis, deleting draft step, republishing and opening retained ledger/results/export/analysis. Cited comparison journey adds a question and renames labels, but never deletes a draft question.
@@ -573,135 +552,113 @@ Core · published · **done**
 
 #### AUD-001 — Contacts
 
-Core · published · **done**
+Core · published · **done** · Cites BASE-INPUT-001, BASE-DATA-003
 
-**Requirement.** Pencil supports contacts. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#aud-001).
+**Requirement.** Operators manage contacts with names, emails and custom fields.
 
 **Acceptance.**
-1. Operators can create, edit, import, and delete contacts with name, email, and custom fields.
-2. Email addresses compare case-insensitively and an import reports, rather than silently duplicating, matching contacts.
+1. Create, edit, import and delete contacts. Email matching ignores case; imports report matches instead of silently duplicating.
 
 **Evidence.** `tests/e2e/distribution-foundation.spec.ts` — "invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey"; `tests/runtime/audience.worker.test.ts` — "audience CSV public preview and commit report case matches, repeats, invalid rows and explicit updates without retaining raw CSV"
 **Gap.** None.
 
-#### AUD-002 — Segments
+#### AUD-002 — Segments and frozen launches
 
 Core · published · **done**
 
-**Requirement.** Pencil supports segments. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#aud-002).
+**Requirement.** Saved segments filter contacts by stored fields. Details are in [the operating rules](docs/contract/MECHANISM.md#aud-002).
 
 **Acceptance.**
-1. A segment filters contacts by stored fields.
-2. Launching invitations records the participant set plus evaluated flow audience-eligibility adapter and flow reminder-schedule adapter configuration, so later contact, segment, or policy changes do not rewrite the launch; AUD-006 still enforces current hard consent and existence checks at send time.
+1. Invitation launch records participants and evaluated eligibility/reminder policies. Later contact, segment or policy changes cannot rewrite it; AUD-006 applies current consent/existence checks before sending.
 
 **Evidence.** `tests/runtime/audience.worker.test.ts` — "saved segments launch a frozen evaluated audience and concurrent command replay creates no extra participants, jobs or attempts"; `tests/e2e/distribution-foundation.spec.ts` — "invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey"
 **Gap.** None.
 
-#### AUD-003 — Participants
+#### AUD-003 — Invitation participants
 
-Core · published · **partial**
+Core · published · **partial** · Cites BASE-MAIL-001
 
-**Requirement.** Pencil supports participants. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#aud-003).
+**Requirement.** Each invitee has an opaque capability and independent delivery, consent and response states.
 
 **Acceptance.**
-1. Each invited contact becomes one participant with an opaque invitation token, independent queued/sent/bounced/failed delivery status, eligible/opted-out consent status, and not-started/started/completed response status.
-2. Delivery attempts are append-only, and names, emails, and other contact values never appear in the public URL.
+1. Delivery is queued, sent, bounced or failed; consent eligible or opted out; progress not started, started or completed.
+2. Attempts are append-only. Public invitation addresses never contain names, emails or other contact values.
 
 **Evidence.** `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey”, `tests/runtime/distribution.worker.test.ts`
 **Gap.** Missing a cited public delivery journey that records a second attempt and reads append-only attempt history plus independent bounced/failed/consent states. Browser journey reads sent/pending/completed participants; attempt and consent transitions in distribution.worker.test.ts run through services.
 
-#### AUD-004 — Eligibility
+#### AUD-004 — Invitation eligibility
 
 Core · published · **partial**
 
-**Requirement.** Pencil supports eligibility. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#aud-004).
+**Requirement.** Audience policy may narrow eligibility but cannot admit missing-email or opted-out contacts. Details are in [the operating rules](docs/contract/MECHANISM.md#aud-004).
 
 **Acceptance.**
-1. Invitations are created only for contacts allowed by the audience policy; that policy may narrow but never admit a missing-email or opted-out contact. *Policy: flow audience-eligibility adapter; default: also exclude contacts already invited to that published revision.
+1. The replaceable policy initially also excludes contacts already invited to that published revision.
 
 **Evidence.** `tests/runtime/audience.worker.test.ts`
 **Gap.** Missing a cited public eligibility journey that tries a new launch command for already-invited and missing-email contacts, reads exclusions and unchanged participants, then completes eligible launch. Cited public journey excludes opted-out contacts and replays same command; broader policy exclusions are direct services.
 
-#### AUD-005 — Launch idempotency
+#### AUD-005 — Replay a launch
 
 Core · published · **done** · Cites BASE-OPS-003
 
-**Requirement.** Pencil supports launch idempotency. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#aud-005).
+**Requirement.** A launch command for one revision can be retried safely.
 
 **Acceptance.**
-1. Repeating the same audience-launch command for one revision returns the original launch and cannot create duplicate participants, invitation jobs, or delivery attempts.
+1. Repeating it returns its original launch without extra participants, invitation jobs or attempts.
 
 **Evidence.** `tests/runtime/audience.worker.test.ts` — "saved segments launch a frozen evaluated audience and concurrent command replay creates no extra participants, jobs or attempts"
 **Gap.** None.
 
-#### AUD-006 — Send-time eligibility
+#### AUD-006 — Eligibility at send time
 
 Core · published · **partial**
 
-**Requirement.** Pencil supports send-time eligibility. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#aud-006).
+**Requirement.** Invitations/reminders retain recipient snapshots but respect current consent and existence.
 
 **Acceptance.**
-1. Immediately before each invitation or reminder, Pencil verifies that the contact still exists and has not opted out.
-2. Mail uses the participant email snapshot displayed and recorded at launch; editing the contact later never silently reroutes an active participant.
+1. Before sending, Pencil verifies the contact still exists and has not opted out.
+2. Mail uses the email snapshot shown/recorded at launch; later edits never silently reroute an active participant.
 
 **Evidence.** `tests/runtime/audience.worker.test.ts`, `tests/runtime/distribution.worker.test.ts`
 **Gap.** Missing a cited public/scheduled delivery journey that attempts invitations and reminders after contact opt-out/deletion, observes no send/no new attempt and then observes allowed snapshot-address send. Cited file mutates contacts through HTTP but invokes each send-time guard directly on delivery services.
 
 ### Distribution
 
-#### DIST-001 — Public link
+#### DIST-001 — Public form link
 
 Core · published · **done** · Cites BASE-PUBLIC-001
 
-**Requirement.** Pencil supports public link. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-001).
+**Requirement.** Open revisions have canonical direct links for respondents.
 
 **Acceptance.**
-1. Every open revision has a canonical direct link that renders the respondent experience without an operator session.
+1. The link renders the respondent experience without an operator session.
 
 **Evidence.** `tests/e2e/public-flow.spec.ts` — "direct and embedded respondents complete the same accessible flow without an operator session"
 **Gap.** None.
 
-#### DIST-002 — Embed
+#### DIST-002 — Inline embed
 
 Core · published · **partial** · From DIST-002 · Cites BASE-PUBLIC-001, BASE-PUBLIC-002
 
-**Requirement.** Pencil supports embed. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-002).
+**Requirement.** An asynchronous script or secure iframe places the same respondent experience in a host page. Isolation follows DIST-009; payment handoff follows DIST-022. Details are in [the operating rules](docs/contract/MECHANISM.md#dist-002).
 
 **Acceptance.**
-1. One asynchronous script or HTTPS iframe embeds the same respondent experience.
-2. It does not block the host page, and direct and embedded submissions produce the same response data and validation.
-3. Script embeds use an asynchronously loaded installation-origin script that mounts a sandboxed iframe without allow-same-origin, resizes to its content and emits only loaded, height, completed and checkout events.
-4. Exact allowed host origin, exact frame source, opaque child origin, challenge and field shape are checked.
-5. No answers, response identifiers, credentials or contact details enter the host URL, DOM or messages.
-6. The plain iframe option remains available.
-7. The checkout message carries only the HTTPS Checkout URL on a Stripe-owned origin and the session ID, with no payer data.
-8. It is posted to the exact owner-configured embedding origin, never `*`; the host must be on the form's allowed-origin list or no checkout event is sent and the respondent gets the same-tab fallback.
-
-**Evidence.** `tests/e2e/public-flow.spec.ts` — “direct and embedded respondents complete the same accessible flow without an operator session” — “the accessible embedded route completes the same flow inside a real iframe”, `tests/e2e/script-embed.spec.ts`, `tests/e2e/calculations.spec.ts`, `tests/e2e/closed-flow.spec.ts` — “closed flows refuse late submissions, retain their named document and embed boundaries, and disappear after archival” (1440/390)
-**Gap.** Opaque script/iframe collection and exact host/frame admission have local browser proof. Checkout carries only its Stripe HTTPS URL and Checkout Session ID plus the transport challenge, targets the configured allowed origin, and is consumed once in child and host. The four permitted events include loaded acknowledgements; other message shapes are refused. An allowed script frame without acknowledgement offers an explicit user-activated same-tab continuation. Gap: a disallowed embedding host is refused with 403 before any payment can start, so its checkout same-tab fallback is not implemented; child rejection of an application receipt with extra payer fields is not asserted through a public door. Payment in a plain iframe remains PAY-001's named gap.
-
-#### DIST-022 — Embed: There is one handoff per payment attempt
-
-Core · published · **partial** · From DIST-002 · Cites BASE-PUBLIC-001, BASE-PUBLIC-002
-
-**Requirement.** This part of DIST-002 covers there is one handoff per payment attempt.. Detailed field, format and door rules remain in [the operating rules](docs/contract/MECHANISM.md#dist-002).
-
-**Acceptance.**
-1. There is one handoff per payment attempt.
-2. No other new host event is permitted without ct's ruling.
+1. Embedding does not block the host page; direct and embedded submissions produce the same response data and validation.
+2. The script loads from the installation, mounts a sandboxed isolated frame and resizes to its content. A plain iframe remains available.
 
 **Evidence.** `tests/e2e/public-flow.spec.ts` — “direct and embedded respondents complete the same accessible flow without an operator session” — “the accessible embedded route completes the same flow inside a real iframe”, `tests/e2e/script-embed.spec.ts`, `tests/e2e/calculations.spec.ts`, `tests/e2e/closed-flow.spec.ts` — “closed flows refuse late submissions, retain their named document and embed boundaries, and disappear after archival” (1440/390)
 **Gap.** Opaque script/iframe collection and exact host/frame admission have local browser proof. Checkout carries only its Stripe HTTPS URL and Checkout Session ID plus the transport challenge, targets the configured allowed origin, and is consumed once in child and host. The four permitted events include loaded acknowledgements; other message shapes are refused. An allowed script frame without acknowledgement offers an explicit user-activated same-tab continuation. Gap: a disallowed embedding host is refused with 403 before any payment can start, so its checkout same-tab fallback is not implemented; child rejection of an application receipt with extra payer fields is not asserted through a public door. Payment in a plain iframe remains PAY-001's named gap.
 
 #### DIST-003 — Invitations
 
-Core · published · **partial**
+Core · published · **partial** · Cites BASE-MAIL-001
 
-**Requirement.** Pencil supports invitations. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-003).
+**Requirement.** An operator sends invitations to eligible participants.
 
 **Acceptance.**
-1. An operator can send an invitation to eligible participants.
-2. Each message names the business and flow, contains that participant's opaque link, and records a durable delivery attempt before calling mail sender adapter.
+1. Each message names the business and flow, carries that participant’s opaque link, and has a durable attempt recorded before the mail-provider call.
 
 **Evidence.** `tests/runtime/distribution.worker.test.ts`
 **Gap.** Missing a cited operator launch/mail transport journey that sends eligible invitation, opens business/form/opaque-link content and observes durable attempt before provider call. Only cited file prepares and records delivery through services.
@@ -710,25 +667,24 @@ Core · published · **partial**
 
 Core · published · **partial**
 
-**Requirement.** Pencil supports reminders. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-004).
+**Requirement.** A reminder follows an invitation only while the respondent remains eligible.
 
 **Acceptance.**
-1. Reminders are sent only to sent participants who have not completed, opted out, bounced, or reached a closed or archived flow.
-2. Completion cancels pending reminders. *Policy: flow reminder-schedule adapter; default: one reminder 2 days after the invitation, released within the WS-002 sending hours.
+1. Send only to a sent participant who has not completed, opted out or bounced, while the flow is neither closed nor archived. Completion cancels pending reminders.
+2. The replaceable schedule initially sends one reminder two days after invitation, released within WS-002 sending hours.
 
 **Evidence.** `tests/runtime/distribution.worker.test.ts`
 **Gap.** Missing a cited public scheduled reminder journey that delivers to eligible sent/noncompleted recipient and refuses unsafe completed/opted-out/bounced/closed/archived sends without changes. Cited Evidence file exercises reminder eligibility and cancellation only through direct services.
 
-#### DIST-005 — Opt-out
+#### DIST-005 — Opt-out and renewed consent
 
 Core · published · **partial**
 
-**Requirement.** Pencil supports opt-out. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-005).
+**Requirement.** Recipients can stop flow mail without deleting their responses.
 
 **Acceptance.**
-1. Every invitation and reminder includes an opt-out link.
-2. Opting out prevents future flow mail to that contact regardless of policy.
-3. Renewed consent records its actor, time, and source before mail can resume; opt-out does not delete an existing response.
+1. Every invitation and reminder includes an opt-out link. Opt-out prevents all later flow mail to that contact regardless of policy.
+2. Mail resumes only after renewed consent records actor, time and source; existing responses survive opt-out.
 
 **Evidence.** `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey”, `tests/runtime/distribution.worker.test.ts`
 **Gap.** Missing a cited public consent-renewal journey that records actor/time/source and then reads resumed mail without deleting existing response. Browser journey saves opt-out; renewal/readback and no-later-send checks in distribution.worker.test.ts use services.
@@ -737,95 +693,117 @@ Core · published · **partial**
 
 Core · published · **partial** · Cites BASE-OPS-003, BASE-OPS-004
 
-**Requirement.** Pencil supports mail retry. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-006).
+**Requirement.** Transient mail failures retry with their original delivery identity.
 
 **Acceptance.**
-1. A transient mail sender adapter failure is retried at most 5 times over 1 hour using the original delivery idempotency key.
+1. Retry at most five times over one hour, always using the original delivery idempotency key.
 
 **Evidence.** `tests/runtime/distribution.worker.test.ts`, `tests/runtime/feedback-digest.worker.test.ts`, `tests/runtime/notifications.worker.test.ts`
 **Gap.** Missing a cited public scheduled delivery journey driving transient failure through five retries over one hour and reading original-key attempt history plus terminal refusal. All cited retry loops invoke delivery/dispatcher services directly, not the native scheduled Worker transport.
 
-#### DIST-007 — Adapter isolation
+#### DIST-007 — Mail failure isolation
 
-Core · published · **partial**
+Core · published · **partial** · Cites BASE-OPS-004
 
-**Requirement.** Pencil supports adapter isolation. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-007).
+**Requirement.** A broken required mail connection affects mail-dependent work without stopping independent Pencil work.
 
 **Acceptance.**
-1. Mail cannot be unconfigured (OPER-003).
-2. A failing mail sender adapter disables invitations, reminders, notification mail, and new magic-link sign-ins with a named error visible to operators, while existing operator sessions, direct links, embeds, response collection, results, the ledger, and exports keep working.
-3. Recovery is restoring the sender; Pencil offers no password or bypass sign-in.
+1. Invitations, reminders, notification mail and new magic-link sign-ins become unavailable with a named operator-visible error; existing sessions, direct links, embeds, response collection, results, ledger and exports keep working.
+2. Recovery restores the sender; OPER-003 keeps mail required and there is no password or bypass sign-in.
 
 **Evidence.** `tests/runtime/base-auth.worker.test.ts`
 **Gap.** Missing a cited sender-failure journey that reads operator-visible named failure for invitations/reminders/notifications and successfully collects via direct/embed, opens results/ledger/exports with existing session. Cited journey fails sign-in send and checks dashboard/health only.
 
-#### DIST-008 — Terminal delivery
+#### DIST-008 — Failed invitation recovery
 
-Core · published · **partial** · Cites BASE-OPS-004
+Core · published · **partial** · Cites BASE-OPS-004, BASE-MAIL-001
 
-**Requirement.** Pencil supports terminal delivery. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-008).
+**Requirement.** Operators can inspect and retry a failed invitation.
 
 **Acceptance.**
-1. A permanent mail failure or exhausted retry is marked failed with the provider reason and retry action visible to operators; no invitation is recorded as sent merely because it was queued.
+1. A permanently failed or retry-exhausted invitation shows its failed state, provider reason and retry action. Queuing alone never presents the invitation as sent.
 
 **Evidence.** `tests/e2e/mail-recovery.spec.ts`, `tests/runtime/distribution.worker.test.ts`
 **Gap.** Missing a cited public permanent/exhausted delivery journey that reads failed status with provider reason and retry action, with queued never shown sent. Browser journey covers unknown outcome; permanent/exhausted failed states in distribution.worker.test.ts are service-only.
 
 #### DIST-009 — Embed isolation
 
-Core · published · **partial** · Cites BASE-PUBLIC-001, BASE-PUBLIC-002
+Core · published · **partial** · From DIST-009 · Cites BASE-PUBLIC-002
 
-**Requirement.** Pencil supports embed isolation. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-009).
+**Requirement.** Embedded forms preserve the respondent’s privacy from their host page. Details are in [the operating rules](docs/contract/MECHANISM.md#dist-009).
 
 **Acceptance.**
-1. The embed rejects a host origin not allowed by BASE-PUBLIC-002 before rendering the flow.
-2. It exposes no answer, response ID, participant token, or contact value to the host URL, DOM, or `postMessage`; host communication is limited to non-identifying loaded, height, completed and checkout events.
-3. The checkout message carries only the HTTPS Checkout URL on a Stripe-owned origin and the session ID, with no payer data.
-4. It is posted to the exact owner-configured embedding origin, never `*`; the host must be on the form's allowed-origin list or no checkout event is sent and the respondent gets the same-tab fallback.
-5. There is one handoff per payment attempt.
-6. No other new host event is permitted without ct's ruling.
+1. Host communication validates the exact allowed origin, frame source, isolated child identity, challenge and message shape.
+2. No answer, response identifier, participant capability, credential or contact value appears in host addresses, page content or messages.
+3. Host messages are limited to load, height, completion and the DIST-022 checkout handoff; adding a host event needs a ct ruling.
 
 **Evidence.** `tests/e2e/embed-security-foundation.spec.ts`, `tests/e2e/rendering-migration.spec.ts`, `tests/e2e/script-embed.spec.ts`, `tests/e2e/calculations.spec.ts` (1440/390)
 **Gap.** Opaque child isolation, exact origin/source/challenge admission, strict four-event messages, Stripe HTTPS URL/Checkout Session ID projection, exact outbound target and handoff replay refusal have local assertions through the script/payment journeys. Non-HTTPS and non-Stripe provider URLs produce no checkout message or navigation. Missing acknowledgement on an allowed script frame exposes a user-activated same-tab continuation. Gap: disallowed-host checkout fallback cannot occur after the existing pre-render 403; extra payer fields on an application payment receipt have no public-door child rejection proof. Plain iframe payments remain outside this handoff proof.
 
-#### DIST-010 — Ambiguous mail outcome
+#### DIST-022 — Embedded payment handoff
 
-Core · published · **done** · Cites BASE-OPS-004
+Core · published · **partial** · From DIST-002, DIST-009 · Cites BASE-PUBLIC-002
 
-**Requirement.** Pencil supports ambiguous mail outcome. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-010).
+**Requirement.** An embedded payment can hand Checkout to its configured host without exposing payer data. Details are in [the operating rules](docs/contract/MECHANISM.md#dist-002).
 
 **Acceptance.**
-1. mail sender adapter implements send-or-get by delivery idempotency key when its provider supports lookup.
-2. An ambiguous timeout without lookup is marked unknown and is not automatically retried; an operator may reconcile or explicitly resend it with the duplicate-delivery risk shown.
+1. A checkout handoff carries only a secure Stripe-owned Checkout address and its session ID, without payer data.
+2. It goes to the exact owner-configured embedding origin, never a wildcard. A host outside the allowed list gets no checkout event and the respondent uses same-tab fallback.
+3. Each payment attempt produces one handoff.
+
+**Evidence.** `tests/e2e/public-flow.spec.ts` — “direct and embedded respondents complete the same accessible flow without an operator session” — “the accessible embedded route completes the same flow inside a real iframe”, `tests/e2e/script-embed.spec.ts`, `tests/e2e/calculations.spec.ts`, `tests/e2e/closed-flow.spec.ts` — “closed flows refuse late submissions, retain their named document and embed boundaries, and disappear after archival” (1440/390)
+**Gap.** Opaque script/iframe collection and exact host/frame admission have local browser proof. Checkout carries only its Stripe HTTPS URL and Checkout Session ID plus the transport challenge, targets the configured allowed origin, and is consumed once in child and host. The four permitted events include loaded acknowledgements; other message shapes are refused. An allowed script frame without acknowledgement offers an explicit user-activated same-tab continuation. Gap: a disallowed embedding host is refused with 403 before any payment can start, so its checkout same-tab fallback is not implemented; child rejection of an application receipt with extra payer fields is not asserted through a public door. Payment in a plain iframe remains PAY-001's named gap.
+
+#### DIST-010 — Uncertain mail recovery
+
+Core · published · **done** · Cites BASE-MAIL-001, BASE-OPS-004
+
+**Requirement.** An uncertain mail submission never silently becomes another send.
+
+**Acceptance.**
+1. Where provider lookup is supported, send-or-get uses the original delivery idempotency key.
+2. Without lookup, an ambiguous timeout stays unknown without automatic retry; an operator may reconcile or explicitly resend after seeing the duplicate-delivery risk.
 
 **Evidence.** `tests/e2e/mail-recovery.spec.ts` — "a real sender failure is visible and an explicit duplicate-risk retry retains its durable key and history"
 **Gap.** None.
 
-#### DIST-012 — QR codes and kiosk mode
+#### DIST-012 — Collector QR codes
 
 Core · published · **done**
 
-**Requirement.** Pencil supports qR codes and kiosk mode. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-012).
+**Requirement.** Each public collector has a source-labelled collection address and QR download.
 
 **Acceptance.**
-1. Every public collector, including each named collector and the default direct and embed links, has its own public URL and a downloadable QR code (SVG and PNG) carrying its source label.
-2. Invitation, imported and unknown system-source buckets are historical attribution, not public collectors: they have no public collection URL, receive no QR code, and retain their existing identity semantics; kiosk mode restarts the form after completion on a shared device, clears all answers from the browser after a configurable idle time, and never shows the previous respondent's answers.
-3. Through the browser, checks the public URL and SVG/PNG QR downloads for each named public collector and the default direct and embed links, scans each QR to collect a response with the matching source, and verifies that invitation, imported and unknown system-source buckets offer neither a public collection URL nor a QR download and retain their identity semantics; it completes a kiosk form twice and proves the second session starts empty and the first response's source is the kiosk collector, then waits through the configured idle time and verifies that all browser answers are cleared and the previous respondent's answers are never shown.
+1. Named collectors and default direct/embed links offer SVG and PNG QR codes; scanning either collects a response with that collector’s source.
+2. Invitation, imported and unknown buckets retain historical identity semantics but offer neither public collection addresses nor QR codes.
 
 **Evidence.** `tests/e2e/kiosk.spec.ts` — "download labelled QR codes and collect isolated shared-device responses with idle clearing"; `tests/runtime/qr.worker.test.ts` — "QR downloads require operator authority, retain the exact collection link and reject unrelated collectors and formats"
 **Gap.** None.
 
-#### DIST-019 — Restricted access
+#### DIST-019 — Restricted collection
 
-Core · published · **done** · Cites BASE-ACCESS-002
+Core · published · **done** · Cites BASE-INPUT-001
 
-**Requirement.** Pencil supports restricted access. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-019).
+**Requirement.** A form can require a password, verified email or a signed link before exposing its first step.
 
 **Acceptance.**
-1. A form can require a password, a verified email in an allowed domain or list (by one-time code, one response per verified email), or a signed link from the business's own app; the restriction is checked on the server before the first step renders and is stated in RESP-005's disclosure when it makes the response identified.
-2. Through the browser, is refused without the password, verifies an allowed-domain email by code and completes once, and a second completion by the same email is refused.
+1. Email restrictions support allowed domains/lists and one-time codes, with one response per verified email; the business’s own app may instead issue signed links.
+2. The server enforces the restriction before rendering and RESP-005 discloses any resulting identification. A respondent without the password is refused; an allowed email can verify and complete once, while its second completion is refused.
 
 **Evidence.** `tests/e2e/restricted-access.spec.ts` — "build password, verified-email and app-signed forms, with server-first gating and one completion per verified email"; `tests/runtime/restricted-access.worker.test.ts` — "restricted collection gates graph and session doors, verifies identity, serializes email uniqueness and binds app signatures to their revision"; `scripts/deployment-data-custody-replay.check.mjs` — "[DATA-001,BASE-DATA-001,IMPORT-004,BASE-OPS-003,LEDG-006,PAY-001] whole-data delivery recovery retains exact product custody and never replays restored capabilities"
+**Gap.** None.
+
+#### DIST-023 — Shared-device kiosk
+
+Core · published · **done** · From DIST-012
+
+**Requirement.** A shared-device form clears one respondent’s state before another begins.
+
+**Acceptance.**
+1. After completion the form restarts empty; two successive completions retain distinct responses with the kiosk collector’s source.
+2. A configurable idle timeout clears abandoned browser answers. The next respondent never sees the previous answers.
+
+**Evidence.** `tests/e2e/kiosk.spec.ts` — "download labelled QR codes and collect isolated shared-device responses with idle clearing"; `tests/runtime/qr.worker.test.ts` — "QR downloads require operator authority, retain the exact collection link and reject unrelated collectors and formats"
 **Gap.** None.
 
 ### Responding
@@ -1894,34 +1872,33 @@ Core · target · **missing** · Cites BASE-ACCESS-004
 
 #### BRAND-002 — Form design themes
 
-Core · target · **partial** · From BRAND-002
+Core · target · **partial** · From BRAND-002 · Cites BASE-INPUT-003, BASE-PUBLIC-001, BASE-ACCESSIBILITY-001
 
-**Requirement.** Pencil supports form design themes. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#brand-002).
+**Requirement.** Editors choose a named per-form theme; a new form starts from the workspace default, based on BRAND-001 identity. Theme reuse and revision custody follow BRAND-004. Details are in [the operating rules](docs/contract/MECHANISM.md#brand-002).
 
 **Acceptance.**
-1. An Editor keeps a library of named themes (for example one per campaign or client) and chooses one per form; a new form uses the workspace default theme, which starts from BRAND-001, BRAND-003's accent and logo.
-2. A theme sets: a question font and an answer-and-button font, chosen from a bundled set of open-licensed families or an uploaded WOFF2 the owner is licensed to use (size- and signature-checked like BRAND-001, BRAND-003 logos), always served from this installation so BASE-PUBLIC-001 holds; separate #rrggbb colors for questions, answers, buttons, button text and background; a background color or a PNG, JPEG or WebP background image with brightness from −100 to 100 and a focal point; corner style; and, per welcome, question and completion screen, an image or video layout (above the question, beside it on the left or right, or behind it as a full-bleed backdrop) with its own phone layout.
-3. The theme applies to preview, direct, embedded, popup and kiosk forms and their completion and closed states, and RESP-020, RESP-027 and NOTIFY-006, NOTIFY-007 emails take its colors.
-4. Every text and background pair, measured against the background color and against the background image at its brightness, must reach A11Y-001's 4.5:1 (3:1 for large text, focus indicators and button borders); A11Y-002 refuses publish and names the failing pair and screen.
-5. A published revision snapshots its theme under FLOW-008, so editing a theme lists the forms that use it and changes each one only at its next publish.
-6. Themes are duplicated, renamed and deleted (deletion is refused while a draft or published form uses the theme), and are carried in deployment exports.
-7. This clause inherits TMPL-002: a saved team template retains its chosen per-form theme, and a new form made from it uses that theme.
-8. Through the browser, publishes two forms on two themes and asserts, at phone and desktop widths, that each renders its own computed font families, question, answer, button and background colors, background image and brightness, and screen layout, and that every request the respondent page makes is to the installation origin; Through the public door, refuses publish of a theme whose button text is 2:1 against the button and names that pair; editing a theme leaves a published form's revision unchanged until it is republished.
+1. A theme chooses question and answer/button fonts from bundled open-licensed families or owner-licensed uploaded WOFF2, with size/signature validation and installation-local serving.
+2. Set separate RGB colors for questions, answers, buttons, button text and background; choose a solid background or PNG/JPEG/WebP image with −100 to 100 brightness and a focal point, and a corner style.
+3. Welcome, question and completion screens each choose image/video placement above, beside left/right or full-bleed behind, with a separate phone layout.
+4. The theme applies to preview, direct, embedded, popup and kiosk forms and completion/closed states; respondent confirmation and response-notification mail use its colors.
+5. Text/background pairs, including the adjusted background image, meet Base accessibility requirements. A11Y-002 refuses publication with the failing pair and screen named.
 
 **Evidence.** `src/core/features/brand/brand.ts`, `public/fonts/`, `tests/runtime/brand.worker.test.ts`, `tests/e2e/business-brand.spec.ts`
 **Gap.** Named themes, per-form choice, font choice, element colors, backgrounds and layouts do not.
 
-#### BRAND-004 — Form design themes: The journey also saves a themed form as a team template and proves a new form from it
+#### BRAND-004 — Reusable theme custody
 
-Core · target · **partial** · From BRAND-002
+Core · target · **missing** · From BRAND-002 · Cites BASE-DATA-001
 
-**Requirement.** This part of BRAND-002 covers the journey also saves a themed form as a team template and proves a new form from it keeps that theme.. Detailed field, format and door rules remain in [the operating rules](docs/contract/MECHANISM.md#brand-002).
+**Requirement.** An Editor’s theme library supports campaigns, clients and reusable team templates. Details are in [the operating rules](docs/contract/MECHANISM.md#brand-002).
 
 **Acceptance.**
-1. The journey also saves a themed form as a team template and proves a new form from it keeps that theme.
+1. Duplicate, rename and delete themes; refuse deletion while a draft or published form uses the theme. Installation exports retain the library.
+2. A published revision snapshots its theme. Editing a theme lists affected forms and changes each only at its next publication.
+3. A TMPL-002 team template retains its chosen theme; a new form made from that template uses it.
 
 **Evidence.** `src/core/features/brand/brand.ts`, `public/fonts/`, `tests/runtime/brand.worker.test.ts`, `tests/e2e/business-brand.spec.ts`
-**Gap.** Named themes, per-form choice, font choice, element colors, backgrounds and layouts do not.
+**Gap.** No reusable-theme create, duplicate, choose-per-form and publish workflow is implemented; the old evidence covers workspace branding only.
 
 ### Target: templates and generated forms
 
@@ -1958,13 +1935,13 @@ Core · target · **done**
 
 Core · target · **partial** · Cites BASE-AGENT-007, BASE-AGENT-008
 
-**Requirement.** Pencil supports generate a form from a prompt or a document. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#ai-001).
+**Requirement.** The configured AI provider drafts an editable form from a goal or source document.
 
 **Acceptance.**
 1. An operator describes the goal in words, or pastes or uploads a document (Word, PDF, Google Doc export, an existing paper form or a SurveyMonkey/Typeform question list), and the configured ai provider adapter drafts a form: question types, choices, required flags, branching, hidden fields and a completion screen.
 2. The draft opens in the builder with each generated step marked, passes FLOW-012 to FLOW-014 before it can be published, and its agent publication, distribution and connection calls carry external and, for connection credentials, security or gated as the provider step requires; the company’s policy decides each step.
 3. Uploaded source documents are used for this request only and are not retained.
-4. Through the AI receiver fixture turns a prompt and a two-page PDF into drafts whose graph validates; schema-invalid provider output fails under ANLY-012 rules with no draft written; Through the browser, edits and publishes the generated, draft.
+4. Using an AI receiver fixture, turn a prompt and a two-page PDF into graph-valid drafts; schema-invalid output writes no draft. In the browser, edit and publish the generated form under the held company policy.
 
 **Evidence.** `tests/runtime/feedback-rewrites.worker.test.ts` — rewrite requests preserve the source and draft until explicit guarded acceptance, with real provider calls, failure and usage attribution; `tests/e2e/analysis.spec.ts` — an operator requests analysis, reads a quoted finding back to its response, sees a small theme withheld, turns the recommendation into an action and retries a failed run; Studio generation runs inside both tagged tests (`tests/runtime/studio-scenario.ts`, `tests/e2e/studio-journey.ts`)
 **Gap.** Explicit provider-origin requests generate validated drafts from a goal and bounded text, Markdown, CSV or HTML, with all native question types, typed hidden fields and forward branching. Invalid output writes no draft or answered usage row; source text and goals are not retained. Generated marks appear in Studio review, not the builder. PDF/Word readers, generated marks in the builder, compound conditions, hidden-field branch operands and recall generation remain unbuilt.
@@ -2234,7 +2211,7 @@ Core · target · **partial** · From FIELD-015 · Cites BASE-ACCESSIBILITY-001
 6. In an en-GB browser, 07/04/2026 entered under MM/DD/YYYY appears that way in recall and review and exports as 2026-07-04; 02/30/2026 is refused, and the same entered date under DD/MM/YYYY is stored as 2026-04-07.
 
 **Evidence.** `src/core/shared/dateFormat.ts`, `src/core/shared/ui/CalendarDateInput.tsx`, `src/core/shared/answerRecall.ts`, `src/core/features/reporting/repository.ts`, `tests/runtime/new-question-types.worker.test.ts`, `tests/runtime/form-import.worker.test.ts`, `tests/e2e/date-format.spec.ts`
-**Gap.** A cited public-door journey must import a Typeform date structure/separator and read its retained setting. The browser journey proves locale-independent entry, refusal, recall, review/completion, ledger and ISO export, but the cited Typeform format check uses FormImports directly rather than an import route or command.
+**Gap.** A cited journey must read the date in an answer-bearing response email using the published display format. The cited browser journey covers locale-independent entry, invalid-date refusal, recall, review/completion, ledger display and ISO export; source-import proof belongs separately to FIELD-020.
 
 #### FIELD-020 — Import date formats
 
@@ -2248,7 +2225,7 @@ Core · target · **partial** · From FIELD-015
 3. A Typeform day/month/year date with a dot separator arrives in the import review with that same format and separator.
 
 **Evidence.** `src/core/shared/dateFormat.ts`, `src/core/shared/ui/CalendarDateInput.tsx`, `src/core/shared/answerRecall.ts`, `src/core/features/reporting/repository.ts`, `tests/runtime/new-question-types.worker.test.ts`, `tests/runtime/form-import.worker.test.ts`, `tests/e2e/date-format.spec.ts`
-**Gap.** A cited public-door journey must import a Typeform date structure/separator and read its retained setting. The browser journey proves locale-independent entry, refusal, recall, review/completion, ledger and ISO export, but the cited Typeform format check uses FormImports directly rather than an import route or command.
+**Gap.** A cited public import journey must retain Typeform structures/separators and Jotform date formats and read the resulting settings. The cited Typeform date-format assertion reads service-imported state, and the old Evidence set contains no Jotform date-format import journey.
 
 #### FIELD-016 — Labeled opinion scales
 
@@ -2265,7 +2242,7 @@ Core · target · **partial** · From FIELD-016 · Cites BASE-ACCESSIBILITY-001
 6. Publication refuses one or twelve steps and a 101-character label.
 
 **Evidence.** `src/core/shared/ratingScale.ts`, `src/core/shared/ui/RatingInput.tsx`, `tests/runtime/new-question-types.worker.test.ts`, `tests/runtime/form-import.worker.test.ts`, `tests/e2e/opinion-scale.spec.ts`
-**Gap.** A cited public-door journey must refuse invalid scale settings at publication and import/read Typeform and Google scale labels. The browser journey covers labeled zero, routing, ledger, result labels and CSV; cited invalid settings are service-level saves, and the old Evidence set does not contain a Google Forms scale-import journey.
+**Gap.** A cited public-door journey must refuse invalid scale lengths and overlong labels at publication. The cited browser journey covers the labeled zero-to-six scale, numeric zero, routing, ledger, result labels and CSV; the invalid-scale settings are refused only through direct service-level saves. Import mapping proof belongs separately to FIELD-021.
 
 #### FIELD-021 — Import opinion scales and labels
 
@@ -2279,7 +2256,7 @@ Core · target · **partial** · From FIELD-016
 3. SurveyMonkey and Jotform scale starts, step counts and labels map under IMPORT-005 and IMPORT-006.
 
 **Evidence.** `src/core/shared/ratingScale.ts`, `src/core/shared/ui/RatingInput.tsx`, `tests/runtime/new-question-types.worker.test.ts`, `tests/runtime/form-import.worker.test.ts`, `tests/e2e/opinion-scale.spec.ts`
-**Gap.** A cited public-door journey must refuse invalid scale settings at publication and import/read Typeform and Google scale labels. The browser journey covers labeled zero, routing, ledger, result labels and CSV; cited invalid settings are service-level saves, and the old Evidence set does not contain a Google Forms scale-import journey.
+**Gap.** A cited import journey must retain Typeform, Google Forms, SurveyMonkey and Jotform scale starts, steps and labels. The cited file checks Typeform through services and SurveyMonkey through HTTP, but the old Evidence set contains no Google Forms or Jotform scale-label import journey.
 
 #### LOGIC-001 — Answer recall
 
@@ -2452,7 +2429,7 @@ Core · target · **missing** · Cites BASE-AGENT-007, BASE-AGENT-008
 **Acceptance.**
 1. An operator can ask ai provider adapter to draft a translation of every untranslated string; the draft is shown beside the source.
 2. Applying an agent translation carries standard, adding external when published to respondents; the company’s policy decides whether it applies alone or waits for the operator.
-3. Under the held company policy, With the AI receiver fixture, the specialist drafts Spanish, strings, accepts half, and the rest stay untranslated and block publish for Spanish.
+3. Under the held company policy, With the AI receiver fixture, the specialist drafts Spanish strings, accepts half, and the rest stay untranslated and block publish for Spanish.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2491,14 +2468,14 @@ Core · target · **partial** · Cites BASE-ACCESSIBILITY-001
 
 Core · target · **partial** · Register R-8
 
-**Requirement.** Pencil supports sMS invitations and reminders. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-011).
+**Requirement.** Operators send invitations/reminders through Twilio to consented mobile contacts. Details are in [the operating rules](docs/contract/MECHANISM.md#dist-011).
 
 **Acceptance.**
-1. Operators send invitations and reminders by text message through Twilio to contacts with a mobile number and recorded SMS consent (TCPA prior express consent: actor, time, source and wording).
-2. Messages carry the opaque link and "Reply STOP to opt out"; an inbound STOP, sent to a signed Twilio status and inbound webhook, opts the contact out of SMS immediately (DIST-005 for SMS), and HELP returns the business name.
-3. Delivery attempts, retries and terminal failures follow DIST-006, DIST-008 and DIST-010; quiet hours follow WS-002 in the contact's time zone where known.
-4. A2P 10DLC registration is the owner's Twilio account step and the settings page shows its state.
-5. Through the a Twilio receiver fixture sends to a consented, contact, refuses an unconsented one, records a STOP that blocks the scheduled reminder, and verifies the inbound webhook signature.
+1. SMS consent records actor, time, source and wording sufficient for TCPA prior express consent.
+2. Messages carry the opaque link and a STOP opt-out instruction. Authenticated Twilio inbound STOP immediately stops SMS, and HELP returns the business name.
+3. Delivery/retry/failure follow DIST-006, DIST-008 and DIST-010. Quiet hours follow WS-002 in the contact’s zone where known.
+4. Settings shows A2P 10DLC registration state from the owner’s connected Twilio account.
+5. With a Twilio receiver fixture, a consented contact receives the invitation, an unconsented contact is refused, and a verified STOP prevents the scheduled reminder; invalid webhook signatures are refused.
 
 **Evidence.** `tests/runtime/sms.worker.test.ts` — “SMS invitations require recorded consent, use sealed owner custody, and signed STOP cancels the reminder while HELP names the business”; `src/core/features/sms/`, `migrations/core/0065_sms_invitations.sql`; Twilio test-credential receipt `docs/evidence/dist011-twilio-test-2026-10-26.json` (`scripts/proof/sms-twilio-test.mjs`, local only); the provider receipt was recorded locally before dd639754 and binds no runtime SHA; `migrations/core/0071_contact_time_zones.sql`, `tests/runtime/sms.worker.test.ts`:248 (known-zone deferral and workspace fallback on one launch, once-only opening), `tests/runtime/sms.worker.test.ts`:40 (unapproved A2P state makes no provider request), `tests/runtime/sms.worker.test.ts`:240 (invalid save and import), `tests/runtime/sms.worker.test.ts`:255 (erasure), `scripts/deployment-data-custody-replay.check.mjs`:269 (archive restoration), `tests/e2e/distribution-foundation.spec.ts`:11 (SMS Settings, recorded consent and invitation channel at 1440 and 390)
 **Gap.** Gap — genuine handset delivery after the owner’s carrier-registration step and genuine provider callback evidence. The shared integration-ledger join remains in INTEG-015; automatic carrier-state lookup is an unclaimed boundary, not completed evidence.
@@ -2507,58 +2484,55 @@ Core · target · **partial** · Register R-8
 
 Core · target · **partial** · Cites BASE-PUBLIC-002
 
-**Requirement.** Pencil supports embed modes and site plugins. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-013).
+**Requirement.** Forms can appear inline, full-page or in triggered host-page containers under DIST-009 isolation.
 
 **Acceptance.**
-1. Besides the inline script and iframe (DIST-002, DIST-022), the embed offers full-page, popup on click, popover bubble, slider and side tab modes, with open triggers on click, delay, scroll depth or exit intent, frequency capping per browser, and the same isolation as DIST-009.
-2. A WordPress plugin and a Webflow/Squarespace snippet install the embed without editing theme code.
-3. Every mode and the WordPress shortcode take DIST-021, DIST-024's forward, fixed-value, `hidden` and `_ga` options, so a popup on a paid-ad landing page carries the campaign like an inline embed.
-4. Through the browser, on a host fixture opens each mode by its trigger, completes a response, and proves the host receives only loaded, height and completed events; the popup and side-tab modes on the documented page or route store the forwarded `utm_campaign`; the WordPress plugin renders a form via shortcode in a WordPress test container.
+1. Offer popup on click, popover bubble, slider and side-tab modes, with click/delay/scroll-depth/exit-intent triggers and per-browser frequency caps.
+2. A WordPress plugin and Webflow/Squarespace snippets install without theme-code edits; the WordPress shortcode renders the form in a WordPress test container.
+3. Each mode and shortcode accepts DIST-021’s forwarded/fixed/hidden/GA4 settings. Popup and side-tab collection retain forwarded campaign values.
+4. Opening each mode by its trigger and completing its response exposes only load, height and completion events to the host.
 
 **Evidence.** `tests/e2e/script-embed.spec.ts` — copied async script mounts an opaque allowed-host iframe, resizes, emits only permitted events and rejects malicious messages (1440/390)
 **Gap.** Inline, full-page, popup, popover, slider and side-tab modes with click/delay/scroll/exit triggers and per-browser opening caps ship. Campaign parameters are forwarded subject to declared hidden-field rules. WordPress plugin/container proof, Webflow/Squarespace-specific installation and DIST-021 forward/fixed-value/hidden/_ga options remain unbuilt. Defaults confirmed by ct (24 Oct): click trigger, one opening per host-origin/browser/form/mode, 1 s delay, 50% scroll; unavailable storage keeps modes closed.
 
-#### DIST-014 — Email-embedded first question
+#### DIST-014 — Compose an email first question
 
 Core · target · **partial** · From DIST-014
 
-**Requirement.** Pencil supports email-embedded first question. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-014).
+**Requirement.** Invitation or program email may present an eligible first question as answer buttons.
 
 **Acceptance.**
-1. An invitation or program email may carry the first question (NPS 0–10, CSAT 1–5, or a short single choice) as buttons.
-2. Clicking opens the form with that answer selected and the rest of the flow ready; the click itself is a GET that records nothing, so mail-security link scanners cannot create answers, and the answer is saved only when the respondent confirms or continues.
-3. Invitation buttons use only the invitation's opaque token and a namespaced answer hint; their GET and HEAD perform no answer, session, response, view-counter or participant-state write.
-4. Selection remains in the page until explicit interaction, and normal completion, closure, opt-out and revision admission still apply.
-5. Unknown or out-of-range hints select nothing.
-6. Only an eligible first published-path question renders buttons: NPS, CSAT, a published rating scale, or a single choice with at most eight short labels (80 characters each); a different first type or an operator-locked contact prefill renders no buttons.
-7. Reminders share this same composer.
-8. PROG-002 inherits these rules before program email ships.
+1. Offer NPS 0–10, CSAT 1–5, a published rating scale or a single choice with at most eight labels of at most 80 characters each, only when it is the first published-path question.
+2. A different first question type or operator-locked contact prefill offers no buttons. Reminders use the same composer.
+3. PROG-002 adopts these rules before program email ships. Selecting and confirming an emailed answer follows DIST-024.
 
 **Evidence.** `tests/runtime/distribution.worker.test.ts` — "invitation score buttons preserve the recipient snapshot, consent blocks sending and renewal records actor and source"; `tests/invitation-links.test.ts` — "emitted invitation answer links are inert for repeated GET and HEAD scanners, pinned to their revision and cannot reopen completed or closed responses"; `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey” — "Audience CSV review, saved segment, email score 9, editable invitation prefill, confirmation receipt, identified ledger, cancellation, opt-out and erasure are keyboard accessible" (1440/390)
 **Gap.** Default APPROVED by ct (23 October 2026): invitation-token link plus a namespaced answer hint, GET/HEAD with no response/session/answer/view/participant mutation, and short-choice bounds of eight options/80-character labels. Program email (PROG-002) inherits before shipping and remains unbuilt. No real mail provider call or consent was used.
 
-#### DIST-023 — Email-embedded first question: Through the public door, fetches every embedded answer link as a scanner would and fi
+#### DIST-024 — Confirm an emailed first answer
 
-Core · target · **partial** · From DIST-014
+Core · target · **partial** · From DIST-014 · Cites BASE-MAIL-001
 
-**Requirement.** This part of DIST-014 covers through the public door, fetches every embedded answer link as a scanner would and finds no answer or session recorded. Detailed field, format and door rules remain in [the operating rules](docs/contract/MECHANISM.md#dist-014).
+**Requirement.** Email buttons prepare a first answer without letting link scanners record it.
 
 **Acceptance.**
-1. Through the public door, fetches every embedded answer link as a scanner would and finds no answer or session recorded; Through the browser, clicks "9", lands on question 2 with 9 selected and completes.
+1. Opening a button selects its answer and readies the rest of the form; only explicit confirmation/continuation records it. A respondent selecting 9 lands on the next question with 9 selected and completes.
+2. Invitation buttons carry only the opaque invitation capability and a namespaced hint. Fetching or prefetching them, including repeated GET/HEAD requests, writes no answer, session, response, view count or participant state.
+3. Selection stays in the page until interaction. Normal completion, closure, opt-out and revision admission still apply; unknown/out-of-range hints select nothing.
 
 **Evidence.** `tests/runtime/distribution.worker.test.ts` — "invitation score buttons preserve the recipient snapshot, consent blocks sending and renewal records actor and source"; `tests/invitation-links.test.ts` — "emitted invitation answer links are inert for repeated GET and HEAD scanners, pinned to their revision and cannot reopen completed or closed responses"; `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey” — "Audience CSV review, saved segment, email score 9, editable invitation prefill, confirmation receipt, identified ledger, cancellation, opt-out and erasure are keyboard accessible" (1440/390)
 **Gap.** Default APPROVED by ct (23 October 2026): invitation-token link plus a namespaced answer hint, GET/HEAD with no response/session/answer/view/participant mutation, and short-choice bounds of eight options/80-character labels. Program email (PROG-002) inherits before shipping and remains unbuilt. No real mail provider call or consent was used.
 
-#### DIST-015 — In-product and website surveys
+#### DIST-015 — In-product surveys
 
-Core · target · **missing**
+Core · target · **missing** · Cites BASE-PUBLIC-001
 
-**Requirement.** Pencil supports in-product and website surveys. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-015).
+**Requirement.** An installation-served SDK shows micro-surveys in the business’s site or app.
 
 **Acceptance.**
-1. A JavaScript SDK served from the installation (no third-party origin) shows micro-surveys inside the business's web app or site, targeted by page, event, user attributes the host passes and a sampling rate, with global and per-survey fatigue limits (for example no more than one survey per user per 14 days).
-2. Identified targeting requires a server-signed user identity from the host, and RESP-005 discloses the identification; unsigned attributes keep the response anonymous.
-3. Through the browser, on a host fixture fires an event, the survey appears for a matching user and not for a non-matching one, a second trigger inside the fatigue window shows nothing, and a forged unsigned identity yields an anonymous response.
+1. Target by page, event, host-supplied attributes and sampling rate, with both global and per-survey fatigue limits.
+2. Identified targeting requires a server-signed host identity and RESP-005 disclosure; unsigned attributes retain anonymous collection.
+3. A host-fixture event shows the survey for a matching user but not a nonmatching user. A second trigger inside the fatigue window shows nothing; a forged unsigned identity yields an anonymous response.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2567,25 +2541,25 @@ Core · target · **missing**
 
 Core · target · **missing**
 
-**Requirement.** Pencil supports recurring surveys. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-016).
+**Requirement.** Forms repeat on weekly, monthly, quarterly or custom schedules in the WS-001 zone.
 
 **Acceptance.**
-1. A form can repeat on a schedule (weekly, monthly, quarterly, or a cron in the WS-001 zone) to a segment or by a fresh public link per occurrence, each occurrence pinned to the then-current revision and reported as its own period in trends (RSLT-007); the distributor is reminded before each occurrence and can skip one.
-2. Through the public door, advances a fake clock through three monthly occurrences and asserts three launches, three periods in the trend report and one skipped occurrence that sent nothing.
+1. Each occurrence launches to a segment or a fresh public link, pins the then-current revision and appears as its own RSLT-007 trend period. The distributor is reminded before each and may skip one.
+2. Advancing a fixture clock over three monthly occurrences produces three launches/periods; skipping one produces no send for that occurrence.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
-#### DIST-017 — Collectors and source labels
+#### DIST-017 — Named collectors
 
 Core · target · **done**
 
-**Requirement.** Pencil supports collectors and source labels. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-017).
+**Requirement.** Operators distribute one form through independently controlled named collectors.
 
 **Acceptance.**
-1. An operator can create several named collectors per form (web link, embed on a named site, email campaign, SMS, QR, social post, partner), each with its own link, close date and response limit; every response records its collector, and results filter and compare by collector.
-2. Through the public door, collects through two collectors, closes one by limit while the other stays open, and the results comparison shows each collector's counts.
-3. The native-route journey also races the last collector place without exceeding its limit, pins a returning session to its collector, and checks independent close/reopen, collector filters and snapshot exports.
+1. Create web-link, named-site embed, email campaign, SMS, QR, social-post or partner collectors, each with its own link, close date and response limit. Responses retain their collector; results filter and compare by it.
+2. Closing one collector by its limit leaves another open. Racing the final place never exceeds the limit; returning sessions keep their collector.
+3. Close/reopen collectors independently; collector filters and snapshot exports retain matching source/counts.
 
 **Evidence.** `tests/runtime/collectors-trends.worker.test.ts` — "named collectors enforce independent atomic limits and retain attribution in zoned, revision-marked score trends, exports, RSLT-006 crosstabs with stated shares, chi-square and suppression, and multi-part LEDG-005 XLSX and SAV exports"
 **Gap.** None.
@@ -2594,66 +2568,90 @@ Core · target · **done**
 
 Core · target · **partial**
 
-**Requirement.** Pencil supports form addresses. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-018).
+**Requirement.** Each form has a readable editable address, mapped custom domains/subdomains and preserved rename redirects. Details are in [the operating rules](docs/contract/MECHANISM.md#dist-018).
 
 **Acceptance.**
-1. Each form has an editable readable slug on the installation's own domain (for example the documented page or route), additional custom domains or subdomains can be mapped to the installation through Cloudflare custom hostnames, and old slugs keep redirecting after a rename.
-2. Every address serves the form's DIST-020 link preview with its canonical `og:url` and robots setting.
+1. The installation supports custom hostnames through Cloudflare. Renaming keeps old direct/embed addresses as permanent redirects with their query values and admission checks.
+2. Every address shares DIST-020 preview and DIST-026 indexing rules, with the resulting canonical address identified.
 3. Under RL-101, a retired slug stays bound to its existing form and may be explicitly restored as that form’s canonical slug in one atomic rename, with every other alias redirecting directly to the resulting canonical address; another form cannot claim an address while it remains an obligated redirect.
-4. Through the public door, renames a slug, the old one redirects with 301 to the new one, and a form served on a mapped test hostname renders with the same admission checks and the same DIST-020 preview tags, with `og:url` naming the canonical address.
+4. The renamed form on a mapped test hostname retains its admission checks, preview and canonical identity.
 
 **Evidence.** `tests/e2e/rendering-migration.spec.ts` — “emitted Worker serves revision previews and canonical-only indexing without weakening respondent admission” (rename through builder; direct/embed 301 with query; retired-slug refusal; second hostname admission and canonical preview; owner archive restoration and exact re-export; 1440/390, CPU throttle 4); `src/core/features/addresses/`, `migrations/core/0064_form_addresses.sql`
 **Gap.** Cloudflare custom-hostname provisioning is not built (Platform zone path). Current equal operators retain builder access until ROLE-001 grants ship.
 
-#### DIST-020 — Link previews and search indexing
+#### DIST-020 — Form link previews
 
-Core · target · **partial**
+Core · target · **partial** · Cites BASE-PUBLIC-001
 
-**Requirement.** Pencil supports link previews and search indexing. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-020).
+**Requirement.** Published revisions retain share previews for links pasted into ads, social posts, Slack or text messages. Details are in [the operating rules](docs/contract/MECHANISM.md#dist-020).
 
 **Acceptance.**
-1. Each form has a share title (default: the form title), description (default: the welcome screen's text, otherwise empty) and share image (default: the BRAND-001, BRAND-003 business logo on the BRAND-002, BRAND-004 theme background; an Editor may upload a PNG, JPEG or WebP within a stated size limit, with required alt text), which are part of the published revision and translated under LANG-001, LANG-003.
-2. The public form page, the embed page and every DIST-018 address serve them as `<title>`, `og:title`, `og:description`, `og:image` (an absolute URL on the installation's own origin), `og:image:alt`, `og:url` (the canonical DIST-018 address) and `twitter:card` set to `summary_large_image`, so a link pasted into an ad, a Facebook, LinkedIn or X post, Slack, or a text message shows that preview.
-3. Preview text never contains answers or recalled values (LOGIC-001), and rendering it makes no third-party request.
-4. Search indexing is off by default: every form, embed, invitation, save-and-resume (PART-002) and completion page sends `<meta name="robots" content="noindex, nofollow">` and `X-Robots-Tag: noindex`.
-5. An Editor may allow indexing for one public form, which removes both only from that form's canonical address; invitation-only, restricted (DIST-019), identified (RESP-023, RESP-028) and HIPAA-mode (GOV-001) forms can never be indexed.
-6. DIST-017 collectors and DIST-018 addresses share the form's preview.
-7. Typeform's meta title, description, image and `allow_indexing` setting import with the form (IMPORT-007).
-8. Through the public door, fetches a published form's page and asserts its `og:title`, `og:description`, `og:image` (same origin and fetchable), `og:url` and `twitter:card` tags and the `noindex` meta tag and header; after an Editor sets a custom title and image and allows indexing, the republished form serves them without `noindex`; publish refuses the indexing setting on a DIST-019 restricted form, which keeps `noindex`; Through the browser, sees the preview card in the builder's share panel.
+1. Set share title (initially the form title), description (initially welcome text, otherwise empty) and image (initially BRAND-001’s logo on the BRAND-002 theme background). Editors may upload size-limited PNG/JPEG/WebP with required alt text; LANG-001 translates title, description and image alt text.
+2. Public, embed, collector and DIST-018 addresses show the same title, description, installation-local image with alt text, canonical address and large-image social card. The image is fetchable from the installation.
+3. Preview text never contains answers or recalled values. Changing title/image affects the next publication and is visible in the builder Share preview card.
+4. IMPORT-007 carries Typeform’s title, description, image and indexing choice into the form.
 
 **Evidence.** Published tags, fetchable same-origin image, defaults, canonical-only opt-in, collector/embed/selected-home and completion privacy, restricted refusal and no outbound requests: `tests/e2e/rendering-migration.spec.ts` — “emitted Worker serves revision previews and canonical-only indexing without weakening respondent admission”. Editor card, upload/alt, save/reload/publish at 1440/390: `tests/e2e/authoring.spec.ts` — “labels, one Save, real controls, reorder, branching, Share and a current dashboard”. Revision/default custody and bounded upload validation: `tests/runtime/brand.worker.test.ts` — “settings API preserves preview overrides and publication freezes defaults and images across later edits”; “settings API rejects recalled preview text and invalid, oversized or unlabelled image uploads without mutating the draft”; “upgrading existing publications freezes their logo preview without changing admission policy”. Valid invitation and private resume meta/header: `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey” — “Audience CSV review, saved segment, email score 9, editable invitation prefill, confirmation receipt, identified ledger, cancellation, opt-out and erasure are keyboard accessible”; `tests/e2e/save-resume.spec.ts` — “a respondent saves two answers, resumes privately on another device and sees completion on reuse”. Typeform metadata and bounded image retrieval/commit/publication: `tests/runtime/typeform-definition.worker.test.ts` — “the authenticated Typeform retrieval feeds the real reviewed import without retaining the credential or creating records early”. Image archive custody: `tests/runtime/brand.worker.test.ts` — “owner backup carries immutable R2 share images, checks their bytes and refuses missing attachment custody”; `tests/e2e/rendering-migration.spec.ts` — “owner browser backup restores preview image bytes with the same archive checksum”; `scripts/deployment-data.check.mjs` — “complete archive recovery retains exact data and attachment custody and refuses unsafe sources, archives and destinations without overwrites” — “complete archive restores R2 bytes and ownership metadata with D1, re-exports identically, and standalone proof keeps actual attachment custody”.
-**Gap.** Missing cited public journeys for translated preview metadata, theme-background logo compositing and HIPAA-mode indexing refusal. Existing journeys comprehensively prove current preview/edit/import/archive and restricted/identified indexing, but inherited LANG-001/BRAND-002/GOV-001 outcomes are not performed.
+**Gap.** Missing cited public preview journeys for translated title/description/image alt and logo compositing on the form theme background. Existing journeys prove current preview editing, published metadata, same-origin image, imports and archive custody; they never perform those two retained capabilities.
 
-#### DIST-021 — Forwarded landing-page parameters
+#### DIST-021 — Forward values from the host page
 
 Core · target · **missing** · From DIST-021
 
-**Requirement.** Pencil supports forwarded landing-page parameters. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-021).
+**Requirement.** Script embeds, all DIST-013 modes and WordPress shortcode forward declared fields without exposing them in the frame address. Details are in [the operating rules](docs/contract/MECHANISM.md#dist-021).
 
 **Acceptance.**
-1. A script embed (DIST-002, DIST-022), every DIST-013 mode (full-page, popup, popover, slider and side tab) and the WordPress plugin's shortcode take a list of parameter names to forward from the URL of the page the form sits on: `data-pencil-forward="utm_source,utm_medium,utm_campaign,gclid,fbclid"` on the snippet, `forward="…"` in the shortcode.
-2. The installation-origin script reads the host page's `location.search`, keeps only names that are both listed and declared as FIELD-001 fields on the published revision (the script the documented page or route serves carries the revision's declared field names and nothing else about the form), and hands those values to the form in the `pencil:init` message it already sends after the frame loads, never in the frame's URL, so they reach no access log or Referer; every other parameter, listed or not, stays on the host page.
-3. The landing page can also supply values itself: `data-pencil-<field>="…"` sets a fixed value, and a documented `hidden` call, made before or after the snippet loads (`(window.pencil = window.pencil || []).push(['hidden', {utm_source: '…'}])`), hands over values the page holds from earlier in the visit, for example the first-visit UTMs it kept in its own first-party cookie.
-4. For GA4, `data-pencil-ga4="cookie"` makes the script read the host's own `_ga` cookie and pass its client ID (the last two dot-separated parts of `GA1.1.123456789.1700000000`, here `123456789.1700000000`) as `ga_client_id`, only when the form declares that field; Pencil sets no cookie of its own.
-5. One precedence holds: a fixed `data-pencil-<field>` value beats a `hidden` value, which beats a forwarded URL value; a declared field with none of them is blank (FIELD-001).
-6. The respondent page accepts the first answer only after `pencil:init` is processed, so no response loses a forwarded value to timing, and the Worker re-checks every received value against the revision's declared names and types, discarding and counting anything else whatever the script sent.
-7. Forwarded values follow every FIELD-001 rule: they drive LOGIC-001 recall and LOGIC-006, LOGIC-008, LOGIC-009 conditions, and are stored, filtered, exported and delivered like link values; an identifying field is accepted only on a RESP-023, RESP-028 identified form; on an anonymous form click IDs are held only for INTEG-017, INTEG-020 delivery and purged once it ends.
-8. Values flow from the host page into the form only: DIST-002, DIST-022 and DIST-009 isolation are unchanged, and nothing about the response flows back beyond the loaded, height and completed events.
+1. The operator chooses host-URL names to forward. Only selected names declared by FIELD-001 on the published revision enter the form; every other parameter stays on the host.
+2. The host can supply fixed values or earlier-visit values through a hidden-value call, before or after snippet loading.
+3. Explicit GA4 cookie mode reads the host’s analytics client ID only when the corresponding field is declared. Pencil sets no cookie.
+4. Fixed values override hidden-call values, which override forwarded URL values; unprovided declared fields stay blank.
+5. The installation script exposes only declared field names. Validated initialization messages carry values into the form, never its frame URL, access logs or referrer.
+6. The form accepts its first answer only after initialization; the server rechecks every name/type, discarding and counting invalid or undeclared values.
+7. Values follow FIELD-001 and DIST-009; campaign use follows DIST-027. Name count and per-type value lengths stay within declared limits.
 
 **Evidence.** None.
 **Gap.** The script embed (`src/core/features/embedding/script.ts`, `tests/e2e/script-embed.spec.ts`) mounts the frame with only its challenge and forwards no host parameter, and `/embed.js` accepts no option but `flow`.
 
-#### DIST-024 — Forwarded landing-page parameters: The plain iframe takes the same values in its src query string (the documented page o
+#### DIST-025 — Plain iframe forwarding
 
 Core · target · **missing** · From DIST-021
 
-**Requirement.** This part of DIST-021 covers the plain iframe takes the same values in its src query string (the documented page or route), written by the operator's page template, under the same declared-field filter at the Worker. Detailed field, format and door rules remain in [the operating rules](docs/contract/MECHANISM.md#dist-021).
+**Requirement.** An operator’s page template may pass declared values in a plain iframe source query. Details are in [the operating rules](docs/contract/MECHANISM.md#dist-021).
 
 **Acceptance.**
-1. The plain iframe takes the same values in its `src` query string (the documented page or route), written by the operator's page template, under the same declared-field filter at the Worker; DOCS-001 gives that recipe, the `hidden` first-visit cookie recipe and the `_ga` recipe.
-2. Forwarded names per snippet are capped by the declared limits embed forwardedParameters limits (design target 20, added with a load-tested value on activation) and each value by its declared type's FIELD-001 length.
-3. When this clause activates, DIST-002, DIST-022 is rewritten to name the forward, fixed-value, `hidden` and `_ga` options, and DIST-009's host-communication sentence to name the inbound `pencil:init` values.
-4. Through the browser, loads a host fixture at the documented page or route with the script embed forwarding `utm_campaign,gclid,fbclid,secret` on a form that declares `utm_campaign`, `gclid` and `fbclid`, is routed by a LOGIC-006, LOGIC-008, LOGIC-009 rule on `utm_campaign`, completes the response, and asserts that the stored response and the CSV hold `utm_campaign=spring`, that `secret` is in neither the stored response, the `pencil:init` message nor any request the frame makes, and that the INTEG-017, INTEG-020 receiver fixtures get one Google Ads click conversion carrying `G1` and one Meta event whose `fbc` is built from `F1`; the same journey with `data-pencil-utm_campaign="fixed"` stores `fixed`; a host fixture with a `_ga` cookie and `data-pencil-ga4="cookie"` produces one GA4 event carrying that client ID, and one whose page calls `hidden` with a first-visit `utm_source` stores that value; the popup mode forwards the same values; a plain iframe whose `src` carries `?utm_campaign=spring&secret=x` stores only `utm_campaign`; on an anonymous form a forwarded `email` is not stored and is counted as discarded; and throughout, the host page receives only loaded, height and completed events.
+1. The server uses DIST-021’s published-field/type filter: a declared campaign is stored and an undeclared secret is absent.
+2. DOCS-001 gives plain-iframe, hidden first-visit and GA4-cookie recipes.
+3. DIST-002 and DIST-013 expose forward/fixed/hidden/GA4 options; DIST-009 recognizes inbound initialization values without exposing answers to the host.
+
+**Evidence.** None.
+**Gap.** The script embed (`src/core/features/embedding/script.ts`, `tests/e2e/script-embed.spec.ts`) mounts the frame with only its challenge and forwards no host parameter, and `/embed.js` accepts no option but `flow`.
+
+#### DIST-026 — Search indexing choice
+
+Core · target · **partial** · From DIST-020
+
+**Requirement.** Search indexing starts disabled on every form and stays disabled on private or identified collection. Details are in [the operating rules](docs/contract/MECHANISM.md#dist-020).
+
+**Acceptance.**
+1. Form, embed, invitation, private resume and completion pages all tell crawlers not to index or follow links, through both document and response metadata.
+2. An Editor may enable indexing on one public form; only its canonical address loses both restrictions after publication.
+3. Invitation-only, DIST-019 restricted, RESP-023 identified and GOV-001 HIPAA-mode forms never permit indexing. Publication refuses an incompatible choice while preserving existing admission.
+
+**Evidence.** Published tags, fetchable same-origin image, defaults, canonical-only opt-in, collector/embed/selected-home and completion privacy, restricted refusal and no outbound requests: `tests/e2e/rendering-migration.spec.ts` — “emitted Worker serves revision previews and canonical-only indexing without weakening respondent admission”. Editor card, upload/alt, save/reload/publish at 1440/390: `tests/e2e/authoring.spec.ts` — “labels, one Save, real controls, reorder, branching, Share and a current dashboard”. Revision/default custody and bounded upload validation: `tests/runtime/brand.worker.test.ts` — “settings API preserves preview overrides and publication freezes defaults and images across later edits”; “settings API rejects recalled preview text and invalid, oversized or unlabelled image uploads without mutating the draft”; “upgrading existing publications freezes their logo preview without changing admission policy”. Valid invitation and private resume meta/header: `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey” — “Audience CSV review, saved segment, email score 9, editable invitation prefill, confirmation receipt, identified ledger, cancellation, opt-out and erasure are keyboard accessible”; `tests/e2e/save-resume.spec.ts` — “a respondent saves two answers, resumes privately on another device and sees completion on reuse”. Typeform metadata and bounded image retrieval/commit/publication: `tests/runtime/typeform-definition.worker.test.ts` — “the authenticated Typeform retrieval feeds the real reviewed import without retaining the credential or creating records early”. Image archive custody: `tests/runtime/brand.worker.test.ts` — “owner backup carries immutable R2 share images, checks their bytes and refuses missing attachment custody”; `tests/e2e/rendering-migration.spec.ts` — “owner browser backup restores preview image bytes with the same archive checksum”; `scripts/deployment-data.check.mjs` — “complete archive recovery retains exact data and attachment custody and refuses unsafe sources, archives and destinations without overwrites” — “complete archive restores R2 bytes and ownership metadata with D1, re-exports identically, and standalone proof keeps actual attachment custody”.
+**Gap.** Missing a cited publication journey that refuses indexing on HIPAA-mode and invitation-only forms while preserving their crawler restrictions and admission. Existing preview/brand journeys prove public canonical opt-in and restricted/identified refusal but never these two retained modes.
+
+#### DIST-027 — Forwarded campaign attribution
+
+Core · target · **missing** · From DIST-021
+
+**Requirement.** Forwarded values behave as FIELD-001 link values throughout collection. Details are in [the operating rules](docs/contract/MECHANISM.md#dist-021).
+
+**Acceptance.**
+1. They drive LOGIC-001 recall and LOGIC-006 conditions, and are stored, filtered, exported and delivered like direct-link values.
+2. Identifying values require RESP-023 identified collection; anonymous forms discard/count them. Anonymous click IDs are held only for INTEG-017 conversions, then purged.
+3. A browser campaign fixture retains its campaign in response/CSV, follows its conditional branch and sends matching Google Ads/Meta conversions; an undeclared secret is absent from stored data, initialization messages and frame requests.
+4. Fixed campaign wins over URL campaign. GA4 mode delivers the host-cookie client ID; a hidden first-visit source is retained; popup mode forwards the same values.
+5. The host receives only allowed nonidentifying load, height and completion events.
 
 **Evidence.** None.
 **Gap.** The script embed (`src/core/features/embedding/script.ts`, `tests/e2e/script-embed.spec.ts`) mounts the frame with only its challenge and forwards no host parameter, and `/embed.js` accepts no option but `flow`.
@@ -3218,7 +3216,7 @@ Core · target · **missing** · Cites BASE-DATA-004, BASE-ACCESS-002, BASE-OPS-
 **Acceptance.**
 1. PHI-form answers stay out of emails, alerts, Slack/Teams messages and AI requests unless that destination has a recorded BAA; a connection without one cannot attach to a PHI form.
 2. Every PHI response view, export and download is audited, sessions expire after 15 idle minutes, and exports are labelled as containing PHI.
-3. A PHI form's alert and digest contain no answers, a Slack connection without a BAA is refused, and AI analysis is refused until its provider BAA is recorded; a ledger view appears in audit.
+3. A PHI form's alert and digest contain no answers, a Slack connection without a BAA is refused, and the AI provider is eligible for PHI only when its BAA is recorded; a ledger view appears in audit. An eligible agent transfer carries sensitive and external; the company’s policy decides the call.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -3245,7 +3243,7 @@ Core · target · **missing** · Cites BASE-ROLE-001, BASE-OPS-005
 **Acceptance.**
 1. Values are encrypted at rest with an installation key separate from database backups; the raw stored value is ciphertext.
 2. Ledger, exports and integrations mask values unless the operator has the identity grant and reveals them; every reveal is audited.
-3. Sensitive values never enter AI requests, alerts or confirmation emails.
+3. Operator alerts and confirmation emails omit sensitive values. An agent’s regulated read carries sensitive and an outside provider transfer also carries external; the company’s policy decides those calls.
 4. An Analyst sees a mask while an Admin reveal records an audit row; provider requests contain no sensitive value.
 5. LEDG-006/LEDG-008 search matches a phrase in a sensitive answer only for an operator permitted to see that answer.
 
@@ -3450,7 +3448,7 @@ Core · target · **partial** · Register R-6
 3. Ongoing billing management hands off to Stripe's customer portal or Nectar.
 
 **Evidence.** `tests/runtime/calculations.worker.test.ts` — "preserves signed tax and discount totals in the ledger, exports, archives and erasure while refusing a changed subtotal" (monthly/yearly prices, bounded custom and recurring donations, signed cancellation, refused client amount, archive/erasure); `tests/e2e/calculations.spec.ts` — "builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals" (settings and response records at 1440/390, CPU throttle 4)
-**Gap.** Custom donation amounts are entered only on Stripe within the operator’s minimum and maximum, as ct approved on 24 October. Gap: pre-Stripe (in-form) amount entry; recurring custom amounts (recurring donations use fixed server-priced amounts); held-key Stripe test-mode proof. Ongoing billing management belongs to Stripe’s customer portal; no portal is built. Proof is against the loopback Stripe stand-in in CI; no real Stripe test-mode receipt is committed.
+**Gap.** Custom donation amounts are entered only on Stripe within the operator’s minimum and maximum. Gap: pre-Stripe (in-form) amount entry; recurring custom amounts (recurring donations use fixed server-priced amounts); held-key Stripe test-mode proof. Ongoing billing management belongs to Stripe’s customer portal; no portal is built. Proof is against the loopback Stripe stand-in in CI; no real Stripe test-mode receipt is committed.
 
 #### PAY-004 — ACH and other US payment methods
 
@@ -3464,7 +3462,7 @@ Core · target · **partial** · Register R-6
 3. Closed ACH attempts retain safe replacement under PAY-001 and RL-102; temporary refusal does not remove the retry door.
 
 **Evidence.** `tests/runtime/calculations.worker.test.ts` — "preserves signed tax and discount totals in the ledger, exports, archives and erasure while refusing a changed subtotal" (card/ACH Checkout methods, processing to paid/failed, replay, processing excluded from admission, archive/erasure); `tests/e2e/calculations.spec.ts` — "builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals" (ACH settings and processing/paid response records at 1440/390, CPU throttle 4)
-**Gap.** ACH and Checkout card wallets ship first under ct’s 24 October ruling. Gap: "and PayPal or Square as alternative providers with the same pending/paid/failed states"; "and a PayPal fixture order to paid" remain unmet, with no PayPal or Square sandbox accounts held. Real Apple Pay, Google Pay and ACH test-mode settlement are unproved. Failed ACH checkout retry and a dedicated respondent processing label remain unproved; the existing return says Stripe is confirming and the response record shows processing. Proof is against the loopback Stripe stand-in in CI; no real Stripe test-mode receipt is committed.  Provider target retained verbatim: Payment steps can offer ACH Direct Debit (Stripe US bank account), Apple Pay and Google Pay through Checkout, and PayPal or Square as alternative providers with the same pending/paid/failed states; ACH's delayed settlement is shown as `processing` until it succeeds or fails. Acceptance retained verbatim: a Worker test drives an ACH payment through processing to succeeded and to failed, and a PayPal fixture order to paid.
+**Gap.** ACH and Checkout card wallets ship first. Gap: "and PayPal or Square as alternative providers with the same pending/paid/failed states"; "and a PayPal fixture order to paid" remain unmet, with no PayPal or Square sandbox accounts held. Real Apple Pay, Google Pay and ACH test-mode settlement are unproved. Failed ACH checkout retry and a dedicated respondent processing label remain unproved; the existing return says Stripe is confirming and the response record shows processing. Proof is against the loopback Stripe stand-in in CI; no real Stripe test-mode receipt is committed.  Provider target retained verbatim: Payment steps can offer ACH Direct Debit (Stripe US bank account), Apple Pay and Google Pay through Checkout, and PayPal or Square as alternative providers with the same pending/paid/failed states; ACH's delayed settlement is shown as `processing` until it succeeds or fails. Acceptance retained verbatim: a Worker test drives an ACH payment through processing to succeeded and to failed, and a PayPal fixture order to paid.
 
 #### PAY-005 — Payment ledger and refunds
 
@@ -4058,7 +4056,7 @@ Core · push-further · **missing** · Cites BASE-AGENT-007, BASE-AGENT-008
 2. Per-question configuration keeps the topics probing must not raise.
 3. Generating a respondent-facing probe carries external; the company’s policy decides whether it runs or waits for review.
 4. Probe content asks for neither identity nor sensitive data.
-5. With the AI receiver fixture, the specialist answers a probe-able, question, sees one labeled follow-up, and the ledger stores the generated prompt and answer; a fixture prompt asking for an email is refused before display.
+5. With the AI receiver fixture, the specialist answers a probe-able question, sees one labeled follow-up, and the ledger stores the generated prompt and answer; a fixture prompt asking for an email is refused before display.
 
 **Evidence.** None.
 **Gap.** No code yet.

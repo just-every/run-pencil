@@ -177,4 +177,4 @@ On an approved host, add attributes to the copied script snippet: `data-pencil-m
 
 Choose `data-pencil-trigger="click"`, `"delay"`, `"scroll"` or `"exit"`. Delay uses `data-pencil-delay` milliseconds (default 1000, at most one hour); scroll uses `data-pencil-scroll` percent (default 50). Exit intent uses a pointer leaving the top of the document. Click remains available on touch devices. `data-pencil-cap` limits openings per browser and form/mode (default one, at most 100); unavailable browser storage keeps the mode closed. Campaign parameters named `utm_*` are forwarded to the form, where declared hidden-field and identity rules apply. Respondent answers stay inside the opaque frame; the host receives only the existing layout/completion events, with the existing payment navigation behavior unchanged.
 
-WordPress shortcodes/plugins and DIST-021 integrations remain unavailable.
+WordPress shortcodes/plugins and DIST-021, DIST-025 and DIST-027 integrations remain unavailable.

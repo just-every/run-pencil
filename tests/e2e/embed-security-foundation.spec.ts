@@ -7,7 +7,7 @@ import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 // Isolate this new journey's API traffic; actual per-address rate limits stay enabled.
 test.use({ extraHTTPHeaders: { 'CF-Connecting-IP': '198.18.240.12' } })
-contract(['DIST-009', 'BASE-PUBLIC-002', 'BASE-PUBLIC-001'], 'even an allowed same-origin host cannot read embedded answers, credentials or completion receipts', async ({ page, request }, info) => {
+contract(["DIST-009","DIST-022","BASE-PUBLIC-002","BASE-PUBLIC-001"], 'even an allowed same-origin host cannot read embedded answers, credentials or completion receipts', async ({ page, request }, info) => {
   await page.setViewportSize(info.project.name==='mobile'?{width:390,height:844}:{width:1440,height:900})
   const origin = new URL(info.project.use.baseURL!).origin
   await request.post('/auth/magic-link', { headers: { Origin: origin }, data: { email: operatorEmail() } })

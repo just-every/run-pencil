@@ -53,7 +53,7 @@ contract(["BRAND-001","BRAND-003","HOME-001","BASE-ACCESS-004","BASE-INPUT-001"]
   expect(workspace).toMatchObject({ name: brand.name, timeZone: 'UTC', sendingWindowStart: '09:00', sendingWindowEnd: '17:00' })
 })
 
-contract('DIST-020', 'settings API preserves preview overrides and publication freezes defaults and images across later edits', async () => {
+contract(["DIST-020","DIST-026"], 'settings API preserves preview overrides and publication freezes defaults and images across later edits', async () => {
   const f = await previewFixture()
   await env.DB.prepare('UPDATE workspaces SET name=?,brand_configured=1,brand_logo_base64=?,brand_logo_mime=?,brand_logo_version=? WHERE id=?').bind('Synthetic studio', previewImage.base64, previewImage.mime, crypto.randomUUID(), f.workspace).run()
   const initial = await f.publish()
@@ -126,7 +126,7 @@ contract('DIST-020', 'settings API preserves preview overrides and publication f
 })
 
 
-contract('DIST-020', 'settings API rejects recalled preview text and invalid, oversized or unlabelled image uploads without mutating the draft, and publication rejects indexing on restricted and identified forms while preserving their existing admission rules', async () => {
+contract(["DIST-020","DIST-026"], 'settings API rejects recalled preview text and invalid, oversized or unlabelled image uploads without mutating the draft, and publication rejects indexing on restricted and identified forms while preserving their existing admission rules', async () => {
   {
     const f = await previewFixture(), before = await f.read()
     const invalid = [
@@ -165,7 +165,7 @@ contract('DIST-020', 'settings API rejects recalled preview text and invalid, ov
     expect((await identified.publish()).status).toBe(201)
   }
 })
-contract('DIST-020', 'upgrading existing publications freezes their logo preview without changing admission policy', async () => {
+contract(["DIST-020","DIST-026"], 'upgrading existing publications freezes their logo preview without changing admission policy', async () => {
   const f = await previewFixture()
   await env.DB.prepare('UPDATE workspaces SET name=?,brand_configured=1,brand_logo_base64=?,brand_logo_mime=? WHERE id=?').bind('Harbour Studio',previewImage.base64,previewImage.mime,f.workspace).run()
   const publication = await f.publish()
@@ -186,7 +186,7 @@ contract('DIST-020', 'upgrading existing publications freezes their logo preview
   await f.publicImage(revision.id,previewImage.base64)
 })
 
-contract(['BASE-DATA-001','DATA-001','DIST-020'], 'owner backup carries immutable R2 share images, checks their bytes and refuses missing attachment custody', async () => {
+contract(["BASE-DATA-001","DATA-001","DIST-020","DIST-026"], 'owner backup carries immutable R2 share images, checks their bytes and refuses missing attachment custody', async () => {
   const f = await previewFixture()
   expect((await f.save({...f.settings,linkPreview:{image:previewImage}})).status).toBe(200)
   expect((await f.publish()).status).toBe(201)

@@ -8,7 +8,7 @@ import { responseScope, type ResponseSelection } from './scope'
 import type { ExportInventory, InventoryQuestion } from './exportInventory'
 import type { LedgerFilter, LedgerResponse } from './repository'
 
-/** SPSS variables of a LEDG-005 export: the CSV's response columns, then hidden fields, calculations and questions. */
+/** SPSS variables of a LEDG-007 export: the CSV's response columns, then hidden fields, calculations and questions. */
 export type SavValue = number | string | null
 export type SavVariable = { name: string; label: string; string: boolean; valueLabels?: Array<[number, string]>; read: (row: LedgerResponse, cutoff: string, excluded: number) => SavValue; bound?: string }
 export const savStringLimit = 32767

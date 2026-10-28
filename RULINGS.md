@@ -137,3 +137,9 @@ Default APPROVED by ct (23 October 2026): revision-frozen opt-in, one marked typ
 Date: 2026-10-24 · Ruler: ct · Governs: INTEG-001
 
 Ruled limits/defaults (ct 24 Oct 19:47Z): one form per reserved worksheet, one fixed destination per form, at most 1,000 worksheet rows, 499 question columns, 100 selectable worksheets and a 2 MiB provider response; restored links stay disarmed until explicitly reattached; cells use RAW canonical values/JSON and erasure blanks the row.
+
+### RL-7 — Donation entry and payment-method priority
+
+Date: 2026-10-24 · Ruler: ct · Governs: PAY-003, PAY-004
+
+Custom donation amounts may be entered on Stripe within the operator’s minimum and maximum. In-form amount entry and recurring custom amounts remain target work. ACH and Checkout card wallets ship first; PayPal or Square and the original provider fixtures remain owed. RL-102 retains the safe retry target.

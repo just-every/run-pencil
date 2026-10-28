@@ -7,7 +7,7 @@ type CollectorOption = { id: string; name: string }
 const crossable = ['single_choice', 'dropdown', 'multiple_choice', 'priority', 'yes_no', 'consent', 'thumbs_rating', 'rating', 'nps', 'csat', 'ces', 'emoji_rating', 'number', 'date']
 const percent = (value: number) => `${value.toFixed(1)}%`
 
-/** RSLT-006: two dimensions of one revision, with stated shares, ANLY-005 suppression and a chi-square. */
+/** RSLT-006 and RSLT-014: two dimensions of one revision, with stated shares, ANLY-005 suppression and a chi-square. */
 export function CrosstabPanel({ flowId, revision, questions }: { flowId: string; revision: Ledger['revisions'][number]; questions: QuestionReport[] }) {
   const dimensions = [
     ...questions.filter(question => crossable.includes(question.questionType ?? '')).map(question => ({ key: `question:${question.id}`, label: question.prompt })),

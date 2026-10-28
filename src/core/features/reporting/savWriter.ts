@@ -48,7 +48,7 @@ export function savHeader(columns: SavColumn[], cases: number, created: Date) {
   const out = writer()
   const slots = columns.reduce((sum, column) => sum + column.segments.reduce((n, segment) => n + (segment.width ? Math.ceil(segment.width / 8) : 1), 0), 0)
   const date = created.toUTCString().split(' ') // e.g. Tue, 20 Oct 2026 15:06:00 GMT
-  out.text('$FL2', 4); out.text('@(#) SPSS DATA FILE Pencil LEDG-005 export', 60)
+  out.text('$FL2', 4); out.text('@(#) SPSS DATA FILE Pencil LEDG-007 export', 60)
   out.int(2); out.int(slots); out.int(1); out.int(0); out.int(cases); out.double(bias)
   out.text(`${date[1]} ${date[2]} ${date[3].slice(2)}`, 9); out.text(date[4], 8); out.text('Pencil responses', 64); out.text('', 3)
   for (const column of columns) column.segments.forEach((segment, index) => {
