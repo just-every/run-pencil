@@ -1,4 +1,4 @@
-import type { SharedReport, SharedCrosstabTable } from '../../reporting/savedModel'
+import type { SharedReport, SharedCrosstabTable } from '../../reporting'
 import './saved-reports.css'
 
 function CrossFigures({ table }: { table: SharedCrosstabTable }) {

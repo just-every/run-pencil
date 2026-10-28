@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import type { SavedDashboard, SavedView, SavedViewDetail } from '../../reporting/savedModel'
+import type { SavedDashboard, SavedView, SavedViewDetail } from '../../reporting'
 import { savedReportApi } from './savedReportApi'
 import { ReportFigures } from './ReportFigures'
 

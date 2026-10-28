@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { reportRequest } from './savedReportApi'
-import type { SavedViewDefinition } from '../../reporting/savedModel'
+import type { SavedViewDefinition } from '../../reporting'
 
 export function ReportCodeCrossing({ onAdd }: { onAdd: (cross: SavedViewDefinition['crosstabs'][number]) => void }) {
   const [codes, setCodes] = useState<Array<{ id: string; label: string }>>([]), [row, setRow] = useState(''), [column, setColumn] = useState(''), [error, setError] = useState('')

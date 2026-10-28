@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import type { SavedReportShare } from '../../reporting/savedModel'
+import type { SavedReportShare } from '../../reporting'
 import { savedReportApi } from './savedReportApi'
 
 export function ReportSharing({ viewId }: { viewId: string }) {

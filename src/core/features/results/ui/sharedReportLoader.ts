@@ -6,7 +6,7 @@ export const loadSharedReport = createServerFn({ method: 'GET' })
   .inputValidator(z.object({ token: z.string().regex(/^[a-f0-9]{64}$/) }))
   .handler(async ({ data }) => {
     const { requestServices } = await import('../../../platform/request.server')
-    const { readSharedReport } = await import('../../reporting/sharedAccess')
+    const { readSharedReport } = await import('../../reporting')
     const { NotFoundError } = await import('../../../shared/errors')
     const { platform } = await requestServices()
     try { return await readSharedReport(platform.databaseBinding, data.token) }

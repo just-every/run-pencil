@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import type { LedgerFilter, QuestionReport } from '../../../app/api'
-import type { SavedView, SavedViewDefinition, SavedViewDetail } from '../../reporting/savedModel'
+import type { SavedView, SavedViewDefinition, SavedViewDetail } from '../../reporting'
 import { savedReportApi } from './savedReportApi'
 import { ReportFigures } from './ReportFigures'
 import { ReportSharing } from './ReportSharing'

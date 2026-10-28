@@ -1,4 +1,4 @@
-import type { SavedDashboard, SavedReportShare, SavedView, SavedViewDefinition, SavedViewDetail, SharedReport } from '../../reporting/savedModel'
+import type { SavedDashboard, SavedReportShare, SavedView, SavedViewDefinition, SavedViewDetail, SharedReport } from '../../reporting'
 
 export async function reportRequest<T>(path: string, data?: unknown, method = data === undefined ? 'GET' : 'POST'): Promise<T> {
   const response = await fetch(path, { method, headers: { 'content-type': 'application/json' }, ...(data === undefined ? {} : { body: JSON.stringify(data) }) })

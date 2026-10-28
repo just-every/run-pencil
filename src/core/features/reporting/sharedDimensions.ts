@@ -1,5 +1,5 @@
 import { NotFoundError } from '../../shared/errors'
-import { activeAssignment } from '../coding/visibility'
+import { activeAssignment } from '../coding'
 import { resolveDimension, type Dimension } from './crosstabDimensions'
 
 export const sharedDimensionPattern = /^(?:(?:question|hidden|variable|code):[^\u0000-\u001f\u007f]{1,200}|collector)$/
