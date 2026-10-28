@@ -118,6 +118,6 @@ contract(['PART-002','GOV-006'],'save mail failures retry one durable state, exp
   const result=await ok<{responseId:string}>(invited.slug,'responses',{sessionId:resumed.sessionId,sessionToken:resumed.sessionToken,loadTime:resumed.loadTime,invitationToken:resumed.invitationToken,idempotencyKey:crypto.randomUUID(),answers:invitedSession.flow.steps.filter(step=>step.kind==='question').map(step=>({stepId:step.id,value:'Invited retained answer'}))})
   expect(await env.DB.prepare('SELECT participant_id,source FROM responses WHERE id=?').bind(result.responseId).first()).toEqual({participant_id:participant!.id,source:'invitation'})
   expect(await env.DB.prepare('SELECT collector_id FROM response_collector WHERE response_id=?').bind(result.responseId).first()).toEqual(await env.DB.prepare('SELECT collector_id FROM invitation_launch_collector WHERE launch_id=?').bind(launch.id).first())
-},90_000)
   const receiver=(env as unknown as {TASK_RECEIVER_ORIGIN:string}).TASK_RECEIVER_ORIGIN
   await privacyRequestJourney(await privacyGoogleFixture(receiver),receiver)
+},90_000)

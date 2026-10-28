@@ -8125,7 +8125,7 @@
       "executable": false
     },
     "tests/runtime/resuming.worker.test.ts": {
-      "sha256": "f7d75886e228c77ea26ed26ec3ff72385ec8102e9856b93d79a41d4c78244df8",
+      "sha256": "fd6ab2791050499552726bad913c4fb450e21595bff2839c7ffb4815517bd9bf",
       "executable": false
     },
     "tests/runtime/retention-notification-evidence.ts": {
