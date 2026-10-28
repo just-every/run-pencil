@@ -1,9 +1,14 @@
+import { privacyRequestBrowser } from './privacy-request'
+import type { ScenarioCall } from '../results-scenario'
+import { appHeaders } from './api-headers'
+import { mkdir } from 'node:fs/promises'
+import { join } from 'node:path'
 import { expect } from './fixtures'
 import { contract } from './contract'
 import { signInEmptyWorkspace } from './authoring-helpers'
 import { openStateDatabase,stateDatabaseFile } from './state-database'
 
-contract('GOV-003','an owner opts into retention, sees advance notice, pauses deletion and releases legal hold',async({page},info)=>{
+contract(['GOV-003','GOV-006'],'an owner opts into retention, sees advance notice, pauses deletion and releases legal hold',async({page},info)=>{
   await signInEmptyWorkspace(page)
   await page.getByRole('button',{name:'Customer feedback',exact:true}).click()
   await page.getByRole('button',{name:'Create draft flow'}).click()
@@ -45,4 +50,15 @@ contract('GOV-003','an owner opts into retention, sees advance notice, pauses de
   await panel.getByRole('button',{name:'Save retention settings'}).click()
   await expect(panel.getByText(/Advance deletion notice: 1 responses/)).toBeVisible()
   await panel.screenshot({path:`test-results/${info.project.name}-retention-release.png`})
+  const call: ScenarioCall = async <T,>(path: string, data?: unknown, method = data === undefined ? 'GET' : 'POST'): Promise<T> => {
+    const response = await page.request.fetch(path, { method, headers: appHeaders, ...(data === undefined ? {} : { data }) })
+    expect(response.status(), path).toBeGreaterThanOrEqual(200)
+    expect(response.status(), path).toBeLessThan(300)
+    return response.status() === 204 ? undefined as T : await response.json() as T
+  }
+  await privacyRequestBrowser(page, call, info, async name => {
+    if (!process.env.PENCIL_CAPTURE_DIR) return
+    await mkdir(process.env.PENCIL_CAPTURE_DIR, { recursive: true })
+    await page.screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-${name}.png`), fullPage: true })
+  })
 })

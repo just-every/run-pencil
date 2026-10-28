@@ -1,4 +1,3 @@
-import { privacyRequestBrowser } from './privacy-request'
 import { operatorDisclosureExposure } from './disclosure-exposure'
 import { appHeaders } from './api-headers'
 import { mkdir } from 'node:fs/promises'
@@ -9,7 +8,7 @@ import { expect, test, openMailLink } from './fixtures'
 import AxeBuilder from '@axe-core/playwright'
 import { collectAnswerScenario, type ScenarioCall } from '../results-scenario'
 import type { FlowResults } from '../../src/core/app/api'
-contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006', 'LEDG-001', 'DATA-002', 'GOV-006', 'BASE-PUBLIC-003'], 'answers first across every type, an RSLT-006 crosstab states shares and suppression, comparison replaces results and ledger confirms erasure', async ({ page }, info) => {
+contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006', 'LEDG-001', 'DATA-002', 'BASE-PUBLIC-003'], 'answers first across every type, an RSLT-006 crosstab states shares and suppression, comparison replaces results and ledger confirms erasure', async ({ page }, info) => {
   test.setTimeout(180000)
   const hydrationErrors:string[]=[]
   page.on('pageerror',error=>{if(/hydrat/i.test(error.message))hydrationErrors.push(error.message)})
@@ -34,7 +33,6 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
     expect(response.status(), path).toBeGreaterThanOrEqual(200)
     return response.status() === 204 ? undefined as T : await response.json() as T
   }
-  await privacyRequestBrowser(page, call, info, capture)
   const scenario = await collectAnswerScenario(call, `answers-${info.project.name}-${Date.now()}`)
   expect(scenario.questions).toHaveLength(13)
   expect(scenario.questions.every(question => question.answered === 12)).toBe(true)

@@ -191,7 +191,7 @@ Acceptance journeys and remaining obligations are recorded in CONTRACT.md and AC
 | GOV-003 | Retention schedules | published | done | `src/core/features/retention/`; `migrations/core/0052_retention.sql`; `tests/runtime/retention-schedule.worker.test.ts`; `tests/e2e/retention.spec.ts`; `tests/runtime/calculations.worker.test.ts` |
 | GOV-004 | Sensitive fields | target | missing |  |
 | GOV-005 | Audit log viewer | target | partial | `src/core/features/audit/`; `src/core/features/audit/events.ts`; `tests/runtime/audit-viewer.worker.test.ts`; `tests/e2e/response-webhooks.spec.ts` |
-| GOV-006 | Respondent privacy requests | target | partial | `tests/runtime/resuming.worker.test.ts`; `tests/e2e/answer-results.spec.ts`; `tests/runtime/analysis-safety.worker.test.ts` |
+| GOV-006 | Respondent privacy requests | target | partial | `tests/runtime/resuming.worker.test.ts`; `tests/e2e/retention.spec.ts`; `tests/runtime/analysis-safety.worker.test.ts` |
 | GOV-007 | Marketing and messaging consent | target | partial | `src/core/shared/marketingConsent.ts`; `tests/runtime/new-question-types.worker.test.ts`; `src/core/features/results/ui/ConsentRecords.tsx`; `src/core/features/flows/ui/MarketingOptInSettings.tsx`; `tests/runtime/foundation.worker.test.ts`; `tests/e2e/closed-flow.spec.ts` |
 | IMPORT-001 | Reviewed definition | published | done | `tests/e2e/form-import.spec.ts`; `tests/e2e/google-forms-import.spec.ts`; `tests/runtime/form-import.worker.test.ts` |
 | IMPORT-002 | Reviewed CSV | published | done | `tests/e2e/form-import.spec.ts`; `tests/e2e/google-forms-import.spec.ts`; `tests/e2e/import-acknowledgement.spec.ts` |
