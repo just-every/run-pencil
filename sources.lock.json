@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "f39210a477cc222d5a2a1e22bee9249195de1ed5ae903e6d32405c4fcdc71e3e",
+      "sha256": "0311f081d6d73cf8dd6a703b382b50f2d5f336841faad4f9f89658cc8506986d",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "f5597225100a5bce540778c55c5cb44ff8cd8e7f46afec7c5b4b0939517216be",
+      "sha256": "8cda5cfff9478be3c9716d09d9d6f99a1f89cc2799b6a28ff969f98958826a7b",
       "executable": false
     },
     "DEMO.md": {
@@ -893,7 +893,7 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "8edbefdcaab61a4d15cd2ca09e725d89327c3556b428f3c90cd6e28987405d2b",
+      "sha256": "239afbb07ca65ca9822e9f91e5eeac28e4b7e9af7a11ca87144ca6a8b3192c1c",
       "executable": false
     },
     "docs/contract-changes-20261002.json": {
