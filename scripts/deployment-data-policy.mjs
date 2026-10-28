@@ -150,6 +150,10 @@ const retained = {
   // Anonymous report consistency metadata contains no answers or respondent identities.
   reporting_generations: 'workspace_id generation',
   reporting_changes: 'workspace_id flow_id eligible_at generation',
+  // Saved definitions and dashboard order are private product configuration, including identity filters.
+  saved_report_views: 'id workspace_id flow_id revision_id name definition_json cutoff threshold saved_by saved_by_name created_at',
+  saved_report_dashboards: 'id workspace_id name scope flow_id view_ids_json saved_by saved_by_name created_at updated_at',
+  saved_report_shares: 'id workspace_id view_id token_hash password_verifier expires_at revoked_at threshold created_at',
   response_answers: 'id response_id step_id value_json created_at updated_at',
   response_outbox: 'id workspace_id response_id kind idempotency_key payload_json status available_at dispatched_at failure_reason created_at updated_at',
   responses: 'response_context_json id workspace_id flow_id revision_id session_id session_token_hash idempotency_key state quarantine_reason released_at released_by_operator_id completion_milliseconds completed_at created_at updated_at source started_at participant_id device_class',
@@ -264,7 +268,7 @@ const excludedCaptureTables = new Set(['notification_timer', 'local_mail_outbox'
 // Sign-in authorization never travels: sessions (native, dev, review, provider), sign-in and invitation links, step-up
 // challenges, minted API credentials and the provider bindings of those sessions. A restore cannot revive a session that
 // was signed out or revoked after the backup, so everyone signs in again. Operators, roles and the audit history stay.
-export const authorizationTables = new Set(['access_challenges','session_access','oa_sessions', 'oa_tokens', 'oa_owner_signins', 'oa_credentials', 'oa_step_up_challenges', 'oa_provider_sessions', 'oa_provider_session_pins', 'operator_sessions', 'auth_magic_links']);
+export const authorizationTables = new Set(['saved_report_shares','access_challenges','session_access','oa_sessions', 'oa_tokens', 'oa_owner_signins', 'oa_credentials', 'oa_step_up_challenges', 'oa_provider_sessions', 'oa_provider_session_pins', 'operator_sessions', 'auth_magic_links']);
 export const rowsNeverTravel = name => excludedCaptureTables.has(name) || authorizationTables.has(name);
 export function refuseAuthorization(table, rows) {
   if (authorizationTables.has(table.name) && rows.length) throw failure('LIVE_AUTHORIZATION', 'Archive holds sign-in authorization (sessions, sign-in or invitation links, or credentials). Export again from the source; sign-in authorization never travels.');

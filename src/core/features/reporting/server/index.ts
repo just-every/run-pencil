@@ -1,0 +1,1 @@
+export { readSharedReport } from '../sharedAccess'

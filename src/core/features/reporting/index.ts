@@ -10,3 +10,5 @@ export type { MatrixRowSummary } from './matrixReport'
 
 export { resultSummary, responseRateFilter } from './summary'
 export { ledgerFilterSchema } from './filter'
+
+export type { SavedViewDefinition, SavedView, SavedViewDetail, SavedDashboard, SavedReportShare, SharedReport, SharedCrosstabTable } from './savedModel'

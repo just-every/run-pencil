@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { spawn } from 'node:child_process'
+import { parseContract } from '../src/base/seed-contract.mjs'
 
 const root = resolve(new URL('..', import.meta.url).pathname)
 const clausePattern = /^[A-Z][A-Z0-9]*(?:-[A-Z][A-Z0-9]*)*-\d{3}$/
@@ -47,7 +48,8 @@ try {
   errors.push(`seed.json does not validate against the bundled base SEED schema: ${error.message}`)
 }
 const [contract, baseline] = await Promise.all([clauseIds('CONTRACT.md'), clauseIds('BASELINE.md')])
-const declaredClauses = new Set([...contract, ...baseline])
+const targetContract = parseContract(await readFile(resolve(root, 'CONTRACT.md'), 'utf8'))
+const declaredClauses = new Set([...targetContract.clauses.map(clause => clause.id), ...baseline])
 
 for (const key of ['id', 'name', 'version', 'maturity', 'description', 'capabilities', 'nonGoals', 'externals', 'env', 'deploy', 'extensionPoints', 'limits', 'accessibility', 'operatingCost']) {
   requireValue(errors, `seed.json.${key}`, seed[key])

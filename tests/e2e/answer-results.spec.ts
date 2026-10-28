@@ -1,3 +1,4 @@
+import { savedReportsJourney } from './saved-reports-journey'
 import { operatorDisclosureExposure } from './disclosure-exposure'
 import { appHeaders } from './api-headers'
 import { mkdir } from 'node:fs/promises'
@@ -8,15 +9,23 @@ import { expect, test, openMailLink } from './fixtures'
 import AxeBuilder from '@axe-core/playwright'
 import { collectAnswerScenario, type ScenarioCall } from '../results-scenario'
 import type { FlowResults } from '../../src/core/app/api'
-contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006', 'LEDG-001', 'DATA-002', 'BASE-PUBLIC-003'], 'answers first across every type, an RSLT-006 crosstab states shares and suppression, comparison replaces results and ledger confirms erasure', async ({ page }, info) => {
-  test.setTimeout(180000)
+contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006', 'RSLT-008', 'RSLT-009', 'LEDG-001', 'DATA-002', 'BASE-PUBLIC-003'], 'answers first across every type, an RSLT-006 crosstab states shares and suppression, comparison replaces results and ledger confirms erasure', async ({ page }, info) => {
+  test.setTimeout(300000)
   const hydrationErrors:string[]=[]
   page.on('pageerror',error=>{if(/hydrat/i.test(error.message))hydrationErrors.push(error.message)})
   page.on('console',message=>{if(message.type()==='error' && /hydrat/i.test(message.text()))hydrationErrors.push(message.text())})
   const capture = async (name: string) => {
     if (!process.env.PENCIL_CAPTURE_DIR) return
     await mkdir(process.env.PENCIL_CAPTURE_DIR, { recursive: true })
-    await page.screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-results-${name}.png`), fullPage: true })
+    const path = join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-results-${name}.png`)
+    if (name === 'saved-editor' || name.startsWith('saved-') || name === 'dashboard' || name === 'program-dashboard') {
+      const anchor = name === 'saved-editor' ? page.locator('details.saved-reports > summary') : name.startsWith('saved-') ? page.getByRole('region', { name: 'Opened saved view', exact: true }).locator('h2').first() : page.getByText('Arrange a dashboard', { exact: true })
+      await anchor.scrollIntoViewIfNeeded(); await page.screenshot({ path })
+      if (name === 'saved-editor') {
+        await page.getByRole('combobox', { name: 'Row code', exact: true }).first().scrollIntoViewIfNeeded()
+        await page.screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-results-saved-editor-codes.png`) })
+      }
+    } else await page.screenshot({ path, fullPage: true })
     if (name === 'operator-exposure') await page.locator('section.crosstab').screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-results-exposure-note.png`) })
   }
   await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
@@ -194,4 +203,5 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   expect((await new AxeBuilder({ page }).include('.operator-content').analyze()).violations).toEqual([])
   await operatorDisclosureExposure(page, call, `disclosure-${info.project.name}-${Date.now()}`, capture)
+  await savedReportsJourney(page, call, `shared-${info.project.name}-${Date.now()}`, capture)
 })

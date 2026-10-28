@@ -16,28 +16,34 @@ test('[DATA-001,BASE-DATA-001,IMPORT-004,BASE-OPS-003,LEDG-006,PAY-001] whole-da
       const { custodyGraph } = await import('./custody-test-graph.mjs');
       const { verifyCustodyReadback, custodyTriggerCanaries } = await import('./custody-test-canaries.mjs');
       const { custodySignIn } = await import('./custody-test-targets.mjs');
+      const { savedReportCustody } = await import('./custody-test-saved-reports.mjs');
       await (async () => {
         const f = fixture(), core = new DatabaseSync(':memory:'), remote = new DatabaseSync(':memory:'), target = new DatabaseSync(':memory:');
         let file;
         try {
           f.db.exec('PRAGMA foreign_keys=ON');
           const graph = await custodyGraph(sqliteD1(f.db));
+          const reports = await savedReportCustody(sqliteD1(f.db), graph.actor);
           const expected = snapshot(f.db), originalSchema = schema(f.db);
           assert.deepEqual(validate(expected), expected);
           initialize(core); populate(core, expected);
           assert.deepEqual(snapshot(core), expected);
           exportData(f.source, f.archive);
+          const archived = readFileSync(f.archive, 'utf8');
+          for (const secret of reports.secrets) assert.equal(archived.includes(secret), false);
           importData(f.archive, f.target); file = new DatabaseSync(f.target);
           assert.deepEqual(snapshot(file), expected);
           initialize(remote); remote.exec('PRAGMA foreign_keys=ON');
           const deployed = join(f.dir, 'deployed.json');
           await exportRemote(deployed, sqliteTransport(f.db).query);
+          await reports.revoke();
           await importRemote(deployed, sqliteTransport(remote).query);
           assert.deepEqual(snapshot(remote), expected);
           for (const database of [core, file, remote]) {
             assert.equal(canonicalDatabaseSchema(database), originalSchema);
             assert.equal(database.prepare('PRAGMA foreign_key_check').get(), undefined);
             await custodySignIn(sqliteD1(database), graph.actor);
+            await reports.readback(sqliteD1(database));
             await verifyCustodyReadback(sqliteD1(database), graph);
             await custodyTriggerCanaries(sqliteD1(database), graph);
           }
