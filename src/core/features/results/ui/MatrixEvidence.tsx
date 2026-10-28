@@ -1,4 +1,4 @@
-import type { MatrixRowSummary } from '../../reporting/matrixReport'
+import type { MatrixRowSummary } from '../../reporting'
 export const answerCount = (value: number) => `${value} ${value === 1 ? 'answer' : 'answers'}`
 
 export function MatrixEvidence({ rows }: { rows: MatrixRowSummary[] }) {

@@ -6,6 +6,7 @@ export type { LedgerFilter } from './repository'
 export type { Crosstab } from './crosstab'
 
 export type { DeviceReport } from './devices'
+export type { MatrixRowSummary } from './matrixReport'
 
 export { resultSummary, responseRateFilter } from './summary'
 export { ledgerFilterSchema } from './filter'
