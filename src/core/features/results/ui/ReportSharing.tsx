@@ -10,7 +10,7 @@ export function ReportSharing({ viewId }: { viewId: string }) {
     event.preventDefault(); setError(''); setBusy(true)
     try {
       const share = await savedReportApi.share(viewId, { ...(password ? { password } : {}), ...(expiresAt ? { expiresAt: new Date(expiresAt).toISOString() } : {}) })
-      setLink(new URL(share.url || `/reports/${share.token}`, location.origin).href); setPassword(''); setShares(await savedReportApi.shares(viewId))
+      setLink(new URL(share.url, location.origin).href); setPassword(''); setShares(await savedReportApi.shares(viewId))
     } catch (reason) { setError((reason as Error).message) } finally { setBusy(false) }
   }
   const revoke = async (id: string) => {

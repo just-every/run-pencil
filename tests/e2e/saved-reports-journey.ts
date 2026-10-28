@@ -51,6 +51,7 @@ export async function savedReportsJourney(page: Page, call: ScenarioCall, slug: 
   await expect(opened.getByText('8 of 43 answers', { exact: true })).toBeVisible()
   await expect(opened.getByText(/suppressed cell would be recoverable/).first()).toBeVisible()
   await expect(opened.getByText(/This subset cohort/)).toBeVisible()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await capture('saved-view')
   const expectedText = await opened.locator('article.saved-report').innerText()
 
@@ -80,6 +81,7 @@ export async function savedReportsJourney(page: Page, call: ScenarioCall, slug: 
   await saved.getByRole('button', { name: 'Save dashboard', exact: true }).click()
   await expect(saved.getByRole('button', { name: 'New dashboard', exact: true })).toBeVisible()
   await expect(saved.locator('ol.report-list li > span')).toHaveText([second.view.name, created.view.name])
+  await expect(saved.getByText('Arrange a dashboard', { exact: true }).locator('..').locator('article.saved-report')).toHaveCount(2)
   await capture('dashboard')
   await saved.getByRole('button', { name: 'New dashboard', exact: true }).click()
   await saved.getByLabel('Dashboard name', { exact: true }).fill('Program renewal board')
@@ -89,6 +91,7 @@ export async function savedReportsJourney(page: Page, call: ScenarioCall, slug: 
   const programSaved = page.waitForResponse(response => new URL(response.url()).pathname === '/api/app/report-dashboards' && response.request().method() === 'POST')
   await saved.getByRole('button', { name: 'Save dashboard', exact: true }).click()
   expect(await (await programSaved).json()).toMatchObject({ scope: 'program', flowId: null, viewIds: [created.view.id, second.view.id] })
+  await expect(saved.getByText('Arrange a dashboard', { exact: true }).locator('..').locator('article.saved-report')).toHaveCount(2)
   await capture('program-dashboard')
 
   await saved.getByRole('list', { name: 'Saved views', exact: true }).getByRole('button', { name: created.view.name, exact: true }).click()
