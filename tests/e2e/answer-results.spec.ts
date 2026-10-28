@@ -34,6 +34,7 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
     expect(response.status(), path).toBeGreaterThanOrEqual(200)
     return response.status() === 204 ? undefined as T : await response.json() as T
   }
+  await privacyRequestBrowser(page, call, info, capture)
   const scenario = await collectAnswerScenario(call, `answers-${info.project.name}-${Date.now()}`)
   expect(scenario.questions).toHaveLength(13)
   expect(scenario.questions.every(question => question.answered === 12)).toBe(true)
@@ -194,6 +195,5 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
   await capture('after-erasure')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   expect((await new AxeBuilder({ page }).include('.operator-content').analyze()).violations).toEqual([])
-  await privacyRequestBrowser(page, call, info, capture)
   await operatorDisclosureExposure(page, call, `disclosure-${info.project.name}-${Date.now()}`, capture)
 })
