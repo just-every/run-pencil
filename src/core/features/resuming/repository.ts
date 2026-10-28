@@ -1,3 +1,4 @@
+import { privacyEmailHash } from '../../shared/privacyIdentity'
 import { admittedResponseSql } from '../payments/admission'
 import { sessionCollectorAdmissionSql } from '../collectors'
 
@@ -28,8 +29,8 @@ export class ResumeRepository {
   async save(input: { sessionId: string; sessionHash: string; revisionId: string; tokenHash: string; commandKey: string; deliveryId: string; email: string; stepId: string; answers: string; responseContext:string; participantId: string | null; expiresAt: string; now: string }) {
     const open = sessionCollectorAdmissionSql('s.id', 'f.id', input.now, 's.source')
     const results = await this.db.batch([
-      this.db.prepare(`INSERT INTO respondent_saves(session_id,revision_id,token_hash,command_key,delivery_id,delivery_email,delivery_state,current_step_id,answers_json,response_context_json,participant_id,expires_at,created_at,updated_at)
-        SELECT s.id,s.revision_id,?,?,?,?,'sending',?,?,?,?,?,?,?
+      this.db.prepare(`INSERT INTO respondent_saves(session_id,revision_id,token_hash,command_key,delivery_id,delivery_email,privacy_email_hash,delivery_state,current_step_id,answers_json,response_context_json,participant_id,expires_at,created_at,updated_at)
+        SELECT s.id,s.revision_id,?,?,?,?,?,'sending',?,?,?,?,?,?,?
         FROM respondent_sessions s JOIN flow_revisions r ON r.id=s.revision_id JOIN flows f ON f.id=r.flow_id
         WHERE s.id=? AND s.session_token_hash=? AND s.revision_id=? AND s.completed_at IS NULL AND s.expires_at>?
           AND f.status IN ('open','closed') AND r.admission_closed_at IS NULL AND (r.deadline_at IS NULL OR r.deadline_at>?)
@@ -40,10 +41,10 @@ export class ResumeRepository {
             WHERE p.id=? AND p.revision_id=r.id AND p.token IS NOT NULL AND p.response_status!='completed')))
           AND ${open.sql}
         ON CONFLICT(session_id) DO UPDATE SET token_hash=excluded.token_hash,command_key=excluded.command_key,
-          delivery_id=excluded.delivery_id,delivery_email=excluded.delivery_email,delivery_state='sending',current_step_id=excluded.current_step_id,
+          delivery_id=excluded.delivery_id,delivery_email=excluded.delivery_email,privacy_email_hash=excluded.privacy_email_hash,delivery_state='sending',current_step_id=excluded.current_step_id,
           response_context_json=excluded.response_context_json,answers_json=excluded.answers_json,participant_id=excluded.participant_id,expires_at=excluded.expires_at,updated_at=excluded.updated_at
         WHERE respondent_saves.response_id IS NULL AND (respondent_saves.delivery_state!='sending' OR respondent_saves.updated_at<?)`)
-        .bind(input.tokenHash,input.commandKey,input.deliveryId,input.email,input.stepId,input.answers,input.responseContext,input.participantId,input.expiresAt,input.now,input.now,
+        .bind(input.tokenHash,input.commandKey,input.deliveryId,input.email,await privacyEmailHash(input.email),input.stepId,input.answers,input.responseContext,input.participantId,input.expiresAt,input.now,input.now,
           input.sessionId,input.sessionHash,input.revisionId,input.now,input.now,input.participantId,input.participantId,...open.params,new Date(Date.parse(input.now)-5*60_000).toISOString()),
       this.db.prepare(`UPDATE respondent_sessions SET expires_at=?,updated_at=? WHERE id=? AND EXISTS(
         SELECT 1 FROM respondent_saves WHERE session_id=? AND token_hash=? AND delivery_state='sending' AND updated_at=?)`)

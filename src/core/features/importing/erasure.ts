@@ -11,9 +11,9 @@ async function responseIdentifiers(database: D1Database, responseId: string) {
   return results.map(row => row.value).filter(value => value.length > 0)
 }
 
-export async function eraseResponseAndImportCustody(database: D1Database, input: { workspaceId: string; responseId: string; operatorId: string; sessionId?: string; retentionAuthority?: D1ImportContext }, statements: D1Sql[]): Promise<D1Result<unknown>[]> {
+export async function eraseResponseAndImportCustody(database: D1Database, input: { workspaceId: string; responseId: string; operatorId: string; sessionId?: string; state?: 'released'|'quarantined'; retentionAuthority?: D1ImportContext }, statements: D1Sql[]): Promise<D1Result<unknown>[]> {
   const response = await database.prepare('SELECT source,state FROM responses WHERE id = ? AND workspace_id = ?').bind(input.responseId, input.workspaceId).first<{ source: string; state: string }>()
-  if (response && response.state !== 'released' && !input.retentionAuthority) return []
+  if (response && response.state !== (input.state ?? 'released') && !input.retentionAuthority) return []
   if (response?.source !== 'imported') {
     const guards = ordinaryErasureGuards(database, input, response?.source)
     const guarded = [guards.before, ...statements, restoreCheckpoint, guards.after, { sql: 'DELETE FROM ik_d1_assertions' }, guards.final]

@@ -22,8 +22,10 @@ for (const id of ids) {
   const entries = acceptance.split('\n'), index = entries.findIndex(line => line.startsWith(`- ${id} — `))
   if (index < 0) throw Error('Missing legacy acceptance journey: ' + id)
   const boundary = entries[index].search(/ (?:Evidence|Gap): /)
-  const journey = (boundary < 0 ? entries[index] : entries[index].slice(0, boundary))
+  let journey = (boundary < 0 ? entries[index] : entries[index].slice(0, boundary))
     .replace(/ — (?:done|partial|missing)\./, ` — ${clause.status}.`)
+  const explicit = /\*Acceptance:\* ([\s\S]*?) \*Status: ([\s\S]*?)\*\s*$/.exec(clause.text)
+  if (explicit) journey = `- ${id} — ${clause.title} — ${clause.status}. Acceptance: ${explicit[1]} Today: ${explicit[2].replace(/^(?:done|partial|missing)\s*(?:—\s*)?/, '')}`
   const row = cells(lines[clause.row - 1])
   entries[index] = `${journey} Evidence: ${row[4]}` + (row[5] ? ` Gap: ${row[5]}` : '')
   acceptance = entries.join('\n')

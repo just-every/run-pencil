@@ -1,3 +1,4 @@
+import { registerPrivacyRoutes } from '../features/privacy/routes'
 import { registerChatRoutes } from '../features/chat-integrations'
 import { registerGoogleRoutes } from '../features/google-sheets'
 import { registerSmsRoutes } from '../features/sms'
@@ -137,6 +138,7 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
   registerSmsRoutes(app)
   registerAddressRoutes(app)
   registerRetentionRoutes(app)
+  registerPrivacyRoutes(app)
   registerBackupRoutes(app)
   registerManagementRoutes(app)
   registerAuthRoutes(app, context => context.get('services'), context => context.get('platform').configuration)
