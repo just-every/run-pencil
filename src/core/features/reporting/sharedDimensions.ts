@@ -2,7 +2,7 @@ import { NotFoundError } from '../../shared/errors'
 import { activeAssignment } from '../coding'
 import { resolveDimension, type Dimension } from './crosstabDimensions'
 
-export const sharedDimensionPattern = /^(?:(?:question|hidden|variable|code):[^\u0000-\u001f\u007f]{1,200}|collector)$/
+export const sharedDimensionPattern = /^(?:(?:question|hidden|variable|code):[^\u0000-\u001f\u007f]{1,200}|matrix:[^:\u0000-\u001f\u007f]{1,200}:[^:\u0000-\u001f\u007f]{1,200}|collector)$/
 export type SharedDimension = Omit<Dimension, 'kind'> & { kind: Dimension['kind'] | 'code' }
 
 export async function resolveSharedDimension(db: D1Database, workspaceId: string, flowId: string, revisionId: string, key: string, cutoff: string): Promise<SharedDimension> {
