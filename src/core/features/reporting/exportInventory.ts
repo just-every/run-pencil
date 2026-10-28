@@ -3,6 +3,7 @@ import { formSettings, type HiddenField } from '../../shared/hiddenFields'
 import type { Calculation } from '../../shared/calculations'
 import { responseScope, type ResponseSelection } from './scope'
 import type { LedgerFilter } from './repository'
+import { savVariables } from './savDictionary'
 
 /**
  * The question inventory of the revisions an export selects (LEDG-005), newest revision first.
@@ -64,12 +65,15 @@ export async function exportInventory(db: D1Database, workspaceId: string, flowI
 
 /** Sheet two of the XLSX: one row per question and revision, and one per choice it offered. */
 export function* questionMetadata(inventory: ExportInventory): Generator<Array<string | number>> {
+  const savNames = new Map(savVariables(inventory).filter(variable => variable.bound?.startsWith('matrix:')).map(variable => [variable.bound, variable.name]))
   for (const step of inventory.steps) {
     const offered = step.question.choices.filter(choice => choice.revisions.has(step.revisionId))
     const base = [step.revisionId, step.revisionNumber, step.id, step.position, step.type, step.prompt]
     if (step.type === 'matrix') {
       for (const row of step.matrixRows ?? []) {
-        for (const choice of offered) yield [step.revisionId, step.revisionNumber, `${step.id}.${row.id}`, step.position, step.type, `${step.prompt}: ${row.label}`, choice.id, choice.value, choice.label, `${step.id}.${row.id}`, '']
+        const savName = savNames.get(`matrix:${step.question.key}\0${row.id}`)
+        if (savName === undefined) throw new Error('A matrix row is missing its SPSS variable mapping.')
+        for (const choice of offered) yield [step.revisionId, step.revisionNumber, `${step.id}.${row.id}`, step.position, step.type, `${step.prompt}: ${row.label}`, choice.id, choice.value, choice.label, savName, '']
       }
       continue
     }

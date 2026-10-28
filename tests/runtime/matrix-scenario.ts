@@ -74,12 +74,13 @@ export async function matrixScenario() {
   ])
   const multigrid = report.find(question => question.id === multiple.id)!.summary.matrixRows!
   expect(multigrid.map(row => [row.answered, row.multipleSelect, row.distribution.map(bucket => bucket.count)])).toEqual([[5, true, [5, 5, 0, 0, 0]], [0, true, [0, 0, 0, 0, 0]]])
-  const exportText = async (format: string) => {
+  const exportBytes = async (format: string) => {
     let { token } = await call<{ token: string }>(root + '/responses/export/start?format=' + format)
-    let result = ''
-    while (token) { const response = await request(root + '/responses/export', { token }); expect(response.status).toBe(200); result += await response.text(); token = response.headers.get('x-export-next') ?? '' }
-    return result
+    const parts: Uint8Array[] = []
+    while (token) { const response = await request(root + '/responses/export', { token }); expect(response.status).toBe(200); parts.push(new Uint8Array(await response.arrayBuffer())); token = response.headers.get('x-export-next') ?? '' }
+    return new Uint8Array(await new Blob(parts).arrayBuffer())
   }
+  const exportText = async (format: string) => new TextDecoder().decode(await exportBytes(format))
   const [head, ...records] = csvRows(await exportText('csv'))
   for (const row of rows) expect(head).toContain(`${matrix.id}.${row.id}`)
   for (const row of rows.slice(0, 2)) expect(head).toContain(`${multiple.id}.${row.id}`)
@@ -90,6 +91,23 @@ export async function matrixScenario() {
   expect(JSON.parse(original[head.indexOf(`${multiple.id}.${rows[0].id}`)])).toEqual([multiOptions[0].id, multiOptions[1].id])
   const exported = JSON.parse(await exportText('json')) as { responses: Ledger['responses'] }
   expect(exported.responses.find(row => row.id === receipts[0].responseId)!.answers.find(row => row.stepId === matrix.id)!.value).toEqual(answer(0, 0))
+  const reader = (env as unknown as { EXPORT_READER_ORIGIN: string }).EXPORT_READER_ORIGIN
+  const readFile = async <T,>(format: string): Promise<T> => {
+    const response = await fetch(`${reader}/${format}`, { method: 'POST', body: await exportBytes(format) })
+    expect(response.status).toBe(200); return response.json<T>()
+  }
+  const workbook = await readFile<{ sheets: Array<{ rows: unknown[][] }> }>('xlsx')
+  expect(workbook.sheets[0].rows[0]).toEqual(head)
+  const workbookRow = workbook.sheets[0].rows.find(row => row[0] === receipts[0].responseId)!
+  expect(workbookRow[head.indexOf(`${matrix.id}.${rows[0].id}`)]).toBe(options[0].id)
+  const sav = await readFile<{ rows: Array<Record<string, unknown>> }>('sav')
+  expect(sav.rows).toHaveLength(29)
+  const [metadataHead, ...metadata] = workbook.sheets[1].rows
+  const savRow = sav.rows.find(row => row.response_id === receipts[0].responseId)!
+  for (const row of rows) {
+    const mapping = metadata.find(item => item[metadataHead.indexOf('step_id')] === `${matrix.id}.${row.id}`)!
+    expect(savRow[String(mapping[metadataHead.indexOf('sav_variable')])]).toBe(answer(0, 0)[row.id])
+  }
   const { policies } = await call<{ policies: Record<string, unknown> }>('/api/app/analysis')
   await call('/api/app/analysis/policies', { ...policies, disclosureThreshold: 1 }, 'PUT')
   const crossPath = root + '/crosstab?' + new URLSearchParams({ revisionId: published.revision.id, rows: `matrix:${matrix.id}:${rows[0].id}`, columns: `matrix:${matrix.id}:${rows[1].id}` })
