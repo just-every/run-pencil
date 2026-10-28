@@ -8077,7 +8077,7 @@
       "executable": false
     },
     "tests/runtime/privacy-fixture.ts": {
-      "sha256": "2922b94b255651bf5b227564f21133972560d4bc122f892776c1a9ea34a17a0c",
+      "sha256": "30edddb780c7362cb8f0d4f26cd53e74d0c5060eec76769846a1adfc6e377bbd",
       "executable": false
     },
     "tests/runtime/privacy-journey.ts": {
