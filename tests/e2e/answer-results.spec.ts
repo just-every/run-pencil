@@ -121,6 +121,7 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
   await expect(metric('Completion rate').locator('strong')).toHaveText('No rate')
   await expect(metric('Average time')).toContainText('0ms total / 0 native completed responses')
   await responseFilters.getByLabel('Device class',{exact:true}).selectOption('')
+  await expect(devices.locator('.device-row').filter({hasText:'desktop'})).toContainText('6 / 6 · 100%')
   await responseFilters.getByLabel('Answer contains / equals').selectOption('false')
   await expect(devices.locator('.device-row').filter({hasText:'mobile'})).toContainText('6 / 6 · 100%')
   await page.getByLabel('Published revision').selectOption('all')
