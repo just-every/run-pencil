@@ -90,7 +90,7 @@ export async function matrixScenario() {
   expect(JSON.parse(original[head.indexOf(`${multiple.id}.${rows[0].id}`)])).toEqual([multiOptions[0].id, multiOptions[1].id])
   const exported = JSON.parse(await exportText('json')) as { responses: Ledger['responses'] }
   expect(exported.responses.find(row => row.id === receipts[0].responseId)!.answers.find(row => row.stepId === matrix.id)!.value).toEqual(answer(0, 0))
-  const policies = await call<Record<string, unknown>>('/api/app/analysis/policies')
+  const { policies } = await call<{ policies: Record<string, unknown> }>('/api/app/analysis')
   await call('/api/app/analysis/policies', { ...policies, disclosureThreshold: 1 }, 'PUT')
   const crossPath = root + '/crosstab?' + new URLSearchParams({ revisionId: published.revision.id, rows: `matrix:${matrix.id}:${rows[0].id}`, columns: `matrix:${matrix.id}:${rows[1].id}` })
   const crossed = await call<Crosstab>(crossPath)
