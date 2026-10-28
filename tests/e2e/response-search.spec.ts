@@ -7,8 +7,9 @@ import { appHeaders } from './api-headers'
 import { downloadedText } from './export-helpers'
 import { collectResponseSearchScenario } from '../response-search-scenario'
 import type { ScenarioCall } from '../results-scenario'
+import { triageSubmission } from './submission-inbox-journey'
 
-contract('LEDG-006', 'operators search responses, see matching answers and download the same filtered records', async ({ page }, info) => {
+contract(['LEDG-006', 'WORK-001'], 'operators search responses, see matching answers and download the same filtered records', async ({ page }, info) => {
   test.setTimeout(120_000)
   const email = operatorEmail()
   await page.goto('/signin'); await page.getByLabel('Operator email').fill(email)
@@ -38,6 +39,7 @@ contract('LEDG-006', 'operators search responses, see matching answers and downl
     await expect(page.locator('section.results')).toHaveAttribute('aria-busy', 'false')
   }
   // The static "All published revisions" option exists before the client loads results; choose it once the ledger has.
+  await expect(page.locator('section.results')).toHaveAttribute('aria-busy', 'false')
   await expect(ledger.getByText('matching completed responses', { exact: false })).toBeVisible()
   await selectRevision('all')
   await ledger.getByRole('searchbox', { name: 'Search responses', exact: true }).fill('queue')
@@ -72,4 +74,5 @@ contract('LEDG-006', 'operators search responses, see matching answers and downl
     await ledger.locator('.ledger-answer mark').scrollIntoViewIfNeeded()
     await page.screenshot({ scale: 'css', path: join(process.env.PENCIL_CAPTURE_DIR, `response-search-unicode-${info.project.name}.png`) })
   }
+  await triageSubmission(page, info, call, scenario.flowId, scenario.slow)
 })

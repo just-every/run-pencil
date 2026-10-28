@@ -24,4 +24,10 @@ Use OPERATIONS.md and docs/HOSTING.md for setup, deployment and recovery. Remote
 
 # Lander-Regenerate
 
-Keep the current contract format until ct's judged cleanup. After resolving CONTRACT.md, run `node scripts/contract-docs.mjs write RSLT-008 RSLT-009` and `node scripts/contract-docs.mjs check RSLT-008 RSLT-009` for these touched clauses. The generator preserves other clauses' acceptance entries, updates summary counts and generates `docs/CLAIMS.md`; use the IDs of the clauses touched in a later round. Regenerate the edition source lock last.
+CONTRACT.md is the acceptance and status source. After changing its rows, run
+`node scripts/contract-docs.mjs write CLAUSE...`, then
+`node scripts/contract-docs.mjs check CLAUSE...`, substituting the touched clause
+IDs (for example `node scripts/contract-docs.mjs write WORK-001`). The incremental
+generator preserves other legacy acceptance journeys, synchronizes summary counts
+and writes docs/CLAIMS.md. Resolve CONTRACT.md first after a rebase, regenerate
+these views, and regenerate the edition source lock last.
