@@ -21,7 +21,7 @@ export function studyTools(db: D1Database, services: PencilServices): ToolDefini
     return record
   }
   const evidence = async (args: Record<string, unknown>, ctx: ToolContext) => {
-    const data = await studio(ctx).generationInput((await scope(ctx)).workspaceId, studioInput.parse(args))
+    const data = await nativeCall(async () => studio(ctx).generationInput((await scope(ctx)).workspaceId, studioInput.parse(args)))
     if (!inputs.has(args)) inputs.set(args, data)
     return data
   }

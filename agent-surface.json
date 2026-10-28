@@ -691,6 +691,19 @@
       }
     },
     {
+      "id": "contacts-list",
+      "tool": "pencil.contacts.list",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
       "id": "read-analysis-connection",
       "tool": "pencil.connections.read_analysis",
       "args": {},
@@ -711,8 +724,8 @@
         "model": "synthetic-pencil-study",
         "baseUrl": "https://api.openai.com/v1",
         "apiKey": {
-          "$from": "create",
-          "pointer": "/id"
+          "$from": "contacts-list",
+          "pointer": "/contacts/0/id"
         }
       },
       "expect": [
@@ -753,8 +766,8 @@
         "model": "synthetic-pencil-study",
         "baseUrl": "https://api.openai.com/v1",
         "apiKey": {
-          "$from": "create",
-          "pointer": "/id"
+          "$from": "contacts-list",
+          "pointer": "/contacts/0/id"
         }
       },
       "expect": [
@@ -789,8 +802,8 @@
       "args": {
         "url": "https://synthetic-pencil-1.invalid/tasks",
         "apiKey": {
-          "$from": "create",
-          "pointer": "/id"
+          "$from": "contacts-list",
+          "pointer": "/contacts/0/id"
         }
       },
       "expect": [
@@ -1252,19 +1265,6 @@
           "pointer": "/id"
         }
       },
-      "expect": [
-        {
-          "class": "standard",
-          "facts": {
-            "measure": 1
-          }
-        }
-      ]
-    },
-    {
-      "id": "contacts-list",
-      "tool": "pencil.contacts.list",
-      "args": {},
       "expect": [
         {
           "class": "standard",

@@ -14,13 +14,16 @@ export function connectionTools(db: D1Database, services: PencilServices): ToolD
   }
   return (['analysis', 'task'] as const).flatMap(kind => {
     const input = kind === 'analysis' ? analysisConnectionSchema : taskConnectionSchema
-    const status = async (): Promise<unknown> => kind === 'analysis' ? services.connections.analysisStatus() : services.connections.taskStatus()
+    const status = async (): Promise<unknown> => {
+      const value = await (kind === 'analysis' ? services.connections.analysisStatus() : services.connections.taskStatus())
+      return JSON.parse(JSON.stringify(value))
+    }
     const effect = { kind: 'record' as const, justification: `Save or remove the installation's encrypted ${kind} connection. This changes no native person, agent, role, grant or standing authority.` }
     const base = {
       scope: 'pencil:connections', classes: ['security' as const], clauses: ['WS-003', 'GOV-005'],
       readOnly: false, authority: 'none' as const, effect, outputSchema: { type: 'object' },
       async target(_args: Record<string, unknown>, ctx: ToolContext) { await owner(ctx); return { kind: 'connection', id: kind } },
-      async classify(_args: Record<string, unknown>, ctx: ToolContext) { await owner(ctx); return [{ class: 'security' as const, facts: { measure: 1 } }] },
+      async classify(_args: Record<string, unknown>, ctx: ToolContext) { await owner(ctx); return [{ class: 'security' as const, facts: { measure: 1, setting: `${kind} connection` } }] },
     }
     const audit = async (ctx: ToolContext, verb: string) => {
       const who = await owner(ctx)
