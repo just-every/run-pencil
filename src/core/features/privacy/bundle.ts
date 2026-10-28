@@ -4,12 +4,17 @@ import type { PrivacyIntegration } from './integrations'
 export async function privacyBundle(db: D1Database, selected: PrivacySelection, integrations: PrivacyIntegration[]) {
   const responses = []
   for (const response of selected.responses) {
-    const answers = (await db.prepare(`SELECT a.step_id AS stepId,s.prompt,s.question_type AS questionType,a.value_json AS value FROM response_answers a JOIN flow_steps s ON s.id=a.step_id WHERE a.response_id=? ORDER BY s.position,s.id`)
-      .bind(response.id).all<{ stepId: string; prompt: string; questionType: string; value: string }>()).results
+    const answers = (await db.prepare(`SELECT a.step_id AS stepId,s.id AS questionId,s.prompt,s.question_type AS questionType,a.value_json AS value FROM response_answers a JOIN flow_steps s ON s.stable_id=a.step_id AND s.revision_id=? WHERE a.response_id=? ORDER BY s.position,s.id`)
+      .bind(response.revisionId, response.id).all<{ stepId: string; questionId: string; prompt: string; questionType: string; value: string }>()).results
     const versions = (await db.prepare('SELECT number,answers_json AS answers,context_json AS context,created_at AS createdAt FROM response_versions WHERE response_id=? ORDER BY number')
       .bind(response.id).all<{ number: number; answers: string; context: string; createdAt: string }>()).results
     const { contextJson, ...record } = response
-    responses.push({ ...record, context: JSON.parse(contextJson), answers: answers.map(answer => ({ ...answer, value: JSON.parse(answer.value) })), versions: versions.map(version => ({ ...version, answers: JSON.parse(version.answers), context: JSON.parse(version.context) })) })
+    const portableAnswers = []
+    for (const {questionId, ...answer} of answers) {
+      const options = (await db.prepare('SELECT stable_id AS id,value,label FROM choice_options WHERE step_id=? ORDER BY position,id').bind(questionId).all()).results
+      portableAnswers.push({...answer, value: JSON.parse(answer.value), options})
+    }
+    responses.push({ ...record, context: JSON.parse(contextJson), answers: portableAnswers, versions: versions.map(version => ({ ...version, answers: JSON.parse(version.answers), context: JSON.parse(version.context) })) })
   }
   const contactIds = JSON.stringify(selected.contacts.map(row => row.id))
   const consent = (await db.prepare('SELECT contact_id AS contactId,consent,source,created_at AS createdAt FROM contact_consent_events WHERE contact_id IN(SELECT value FROM json_each(?)) ORDER BY created_at,id').bind(contactIds).all()).results

@@ -1,4 +1,3 @@
-import { privacyRequestJourney } from './privacy-journey'
 import { applyD1Migrations,env,type D1Migration } from 'cloudflare:test'
 import { beforeAll,expect } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -8,7 +7,7 @@ import { materializeConfirmations } from '../../src/core/features/notifications/
 declare const __PENCIL_CORE_MIGRATIONS__:D1Migration[]
 beforeAll(()=>applyD1Migrations(env.DB,__PENCIL_CORE_MIGRATIONS__))
 const receiver=(env as unknown as {TASK_RECEIVER_ORIGIN:string}).TASK_RECEIVER_ORIGIN
-contract(['INTEG-001','INTEG-015','GOV-006'],'Google OAuth seals owner tokens and Sheets backfills, appends stable columns, replays failed rows without duplicates and clears an erased response',async()=>{
+contract(['INTEG-001','INTEG-015'],'Google OAuth seals owner tokens and Sheets backfills, appends stable columns, replays failed rows without duplicates and clears an erased response',async()=>{
  await fetch(receiver+'/__control/reset',{method:'POST',body:'{}'})
  const f=await actionsHttp({},'sheets-'+crypto.randomUUID().slice(0,8)),base=`/api/app/flows/${f.flowId}`,book='synthetic-pencil-1'
  const accepted=async(response:Response,status=200)=>{expect(response.status,'Google proof HTTP status').toBe(status);return response.status===204?undefined:response.json() as Promise<any>}
@@ -188,7 +187,6 @@ contract(['INTEG-001','INTEG-015','GOV-006'],'Google OAuth seals owner tokens an
  await control({});await accepted(await f.call('/api/app/google-sheet/deliveries/'+stopped.id+'/replay',{}))
  expect((await accepted(await f.call('/api/app/integration-deliveries?state=confirmed'))).deliveries.some((r:any)=>r.responseId===bounded)).toBe(true)
  // A historical released-response fixture also proves attachment's count guard at 1,000 and one over.
- await privacyRequestJourney(f,receiver)
  const responseFixture=(await env.DB.prepare('SELECT * FROM responses WHERE id=?').bind(fourth).first())!
  const otherRevision=(await env.DB.prepare("SELECT id FROM flow_revisions WHERE flow_id=? AND state='published' AND is_current=1").bind(other.id).first<{id:string}>())!.id
  const insertFixture=(n:number)=>{
@@ -199,4 +197,6 @@ contract(['INTEG-001','INTEG-015','GOV-006'],'Google OAuth seals owner tokens an
  await accepted(await f.call(otherBase+'/google-sheet',{spreadsheetId:'synthetic-pencil-count-book',tab:'Synthetic responses'},{method:'PUT'}))
  await insertFixture(1000).run()
  expect((await f.call(otherBase+'/google-sheet',{spreadsheetId:'synthetic-pencil-count-book',tab:'Synthetic responses'},{method:'PUT'})).status).toBe(400)
+
+
 })

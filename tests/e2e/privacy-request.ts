@@ -50,5 +50,5 @@ export async function privacyRequestBrowser(page: Page, call: ScenarioCall, info
   await panel.getByRole('button', { name: 'Find linked data', exact: true }).click()
   await expect(panel.getByText('0 responses', { exact: true })).toBeVisible()
   await expect(panel.getByText('0 contacts', { exact: true })).toBeVisible()
-  expect((await call<any>(base + '/ledger')).rows).toHaveLength(0)
+  expect((await call<any>(base + '/ledger')).responses).toHaveLength(0)
 }

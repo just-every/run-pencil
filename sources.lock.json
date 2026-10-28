@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "3768c7b70187027b1c875bee828dfc24236d6c2907ca52e37921793d2e87d536",
+      "sha256": "bf6aa22b9003b5a4f98ae8868274a256327871b3094cf51a4e09efc9d67e9422",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "77ad3e6841aa65549e44be0f13076b8361af1db66874bcaddd1fce05cd3aeb7f",
+      "sha256": "cf57aab4e66f5e3c3fb8d61f012f0ae9758b7fe2cbcba76eae3eb68ee1b50e90",
       "executable": false
     },
     "DEMO.md": {
@@ -893,7 +893,7 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "d1820be9698480d15e274c5a825dba7b2d12487b0e525722debfc6cdabbb33cb",
+      "sha256": "bebcaea8af16b3cbace0d75317c54f5cf8e1589f52cd7fdaf0f8cfb3704f8b70",
       "executable": false
     },
     "docs/contract-changes-20261002.json": {
@@ -5721,7 +5721,7 @@
       "executable": false
     },
     "src/core/features/privacy/bundle.ts": {
-      "sha256": "baafbc86dca2ee11abcac4d0a9d36f631297ee0fa5a914ac69bcb174eefb0f39",
+      "sha256": "c66f44e1bf8b3fbf9eaa9946b4c8021c23106a0d350ace4246d47f58d8828c9c",
       "executable": false
     },
     "src/core/features/privacy/erase.ts": {
@@ -7397,7 +7397,7 @@
       "executable": false
     },
     "tests/e2e/privacy-request.ts": {
-      "sha256": "96dc35858db56893de49cc30584961fad96a3255a5dc5e4b1ec6ddc9ab45ef15",
+      "sha256": "65bb318a3f44f128592119baad3c08a87d98dfa306c01b80e7d87512611ce248",
       "executable": false
     },
     "tests/e2e/public-flow.spec.ts": {
@@ -7957,7 +7957,7 @@
       "executable": false
     },
     "tests/runtime/google-sheets.worker.test.ts": {
-      "sha256": "a4c0aa17e9bc02ef090078c5e32ab92c21214e794b6148f0980d113404f9e916",
+      "sha256": "b44872a2304d3c9c338d6b2509af56126d1dcf76c0a6f4d389d0cb4e77a71d7b",
       "executable": false
     },
     "tests/runtime/graph-reachability.worker.test.ts": {
@@ -8073,11 +8073,11 @@
       "executable": false
     },
     "tests/runtime/privacy-fixture.ts": {
-      "sha256": "99dcf80bfa7d0474bc1af4d0e4fac96550d3bd96364fac4d5c8eee19e8d1b9dc",
+      "sha256": "2922b94b255651bf5b227564f21133972560d4bc122f892776c1a9ea34a17a0c",
       "executable": false
     },
     "tests/runtime/privacy-journey.ts": {
-      "sha256": "97f1bd440563e327bf50432895f6e0b8f185374d2146974764f14f9443f78b24",
+      "sha256": "96a406b1fc88a887b2ba16b83d60c3afc3c82ed3b177cbc83dddd8ac8aeb81bd",
       "executable": false
     },
     "tests/runtime/private-auth-freshness.worker.test.ts": {
@@ -8121,7 +8121,7 @@
       "executable": false
     },
     "tests/runtime/resuming.worker.test.ts": {
-      "sha256": "d4237974f616b93a167f15353588553ea2018f0ee371456f2c6364125ca6ea67",
+      "sha256": "f7d75886e228c77ea26ed26ec3ff72385ec8102e9856b93d79a41d4c78244df8",
       "executable": false
     },
     "tests/runtime/retention-notification-evidence.ts": {

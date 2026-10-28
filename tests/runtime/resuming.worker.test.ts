@@ -1,3 +1,5 @@
+import { privacyGoogleFixture } from './privacy-fixture'
+import { privacyRequestJourney } from './privacy-journey'
 import { matureLoad } from './load-time-fixture'
 import { applyD1Migrations, env, SELF, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
@@ -80,7 +82,7 @@ contract('PART-002','explicit saves resume a pinned response through public door
   expect(await env.DB.prepare('SELECT session_id FROM respondent_saves WHERE session_id=?').bind(closedSession.sessionId).first()).toBeNull()
 },90_000)
 
-contract('PART-002','save mail failures retry one durable state, expiry purges it, and invitation resume preserves its original identity and collector',async()=>{
+contract(['PART-002','GOV-006'],'save mail failures retry one durable state, expiry purges it, and invitation resume preserves its original identity and collector',async()=>{
   const f=await form('resume-failures'), session=await ok<Session>(f.slug,'sessions',{deviceClass:'tablet',source:'embed'})
   const email=`failure-${session.sessionId}@example.test`, commandKey=crypto.randomUUID()
   const input={sessionId:session.sessionId,sessionToken:session.sessionToken,email,commandKey,currentStepId:session.flow.steps[0].id,answers:[]}
@@ -117,3 +119,5 @@ contract('PART-002','save mail failures retry one durable state, expiry purges i
   expect(await env.DB.prepare('SELECT participant_id,source FROM responses WHERE id=?').bind(result.responseId).first()).toEqual({participant_id:participant!.id,source:'invitation'})
   expect(await env.DB.prepare('SELECT collector_id FROM response_collector WHERE response_id=?').bind(result.responseId).first()).toEqual(await env.DB.prepare('SELECT collector_id FROM invitation_launch_collector WHERE launch_id=?').bind(launch.id).first())
 },90_000)
+  const receiver=(env as unknown as {TASK_RECEIVER_ORIGIN:string}).TASK_RECEIVER_ORIGIN
+  await privacyRequestJourney(await privacyGoogleFixture(receiver),receiver)

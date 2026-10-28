@@ -83,7 +83,7 @@ export async function privacyRequestJourney(f: Fixture, receiver: string) {
     await call(`/api/app/flows/${flow.id}/google-sheet/sync`, {})
     expect((await sheet(flow.book)).flat()).not.toContain(mailbox)
     expect((await call(`/api/app/flows/${flow.id}/results`)).completedResponses).toBe(flow.id === first.id ? 1 : 0)
-    expect((await call(`/api/app/flows/${flow.id}/ledger`)).rows.map((row: any) => row.id)).not.toContain(flow.responseId)
+    expect((await call(`/api/app/flows/${flow.id}/ledger`)).responses.map((row: any) => row.id)).not.toContain(flow.responseId)
     const replay = await f.call(`/api/public/flows/${flow.slug}/responses`, { ...flow.session, answers: flow.answers, idempotencyKey: 'synthetic-pencil-privacy-' + flows.indexOf(flow), honeypot: '' }, { auth: false })
     expect(replay.status).toBe(400)
   }
