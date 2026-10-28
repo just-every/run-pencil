@@ -62,7 +62,13 @@ export async function triageSubmission(page: Page, info: TestInfo, call: Scenari
   await expect(detail.locator('.workflow-badge')).toHaveText('Done')
   await inbox.getByRole('link', { name: 'Back to form results', exact: false }).click()
   const ledger = page.getByRole('region', { name: 'Response ledger' })
+  const allRevisions = page.waitForResponse(response => {
+    const url = new URL(response.url())
+    return url.pathname === root + '/results' && url.searchParams.get('allRevisions') === 'true'
+  })
   await page.getByLabel('Published revision').selectOption('all')
+  expect((await allRevisions).ok()).toBe(true)
+  await expect(page.locator('section.results')).toHaveAttribute('aria-busy', 'false')
   await ledger.getByRole('combobox', { name: 'Workflow status', exact: true }).selectOption('done')
   await expect(ledger.getByRole('button', { name: 'View answers', exact: true })).toHaveCount(1)
   await ledger.getByRole('button', { name: 'View answers', exact: true }).click()

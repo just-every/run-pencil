@@ -39,6 +39,7 @@ contract(['LEDG-006', 'WORK-001'], 'operators search responses, see matching ans
     await expect(page.locator('section.results')).toHaveAttribute('aria-busy', 'false')
   }
   // The static "All published revisions" option exists before the client loads results; choose it once the ledger has.
+  await expect(page.locator('section.results')).toHaveAttribute('aria-busy', 'false')
   await expect(ledger.getByText('matching completed responses', { exact: false })).toBeVisible()
   await selectRevision('all')
   await ledger.getByRole('searchbox', { name: 'Search responses', exact: true }).fill('queue')
