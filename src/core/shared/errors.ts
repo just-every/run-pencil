@@ -27,7 +27,7 @@ export class ValidationError extends PencilError {
 }
 
 export class RateLimitError extends PencilError {
-  constructor(message = 'Too many requests. Please wait a minute and try again.') {
+  constructor(message = 'Too many requests. Please wait a minute and try again.', readonly retryAfterSeconds?: number) {
     super('RATE_LIMITED', message)
   }
 }

@@ -1033,7 +1033,7 @@
       "executable": false
     },
     "docs/guide/agents.md": {
-      "sha256": "cb98da1b610088d01fd064b3036fb66f37685cc9e005d96e167df3933ab2af26",
+      "sha256": "179aa26f3e86e79a4fd1cdbd3a19f113a64832c8fb5249f048d4c256fde74509",
       "executable": false
     },
     "docs/guide/analysis.md": {
@@ -4309,7 +4309,7 @@
       "executable": false
     },
     "src/core/app/public-paths.ts": {
-      "sha256": "fdfa3abcab74ffcb8e9116a9793b45fc991f40c96b114c2a1e8aef8225b256c6",
+      "sha256": "f224cee08f77e3f4046ae4c6395555ee2df7ec16c148adf54885271b57dc4060",
       "executable": false
     },
     "src/core/app/public-slug.ts": {
@@ -6485,7 +6485,7 @@
       "executable": false
     },
     "src/core/features/responses/service.ts": {
-      "sha256": "9acbcdd316dd8353b16eb2d9cfd1ff7d16276f57e8dbe1e74682d3903ae5d059",
+      "sha256": "738ebae63f79fd1c5f13d2a1e562f38ccd499ed1f318b29159288554ae62c0b5",
       "executable": false
     },
     "src/core/features/responses/ui/CompletionDisclosure.tsx": {
@@ -7317,7 +7317,7 @@
       "executable": false
     },
     "src/core/shared/errors.ts": {
-      "sha256": "46f3db4b89e5a63c68eefe8d0a65177eb2d57f05d3f48e81da55b5f01a338e63",
+      "sha256": "d42a80c8807bacec9cf4e98eef4cd35b753442327798332dd85ad2e4643d0ab1",
       "executable": false
     },
     "src/core/shared/flowPath.ts": {
