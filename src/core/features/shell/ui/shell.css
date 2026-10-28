@@ -10,6 +10,7 @@
   display: inline-flex;
   align-items: center;
   min-height: 44px;
+  min-width: 44px;
   padding-block: 6px;
   color: var(--ink);
   text-decoration: none;

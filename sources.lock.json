@@ -1497,7 +1497,7 @@
       "executable": false
     },
     "public/rer-theme.css": {
-      "sha256": "1fd8b7d5918d96864c3dce7e305356a519c84e2ad4f3cdbf62c6c0ce3798c2db",
+      "sha256": "7fb63325d99e2afbb6987f3290999dedb6d8a0963ac17b01038ff84f7ce920a9",
       "executable": false
     },
     "README.md": {
@@ -6549,7 +6549,7 @@
       "executable": false
     },
     "src/core/features/shell/ui/shell.css": {
-      "sha256": "7ce6de5be349661b4b7fa3d843a9b6b047b820e4173ed84736d1f1ef6c76da13",
+      "sha256": "9b4683a16d109245e36815e9bd22883ffd0aa8f9067bd86ba632f2dc77bceae1",
       "executable": false
     },
     "src/core/features/site/brand/apple-touch-icon.png": {
