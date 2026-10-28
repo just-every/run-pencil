@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "d38e1204ec873e9736ec50801da189e99143467d4c9dd91a44314c18ed3a3f92",
+      "sha256": "24d12b9105c607a09e1a45030a7c64c2627ec9aea3ef651476df56273b6ad8ee",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "7e34d2cc4f1538bb81a4b4d52b2ef74b503d9a31086d6386081ccabc1ccd2212",
+      "sha256": "71a4145385ec3c4fe361521b4b0778051082a73b867de3fd731728828f48e82b",
       "executable": false
     },
     "DEMO.md": {
@@ -893,7 +893,7 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "3a29f3bcb5aac27f6d2b31e430801065744d6b48fd8101e203dd52a46c251a65",
+      "sha256": "5a1ec9f5fc57ff0c6c3cfd8a8b81b57959786ac008b059686e9895a844d541ec",
       "executable": false
     },
     "docs/contract-changes-20261002.json": {
@@ -7237,7 +7237,7 @@
       "executable": false
     },
     "src/routeTree.gen.ts": {
-      "sha256": "663ec4ddf8cb02a51713cdb3dfe08eaabc84947dc193f4d68bdcb329d2ba3905",
+      "sha256": "9bf81f75e79b7f685dc2d789539dd387d5e459775b07d5c6cbdf7588b4666237",
       "executable": false
     },
     "src/server.dev.ts": {
