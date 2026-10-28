@@ -4241,7 +4241,7 @@
       "executable": false
     },
     "src/core/app/agent-door/index.server.ts": {
-      "sha256": "b6bce60b9bc4315f1cfce15803e6a2fab44fc8fc4d27721e2f751aa791b053af",
+      "sha256": "a36dc18ad37e5a41443630ffa0aa2cdbdaaaa81e02cb84a7387553ca77f193fa",
       "executable": false
     },
     "src/core/app/agent-door/native.ts": {
@@ -7761,7 +7761,7 @@
       "executable": false
     },
     "tests/agent-surface/native-journey.mjs": {
-      "sha256": "f773e5f55975b3056acd9e172cafb18d6ccf6ef5a36c19f51fe36b70ec583b6b",
+      "sha256": "07dda0f64ceed9d8b8ef9155bd8393ab06f5a80c98660b2225dfd63b9f5d2118",
       "executable": false
     },
     "tests/agent-surface/owner.mjs": {
