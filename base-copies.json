@@ -13,6 +13,17 @@
       }
     },
     {
+      "path": "BASELINE.md",
+      "originPath": "export/BASELINE.md",
+      "revision": "0fe27af9a5cb1bd9dc5e41da024784082e609010",
+      "files": {
+        "BASELINE.md": "7edf11ce7f54181e40afcf424209b9527bd1e0f7cf6fee7bf84d7811f082042f"
+      },
+      "modes": {
+        "BASELINE.md": "100644"
+      }
+    },
+    {
       "path": "docs/contract-changes-20261002.json",
       "originPath": "changes/2026-09-08-base-access-002.json",
       "revision": "9d371985250abd531495a9d8752e1c291a778308",

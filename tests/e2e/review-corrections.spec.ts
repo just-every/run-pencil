@@ -5,7 +5,7 @@ import { signInEmptyWorkspace } from './authoring-helpers'
 import { mkdir, writeFile } from 'node:fs/promises'
 import type { Locator } from '@playwright/test'
 
-contract(['FLOW-004', 'FLOW-005', 'FLOW-014', 'RESP-003', 'DIST-001', 'HOME-001', 'WS-003', 'BASE-PUBLIC-003'], 'plain corrections, compact editing and publication remain visible and accessible', async ({ page }, info) => {
+contract(["FLOW-004","FLOW-005","FLOW-014","RESP-003","RESP-025","DIST-001","HOME-001","WS-003","BASE-PUBLIC-003"], 'plain corrections, compact editing and publication remain visible and accessible', async ({ page }, info) => {
   test.setTimeout(120_000)
   const output = process.env.PENCIL_CAPTURE_DIR ?? 'test-results/review-captures'
   await mkdir(output, { recursive: true })

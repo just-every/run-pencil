@@ -2,7 +2,7 @@ import { expect, test } from './fixtures'
 import { contract } from './contract'
 import { browserLogo, checkBrand, logo, missingLandingSelection, signInBrand } from './brand-helpers'
 
-contract(['BRAND-001', 'HOME-001', 'BASE-PUBLIC-003'], 'saved business branding persists across preview, direct, embed, completion, closure and root, with complete logo removal', async ({ page }, info) => {
+contract(["BRAND-001","BRAND-003","HOME-001","BASE-PUBLIC-003"], 'saved business branding persists across preview, direct, embed, completion, closure and root, with complete logo removal', async ({ page }, info) => {
   test.setTimeout(300_000)
   await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
   await signInBrand(page)

@@ -7,7 +7,7 @@ import { baseMailSender } from '../../src/core/platform/mail/base.server'
 
 declare const __PENCIL_CORE_MIGRATIONS__:D1Migration[]
 beforeAll(()=>applyD1Migrations(env.DB,__PENCIL_CORE_MIGRATIONS__))
-contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released confirmations use only the marked mailbox or participant, escape permitted recall and dates, retry once and erase their retained copy',async()=>{
+contract(["RESP-020","RESP-027","LOGIC-001","FIELD-015","FIELD-020","DIST-006","DATA-002"],'released confirmations use only the marked mailbox or participant, escape permitted recall and dates, retry once and erase their retained copy',async()=>{
  const f=await foundationFixture('synthetic-pencil-confirmation')
  const post=async<T,>(slug:string,door:string,body:unknown):Promise<T>=>{
   const result=await SELF.fetch(`http://localhost/api/public/flows/${slug}/${door}`,{method:'POST',headers:{Host:'localhost',Origin:'http://localhost','Content-Type':'application/json','CF-Connecting-IP':'192.0.2.61'},body:JSON.stringify(body)})

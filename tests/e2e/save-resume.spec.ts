@@ -21,7 +21,7 @@ async function inspectState(page: Page, name: string, project: string) {
   }
 }
 
-contract(['PART-002','RSLT-013'], 'a respondent saves two answers, resumes privately on another device and sees completion on reuse', async ({ page, browser }, info) => {
+contract(["PART-002","RSLT-013","RSLT-017"], 'a respondent saves two answers, resumes privately on another device and sees completion on reuse', async ({ page, browser }, info) => {
   test.setTimeout(120_000)
   const email = operatorEmail()
   await page.goto('/signin'); await page.getByLabel('Operator email').fill(email)

@@ -7,7 +7,7 @@ import { expect, test } from './fixtures'
 import type { BuilderDraft } from '../../src/core/app/api'
 // Isolate this new journey's API traffic; actual per-address rate limits stay enabled.
 test.use({ extraHTTPHeaders: { 'CF-Connecting-IP': '198.18.240.13' } })
-contract(['RESP-003', 'BASE-PUBLIC-003'], 'all seven question types reject an empty required answer and complete through keyboard controls at both widths', async ({ page, request }, info) => {
+contract(["RESP-003","RESP-025","BASE-PUBLIC-003"], 'all seven question types reject an empty required answer and complete through keyboard controls at both widths', async ({ page, request }, info) => {
   test.setTimeout(120_000)
   await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
   const origin = new URL(info.project.use.baseURL!).origin

@@ -35,7 +35,7 @@ async function completeResponse(surface: FlowSurface) {
   await expect(surface.getByRole('button', { name: /Back|Continue|Submit response/ })).toHaveCount(0)
 }
 
-contract(["DIST-001","RESP-001","RESP-011","DIST-002"], "direct and embedded respondents complete the same accessible flow without an operator session", async ({ page, request }, info) => {
+contract(["DIST-001","RESP-001","RESP-011","DIST-002","DIST-022"], "direct and embedded respondents complete the same accessible flow without an operator session", async ({ page, request }, info) => {
   await test.step("a sessionless direct flow presents one accessible screen at a time and reaches immutable completion", async () => {
     await verifyHealth(page)
     const requestedOrigins: string[] = []

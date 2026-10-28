@@ -1,3 +1,4 @@
+import { readProductContract, readBaselineClauses } from './contract-registry.mjs'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { spawn } from 'node:child_process'
@@ -30,10 +31,6 @@ async function validateAgainstBundledSchema(schema, path) {
   if (result.code !== 0) throw new Error(result.output.trim())
 }
 
-async function clauseIds(path) {
-  const document = await readFile(resolve(root, path), 'utf8')
-  return [...document.matchAll(/^- \*\*([A-Z][A-Z0-9]*(?:-[A-Z][A-Z0-9]*)*-\d{3})\s+—/gm)].map((match) => match[1])
-}
 
 function requireValue(errors, subject, value) {
   if (value === undefined || value === null || value === '') errors.push(`${subject} is required`)
@@ -46,7 +43,9 @@ try {
 } catch (error) {
   errors.push(`seed.json does not validate against the bundled base SEED schema: ${error.message}`)
 }
-const [contract, baseline] = await Promise.all([clauseIds('CONTRACT.md'), clauseIds('BASELINE.md')])
+const [product, baselineDefinitions] = await Promise.all([readProductContract(root), readBaselineClauses(root)])
+const contract = product.clauses.map(clause => clause.id)
+const baseline = baselineDefinitions.map(clause => clause.id)
 const declaredClauses = new Set([...contract, ...baseline])
 
 for (const key of ['id', 'name', 'version', 'maturity', 'description', 'capabilities', 'nonGoals', 'externals', 'env', 'deploy', 'extensionPoints', 'limits', 'accessibility', 'operatingCost']) {

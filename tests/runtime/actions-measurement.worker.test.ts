@@ -16,7 +16,7 @@ const scheduled = async (at: string) => {
   await worker.scheduled!({ scheduledTime: Date.parse(at), cron: '* * * * *', noRetry() {} } as ScheduledController, { ...env, ...mailBindings } as unknown as WorkerBindings, { waitUntil() {}, passThroughOnException() {} } as unknown as ExecutionContext)
 }
 
-contract(['ACT-005','ACT-009','WS-002','NOTIFY-004'], 'ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders', async () => {
+contract(["ACT-005","ACT-009","ACT-010","WS-002","NOTIFY-004"], 'ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders', async () => {
   vi.useFakeTimers({ toFake: ['Date'] })
   vi.setSystemTime(new Date('2026-11-26T01:00:00.000Z'))
   const f = await actionsHttp()

@@ -8,7 +8,7 @@ import { fixtureExport } from '../helpers/report-download'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 
-contract('FIELD-014', 'publishes and collects a 250-question form with a thousand-option dropdown mixing pages, groups and standalone questions, and preserves IDs through edit and export', async () => {
+contract(["FIELD-014","FIELD-019"], 'publishes and collects a 250-question form with a thousand-option dropdown mixing pages, groups and standalone questions, and preserves IDs through edit and export', async () => {
   const f = await foundationFixture('long-business-intake')
   const options = Array.from({ length: 1000 }, (_, index) => ({ label: `Office ${index + 1}`, value: `office-${index + 1}` }))
   await f.add({ kind: 'question', questionType: 'dropdown', prompt: 'Choose your office', required: true, choices: options })

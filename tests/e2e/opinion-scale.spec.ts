@@ -4,7 +4,7 @@ import { signInEmptyWorkspace } from './authoring-helpers'
 import { csvRows, downloadedText } from './export-helpers'
 import type { BuilderDraft, Ledger } from '../../src/core/app/api'
 
-contract('FIELD-016', 'a labeled 0–6 opinion scale records 0, keeps it in the ledger and CSV and routes by less than 2', async ({ page }, info) => {
+contract(["FIELD-016","FIELD-021"], 'a labeled 0–6 opinion scale records 0, keeps it in the ledger and CSV and routes by less than 2', async ({ page }, info) => {
   const origin = new URL(info.project.use.baseURL!).origin
   await signInEmptyWorkspace(page)
   const call = async <T,>(path: string, data?: unknown, method = 'POST') => {

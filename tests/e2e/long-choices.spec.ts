@@ -4,7 +4,7 @@ import { expect } from './fixtures'
 import { signInEmptyWorkspace } from './authoring-helpers'
 import { downloadedText } from './export-helpers'
 
-contract('FIELD-014', 'builds reviewed country and bulk lists and collects a keyboard-selected searchable dropdown', async ({ page }, info) => {
+contract(["FIELD-014","FIELD-019"], 'builds reviewed country and bulk lists and collects a keyboard-selected searchable dropdown', async ({ page }, info) => {
   await signInEmptyWorkspace(page)
   await page.getByRole('button', { name: 'Blank flow', exact: true }).click()
   await page.getByLabel('Flow name').fill(`Regional office onboarding ${info.project.name}`)

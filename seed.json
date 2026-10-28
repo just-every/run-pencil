@@ -9,9 +9,18 @@
     "record": "form response"
   },
   "replaces": [
-    { "name": "Typeform", "edition": null },
-    { "name": "Google Forms", "edition": null },
-    { "name": "Jotform", "edition": null }
+    {
+      "name": "Typeform",
+      "edition": null
+    },
+    {
+      "name": "Google Forms",
+      "edition": null
+    },
+    {
+      "name": "Jotform",
+      "edition": null
+    }
   ],
   "description": "Collect feedback, understand responses, and turn insights into assigned actions.",
   "scope": "One business, one shared workspace, equal operators with no roles.",
@@ -112,6 +121,7 @@
       "clauses": [
         "DIST-001",
         "DIST-002",
+        "DIST-022",
         "DIST-003",
         "DIST-004",
         "DIST-005",
@@ -131,6 +141,7 @@
         "RESP-001",
         "RESP-002",
         "RESP-003",
+        "RESP-025",
         "RESP-004",
         "RESP-005",
         "RESP-006",
@@ -144,6 +155,7 @@
         "RESP-014",
         "RESP-015",
         "RESP-016",
+        "RESP-026",
         "RESP-017",
         "RESP-018",
         "RESP-019",
@@ -223,14 +235,16 @@
       "clauses": [
         "DATA-001",
         "DATA-002",
-        "GOV-003"
+        "GOV-003",
+        "GOV-008"
       ]
     },
     {
       "id": "business-brand",
       "description": "Saved business name, supporting line, accessible accent, own-origin logo and public landing selection across respondent surfaces.",
       "clauses": [
-        "BRAND-001"
+        "BRAND-001",
+        "BRAND-003"
       ]
     },
     {
@@ -248,6 +262,272 @@
       "description": "Operator-authored workspace codes, manual and explicitly accepted exact-quote assignments, response filters, charts and code crosstabs with retained provenance.",
       "clauses": [
         "RSLT-012"
+      ]
+    },
+    {
+      "id": "target-target-roles-sharing-and-sign-in",
+      "description": "Contract target: Target: roles, sharing and sign-in. Completion is recorded clause by clause in CONTRACT.md.",
+      "clauses": [
+        "ROLE-001",
+        "ROLE-005",
+        "ROLE-002",
+        "ROLE-003",
+        "ROLE-004"
+      ]
+    },
+    {
+      "id": "target-target-form-design-themes",
+      "description": "Contract target: Target: form design themes. Completion is recorded clause by clause in CONTRACT.md.",
+      "clauses": [
+        "BRAND-002",
+        "BRAND-004"
+      ]
+    },
+    {
+      "id": "target-target-templates-and-generated-forms",
+      "description": "Contract target: Target: templates and generated forms. Completion is recorded clause by clause in CONTRACT.md.",
+      "clauses": [
+        "TMPL-001",
+        "TMPL-002",
+        "AI-001"
+      ]
+    },
+    {
+      "id": "target-target-the-complete-builder",
+      "description": "Contract target: Target: the complete builder. Completion is recorded clause by clause in CONTRACT.md.",
+      "clauses": [
+        "FIELD-001",
+        "FIELD-002",
+        "FIELD-003",
+        "FIELD-004",
+        "FIELD-005",
+        "FIELD-007",
+        "FIELD-008",
+        "FIELD-009",
+        "FIELD-010",
+        "FIELD-017",
+        "FIELD-011",
+        "FIELD-018",
+        "FIELD-012",
+        "FIELD-013",
+        "FIELD-014",
+        "FIELD-019",
+        "FIELD-015",
+        "FIELD-020",
+        "FIELD-016",
+        "FIELD-021",
+        "LOGIC-001",
+        "LOGIC-002",
+        "LOGIC-007",
+        "LOGIC-003",
+        "LOGIC-004",
+        "LOGIC-006",
+        "LOGIC-008",
+        "LOGIC-009",
+        "LANG-001",
+        "LANG-003",
+        "AI-002",
+        "LANG-002",
+        "A11Y-002"
+      ]
+    },
+    {
+      "id": "target-target-every-distribution-channel",
+      "description": "Contract target: Target: every distribution channel. Completion is recorded clause by clause in CONTRACT.md.",
+      "clauses": [
+        "DIST-011",
+        "DIST-013",
+        "DIST-014",
+        "DIST-023",
+        "DIST-015",
+        "DIST-016",
+        "DIST-017",
+        "DIST-018",
+        "DIST-020",
+        "DIST-021",
+        "DIST-024"
+      ]
+    },
+    {
+      "id": "target-target-respondent-follow-through-and-partial-responses",
+      "description": "Contract target: Target: respondent follow-through and partial responses. Completion is recorded clause by clause in CONTRACT.md.",
+      "clauses": [
+        "RESP-020",
+        "RESP-027",
+        "RESP-021",
+        "PART-001",
+        "PART-002",
+        "RESP-022",
+        "RESP-023",
+        "RESP-028",
+        "RESP-024"
+      ]
+    },
+    {
+      "id": "target-target-submission-workflow",
+      "description": "Contract target: Target: submission workflow. Completion is recorded clause by clause in CONTRACT.md.",
+      "clauses": [
+        "LEDG-005",
+        "LEDG-007",
+        "LEDG-006",
+        "LEDG-008",
+        "WORK-001",
+        "WORK-002",
+        "WORK-003",
+        "WORK-004",
+        "WORK-005"
+      ]
+    },
+    {
+      "id": "target-target-reports-buyers-share",
+      "description": "Contract target: Target: reports buyers share. Completion is recorded clause by clause in CONTRACT.md.",
+      "clauses": [
+        "RSLT-006",
+        "RSLT-014",
+        "RSLT-007",
+        "RSLT-008",
+        "RSLT-009",
+        "RSLT-015",
+        "RSLT-016",
+        "RSLT-010",
+        "RSLT-011",
+        "RSLT-013",
+        "RSLT-017"
+      ]
+    },
+    {
+      "id": "target-target-actions-that-are-chased",
+      "description": "Contract target: Target: actions that are chased. Completion is recorded clause by clause in CONTRACT.md.",
+      "clauses": [
+        "ACT-009",
+        "ACT-010"
+      ]
+    },
+    {
+      "id": "target-target-alerts",
+      "description": "Contract target: Target: alerts. Completion is recorded clause by clause in CONTRACT.md.",
+      "clauses": [
+        "NOTIFY-005",
+        "NOTIFY-006",
+        "NOTIFY-007"
+      ]
+    },
+    {
+      "id": "target-target-regulated-accessible-and-retained-collection",
+      "description": "Contract target: Target: regulated, accessible and retained collection. Completion is recorded clause by clause in CONTRACT.md.",
+      "clauses": [
+        "GOV-001",
+        "GOV-002",
+        "GOV-004",
+        "GOV-005",
+        "GOV-006",
+        "GOV-007"
+      ]
+    },
+    {
+      "id": "target-target-moving-in-from-every-incumbent",
+      "description": "Contract target: Target: moving in from every incumbent. Completion is recorded clause by clause in CONTRACT.md.",
+      "clauses": [
+        "IMPORT-005",
+        "IMPORT-006",
+        "IMPORT-007",
+        "IMPORT-008",
+        "IMPORT-009"
+      ]
+    },
+    {
+      "id": "target-payments",
+      "description": "Contract target: Payments. Completion is recorded clause by clause in CONTRACT.md.",
+      "clauses": [
+        "PAY-001",
+        "PAY-006",
+        "PAY-007",
+        "PAY-002",
+        "PAY-003",
+        "PAY-004",
+        "PAY-005"
+      ]
+    },
+    {
+      "id": "target-files-and-signatures",
+      "description": "Contract target: Files and signatures. Completion is recorded clause by clause in CONTRACT.md.",
+      "clauses": [
+        "FILE-001",
+        "FILE-002",
+        "FILE-003",
+        "SIGN-001",
+        "AI-003"
+      ]
+    },
+    {
+      "id": "target-feedback-programs-nps-csat-ces",
+      "description": "Contract target: Feedback programs (NPS, CSAT, CES). Completion is recorded clause by clause in CONTRACT.md.",
+      "clauses": [
+        "PROG-001",
+        "PROG-002",
+        "PROG-003",
+        "PROG-004"
+      ]
+    },
+    {
+      "id": "target-integrations",
+      "description": "Contract target: Integrations. Completion is recorded clause by clause in CONTRACT.md.",
+      "clauses": [
+        "INTEG-001",
+        "INTEG-002",
+        "INTEG-003",
+        "INTEG-018",
+        "INTEG-004",
+        "INTEG-005",
+        "INTEG-006",
+        "INTEG-007",
+        "INTEG-019",
+        "INTEG-008",
+        "INTEG-009",
+        "INTEG-010",
+        "INTEG-011",
+        "INTEG-012",
+        "INTEG-013",
+        "INTEG-014",
+        "INTEG-015",
+        "INTEG-016",
+        "INTEG-017",
+        "INTEG-020"
+      ]
+    },
+    {
+      "id": "target-mobile-and-offline",
+      "description": "Contract target: Mobile and offline. Completion is recorded clause by clause in CONTRACT.md.",
+      "clauses": [
+        "MOB-001",
+        "MOB-002",
+        "MOB-003"
+      ]
+    },
+    {
+      "id": "target-push-further",
+      "description": "Contract target: Push further. Completion is recorded clause by clause in CONTRACT.md.",
+      "clauses": [
+        "AGENT-001",
+        "AGENT-002",
+        "AGENT-003",
+        "AGENT-004",
+        "AGENT-005",
+        "AGENT-006",
+        "AGENT-007",
+        "AGENT-008",
+        "AGENT-009"
+      ]
+    },
+    {
+      "id": "target-agent-surface",
+      "description": "Contract target: Agent surface. Completion is recorded clause by clause in CONTRACT.md.",
+      "clauses": [
+        "SURFACE-001",
+        "SURFACE-002",
+        "SURFACE-003",
+        "SURFACE-004",
+        "SURFACE-005"
       ]
     }
   ],
@@ -273,7 +553,11 @@
       "id": "completion-destination",
       "required": false,
       "why": "An operator-approved destination is a separate business page; the browser navigates there after a committed response, using only the explicitly mapped URL parameters.",
-      "data": ["explicitly mapped on-path answers", "explicitly mapped declared hidden fields", "explicitly mapped calculated values"],
+      "data": [
+        "explicitly mapped on-path answers",
+        "explicitly mapped declared hidden fields",
+        "explicitly mapped calculated values"
+      ],
       "adapters": []
     },
     {
@@ -322,7 +606,7 @@
     {
       "id": "typeform",
       "required": false,
-      "why": "Fetching a form definition and its share image at the owner’s request needs Typeform’s forms.read API and images.typeform.com image endpoint. Only the API receives the personal token; the image request has no authorization or cookies. Redirects are refused and the token is never stored.",
+      "why": "Fetching a form definition and its share image at the owner\u2019s request needs Typeform\u2019s forms.read API and images.typeform.com image endpoint. Only the API receives the personal token; the image request has no authorization or cookies. Redirects are refused and the token is never stored.",
       "data": [
         "Typeform form identifier",
         "owner-entered Typeform personal access token (Bearer authorization to api.typeform.com only)",
@@ -540,9 +824,21 @@
     ]
   },
   "limits": {
-    "calculations": { "perRevision": 50, "expressionDepth": 12, "expressionNodes": 128, "textCharacters": 10000, "decimalPlaces": 15 },
-    "hiddenFields": { "perRevision": 20, "textCharacters": 1000 },
-    "respondentText": { "messageCharacters": 300, "labelCharacters": 40 },
+    "calculations": {
+      "perRevision": 50,
+      "expressionDepth": 12,
+      "expressionNodes": 128,
+      "textCharacters": 10000,
+      "decimalPlaces": 15
+    },
+    "hiddenFields": {
+      "perRevision": 20,
+      "textCharacters": 1000
+    },
+    "respondentText": {
+      "messageCharacters": 300,
+      "labelCharacters": 40
+    },
     "status": "estimated",
     "mustBeReplacedByLoadTest": true,
     "flows": {

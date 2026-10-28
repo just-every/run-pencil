@@ -32,7 +32,7 @@ beforeAll(async () => {
   cookie = login.headers.get('set-cookie')!.split(';')[0]
 })
 
-contract(['LEDG-006', 'LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019', 'IMPORT-003', 'RSLT-001', 'RSLT-003'], 'typed filters return exact native and imported IDs with retained consent and revision/source scopes in snapshot CSV, JSON and LEDG-005 XLSX and SAV exports read back by independent readers', async () => {
+contract(["LEDG-006","LEDG-008","LEDG-001","LEDG-003","LEDG-004","LEDG-005","LEDG-007","FLOW-019","IMPORT-003","RSLT-001","RSLT-003"], 'typed filters return exact native and imported IDs with retained consent and revision/source scopes in snapshot CSV, JSON and LEDG-005 XLSX and SAV exports read back by independent readers', async () => {
   const scenario = await collectLedgerFilterScenario(call, 'Typed response filter study')
   const positive = [scenario.nativePositive.responseId, scenario.importedPositive.id].sort()
   const negative = [scenario.nativeNegative.responseId, scenario.importedNegative.id].sort()
@@ -158,7 +158,7 @@ contract(['LEDG-006', 'LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019'
   expect((await repository.ledger(workspace.id, 'unrelated-flow', filter, new Date().toISOString())).total).toBe(0)
 }, 60_000)
 
-contract('LEDG-006', 'response search composes with revision and source filters, exports the same released IDs and excludes erasure', async () => {
+contract(["LEDG-006","LEDG-008"], 'response search composes with revision and source filters, exports the same released IDs and excludes erasure', async () => {
   const scenario = await collectResponseSearchScenario(call, 'ledger-search-worker')
   const ids = (rows: LedgerResponse[]) => rows.map(row => row.id).sort()
   const ledger = (search: string, extra: Record<string,string> = {}) => call<Ledger>(`${scenario.path}/ledger?${new URLSearchParams({ search, ...extra })}`)
@@ -176,7 +176,7 @@ contract('LEDG-006', 'response search composes with revision and source filters,
   expect((await ledger('Cold brew')).total).toBe(0)
 }, 60_000)
 
-contract('LEDG-006', 'an accented and a non-ASCII phrase match case-insensitively while wildcards stay literal', async () => {
+contract(["LEDG-006","LEDG-008"], 'an accented and a non-ASCII phrase match case-insensitively while wildcards stay literal', async () => {
   const slug = 'ledger-search-unicode'
   const flow = await call<{ id: string }>('/api/app/flows', { title: 'Café feedback', slug })
   const path = `/api/app/flows/${flow.id}`

@@ -19,7 +19,7 @@ async function login(email: string) {
   const inbox = await developmentInbox(path => SELF.fetch(`http://localhost${path}`, { headers: { Host: 'localhost', ...devKeyHeaders } }), email)
   return (await request('/auth/confirm', '', { token: inbox.messages[0].magicLinkToken })).headers.get('set-cookie')!.split(';')[0]
 }
-contract('FIELD-010', 'Other write-ins and exclusive None survive native collection, branches, reports, search, exports and reviewed imports', async () => {
+contract(["FIELD-010","FIELD-017"], 'Other write-ins and exclusive None survive native collection, branches, reports, search, exports and reviewed imports', async () => {
   const f = await foundationFixture('other-choices')
   for (const type of ['multiple_choice', 'single_choice', 'dropdown'] as const) await f.add({ kind: 'question', questionType: type, prompt: type, required: true, choices: [{ value:'a',label:'Alpha' },{value:'b',label:'Beta'},{value:'other',label:'Other'},...(type === 'multiple_choice' ? [{value:'none',label:'None of the above'}] : [])] })
   await f.add({kind:'completion',questionType:null,prompt:'Thank you'})

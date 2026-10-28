@@ -7,7 +7,7 @@ import { conditionTests, type Condition } from '../../src/core/shared/conditions
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 
-contract('LOGIC-006', 'publishes correlated AND OR conditions, handles blank and negative operands and preserves immutable routing and copies', async () => {
+contract(["LOGIC-006","LOGIC-008","LOGIC-009"], 'publishes correlated AND OR conditions, handles blank and negative operands and preserves immutable routing and copies', async () => {
   const f = await foundationFixture('enterprise-leads')
   await f.add({ kind: 'question', questionType: 'number', prompt: 'Company size', required: true })
   await f.add({ kind: 'question', questionType: 'single_choice', prompt: 'Your role', required: true, choices: ['Decision maker', 'Partner', 'Other'].map(label => ({ label, value: label })) })
@@ -61,7 +61,7 @@ contract('LOGIC-006', 'publishes correlated AND OR conditions, handles blank and
   expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, {})).responses).toHaveLength(6)
 }, 60_000)
 
-contract(['LOGIC-006', 'FLOW-013'], 'refuses destinations made impossible by constraints on an earlier question without publishing', async () => {
+contract(["LOGIC-006","LOGIC-008","LOGIC-009","FLOW-013"], 'refuses destinations made impossible by constraints on an earlier question without publishing', async () => {
   const f = await foundationFixture('correlated-publication')
   await f.add({ kind: 'question', questionType: 'yes_no', prompt: 'Existing customer?', required: true })
   await f.add({ kind: 'question', questionType: 'yes_no', prompt: 'Renewal?', required: true })

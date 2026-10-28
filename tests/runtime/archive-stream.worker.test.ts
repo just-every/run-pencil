@@ -13,7 +13,7 @@ beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 type Statement = { sql: string; params?: unknown[] }
 const query = (batch: Statement[]) => env.DB.batch(batch.map(({ sql, params = [] }) => env.DB.prepare(sql).bind(...params)))
 
-contract(['DATA-001','BASE-DATA-001','BASE-OPS-003','PAY-001'], 'native D1 stages bounded writes and atomically publishes all tables, payment states and Stripe IDs included, with exact constraints and concurrent-writer refusal', async () => {
+contract(["DATA-001","BASE-DATA-001","BASE-OPS-003","PAY-001","PAY-006","PAY-007"], 'native D1 stages bounded writes and atomically publishes all tables, payment states and Stripe IDs included, with exact constraints and concurrent-writer refusal', async () => {
   const empty = await archiveFixture(env.DB, __PENCIL_CORE_MIGRATIONS__)
   const stamp = '2026-10-01T00:00:00Z'
   const exact = '😀\u0000"\\\n'.repeat(600)

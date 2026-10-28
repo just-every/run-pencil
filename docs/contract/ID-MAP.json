@@ -51,9 +51,10 @@
       ]
     },
     "ROLE-001": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "ROLE-001"
+        "ROLE-001",
+        "ROLE-005"
       ]
     },
     "ROLE-002": {
@@ -93,15 +94,17 @@
       ]
     },
     "BRAND-001": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "BRAND-001"
+        "BRAND-001",
+        "BRAND-003"
       ]
     },
     "BRAND-002": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "BRAND-002"
+        "BRAND-002",
+        "BRAND-004"
       ]
     },
     "DASH-001": {
@@ -315,15 +318,17 @@
       ]
     },
     "FIELD-010": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "FIELD-010"
+        "FIELD-010",
+        "FIELD-017"
       ]
     },
     "FIELD-011": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "FIELD-011"
+        "FIELD-011",
+        "FIELD-018"
       ]
     },
     "FIELD-012": {
@@ -339,21 +344,24 @@
       ]
     },
     "FIELD-014": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "FIELD-014"
+        "FIELD-014",
+        "FIELD-019"
       ]
     },
     "FIELD-015": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "FIELD-015"
+        "FIELD-015",
+        "FIELD-020"
       ]
     },
     "FIELD-016": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "FIELD-016"
+        "FIELD-016",
+        "FIELD-021"
       ]
     },
     "LOGIC-001": {
@@ -363,9 +371,10 @@
       ]
     },
     "LOGIC-002": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "LOGIC-002"
+        "LOGIC-002",
+        "LOGIC-007"
       ]
     },
     "LOGIC-003": {
@@ -387,15 +396,18 @@
       ]
     },
     "LOGIC-006": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "LOGIC-006"
+        "LOGIC-006",
+        "LOGIC-008",
+        "LOGIC-009"
       ]
     },
     "LANG-001": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "LANG-001"
+        "LANG-001",
+        "LANG-003"
       ]
     },
     "AI-002": {
@@ -465,9 +477,10 @@
       ]
     },
     "DIST-002": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "DIST-002"
+        "DIST-002",
+        "DIST-022"
       ]
     },
     "DIST-003": {
@@ -537,9 +550,10 @@
       ]
     },
     "DIST-014": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "DIST-014"
+        "DIST-014",
+        "DIST-023"
       ]
     },
     "DIST-015": {
@@ -579,9 +593,10 @@
       ]
     },
     "DIST-021": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "DIST-021"
+        "DIST-021",
+        "DIST-024"
       ]
     },
     "RESP-001": {
@@ -597,9 +612,10 @@
       ]
     },
     "RESP-003": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "RESP-003"
+        "RESP-003",
+        "RESP-025"
       ]
     },
     "RESP-004": {
@@ -675,9 +691,10 @@
       ]
     },
     "RESP-016": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "RESP-016"
+        "RESP-016",
+        "RESP-026"
       ]
     },
     "RESP-017": {
@@ -699,9 +716,10 @@
       ]
     },
     "RESP-020": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "RESP-020"
+        "RESP-020",
+        "RESP-027"
       ]
     },
     "RESP-021": {
@@ -729,9 +747,10 @@
       ]
     },
     "RESP-023": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "RESP-023"
+        "RESP-023",
+        "RESP-028"
       ]
     },
     "RESP-024": {
@@ -765,15 +784,17 @@
       ]
     },
     "LEDG-005": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "LEDG-005"
+        "LEDG-005",
+        "LEDG-007"
       ]
     },
     "LEDG-006": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "LEDG-006"
+        "LEDG-006",
+        "LEDG-008"
       ]
     },
     "WORK-001": {
@@ -837,9 +858,10 @@
       ]
     },
     "RSLT-006": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "RSLT-006"
+        "RSLT-006",
+        "RSLT-014"
       ]
     },
     "RSLT-007": {
@@ -855,9 +877,11 @@
       ]
     },
     "RSLT-009": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "RSLT-009"
+        "RSLT-009",
+        "RSLT-015",
+        "RSLT-016"
       ]
     },
     "RSLT-010": {
@@ -879,9 +903,10 @@
       ]
     },
     "RSLT-013": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "RSLT-013"
+        "RSLT-013",
+        "RSLT-017"
       ]
     },
     "ANLY-001": {
@@ -1029,9 +1054,10 @@
       ]
     },
     "ACT-009": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "ACT-009"
+        "ACT-009",
+        "ACT-010"
       ]
     },
     "NOTIFY-001": {
@@ -1065,9 +1091,10 @@
       ]
     },
     "NOTIFY-006": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "NOTIFY-006"
+        "NOTIFY-006",
+        "NOTIFY-007"
       ]
     },
     "DATA-001": {
@@ -1095,9 +1122,10 @@
       ]
     },
     "GOV-003": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "GOV-003"
+        "GOV-003",
+        "GOV-008"
       ]
     },
     "GOV-004": {
@@ -1179,9 +1207,11 @@
       ]
     },
     "PAY-001": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "PAY-001"
+        "PAY-001",
+        "PAY-006",
+        "PAY-007"
       ]
     },
     "PAY-002": {
@@ -1275,9 +1305,10 @@
       ]
     },
     "INTEG-003": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "INTEG-003"
+        "INTEG-003",
+        "INTEG-018"
       ]
     },
     "INTEG-004": {
@@ -1299,9 +1330,10 @@
       ]
     },
     "INTEG-007": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "INTEG-007"
+        "INTEG-007",
+        "INTEG-019"
       ]
     },
     "INTEG-008": {
@@ -1359,9 +1391,10 @@
       ]
     },
     "INTEG-017": {
-      "how": "kept",
+      "how": "split",
       "to": [
-        "INTEG-017"
+        "INTEG-017",
+        "INTEG-020"
       ]
     },
     "MOB-001": {

@@ -29,7 +29,7 @@ async function refusesCapture(message: Parameters<ReturnType<typeof baseMailSend
   await expect(guardedDevelopmentOutbox(env.DB, notificationCaptureClaim).put(message)).rejects.toThrow('no longer eligible')
 }
 
-contract(['RESP-020','DATA-001','BASE-DATA-001','NOTIFY-002','NOTIFY-004','DIST-010','DATA-002'], 'restored failed and unknown mail can be explicitly retried with their original key while every other restored delivery remains unarmed', async () => {
+contract(["RESP-020","RESP-027","DATA-001","BASE-DATA-001","NOTIFY-002","NOTIFY-004","DIST-010","DATA-002"], 'restored failed and unknown mail can be explicitly retried with their original key while every other restored delivery remains unarmed', async () => {
   const f = await notificationFixture('restored-notifications'), now = new Date().toISOString()
   const other = crypto.randomUUID()
   await env.DB.prepare('INSERT INTO operators(id,workspace_id,email,display_name,created_at,updated_at) VALUES(?,?,?,?,?,?)').bind(other, f.scope.workspaceId, 'other@example.test', 'Other operator', now, now).run()

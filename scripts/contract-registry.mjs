@@ -1,6 +1,7 @@
 import { readFile, readdir } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import ts from 'typescript'
+import { parseContract, clauseIdSource } from '../src/base/seed-contract.mjs'
 import { contractTitle, literalContractLoop } from './contract-title.mjs'
 
 async function collectTestFiles(directory) {
@@ -54,4 +55,15 @@ export async function contractRegistry(root) {
     ts.forEachChild(source, visit)
   }
   return registry
+}
+
+// Product clauses are read by the same parser as /contract and rer check.
+export async function readProductContract(root) {
+  return parseContract(await readFile(resolve(root, 'CONTRACT.md'), 'utf8'), { file: 'CONTRACT.md' })
+}
+
+export async function readBaselineClauses(root) {
+  const text = await readFile(resolve(root, 'BASELINE.md'), 'utf8')
+  return [...text.matchAll(new RegExp('^-\\s+\\*\\*(' + clauseIdSource + ')\\s+[—–-]\\s+(.+?)\\*\\*', 'gm'))]
+    .map(match => ({ id: match[1], title: match[2].replace(/[.:]$/, '') }))
 }

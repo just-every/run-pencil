@@ -121,7 +121,7 @@ contract('LOGIC-003', 'agrees across preview, collection, recall and exports for
   assertValues((await f.ledger()).responses)
 }, 60_000)
 
-contract(['LOGIC-003', 'PAY-001', 'FLOW-006'], 'refuses cyclic, deleted, mistyped and zero-denominator calculations, and misplaced or out-of-range payment steps, without publishing the draft', async () => {
+contract(["LOGIC-003","PAY-001","PAY-006","PAY-007","FLOW-006"], 'refuses cyclic, deleted, mistyped and zero-denominator calculations, and misplaced or out-of-range payment steps, without publishing the draft', async () => {
   const f = await fixture(), draftId = (await f.read()).revision.id
   const invalid: Array<{ calculations: Calculation[]; reason: RegExp }> = [
     { calculations: [{ ...f.calculation, expression: { kind: 'variable', variableId: 'other' } }, { id: 'other', name: 'Other total', type: 'number', expression: { kind: 'variable', variableId: 'total' } }], reason: /cycle/i },
@@ -210,7 +210,7 @@ contract(['LOGIC-003', 'PAY-001', 'FLOW-006'], 'refuses cyclic, deleted, mistype
   await unchanged(/after a completion screen/)
 }, 60_000)
 
-contract(['LOGIC-003', 'PAY-001', 'NOTIFY-003', 'DIST-017', 'GOV-003'], 'excludes off-path and forged operands, completes a private saved quote, and charges only the server-computed total through Stripe Checkout', async () => {
+contract(["LOGIC-003","PAY-001","PAY-006","PAY-007","NOTIFY-003","DIST-017","GOV-003","GOV-008"], 'excludes off-path and forged operands, completes a private saved quote, and charges only the server-computed total through Stripe Checkout', async () => {
   const f = await fixture(true), gate = f.gate!
   await accepted(await f.publish(), 201)
   const skipped = await f.submit([{ stepId: gate.id, value: false }, { stepId: f.quantity.id, value: 100 }, { stepId: f.discount.id, value: false }], undefined, { calculations: { total: 2000 } })

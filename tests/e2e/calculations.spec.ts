@@ -20,7 +20,7 @@ async function submissionWindow(load: Promise<Response>) {
   await expect.poll(()=>Date.now()-at).toBeGreaterThanOrEqual(manifest.limits.abuse.minimumSecondsFromFormLoadToSubmit*1000)
 }
 
-contract(['LOGIC-003', 'LOGIC-006', 'PAY-001', 'PAY-005', 'PAY-003', 'PAY-004'], 'builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals', async ({ page, browser }, info) => {
+contract(["LOGIC-003","LOGIC-006","LOGIC-008","LOGIC-009","PAY-001","PAY-006","PAY-007","PAY-005","PAY-003","PAY-004"], 'builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals', async ({ page, browser }, info) => {
   test.setTimeout(240_000)
   page.setDefaultTimeout(15_000)
   const hydrationErrors:string[]=[]

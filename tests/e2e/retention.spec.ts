@@ -3,7 +3,7 @@ import { contract } from './contract'
 import { signInEmptyWorkspace } from './authoring-helpers'
 import { openStateDatabase,stateDatabaseFile } from './state-database'
 
-contract('GOV-003','an owner opts into retention, sees advance notice, pauses deletion and releases legal hold',async({page},info)=>{
+contract(["GOV-003","GOV-008"],'an owner opts into retention, sees advance notice, pauses deletion and releases legal hold',async({page},info)=>{
   await signInEmptyWorkspace(page)
   await page.getByRole('button',{name:'Customer feedback',exact:true}).click()
   await page.getByRole('button',{name:'Create draft flow'}).click()

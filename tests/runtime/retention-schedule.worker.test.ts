@@ -11,7 +11,7 @@ beforeAll(()=>applyD1Migrations(env.DB,__PENCIL_CORE_MIGRATIONS__))
 const day=86_400_000
 const tick=(at:number)=>worker.scheduled(createScheduledController({scheduledTime:at,cron:'15 * * * *'}),env)
 
-contract(['GOV-003','DATA-002','PART-002','BASE-DATA-002'],'owner opt-in gives old responses and private saves seven days of notice, hold preserves expiry, and release erases with DATA-002 effects',async()=>{
+contract(["GOV-003","GOV-008","DATA-002","PART-002","BASE-DATA-002"],'owner opt-in gives old responses and private saves seven days of notice, hold preserves expiry, and release erases with DATA-002 effects',async()=>{
   vi.useFakeTimers({toFake:['Date']})
   try {
     const now=Date.now(),f=await analysisHttp(),other=await analysisHttp({AI_ENABLED:'false'})

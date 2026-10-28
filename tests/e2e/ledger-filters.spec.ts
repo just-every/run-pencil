@@ -14,7 +14,7 @@ import type { LedgerResponse } from '../../src/core/app/api'
 
 // sav-reader publishes only a CommonJS entry and shares no code with Pencil's writer. read-excel-file reads XLSX in the Worker case.
 const { SavBufferReader } = createRequire(import.meta.url)('sav-reader') as typeof SavReaderModule
-contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019', 'IMPORT-003', 'BASE-PUBLIC-003'], 'native and imported typed filters download exact JSON, CSV, LEDG-005 XLSX and SPSS response snapshots with readable decisions and compact rows at both widths', async ({ page }, info) => {
+contract(["LEDG-001","LEDG-003","LEDG-004","LEDG-005","LEDG-007","FLOW-019","IMPORT-003","BASE-PUBLIC-003"], 'native and imported typed filters download exact JSON, CSV, LEDG-005 XLSX and SPSS response snapshots with readable decisions and compact rows at both widths', async ({ page }, info) => {
   test.setTimeout(180_000)
   await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
   const email = operatorEmail()

@@ -19,7 +19,7 @@ async function launched(slug: string, prefill?: {locked:boolean}, questionType:'
   const delivery = (await f.services.distribution.launches.list(f.scope.workspaceId, f.flow.flowId))[0] as { deliveryId: string }
   return { ...f, contact, input, launch, p, delivery }
 }
-contract(['AUD-003', 'AUD-006', 'DIST-003', 'DIST-005', 'FLOW-008', 'DIST-014'], 'invitation score buttons preserve the recipient snapshot, consent blocks sending and renewal records actor and source', async () => {
+contract(["AUD-003","AUD-006","DIST-003","DIST-005","FLOW-008","DIST-014","DIST-023"], 'invitation score buttons preserve the recipient snapshot, consent blocks sending and renewal records actor and source', async () => {
   const f = await launched('distribution-consent',undefined,'nps')
   expect(await f.services.distribution.launches.launch(f.input)).toEqual(f.launch)
   expect((await f.services.distribution.launches.list(f.scope.workspaceId, f.flow.flowId))).toHaveLength(1)
@@ -38,7 +38,7 @@ contract(['AUD-003', 'AUD-006', 'DIST-003', 'DIST-005', 'FLOW-008', 'DIST-014'],
   await f.services.distribution.contacts.consent({ ...f.scope, contactId: f.contact.id, actor: f.operatorId, source: 'Explicit synthetic consent', renewed: true })
   expect((await env.DB.prepare('SELECT consent, actor, source FROM contact_consent_events WHERE contact_id = ? ORDER BY created_at').bind(f.contact.id).all()).results).toEqual([{ consent: 'opted-out', actor: 'recipient', source: 'invitation-opt-out' }, { consent: 'renewed', actor: f.operatorId, source: 'Explicit synthetic consent' }])
 }, 60_000)
-contract(['FLOW-008', 'FLOW-009', 'FLOW-017', 'RESP-008', 'DIST-004', 'RESP-007', 'LOGIC-002'], 'invitation prefill stays pinned, is editable and marked in the ledger, locks are enforced and one completion cancels reminders', async () => {
+contract(["FLOW-008","FLOW-009","FLOW-017","RESP-008","DIST-004","RESP-007","LOGIC-002","LOGIC-007"], 'invitation prefill stays pinned, is editable and marked in the ledger, locks are enforced and one completion cancels reminders', async () => {
   const f = await launched('distribution-admission', {locked:false})
   await f.services.distribution.deliveries.prepare(f.delivery.deliveryId, 'https://synthetic.example.test')
   await f.services.distribution.deliveries.record(f.delivery.deliveryId, 1, { kind: 'sent', providerId: 'synthetic-provider-id' })

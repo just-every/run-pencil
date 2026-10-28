@@ -4,7 +4,7 @@ import { contract } from './contract'
 import { expect, test } from './fixtures'
 import { signInEmptyWorkspace } from './authoring-helpers'
 
-contract('LOGIC-006', 'builds nested lead conditions, inspects their values and collects both published paths', async ({ page }, info) => {
+contract(["LOGIC-006","LOGIC-008","LOGIC-009"], 'builds nested lead conditions, inspects their values and collects both published paths', async ({ page }, info) => {
   test.setTimeout(90_000)
   await signInEmptyWorkspace(page)
   const slug = `business-leads-${info.project.name}-${Date.now()}`

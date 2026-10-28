@@ -6,7 +6,7 @@ import { contract } from './contract'
 import { expect, test } from './fixtures'
 import type { BuilderDraft } from '../../src/core/app/api'
 test.use({ extraHTTPHeaders: { 'CF-Connecting-IP': '198.18.240.24' } })
-contract(['RESP-002', 'RESP-003', 'RESP-004'], 'recomputes reachable progress after branching, optional skips, Back and a valid zero', async ({ page, request }, info) => {
+contract(["RESP-002","RESP-003","RESP-025","RESP-004"], 'recomputes reachable progress after branching, optional skips, Back and a valid zero', async ({ page, request }, info) => {
   test.setTimeout(120_000)
   await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
   const origin = new URL(info.project.use.baseURL!).origin, slug = `progress-path-${info.project.name}-${Date.now()}`

@@ -7,7 +7,7 @@ import type { BuilderDraft, Ledger } from '../../src/core/app/api'
 
 // A British browser locale must not change the published MM/DD/YYYY order.
 test.use({ locale: 'en-GB', extraHTTPHeaders: { 'CF-Connecting-IP': '198.18.240.41' } })
-contract(['RESP-024','FIELD-015','FIELD-016','RESP-012','RESP-006'], 'RESP-024 reviews display formats, edits a branch and submits once; FIELD-015 keeps locale-independent entry, recall and ISO exports', async ({ page }, info) => {
+contract(["RESP-024","FIELD-015","FIELD-020","FIELD-016","FIELD-021","RESP-012","RESP-006"], 'RESP-024 reviews display formats, edits a branch and submits once; FIELD-015 keeps locale-independent entry, recall and ISO exports', async ({ page }, info) => {
   test.setTimeout(180_000)
   const origin = new URL(info.project.use.baseURL!).origin
   await signInEmptyWorkspace(page)

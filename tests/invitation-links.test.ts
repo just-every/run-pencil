@@ -4,7 +4,7 @@ import { issueLoadTime } from '../src/core/features/traffic/loadTime'
 import type { BuilderDraft } from '../src/core/app/api'
 import { emittedWorker } from './helpers/emitted-worker.mjs'
 
-contract('DIST-014','emitted invitation answer links are inert for repeated GET and HEAD scanners, pinned to their revision and cannot reopen completed or closed responses',async()=>{
+contract(["DIST-014","DIST-023"],'emitted invitation answer links are inert for repeated GET and HEAD scanners, pinned to their revision and cannot reopen completed or closed responses',async()=>{
   const origin='https://forms.example.test',relay='https://run.example.test/api/managed-mail/send'
   const bindings={APP_ORIGIN:origin,SEED_ADMIN_EMAIL:'synthetic-pencil-owner@example.test',SESSION_SECRET:'synthetic-pencil-scanner-session-at-least-32-characters',SETUP_TOKEN:'synthetic-pencil-scanner-setup-at-least-32-characters',MAIL_PROVIDER:'rer',MAIL_FROM:'Studio <apps@relay.example.test>',MAIL_RELAY_URL:relay,MAIL_API_KEY:'synthetic-pencil-mail-edge',PENCIL_LOCAL_DEVELOPMENT:'false',SEED_SAMPLE_DATA:'false'}
   const messages:Array<{to:string;text:string;html:string}>=[]

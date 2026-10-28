@@ -13,7 +13,7 @@ async function axe(page: Page) {
   expect((await new AxeBuilder({ page }).analyze()).violations.map(violation => violation.id)).toEqual([])
 }
 
-contract(['ACT-001', 'ACT-002', 'ACT-003', 'ACT-005', 'ACT-006', 'ACT-007', 'ACT-008', 'ACT-009'], 'ACT-009 shows honest email-only owner reminders that stop at the verdict; an operator turns a question into an action, confirms its task, measures it, marks it effective and closes it; a past review date only shows review due', async ({ page }, info) => {
+contract(["ACT-001","ACT-002","ACT-003","ACT-005","ACT-006","ACT-007","ACT-008","ACT-009","ACT-010"], 'ACT-009 shows honest email-only owner reminders that stop at the verdict; an operator turns a question into an action, confirms its task, measures it, marks it effective and closes it; a past review date only shows review due', async ({ page }, info) => {
   test.setTimeout(180_000)
   const viewport = info.project.name === 'mobile' ? 'mobile' : 'desktop'
   const capture = async (step: string) => {

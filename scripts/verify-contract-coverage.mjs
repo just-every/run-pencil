@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { contractRegistry } from './contract-registry.mjs'
+import { contractRegistry, readProductContract, readBaselineClauses } from './contract-registry.mjs'
 import { withReleaseUpgradeInputs } from './release-upgrade-inputs.mjs'
 import { runVitestJson, vitestPassedTests, vitestRunSummary } from './vitest-evidence.mjs'
 import { runPlaywrightJson } from './browser-evidence.mjs'
@@ -10,21 +10,14 @@ import { readProfile } from './contract-profile.mjs'
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)))
 
-async function clauses(path) {
-  const document = await readFile(resolve(root, path), 'utf8')
-  return [...document.matchAll(/^- \*\*([A-Z][A-Z0-9]*(?:-[A-Z][A-Z0-9]*)*-\d{3})\s+—/gm)].map((match) => match[1])
-}
-
-async function supersededBaselineClauses() {
-  const document = await readFile(resolve(root, 'CONTRACT.md'), 'utf8')
-  return new Map([...document.matchAll(/^- \*\*([A-Z][A-Z0-9]*(?:-[A-Z][A-Z0-9]*)*-\d{3})\s+—[^\n]*\*Supersedes `([A-Z][A-Z0-9]*(?:-[A-Z][A-Z0-9]*)*-\d{3})`/gm)].map((match) => [match[2], match[1]]))
-}
-
-const [registry, ids, superseded] = await Promise.all([
-  contractRegistry(root),
-  Promise.all([clauses('CONTRACT.md'), clauses('BASELINE.md')]).then(([contract, baseline]) => [...new Set([...contract, ...baseline])]),
-  supersededBaselineClauses(),
+const [registry, product, baseline] = await Promise.all([
+  contractRegistry(root), readProductContract(root), readBaselineClauses(root),
 ])
+const productById = new Map(product.clauses.map(clause => [clause.id, clause]))
+const baselineIds = new Set(baseline.map(clause => clause.id))
+const ids = [...new Set([...productById.keys(), ...baselineIds])]
+const superseded = new Map(product.clauses.flatMap(clause =>
+  [...clause.text.matchAll(/Supersedes\s+`(BASE-[A-Z0-9-]+)`/gi)].map(match => [match[1], clause.id])))
 
 const profileMode = process.argv[2] ?? 'first-release'
 const deferred = await readProfile(root, ids, profileMode)
@@ -68,11 +61,21 @@ const partial = []
 const failed = []
 const covered = []
 const overridden = []
+const plannedBase = []
+const plannedProduct = []
 for (const id of ids) {
   if (deferred.has(id)) continue
   const entry = registry.get(id)
   if (!entry && superseded.has(id)) {
     overridden.push(`${id} by ${superseded.get(id)}`)
+    continue
+  }
+  if (!entry && baselineIds.has(id)) {
+    plannedBase.push(id)
+    continue
+  }
+  if (!entry && productById.get(id)?.kind !== 'published') {
+    plannedProduct.push(id)
     continue
   }
   if (!entry) {
@@ -92,9 +95,11 @@ for (const id of ids) {
   covered.push(id)
 }
 
-if (process.env.PENCIL_CONTRACT_REPORT) await writeFile(process.env.PENCIL_CONTRACT_REPORT, JSON.stringify({ runs: { vitest: runtime.map(vitestRunSummary), playwright: browserRuntime?.report }, profile: profileMode, covered, partial, todo, deferred: [...deferred], missing, failed, overridden, clauses: Object.fromEntries(ids.map(id => [id, { status: deferred.has(id) ? 'deferred' : covered.includes(id) ? 'covered' : partial.includes(id) ? 'partial' : todo.includes(id) ? 'todo' : overridden.some(value => value.startsWith(id + ' ')) ? 'superseded' : 'uncovered', evidence: (registry.get(id)?.covered ?? []).map(test => ({ file: test.file.slice(root.length + 1), title: test.title, passed: passedTests.has(`${test.file}\u0000${test.title}`) })) }])) }, null, 2) + '\n')
+if (process.env.PENCIL_CONTRACT_REPORT) await writeFile(process.env.PENCIL_CONTRACT_REPORT, JSON.stringify({ runs: { vitest: runtime.map(vitestRunSummary), playwright: browserRuntime?.report }, profile: profileMode, covered, partial, todo, deferred: [...deferred], missing, failed, overridden, plannedBase, plannedProduct, clauses: Object.fromEntries(ids.map(id => [id, { status: deferred.has(id) ? 'deferred' : plannedBase.includes(id) || plannedProduct.includes(id) ? 'planned' : covered.includes(id) ? 'covered' : partial.includes(id) ? 'partial' : todo.includes(id) ? 'todo' : overridden.some(value => value.startsWith(id + ' ')) ? 'superseded' : 'uncovered', evidence: (registry.get(id)?.covered ?? []).map(test => ({ file: test.file.slice(root.length + 1), title: test.title, passed: passedTests.has(`${test.file}\u0000${test.title}`) })) }])) }, null, 2) + '\n')
 console.log(`Partially evidenced but still active TODO: ${partial.join(', ')}`)
 console.log(`Contract coverage: ${covered.length} runtime-covered, ${deferred.size} explicitly deferred (${profileMode}), ${todo.length} todo, ${overridden.length} superseded, ${missing.length} untracked, ${failed.length} not-passing, ${ids.length} declared.`)
+console.log(`Planned Base duties (not proved): ${plannedBase.join(', ')}`)
+console.log(`Planned target clauses (not proved): ${plannedProduct.join(', ')}`)
 console.log(`Passing clauses: ${covered.join(', ')}`)
 if (deferred.size > 0) console.log(`Deferred (not satisfied): ${[...deferred].join(', ')}`)
 if (overridden.length > 0) console.log(`Superseded baseline clauses: ${overridden.join(', ')}`)

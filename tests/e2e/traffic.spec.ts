@@ -2,7 +2,7 @@ import { expect } from './fixtures'
 import { contract } from './contract'
 import { signInEmptyWorkspace } from './authoring-helpers'
 
-contract('RSLT-013','three real form loads yield two starts and one submission, while preview remains isolated',async({page},info)=>{
+contract(["RSLT-013","RSLT-017"],'three real form loads yield two starts and one submission, while preview remains isolated',async({page},info)=>{
   await signInEmptyWorkspace(page)
   const zone=await page.request.put('/api/app/workspace',{headers:{Origin:new URL(page.url()).origin},data:{timeZone:'America/New_York',sendingWindowStart:'09:00',sendingWindowEnd:'17:00'}})
   expect(zone.ok()).toBe(true)

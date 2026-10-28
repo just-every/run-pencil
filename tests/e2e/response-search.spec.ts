@@ -8,7 +8,7 @@ import { downloadedText } from './export-helpers'
 import { collectResponseSearchScenario } from '../response-search-scenario'
 import type { ScenarioCall } from '../results-scenario'
 
-contract('LEDG-006', 'operators search responses, see matching answers and download the same filtered records', async ({ page }, info) => {
+contract(["LEDG-006","LEDG-008"], 'operators search responses, see matching answers and download the same filtered records', async ({ page }, info) => {
   test.setTimeout(120_000)
   const email = operatorEmail()
   await page.goto('/signin'); await page.getByLabel('Operator email').fill(email)

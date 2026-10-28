@@ -1,19 +1,19 @@
 <!-- Generated from CONTRACT.md by contract-docs. Edit CONTRACT.md, then regenerate. -->
 
-# Accept a CONTRACT.md — Pencil installation
+# Accept a Pencil installation
 
-The primary journey: Exercise the capabilities and acceptance journeys below.
+The primary journey: Build and preview a branching form, publish and distribute it, collect valid responses, review results and evidence, and close an owned action against a comparable measurement.
 
 ## Progress
 
 | Tier | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
-| Core | 135 | 53 | 51 | 239 |
-| Agent surface | 0 | 0 | 0 | 0 |
+| Core | 60 | 154 | 58 | 272 |
+| Agent surface | 0 | 0 | 5 | 5 |
 | Later | 0 | 0 | 0 | 0 |
-| Full target | 135 | 53 | 51 | 239 |
+| Full target | 60 | 154 | 63 | 277 |
 
-Judged from the code and tests at commit `712c770c14264668f9380c1b67190cefbaf4820a` (23 October 2026). ct reviewed `dd63975478b100f7df5e52799eea1e5663da6a0e` on 27 October 2026 for PAY-005, INTEG-006 and DIST-011 scope only, crediting no completion. Applying ct’s 05:00Z contract rulings; these text-only corrections claim no new DONE evidence. Subsequent target completions are maintained alongside their cited clause-tagged tests. RSLT-001, RSLT-003 and RSLT-004 include the combined-filter and response device-class implementation with native and browser journeys from sd-pencil-c10, repaired in sd-pencil-c12; they remain PARTIAL under ct's 05:00Z wording and no restoration is counted DONE. Release 0.7.0 was cut before these completions: on top of 0.6.0 it adds FIELD-006 and GOV-003 and fixes backup and restore on a database installed by Run Edit Run Platform (CHANGELOG.md). Each done row's evidence is its tagged tests, which `rer verify` runs. Field proof register: 0 rows; 0 passed, 0 failed, 0 not run.
+Judged from the code and tests at commit `712c770c14264668f9380c1b67190cefbaf4820a` (23 October 2026). ct reviewed `dd63975478b100f7df5e52799eea1e5663da6a0e` on 27 October 2026 for PAY-005, INTEG-006 and DIST-011 scope only, crediting no completion. Applying ct’s 05:00Z contract rulings; these text-only corrections claim no new DONE evidence. Subsequent target completions are maintained alongside their cited clause-tagged tests. RSLT-001, RSLT-003 and RSLT-004 include the combined-filter and response device-class implementation with native and browser journeys from sd-pencil-c10, repaired in sd-pencil-c12; they remain PARTIAL under ct's 05:00Z wording and no restoration is counted DONE. Release 0.7.0 was cut before these completions: on top of 0.6.0 it adds FIELD-006 and GOV-003 and fixes backup and restore on a database installed by Run Edit Run Platform (CHANGELOG.md). Each done row's evidence is its tagged tests, which `rer verify` runs. Field proof register: 11 rows; 0 passed, 0 failed, 11 not run.
 
 ## Core
 
@@ -21,381 +21,553 @@ Judged from the code and tests at commit `712c770c14264668f9380c1b67190cefbaf482
 
 #### HOME-001 — Public landing
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-DATA-005, BASE-PUBLIC-001
 
-**Requirement.** By the owner's 12 October 2026 decision, `/` serves Base's shared Lobby when no public landing flow is selected (Finish setup until the owner confirms first-run setup, then Sign in; `GET /setup/state` answers the same claim state), and `/pencil` redirects to `/`. An explicitly selected open published flow keeps its canonical respondent experience and admission checks at `/`. A later closed flow shows the standard closed page; an archived or missing flow returns 404, just as its direct link does. Business branding follows BRAND-001. The optional default-off static `Powered by Pencil · runeditrun.com` credit remains available. A selected respondent landing contains no vendor marketing, pricing, invented metrics, testimonials, or third-party requests.
+**Requirement.** Pencil supports public landing. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#home-001).
+
+**Acceptance.**
+1. By the owner's 12 October 2026 decision, the public home page serves Base's shared Lobby when no public landing flow is selected (Finish setup until the owner confirms first-run setup, then Sign in; `GET /setup/state` answers the same claim state), and the documented page or route redirects to the public home page.
+2. An explicitly selected open published flow keeps its canonical respondent experience and admission checks at the public home page.
+3. A later closed flow shows the standard closed page; an archived or missing flow returns 404, just as its direct link does.
+4. Business branding follows BRAND-001, BRAND-003.
+5. The optional default-off static `Powered by Pencil · runeditrun.com` credit remains available.
+6. A selected respondent landing contains no vendor marketing, pricing, invented metrics, testimonials, or third-party requests.
 
 **Evidence.** `tests/e2e/accessibility-foundation.spec.ts`, `tests/e2e/business-brand.spec.ts`, `tests/e2e/installed-home.spec.ts`
-**Gap.** None.
+**Gap.** Missing a cited browser journey that follows the legacy Pencil redirect and enables then reads the optional public credit. Cited journeys show Lobby and selected-form lifecycle with the credit absent by default.
 
 ### Product site
 
 #### SITE-001 — Product page
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-DATA-005, BASE-PUBLIC-001
 
-**Requirement.** The run site's `/` (run-pencil.com, written by `rer build --site`) renders Pencil's own product page for people evaluating the software: what Pencil does, its Run Pencil action to `/run`, and links to the source repository and the documentation. It sets no cookies, loads nothing from third-party origins, links no installed-instance route, and makes claims only about active clauses of this contract: no deferred ANLY, ACT or NOTIFY features, invented metrics, customers, testimonials or pricing. The installed `/` is governed by HOME-001.
+**Requirement.** Pencil supports product page. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#site-001).
+
+**Acceptance.**
+1. The run site's the public home page (run-pencil.com, written by `rer build --site`) renders Pencil's own product page for people evaluating the software: what Pencil does, its Run Pencil action to the documented page or route, and links to the source repository and the documentation.
+2. The installed the public home page is governed by HOME-001.
+3. The product page links no installed-instance route and makes claims only about delivered clauses: no invented metrics, customers, testimonials or pricing.
 
 **Evidence.** `tests/e2e/site-page.spec.ts`
-**Gap.** None.
+**Gap.** Missing a cited reader journey that follows the source link and reads claim content for the contract-only publication boundary. Cited journey reads headings, Run/Docs links and privacy, but never source link or claim content.
 
 #### SITE-002 — Live answer path
 
-Core · published · **done**
+Core · published · **done** · Cites BASE-PUBLIC-003
 
-**Requirement.** The product page's first screen demonstrates an answer path: choosing an answer on the illustrated card shows the follow-up question that answer leads to, works by keyboard, announces the change to assistive technology, and respects reduced motion. Without JavaScript the card shows one complete question, answer and follow-up.
+**Requirement.** Pencil supports live answer path. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#site-002).
 
-**Evidence.** `tests/e2e/site-hero.spec.ts` — “the note card retains its complete question and answer follow-ups without JavaScript, by pointer and keyboard, and with reduced motion”
+**Acceptance.**
+1. The product page's first screen demonstrates an answer path: choosing an answer on the illustrated card shows the follow-up question that answer leads to, works by keyboard, announces the change to assistive technology, and respects reduced motion.
+2. Without JavaScript the card shows one complete question, answer and follow-up.
+
+**Evidence.** `tests/e2e/site-hero.spec.ts` — "the note card retains its complete question and answer follow-ups without JavaScript, by pointer and keyboard, and with reduced motion"
 **Gap.** None.
 
 #### DOCS-001 — Documentation
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-PUBLIC-001
 
-**Requirement.** `/docs` and `/docs/<slug>` render the product documentation from Markdown in this repository at build time, with navigation, an on-page table of contents and previous/next links. Unknown slugs return 404. Docs pages set no cookies and load nothing from third-party origins. The analysis guide states that withheld themes affect the analysis view, Results crosstabs use the same small-cell threshold, and answer summaries, the ledger and exports are unchanged.
+**Requirement.** Pencil supports documentation. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#docs-001).
+
+**Acceptance.**
+1. the documentation and the documented page or route render the product documentation from Markdown in this repository at build time, with navigation, an on-page table of contents and previous/next links.
+2. Unknown slugs return 404.
+3. The analysis guide states that withheld themes affect the analysis view, Results crosstabs use the same small-cell threshold, and answer summaries, the ledger and exports are unchanged.
 
 **Evidence.** `tests/e2e/docs-site.spec.ts`
-**Gap.** None.
+**Gap.** Missing a cited docs journey that reads analysis-guide withholding, crosstab threshold and unchanged summary/ledger/export statements. Cited journey visits overview/build/branch/results guides and checks shell/navigation/404, not analysis-guide content.
 
 ### Application shell
 
 #### SHELL-001 — Operator shell
 
-Core · published · **done**
+Core · published · **done** · Cites BASE-ACCESS-002, BASE-PUBLIC-003
 
-**Requirement.** `/app` and every route below it require a valid operator session before the operator document or API data is served. A valid session receives labeled, keyboard-operable navigation to the implemented operator surfaces; the public respondent experience is never an operator navigation destination. `/signin` remains sessionless and is the only entry point to the operator session flow, so an unauthenticated request never receives the operator shell as a fallback.
+**Requirement.** Pencil supports operator shell. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#shell-001).
 
-**Evidence.** `tests/e2e/accessibility-foundation.spec.ts`, `tests/e2e/rendering-migration.spec.ts`, `tests/runtime/private-auth-freshness.worker.test.ts`
+**Acceptance.**
+1. A valid session receives labeled, keyboard-operable navigation to the implemented operator surfaces; the public respondent experience is never an operator navigation destination. sign-in remains sessionless and is the only entry point to the operator session flow, so an unauthenticated request never receives the operator shell as a fallback.
+
+**Evidence.** `tests/e2e/accessibility-foundation.spec.ts` — "keyboard and axe cover the landing, sign-in, operator navigation, builder and reports at declared viewports"; `tests/e2e/rendering-migration.spec.ts` — "native document/API/generated transport session matrix preserves private data boundaries"; `tests/runtime/private-auth-freshness.worker.test.ts` — "a warmed private route denies native session revocation"
 **Gap.** None.
 
 ### Operators
 
 #### OPER-001 — Equal operators
 
-Core · published · **done**
+Core · published · **done** · Cites BASE-ACCESS-004
 
-**Requirement.** Every operator can see and act on every flow, audience, response, analysis, and action. There are no roles.
+**Requirement.** Pencil supports equal operators. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#oper-001).
 
-**Evidence.** `tests/runtime/access-foundation.worker.test.ts`
+**Acceptance.**
+1. Every operator can see and act on every flow, audience, response, analysis, and action.
+2. There are no roles.
+
+**Evidence.** `tests/runtime/access-foundation.worker.test.ts` — "a second equal operator edits another operators flow while foreign workspace IDs never become ownership authority"
 **Gap.** None.
 
 #### OPER-002 — Management
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-ACCESS-004
 
-**Requirement.** Operators are invited and removed in settings. Any operator may invite another and may remove any other operator, except that the setup operator can be removed only by themselves and the last operator cannot be removed. There are no roles (OPER-001), so there is no seam that narrows who may do this.
+**Requirement.** Pencil supports management. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#oper-002).
+
+**Acceptance.**
+1. Operators are invited and removed in settings.
+2. Any operator may invite another and may remove any other operator, except that the setup operator can be removed only by themselves and the last operator cannot be removed.
+3. There are no roles (OPER-001), so there is no seam that narrows who may do this.
 
 **Evidence.** `tests/runtime/auth.worker.test.ts`, `tests/runtime/first-owner.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited settings or HTTP journey that refuses another operator removing the setup operator with credentials unchanged, then permits setup self-removal. Cited public journeys show invitation and peer-removal races; setup/last guards run directly on the repository.
 
 #### OPER-003 — Sign-in depends on mail
 
-Core · published · **done**
+Core · published · **done** · Cites BASE-ACCESS-001
 
-**Requirement.** `BASE-ACCESS-001` magic links are delivered through `mail.sender.v1`, so mail is a required external, not an optional one: startup fails under WS-003 naming the missing variable when `MAIL_PROVIDER`, `MAIL_API_KEY`, or `MAIL_FROM` is absent. No deployment starts in a state where no operator can sign in.
+**Requirement.** Pencil supports sign-in depends on mail. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#oper-003).
 
-**Evidence.** `tests/managed-mail.test.ts`, `tests/runtime/base-auth.worker.test.ts`, `tests/runtime/optional-configuration.worker.test.ts`
+**Acceptance.**
+1. `BASE-ACCESS-001` magic links are delivered through mail sender adapter, so mail is a required external, not an optional one: startup fails under WS-003 naming the missing variable when the documented field or setting, the documented field or setting, or the documented field or setting is absent.
+2. No deployment starts in a state where no operator can sign in.
+
+**Evidence.** `tests/runtime/optional-configuration.worker.test.ts` — "native startup still names every missing required variable while absent deferred adapters do not block health"; `tests/runtime/base-auth.worker.test.ts` — "Base bootstraps once, signs in only existing operators and confirms with a read-only GET before a single-use POST"; `tests/managed-mail.test.ts` — "Managed mail uses its assigned sender for sign-in, response notifications and digests, queues rate limits and shows rejected mail to its owner"
 **Gap.** None.
 
 ### Workspace
 
 #### WS-001 — Workspace time zone
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** Settings hold one IANA time zone for the workspace. First-run setup offers the browser's IANA time zone as an editable default; existing configured workspaces retain their saved zone. Every deadline, sending window, digest send time, and operator-facing date and time is evaluated and displayed in it. A revision records the zone in force when its deadline was set, so changing the workspace zone later cannot move a deadline on an open revision.
+**Requirement.** Pencil supports workspace time zone. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#ws-001).
+
+**Acceptance.**
+1. Settings hold one IANA time zone for the workspace.
+2. First-run setup offers the browser's IANA time zone as an editable default; existing configured workspaces retain their saved zone.
+3. Every deadline, sending window, digest send time, and operator-facing date and time is evaluated and displayed in it.
+4. A revision records the zone in force when its deadline was set, so changing the workspace zone later cannot move a deadline on an open revision.
 
 **Evidence.** `tests/e2e/publication-zone.spec.ts`, `tests/runtime/access-foundation.worker.test.ts`, `tests/runtime/analysis-safety.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited public journey that changes workspace zone after publication and reads unchanged open-revision deadline/zone. Cited journeys show settings, publication conversion and historical usage. The deadline-retention service journey is in uncited foundation.worker.test.ts.
 
 #### WS-002 — Sending hours
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** Settings hold a daily sending window in the WS-001 zone, defaulting to 09:00–17:00 every day. Scheduled mail — reminders and digests — that falls due outside the window is held and sent when the window next opens; nothing is dropped for falling outside it. Mail an operator triggers directly, and every magic link, is sent immediately regardless of the window.
+**Requirement.** Pencil supports sending hours. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#ws-002).
+
+**Acceptance.**
+1. Settings hold a daily sending window in the WS-001 zone, defaulting to 09:00–17:00 every day.
+2. Scheduled mail — reminders and digests — that falls due outside the window is held and sent when the window next opens; nothing is dropped for falling outside it.
+3. Mail an operator triggers directly, and every magic link, is sent immediately regardless of the window.
 
 **Evidence.** `tests/runtime/access-foundation.worker.test.ts`, `tests/runtime/distribution.worker.test.ts`, `tests/runtime/feedback-digest.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited public scheduling journey that holds reminders/digests outside the window, releases at opening, and sends operator-triggered mail and magic links immediately outside it. Cited files show settings through HTTP and scheduling through direct services/maintenance; the immediate exception is never exercised under an out-of-window clock.
 
 #### WS-003 — Optional externals are configuration, not degradation
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-SECRET-002
 
-**Requirement.** *Supersedes `BASE-SECRET-002`.* Pencil starts only when every variable marked required in `seed.json → env` is present, and fails at startup naming the first missing one. `ai.provider.v1` and `task.destination.v1` are declared optional: with either absent the deployment starts and serves, every clause that does not name that adapter holds in full, and each feature offered by the implemented profile that does name it is shown as unavailable alongside page-local connection setup, with deployment variables retained as an alternative. Features deferred by the declared contract profile are omitted from the interface until implemented. No feature silently produces a reduced result instead.
+**Requirement.** Pencil supports optional externals are configuration, not degradation. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#ws-003).
+
+**Acceptance.**
+1. Supersedes `BASE-SECRET-002`.
+2. Pencil starts only when every variable marked required in the declared env limits is present, and fails at startup naming the first missing one. ai provider adapter and task destination adapter are declared optional: with either absent the deployment starts and serves, every clause that does not name that adapter holds in full, and each feature offered by the implemented profile that does name it is shown as unavailable alongside page-local connection setup, with deployment variables retained as an alternative.
+3. Features deferred by the declared contract profile are omitted from the interface until implemented.
+4. No feature silently produces a reduced result instead.
 
 **Evidence.** `tests/e2e/review-corrections.spec.ts`, `tests/runtime/optional-configuration.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited browser journey with absent AI/task adapters that reads unavailable feature states and page-local connection setup while independent collection/results work. Startup proves optional absence permits health; cited browser does not configure absent-adapter cases.
 
 ### Business branding
 
 #### BRAND-001 — Saved business identity
 
-Core · published · **done**
+Core · published · **partial** · From BRAND-001 · Cites BASE-INPUT-002, BASE-INPUT-003
 
-**Requirement.** *Supersedes `BASE-INPUT-003` for business logos only.* Operators save the business name, one supporting line, an accent in #rrggbb format, and an optional PNG, JPEG or WebP logo within `seed.json → limits.brand`. A fresh workspace asks its owner for the business name at `/setup` and uses neutral defaults until saved. The same saved brand appears in preview, direct and embedded forms, completion and closed states, the selected public landing, and new-response email. Email includes the saved name and supporting line as literal text and escaped HTML, the saved accent, and any validated logo as inline CID bytes with no remote resources; removing the logo affects the next dispatch run. The accent's button text has at least 4.5:1 contrast; a readable foreground is selected for other accent text. Logo removal takes effect everywhere. Authenticated server uploads check size, declared MIME and content signatures, refusing SVG. Logos are served from this installation with the validated Content-Type and nosniff, with no third-party request. This clause supersedes BASE-INPUT-003 for business logos only: their bytes live in D1 and are deliberately public inline images, included in deployment exports, rather than private R2 downloads. Business identity is independent of Pencil's operator authentication branding.
+**Requirement.** Pencil supports saved business identity. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#brand-001).
+
+**Acceptance.**
+1. Supersedes `BASE-INPUT-003` for business logos only.
+2. Operators save the business name, one supporting line, an accent in #rrggbb format, and an optional PNG, JPEG or WebP logo within the declared limits brand limits.
+3. A fresh workspace asks its owner for the business name at first-run setup and uses neutral defaults until saved.
+4. The same saved brand appears in preview, direct and embedded forms, completion and closed states, the selected public landing, and new-response email.
+5. Email includes the saved name and supporting line as literal text and escaped HTML, the saved accent, and any validated logo as inline CID bytes with no remote resources; removing the logo affects the next dispatch run.
+6. The accent's button text has at least 4.5:1 contrast; a readable foreground is selected for other accent text.
+7. Logo removal takes effect everywhere.
+8. Authenticated server uploads check size, declared MIME and content signatures, refusing SVG.
 
 **Evidence.** `tests/e2e/business-brand.spec.ts`, `tests/runtime/brand.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited journey that dispatches and opens branded new-response mail, checks literal/escaped identity/accent/inline logo, then removes the logo and reads next mail. Cited journeys cover screens/public states/uploads/removal; neither opens new-response email.
+
+#### BRAND-003 — Saved business identity: Logos are served from this installation with the validated Content-Type and nosniff
+
+Core · published · **partial** · From BRAND-001 · Cites BASE-INPUT-002, BASE-INPUT-003
+
+**Requirement.** This part of BRAND-001 covers logos are served from this installation with the validated Content-Type and nosniff, with no third-party request.. Detailed field, format and door rules remain in [the operating rules](docs/contract/MECHANISM.md#brand-001).
+
+**Acceptance.**
+1. Logos are served from this installation with the validated Content-Type and nosniff, with no third-party request.
+2. This clause supersedes BASE-INPUT-003 for business logos only: their bytes live in D1 and are deliberately public inline images, included in deployment exports, rather than private R2 downloads.
+3. Business identity is independent of Pencil's operator authentication branding.
+
+**Evidence.** `tests/e2e/business-brand.spec.ts`, `tests/runtime/brand.worker.test.ts`
+**Gap.** Missing a cited journey that dispatches and opens branded new-response mail, checks literal/escaped identity/accent/inline logo, then removes the logo and reads next mail. Cited journeys cover screens/public states/uploads/removal; neither opens new-response email.
 
 ### Dashboard
 
 #### DASH-001 — First flow
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** A fresh deployment has no sample flows or responses. A workspace with no flows shows an empty state that explains Ask → Signal → Act. The empty dashboard and New flow offer Customer feedback, NPS and Contact/lead templates alongside a blank flow. Templates create ordinary editable drafts and can be duplicated under FLOW-011. Synthetic sample data is an explicit local development option.
+**Requirement.** Pencil supports first flow. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dash-001).
+
+**Acceptance.**
+1. A fresh deployment has no sample flows or responses.
+2. A workspace with no flows shows an empty state that explains Ask → Signal → Act.
+3. The empty dashboard and New flow offer Customer feedback, NPS and Contact/lead templates alongside a blank flow.
+4. Templates create ordinary editable drafts and can be duplicated under FLOW-011.
+5. Synthetic sample data is an explicit local development option.
 
 **Evidence.** `tests/runtime/first-owner.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited dashboard browser journey that reads empty Ask → Signal → Act and chooses Customer feedback/NPS/Contact-lead or blank drafts. First-owner journey checks zero flows and creates templates through API, never the empty dashboard or its choices.
 
 #### DASH-002 — Flow list
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** Operators can list flows by draft, open, closed, or archived state, sorted by last activity, with completed-response count, audience, and analysis status visible. An invited flow also shows completions divided by launched participants not bounced or opted out; zero eligible participants shows `0 / 0` with no percentage. An anonymous public flow shows starts and completions without inventing a target denominator.
+**Requirement.** Pencil supports flow list. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dash-002).
+
+**Acceptance.**
+1. Operators can list flows by draft, open, closed, or archived state, sorted by last activity, with completed-response count, audience, and analysis status visible.
+2. An invited flow also shows completions divided by launched participants not bounced or opted out; zero eligible participants shows `0 / 0` with no percentage.
+3. An anonymous public flow shows starts and completions without inventing a target denominator.
 
 **Evidence.** `tests/runtime/feedback-attention.worker.test.ts`, `tests/runtime/foundation.worker.test.ts`, `tests/runtime/journey.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited dashboard journey that reads last-activity ordering and invited-audience completion denominators, including zero eligible participants, across state filters. Cited HTTP journeys show counts/analysis; archive filter is service-level.
 
 ### Flows
 
 #### FLOW-001 — Lifecycle
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** A new flow is draft; publishing makes it open; an open flow can close; a closed flow can reopen the same published revision only after no deadline or target condition remains satisfied, or it can archive; a draft can archive; and an archived flow cannot reopen. Draft public URLs return 404, closed revisions show the standard closed page, and archived public URLs return 404. Archiving removes the flow from default operator views without deleting its revisions, responses, analyses, or actions.
+**Requirement.** Pencil supports lifecycle. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-001).
+
+**Acceptance.**
+1. A new flow is draft; publishing makes it open; an open flow can close; a closed flow can reopen the same published revision only after no deadline or target condition remains satisfied, or it can archive; a draft can archive; and an archived flow cannot reopen.
+2. Draft public URLs return 404, closed revisions show the standard closed page, and archived public URLs return 404.
+3. Archiving removes the flow from default operator views without deleting its revisions, responses, analyses, or actions.
 
 **Evidence.** `tests/runtime/foundation.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited public lifecycle journey that completes allowed close/reopen/archive, refuses archived reopen and reads unchanged history. The cited test calls services directly; foundation-fixture methods are not HTTP proxies.
 
 #### FLOW-002 — Ordered steps
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** A draft contains an ordered list of steps: at most one welcome screen, which is optional and can only be first; one or more questions; and one or more named completion screens. Operators can add, edit, duplicate, reorder, and delete them.
+**Requirement.** Pencil supports ordered steps. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-002).
+
+**Acceptance.**
+1. A draft contains an ordered list of steps: at most one welcome screen, which is optional and can only be first; one or more questions; and one or more named completion screens.
+2. Operators can add, edit, duplicate, reorder, and delete them.
 
 **Evidence.** `tests/e2e/journey.spec.ts`
-**Gap.** None.
+**Gap.** Missing a cited builder journey that duplicates, reorders and deletes steps and reads the resulting order while preserving welcome/completion constraints. Cited journey adds/edits, but never performs those three operations.
 
 #### FLOW-003 — Question types
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** A question is short text, long text, email, single choice, multiple choice, rating, priority, dropdown, yes/no, NPS, number, date, or consent; it has a prompt, optional why-we-ask text, required flag, and applicable editable type-specific options within the limits in `seed.json`. The builder canvas uses the same respondent controls.
+**Requirement.** Pencil supports question types. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-003).
+
+**Acceptance.**
+1. A question is short text, long text, email, single choice, multiple choice, rating, priority, dropdown, yes/no, NPS, number, date, or consent; it has a prompt, optional why-we-ask text, required flag, and applicable editable type-specific options within the limits in `seed.json`.
+2. The builder canvas uses the same respondent controls.
 
 **Evidence.** `tests/e2e/new-question-types.spec.ts`, `tests/runtime/new-question-types.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited builder/respondent journey covering original short/long text, email, single/multiple choice, rating and priority alongside the six added types. Cited browser covers dropdown/yes-no/NPS/number/date/consent; wider type work in runtime file is largely direct services.
 
 #### FLOW-004 — Saved edits
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-INPUT-001
 
-**Requirement.** A field-valid builder write includes the draft version it read and may leave the graph incomplete until publication. One Save per step acknowledges a single version-checked transaction containing its content, choices and answer paths. Invalid writes change none of those fields. A current-version edit is persisted before the builder shows it as saved; a stale edit is rejected with the latest version and cannot overwrite another operator's edit. Leaving or reloading after the saved indicator cannot lose the accepted edit.
+**Requirement.** Pencil supports saved edits. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-004).
+
+**Acceptance.**
+1. A field-valid builder write includes the draft version it read and may leave the graph incomplete until publication.
+2. One Save per step acknowledges a single version-checked transaction containing its content, choices and answer paths.
+3. Invalid writes change none of those fields.
+4. A current-version edit is persisted before the builder shows it as saved; a stale edit is rejected with the latest version and cannot overwrite another operator's edit.
+5. Leaving or reloading after the saved indicator cannot lose the accepted edit.
 
 **Evidence.** `tests/e2e/review-corrections.spec.ts`
-**Gap.** None.
+**Gap.** Missing a cited save journey that commits content/choices/paths, reloads after Saved, and attempts a stale competing edit without overwriting. Cited journey shows invalid-label refusal and editing controls, without stale-write or accepted-save reload readback.
 
 #### FLOW-005 — Branching
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** A single-choice or dropdown answer can match equality against a stable choice ID; yes/no and consent answers can match boolean equality; rating, priority, NPS, number and calendar-date answers can match equality or ordered comparison; and a multiple-choice answer can match any or all selected stable choice IDs. Priority equality compares the complete ordering and ordered comparisons use a choice's rank. Preview shows the ordered rule evaluations and chosen next step used by the published runtime, using the same predicates. *Policy: `flow.branch-selection.v1`; default: first matching rule in displayed order, then the required default path.*
+**Requirement.** Pencil supports branching. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-005).
+
+**Acceptance.**
+1. A single-choice or dropdown answer can match equality against a stable choice ID; yes/no and consent answers can match boolean equality; rating, priority, NPS, number and calendar-date answers can match equality or ordered comparison; and a multiple-choice answer can match any or all selected stable choice IDs.
+2. Priority equality compares the complete ordering and ordered comparisons use a choice's rank.
+3. Preview shows the ordered rule evaluations and chosen next step used by the published runtime, using the same predicates. *Policy: flow branch-selection adapter; default: first matching rule in displayed order, then the required default path.
 
 **Evidence.** `tests/e2e/journey.spec.ts`, `tests/e2e/publication-zone.spec.ts`, `tests/e2e/review-corrections.spec.ts`
-**Gap.** None.
+**Gap.** Missing a cited branching journey that exercises boolean, numeric/date comparisons, priority ranking and multiple-choice any/all predicates through builder, preview and collection. Cited browser set demonstrates single-choice branching only.
 
 #### FLOW-006 — Publish validation
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-INPUT-001
 
-**Requirement.** Publishing runs every FLOW-012 through FLOW-014 validation and is rejected with all offending stable step IDs and reasons; rejection creates no revision and leaves the draft editable. This clause inherits PAY-001: publishing refuses misplaced PAY-001 payment steps by step ID.
+**Requirement.** Pencil supports publish validation. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-006).
+
+**Acceptance.**
+1. Publishing runs every FLOW-012 through FLOW-014 validation and is rejected with all offending stable step IDs and reasons; rejection creates no revision and leaves the draft editable.
+2. This clause inherits PAY-001, PAY-006, PAY-007: publishing refuses misplaced PAY-001, PAY-006, PAY-007 payment steps by step ID.
 
 **Evidence.** `tests/runtime/calculations.worker.test.ts`, `tests/runtime/foundation.worker.test.ts`, `tests/runtime/graph-reachability.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited HTTP publication journey refusing invalid graph references, unreachable/cyclic screens and invalid questions, reading stable IDs/reasons, then editing/publishing same draft. Cited HTTP journey proves payment/calculation refusal; general graph paths use services.
 
 #### FLOW-007 — Preview isolation
 
 Core · published · **done**
 
-**Requirement.** Preview runs the current draft with test answers, identifies itself as preview, sends no invitations or external effects, and never creates a response or changes result counts.
+**Requirement.** Pencil supports preview isolation. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-007).
 
-**Evidence.** `tests/runtime/journey.worker.test.ts`
+**Acceptance.**
+1. Preview runs the current draft with test answers, identifies itself as preview, sends no invitations or external effects, and never creates a response or changes result counts.
+
+**Evidence.** `tests/runtime/journey.worker.test.ts` — "previews the current draft and incomplete branches with test answers while preserving every product record and effect"
 **Gap.** None.
 
 #### FLOW-008 — Published revisions
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** Publishing creates an immutable numbered revision and makes it the current revision resolved by the flow's canonical direct and embed URL. Every invitation, first-interaction session permitted by RESP-013, completed response, analysis, and export records the revision it used; merely loading the page creates no session or visitor record. The only load-time recording is RSLT-013’s anonymous aggregate counter increment, with no identifier or cookie and no link to a response.
+**Requirement.** Pencil supports published revisions. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-008).
+
+**Acceptance.**
+1. Publishing creates an immutable numbered revision and makes it the current revision resolved by the flow's canonical direct and embed URL.
+2. Every invitation, first-interaction session permitted by RESP-013, completed response, analysis, and export records the revision it used; merely loading the page creates no session or visitor record.
+3. The only load-time recording is RSLT-013, RSLT-017’s anonymous aggregate counter increment, with no identifier or cookie and no link to a response.
 
 **Evidence.** `tests/runtime/distribution.worker.test.ts`, `tests/runtime/journey.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited public revision journey that reads launched-invitation and analysis revisions and verifies load creates no session before interaction. Cited native journey proves anonymous revisions/exported answers; invitation pinning is service-level and load-only/analysis revision are not read.
 
 #### FLOW-009 — Live edits
 
 Core · published · **done**
 
-**Requirement.** Editing an open flow changes a new draft only. Existing invitations and first-interaction sessions stay pinned to their recorded revision; publishing the draft affects only later direct or embedded sessions and later invitation launches.
+**Requirement.** Pencil supports live edits. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-009).
 
-**Evidence.** `tests/runtime/distribution.worker.test.ts`, `tests/runtime/journey.worker.test.ts`
+**Acceptance.**
+1. Editing an open flow changes a new draft only.
+2. Existing invitations and first-interaction sessions stay pinned to their recorded revision; publishing the draft affects only later direct or embedded sessions and later invitation launches.
+
+**Evidence.** `tests/runtime/journey.worker.test.ts` — "builds, previews, publishes and reports a branching form without preview effects; pins live revisions and exact answers"
 **Gap.** None.
 
 #### FLOW-010 — Closure
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** An operator may close a flow immediately or configure a revision-specific deadline or completed-response target. A deadline is an instant in the WS-001 zone recorded with that revision. A manual flow close closes every revision's admission; a deadline or target closes only that revision's admission atomically.
+**Requirement.** Pencil supports closure. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-010).
+
+**Acceptance.**
+1. An operator may close a flow immediately or configure a revision-specific deadline or completed-response target.
+2. A deadline is an instant in the WS-001 zone recorded with that revision.
+3. A manual flow close closes every revision's admission; a deadline or target closes only that revision's admission atomically.
 
 **Evidence.** `tests/e2e/publication-zone.spec.ts`
-**Gap.** None.
+**Gap.** Missing a cited closure journey that reaches deadline/target and manually closes a flow, then reads admission across revisions. Cited browser sets/publishes values and stops before either closure condition or manual close.
 
 #### FLOW-011 — Duplication
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** Duplicating a flow creates an unlinked draft containing its latest draft or published structure and settings, but no audience members, invitations, responses, analyses, actions, delivery history, or external IDs.
+**Requirement.** Pencil supports duplication. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-011).
+
+**Acceptance.**
+1. Duplicating a flow creates an unlinked draft containing its latest draft or published structure and settings, but no audience members, invitations, responses, analyses, actions, delivery history, or external IDs.
 
 **Evidence.** `tests/runtime/foundation.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited public duplication journey that duplicates populated data and opens the independent draft and empty audience/response/analysis/action/delivery views. Cited lifecycle test duplicates/reads directly through services.
 
 #### FLOW-012 — Valid references
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-INPUT-001
 
-**Requirement.** Every branch predicate references an existing structured question and stable choice when applicable, and every branch destination references an existing question or completion screen.
+**Requirement.** Pencil supports valid references. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-012).
+
+**Acceptance.**
+1. Every branch predicate references an existing structured question and stable choice when applicable, and every branch destination references an existing question or completion screen.
 
 **Evidence.** `src/core/features/flows/graph.contract.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited publication-door journey accepting valid references and refusing missing/incompatible branch references without revision writes. Only cited file directly calls the graph validator.
 
 #### FLOW-013 — Reachable termination
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-INPUT-001
 
-**Requirement.** The flow's first step is its welcome screen or its first question, every step is reachable from it on at least one path, and every possible path reaches one completion screen without a cycle.
+**Requirement.** Pencil supports reachable termination. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-013).
+
+**Acceptance.**
+1. The flow's first step is its welcome screen or its first question, every step is reachable from it on at least one path, and every possible path reaches one completion screen without a cycle.
 
 **Evidence.** `tests/runtime/graph-reachability.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited publication-door journey refusing unreachable/cyclic graphs without writes, then publishing/completing reachable paths. Cited fixture calls services; cycle outcome is not exercised in this file.
 
 #### FLOW-014 — Valid questions
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-INPUT-001
 
-**Requirement.** Every question has a non-empty prompt within the text limit, every structured question has valid distinct options within its type limits, and the flow contains at least one question.
+**Requirement.** Pencil supports valid questions. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-014).
+
+**Acceptance.**
+1. Every question has a non-empty prompt within the text limit, every structured question has valid distinct options within its type limits, and the flow contains at least one question.
 
 **Evidence.** `tests/e2e/review-corrections.spec.ts`
-**Gap.** None.
+**Gap.** Missing a cited builder/publication journey refusing empty/over-limit prompts, invalid type options and a form with no question, then publishing a valid question. Cited browser proves duplicate-label refusal, not these missing conditions.
 
 #### FLOW-015 — Stable structure IDs
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** A step and each of its choices receive stable IDs when created; editing, reordering, publishing, exporting, and importing preserve them, while duplication creates new IDs. Operators enter choice labels; answer values are generated from them, remain unchanged when a saved label is renamed, and can be edited under Advanced.
+**Requirement.** Pencil supports stable structure IDs. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-015).
+
+**Acceptance.**
+1. A step and each of its choices receive stable IDs when created; editing, reordering, publishing, exporting, and importing preserve them, while duplication creates new IDs.
+2. Operators enter choice labels; answer values are generated from them, remain unchanged when a saved label is renamed, and can be edited under Advanced.
 
 **Evidence.** `tests/contract/data-release.contract.test.ts`, `tests/runtime/foundation.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited authoring journey reading stable IDs through saved label rename/reorder/publication, then public duplication with new IDs and editable Advanced values. Cited archive command preserves recovery IDs; lifecycle services prove duplication without authoring door.
 
 #### FLOW-016 — Published policy snapshot
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** A published revision stores the evaluated configuration for `flow.branch-selection.v1`, `response.identity.v1`, and `flow.response-admission.v1`; later policy changes affect only a newly published revision.
+**Requirement.** Pencil supports published policy snapshot. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-016).
+
+**Acceptance.**
+1. A published revision stores the evaluated configuration for flow branch-selection adapter, response identity adapter, and flow response-admission adapter; later policy changes affect only a newly published revision.
 
 **Evidence.** `tests/runtime/graph-reachability.worker.test.ts`, `tests/runtime/policy-snapshot.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited public publish/session journey that changes policy and reads old identity/admission/branch settings on existing invitations/sessions while later publication adopts new policy. Both cited files test policy changes through direct services.
 
 #### FLOW-017 — Revision admission
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** A new direct or embedded visit starts the current revision; an invitation starts its recorded revision; and a returning first-interaction session resumes its recorded revision. A superseded revision cannot start a new anonymous session and remains reachable only through an existing invitation or session until its admission closes.
+**Requirement.** Pencil supports revision admission. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-017).
+
+**Acceptance.**
+1. A new direct or embedded visit starts the current revision; an invitation starts its recorded revision; and a returning first-interaction session resumes its recorded revision.
+2. A superseded revision cannot start a new anonymous session and remains reachable only through an existing invitation or session until its admission closes.
 
 **Evidence.** `tests/runtime/distribution.worker.test.ts`, `tests/runtime/journey.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited public admission journey that refuses a fresh anonymous start on a superseded revision, resumes a returning first-interaction session and opens an old invitation until closure. Native journey shows old submission/new current session; invitation/resume admission is service-level.
 
 #### FLOW-018 — Revision counts
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** Deadline and target admission checks use completed responses for that revision only. Reaching either condition cannot close another revision, while manual close and archive close all revisions.
+**Requirement.** Pencil supports revision counts. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-018).
+
+**Acceptance.**
+1. Deadline and target admission checks use completed responses for that revision only.
+2. Reaching either condition cannot close another revision, while manual close and archive close all revisions.
 
 **Evidence.** `tests/runtime/journey.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited two-revision count journey reaching deadline/target on one while the other stays open, then manually closing/archiving both and reading refusals. Cited native target-race journey has only one revision.
 
 #### FLOW-019 — Answer values by type
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-INPUT-001
 
-**Requirement.** A stored answer is exactly one of: for short text and long text, a string within that type's character limit in `seed.json → limits`; for email, a syntactically valid address stored as the respondent typed it and compared case-insensitively; for single choice and dropdown without Other selected, one stable choice ID belonging to that question; for multiple choice without Other selected, a set of distinct stable choice IDs belonging to that question, within its configured minimum and maximum selections, except that the configured None option alone satisfies the minimum; when Other is selected on any of these types, exactly `{choiceIds: string[], otherText: string}`, with distinct IDs belonging to the question and including its configured Other ID, exactly one ID for single choice or dropdown, and non-blank Other text within the short-text limit and configured FIELD-013 validation. None cannot be combined with another choice or an Other-answer object, and Other text without the Other selection is invalid; for rating, an integer within the question's configured scale; for priority, a complete ordering of that question's stable choice IDs with no repetition and no omission; for yes/no, a boolean; for NPS, an integer from 0 through 10; for number, a finite number within optional minimum, maximum and decimal precision; for date, a true calendar YYYY-MM-DD value within optional earliest/latest bounds without timezone conversion; for consent, `{accepted: boolean, statement: string}` retaining the immutable published statement, with required consent accepting only true. For FIELD-003 score and FIELD-004 contact questions, the stored values are the typed, normalized values those clauses define. Nothing else is a valid answer.
+**Requirement.** Pencil supports answer values by type. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-019).
+
+**Acceptance.**
+1. A stored answer is exactly one of: for short text and long text, a string within that type's character limit in the declared limits limits; for email, a syntactically valid address stored as the respondent typed it and compared case-insensitively; for single choice and dropdown without Other selected, one stable choice ID belonging to that question; for multiple choice without Other selected, a set of distinct stable choice IDs belonging to that question, within its configured minimum and maximum selections, except that the configured None option alone satisfies the minimum; when Other is selected on any of these types, exactly `{choiceIds: string[], otherText: string}`, with distinct IDs belonging to the question and including its configured Other ID, exactly one ID for single choice or dropdown, and non-blank Other text within the short-text limit and configured FIELD-013 validation.
+2. None cannot be combined with another choice or an Other-answer object, and Other text without the Other selection is invalid; for rating, an integer within the question's configured scale; for priority, a complete ordering of that question's stable choice IDs with no repetition and no omission; for yes/no, a boolean; for NPS, an integer from 0 through 10; for number, a finite number within optional minimum, maximum and decimal precision; for date, a true calendar YYYY-MM-DD value within optional earliest/latest bounds without timezone conversion; for consent, `{accepted: boolean, statement: string}` retaining the immutable published statement, with required consent accepting only true.
+3. For FIELD-003 score and FIELD-004 contact questions, the stored values are the typed, normalized values those clauses define.
+4. Nothing else is a valid answer.
 
 **Evidence.** `tests/e2e/ledger-filters.spec.ts`, `tests/runtime/foundation.worker.test.ts`, `tests/runtime/ledger-filters.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited answer-submission journey for configured Other/None objects and their exclusive selection/text refusal rules with accepted-value readback. Cited typed-filter fixture has ordinary typed answers only; Other/None objects and normalized contact/score cases never occur.
 
 #### FLOW-020 — Required applies to the path taken
 
 Core · published · **done**
 
-**Requirement.** A required question blocks progress only on a path that reaches it. A question that the respondent's answers route around is never asked, never recorded as unanswered or missing, and never blocks final submission; publish validation does not require a required question to appear on every path.
+**Requirement.** Pencil supports required applies to the path taken. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-020).
 
-**Evidence.** `tests/runtime/journey.worker.test.ts`
+**Acceptance.**
+1. A required question blocks progress only on a path that reaches it.
+2. A question that the respondent's answers route around is never asked, never recorded as unanswered or missing, and never blocks final submission; publish validation does not require a required question to appear on every path.
+
+**Evidence.** `tests/runtime/journey.worker.test.ts` — "builds, previews, publishes and reports a branching form without preview effects; pins live revisions and exact answers"
 **Gap.** None.
 
 #### FLOW-021 — Deleting a question keeps its answers
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-DATA-002
 
-**Requirement.** Deleting a step in a draft changes only that draft. Answers already collected keep their stable step ID and the revision that asked them, stay in the ledger, results, exports, and existing analyses, and are never rewritten or removed by a later publication. A question first added in a later revision is never reported as unanswered by responses to an earlier revision that did not contain it.
+**Requirement.** Pencil supports deleting a question keeps its answers. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#flow-021).
+
+**Acceptance.**
+1. Deleting a step in a draft changes only that draft.
+2. Answers already collected keep their stable step ID and the revision that asked them, stay in the ledger, results, exports, and existing analyses, and are never rewritten or removed by a later publication.
+3. A question first added in a later revision is never reported as unanswered by responses to an earlier revision that did not contain it.
 
 **Evidence.** `tests/runtime/journey.worker.test.ts`
+**Gap.** Missing a cited question-deletion journey collecting answers/analysis, deleting draft step, republishing and opening retained ledger/results/export/analysis. Cited comparison journey adds a question and renames labels, but never deletes a draft question.
+
+#### LOGIC-005 — Conditional completion and redirects
+
+Core · published · **done** · Cites BASE-DATA-004
+
+**Requirement.** A response ends on the completion screen or approved outside destination selected from its accepted answers and context. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#logic-005).
+
+**Acceptance.**
+1. LOGIC-006 conditions over answers, hidden fields, calculations and scores choose the completion screen or an HTTPS redirect on an approved origin with only declared values appended.
+2. A compound AND condition over an answer and hidden field can route two response paths to distinct completion targets.
+3. Publication refuses a redirect to an unapproved origin; preview displays the selected target without navigating or collecting, and only a committed submission returns the server-derived destination.
+4. Retries retain the original revision, accepted values and destination, and a copied form remaps its destination-parameter operands.
+
+**Evidence.** `tests/runtime/completion-redirects.worker.test.ts` — "chooses screen or approved redirect from accepted answer, hidden, calculation and score conditions; replay and copies preserve revision custody"; `tests/runtime/completion-redirects.worker.test.ts` — "refuses unapproved, insecure, credential-bearing and invalid operand redirects at publish without changing the live revision"; `tests/e2e/completion-redirects.spec.ts` — "authors an approved redirect, previews without leaving and collects both conditional completion targets"
 **Gap.** None.
 
-#### LOGIC-005 — Conditional completion and redirect
+#### A11Y-001 — Accessible respondent states and layouts
+
+Core · published · **done** · Cites BASE-ACCESSIBILITY-001 · Register R-1, R-2
+
+**Requirement.** Pencil applies Base's shared accessibility bar to its full respondent journey, including error and unavailable states. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#a11y-001).
+
+**Acceptance.**
+1. The respondent journey covers every shipped question type and the one-question, classic-page and question-group layouts, including welcome, answer errors, progress, completion, closed-form and unavailable-resume states.
+2. Each added question type or layout extends that same respondent coverage before it ships.
+
+**Evidence.** `tests/e2e/respondent-accessibility.spec.ts` — "completes every shipped type across standalone, classic and grouped screens with keyboard, associated errors, focus, contrast and 320px reflow"
+**Gap.** None.
+
+#### FIELD-006 — Randomized choice and question order
 
 Core · published · **done**
 
-**Requirement.** A flow may choose its completion screen, or redirect to an HTTPS URL on an approved origin with declared values appended, chosen by LOGIC-006 rules over answers, hidden fields, calculations or scores.
+**Requirement.** Operators randomize choices or question blocks while retaining the exact presentation order for later analysis. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-006).
 
 **Acceptance.**
-1. a browser journey takes two paths and lands on two different completion targets, one chosen by a compound AND rule over an answer and a hidden field; a redirect to an unapproved origin is refused at publish.
-2. *Status: done — Conditional on-screen completion routing ships through FLOW-005.
-3. Immutable completion redirects require an explicitly approved HTTPS origin and declared query mappings.
-4. The shared conditions select a completion target from accepted on-path answers, hidden fields, calculations and native scores.
-5. Preview shows the target without navigating or collecting; only a committed submission returns a server-derived URL.
-6. Replay retains the original revision, values and destination, and copies remap parameter operands.
-7. Evidence: `src/core/shared/completionRedirect.ts`, `tests/runtime/completion-redirects.worker.test.ts`, `tests/e2e/completion-redirects.spec.ts`.*
+1. Operators may randomize a question's choices or a block of questions, with Other and None of the above under FIELD-010 always anchored last.
+2. Each completed response stores the order the respondent saw, and the export retains that presentation order.
+3. Across 200 collected responses every stored permutation contains exactly the permitted members, retains the anchored choices and matches the exported order.
 
-**Evidence.** `src/core/shared/completionRedirect.ts`, `tests/runtime/completion-redirects.worker.test.ts`, `tests/e2e/completion-redirects.spec.ts`
-**Gap.** None. Approved HTTPS origins, declared parameters, compound completion routing, inert preview, server-derived accepted-path redirects, revision-bound replay and remapped copies.
-
-#### A11Y-001 — WCAG 2.2 AA respondent experience
-
-Core · published · **done**
-
-**Requirement.** Every respondent page, layout, question type, error, progress indicator and completion screen meets WCAG 2.2 AA: keyboard operation, visible focus, labels and required semantics, error association, 4.5:1 text contrast with the saved brand, reflow at 320 CSS pixels, reduced motion and screen-reader announcements on step change. Today this obligation covers all 22 shipped question types and the three shipped layouts: one question per screen, classic pages and question groups. Standing rule: every question type or layout added later inherits all these obligations and must meet them before it can ship.
-
-**Acceptance.**
-1. browser journeys run axe and keyboard-only completion over all 22 shipped question types and all three shipped layouts at phone and desktop widths with zero violations, checking step focus and announcements, associated errors, saved-brand contrast, reduced motion and 320px reflow; each later type or layout extends this journey before it ships.
-2. *Status: done — All 22 shipped question types, standalone questions, classic pages, groups, welcome, completion, closed and unavailable-resume states have native keyboard and WCAG 2.2 axe journeys at 1440 and 390, including 320px reflow, required/error associations, first-invalid focus, screen-change focus, reduced motion and saved-brand button contrast.
-3. Future question types and layouts must extend these checks before shipping.
-4. Evidence: `src/core/shared/ui/AnswerFieldset.tsx`, `src/core/shared/ui/useRespondentFocus.ts`, `tests/e2e/respondent-accessibility.spec.ts`.*
-
-**Evidence.** `src/core/shared/ui/AnswerFieldset.tsx`, `src/core/shared/ui/useRespondentFocus.ts`, `tests/e2e/respondent-accessibility.spec.ts`
-**Gap.** None for shipped collection: all 22 types and three layouts, keyboard completion, associated required errors, focus/announcements, contrast, reduced motion, 320px reflow and completion/closed/unavailable states at 1440 and 390. New types must extend the journey.
-
-#### FIELD-006 — Randomized order
-
-Core · published · **done**
-
-**Requirement.** An operator may randomize the order of a question's choices (keeping FIELD-010's Other and None of the above anchored last) or of a block of questions; the order each respondent saw is stored with the response and exported, so order effects can be analyzed.
-
-**Acceptance.**
-1. a Worker test collects 200 responses and asserts every permutation stored is valid, Other and None of the above are last in every one, and the presented order is in the export.
-2. *Status: done — Choice permutations keep Other and None last; question blocks use classic pages or question groups with independently shuffled display order and the same canonical logic.
-3. Presentation is fixed for Back, preview and private save/resume, retained with each completed response and exported as stable IDs.
-4. The Worker journey collects 200 responses and checks every order, both export formats, invalid permutations, revision pinning and copies; builder and collection journeys run at 1440 and 390.
-5. Evidence: `src/core/shared/presentationOrder.ts`, `migrations/core/0051_presentation_order.sql`, `tests/runtime/randomized-order.worker.test.ts`, `tests/e2e/randomized-order.spec.ts`.*
-
-**Evidence.** `src/core/shared/presentationOrder.ts`, `migrations/core/0051_presentation_order.sql`, `tests/runtime/randomized-order.worker.test.ts`, `tests/e2e/randomized-order.spec.ts`
-**Gap.** None. Per-respondent choice and page/group question order, anchored Other/None, preview/Back/resume stability, revision and copy custody, server permutation validation and lossless CSV/JSON presentation metadata.
+**Evidence.** `tests/runtime/randomized-order.worker.test.ts` — "200 respondents retain valid varied choice and block orders through sessions, resume, immutable revisions, copies and ledger exports"; `tests/e2e/randomized-order.spec.ts` — "a workshop organiser randomizes a question group and choices, previews it and retains the respondent’s displayed order in results and exports"
+**Gap.** None.
 
 ### Audience
 
@@ -403,400 +575,626 @@ Core · published · **done**
 
 Core · published · **done**
 
-**Requirement.** Operators can create, edit, import, and delete contacts with name, email, and custom fields. Email addresses compare case-insensitively and an import reports, rather than silently duplicating, matching contacts.
+**Requirement.** Pencil supports contacts. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#aud-001).
 
-**Evidence.** `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey”, `tests/runtime/audience.worker.test.ts`, `tests/runtime/upgrades.worker.test.ts`
+**Acceptance.**
+1. Operators can create, edit, import, and delete contacts with name, email, and custom fields.
+2. Email addresses compare case-insensitively and an import reports, rather than silently duplicating, matching contacts.
+
+**Evidence.** `tests/e2e/distribution-foundation.spec.ts` — "invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey"; `tests/runtime/audience.worker.test.ts` — "audience CSV public preview and commit report case matches, repeats, invalid rows and explicit updates without retaining raw CSV"
 **Gap.** None.
 
 #### AUD-002 — Segments
 
 Core · published · **done**
 
-**Requirement.** A segment filters contacts by stored fields. Launching invitations records the participant set plus evaluated `flow.audience-eligibility.v1` and `flow.reminder-schedule.v1` configuration, so later contact, segment, or policy changes do not rewrite the launch; AUD-006 still enforces current hard consent and existence checks at send time.
+**Requirement.** Pencil supports segments. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#aud-002).
 
-**Evidence.** `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey”, `tests/runtime/audience.worker.test.ts`
+**Acceptance.**
+1. A segment filters contacts by stored fields.
+2. Launching invitations records the participant set plus evaluated flow audience-eligibility adapter and flow reminder-schedule adapter configuration, so later contact, segment, or policy changes do not rewrite the launch; AUD-006 still enforces current hard consent and existence checks at send time.
+
+**Evidence.** `tests/runtime/audience.worker.test.ts` — "saved segments launch a frozen evaluated audience and concurrent command replay creates no extra participants, jobs or attempts"; `tests/e2e/distribution-foundation.spec.ts` — "invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey"
 **Gap.** None.
 
 #### AUD-003 — Participants
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** Each invited contact becomes one participant with an opaque invitation token, independent queued/sent/bounced/failed delivery status, eligible/opted-out consent status, and not-started/started/completed response status. Delivery attempts are append-only, and names, emails, and other contact values never appear in the public URL.
+**Requirement.** Pencil supports participants. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#aud-003).
+
+**Acceptance.**
+1. Each invited contact becomes one participant with an opaque invitation token, independent queued/sent/bounced/failed delivery status, eligible/opted-out consent status, and not-started/started/completed response status.
+2. Delivery attempts are append-only, and names, emails, and other contact values never appear in the public URL.
 
 **Evidence.** `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey”, `tests/runtime/distribution.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited public delivery journey that records a second attempt and reads append-only attempt history plus independent bounced/failed/consent states. Browser journey reads sent/pending/completed participants; attempt and consent transitions in distribution.worker.test.ts run through services.
 
 #### AUD-004 — Eligibility
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** Invitations are created only for contacts allowed by the audience policy; that policy may narrow but never admit a missing-email or opted-out contact. *Policy: `flow.audience-eligibility.v1`; default: also exclude contacts already invited to that published revision.*
+**Requirement.** Pencil supports eligibility. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#aud-004).
+
+**Acceptance.**
+1. Invitations are created only for contacts allowed by the audience policy; that policy may narrow but never admit a missing-email or opted-out contact. *Policy: flow audience-eligibility adapter; default: also exclude contacts already invited to that published revision.
 
 **Evidence.** `tests/runtime/audience.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited public eligibility journey that tries a new launch command for already-invited and missing-email contacts, reads exclusions and unchanged participants, then completes eligible launch. Cited public journey excludes opted-out contacts and replays same command; broader policy exclusions are direct services.
 
 #### AUD-005 — Launch idempotency
 
-Core · published · **done**
+Core · published · **done** · Cites BASE-OPS-003
 
-**Requirement.** Repeating the same audience-launch command for one revision returns the original launch and cannot create duplicate participants, invitation jobs, or delivery attempts.
+**Requirement.** Pencil supports launch idempotency. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#aud-005).
 
-**Evidence.** `tests/runtime/audience.worker.test.ts`
+**Acceptance.**
+1. Repeating the same audience-launch command for one revision returns the original launch and cannot create duplicate participants, invitation jobs, or delivery attempts.
+
+**Evidence.** `tests/runtime/audience.worker.test.ts` — "saved segments launch a frozen evaluated audience and concurrent command replay creates no extra participants, jobs or attempts"
 **Gap.** None.
 
 #### AUD-006 — Send-time eligibility
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** Immediately before each invitation or reminder, Pencil verifies that the contact still exists and has not opted out. Mail uses the participant email snapshot displayed and recorded at launch; editing the contact later never silently reroutes an active participant.
+**Requirement.** Pencil supports send-time eligibility. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#aud-006).
+
+**Acceptance.**
+1. Immediately before each invitation or reminder, Pencil verifies that the contact still exists and has not opted out.
+2. Mail uses the participant email snapshot displayed and recorded at launch; editing the contact later never silently reroutes an active participant.
 
 **Evidence.** `tests/runtime/audience.worker.test.ts`, `tests/runtime/distribution.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited public/scheduled delivery journey that attempts invitations and reminders after contact opt-out/deletion, observes no send/no new attempt and then observes allowed snapshot-address send. Cited file mutates contacts through HTTP but invokes each send-time guard directly on delivery services.
 
 ### Distribution
 
 #### DIST-001 — Public link
 
-Core · published · **done**
+Core · published · **done** · Cites BASE-PUBLIC-001
 
-**Requirement.** Every open revision has a canonical direct link that renders the respondent experience without an operator session.
+**Requirement.** Pencil supports public link. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-001).
 
-**Evidence.** `tests/e2e/public-flow.spec.ts` — “direct and embedded respondents complete the same accessible flow without an operator session” — “a sessionless direct flow presents one accessible screen at a time and reaches immutable completion”, `tests/e2e/review-corrections.spec.ts`
+**Acceptance.**
+1. Every open revision has a canonical direct link that renders the respondent experience without an operator session.
+
+**Evidence.** `tests/e2e/public-flow.spec.ts` — "direct and embedded respondents complete the same accessible flow without an operator session"
 **Gap.** None.
 
 #### DIST-002 — Embed
 
-Core · published · **partial**
+Core · published · **partial** · From DIST-002 · Cites BASE-PUBLIC-001, BASE-PUBLIC-002
 
-**Requirement.** One asynchronous script or HTTPS iframe embeds the same respondent experience. It does not block the host page, and direct and embedded submissions produce the same response data and validation. Script embeds use an asynchronously loaded installation-origin script that mounts a sandboxed iframe without allow-same-origin, resizes to its content and emits only loaded, height, completed and checkout events. Exact allowed host origin, exact frame source, opaque child origin, challenge and field shape are checked. No answers, response identifiers, credentials or contact details enter the host URL, DOM or messages. The plain iframe option remains available. The checkout message carries only the HTTPS Checkout URL on a Stripe-owned origin and the session ID, with no payer data. It is posted to the exact owner-configured embedding origin, never `*`; the host must be on the form's allowed-origin list or no checkout event is sent and the respondent gets the same-tab fallback. There is one handoff per payment attempt. No other new host event is permitted without ct's ruling.
+**Requirement.** Pencil supports embed. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-002).
+
+**Acceptance.**
+1. One asynchronous script or HTTPS iframe embeds the same respondent experience.
+2. It does not block the host page, and direct and embedded submissions produce the same response data and validation.
+3. Script embeds use an asynchronously loaded installation-origin script that mounts a sandboxed iframe without allow-same-origin, resizes to its content and emits only loaded, height, completed and checkout events.
+4. Exact allowed host origin, exact frame source, opaque child origin, challenge and field shape are checked.
+5. No answers, response identifiers, credentials or contact details enter the host URL, DOM or messages.
+6. The plain iframe option remains available.
+7. The checkout message carries only the HTTPS Checkout URL on a Stripe-owned origin and the session ID, with no payer data.
+8. It is posted to the exact owner-configured embedding origin, never `*`; the host must be on the form's allowed-origin list or no checkout event is sent and the respondent gets the same-tab fallback.
+
+**Evidence.** `tests/e2e/public-flow.spec.ts` — “direct and embedded respondents complete the same accessible flow without an operator session” — “the accessible embedded route completes the same flow inside a real iframe”, `tests/e2e/script-embed.spec.ts`, `tests/e2e/calculations.spec.ts`, `tests/e2e/closed-flow.spec.ts` — “closed flows refuse late submissions, retain their named document and embed boundaries, and disappear after archival” (1440/390)
+**Gap.** Opaque script/iframe collection and exact host/frame admission have local browser proof. Checkout carries only its Stripe HTTPS URL and Checkout Session ID plus the transport challenge, targets the configured allowed origin, and is consumed once in child and host. The four permitted events include loaded acknowledgements; other message shapes are refused. An allowed script frame without acknowledgement offers an explicit user-activated same-tab continuation. Gap: a disallowed embedding host is refused with 403 before any payment can start, so its checkout same-tab fallback is not implemented; child rejection of an application receipt with extra payer fields is not asserted through a public door. Payment in a plain iframe remains PAY-001's named gap.
+
+#### DIST-022 — Embed: There is one handoff per payment attempt
+
+Core · published · **partial** · From DIST-002 · Cites BASE-PUBLIC-001, BASE-PUBLIC-002
+
+**Requirement.** This part of DIST-002 covers there is one handoff per payment attempt.. Detailed field, format and door rules remain in [the operating rules](docs/contract/MECHANISM.md#dist-002).
+
+**Acceptance.**
+1. There is one handoff per payment attempt.
+2. No other new host event is permitted without ct's ruling.
 
 **Evidence.** `tests/e2e/public-flow.spec.ts` — “direct and embedded respondents complete the same accessible flow without an operator session” — “the accessible embedded route completes the same flow inside a real iframe”, `tests/e2e/script-embed.spec.ts`, `tests/e2e/calculations.spec.ts`, `tests/e2e/closed-flow.spec.ts` — “closed flows refuse late submissions, retain their named document and embed boundaries, and disappear after archival” (1440/390)
 **Gap.** Opaque script/iframe collection and exact host/frame admission have local browser proof. Checkout carries only its Stripe HTTPS URL and Checkout Session ID plus the transport challenge, targets the configured allowed origin, and is consumed once in child and host. The four permitted events include loaded acknowledgements; other message shapes are refused. An allowed script frame without acknowledgement offers an explicit user-activated same-tab continuation. Gap: a disallowed embedding host is refused with 403 before any payment can start, so its checkout same-tab fallback is not implemented; child rejection of an application receipt with extra payer fields is not asserted through a public door. Payment in a plain iframe remains PAY-001's named gap.
 
 #### DIST-003 — Invitations
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** An operator can send an invitation to eligible participants. Each message names the business and flow, contains that participant's opaque link, and records a durable delivery attempt before calling `mail.sender.v1`.
+**Requirement.** Pencil supports invitations. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-003).
+
+**Acceptance.**
+1. An operator can send an invitation to eligible participants.
+2. Each message names the business and flow, contains that participant's opaque link, and records a durable delivery attempt before calling mail sender adapter.
 
 **Evidence.** `tests/runtime/distribution.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited operator launch/mail transport journey that sends eligible invitation, opens business/form/opaque-link content and observes durable attempt before provider call. Only cited file prepares and records delivery through services.
 
 #### DIST-004 — Reminders
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** Reminders are sent only to sent participants who have not completed, opted out, bounced, or reached a closed or archived flow. Completion cancels pending reminders. *Policy: `flow.reminder-schedule.v1`; default: one reminder 2 days after the invitation, released within the WS-002 sending hours.*
+**Requirement.** Pencil supports reminders. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-004).
+
+**Acceptance.**
+1. Reminders are sent only to sent participants who have not completed, opted out, bounced, or reached a closed or archived flow.
+2. Completion cancels pending reminders. *Policy: flow reminder-schedule adapter; default: one reminder 2 days after the invitation, released within the WS-002 sending hours.
 
 **Evidence.** `tests/runtime/distribution.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited public scheduled reminder journey that delivers to eligible sent/noncompleted recipient and refuses unsafe completed/opted-out/bounced/closed/archived sends without changes. Cited Evidence file exercises reminder eligibility and cancellation only through direct services.
 
 #### DIST-005 — Opt-out
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** Every invitation and reminder includes an opt-out link. Opting out prevents future flow mail to that contact regardless of policy. Renewed consent records its actor, time, and source before mail can resume; opt-out does not delete an existing response.
+**Requirement.** Pencil supports opt-out. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-005).
+
+**Acceptance.**
+1. Every invitation and reminder includes an opt-out link.
+2. Opting out prevents future flow mail to that contact regardless of policy.
+3. Renewed consent records its actor, time, and source before mail can resume; opt-out does not delete an existing response.
 
 **Evidence.** `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey”, `tests/runtime/distribution.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited public consent-renewal journey that records actor/time/source and then reads resumed mail without deleting existing response. Browser journey saves opt-out; renewal/readback and no-later-send checks in distribution.worker.test.ts use services.
 
 #### DIST-006 — Mail retry
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-OPS-003, BASE-OPS-004
 
-**Requirement.** A transient `mail.sender.v1` failure is retried at most 5 times over 1 hour using the original delivery idempotency key.
+**Requirement.** Pencil supports mail retry. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-006).
+
+**Acceptance.**
+1. A transient mail sender adapter failure is retried at most 5 times over 1 hour using the original delivery idempotency key.
 
 **Evidence.** `tests/runtime/distribution.worker.test.ts`, `tests/runtime/feedback-digest.worker.test.ts`, `tests/runtime/notifications.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited public scheduled delivery journey driving transient failure through five retries over one hour and reading original-key attempt history plus terminal refusal. All cited retry loops invoke delivery/dispatcher services directly, not the native scheduled Worker transport.
 
 #### DIST-007 — Adapter isolation
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** Mail cannot be unconfigured (OPER-003). A failing `mail.sender.v1` disables invitations, reminders, notification mail, and new magic-link sign-ins with a named error visible to operators, while existing operator sessions, direct links, embeds, response collection, results, the ledger, and exports keep working. Recovery is restoring the sender; Pencil offers no password or bypass sign-in.
+**Requirement.** Pencil supports adapter isolation. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-007).
+
+**Acceptance.**
+1. Mail cannot be unconfigured (OPER-003).
+2. A failing mail sender adapter disables invitations, reminders, notification mail, and new magic-link sign-ins with a named error visible to operators, while existing operator sessions, direct links, embeds, response collection, results, the ledger, and exports keep working.
+3. Recovery is restoring the sender; Pencil offers no password or bypass sign-in.
 
 **Evidence.** `tests/runtime/base-auth.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited sender-failure journey that reads operator-visible named failure for invitations/reminders/notifications and successfully collects via direct/embed, opens results/ledger/exports with existing session. Cited journey fails sign-in send and checks dashboard/health only.
 
 #### DIST-008 — Terminal delivery
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-OPS-004
 
-**Requirement.** A permanent mail failure or exhausted retry is marked failed with the provider reason and retry action visible to operators; no invitation is recorded as sent merely because it was queued.
+**Requirement.** Pencil supports terminal delivery. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-008).
+
+**Acceptance.**
+1. A permanent mail failure or exhausted retry is marked failed with the provider reason and retry action visible to operators; no invitation is recorded as sent merely because it was queued.
 
 **Evidence.** `tests/e2e/mail-recovery.spec.ts`, `tests/runtime/distribution.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited public permanent/exhausted delivery journey that reads failed status with provider reason and retry action, with queued never shown sent. Browser journey covers unknown outcome; permanent/exhausted failed states in distribution.worker.test.ts are service-only.
 
 #### DIST-009 — Embed isolation
 
-Core · published · **partial**
+Core · published · **partial** · Cites BASE-PUBLIC-001, BASE-PUBLIC-002
 
-**Requirement.** The embed rejects a host origin not allowed by BASE-PUBLIC-002 before rendering the flow. It exposes no answer, response ID, participant token, or contact value to the host URL, DOM, or `postMessage`; host communication is limited to non-identifying loaded, height, completed and checkout events. The checkout message carries only the HTTPS Checkout URL on a Stripe-owned origin and the session ID, with no payer data. It is posted to the exact owner-configured embedding origin, never `*`; the host must be on the form's allowed-origin list or no checkout event is sent and the respondent gets the same-tab fallback. There is one handoff per payment attempt. No other new host event is permitted without ct's ruling.
+**Requirement.** Pencil supports embed isolation. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-009).
+
+**Acceptance.**
+1. The embed rejects a host origin not allowed by BASE-PUBLIC-002 before rendering the flow.
+2. It exposes no answer, response ID, participant token, or contact value to the host URL, DOM, or `postMessage`; host communication is limited to non-identifying loaded, height, completed and checkout events.
+3. The checkout message carries only the HTTPS Checkout URL on a Stripe-owned origin and the session ID, with no payer data.
+4. It is posted to the exact owner-configured embedding origin, never `*`; the host must be on the form's allowed-origin list or no checkout event is sent and the respondent gets the same-tab fallback.
+5. There is one handoff per payment attempt.
+6. No other new host event is permitted without ct's ruling.
 
 **Evidence.** `tests/e2e/embed-security-foundation.spec.ts`, `tests/e2e/rendering-migration.spec.ts`, `tests/e2e/script-embed.spec.ts`, `tests/e2e/calculations.spec.ts` (1440/390)
 **Gap.** Opaque child isolation, exact origin/source/challenge admission, strict four-event messages, Stripe HTTPS URL/Checkout Session ID projection, exact outbound target and handoff replay refusal have local assertions through the script/payment journeys. Non-HTTPS and non-Stripe provider URLs produce no checkout message or navigation. Missing acknowledgement on an allowed script frame exposes a user-activated same-tab continuation. Gap: disallowed-host checkout fallback cannot occur after the existing pre-render 403; extra payer fields on an application payment receipt have no public-door child rejection proof. Plain iframe payments remain outside this handoff proof.
 
 #### DIST-010 — Ambiguous mail outcome
 
-Core · published · **done**
+Core · published · **done** · Cites BASE-OPS-004
 
-**Requirement.** `mail.sender.v1` implements send-or-get by delivery idempotency key when its provider supports lookup. An ambiguous timeout without lookup is marked unknown and is not automatically retried; an operator may reconcile or explicitly resend it with the duplicate-delivery risk shown.
+**Requirement.** Pencil supports ambiguous mail outcome. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-010).
 
-**Evidence.** `tests/e2e/mail-recovery.spec.ts`, `tests/runtime/distribution.worker.test.ts`, `tests/runtime/notification-restore.worker.test.ts`
+**Acceptance.**
+1. mail sender adapter implements send-or-get by delivery idempotency key when its provider supports lookup.
+2. An ambiguous timeout without lookup is marked unknown and is not automatically retried; an operator may reconcile or explicitly resend it with the duplicate-delivery risk shown.
+
+**Evidence.** `tests/e2e/mail-recovery.spec.ts` — "a real sender failure is visible and an explicit duplicate-risk retry retains its durable key and history"
 **Gap.** None.
 
 #### DIST-012 — QR codes and kiosk mode
 
 Core · published · **done**
 
-**Requirement.** Every public collector, including each named collector and the default direct and embed links, has its own public URL and a downloadable QR code (SVG and PNG) carrying its source label. Invitation, imported and unknown system-source buckets are historical attribution, not public collectors: they have no public collection URL, receive no QR code, and retain their existing identity semantics; kiosk mode restarts the form after completion on a shared device, clears all answers from the browser after a configurable idle time, and never shows the previous respondent's answers.
+**Requirement.** Pencil supports qR codes and kiosk mode. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-012).
 
 **Acceptance.**
-1. a browser journey checks the public URL and SVG/PNG QR downloads for each named public collector and the default direct and embed links, scans each QR to collect a response with the matching source, and verifies that invitation, imported and unknown system-source buckets offer neither a public collection URL nor a QR download and retain their identity semantics; it completes a kiosk form twice and proves the second session starts empty and the first response's source is the kiosk collector, then waits through the configured idle time and verifies that all browser answers are cleared and the previous respondent's answers are never shown.
-2. *Status: done — Labeled SVG/PNG downloads encode each public or named collector link; shared-device completion unmounts all answer/session state, and configurable idle expiry clears abandoned answers.
-3. Two isolated responses, exact QR decoding and retained collector attribution are proved at 1440 and 390.
-4. Evidence: `src/core/features/collectors/qr.ts`, `src/core/features/responses/ui/KioskFlow.tsx`, `tests/runtime/qr.worker.test.ts`, `tests/e2e/kiosk.spec.ts`.*
+1. Every public collector, including each named collector and the default direct and embed links, has its own public URL and a downloadable QR code (SVG and PNG) carrying its source label.
+2. Invitation, imported and unknown system-source buckets are historical attribution, not public collectors: they have no public collection URL, receive no QR code, and retain their existing identity semantics; kiosk mode restarts the form after completion on a shared device, clears all answers from the browser after a configurable idle time, and never shows the previous respondent's answers.
+3. Through the browser, checks the public URL and SVG/PNG QR downloads for each named public collector and the default direct and embed links, scans each QR to collect a response with the matching source, and verifies that invitation, imported and unknown system-source buckets offer neither a public collection URL nor a QR download and retain their identity semantics; it completes a kiosk form twice and proves the second session starts empty and the first response's source is the kiosk collector, then waits through the configured idle time and verifies that all browser answers are cleared and the previous respondent's answers are never shown.
 
-**Evidence.** `src/core/features/collectors/qr.ts`, `src/core/features/responses/ui/KioskFlow.tsx`, `tests/runtime/qr.worker.test.ts`, `tests/e2e/kiosk.spec.ts`
-**Gap.** None for named and default direct/embed public links. Historical invitation/imported/unknown source buckets have no public URL or QR download.
+**Evidence.** `tests/e2e/kiosk.spec.ts` — "download labelled QR codes and collect isolated shared-device responses with idle clearing"; `tests/runtime/qr.worker.test.ts` — "QR downloads require operator authority, retain the exact collection link and reject unrelated collectors and formats"
+**Gap.** None.
 
 #### DIST-019 — Restricted access
 
-Core · published · **done**
+Core · published · **done** · Cites BASE-ACCESS-002
 
-**Requirement.** A form can require a password, a verified email in an allowed domain or list (by one-time code, one response per verified email), or a signed link from the business's own app; the restriction is checked on the server before the first step renders and is stated in RESP-005's disclosure when it makes the response identified.
+**Requirement.** Pencil supports restricted access. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-019).
 
 **Acceptance.**
-1. a browser journey is refused without the password, verifies an allowed-domain email by code and completes once, and a second completion by the same email is refused.
-2. *Status: done — Immutable password, allowed-domain/list email-code and app-signed Ed25519 access rules gate the server graph and session start.
-3. Codes expire, limit attempts and consume once; verified email uniqueness is atomic across revisions, identities are disclosed and retained, and signed links bind the exact revision and expiry.
-4. Native rules and all three browser paths at 1440 and 390 ship.
-5. Backups redact password verifiers and discard live access authorizations while retaining response identity.
-6. Evidence: `src/core/features/restricted-access/`, `migrations/core/0050_restricted_access.sql`, `tests/runtime/restricted-access.worker.test.ts`, `tests/e2e/restricted-access.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”.*
+1. A form can require a password, a verified email in an allowed domain or list (by one-time code, one response per verified email), or a signed link from the business's own app; the restriction is checked on the server before the first step renders and is stated in RESP-005's disclosure when it makes the response identified.
+2. Through the browser, is refused without the password, verifies an allowed-domain email by code and completes once, and a second completion by the same email is refused.
 
-**Evidence.** `src/core/features/restricted-access/`, `migrations/core/0050_restricted_access.sql`, `tests/runtime/restricted-access.worker.test.ts`, `tests/e2e/restricted-access.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”
-**Gap.** None. Password, single-use email verification with atomic one-response enforcement, signed app links, server-first collection gates, disclosure, ledger/export identity and archive custody. Production email delivery remains dependent on the configured sender; local development suppresses it.
+**Evidence.** `tests/e2e/restricted-access.spec.ts` — "build password, verified-email and app-signed forms, with server-first gating and one completion per verified email"; `tests/runtime/restricted-access.worker.test.ts` — "restricted collection gates graph and session doors, verifies identity, serializes email uniqueness and binds app signatures to their revision"; `scripts/deployment-data-custody-replay.check.mjs` — "[DATA-001,BASE-DATA-001,IMPORT-004,BASE-OPS-003,LEDG-006,PAY-001] whole-data delivery recovery retains exact product custody and never replays restored capabilities"
+**Gap.** None.
 
 ### Responding
 
-#### RESP-001 — One question at a time
+#### RESP-001 — Respondent layouts
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** A respondent sees one welcome or completion screen at a time. Questions use the flow's selected layout: one question per screen; classic pages (FIELD-008), with several questions per page, shared LOGIC-006 page conditions, validation of visible questions only and progress by page; or question groups (FIELD-012), with several questions under one heading on one screen, individual required flags and validation, and progress counting each grouped question. No layout exposes builder or operator controls. One-question screens, classic pages (FIELD-008) and grouped questions ship. FIELD-012 remains partial for optional group media (FIELD-005) and statement blocks (FIELD-011).
+**Requirement.** A published form presents its selected layout without builder or operator controls. Layout behavior is shared with FIELD-008 and FIELD-012.
+
+**Acceptance.**
+1. A respondent sees one welcome or completion screen at a time.
+2. One-question layout presents one question per screen.
+3. Classic pages present several questions per page and apply the shared page conditions of LOGIC-006, LOGIC-008 and LOGIC-009.
+4. Question groups present several questions under one heading on one screen, with individual required flags and validation.
+5. Classic-page progress and validation follow RESP-025; grouped progress counts each grouped question.
+6. No respondent layout exposes builder or operator controls.
+7. Question groups include the optional media of FIELD-005 and statement blocks of FIELD-011 and FIELD-018.
 
 **Evidence.** `tests/e2e/public-flow.spec.ts` — “direct and embedded respondents complete the same accessible flow without an operator session” — “a sessionless direct flow presents one accessible screen at a time and reaches immutable completion”
-**Gap.** None.
+**Gap.** Missing a cited journey through classic pages and grouped questions that checks each layout, shared conditions, validation and progress. Cited public-flow journey covers one-question screens only.
 
 #### RESP-002 — Truthful progress
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** The page shows the respondent's current position and remaining reachable questions for the answers already given; classic layouts under FIELD-008 show the current page and remaining reachable pages instead. Branching can change that count, and skipped or unreachable questions are never counted.
+**Requirement.** Respondent progress describes the reachable path for the answers already given.
+
+**Acceptance.**
+1. The page shows the current question position and remaining reachable questions; classic layout shows the current page and remaining reachable pages instead.
+2. Branching recomputes that count, excluding skipped and unreachable questions.
 
 **Evidence.** `tests/e2e/question-progress.spec.ts`
-**Gap.** None.
+**Gap.** Missing a cited classic-page journey that checks current and remaining reachable pages. The cited progress journey covers question counts only.
 
-#### RESP-003 — Answers
+#### RESP-003 — Explicit and validated answers
 
-Core · published · **done**
+Core · published · **partial** · From RESP-003 · Cites BASE-INPUT-001
 
-**Requirement.** The respondent can submit only the values FLOW-019 defines for the published question's type and configured limits. Every question begins unanswered. False yes/no answers and zero scores or numbers count only after explicit selection or entry. Rating, priority, and choice questions begin unselected and require affirmative respondent selection. Required fields show Required and expose required semantics; a required unanswered or invalid question stays on screen with a field-specific error and creates no response. Choosing Other makes its text box required even on an otherwise optional question: empty or whitespace-only text shows the field-specific “Please specify your Other answer.” error and cannot create a response. Configured Other-text validation applies in both browser and API, and None is exclusive. In one-question and question-group layouts, progress is the share of currently reachable questions answered validly or deliberately skipped when optional; remaining includes every unfinished reachable question. Classic pages under FIELD-008 count reachable pages, validate only visible questions and do not let a hidden required question block progress. Skipping never creates an answer.
+**Requirement.** Respondents supply explicit values for the published question and its configured limits, following FLOW-019.
+
+**Acceptance.**
+1. Every question begins unanswered; false yes/no answers and zero scores or numbers count only after explicit selection or entry.
+2. Rating, priority and choice questions begin unselected and require affirmative respondent selection.
+3. Required fields show Required and expose required semantics.
+4. An unanswered required question or invalid answer stays on screen with a field-specific error and creates no response.
+5. Choosing Other requires its text even when the question is optional; empty or whitespace-only text shows “Please specify your Other answer.” and creates no response.
+6. Configured Other-text validation applies in the browser and API, and None is exclusive.
+7. The server accepts only values permitted by the published question type and configured limits.
 
 **Evidence.** `tests/e2e/new-question-types.spec.ts`, `tests/e2e/question-accessibility-foundation.spec.ts`, `tests/e2e/question-progress.spec.ts`
-**Gap.** None.
+**Gap.** Missing a journey in the old cited evidence that exercises Other-text validation in browser and API and exclusive None choices. Cited one-question journeys prove ordinary types, explicit selection and required refusals; the covering Other journey is outside this old Evidence set.
+
+#### RESP-025 — Reachable validation and answer progress
+
+Core · published · **partial** · From RESP-003
+
+**Requirement.** Progress and validation follow the current visible path in each respondent layout.
+
+**Acceptance.**
+1. In one-question and grouped layouts, progress is the share of reachable questions answered validly or deliberately skipped when optional; remaining includes every unfinished reachable question.
+2. Classic pages count reachable pages, validate only visible questions and never let a hidden required question block progress.
+3. Skipping never creates an answer.
+
+**Evidence.** `tests/e2e/new-question-types.spec.ts`, `tests/e2e/question-accessibility-foundation.spec.ts`, `tests/e2e/question-progress.spec.ts`
+**Gap.** Missing a cited journey for grouped-question progress and classic-page hidden-required validation and page progress. The cited progress journey covers one-question progress only.
 
 #### RESP-004 — Back navigation
 
 Core · published · **done**
 
-**Requirement.** A respondent can move back through screens already visited in the current session and edit an answer. Pencil recomputes the forward path and progress and discards answers belonging to steps that become unreachable before final validation, export, or analysis.
+**Requirement.** A respondent can revisit earlier screens and change an answer without retaining data from an abandoned branch.
 
-**Evidence.** `tests/e2e/journey.spec.ts`, `tests/e2e/question-progress.spec.ts`, `tests/runtime/journey.worker.test.ts`
+**Acceptance.**
+1. Back opens a screen already visited in the current session and permits editing its answer.
+2. Changing an answer recomputes the forward path and progress.
+3. Answers belonging to newly unreachable steps are discarded before final validation, export or analysis.
+
+**Evidence.** `tests/e2e/journey.spec.ts` — "an operator builds and previews an adaptive form, a respondent changes branches, and the report retains only final reachable answers"; `tests/runtime/journey.worker.test.ts` — "builds, previews, publishes and reports a branching form without preview effects; pins live revisions and exact answers"
 **Gap.** None.
 
 #### RESP-005 — Privacy disclosure
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** Before the first answer, the flow states why feedback is requested, whether the response is anonymous or identified, who can see individual answers, and each configured external and data category declared in `seed.json → externals` that may receive the answers. The policy decides which identity mode applies; it can never suppress or weaken the disclosure of the mode it chose. *Policy: `response.identity.v1`; default: `anonymous-public-link`, with invited responses identified. Publishing a form in identified mode records `identified-public-link` on that revision; declared identifying hidden fields supplied by the public link are typed, link-supplied and unverified, and their values and forwarding implications are disclosed before answering. RESP-023 requires the identifying link to bind one revision and fix those identifying values, with a reasoned refusal on another revision; its partial status records the remaining link-binding work.*
+**Requirement.** Before answering, respondents can understand the form’s purpose, identity mode and onward use of answers.
+
+**Acceptance.**
+1. Before the first answer, the form states why feedback is requested, whether the response is anonymous or identified, who can see individual answers, and every configured external and data category that may receive answers.
+2. The selected identity policy cannot suppress or weaken that disclosure; public links default to anonymous and invited responses are identified.
+3. An identified publication records the chosen mode on its revision. Identifying hidden values from a public link are typed, link-supplied and unverified, and the disclosure explains the values received and the implications of forwarding the link.
+4. Identifying links obey RESP-028’s revision binding and fixed-value rules.
 
 **Evidence.** `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey”, `tests/runtime/analysis-safety.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited disclosure journey that reads the stated purpose, viewers and each configured external/data category before answering. The cited journey checks invitation identification; the analysis-safety journey checks provider payload minimization rather than the respondent disclosure.
 
 #### RESP-006 — Anonymous means anonymous
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-PUBLIC-001
 
-**Requirement.** An anonymous response records no contact link, no participant, no name or email taken from an invitation, contact record, or session, no raw IP address, and no host-page identifier. It receives a random response ID that cannot be reversed to identify the respondent; expiring rate-limit and session state is not linked to that ID. An email or name the respondent knowingly types into a question is stored as that answer and nothing else: it creates no contact and no participant, and RESP-005's disclosure states before the flow starts that answering such a question identifies the respondent to the operator.
+**Requirement.** Anonymous collection retains a response without deriving respondent identity from transport or contact records.
+
+**Acceptance.**
+1. An anonymous response has no contact or participant link, no name or email copied from an invitation, contact or session, no raw IP address and no host-page identifier.
+2. Its random response ID cannot be reversed to identify the respondent and is not linked to expiring rate-limit or session state.
+3. A name or email knowingly typed as an answer remains only that answer and creates no contact or participant.
+4. Before answering, RESP-005’s disclosure explains that such an identifying answer will identify the respondent to the operator.
 
 **Evidence.** `tests/runtime/distribution.worker.test.ts`, `tests/runtime/foundation.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing an anonymous-collection journey through the public HTTP or browser door that reads the retained anonymous identity and the disclosure for a typed identifying answer. Both cited Worker files use foundationFixture service calls for this behavior; their data assertions remain useful lower-level evidence.
 
-#### RESP-007 — Final submission
+#### RESP-007 — Atomic final submission
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** A completed response, all its answers, count change, and durable outbox commands for required downstream effects are committed in one transaction before any effect is dispatched.
+**Requirement.** Final submission commits the completed response and its required effects as one indivisible admission.
+
+**Acceptance.**
+1. The completed response, every answer, count change and durable command for each required downstream effect commit together.
+2. No downstream effect is dispatched before that transaction commits.
 
 **Evidence.** `tests/e2e/journey.spec.ts`, `tests/runtime/distribution.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited final-submit rollback journey that fails the transaction and proves no response, answer, count or effect remains. The cited browser journey covers normal commit and retry; the covering failure journey is in tests/runtime/journey.worker.test.ts, which this old Evidence cell does not cite.
 
 #### RESP-008 — Admission per invitation
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** An invitation admits only the completions its recorded admission rule allows. A visit beyond that shows the existing completion state and creates no further response, and no rule can admit a completion after the flow's admission has closed (RESP-009). *Policy: `flow.response-admission.v1`; default: one completion per invitation; anonymous direct links allow multiple independent completions.*
+**Requirement.** An invitation follows the response-admission rule recorded for it.
+
+**Acceptance.**
+1. An invitation admits only the completions its recorded rule permits.
+2. A visit beyond that allowance shows the existing completion state and creates no further response.
+3. No rule admits a completion after RESP-009 admission closure.
+4. The configurable default is one completion per invitation; anonymous direct links allow independent completions.
 
 **Evidence.** `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey”, `tests/runtime/distribution.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited public-door journey that attempts an over-quota or closed invitation completion and confirms no additional response. The cited distribution Worker journey covers concurrency through services; the browser journey checks invitation receipt and reload.
 
 #### RESP-009 — Concurrent closure
 
 Core · published · **done**
 
-**Requirement.** Final submission rechecks deadline, target, and manual closure in the same admission transaction. A submission that loses the final available place sees the standard closed page naming the business and flow and creates no response.
+**Requirement.** Final admission resolves concurrent submissions against the form’s actual remaining capacity.
 
-**Evidence.** `tests/e2e/closed-flow.spec.ts` — “closed flows refuse late submissions, retain their named document and embed boundaries, and disappear after archival”, `tests/runtime/journey.worker.test.ts`
+**Acceptance.**
+1. Final submission rechecks deadline, target and manual closure in the same admission transaction.
+2. A submission that loses the last available place sees the standard closed page naming the business and form, and creates no response.
+
+**Evidence.** `tests/runtime/journey.worker.test.ts` — "rechecks manual closure and deadline inside final admission; losers receive a named closed outcome with no saved response"; `tests/runtime/journey.worker.test.ts` — "admits only one released completion at a target of one, while retaining its replay after automatic closure"
 **Gap.** None.
 
 #### RESP-010 — No silent partials
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** Pencil never captures partial answers silently. Unless a respondent explicitly chooses to save a partial response under PART-002, answers from an abandoned or reloaded session are not visible to operators, included in results, exported as responses, or counted as completions. A respondent-chosen save is the explicit exception: it may retain answers only for save and resume, without counting them as a completion or including them in completed results or default response exports. Only final submission creates completed response data; PART-002 stores an explicitly requested save separately and never makes its answers available to operators, completed results, analysis or default response exports.
+**Requirement.** Pencil retains incomplete answers only when the respondent explicitly chooses save and resume under PART-002.
+
+**Acceptance.**
+1. Answers in an abandoned or reloaded session are not visible to operators, included in results, exported as responses or counted as completions.
+2. A respondent-chosen save retains answers separately for resume and does not expose them to operators, completed results, analysis or default response exports.
+3. Only final submission creates completed response data.
 
 **Evidence.** `tests/runtime/foundation.worker.test.ts`, `tests/runtime/journey.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited explicit-save journey that checks saved partial answers stay unavailable to operators, completed results, analysis and default exports. The cited files prove ordinary abandoned-session isolation, not the PART-002 saved exception.
 
 #### RESP-011 — Completion
 
 Core · published · **done**
 
-**Requirement.** After a successful submission the respondent sees the published completion screen and cannot edit the completed response through the public link.
+**Requirement.** A successful submission reaches the completion screen published for that response.
 
-**Evidence.** `tests/e2e/public-flow.spec.ts` — “direct and embedded respondents complete the same accessible flow without an operator session” — “a sessionless direct flow presents one accessible screen at a time and reaches immutable completion”
+**Acceptance.**
+1. The respondent sees the published completion screen only after successful submission.
+2. The ordinary public form link cannot edit the completed response; optional editing follows RESP-021.
+
+**Evidence.** `tests/e2e/public-flow.spec.ts` — "direct and embedded respondents complete the same accessible flow without an operator session"
 **Gap.** None.
 
 #### RESP-012 — Submission retry
 
-Core · published · **done**
+Core · published · **done** · Cites BASE-OPS-003
 
-**Requirement.** A submission idempotency key is scoped to one respondent session and published revision and retained with the completed response. Retrying that key returns the same response ID and completion screen and cannot increment counts or dispatch downstream effects twice.
+**Requirement.** Retrying one completed submission returns its recorded receipt instead of creating another effect.
 
-**Evidence.** `tests/runtime/journey.worker.test.ts`
+**Acceptance.**
+1. The submission key is scoped to one respondent session and published revision and retained with the completed response.
+2. Retry returns the same response ID and completion screen, without incrementing counts or dispatching downstream effects twice.
+
+**Evidence.** `tests/runtime/journey.worker.test.ts` — "retains the committed completion across changed-answer retries, pinned revisions and removal of the session"
 **Gap.** None.
 
 #### RESP-013 — Session metrics
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-DATA-002
 
-**Requirement.** The first respondent interaction creates an expiring session record containing only an opaque session ID, revision ID, source, start time, the stable ID of the furthest step reached, a device class of mobile, tablet, or desktop, and FIELD-006’s stable choice and block presentation IDs—never answers, contact identity, raw IP, user-agent string, or host identity. It pins the revision and supplies starts, drop-off, device, and completion-time metrics; an abandoned session expires under BASE-DATA-002 after the retention period in `seed.json → limits`.
+**Requirement.** The first respondent interaction creates limited, expiring session state for the form’s collection metrics.
+
+**Acceptance.**
+1. Session state contains only an opaque session ID, revision ID, source, start time, furthest-reached stable step ID, coarse mobile/tablet/desktop class and FIELD-006 choice/block presentation identities.
+2. It contains no answers, contact identity, raw IP, user-agent string or host identity.
+3. The session pins the revision and supplies starts, drop-off, device and completion-time metrics.
+4. Abandoned sessions expire after the documented retention period, and RESP-019 preserves only their aggregate metrics.
 
 **Evidence.** `tests/runtime/distribution.worker.test.ts`, `tests/runtime/journey.worker.test.ts`, `tests/runtime/transition.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited journey that reads FIELD-006 stable choice/block presentation identities and the complete session-only field boundary through the public door. Cited HTTP journeys prove pinning, expiry and metrics; the session-privacy assertions use services and the presentation-order outcome is not exercised.
 
 #### RESP-014 — Submit failure
 
 Core · published · **done**
 
-**Requirement.** A final-submit request that is not durably committed leaves the respondent off the completion screen, preserves current in-browser answers, shows a retryable error, and retries with the original submission idempotency key.
-
-**Evidence.** `tests/e2e/journey.spec.ts`, `tests/runtime/journey.worker.test.ts`
-**Gap.** None.
-
-#### RESP-015 — Abuse defenses
-
-Core · published · **done**
-
-**Requirement.** Every public submission is checked by defenses the deployment owns entirely: a hidden honeypot field, a minimum elapsed time from form load to final submission taken from `seed.json → limits`, a submission token bound to the RESP-013 session, and the public rate limits enforced under BASE-ACCESS-003. Elapsed time uses the signed, non-identifying load timestamp carried by the form and returned with its submission under RSLT-013; it creates no visitor identity or server-side view record. Pencil loads no third-party challenge, script, or reputation service on a public surface, so BASE-PUBLIC-001 continues to hold. A submission whose session token is missing or unrecognized is refused under RESP-014 with a visible, retryable error naming the expired session, never silently discarded. A filled honeypot or a submission under the minimum time is retained with its reason and answers under RESP-016 and RESP-017 for owner review and reversal under RESP-018. Scoring a respondent's trustworthiness beyond these checks is out of scope.
-
-**Evidence.** `tests/e2e/public-rate.spec.ts` — “public request and final submission limits refuse excess traffic without retaining invalid answers and recover after expiry”, `tests/runtime/journey.worker.test.ts`, `tests/runtime/transition.worker.test.ts`
-**Gap.** None.
-
-#### RESP-016 — Bot submissions are excluded and retained
-
-Core · published · **done**
-
-**Requirement.** A submission that fills the honeypot is shown the ordinary completion screen and committed under RESP-007 as an excluded, quarantined response with its honeypot reason and all its answers retained. While excluded it changes no accepted-response count, admission check, result, analysis evidence set, notification or other downstream effect; exclusion and reversal leave anonymous view and start counters unchanged. Response exports omit automatically excluded responses by default. An owner may explicitly choose to include automatically excluded responses (honeypot or minimum-time); each included response is marked with its exclusion reason. An owner can review its reason and answers and reverse a false positive under RESP-018, after which it counts as an ordinary completed response. The exclusion records an audit entry under BASE-OPS-005 naming the defense that fired, the revision, and the time, and containing no answer text or respondent identity. It creates no visitor identity or server-side view record, and is erased under the form's normal retention and DATA-002 erasure rules.
+**Requirement.** A failed final submission keeps the respondent’s work available for a safe retry.
 
 **Acceptance.**
-1. a honeypot hit retains its reason and answers in quarantine, an owner reviews and reverses it and it then counts.
-2. A default export omits automatically excluded responses; an explicit include adds them, each marked with its exclusion reason.
-3. *Status: done — Retained honeypot and minimum-time answers, review/release, default omission and explicit inclusion in filtered, cutoff-bound CSV/JSON exports are proved by `tests/runtime/traffic.worker.test.ts` and `tests/e2e/traffic-review.spec.ts` at 1440 and 390.
-4. Rows carry state and reason; inclusion changes no accepted counts or effects.
-5. `migrations/core/0046_exclusion_export_consistency.sql` invalidates snapshots on excluded-answer changes.*
+1. A final request that did not commit leaves the respondent off the completion screen and preserves the current in-browser answers.
+2. A visible, retryable error lets the respondent retry with the original submission key.
 
-**Evidence.** `tests/runtime/traffic.worker.test.ts` — “signed form-load timing and retained bot exclusions leave anonymous view and start counters unchanged on review”, `tests/e2e/traffic-review.spec.ts`
-**Gap.** None. Default-off automated-exclusion inclusion preserves filters, cutoff and streaming; CSV/JSON label quarantine state and reason. Snapshot changes abort; export inclusion changes no accepted counts or effects. Browser downloads proved at 1440 and 390.
+**Evidence.** `tests/e2e/journey.spec.ts` — "an operator builds and previews an adaptive form, a respondent changes branches, and the report retains only final reachable answers"; `tests/runtime/journey.worker.test.ts` — "rolls a failed final transaction back completely and commits one original-key retry without partial answers or effects"
+**Gap.** None.
 
-#### RESP-017 — Suspected submissions are quarantined, not lost
+#### RESP-015 — Owned abuse defenses
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-ACCESS-003, BASE-PUBLIC-001
 
-**Requirement.** A submission that fails only the minimum-elapsed-time check, measured from the signed, non-identifying load timestamp under RESP-015, is committed under RESP-007 as an excluded, quarantined response with its minimum-fill-time reason and all its answers retained. While excluded it is omitted from completed-response counts, admission checks, results, analysis evidence sets and notifications. Response exports omit it by default; RESP-016 governs the explicit include option for automated exclusions. An owner can review and reverse a false positive under RESP-018, after which it counts as an ordinary completed response. Exclusion and reversal leave anonymous view and start counters unchanged and create no visitor identity or server-side view record. It is erased under the form's normal retention and DATA-002 erasure rules.
+**Requirement.** Pencil checks public submissions using defenses the installation owns; the operating rules document the limits and signed load-time mechanism.
+
+**Acceptance.**
+1. Every submission checks a hidden honeypot, the documented minimum elapsed time from form load, and a submission token bound to the respondent session.
+2. Elapsed time comes from the signed, non-identifying form-load timestamp, with no visitor identity or server-side view record linked to it.
+3. A missing or unrecognized session token produces a visible retryable error naming the expired session; the response is never silently discarded.
+4. Honeypot and minimum-time submissions retain their reasons and answers under RESP-016 and RESP-017 for review and reversal under RESP-018.
+
+**Evidence.** `tests/e2e/public-rate.spec.ts` — “public request and final submission limits refuse excess traffic without retaining invalid answers and recover after expiry”, `tests/runtime/journey.worker.test.ts`, `tests/runtime/transition.worker.test.ts`
+**Gap.** Missing a cited journey exercising signed load timing and honeypot admission, retention and reversal through the public door. The cited journey and transition files cover session credential failures and minimum-time quarantine, not the honeypot/load-time matrix; tests/runtime/traffic.worker.test.ts has that journey but is absent from this old Evidence cell.
+
+#### RESP-016 — Retained bot exclusions
+
+Core · published · **done** · From RESP-016 · Cites BASE-OPS-005, BASE-AUDIT-001
+
+**Requirement.** A honeypot submission remains recoverable in quarantine while staying outside accepted collection.
+
+**Acceptance.**
+1. A filled honeypot produces the ordinary completion screen and atomically retains every answer with the honeypot reason in quarantine.
+2. An excluded response changes no accepted-response count, admission check, result, analysis evidence set, notification or other downstream effect.
+3. Exclusion and reversal leave anonymous view and start counters unchanged.
+4. An operator can read the reason and answers and reverse a false positive under RESP-018, after which it counts as an ordinary completed response.
+5. The exclusion audit identifies the defense and revision without answer text or respondent identity.
+6. Exclusion creates no visitor identity or server-side view record; the retained response follows DATA-002 erasure and its form’s retention rules.
+
+**Evidence.** `tests/runtime/traffic.worker.test.ts` — "signed form-load timing and retained bot exclusions leave anonymous view and start counters unchanged on review"; `tests/e2e/traffic-review.spec.ts` — "an operator reviews and releases a retained bot exclusion without changing views or starts"
+**Gap.** None.
+
+#### RESP-026 — Exporting automated exclusions
+
+Core · published · **done** · From RESP-016
+
+**Requirement.** Automated-exclusion exports are an explicit option separate from quarantine review and accepted results.
+
+**Acceptance.**
+1. Default exports omit honeypot and minimum-time exclusions.
+2. An operator may explicitly include them; each included response is marked quarantined with its exclusion reason.
+3. Inclusion keeps the same filter and cutoff, changes no accepted count or downstream effect, and does not release the response.
+
+**Evidence.** `tests/runtime/traffic.worker.test.ts` — "signed form-load timing and retained bot exclusions leave anonymous view and start counters unchanged on review"; `tests/e2e/traffic-review.spec.ts` — "an operator reviews and releases a retained bot exclusion without changing views or starts"
+**Gap.** None.
+
+#### RESP-017 — Retained minimum-time exclusions
+
+Core · published · **partial**
+
+**Requirement.** A submission failing only the minimum elapsed-time check is retained for review rather than lost.
+
+**Acceptance.**
+1. The signed load-time check commits every answer with the minimum-fill-time reason in quarantine under RESP-007.
+2. An excluded response stays outside completed counts, admission checks, results, analysis evidence and notifications.
+3. Response exports follow RESP-026’s default omission and explicit-inclusion rules.
+4. An operator can read and reverse a false positive under RESP-018, making it an ordinary completed response.
+5. Exclusion and reversal leave view/start counters unchanged and create no visitor identity or server-side view record.
+6. The retained response follows its form’s retention and DATA-002 erasure rules.
 
 **Evidence.** `tests/runtime/journey.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited journey that reads the minimum-fill-time reason and all retained answers before release and checks the full exclusion boundary, including unchanged view/start counters. The cited journey covers held completion, export omission, release and deletion; the fuller traffic journey is not in the old Evidence cell.
 
 #### RESP-018 — Quarantine review
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-AGENT-006, BASE-AGENT-007
 
-**Requirement.** Operators can list quarantined responses for a revision with their answers and the defense that quarantined them, and can release or delete each one. Releasing makes the response an ordinary completed response from that moment, and every affected count, rate, and results figure is recomputed; deleting follows DATA-002. A release is allowed after the revision's admission has closed, is recorded with its operator and time, and never reopens admission or re-triggers a deadline or target check. Nothing leaves quarantine without an operator acting.
+**Requirement.** Operators can inspect and resolve each quarantined response.
+
+**Acceptance.**
+1. The revision’s quarantine list shows every held response’s answers and the defense that held it.
+2. An operator can release or delete each response; deletion follows DATA-002.
+3. Release makes it an ordinary completed response at that moment and recomputes every affected count, rate and result.
+4. Release works after admission closure and records the acting operator and time without reopening admission or retriggering its deadline or target.
+5. A response leaves quarantine only through an explicit resolution; when an agent resolves it, the call carries standard for release or destructive for irreversible deletion, and the company’s policy decides the disposition.
 
 **Evidence.** `tests/runtime/journey.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited quarantine-list journey that reads each held answer and defense and observes every affected rate/results value after release while admission remains closed. The cited journey does not read the quarantine list; it proves release/delete persistence and counts.
 
 #### RESP-019 — Retained flow metrics
 
 Core · published · **done**
 
-**Requirement.** When a session completes or expires, its start, furthest-reached step ID, device class, and completion outcome are folded into per-revision counters that hold counts only, cannot be traced to a session, response, or respondent, and are retained with the revision after the session record has expired. These counters are the source of every historical starts, drop-off, and device figure; no partial answer is retained with them.
+**Requirement.** Collection keeps historical aggregate metrics after private session state expires.
 
-**Evidence.** `tests/runtime/journey.worker.test.ts`, `tests/runtime/transition.worker.test.ts`
+**Acceptance.**
+1. On completion or expiry, a session’s start, furthest step, device class and completion outcome fold into per-revision counters.
+2. Those counters hold only counts, cannot be traced to a session, response or person, and remain with the revision after session expiry.
+3. Every historical starts, drop-off and device figure uses those counters, which contain no partial answer.
+
+**Evidence.** `tests/runtime/journey.worker.test.ts` — "scheduled retention folds abandoned sessions once, preserves active auth and every current persistent entity, and logs counts only"
 **Gap.** None.
 
 ### Response ledger
 
-#### LEDG-001 — Ledger
+#### LEDG-001 — Response ledger
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** Operators can list and open every released completed response with stable response ID, flow revision, source, participant when identified, started and submitted times, and each answer keyed by stable step ID. A quarantined response appears only in the RESP-018 review list until it is released.
+**Requirement.** Operators can list and open the released completed responses of a form.
+
+**Acceptance.**
+1. Every row retains its stable response ID, form revision, source, participant when identified, started/submitted times and each answer keyed by stable step ID.
+2. A quarantined response appears only in RESP-018 review until release.
 
 **Evidence.** `tests/e2e/answer-results.spec.ts`, `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey”, `tests/e2e/imported-results.spec.ts`
-**Gap.** None.
+**Gap.** Missing a cited ledger journey that reads the complete retained response record, including stable response ID and started/submitted times, and checks quarantine exclusion with real held data. Cited browser journeys inspect answers, participant and cohort counts, but do not read the complete listed record.
 
-#### LEDG-002 — Counts
-
-Core · published · **done**
-
-**Requirement.** Completed-response and participant counts are derived from stored participants and completed responses. Starts come only from RESP-013 session records and the RESP-019 counters they fold into; preview sessions, duplicate submissions, failed deliveries, abandoned sessions, dropped submissions, and unreleased quarantined responses never increment completed responses.
-
-**Evidence.** `tests/runtime/form-import.worker.test.ts`, `tests/runtime/journey.worker.test.ts`, `tests/runtime/reporting-bounded.worker.test.ts`
-**Gap.** None.
-
-#### LEDG-003 — Filters
+#### LEDG-002 — Collection counts
 
 Core · published · **done**
 
-**Requirement.** Operators can filter the ledger by revision, submission time, source, participant status, and structured answer, while preserving the same response IDs shown in exports and evidence.
+**Requirement.** Collection counts come from retained collection records rather than delivery or preview activity.
 
-**Evidence.** `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey”, `tests/e2e/ledger-filters.spec.ts`, `tests/e2e/reporting-counts.spec.ts`
+**Acceptance.**
+1. Completed-response and participant counts derive from stored completed responses and participants.
+2. Starts derive only from RESP-013 sessions and RESP-019 counters.
+3. Preview, duplicate submission, failed delivery, abandoned session, dropped submission and unreleased quarantine never increment completed responses.
+
+**Evidence.** `tests/runtime/journey.worker.test.ts` — "quarantines fast submissions, excludes them from reporting, releases exactly once after closure, and erases rejected answers"
+**Gap.** None.
+
+#### LEDG-003 — Response filters
+
+Core · published · **done**
+
+**Requirement.** The ledger and its exports use the same selected response identities.
+
+**Acceptance.**
+1. Operators can filter by revision, submission time, source, participant status and structured answer.
+2. Filtering preserves the response IDs shown in the ledger, exports and supporting evidence.
+
+**Evidence.** `tests/e2e/ledger-filters.spec.ts` — "native and imported typed filters download exact JSON, CSV, LEDG-005 XLSX and SPSS response snapshots with readable decisions and compact rows at both widths"; `tests/e2e/distribution-foundation.spec.ts` — "invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey"
 **Gap.** None.
 
 #### LEDG-004 — Response export
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-DATA-001
 
-**Requirement.** Starting an export fixes its filter and evidence-cutoff time. By default, CSV and JSON contain exactly the matching released responses committed by that cutoff, including response and revision IDs, source, timestamps, stable step IDs and labels, and lossless values for every answer including open text. Quarantined and excluded responses stay out until released, and the export names how many were excluded. An owner may explicitly choose to include automatically excluded responses (honeypot or minimum-time); each included response is marked with its exclusion reason. This RESP-016 option is the only exception: included exclusions obey the same filter and cutoff and remain quarantined, without changing accepted-response counts or downstream effects.
+**Requirement.** An operator can download a fixed selection of responses as lossless CSV or JSON.
 
 **Acceptance.**
-1. A default export omits automatically excluded responses; an explicit include adds them, each marked with its exclusion reason.
+1. Starting the export fixes its filter and evidence-cutoff time.
+2. Default exports contain exactly the matching released responses committed by that cutoff, including response/revision IDs, source, timestamps, stable step IDs/labels and lossless values for every answer, including open text.
+3. Quarantined and excluded responses stay out until release, and the export states how many were excluded.
+4. RESP-026’s explicit automated-exclusion option is the sole exception: included responses are marked with their exclusion reasons and obey the same filter/cutoff without release, changed accepted counts or downstream effects.
 
 **Evidence.** `tests/e2e/journey.spec.ts`, `tests/e2e/ledger-filters.spec.ts`, `tests/e2e/new-question-types.spec.ts`
-**Gap.** None.
+**Gap.** Missing a cited journey for the explicit automated-exclusion inclusion option, marked reasons and unchanged accepted counts/effects. The cited browser journeys prove ordinary exports; tests/e2e/traffic-review.spec.ts covers the option but this old Evidence cell does not cite it.
 
 ### Results
 
@@ -804,280 +1202,425 @@ Core · published · **done**
 
 Core · published · **partial**
 
-**Requirement.** Every published revision has a results view that needs no `ai.provider.v1`: question answer summaries appear before session metrics. It shows completed responses, starts, completion rate, and average time to complete for the current combined filter bar (published-revision selector plus the response filters), each beside the counts it was computed from. Imported completions remain in answer summaries and completed counts but are excluded from native starts, completion-rate numerators and duration samples, with the imported count stated separately. It is available from publication, shows zeros rather than an error before the first session, and never blocks on an analysis run. Answer summaries are never suppressed for operators who may read the form's responses and stay complete beside a suppressed RSLT-006 crosstab; in aggregate-only views RSLT-009's rule governs the crosstab, not the summaries.
+**Requirement.** Every published revision has a results view independent of AI analysis.
+
+**Acceptance.**
+1. Question-answer summaries appear before session metrics.
+2. The current combined revision/response filters govern completed responses, starts, completion rate and average completion time, each shown beside its underlying counts.
+3. Imported completions contribute to answer summaries and completed counts but never native starts, completion-rate numerators or duration samples; their count is stated separately.
+4. The view is available from publication, shows zeros before the first session and does not wait for analysis.
+5. Operators with response access keep complete summaries beside a suppressed crosstab; aggregate-only reports apply RSLT-015/RSLT-016 to crosstabs without suppressing answer summaries.
 
 **Evidence.** `tests/runtime/journey.worker.test.ts`, `tests/runtime/ledger-filters.worker.test.ts`, `tests/runtime/reporting-bounded.worker.test.ts`, `tests/e2e/answer-results.spec.ts`, `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey”, `tests/e2e/imported-results.spec.ts`, `tests/e2e/reporting-counts.spec.ts`, `tests/e2e/text-answer-plurals.spec.ts` (line 10)
 **Gap.** The published-revision selector and response filters share one response scope across summary, answer summaries, device split, ledger and exports. Native starts, rate numerator/denominator, duration total/sample count, completed and imported counts are stated beside the values. All-revision answers retain their published question versions. Zero, quarantine/release, erasure and imported exclusions remain factual; no AI run is required. Gap: all-published-revision average completion time with unequal per-revision durations has no independently computed public-door assertion.
 
 #### RSLT-002 — Drop-off by question
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** Results show, for each step on the published revision, how many sessions reached it and how many of those reached no later step, computed from RESP-019 counters and therefore still available after the underlying sessions have expired. A step no session reached is shown as reached by zero, not omitted.
+**Requirement.** Results preserve per-question collection reach and drop-off after session expiry.
+
+**Acceptance.**
+1. Every published step shows how many sessions reached it and how many reached no later step.
+2. The figures use RESP-019 counters and remain readable after the sessions expire.
+3. A never-reached step is shown with zero rather than omitted.
 
 **Evidence.** `tests/e2e/answer-results.spec.ts`, `tests/e2e/imported-results.spec.ts`, `tests/e2e/text-answer-plurals.spec.ts`
-**Gap.** None.
+**Gap.** Missing a cited journey that expires a real abandoned session and reads the retained per-step reached/drop-off report afterward, including zero-reached steps. Cited browser reports show ordinary native answers and historical zero telemetry; tests/runtime/transition.worker.test.ts exercises expiry but is absent from this old Evidence cell.
 
 #### RSLT-003 — Stated denominators
 
 Core · published · **partial**
 
-**Requirement.** Every percentage Pencil displays in results or analysis names the numerator and denominator it was computed from. A single-answer distribution divides by the responses that answered that question and its parts sum to that denominator. A multiple-choice distribution divides by the same denominator, may therefore total more than 100%, and is labeled as multiple-select. With a response-only filter active, completion shows started-to-completed among the filtered responses and states that view-based rates are unfiltered; with revision or date only, completion uses views. Imported historical responses are excluded from native starts, completion-rate numerators and duration calculations. Completion is never mixed with a per-question answer rate. Numerator and denominator always come from the same filtered set, which is named; changing a filter changes both together.
+**Requirement.** Every results and analysis percentage identifies the population it measures.
+
+**Acceptance.**
+1. Each percentage names its numerator, denominator and filtered set; changing a filter changes both together.
+2. Single-answer distributions divide by responses that answered the question and their parts sum to that denominator.
+3. Multiple-choice distributions use that same denominator, are labeled multiple-select and may exceed one hundred percent in total.
+4. A response-only filter shows started-to-completed within filtered responses and states that view-based rates are unfiltered; revision/date-only views use views.
+5. Imported history never enters native starts, completion numerators or durations.
+6. Completion is kept distinct from per-question answer rates.
 
 **Evidence.** `tests/runtime/journey.worker.test.ts`, `tests/runtime/ledger-filters.worker.test.ts`, `tests/runtime/reporting-bounded.worker.test.ts`, `tests/e2e/answer-results.spec.ts`, `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey”, `tests/e2e/imported-results.spec.ts`, `tests/e2e/reporting-counts.spec.ts`, `tests/e2e/text-answer-plurals.spec.ts` (line 10)
 **Gap.** Response filters use matching native released and quarantined response starts for started-to-completed; the screen states that view-based rates are unfiltered by response filters. Revision/date-only selections use the matching view counters. Numerator and denominator, duration total and samples, imported exclusions and per-question answered denominators are named; clearing a response filter restores the view basis. Gap: CSAT and thumbs-up score-trend percentages have no public-door assertion of their displayed numerator and denominator labels. The answer-share trend, zero-denominator states, unequal started-to-completed rate, date-only scope, multiple-select label and single-answer bucket sums are asserted by the existing results journeys.
 
 #### RSLT-004 — Device split
 
-Core · published · **partial**
+Core · published · **partial** · Cites BASE-DATA-003, BASE-ROLE-001
 
-**Requirement.** Results show the device split following the combined filter bar (published-revision selector plus the response filters), with its numerator and denominator named as RSLT-003 requires. A coarse RESP-013 device class is derived at session start and stored on the response at start so it can be filtered: class only, no fingerprint, erased with the response. Revision-wide session counts without that response link do not satisfy the filtered split. Device class never appears in an export of responses.
+**Requirement.** Results present only coarse device classes and keep their response-export boundary, including RL-104’s archive exception.
+
+**Acceptance.**
+1. Device shares follow the combined revision and response filters, with the numerator and denominator stated under RSLT-003.
+2. A coarse mobile, tablet or desktop class is derived at session start and linked to its response for filtering; revision-wide unlinked session counts do not satisfy a filtered split.
+3. No fingerprint is retained; the class erases with its response and historical missing classes remain honestly unknown.
+4. Device class is excluded from every response export.
+5. Under RL-104, its sole archive exception is the private integrity-checked whole-installation restore archive of DATA-001; restoration preserves erasure fences and applies current authority.
 
 **Evidence.** `tests/runtime/journey.worker.test.ts` — "retains factual zero, quarantine, release and erasure summaries and matching dashboard counts"; `tests/runtime/distribution.worker.test.ts`; `tests/runtime/retention-schedule.worker.test.ts`; `tests/runtime/upgrades.worker.test.ts` — "retains the representative legacy rows, graph relationships, and idempotency behavior declared by the predecessor fixture"; `scripts/deployment-data.check.mjs` — “complete archive recovery retains exact data and attachment custody and refuses unsafe sources, archives and destinations without overwrites” — "full current-data roundtrip preserves prefill markers and disabled confirmation history, stable revisions, quarantine, receipts, historical actors, auth, effects, exact text and int64"; `tests/e2e/answer-results.spec.ts`; `tests/e2e/ledger-filters.spec.ts` (1440/390)
-**Gap.** Coarse session-start class is copied only on admitted commit, preserved under unpaid replacement, filterable through the shared response selection and erased with the response. Historical classes are unknown. Filtered device shares name native-response denominators; imported completions and unlinked open/abandoned sessions are separate. Unfiltered shares name session starts. No class enters CSV/JSON response records; DATA-001 portable archives carry the response column for restoration. Default ADOPTED pending ct: archive only, never a response export. Gap: the current archive importer requires the same committed migration inventory; restoration of an older pre-device archive has not been proved with its original trusted controller. RSLT-001/RSLT-003 summary integration remains their own target.
+**Gap.** Coarse session-start class is copied only on admitted commit, preserved under unpaid replacement, filterable through the shared response selection and erased with the response. Historical classes are unknown. Filtered device shares name native-response denominators; imported completions and unlinked open/abandoned sessions are separate. Unfiltered shares name session starts. No class enters CSV/JSON response records; DATA-001 portable archives carry the response column for restoration.  Gap: the current archive importer requires the same committed migration inventory; restoration of an older pre-device archive has not been proved with its original trusted controller. RSLT-001/RSLT-003 summary integration remains their own target.
 
 #### RSLT-005 — Results across revisions
 
 Core · published · **done**
 
-**Requirement.** A results view spanning more than one revision reports each question only for the revisions that contained it, using the responses that could have answered it as the denominator. It never treats a question added later as unanswered by earlier responses, and it never merges two questions that have different stable step IDs.
+**Requirement.** Cross-revision reporting compares questions only within the revisions that actually contained them.
 
-**Evidence.** `tests/e2e/answer-results.spec.ts`, `tests/e2e/reporting-bounded.spec.ts`, `tests/e2e/revision-comparison-http.spec.ts`
+**Acceptance.**
+1. Each question uses the responses that could have answered it as its denominator.
+2. A question added later is never treated as unanswered by earlier responses.
+3. Different stable step IDs never merge, even when their labels match.
+
+**Evidence.** `tests/e2e/revision-comparison-http.spec.ts` — "native revision comparison keeps absent questions, containing-revision cohorts and historical labels distinct"
 **Gap.** None.
 
 #### RSLT-012 — Open-text coding
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-AGENT-006, BASE-AGENT-007
 
-**Requirement.** Operators can tag open-text answers with workspace codes by hand, accept or reject AI-suggested codes (each suggestion citing the exact excerpt), and chart, filter and crosstab by code; every code assignment records who or what made it. Aggregate-only code crosstabs inherit RSLT-009's aggregate-only disclosure rule and refusal fixture before they ship; today's raw-authorized operator code panel stays complete.
+**Requirement.** Operators can organize open text with workspace codes, manual assignments and exact-excerpt AI suggestions.
 
 **Acceptance.**
-1. a Worker test codes 20 answers by hand and 20 by accepted suggestion, asserts code counts and filters, and proves rejected suggestions leave no code.
-2. *Status: done — Workspace codes, manual per-answer assignments, accepted/rejected exact-quote analysis suggestions, actor/source provenance, chart denominators, code filters and two-code response crosstabs ship.
-3. Hidden/redacted findings remain hidden; quarantine and erasure stay excluded; code edits invalidate filtered export snapshots.
-4. Evidence: `src/core/features/coding/`, `migrations/core/0047_open_text_coding.sql`, `tests/runtime/coding.worker.test.ts`, `tests/e2e/coding.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”.*
+1. A person can assign codes, accept a suggestion citing the exact retained excerpt or reject it; a rejected suggestion creates no assignment.
+2. Code assignments retain who or what made them and drive charts, filters and code crosstabs.
+3. Coding twenty answers manually and twenty by accepted suggestions yields the correct counts and filters with no code from rejected suggestions.
+4. Agent code-assignment decisions carry standard, adding sensitive for regulated personal data; the company’s policy decides their disposition.
+5. Raw-authorized operator panels stay complete; aggregate-only code crosstabs obey RSLT-015/RSLT-016, including the refusal fixture.
 
 **Evidence.** `src/core/features/coding/`, `tests/runtime/coding.worker.test.ts`, `tests/e2e/coding.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”
-**Gap.** None. Manual and accepted exact-quote AI codes retain actor/source; rejected suggestions leave no assignment. Charts, ledger/export filters and two-code response crosstabs ship with stated denominators, disclosure guards, erasure and archive custody.
+**Gap.** Missing the aggregate-only code-crosstab disclosure/refusal journey and the company-policy journey for standard/sensitive agent coding decisions. Cited old journeys prove the raw-authorized operator’s manual and accepted/rejected AI suggestion workflows, chart/filter/export and unsafe refusals.
 
 ### Analysis
 
 #### ANLY-001 — Analysis run
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** An operator can request analysis for any revision with completed responses. A run is queued durably and shows queued, running, completed, insufficient-evidence, or failed status. *Policy: `analysis.autorun.v1`; default: run when a flow closes and has at least 5 completed responses.*
+**Requirement.** Operators can request analysis for any published revision with completed responses.
+
+**Acceptance.**
+1. The requested run is durably queued and exposes queued, running, completed, insufficient-evidence or failed state.
+2. The configurable autorun policy starts analysis when a form closes with at least five completed responses by default.
 
 **Evidence.** `tests/e2e/analysis.spec.ts`, `tests/runtime/analysis-run.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited close-time autorun journey and a running-state observation for the full queued/running lifecycle. Cited analysis-run and browser journeys cover requested completed/insufficient/failed runs; feedback-attention has queued/running observations but is absent from this old Evidence cell.
 
 #### ANLY-002 — Fixed evidence set
 
 Core · published · **done**
 
-**Requirement.** An analysis records the exact response IDs and revision it read, and reads only released responses. Responses submitted, or released from quarantine, after it started are excluded and make the completed analysis stale rather than changing it in place.
+**Requirement.** An analysis keeps the exact collection evidence it read.
 
-**Evidence.** `tests/runtime/analysis-run.worker.test.ts`, `tests/runtime/analysis-safety.worker.test.ts`
+**Acceptance.**
+1. It records the exact response IDs and revision and reads only released responses.
+2. Later submissions or quarantine releases are excluded from that run and mark the completed analysis stale instead of changing it in place.
+
+**Evidence.** `tests/runtime/analysis-run.worker.test.ts` — "a requested run fixes the released responses it read and its policies and completes without a cron tick, later evidence or policy only marks or changes new runs, and too little evidence completes as insufficient-evidence with its reason and sends nothing"; `tests/runtime/analysis-safety.worker.test.ts` — "only the selected answers and stable response IDs leave, to the configured origin with the key as a bearer value, and every call records its usage and cost"
 **Gap.** None.
 
 #### ANLY-003 — Findings
 
 Core · published · **done**
 
-**Requirement.** A run that reaches completed status ranks themes and selects one primary finding from its fixed evidence set; an insufficient-evidence run follows ANLY-013 instead.
+**Requirement.** A completed analysis presents ranked findings from its fixed evidence set.
 
-**Evidence.** `tests/e2e/analysis.spec.ts`, `tests/runtime/analysis-output.worker.test.ts`
+**Acceptance.**
+1. It ranks themes and selects one primary finding.
+2. Insufficient-evidence runs follow ANLY-013 instead.
+
+**Evidence.** `tests/runtime/analysis-output.worker.test.ts` — "findings rank themes by recomputed support, quote exact stored excerpts, link every figure to its responses and withhold a theme below the disclosure threshold"; `tests/e2e/analysis.spec.ts` — "an operator requests analysis, reads a quoted finding back to its response, sees a small theme withheld, turns the recommendation into an action and retries a failed run"
 **Gap.** None.
 
 #### ANLY-004 — Exact evidence
 
 Core · published · **done**
 
-**Requirement.** Text presented as a respondent quote is an exact excerpt of a stored answer. Generated paraphrases and summaries are labeled as analysis and never presented in quotation marks or attributed to a respondent.
+**Requirement.** Analysis distinguishes retained respondent words from generated interpretation.
 
-**Evidence.** `tests/e2e/analysis.spec.ts`, `tests/runtime/analysis-output.worker.test.ts`
+**Acceptance.**
+1. Every respondent quote is an exact excerpt of a stored answer.
+2. Generated paraphrases and summaries are labeled analysis and never quoted or attributed as a respondent’s words.
+
+**Evidence.** `tests/runtime/analysis-output.worker.test.ts` — "findings rank themes by recomputed support, quote exact stored excerpts, link every figure to its responses and withhold a theme below the disclosure threshold"; `tests/e2e/analysis.spec.ts` — "an operator requests analysis, reads a quoted finding back to its response, sees a small theme withheld, turns the recommendation into an action and retries a failed run"
 **Gap.** None.
 
 #### ANLY-005 — Disclosure threshold
 
 Core · published · **done**
 
-**Requirement.** In every analysis view, a theme or filtered segment with fewer included responses than the threshold shows no raw excerpt, participant identity, unique field combination, or breakdown; exactly the threshold is permitted. Suppression changes presentation, not the raw ledger or operator export. *Policy: `analysis.disclosure.v1`; default threshold: 5 completed responses in that theme or current filter cohort.* The same threshold governs crosstab cells (RSLT-006) and aggregate-only views (RSLT-009) under their own rules; an operator's own results summaries, the raw ledger and operator exports stay unsuppressed.
+**Requirement.** Analysis presentation protects cohorts below its configured disclosure threshold.
 
-**Evidence.** `tests/e2e/analysis.spec.ts`, `tests/runtime/analysis-output.worker.test.ts`
+**Acceptance.**
+1. A theme or filtered segment below threshold reveals no raw excerpt, participant identity, unique field combination or breakdown; exactly the threshold is permitted.
+2. The configurable default is five completed responses in the theme or current filter cohort.
+3. Suppression affects presentation, not the operator’s raw ledger or export.
+4. RSLT-014 crosstabs and RSLT-015/RSLT-016 aggregate reports use the same threshold under their own rules; an authorized operator’s own summaries, ledger and exports remain complete.
+
+**Evidence.** `tests/runtime/analysis-output.worker.test.ts` — "findings rank themes by recomputed support, quote exact stored excerpts, link every figure to its responses and withhold a theme below the disclosure threshold"; `tests/e2e/analysis.spec.ts` — "an operator requests analysis, reads a quoted finding back to its response, sees a small theme withheld, turns the recommendation into an action and retries a failed run"
 **Gap.** None.
 
 #### ANLY-006 — Recommendations
 
 Core · published · **done**
 
-**Requirement.** A completed analysis with sufficient evidence may propose one primary action with rationale, linked findings, confidence, expected impact, and effort; an insufficient-evidence run proposes none. *Policy: `recommendation.selection.v1`; default: the action supported by the highest-impact finding with sufficient evidence.*
+**Requirement.** A sufficient analysis can identify one primary action supported by its findings.
 
-**Evidence.** `tests/e2e/analysis.spec.ts`, `tests/runtime/analysis-output.worker.test.ts`
+**Acceptance.**
+1. The recommendation includes rationale, linked findings, confidence, expected impact and effort.
+2. An insufficient-evidence run proposes no action.
+3. The configurable selection policy defaults to the action supported by the highest-impact finding with sufficient evidence.
+
+**Evidence.** `tests/runtime/analysis-output.worker.test.ts` — "a sufficient run proposes one primary action, and turning it into an action records the analysis without contacting anyone"; `tests/runtime/analysis-output.worker.test.ts` — "findings rank themes by recomputed support, quote exact stored excerpts, link every figure to its responses and withhold a theme below the disclosure threshold"
 **Gap.** None.
 
 #### ANLY-007 — Staleness
 
 Core · published · **done**
 
-**Requirement.** A stale analysis remains readable and labeled with its evidence cutoff. Operators can run a new analysis; prior runs remain in history except for the erasure redaction required by DATA-002.
+**Requirement.** A stale analysis remains available as an historical record of its original evidence.
 
-**Evidence.** `tests/runtime/analysis-run.worker.test.ts`
+**Acceptance.**
+1. It stays readable and shows its evidence cutoff.
+2. Operators can request a new analysis while prior runs remain in history, except for DATA-002 erasure redaction.
+
+**Evidence.** `tests/runtime/analysis-run.worker.test.ts` — "a requested run fixes the released responses it read and its policies and completes without a cron tick, later evidence or policy only marks or changes new runs, and too little evidence completes as insufficient-evidence with its reason and sends nothing"
 **Gap.** None.
 
 #### ANLY-008 — Provider failure
 
 Core · published · **done**
 
-**Requirement.** If `ai.provider.v1` is unconfigured or fails an analysis or builder-assistance request, the request is marked failed with the error and retry action, no suggestion, finding, or recommendation is fabricated, and flow publishing, response collection, the ledger, and exports continue to work.
+**Requirement.** Unavailable analysis never fabricates a result or stops ordinary form collection.
 
-**Evidence.** `tests/e2e/analysis.spec.ts`, `tests/runtime/analysis-safety.worker.test.ts`, `tests/runtime/feedback-rewrites.worker.test.ts`
+**Acceptance.**
+1. An unconfigured or failed provider marks the analysis or builder-assistance request failed with its error and retry action.
+2. No suggestion, finding or recommendation is invented.
+3. Form publication, response collection, ledger and exports continue working.
+
+**Evidence.** `tests/runtime/analysis-safety.worker.test.ts` — "an unconfigured or failing provider fails the request with its error and a retry action while collection keeps working; a transient transport failure is retried at most three times within ten minutes with the same request and a schema failure is never retried"; `tests/runtime/feedback-rewrites.worker.test.ts` — "rewrite requests preserve the source and draft until explicit guarded acceptance, with real provider calls, failure and usage attribution"; `tests/e2e/analysis.spec.ts` — "an operator requests analysis, reads a quoted finding back to its response, sees a small theme withheld, turns the recommendation into an action and retries a failed run"
 **Gap.** None.
 
 #### ANLY-009 — Builder assistance
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-AGENT-006, BASE-AGENT-007
 
-**Requirement.** An operator may request a sharper, broader, or contextual rewrite of a draft question. Suggestions show their source text and are never applied or published without an operator accepting them.
+**Requirement.** Operators can request sharper, broader or contextual draft-question wording while preserving the original text. Agent changes carry their class and follow the company’s policy.
+
+**Acceptance.**
+1. A suggestion shows the source wording and the proposed rewrite.
+2. An operator can accept or reject the proposal; a stale version cannot overwrite a later draft edit and publication remains a separate action.
+3. An agent’s application of wording carries standard; a publication that exposes a form outside the business carries external. The company’s policy decides whether either call runs, is reviewed, waits or is refused.
 
 **Evidence.** `tests/runtime/feedback-rewrites.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing the class-and-company-policy journey for agent wording application and external publication. Old cited evidence proves the held human workflow only; it does not compute the standard/external classes or run the all-autonomous company policy.
 
-#### ANLY-010 — Cost
+#### ANLY-010 — AI usage and cost
 
 Core · published · **done**
 
-**Requirement.** Every AI call records provider, model, input and output usage, feature, analysis or draft ID, and reported cost. Operators can view totals by day and feature.
+**Requirement.** Operators can inspect the usage and cost of analysis and builder-assistance calls.
 
-**Evidence.** `tests/runtime/analysis-safety.worker.test.ts`, `tests/runtime/feedback-rewrites.worker.test.ts`
+**Acceptance.**
+1. Each call records provider, model, input/output usage, feature, analysis or draft ID and reported cost.
+2. The usage view totals calls and cost by day and feature.
+
+**Evidence.** `tests/runtime/analysis-safety.worker.test.ts` — "only the selected answers and stable response IDs leave, to the configured origin with the key as a bearer value, and every call records its usage and cost"; `tests/runtime/feedback-rewrites.worker.test.ts` — "rewrite requests preserve the source and draft until explicit guarded acceptance, with real provider calls, failure and usage attribution"
 **Gap.** None.
 
 #### ANLY-011 — Evidence provenance
 
 Core · published · **done**
 
-**Requirement.** Each displayed theme count, percentage, supporting excerpt, and recommendation records the included response IDs from which it was derived; an operator can navigate from displayed evidence to those retained responses.
+**Requirement.** Operators can follow analysis figures and excerpts back to the retained evidence that supports them.
 
-**Evidence.** `tests/e2e/analysis.spec.ts`, `tests/runtime/analysis-output.worker.test.ts`
+**Acceptance.**
+1. Each displayed theme count, percentage, supporting excerpt and recommendation records its included response IDs.
+2. Navigating from displayed evidence opens those retained responses.
+
+**Evidence.** `tests/runtime/analysis-output.worker.test.ts` — "findings rank themes by recomputed support, quote exact stored excerpts, link every figure to its responses and withhold a theme below the disclosure threshold"; `tests/e2e/analysis.spec.ts` — "an operator requests analysis, reads a quoted finding back to its response, sees a small theme withheld, turns the recommendation into an action and retries a failed run"
 **Gap.** None.
 
 #### ANLY-012 — Output validation
 
-Core · published · **done**
+Core · published · **done** · Cites BASE-INPUT-001
 
-**Requirement.** Before a run completes, Pencil validates its schema, verifies that cited response IDs belong to the run's evidence set, verifies quote ranges exactly against stored answers, and recomputes counts and percentages over that evidence set; any failure marks the run failed.
+**Requirement.** Provider output must agree with the analysis’s fixed evidence before the run can complete.
 
-**Evidence.** `tests/runtime/analysis-output.worker.test.ts`
+**Acceptance.**
+1. Pencil checks the output schema and that every cited response belongs to the evidence set.
+2. Quote ranges match stored answers exactly, and counts/percentages are recomputed from that evidence.
+3. Any failed check marks the run failed.
+
+**Evidence.** `tests/runtime/analysis-output.worker.test.ts` — "findings rank themes by recomputed support, quote exact stored excerpts, link every figure to its responses and withhold a theme below the disclosure threshold"
 **Gap.** None.
 
 #### ANLY-013 — Insufficient evidence
 
 Core · published · **done**
 
-**Requirement.** A run whose evidence or disclosure-eligible cohorts cannot support a finding completes as `insufficient-evidence`, shows the evidence cutoff and reason, and emits no theme, quote, or recommendation.
+**Requirement.** Analysis can truthfully report that its evidence cannot support a finding.
 
-**Evidence.** `tests/runtime/analysis-run.worker.test.ts`
+**Acceptance.**
+1. Insufficient evidence or insufficient disclosure-eligible cohorts produce an insufficient-evidence outcome.
+2. The outcome shows the evidence cutoff and reason and emits no theme, quote or recommendation.
+
+**Evidence.** `tests/runtime/analysis-run.worker.test.ts` — "a requested run fixes the released responses it read and its policies and completes without a cron tick, later evidence or policy only marks or changes new runs, and too little evidence completes as insufficient-evidence with its reason and sends nothing"
 **Gap.** None.
 
 #### ANLY-014 — Untrusted evidence
 
-Core · published · **done**
+Core · published · **done** · Cites BASE-AGENT-005
 
-**Requirement.** Respondent text is treated only as data: it cannot change system instructions or configuration, select tools, call adapters, create jobs, or authorize effects; schema-invalid provider output fails under ANLY-012.
+**Requirement.** Respondent text remains evidence rather than instructions to the analysis or its adapters.
 
-**Evidence.** `tests/runtime/analysis-safety.worker.test.ts`
+**Acceptance.**
+1. Respondent text cannot change system instructions/configuration, select tools, call adapters, create jobs or authorize effects.
+2. Provider output that violates the required schema fails under ANLY-012.
+
+**Evidence.** `tests/runtime/analysis-safety.worker.test.ts` — "instructions planted in answers change nothing: a tool call or webhook-shaped answer fails, and no task, job, policy or setting changes"
 **Gap.** None.
 
-#### ANLY-015 — Analysis policy snapshot
+#### ANLY-015 — Analysis and report policy snapshots
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** Each run stores the evaluated `analysis.disclosure.v1` and `recommendation.selection.v1` configuration; later policy changes affect only a new run and never retroactively reveal or reinterpret historical output. Saved/shared aggregate-only views record the disclosure threshold at save/share and use a threshold never lower than that record under RSLT-009 and ANLY-015; lowering the current policy reveals nothing in those views. This future obligation adds no snapshot machinery to the operator's current-threshold results page.
+**Requirement.** Historical analysis and saved aggregate reports retain the disclosure policy bound to them.
+
+**Acceptance.**
+1. Each analysis stores the evaluated disclosure and recommendation-selection configuration.
+2. A later policy change applies to a new analysis and never reveals or reinterprets historical output retroactively.
+3. A saved/shared aggregate view records its threshold at save/share and uses a threshold never below that record under RSLT-015/RSLT-016.
+4. Lowering the current policy reveals nothing in that saved/shared view; the operator’s current-threshold results page does not require saved-view snapshots.
 
 **Evidence.** `tests/runtime/analysis-run.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing the saved/shared aggregate-view snapshot journey retained by RSLT-009. Cited analysis-run journey proves analysis snapshots only; it does not create a saved/shared aggregate view or lower policy and read that view.
 
 #### ANLY-016 — Provider retry
 
 Core · published · **done**
 
-**Requirement.** A transient `ai.provider.v1` transport failure is retried at most 3 times over 10 minutes with the same request, evidence set, and policy snapshot; schema or evidence-validation failures are terminal and never retried as transport failures.
+**Requirement.** Transient analysis transport errors retry the original request without changing its evidence or policy.
 
-**Evidence.** `tests/runtime/analysis-safety.worker.test.ts`
+**Acceptance.**
+1. A transient provider failure retries at most three times over ten minutes, preserving request, evidence set and policy snapshot.
+2. Schema and evidence-validation failures are terminal and never retried as transport failures.
+
+**Evidence.** `tests/runtime/analysis-safety.worker.test.ts` — "an unconfigured or failing provider fails the request with its error and a retry action while collection keeps working; a transient transport failure is retried at most three times within ten minutes with the same request and a schema failure is never retried"
 **Gap.** None.
 
 ### Actions and measurement
 
 #### ACT-001 — Action record
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** An operator can accept a recommendation as an action with title, rationale, owner, target metric, review date, and links to its analysis and evidence. Accepting does not itself contact an external service.
+**Requirement.** An operator can turn an analysis recommendation into owned work.
+
+**Acceptance.**
+1. The action retains title, rationale, owner, target metric, review date and links to the analysis and its evidence.
+2. Accepting the action does not itself contact an external service.
 
 **Evidence.** `tests/e2e/actions.spec.ts`
-**Gap.** None.
+**Gap.** Missing a journey in the cited evidence that accepts an analysis recommendation and reads the resulting analysis/evidence links and action fields. The cited actions browser journey creates a manual action; tests/e2e/analysis.spec.ts covers recommendation acceptance but is absent from this old Evidence cell.
 
 #### ACT-002 — Action lifecycle
 
 Core · published · **done**
 
-**Requirement.** A new action is planned. Legal transitions are planned → in progress or closed, in progress → ready for review or closed, ready for review → effective, ineffective, in progress, or closed, and effective or ineffective → closed; every transition records the operator, time, and optional outcome note.
+**Requirement.** Actions have an explicit lifecycle with attributed transition history.
 
-**Evidence.** `tests/e2e/actions.spec.ts`, `tests/runtime/actions-lifecycle.worker.test.ts`
+**Acceptance.**
+1. A new action starts planned.
+2. Planned can move to in progress or closed; in progress to ready for review or closed; ready for review to effective, ineffective, in progress or closed; effective/ineffective to closed.
+3. Each transition records its operator, time and optional outcome note.
+
+**Evidence.** `tests/runtime/actions-lifecycle.worker.test.ts` — "the server enforces the lifecycle: every legal move is recorded, every illegal move answers 409 and changes nothing"; `tests/e2e/actions.spec.ts` — "ACT-009 shows honest email-only owner reminders that stop at the verdict; an operator turns a question into an action, confirms its task, measures it, marks it effective and closes it; a past review date only shows review due"
 **Gap.** None.
 
 #### ACT-003 — External task
 
-Core · published · **done**
+Core · published · **done** · Cites BASE-OPS-003
 
-**Requirement.** `task.destination.v1` must implement create-or-get by Pencil's idempotency key and return the existing remote task ID for a repeated key; repeated activation or delivery of one action therefore cannot create more than one external task.
+**Requirement.** The configured task destination creates or returns one remote task for a Pencil action.
 
-**Evidence.** `tests/e2e/actions.spec.ts`, `tests/runtime/actions-task.worker.test.ts`
+**Acceptance.**
+1. Repeated activation or delivery uses the action’s same key and returns the existing remote task ID.
+2. Retry never creates a second remote task for that action.
+
+**Evidence.** `tests/runtime/actions-task.worker.test.ts` — "a 500 fails visibly and a dropped connection is unknown; both keep the local action and a retry on the same key creates one task"; `tests/e2e/actions.spec.ts` — "ACT-009 shows honest email-only owner reminders that stop at the verdict; an operator turns a question into an action, confirms its task, measures it, marks it effective and closes it; a past review date only shows review due"
 **Gap.** None.
 
 #### ACT-004 — Task failure
 
-Core · published · **done**
+Core · published · **done** · Cites BASE-OPS-004
 
-**Requirement.** An unconfigured adapter disables external task creation with setup guidance. A failed call keeps the local action, records the attempt and error, and offers a retry that reuses the same idempotency key.
+**Requirement.** Task delivery problems remain visible without losing local work.
 
-**Evidence.** `tests/runtime/actions-task.worker.test.ts`
+**Acceptance.**
+1. An unconfigured task connection makes external task creation unavailable with setup guidance.
+2. A failed call retains the local action, records the attempt/error and offers a same-key retry.
+
+**Evidence.** `tests/runtime/actions-task.worker.test.ts` — "a 500 fails visibly and a dropped connection is unknown; both keep the local action and a retry on the same key creates one task"; `tests/runtime/actions-task.worker.test.ts` — "with no adapter configured the external task is unavailable and the action works; redirects are not followed and a plain http URL is refused outside the dev and test runtimes"
 **Gap.** None.
 
 #### ACT-005 — Follow-up measurement
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008
 
-**Requirement.** An action records a metric name, unit, desired direction, baseline value, source, and observation time. An operator can link a later flow or analysis, record the comparable observed value and time, and mark the outcome effective or ineffective. Pencil never sets or changes that verdict itself, and no extension point can; a review date that has passed is surfaced on the action, never resolved on the operator's behalf.
+**Requirement.** Actions retain comparable measurements and a separate attributed outcome decision.
+
+**Acceptance.**
+1. An action records metric name, unit, desired direction, baseline value, source and observation time.
+2. An operator can link a later form or analysis and record the comparable observed value and time.
+3. Effective/ineffective is a separate decision: recording a measurement or passing a review date never sets or changes the verdict as a side effect.
+4. A past review date is surfaced on the action for resolution.
+5. An agent’s verdict call carries commitment and the company’s policy decides its disposition; attribution follows the actor who made the decision.
 
 **Evidence.** `tests/e2e/actions.spec.ts`, `tests/runtime/actions-measurement.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited class-and-company-policy journey for an agent’s commitment-class verdict decision. Existing cited journeys prove the separate human decision and no verdict from measurement or overdue date, not policy-driven agent decisions.
 
-#### ACT-006 — Confirmed task payload
+#### ACT-006 — Exact task payload
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-AGENT-006, BASE-AGENT-007, BASE-AGENT-008
 
-**Requirement.** Before calling `task.destination.v1`, Pencil shows the action fields and operator-authenticated report link that will leave the deployment and sends only those confirmed values; raw answers and excerpts are never included.
+**Requirement.** An external task binds the exact action payload being sent, without raw response content.
+
+**Acceptance.**
+1. The product shows the action fields and authenticated report link that would leave the installation.
+2. A person can confirm that displayed payload; the sent values equal that confirmed revision and changed values require a new decision.
+3. Raw answers and excerpts are never included.
+4. An agent’s send carries external and the company’s policy decides the disposition, without treating an agent-provided flag as a person’s confirmation.
 
 **Evidence.** `tests/e2e/actions.spec.ts`, `tests/runtime/actions-task.worker.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited external-class agent-send journey under company policy, including the autonomous policy without a person confirmation and truthful handling of person-confirmation flags. Existing cited journeys prove the human-confirmed task payload only.
 
 #### ACT-007 — Task delivery state
 
-Core · published · **done**
+Core · published · **done** · Cites BASE-AUDIT-001
 
-**Requirement.** External task delivery records pending, confirmed, unknown, or failed status, the idempotency key, every attempt, and the remote task ID when confirmed. An unknown network outcome is retried with the same key rather than assumed failed or sent again with a new key.
+**Requirement.** Operators can follow an external task’s recorded delivery attempts.
 
-**Evidence.** `tests/contract/data-release.contract.test.ts`, `tests/e2e/actions.spec.ts`, `tests/runtime/actions-task.worker.test.ts`
+**Acceptance.**
+1. Delivery shows pending, confirmed, unknown or failed, its key, every attempt and the remote task ID when confirmed.
+2. An uncertain network result retries with the same key and is never assumed failed or retried with a new one.
+
+**Evidence.** `tests/runtime/actions-task.worker.test.ts` — "a 500 fails visibly and a dropped connection is unknown; both keep the local action and a retry on the same key creates one task"; `tests/runtime/actions-task.worker.test.ts` — "with no adapter configured the external task is unavailable and the action works; redirects are not followed and a plain http URL is refused outside the dev and test runtimes"; `tests/e2e/actions.spec.ts` — "ACT-009 shows honest email-only owner reminders that stop at the verdict; an operator turns a question into an action, confirms its task, measures it, marks it effective and closes it; a past review date only shows review due"
 **Gap.** None.
 
 #### ACT-008 — Manual recommendation
 
 Core · published · **done**
 
-**Requirement.** An operator may write a recommendation by hand and accept it as an action under ACT-001, linked to the results evidence it rests on: a flow, a published revision and optionally one question, with the RSLT counts shown at that moment kept as they were, never response identifiers, answer excerpts or cohort filters. An action written by hand has no analysis link. The analysis link of ACT-001 is required for every action accepted from an analysis; nothing else in ACT-001 to ACT-007 is relaxed.
+**Requirement.** An operator can write a recommendation directly from retained results evidence.
 
-**Evidence.** `tests/e2e/actions.spec.ts`
+**Acceptance.**
+1. The resulting ACT-001 action links a form, published revision and optionally one question, with the displayed result counts frozen at that moment.
+2. Its evidence contains no response IDs, answer excerpts or cohort filters.
+3. A manually written action has no analysis link; an action accepted from analysis requires that link.
+4. All other ACT-001 through ACT-007 requirements still apply.
+
+**Evidence.** `tests/e2e/actions.spec.ts` — "ACT-009 shows honest email-only owner reminders that stop at the verdict; an operator turns a question into an action, confirms its task, measures it, marks it effective and closes it; a past review date only shows review due"
 **Gap.** None.
 
 ### Notifications
@@ -1086,168 +1629,263 @@ Core · published · **done**
 
 Core · published · **done**
 
-**Requirement.** The in-app notification center records one notification for the requesting operator when an analysis completes or fails; an automatic close-time analysis records one for every unmuted operator. Duplicate queue delivery cannot create the same notification twice.
+**Requirement.** The notification center records each terminal analysis outcome for its intended operators.
 
-**Evidence.** `tests/runtime/feedback-attention.worker.test.ts`
+**Acceptance.**
+1. Manual analysis completion/failure records one notification for the requesting operator.
+2. Automatic close-time analysis records one for each unmuted operator.
+3. Duplicate queue delivery never duplicates the same notification.
+
+**Evidence.** `tests/runtime/feedback-attention.worker.test.ts` — "terminal attention is scoped and duplicate-safe across manual retries, autoruns, insufficient evidence and interruption; cards retain the latest actual revision and state"
 **Gap.** None.
 
 #### NOTIFY-002 — New-response mail
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-MAIL-001
 
-**Requirement.** Each operator sets, per flow, whether completed responses are mailed to them immediately, grouped daily under NOTIFY-003, or not mailed. Publication starts its publisher on Immediately only when no preference exists; every other operator defaults Off. Existing unrepublished flows default Off. A message uses the saved business identity under BRAND-001, names the flow and submission time in the workspace zone, and links to the authenticated results ledger; it never carries answer text, respondent identity, or a link that grants access without signing in. A committed, released response queues one delivery per opted-in operator, with durable attempts, bounded retries and explicit unknown-outcome confirmation. Daily uses NOTIFY-003 and keeps its recipient snapshot separate from immediate mail. This clause inherits PAY-001: on payment forms it waits for PAY-001 payment.
+**Requirement.** Each operator chooses immediate, daily or off response notifications for each form.
+
+**Acceptance.**
+1. Publication selects Immediately for the publisher only when no preference exists; other operators and existing unrepublished forms default Off.
+2. A message uses the saved business identity, names the form and submission time in the workspace zone, and links to the authenticated results ledger.
+3. It contains no answer text, respondent identity or access-granting link.
+4. A committed released response queues one delivery per opted-in operator with durable attempts, bounded retries and explicit confirmation of uncertain outcomes.
+5. Daily delivery follows NOTIFY-003 and keeps its recipient snapshot separate from immediate mail.
+6. Payment-form notification waits for PAY-001/PAY-006/PAY-007 payment.
 
 **Evidence.** `tests/e2e/notifications.spec.ts`, `tests/e2e/request-notifications.spec.ts`, `tests/managed-mail.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited mail journey that reads saved business identity, workspace-zone submission time and the complete operator cohort/default boundary; the cited journeys cover preference controls, request-time once-only delivery and managed-relay retries. PAY-001 gating is also retained but not exercised by this old Evidence set.
 
-#### NOTIFY-003 — Digest
+#### NOTIFY-003 — Daily digest
 
 Core · published · **done**
 
-**Requirement.** A digest is one message per operator per flow per day, sent at the WS-002 window's opening hour in the WS-001 zone, covering the completed responses committed since the previous digest. A day with no new completed responses sends no message, and a digest that fails to send is retried under DIST-006 rather than merging into the next day's. This clause inherits PAY-001: on payment forms it waits for PAY-001 payment.
+**Requirement.** A digest groups one operator’s newly completed responses for one form and local day.
 
-**Evidence.** `tests/managed-mail.test.ts`, `tests/runtime/calculations.worker.test.ts`, `tests/runtime/feedback-digest.worker.test.ts`
+**Acceptance.**
+1. It sends at the WS-002 opening hour in the WS-001 zone and covers completions committed since the previous digest.
+2. One operator/form/day produces one digest; an empty day sends nothing.
+3. A failed digest retries under DIST-006 with its original day rather than merging into the next day.
+4. Payment-form digest admission waits for PAY-001/PAY-006/PAY-007 payment.
+
+**Evidence.** `tests/runtime/feedback-digest.worker.test.ts` — "Daily freezes independent local-day cohorts, catches missed openings without empty mail, preserves commit recipients and releases, and crosses DST, zone edits and overnight windows once"; `tests/runtime/feedback-digest.worker.test.ts` — "digest retries retain their frozen day and key, unknown requires consent, erasure stops sends and retains anonymous audit facts, and local capture requires a live durable claim"; `tests/managed-mail.test.ts` — "Managed mail uses its assigned sender for sign-in, response notifications and digests, queues rate limits and shows rejected mail to its owner"
 **Gap.** None.
 
 #### NOTIFY-004 — No mail loops
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** Every notification, digest, invitation, and reminder is sent from the configured no-reply address (RER's assigned verified sender on Managed hosting) and marked auto-generated. Pencil ingests no inbound mail, so a reply or vacation auto-responder can never create a response, participant, notification, or further outbound mail. A bounce of operator notification or digest mail is recorded against that operator's mail setting only and never marks a participant bounced; participant bounce status comes only from invitation and reminder delivery (DIST-008).
+**Requirement.** Outbound form mail cannot turn replies or operator-mail bounces into respondent activity.
+
+**Acceptance.**
+1. Notifications, digests, invitations and reminders use the configured no-reply address, or Managed hosting’s assigned verified sender, and are marked auto-generated.
+2. Pencil ingests no inbound mail; a reply or vacation response cannot create a response, participant, notification or further outbound message.
+3. Operator notification/digest bounce state belongs only to that operator’s mail setting and never marks a participant bounced.
+4. Participant bounce state comes only from DIST-008 invitation/reminder delivery.
 
 **Evidence.** `tests/e2e/notifications.spec.ts`, `tests/e2e/request-notifications.spec.ts`, `tests/managed-mail.test.ts`
-**Gap.** None.
+**Gap.** Missing a cited no-inbound-loop journey that tries a reply/autoresponder and proves zero response/participant/notification/further-mail effects, plus an operator-notification bounce that preserves participant delivery state. Current cited journeys exercise outbound deliveries and preferences, not those unsafe cases.
 
 ### Data
 
 #### DATA-001 — Export contents
 
-Core · published · **done**
+Core · published · **done** · Cites BASE-DATA-001
 
-**Requirement.** The deployment export contains every operator, contact, segment, flow and revision, step and branch, participant and delivery attempt, response and answer including quarantined ones with their state, RESP-019 revision counters, analysis and evidence link, recommendation, action, notification, setting, audit entry, and referenced file as original data. Import preserves Pencil's stable graph, revision, response, evidence, recommendation, and action linkages.
+**Requirement.** Pencil's portable archive retains its complete product graph as original data, including relationships that connect a response to its collection, evidence and follow-up work.
 
-**Evidence.** `tests/contract/data-release.contract.test.ts`, `tests/runtime/analysis-safety.worker.test.ts`, `tests/runtime/archive-stream.worker.test.ts`
+**Acceptance.**
+1. The archive includes every operator, contact, segment, flow, revision, step, branch, participant and delivery attempt; released and quarantined responses and answers retain their state and RESP-019 counters.
+2. It includes analyses, evidence links, recommendations, actions, notifications, settings, audit entries and referenced original files.
+3. Restoration preserves stable graph, revision, response, evidence, recommendation and action links.
+
+**Evidence.** `tests/contract/data-release.contract.test.ts` — "whole-data archives preserve stable revisions, quarantine, receipts, effects and exact values and refuse unsafe targets"; `tests/contract/data-release.contract.test.ts` — "whole-data owner recovery round-trips a hosted installation and refuses altered migration ledgers"; `tests/contract/data-release.contract.test.ts` — "whole-data recovery preserves import custody, delivery facts, actions, analyses and reporting scope without replay"; `tests/runtime/archive-stream.worker.test.ts` — "native D1 stages bounded writes and atomically publishes all tables, payment states and Stripe IDs included, with exact constraints and concurrent-writer refusal"
 **Gap.** None.
 
 #### DATA-002 — Response erasure
 
-Core · published · **done**
+Core · published · **partial** · Cites BASE-DATA-003, BASE-OPS-005
 
-**Requirement.** Deleting a response, or a contact that owns it, revokes and deletes active invitation tokens, removes contact links or anonymizes retained delivery facts, and removes its answers, raw excerpts, and evidence links from every analysis within 5 minutes. Affected aggregates are recomputed or marked unavailable, affected analyses are labeled redacted and stale, and only the anonymized audit tombstone required by BASE-DATA-003 remains.
+**Requirement.** Erasing a Pencil response, directly or through its owning contact, removes its influence from collection and analysis while preserving honest aggregate and delivery history.
+
+**Acceptance.**
+1. Erasure revokes and deletes active invitation tokens, removes contact links or anonymizes retained delivery facts, and removes the response's answers, raw excerpts and evidence links from every analysis.
+2. Affected aggregates are recomputed or marked unavailable, and affected analyses become redacted and stale.
 
 **Evidence.** `tests/e2e/answer-results.spec.ts`, `tests/runtime/analysis-safety.worker.test.ts`, `tests/runtime/feedback-digest.worker.test.ts`
-**Gap.** None.
+**Gap.** A cited journey must attempt response/contact erasure through its protected door with an inadmissible actor or state, see refusal, and read that populated records remain unchanged. Cited journeys prove successful response/contact erasure, recomputation/redaction and stopped sends; the browser Keep response cancellation does not execute a refused destructive request.
 
 #### GOV-003 — Retention schedules
 
-Core · published · **done**
+Core · published · **done** · From GOV-003 · Cites BASE-DATA-002, BASE-DATA-003
 
-**Requirement.** *Supersedes `BASE-DATA-002` only for a form whose owner explicitly opts into a retention schedule; all other forms keep the baseline.* Each form can set a retention period after which responses, partials, uploads, signatures and payment references are deleted under DATA-002 (aggregates recomputed, analyses redacted and stale), with an advance in-app notice to Admins and a legal-hold switch that pauses all automatic deletion. Until ROLE-001 supplies Admins, the installation owner manages this setting and receives its notices. Completion covers every existing response class: released and quarantined completions and private PART-002 saves. FILE-001 uploads, SIGN-001 signatures, PAY-001 payment references and PART-001 partial capture must inherit these retention and hold rules before they ship. A period is a whole number of elapsed 24-hour days from completion, or from a private save's creation; private saves also retain their original link expiry. Every scheduled deletion has at least seven days of in-app notice, including data already older than a newly enabled period. Legal hold also pauses PART-002's automatic save-data expiry, without reviving an expired resume link. Releasing hold starts a fresh seven-day notice window. Manual DATA-002 erasure remains available.
+**Requirement.** Supersedes `BASE-DATA-002` only for a form whose owner opts into a retention schedule; other forms retain Base's retention rule. Pencil schedules deletion of form data with advance notice; legal holds and release are governed by GOV-008.
 
 **Acceptance.**
-1. a Worker test sets 30-day retention, advances a fake clock and asserts advance notice then deletion with DATA-002 effects; a form on legal hold keeps its released, quarantined and private saved responses past expiry, and release provides a new notice window before deletion.
-2. It also proves owner-only settings, stale-write refusal and imported-response custody erasure; desktop and phone browser journeys configure the period, inspect notice and activate/release hold.
-3. *Status: done — Owner-only, version-checked per-form retention, durable seven-day notices, legal hold including private save expiry, fresh release grace and scheduled DATA-002 erasure ship.
-4. The native Worker journey proves ordinary and imported custody, quarantine, private saves, aggregates and analysis redaction; the settings journey runs at 1440 and 390.
-5. Evidence: `src/core/features/retention/`, `migrations/core/0052_retention.sql`, `tests/runtime/retention-schedule.worker.test.ts`, `tests/e2e/retention.spec.ts`.*
+1. An Admin configures a retention period for responses, partials, uploads, signatures and payment references; deletion applies DATA-002's recomputation, redaction and stale-analysis effects. The installation owner manages the setting and notices until ROLE-001 supplies Admins.
+2. The period is a whole number of elapsed 24-hour days from completion, or from a private save's creation; private saves retain their original link expiry.
+3. Every deletion receives at least seven days of in-app notice, including data already older than a newly enabled period.
+4. Released and quarantined completions, imported-response custody and private PART-002 saves receive the same schedule; FILE-001, SIGN-001, PAY-001/PAY-006 and PART-001 inherit it.
+5. A 30-day schedule leaves aged data untouched during notice, then removes it with DATA-002 effects. An unconfirmed, unauthorized or stale setting change is refused without changing the schedule.
+
+**Evidence.** `tests/runtime/retention-schedule.worker.test.ts` — "owner opt-in gives old responses and private saves seven days of notice, hold preserves expiry, and release erases with DATA-002 effects"; `tests/e2e/retention.spec.ts` — "an owner opts into retention, sees advance notice, pauses deletion and releases legal hold"
+**Gap.** None.
+
+#### GOV-008 — Legal hold and release
+
+Core · published · **partial** · From GOV-003 · Cites BASE-DATA-002, BASE-DATA-003
+
+**Requirement.** An Admin can hold a form's scheduled deletion and private-save expiry, then release it into a fresh notice period. The installation owner exercises this authority until ROLE-001 supplies Admins.
+
+**Acceptance.**
+1. Legal hold preserves released and quarantined completions and private saved responses past their automatic deletion or save-data expiry; it never revives an expired resume link.
+2. Releasing hold starts a fresh seven-day notice window before automatic deletion.
+3. Manual DATA-002 erasure remains available during hold.
+4. The retention page shows the active hold and the notice created on release; settings survive reload on desktop and phone.
 
 **Evidence.** `src/core/features/retention/`, `migrations/core/0052_retention.sql`, `tests/runtime/retention-schedule.worker.test.ts`, `tests/e2e/retention.spec.ts`, `tests/runtime/calculations.worker.test.ts`
-**Gap.** None for existing response stores. Owner opt-in, seven-day notice/grace, legal hold including private save expiry, fresh release notice, DATA-002 erasure and imported custody. FILE-001/SIGN-001/PAY-001/PART-001 inherit the obligation before shipping.
+**Gap.** A cited journey must open an expired private resume link while legal hold preserves its saved state and observe that the link remains unavailable. The retention journey proves hold preserves expired rows, manual erasure remains available and release creates a fresh seven-day grace before deletion, but never opens the expired link.
 
 ### Form imports
 
 #### IMPORT-001 — Reviewed definition
 
-Core · published · **done**
+Core · published · **partial** · Register R-5
 
-**Requirement.** Operators can import a documented form-definition JSON into a new editable draft with new stable IDs. Every field, screen and logic action is listed before writes with source type, imported/changed/unsupported outcome, explicit change and reason. Unsupported logic leaves affected paths incomplete; native graph validation still controls publication.
+**Requirement.** Operators review a documented form definition before importing it as an editable Pencil draft.
+
+**Acceptance.**
+1. Import creates a new draft with new stable IDs.
+2. Before writes, every field, screen and logic action is listed with its source type, imported/changed/unsupported outcome, explicit change and reason.
+3. Unsupported logic leaves its affected paths incomplete; native graph validation continues to control publication.
 
 **Evidence.** `tests/e2e/form-import.spec.ts`, `tests/e2e/google-forms-import.spec.ts` — “Google CSV-only and definition imports preserve reviewed locale, omissions and historical answers without identity”, `tests/runtime/form-import.worker.test.ts`
-**Gap.** None.
+**Gap.** A cited journey must import unsupported logic, inspect that its affected path remains incomplete, then try publication and observe native validation refusal with no revision created. Cited journeys review unsupported items and preview a valid imported branch, but do not exercise that promised incomplete-path publish refusal.
 
 #### IMPORT-002 — Reviewed CSV
 
-Core · published · **done**
+Core · published · **partial** · Register R-5
 
-**Requirement.** Operators can map every response CSV column to a supported question, timestamp or Skip. Every row error is reported. Blank answers stay unanswered; malformed values and configured capacity excess are refused before commit. Commit requires acknowledgment of every reported change or omission; canceling review creates no job, flow or response. Acknowledgment first stores owner-private, indexed preparation with bounded database transport. Continue import verifies its complete stored fingerprint before any public job, form or response is published. Interrupted preparation remains private and can be retried or canceled under current authority; erasure removes retained copies and prevents publication or resurrection.
+**Requirement.** Operators map and acknowledge response-file changes before any public import is published; interrupted preparation remains private and recoverable.
+
+**Acceptance.**
+1. Every CSV column can map to a supported question, timestamp or Skip; every row error is reported.
+2. Blank answers stay unanswered, and malformed values or configured capacity excess are refused before commit.
+3. Commit requires acknowledgement of every reported change or omission; canceling review creates no job, flow or response.
+4. Acknowledgement stores owner-private indexed preparation using bounded database transport.
+5. Continue verifies the complete stored fingerprint before publishing any job, form or response.
+6. Interrupted preparation can be retried or canceled under current authority; erasure removes retained copies and prevents publication or resurrection.
 
 **Evidence.** `tests/e2e/form-import.spec.ts`, `tests/e2e/google-forms-import.spec.ts` — “Google CSV-only and definition imports preserve reviewed locale, omissions and historical answers without identity”, `tests/e2e/import-acknowledgement.spec.ts`
-**Gap.** None.
+**Gap.** A cited journey must submit malformed or over-capacity CSV and read every row error/refusal before writes, then interrupt private preparation and exercise changed-authority/erasure refusal without publication or resurrection. Cited browser journeys cover valid review/acknowledgement, untouched native inventory before Continue, reload and completed typed export, but not those promised refusal/custody cases.
 
 #### IMPORT-003 — Historical privacy and pinning
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** Imported released completions retain their original timestamps and remain anonymous, with source imported and an immutable revision matching the mapped source. Hidden values and network/IP metadata are discarded before durable planning; original file bytes are not retained, and this omission is disclosed before commit. Imported data creates no session, contact, mail, outbox event or admission effect. Later draft edits cannot reinterpret historical answers.
+**Requirement.** Imported completions remain honest historical records, isolated from live collection and later draft changes.
+
+**Acceptance.**
+1. Released imported completions retain their original timestamps, remain anonymous, identify their source as imported and retain an immutable revision matching the mapped source.
+2. Hidden values and network/IP metadata are discarded before durable planning; original file bytes are not retained, and the omission is disclosed before commit.
+3. Import creates no respondent session, contact, mail, outbox event or admission effect.
+4. Later draft edits cannot reinterpret historical answers.
 
 **Evidence.** `tests/e2e/form-import.spec.ts`, `tests/e2e/google-forms-import.spec.ts` — “Google CSV-only and definition imports preserve reviewed locale, omissions and historical answers without identity”, `tests/e2e/import-acknowledgement.spec.ts`
-**Gap.** None.
+**Gap.** A cited journey must edit the imported form after completion and reopen its historical answers to verify they retain the original revision interpretation; it must inspect retained planning/original custody for the promised hidden/network/file-byte discard. Cited browsers show anonymous historical results and source timestamps, but the edited Google journey ends at an undo-conflict alert without reading historical results again.
 
 #### IMPORT-004 — Durable replay and reversal
 
-Core · published · **done**
+Core · published · **partial**
 
-**Requirement.** The unchanged Base D1 import kit owns reviewed commit, source identity, bounded resume and undo. Identical files create no duplicate native records; interruption resumes the exact stored safe plan. Undo removes unedited imported data while exact native snapshot guards preserve and report later edits. Completed reversal is idempotent; retained safe plan and provenance survive. Published work resumes and undoes from durable custody without the original files.
+**Requirement.** A reviewed Pencil import can resume and reverse from durable custody without losing native edits or requiring the original files. The Base import kit owns source identity, bounded application and undo.
+
+**Acceptance.**
+1. Identical files create no duplicate native records; interruption resumes the exact stored safe plan.
+2. Undo removes unedited imported records while exact native snapshot guards preserve and report later edits.
+3. Completed reversal is idempotent and retains its safe plan and provenance.
+4. Published import work resumes and undoes without the original files.
 
 **Evidence.** `tests/e2e/form-import.spec.ts`, `tests/e2e/google-forms-import.spec.ts` — “Google CSV-only and definition imports preserve reviewed locale, omissions and historical answers without identity”, `tests/e2e/import-acknowledgement.spec.ts`
-**Gap.** None.
+**Gap.** A cited journey must read the edited native form/answers after an unsafe undo is refused, and verify safe plan/provenance remain with idempotent completed reversal. Cited browsers show successful undo and a later-native-edit conflict alert but do not read retained native state after that refusal. tests/runtime/form-import.worker.test.ts has a readback journey outside the old Evidence set.
 
 ### Target: roles, sharing and sign-in
 
 #### ROLE-001 — Workspace roles
 
-Core · target · **missing**
+Core · target · **missing** · From ROLE-001 · Cites BASE-ACCESS-004
 
-**Requirement.** Each operator holds one role: Owner, Admin, Editor, Analyst or Viewer. Owners and Admins manage operators, installation settings, connections and retention; Editors build, publish and distribute the forms they can access; Analysts read results, run analysis and create actions but cannot edit or publish; Viewers read reports only. Every API route and page checks the role on the server; a refused request names the missing permission and writes nothing. On activation this replaces OPER-001 and the no-roles sentence of OPER-002; the last Owner cannot be removed or demoted. This clause inherits TMPL-002's Admin-only team-template retirement; only Owners and Admins may retire templates. For roles without form-response access, this clause inherits RSLT-009's aggregate-only disclosure rule, before it ships.
+**Requirement.** Pencil supports workspace roles. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#role-001).
 
 **Acceptance.**
-1. a Worker suite signs in as each role and calls every operator route family (flows, publish, audience, responses, export, analysis, actions, settings, connections), asserting allowed and refused outcomes from one role matrix; a browser journey shows an Analyst the results but no Publish control.
-2. The role matrix includes template retirement, refusing Editors, Analysts and Viewers without changing the template.
-3. For roles without form-response access, it inherits the RSLT-009 aggregate-only fixture: the same figures are refused or complemented identically.
-4. A Viewer gets the aggregate-only form and is refused the ledger and export.
-5. *Status: missing.*
+1. Each operator holds one role: Owner, Admin, Editor, Analyst or Viewer.
+2. Owners and Admins manage operators, installation settings, connections and retention; Editors build, publish and distribute the forms they can access; Analysts read results, run analysis and create actions but cannot edit or publish; Viewers read reports only.
+3. Every API route and page checks the role on the server; a refused request names the missing permission and writes nothing.
+4. On activation this replaces OPER-001 and the no-roles sentence of OPER-002; the last Owner cannot be removed or demoted.
+5. This clause inherits TMPL-002's Admin-only team-template retirement; only Owners and Admins may retire templates.
+6. For roles without form-response access, this clause inherits RSLT-009, RSLT-015, RSLT-016's aggregate-only disclosure rule, before it ships.
+7. A Worker suite signs in as each role and calls every operator route family (flows, publish, audience, responses, export, analysis, actions, settings, connections), asserting allowed and refused outcomes from one role matrix; Through the browser, shows an Analyst the results but no Publish control.
+8. The role matrix includes template retirement, refusing Editors, Analysts and Viewers without changing the template.
+
+**Evidence.** None.
+**Gap.** No code yet.
+
+#### ROLE-005 — Workspace roles: For roles without form-response access, it inherits the RSLT-009 aggregate-only fixtu
+
+Core · target · **missing** · From ROLE-001 · Cites BASE-ACCESS-004
+
+**Requirement.** This part of ROLE-001 covers for roles without form-response access, it inherits the RSLT-009 aggregate-only fixture: the same figures are refused or complemented identically.. Detailed field, format and door rules remain in [the operating rules](docs/contract/MECHANISM.md#role-001).
+
+**Acceptance.**
+1. For roles without form-response access, it inherits the RSLT-009, RSLT-015, RSLT-016 aggregate-only fixture: the same figures are refused or complemented identically.
+2. A Viewer gets the aggregate-only form and is refused the ledger and export.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
 #### ROLE-002 — Per-form access and folders
 
-Core · target · **missing**
+Core · target · **missing** · Cites BASE-ACCESS-004
 
-**Requirement.** Forms live in folders; an Admin can restrict a folder or form to named operators, and an operator sees, searches, exports and receives notifications only for forms they can access. Access to respondent identity (identified participants, typed email and phone answers, uploads, signatures, payment details) is a separate grant; without it the ledger, exports and integrations show those values masked. This clause inherits LEDG-006: ledger search matches identity values (identified names and emails, typed email and phone answers) only for operators with the identity grant. For grants without form-response access, this clause inherits RSLT-009's aggregate-only disclosure rule, before it ships.
+**Requirement.** Pencil supports per-form access and folders. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#role-002).
 
 **Acceptance.**
-1. a Worker test restricts a form to one Editor and proves a second Editor gets 404 from its page, results, export and API, and an operator without the identity grant receives masked values in the ledger and CSV.
-2. The acceptance also proves: search by an identified email and a typed phone answer returns the response only for an operator with the identity grant.
-3. For grants without form-response access, it inherits the RSLT-009 aggregate-only fixture: the same figures are refused or complemented identically.
-4. A Viewer gets the aggregate-only form and is refused the ledger and export.
-5. *Status: missing.*
+1. Forms live in folders; an Admin can restrict a folder or form to named operators, and an operator sees, searches, exports and receives notifications only for forms they can access.
+2. Access to respondent identity (identified participants, typed email and phone answers, uploads, signatures, payment details) is a separate grant; without it the ledger, exports and integrations show those values masked.
+3. This clause inherits LEDG-006, LEDG-008: ledger search matches identity values (identified names and emails, typed email and phone answers) only for operators with the identity grant.
+4. For grants without form-response access, this clause inherits RSLT-009, RSLT-015, RSLT-016's aggregate-only disclosure rule, before it ships.
+5. Through the public door, restricts a form to one Editor and proves a second Editor gets 404 from its page, results, export and API, and an operator without the identity grant receives masked values in the ledger and CSV.
+6. The acceptance also proves: search by an identified email and a typed phone answer returns the response only for an operator with the identity grant.
+7. For grants without form-response access, it inherits the RSLT-009, RSLT-015, RSLT-016 aggregate-only fixture: the same figures are refused or complemented identically.
+8. A Viewer gets the aggregate-only form and is refused the ledger and export.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
 #### ROLE-003 — Single sign-on and provisioning
 
-Core · target · **missing**
+Core · target · **missing** · Cites BASE-ACCESS-001, BASE-ACCESS-002, BASE-ACCESS-004, BASE-SIGNIN-001 · Register R-4
 
-**Requirement.** Owners can require SAML 2.0 or OpenID Connect sign-in through the business identity provider (Okta, Microsoft Entra ID, Google Workspace, JumpCloud or the sibling Auth), map IdP groups to ROLE-001 roles, and accept SCIM 2.0 provisioning so a deprovisioned user loses every session within one minute. Magic-link sign-in remains the break-glass path for Owners only when SSO is enforced.
+**Requirement.** Pencil supports single sign-on and provisioning. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#role-003).
 
 **Acceptance.**
-1. a Worker test signs in through a test OIDC provider and a signed SAML assertion, maps a group to Analyst, then a SCIM `active:false` PATCH revokes the session and the next request is refused.
-2. *Status: missing.*
+1. Owners can require SAML 2.0 or OpenID Connect sign-in through the business identity provider (Okta, Microsoft Entra ID, Google Workspace, JumpCloud or the sibling Auth), map IdP groups to ROLE-001, ROLE-005 roles, and accept SCIM 2.0 provisioning so a deprovisioned user loses every session within one minute.
+2. Magic-link sign-in remains the break-glass path for Owners only when SSO is enforced.
+3. Through the public door, signs in through a test OIDC provider and a signed SAML assertion, maps a group to Analyst, then a SCIM `active:false` PATCH revokes the session and the next request is refused.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
 #### ROLE-004 — Builder collaboration
 
-Core · target · **missing**
+Core · target · **missing** · Cites BASE-ACCESS-004
 
-**Requirement.** Operators with edit access can leave comments on a draft step, mention another operator (who receives an in-app notification), resolve the thread, and see who last saved each step. Concurrent edits stay safe under FLOW-004's version check.
+**Requirement.** Pencil supports builder collaboration. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#role-004).
 
 **Acceptance.**
-1. a browser journey has two operators comment and resolve on one step; a stale save by the second is refused with the latest version shown.
-2. *Status: missing.*
+1. Operators with edit access can leave comments on a draft step, mention another operator (who receives an in-app notification), resolve the thread, and see who last saved each step.
+2. Concurrent edits stay safe under FLOW-004's version check.
+3. Through the browser, has two operators comment and resolve on one step; a stale save by the second is refused with the latest version shown.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -1256,14 +1894,31 @@ Core · target · **missing**
 
 #### BRAND-002 — Form design themes
 
-Core · target · **partial**
+Core · target · **partial** · From BRAND-002
 
-**Requirement.** An Editor keeps a library of named themes (for example one per campaign or client) and chooses one per form; a new form uses the workspace default theme, which starts from BRAND-001's accent and logo. A theme sets: a question font and an answer-and-button font, chosen from a bundled set of open-licensed families or an uploaded WOFF2 the owner is licensed to use (size- and signature-checked like BRAND-001 logos), always served from this installation so BASE-PUBLIC-001 holds; separate #rrggbb colors for questions, answers, buttons, button text and background; a background color or a PNG, JPEG or WebP background image with brightness from −100 to 100 and a focal point; corner style; and, per welcome, question and completion screen, an image or video layout (above the question, beside it on the left or right, or behind it as a full-bleed backdrop) with its own phone layout. The theme applies to preview, direct, embedded, popup and kiosk forms and their completion and closed states, and RESP-020 and NOTIFY-006 emails take its colors. Every text and background pair, measured against the background color and against the background image at its brightness, must reach A11Y-001's 4.5:1 (3:1 for large text, focus indicators and button borders); A11Y-002 refuses publish and names the failing pair and screen. A published revision snapshots its theme under FLOW-008, so editing a theme lists the forms that use it and changes each one only at its next publish. Themes are duplicated, renamed and deleted (deletion is refused while a draft or published form uses the theme), and are carried in deployment exports. This clause inherits TMPL-002: a saved team template retains its chosen per-form theme, and a new form made from it uses that theme.
+**Requirement.** Pencil supports form design themes. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#brand-002).
 
 **Acceptance.**
-1. a browser journey publishes two forms on two themes and asserts, at phone and desktop widths, that each renders its own computed font families, question, answer, button and background colors, background image and brightness, and screen layout, and that every request the respondent page makes is to the installation origin; a Worker test refuses publish of a theme whose button text is 2:1 against the button and names that pair; editing a theme leaves a published form's revision unchanged until it is republished.
-2. The journey also saves a themed form as a team template and proves a new form from it keeps that theme.
-3. *Status: partial — one workspace accent and logo with enforced button-text contrast ship, and fonts are already self-hosted (`src/core/features/brand/brand.ts`, `public/fonts/`, `tests/runtime/brand.worker.test.ts`, `tests/e2e/business-brand.spec.ts`); named themes, per-form choice, font choice, element colors, backgrounds and layouts do not.*
+1. An Editor keeps a library of named themes (for example one per campaign or client) and chooses one per form; a new form uses the workspace default theme, which starts from BRAND-001, BRAND-003's accent and logo.
+2. A theme sets: a question font and an answer-and-button font, chosen from a bundled set of open-licensed families or an uploaded WOFF2 the owner is licensed to use (size- and signature-checked like BRAND-001, BRAND-003 logos), always served from this installation so BASE-PUBLIC-001 holds; separate #rrggbb colors for questions, answers, buttons, button text and background; a background color or a PNG, JPEG or WebP background image with brightness from −100 to 100 and a focal point; corner style; and, per welcome, question and completion screen, an image or video layout (above the question, beside it on the left or right, or behind it as a full-bleed backdrop) with its own phone layout.
+3. The theme applies to preview, direct, embedded, popup and kiosk forms and their completion and closed states, and RESP-020, RESP-027 and NOTIFY-006, NOTIFY-007 emails take its colors.
+4. Every text and background pair, measured against the background color and against the background image at its brightness, must reach A11Y-001's 4.5:1 (3:1 for large text, focus indicators and button borders); A11Y-002 refuses publish and names the failing pair and screen.
+5. A published revision snapshots its theme under FLOW-008, so editing a theme lists the forms that use it and changes each one only at its next publish.
+6. Themes are duplicated, renamed and deleted (deletion is refused while a draft or published form uses the theme), and are carried in deployment exports.
+7. This clause inherits TMPL-002: a saved team template retains its chosen per-form theme, and a new form made from it uses that theme.
+8. Through the browser, publishes two forms on two themes and asserts, at phone and desktop widths, that each renders its own computed font families, question, answer, button and background colors, background image and brightness, and screen layout, and that every request the respondent page makes is to the installation origin; Through the public door, refuses publish of a theme whose button text is 2:1 against the button and names that pair; editing a theme leaves a published form's revision unchanged until it is republished.
+
+**Evidence.** `src/core/features/brand/brand.ts`, `public/fonts/`, `tests/runtime/brand.worker.test.ts`, `tests/e2e/business-brand.spec.ts`
+**Gap.** Named themes, per-form choice, font choice, element colors, backgrounds and layouts do not.
+
+#### BRAND-004 — Form design themes: The journey also saves a themed form as a team template and proves a new form from it
+
+Core · target · **partial** · From BRAND-002
+
+**Requirement.** This part of BRAND-002 covers the journey also saves a themed form as a team template and proves a new form from it keeps that theme.. Detailed field, format and door rules remain in [the operating rules](docs/contract/MECHANISM.md#brand-002).
+
+**Acceptance.**
+1. The journey also saves a themed form as a team template and proves a new form from it keeps that theme.
 
 **Evidence.** `src/core/features/brand/brand.ts`, `public/fonts/`, `tests/runtime/brand.worker.test.ts`, `tests/e2e/business-brand.spec.ts`
 **Gap.** Named themes, per-form choice, font choice, element colors, backgrounds and layouts do not.
@@ -1274,11 +1929,12 @@ Core · target · **partial**
 
 Core · target · **partial**
 
-**Requirement.** New form offers a searchable gallery of at least 60 US-business templates in named categories: customer feedback, NPS, CSAT, CES, product research, employee engagement and eNPS, event registration, contact and lead capture, order and payment forms, job applications, client intake, W-9 and vendor onboarding, quizzes, and patient intake for HIPAA mode (GOV-001). Each template previews in the respondent experience, passes FLOW-006 publish validation, and creates an ordinary editable draft; templates that use payment, upload or signature fields show what connection they need before creation.
+**Requirement.** New form offers a searchable gallery of at least 60 US-business templates that become ordinary editable drafts.
 
 **Acceptance.**
-1. a Worker test creates and publishes every gallery template with no validation error; a browser journey searches the gallery, previews one with branching, creates it and collects a response.
-2. *Status: partial — three templates ship (`src/core/features/flows/templates.ts`, `tests/e2e/templates.spec.ts`).*
+1. Categories include customer feedback, NPS, CSAT, CES, product research, employee engagement/eNPS, event registration, contact/lead capture, orders/payments, job applications, client intake, W-9/vendor onboarding, quizzes and GOV-001 patient intake.
+2. Every template previews in the respondent experience and passes FLOW-006 publication; templates using payments, uploads or signatures show required connections before creation.
+3. Every gallery template can be created and published without validation errors; a branching template can be found by search, previewed, created and used to collect a response.
 
 **Evidence.** `tests/runtime/first-owner.worker.test.ts` — local first-owner setup preserves identity and requires email proof before inviting an equal operator; `tests/e2e/templates.spec.ts` — “built-in templates each progress from an empty dashboard to publication, response and counted result” — empty dashboard to publication, response and counted result (1440/390)
 **Gap.** 75 editable templates in 12 named business categories; native CSAT/CES and 29 branched templates. W-9, quizzes (LOGIC-004), HIPAA intake (GOV-001) and actual payment templates remain unbuilt. Order templates collect requests only; vendor onboarding has no upload or signature. Gallery previews show the first question and a path summary; full respondent previews for every template remain unproved.
@@ -1287,28 +1943,28 @@ Core · target · **partial**
 
 Core · target · **done**
 
-**Requirement.** An Editor can save any draft or published form as a workspace template with its structure, logic, branding choice and question settings but no revision publication deadlines or response targets, responses, audience, connections' credentials or external IDs; Admins can retire one. Until per-form themes ship, new forms use the workspace brand; BRAND-002 inherits carrying a template's per-form theme into each new form. Until ROLE-001 ships, the owner acts for Admin under the current equal-operator authority; ROLE-001 inherits Admin-only template retirement.
+**Requirement.** Editors can turn a draft or published form into a reusable workspace template; Admins can retire it. The installation owner exercises Admin retirement until ROLE-001 supplies that role.
 
 **Acceptance.**
-1. a Worker test saves a form with logic as a template, creates a new form from it and proves new stable IDs, identical logic and no copied responses or credentials.
-2. *Status: done — version-checked draft or published content snapshots, private workspace reuse with remapped IDs, source-version isolation and retirement ship (`src/core/features/flows/team-templates.ts`, `tests/runtime/team-templates.worker.test.ts`, `tests/e2e/team-templates.spec.ts`).
-3. Question settings and remapped logic are copied; revision publication deadlines and response targets are not.
-4. Current workspace branding applies; future theme carryover and role restrictions belong to BRAND-002 and ROLE-001 as specified above.*
+1. Templates retain structure, logic, branding choice and question settings, excluding publication deadlines, response targets, responses, audiences, connection credentials and external IDs.
+2. A new form receives new stable IDs and correctly remapped logic; its questions and settings match the saved template.
+3. New forms use the workspace brand until BRAND-002/BRAND-004 supplies per-form theme carryover; those clauses retain that obligation.
+4. Retirement removes the template from reuse without deleting forms already created from it.
 
-**Evidence.** `src/core/features/flows/team-templates.ts`, `tests/runtime/team-templates.worker.test.ts`, `tests/e2e/team-templates.spec.ts`
-**Gap.** Version-checked saved draft/published templates retain questions, question settings and remapped logic, with isolated workspace reuse and retirement. Revision publication deadlines and response targets are deliberately excluded, including from published templates. New forms use workspace branding; BRAND-002 inherits per-form theme carryover and ROLE-001 inherits Admin-only retirement (the owner currently acts for Admin with equal-operator authority).
+**Evidence.** `tests/runtime/team-templates.worker.test.ts` — "workspace templates preserve branching and settings without copying private source history"; `tests/e2e/team-templates.spec.ts` — "save and reuse a team form, then retire its template"
+**Gap.** None.
 
 #### AI-001 — Generate a form from a prompt or a document
 
-Core · target · **partial**
+Core · target · **partial** · Cites BASE-AGENT-007, BASE-AGENT-008
 
-**Requirement.** An operator describes the goal in words, or pastes or uploads a document (Word, PDF, Google Doc export, an existing paper form or a SurveyMonkey/Typeform question list), and the configured `ai.provider.v1` drafts a form: question types, choices, required flags, branching, hidden fields and a completion screen. The draft opens in the builder with each generated step marked, passes FLOW-012 to FLOW-014 before it can be published, and is never published, distributed or connected without an operator. Uploaded source documents are used for this request only and are not retained.
+**Requirement.** Pencil supports generate a form from a prompt or a document. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#ai-001).
 
 **Acceptance.**
-1. a Worker test with the AI receiver fixture turns a prompt and a two-page PDF into drafts whose graph validates; schema-invalid provider output fails under ANLY-012 rules with no draft written; a browser journey edits and publishes the generated draft.
-2. *Status: partial — guarded rewrites of saved questions ship, and explicit provider-origin requests generate validated drafts from a goal and bounded text, Markdown, CSV or HTML; invalid output writes no draft and Pencil does not retain the goal or source text (`src/core/features/analysis/rewrites.ts`, `src/core/features/studio/`, `tests/runtime/feedback-rewrites.worker.test.ts`, `tests/runtime/studio-scenario.ts`, `tests/e2e/studio-journey.ts`).
-3. Generated marks appear in Studio review, not the builder.
-4. PDF/Word, hidden-field generation, other native question types and advanced branching remain unbuilt.*
+1. An operator describes the goal in words, or pastes or uploads a document (Word, PDF, Google Doc export, an existing paper form or a SurveyMonkey/Typeform question list), and the configured ai provider adapter drafts a form: question types, choices, required flags, branching, hidden fields and a completion screen.
+2. The draft opens in the builder with each generated step marked, passes FLOW-012 to FLOW-014 before it can be published, and its agent publication, distribution and connection calls carry external and, for connection credentials, security or gated as the provider step requires; the company’s policy decides each step.
+3. Uploaded source documents are used for this request only and are not retained.
+4. Through the AI receiver fixture turns a prompt and a two-page PDF into drafts whose graph validates; schema-invalid provider output fails under ANLY-012 rules with no draft written; Through the browser, edits and publishes the generated, draft.
 
 **Evidence.** `tests/runtime/feedback-rewrites.worker.test.ts` — rewrite requests preserve the source and draft until explicit guarded acceptance, with real provider calls, failure and usage attribution; `tests/e2e/analysis.spec.ts` — an operator requests analysis, reads a quoted finding back to its response, sees a small theme withheld, turns the recommendation into an action and retries a failed run; Studio generation runs inside both tagged tests (`tests/runtime/studio-scenario.ts`, `tests/e2e/studio-journey.ts`)
 **Gap.** Explicit provider-origin requests generate validated drafts from a goal and bounded text, Markdown, CSV or HTML, with all native question types, typed hidden fields and forward branching. Invalid output writes no draft or answered usage row; source text and goals are not retained. Generated marks appear in Studio review, not the builder. PDF/Word readers, generated marks in the builder, compound conditions, hidden-field branch operands and recall generation remain unbuilt.
@@ -1319,14 +1975,16 @@ Core · target · **partial**
 
 Core · target · **partial**
 
-**Requirement.** An operator declares named hidden fields (for example `utm_source`, `plan`, `order_id`) with a type and whether each is identifying. Values arrive from the link's query string, an embed's fixed `data-pencil-<field>` attributes, the landing page a script embed sits on (its URL parameters, a `hidden` call or its `_ga` cookie, under DIST-021), the in-product SDK (DIST-015) or an invitation, are validated against the declared type, are stored with the response, appear in the ledger, filters, crosstabs (RSLT-006), exports and integrations (INTEG-001 to INTEG-011, INTEG-015 and INTEG-017), and can drive recall (LOGIC-001) and every LOGIC-006 condition (branching, completion, page show/hide, alerts and email rules); a declared field absent from the link is blank, never an error. Undeclared parameters are discarded. Each field is declared as campaign (for example `utm_*`), click ID (`fbclid`, `gclid`, `gbraid`, `wbraid`, `ga_client_id`, used only by INTEG-017), identifying, or plain. Completion also depends on DIST-021 (script-supplied fields), DIST-015 (SDK), DIST-003 (invitation-supplied values), the named INTEG consumers, LOGIC-005 (completion redirects), NOTIFY-005 (alerts) and NOTIFY-006 (answer-bearing email); naming these consumers does not claim they ship. An identifying hidden field makes the response identified and RESP-005's disclosure says so before the first answer; it is accepted on public links and embeds only when the form is in RESP-023's identified mode, and an anonymous flow refuses identifying parameters. In aggregate-only views, identifying hidden fields are neither crossed nor summarised under RSLT-009.
+**Requirement.** Operators attach declared, typed context to a response without adding visible questions; identifying context follows the form's identity mode. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-001).
 
 **Acceptance.**
-1. a browser journey opens a link with declared and undeclared parameters, is routed by a LOGIC-006 rule on one, is routed by an `is blank` rule when the link omits it, and the CSV export carries only the declared values; a Worker test proves an identifying parameter on an anonymous revision is refused at publish and accepted on an identified one (RESP-023); DIST-021's embedded journey stores forwarded, fixed and `hidden` values under the same declared-field filter.
-2. *Status: partial — Revision-bound typed declarations, direct-link query values, identifying-field publication checks, blank/value branching and page visibility, preview, escaped recall, private save/resume, ledger search/typed filters, CSV/JSON and copy/archive custody ship.
-3. Undeclared, invalid and unsubstituted merge values are discarded and counted; anonymous click IDs are discarded.
-4. Remaining: script fixed/forwarded/hidden/GA values (DIST-021), SDK (DIST-015) and invitation-supplied values (DIST-003), integration consumers (INTEG-001 to INTEG-011, INTEG-015 and INTEG-017), alerts (NOTIFY-005), email (NOTIFY-006) and anonymous click-ID delivery custody (INTEG-017).
-5. Evidence: `src/core/shared/hiddenFields.ts`, `tests/runtime/hidden-fields.worker.test.ts`, `tests/e2e/hidden-fields.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”.*
+1. Operators declare each hidden field's name, type and identifying status, and classify it as campaign, click identifier, identifying or plain context. Click identifiers are used only by INTEG-017 and INTEG-020.
+2. Declared values may come from a direct link, an embed's fixed attributes, its host page's URL parameters, its explicit hidden-value call or analytics cookie, an in-product survey, or an invitation; invalid or undeclared values are discarded and a missing declared value is blank.
+3. Accepted values are stored with the response and appear in the ledger, filters, crosstabs under RSLT-006, exports and the named integration consumers, and may drive answer recall and branching, completion, visibility, alert and email conditions.
+4. An identifying hidden field is admitted on a direct link or embed only in the identified mode under RESP-023; the disclosure identifies that effect before the first answer, and an anonymous revision refuses identifying parameters at publication.
+5. Aggregate-only views neither cross nor summarize identifying hidden fields under RSLT-009.
+6. A declared context value routes the response by its condition, omission routes by the blank-value condition, and the CSV export carries only declared values.
+7. Script forwarding, fixed values and explicit hidden values under DIST-021 and DIST-024 obey the same declaration filter; DIST-015, DIST-003, INTEG-001 through INTEG-011, INTEG-015, INTEG-017, INTEG-020, LOGIC-005, NOTIFY-005, NOTIFY-006 and NOTIFY-007 retain their stated consumer obligations.
 
 **Evidence.** `src/core/shared/hiddenFields.ts`, `tests/runtime/hidden-fields.worker.test.ts`, `tests/e2e/hidden-fields.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”
 **Gap.** Revision-bound typed declarations, direct-link query values, identifying-field publication checks, blank/value branching and page visibility, preview, escaped recall, private save/resume, ledger search/typed filters, CSV/JSON and copy/archive custody ship. Undeclared, invalid and unsubstituted merge values are discarded and counted; anonymous click IDs are discarded. Remaining: script fixed/forwarded/hidden/GA values (DIST-021), SDK (DIST-015) and invitation-supplied values (DIST-003), integration consumers (INTEG-001 to INTEG-011, INTEG-015 and INTEG-017), alerts (NOTIFY-005), email (NOTIFY-006) and anonymous click-ID delivery custody (INTEG-017).
@@ -1335,11 +1993,13 @@ Core · target · **partial**
 
 Core · target · **missing**
 
-**Requirement.** A matrix question asks several rows on one shared scale (single- or multi-select per row, or a 5- or 7-point Likert), each row with a stable ID; results show a per-row distribution with RSLT-003 denominators, and any LOGIC-006 condition can test any row. This clause inherits RSLT-006: each matrix row is a crosstab dimension keyed by its stable row ID, with the same stated shares, chi-square rule and ANLY-005 suppression.
+**Requirement.** A matrix collects several stable rows against a shared answer scale and reports each row independently. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-002).
 
 **Acceptance.**
-1. a Worker test publishes a 4×5 matrix, collects responses, and asserts per-row counts and an export column per row keyed by stable row ID, and crosses one row against another under RSLT-006.
-2. *Status: missing.*
+1. A matrix supports single- or multiple-selection rows and five- or seven-point Likert scales, with a stable identity for each row.
+2. Each row has a distribution with the denominators under RSLT-003 and is available to the shared condition model under LOGIC-006.
+3. Each row is a crosstab dimension under RSLT-006 and RSLT-014, with stated shares, the same chi-square rule and ANLY-005 suppression.
+4. A published four-row, five-column matrix accepts responses, reports the hand-counted values, exports a distinct column keyed to each stable row and crosses one row against another.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -1348,54 +2008,57 @@ Core · target · **missing**
 
 Core · target · **done**
 
-**Requirement.** CSAT (1–5 satisfaction), CES (1–7 effort) and emoji or thumbs ratings are typed questions with fixed semantics, with native fixed-score calculations available independently of program setup (PROG-001): CSAT as the share of 4–5 answers, CES as the mean, both with stated denominators.
+**Requirement.** Typed satisfaction, effort, emoji and thumbs questions provide comparable scores independently of survey-program setup under PROG-001. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-003).
 
 **Acceptance.**
-1. a Worker test collects each type and asserts the computed CSAT percentage and CES mean against hand-computed values.
-2. The same native-route journey verifies emoji and thumbs distributions and normalized exports; PROG-001 acceptance separately proves program setup.
-3. *Status: done — Typed CSAT, CES, emoji and thumbs questions, fixed score semantics, required-answer validation, distributions, stated denominators and numeric/boolean exports are proved through native routes and browser journeys at 1440 and 390.
-4. Evidence: `src/core/shared/scoreQuestions.ts`, `src/core/shared/ui/ScoreQuestionInput.tsx`, `src/core/features/reporting/aggregate.ts`, `tests/runtime/contact-scores-scenario.ts`, `tests/runtime/new-question-types.worker.test.ts`, `tests/e2e/satisfaction-scores.spec.ts`.
-5. PROG-001 remains separate program setup.*
+1. CSAT uses the fixed one-to-five satisfaction scale and reports the share of four-or-five answers with its denominator.
+2. CES uses the fixed one-to-seven effort scale and reports the arithmetic mean with its denominator.
+3. Emoji and thumbs answers retain their fixed semantics and report their distributions; score exports retain normalized numeric or boolean values.
+4. Collected answer sets produce the hand-computed CSAT percentage and CES mean, independently of PROG-001 program setup.
 
-**Evidence.** `src/core/shared/scoreQuestions.ts`, `src/core/shared/ui/ScoreQuestionInput.tsx`, `tests/runtime/contact-scores-scenario.ts`, `tests/runtime/new-question-types.worker.test.ts`, `tests/e2e/satisfaction-scores.spec.ts`
-**Gap.** None. Fixed typed scores, required-answer validation, stated distributions and denominators, and lossless numeric/boolean CSV and JSON exports are proved at 1440 and 390. Program setup belongs to PROG-001.
+**Evidence.** `tests/runtime/contact-scores-scenario.ts` — "contactScoresScenario"; `tests/e2e/satisfaction-scores.spec.ts` — "builds and collects satisfaction, effort, emoji and thumbs scores with stated results and numeric exports"
+**Gap.** None.
 
 #### FIELD-004 — US contact fields
 
-Core · target · **done**
+Core · target · **partial** · Cites BASE-PUBLIC-001, BASE-INPUT-001
 
-**Requirement.** Phone (stored E.164, displayed in US format, extension allowed), postal address (street, unit, city, two-letter state, five- or nine-digit ZIP, with non-US country as an option), full name split into parts, URL and currency amount in USD are typed questions with validation and formatted export columns. No third-party autocomplete script is loaded on the respondent page (BASE-PUBLIC-001).
+**Requirement.** Respondents enter structured contact details and USD amounts with type-specific validation and useful exports. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-004).
 
 **Acceptance.**
-1. a browser journey enters valid and invalid US phone, ZIP and state values and sees field-specific errors; the export carries normalized columns.
-2. The native-route check also rejects invalid names, URLs and fractional cents, retains an international number and address, keeps the phone extension separate, and checks normalized and display columns in CSV and JSON.
-3. *Status: done — US and international phone/address entry, separate extensions and name parts, URL validation, exact USD cents, field-specific errors and normalized/formatted exports ship (`src/core/shared/contactAnswers.ts`, `src/core/shared/ui/ContactQuestionInput.tsx`, `src/core/features/reporting/contactExport.ts`, `tests/runtime/contact-scores-scenario.ts`).*
+1. A phone answer retains an E.164 number and separate optional extension and displays the number in US format; international numbers remain accepted.
+2. A postal address retains street, optional unit, city, two-letter state, five- or nine-digit ZIP and country, including the non-US address option.
+3. A full name retains its component parts, a website answer is a valid URL, and a USD amount retains exact cents rather than accepting fractional cents.
+4. Valid contact values are admitted and invalid phone, ZIP, state, name, URL or amount values show a field-specific error through the form and API.
+5. CSV and JSON downloads carry the normalized values and formatted columns, including separate phone extensions and name parts.
 
 **Evidence.** `src/core/shared/contactAnswers.ts`, `src/core/shared/ui/ContactQuestionInput.tsx`, `src/core/features/reporting/contactExport.ts`, `migrations/core/0040_scores_contact_fields.sql`, `tests/runtime/contact-scores-scenario.ts`
-**Gap.** None. US and international phone/address entry, separate extensions and name parts, URL validation, exact USD cents, field errors and normalized/formatted exports are proved at 1440 and 390 without third-party requests.
+**Gap.** A cited browser journey must enter valid and invalid US contact values and read field-specific errors and the normalized download. The cited native contactScoresScenario proves API validation, international values and normalized exports, but the old Evidence set names no contact-field browser journey.
 
 #### FIELD-005 — Media in questions and choices
 
-Core · target · **missing**
+Core · target · **missing** · Cites BASE-ACCESSIBILITY-001, BASE-PUBLIC-001
 
-**Requirement.** Steps may carry an image with required alt text or a video from an approved host (YouTube or Vimeo via a privacy-enhanced embed only after the respondent clicks to play), and choices may be images with labels.
+**Requirement.** Question steps and choices support accessible visual media without contacting a video provider before play. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-005).
 
 **Acceptance.**
-1. a browser journey builds an image-choice question, publish is refused while alt text is empty, and the respondent page makes no third-party request until play is pressed.
-2. *Status: missing.*
+1. A step may carry an image with required alt text or a YouTube or Vimeo video through an approved host's privacy-enhanced embed.
+2. An image choice retains its label, and publication refuses an image whose required alt text is empty.
+3. The respondent page contacts the video provider only after the respondent chooses play.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
 #### FIELD-007 — Scheduling handoff
 
-Core · target · **missing**
+Core · target · **missing** · Cites BASE-DATA-004
 
-**Requirement.** A scheduling step hands the respondent to the business's booking page in the sibling Dial, Calendly or Google Calendar appointment schedules, passing name and email only when the respondent typed them and the disclosure names the destination; the booked time returned by the provider's webhook is stored with the response. Pencil does not run availability or calendars itself.
+**Requirement.** A scheduling step hands a respondent to an existing booking service and retains its confirmed appointment. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-007).
 
 **Acceptance.**
-1. a Worker test with a Dial/Calendly receiver fixture completes a booking handoff and stores the confirmed time on the response; an anonymous flow passes nothing.
-2. *Status: missing.*
+1. The step opens the business's booking page in Dial, Calendly or Google Calendar appointment schedules, rather than implementing availability or calendars in Pencil.
+2. Name and email are passed only when the respondent entered them and the disclosure names the destination; anonymous collection passes neither.
+3. A Dial or Calendly-compatible booking completes through the provider handoff and its confirmation stores the booked time with the response.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -1404,61 +2067,89 @@ Core · target · **missing**
 
 Core · target · **done**
 
-**Requirement.** Besides one question at a time (RESP-001), a flow may use pages that show several questions together with conditional show/hide inside the page (written as LOGIC-006 conditions on earlier answers, including answers on the same page), the layout Jotform and Google Forms buyers use. Branching and required-on-path (FLOW-020) apply per page. Validation checks only visible questions, so hidden required questions never block navigation or submission; progress (RESP-002, RESP-003) counts reachable pages. RESP-001 names this layout alongside one question per screen and question groups.
+**Requirement.** Operators build forms with several questions on each page, including conditional questions within that page. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-008).
 
 **Acceptance.**
-1. a browser journey builds a three-page classic form with in-page conditional questions, and a hidden required question never blocks navigation or submission, only visible questions are validated, and progress counts reachable pages.
-2. *Status: done — Classic pages preserve each question ID and show several controls together.
-3. Bounded shared AND/OR conditions on earlier answers, including same-page answers, determine visibility; Next validates every visible question, Back edits discard newly hidden values, outgoing page rules run even when the final question is hidden, and classic-page progress counts reachable pages.
-4. Preview, pinned revisions, server admission, copies and private save/resume use the same structure.
-5. Evidence: `src/core/shared/screenLayout.ts`, `src/core/features/flows/screen-validation.ts`, `tests/runtime/pages.worker.test.ts`, `tests/e2e/pages.spec.ts`.
-6. Browser journeys build and collect three pages at 1440 and 390.*
+1. A classic page shows multiple questions together and applies LOGIC-006 conditions to earlier answers, including earlier answers on the same page.
+2. Branching and required-on-path under FLOW-020 apply per page; hidden required questions cannot block navigation or submission, and only visible questions are validated.
+3. Progress under RESP-002, RESP-003 and RESP-025 counts reachable pages, alongside the one-question and grouped layouts named by RESP-001.
+4. A three-page form with in-page conditional questions completes with the correct reachable-page progress and without retaining newly hidden answers.
 
-**Evidence.** `src/core/shared/screenLayout.ts`, `src/core/features/flows/screen-validation.ts`, `tests/runtime/pages.worker.test.ts`, `tests/e2e/pages.spec.ts`
-**Gap.** None for classic pages with the shared condition model. Three-page builder, preview, visible required validation, Back edits and completed collection are proved at 1440 and 390; native rules also prove pinned revisions, copies and saved page state.
+**Evidence.** `tests/e2e/pages.spec.ts` — "builds three classic pages, edits in-page visibility and completes with hidden required answers discarded"
+**Gap.** None.
 
 #### FIELD-009 — Video and audio answers
 
-Core · target · **missing**
+Core · target · **missing** · Cites BASE-INPUT-003, BASE-DATA-004
 
-**Requirement.** A question may accept a recorded video or audio answer (up to an operator-set length) captured in the browser with explicit camera or microphone permission, stored like an upload (FILE-001), transcribed by `ai.provider.v1` when configured, and analyzed through its transcript with the clip available to authorized operators.
+**Requirement.** Respondents record media answers and operators review the recording and any configured transcription as response evidence. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-009).
 
 **Acceptance.**
-1. a browser journey with a fake media device records a 10-second answer, the operator plays it back through a signed URL, and the transcript appears in the ledger and analysis evidence.
-2. *Status: missing.*
+1. A question may accept browser-recorded video or audio up to the operator's chosen length after explicit camera or microphone permission.
+2. The recording is retained as an upload under FILE-001; when the AI provider is configured it is transcribed, and analysis uses that transcript while authorized operators may open the clip.
+3. A ten-second recording can be played back by the operator through its authorized download, and its transcript appears in the ledger and analysis evidence.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
-#### FIELD-010 — "Other (please specify)" and "None of the above"
+#### FIELD-010 — Other write-ins and exclusive None choices
 
-Core · target · **partial**
+Core · target · **partial** · From FIELD-010
 
-**Requirement.** A single-choice, multiple-choice or dropdown question may enable an **Other** option and, on multiple choice, a **None of the above** option. Each is a choice with its own stable ID (FLOW-015) and an editable label that LANG-001 translates. Choosing Other shows a text box that is required once Other is chosen, holds a short-text answer within `seed.json → limits` and any FIELD-013 validation the operator set, and is discarded when the respondent deselects Other. None of the above is exclusive: choosing it clears every other selection, choosing any other option clears it, and None alone satisfies a multiple-choice minimum. The stored answer keeps the chosen stable IDs and, for Other, the typed text beside the Other choice ID; FLOW-019 admits exactly the `{choiceIds: string[], otherText: string}` shape and RESP-003 names the empty-Other error. Results count Other and None in the RSLT-003 distribution with their denominators and list the Other write-ins as open text that RSLT-012 coding, LEDG-003 filters, LEDG-006 search and analysis evidence read. CSV and JSON exports (LEDG-004) carry the Other text in its own column beside the choice column, keyed by stable step ID. Branching (FLOW-005) tests Other and None like any stable choice ID, recall (LOGIC-001) inserts the typed Other text, and FIELD-006 randomization keeps Other and None anchored last. Imports carry each source's Other option and its historical write-in text: Typeform `allow_other_choice` with response `choice.other` and Google Forms `isOther` with its typed value (IMPORT-007), SurveyMonkey's "Other (please specify)" answer and its text (IMPORT-005), and Jotform's "Other" option on radio and checkbox fields (IMPORT-006), so no write-in is lost.
+**Requirement.** Choice questions offer an optional write-in and an exclusive none answer without losing their stable choice identity. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-010).
 
 **Acceptance.**
-1. a Worker test publishes a multiple-choice question with Other and None and a single-choice question with Other; a response choosing Other with text stores the Other choice ID and the text, and the CSV carries the text in its own column; Other with empty or whitespace-only text is refused with a field-specific error and creates no response; None together with another option is refused; the results distribution counts Other and lists its text as open text; a branch on Other routes to its destination.
-2. A browser journey sees the text box appear when Other is chosen and the other selections clear when None is chosen.
-3. A Worker test imports a Typeform definition and responses fixture whose `allow_other_choice` answers arrive as `choice.other` write-ins, and a Google Forms fixture with an `isOther` option, and asserts every write-in lands on the Other choice with its text.
-4. *Status: partial — Stable Other IDs and required validated write-ins, exclusive None (including selection-minimum exemption), builder controls, branching, distributions/open text, search/filters, analysis evidence, lossless JSON and a separate stable-step CSV text column ship.
-5. Typeform/Google definition and reviewed CSV imports retain unambiguous write-ins.
-6. Source response API retrieval, SurveyMonkey/Jotform imports, and translation await their target features; ambiguous Google checkbox cells require explicit reviewed columns.
-7. Evidence: `src/core/shared/otherChoices.ts`, `src/core/shared/ui/ChoiceQuestionInput.tsx`, `src/core/features/importing/choice-response.ts`, `tests/runtime/other-choices.worker.test.ts`, `tests/e2e/other-choices.spec.ts` — “Other write-ins survive native collection, results export and explicit import column review”.*
+1. Single-choice, multiple-choice and dropdown questions may offer Other; multiple choice may also offer None of the above. Each has a stable choice identity under FLOW-015 and an editable translated label under LANG-001 and LANG-003.
+2. Selecting Other reveals a required short-text answer governed by the stated limits and FIELD-013 validation, and deselecting Other discards that text.
+3. Selecting None clears all other choices, selecting another choice clears None, and None alone satisfies a multiple-choice minimum; a submission combining None with another choice is refused.
+4. Stored answers preserve the chosen stable identities and the Other text beside its choice; an empty or whitespace-only Other answer is refused with a field-specific error and creates no response.
+5. Results count Other and None with RSLT-003 denominators and list write-ins as open text available to RSLT-012 coding, LEDG-003 filters, LEDG-006 and LEDG-008 search, and analysis evidence.
+6. CSV and JSON exports under LEDG-004 retain Other text in its own column beside the choice column, keyed by stable question identity.
+7. FLOW-005 branches on Other or None, LOGIC-001 recalls the write-in, and FIELD-006 keeps Other and None anchored last during randomization; the respondent sees the write-in appear and other selections clear when None is chosen.
 
 **Evidence.** `src/core/shared/otherChoices.ts`, `src/core/shared/ui/ChoiceQuestionInput.tsx`, `src/core/features/importing/choice-response.ts`, `tests/runtime/other-choices.worker.test.ts`, `tests/e2e/other-choices.spec.ts` — “Other write-ins survive native collection, results export and explicit import column review”
 **Gap.** Stable Other IDs and required validated write-ins, exclusive None (including selection-minimum exemption), builder controls, branching, distributions/open text, search/filters, analysis evidence, lossless JSON and a separate stable-step CSV text column ship. Typeform/Google definition and reviewed CSV imports retain unambiguous write-ins. Source response API retrieval, SurveyMonkey/Jotform imports, and translation await their target features; ambiguous Google checkbox cells require explicit reviewed columns.
 
-#### FIELD-011 — Statement screens anywhere in the flow
+#### FIELD-017 — Import Other choices and historical write-ins
 
-Core · target · **partial**
+Core · target · **partial** · From FIELD-010
 
-**Requirement.** A statement step can sit anywhere between questions: rich text (headings, bold, italic, lists and links to approved HTTPS origins) with LOGIC-001 recall, optional media under FIELD-005 with required alt text, and a Continue label the operator can change under LANG-002. It asks for no answer. It is a valid branch destination and can be reached by branching (FLOW-012, FLOW-013), including the per-question feedback screens a LOGIC-004 quiz routes to. It is never counted as a question by progress (RESP-002), drop-off (RSLT-002 reports it as a step reached, not a question answered) or required checks (FLOW-020), and nothing is stored for it in the response, the ledger or exports. Inside a FIELD-008 classic page it is a text block between questions. On activation FLOW-002 is rewritten to allow statement steps at any position besides the optional first welcome screen. Imports map Typeform Statements after the first (IMPORT-007), Google Forms text items (IMPORT-007), Jotform paragraph and header fields (IMPORT-006) and SurveyMonkey descriptive-text items (IMPORT-005) to statement steps in the review.
+**Requirement.** Moving a form into Pencil preserves its Other option and every historical write-in without inventing a replacement choice. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-010).
 
 **Acceptance.**
-1. a browser journey publishes a flow of question, branch, statement and question, answers so the branch reaches the statement, sees its recalled text and Continue label, continues, and sees progress count only the two questions; the ledger and CSV hold no answer for the statement step.
-2. A Worker test refuses publish for a statement whose image lacks alt text and accepts a branch whose destination is a statement.
-3. A Worker test imports a Typeform fixture with a welcome screen and two Statements between questions and asserts both become statement steps in the review in their original order.
-4. *Status: partial — a no-answer screen ships only as the optional first welcome screen (FLOW-002, `tests/e2e/journey.spec.ts`), and the Typeform importer maps only a leading Statement to it while later Statements are reported unsupported (`src/core/features/importing/fields.ts`, `tests/runtime/form-import.worker.test.ts`); the SurveyMonkey file importer likewise maps only a leading descriptive-text item to the welcome screen and reports later items unsupported (IMPORT-005).*
+1. Typeform Other-choice definitions and response write-ins, and Google Forms Other options with typed values, map to the stable Other choice and text under IMPORT-007.
+2. SurveyMonkey's Other answer and text map under IMPORT-005, and Jotform's Other options on radio and checkbox fields map under IMPORT-006.
+3. Typeform and Google Forms imports with historical Other responses retain every write-in on its matching Other choice with the exact text.
+
+**Evidence.** `src/core/shared/otherChoices.ts`, `src/core/shared/ui/ChoiceQuestionInput.tsx`, `src/core/features/importing/choice-response.ts`, `tests/runtime/other-choices.worker.test.ts`, `tests/e2e/other-choices.spec.ts` — “Other write-ins survive native collection, results export and explicit import column review”
+**Gap.** Stable Other IDs and required validated write-ins, exclusive None (including selection-minimum exemption), builder controls, branching, distributions/open text, search/filters, analysis evidence, lossless JSON and a separate stable-step CSV text column ship. Typeform/Google definition and reviewed CSV imports retain unambiguous write-ins. Source response API retrieval, SurveyMonkey/Jotform imports, and translation await their target features; ambiguous Google checkbox cells require explicit reviewed columns.
+
+#### FIELD-011 — Statement screens between questions
+
+Core · target · **partial** · From FIELD-011 · Cites BASE-INPUT-002, BASE-ACCESSIBILITY-001
+
+**Requirement.** Operators insert answerless information screens between questions and route respondents through them. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-011).
+
+**Acceptance.**
+1. A statement may appear anywhere between questions, with headings, emphasis, lists and approved HTTPS links, LOGIC-001 recall, optional FIELD-005 media with required alt text and a Continue label editable under LANG-002.
+2. A statement asks for no answer and is a valid branch destination, including a quiz's per-question feedback under LOGIC-004.
+3. Progress and required checks never count a statement as a question; RSLT-002 counts a reached step rather than an answered question, and the response, ledger and exports contain no statement answer.
+4. Inside a classic page under FIELD-008 the statement appears as a text block between questions; FLOW-002 admits statement steps beyond the optional first welcome screen.
+5. A form routing through a recalled statement displays its Continue label, counts only the two surrounding questions in progress and leaves no statement answer in the ledger or CSV; publication refuses its image when alt text is missing.
+
+**Evidence.** `src/core/features/importing/fields.ts`, `tests/e2e/journey.spec.ts`, `tests/runtime/form-import.worker.test.ts`
+**Gap.** A no-answer screen ships only as the optional first welcome screen, and the Typeform importer maps only a leading Statement while later Statements are reported unsupported; the SurveyMonkey file importer likewise maps only a leading descriptive-text item to the welcome screen and reports later items unsupported (IMPORT-005).
+
+#### FIELD-018 — Import statement screens
+
+Core · target · **partial** · From FIELD-011
+
+**Requirement.** Moving a form into Pencil keeps its intervening information items as ordered statement steps. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-011).
+
+**Acceptance.**
+1. Typeform Statements after the welcome screen and Google Forms text items map to statement steps under IMPORT-007.
+2. Jotform paragraph and header fields map under IMPORT-006, and SurveyMonkey descriptive-text items map under IMPORT-005.
+3. A Typeform form with a welcome and two statements between questions retains both statements in their original order in the import review.
 
 **Evidence.** `src/core/features/importing/fields.ts`, `tests/e2e/journey.spec.ts`, `tests/runtime/form-import.worker.test.ts`
 **Gap.** A no-answer screen ships only as the optional first welcome screen, and the Typeform importer maps only a leading Statement while later Statements are reported unsupported; the SurveyMonkey file importer likewise maps only a leading descriptive-text item to the welcome screen and reports later items unsupported (IMPORT-005).
@@ -1467,118 +2158,171 @@ Core · target · **partial**
 
 Core · target · **partial**
 
-**Requirement.** Inside a one-question-at-a-time flow (RESP-001), an operator can group several questions under one heading, with optional description and media, so they show together on one screen, as Typeform's Question Group does. Each grouped question keeps its stable ID, type, required flag and validation. Next validates every visible question in the group and keeps the screen with field-specific errors; progress (RESP-002) counts each grouped question; LOGIC-006 conditions after the group may test any of its questions, and the group is one branch destination (FLOW-012, FLOW-013). A group may contain statement text (FIELD-011) but no nested group. Typeform `group` and `inline_group` fields import as groups (IMPORT-007). FIELD-012 is done only when every requirement and acceptance step in this clause and its dependencies FIELD-005 (optional media) and FIELD-011 (statement items) are done.
+**Requirement.** Operators place several individually validated questions together under one heading within a one-question-at-a-time form. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-012).
 
 **Acceptance.**
-1. a browser journey builds a group of three questions with one required, sees all three on one screen, is held by a field-specific error until the required one is answered, and is routed by a branch that tests a grouped answer; progress counts three questions.
-2. A Worker test imports a Typeform fixture with a group and asserts the review shows one group containing its questions.
-3. *Status: partial — Named question groups show ordinary independently validated questions on one screen, preserve question IDs, count questions in progress and branch on grouped answers.
-4. Typeform group and inline_group headings, descriptions and children import together and appear hierarchically in review.
-5. Builder, required errors, both collection branches and review are proved at 1440 and 390.
-6. Optional group media and statement blocks remain unbuilt under FIELD-005/FIELD-011; nested groups are refused.
-7. Evidence: `src/core/shared/screenLayout.ts`, `src/core/features/importing/typeform-groups.ts`, `tests/runtime/groups.worker.test.ts`, `tests/e2e/groups.spec.ts`.*
+1. A group has one heading, optional description and optional FIELD-005 media; every member keeps its stable identity, type, required flag and validation.
+2. Next validates every visible member and remains on the group with field-specific errors until its required questions are answered; progress counts each grouped question.
+3. Conditions after the group may test any member, and the group is one branch destination under FLOW-012 and FLOW-013.
+4. A group may contain statement text under FIELD-011 and FIELD-018 but cannot contain a nested group.
+5. A published group of three questions with one required shows all three together, reports the required error, routes by a grouped answer and counts three questions in progress.
+6. Typeform groups and inline groups map under IMPORT-007 to one group containing their questions in the import review.
 
 **Evidence.** `src/core/shared/screenLayout.ts`, `src/core/features/importing/typeform-groups.ts`, `tests/runtime/groups.worker.test.ts`, `tests/e2e/groups.spec.ts`
 **Gap.** Group builder, per-question validation/progress, grouped-answer branching, Typeform group/inline_group import and hierarchical review ship at 1440 and 390. Optional media and statement blocks remain unbuilt under FIELD-005/FIELD-011.
 
-#### FIELD-013 — Text answer validation
+#### FIELD-013 — Text length, masks and patterns
 
-Core · target · **done**
+Core · target · **partial** · Cites BASE-INPUT-001
 
-**Requirement.** Short-text and long-text questions take an operator-set minimum and maximum character count within the type limit in `seed.json → limits`, with a live character counter when a maximum is set. Short text may also take an input mask (`#` digit, `@` letter, `*` letter or digit, any other character literal, for example `###-##-####` or `@@-####`) or a pattern written in a linear-time regular-expression subset (no backreferences or lookaround, bounded length), each with a custom error message that LANG-001 translates; publish refuses a pattern outside that subset. The browser and the Worker apply the same rules, so a value refused on screen is refused by the API. Typeform `max_length`, SurveyMonkey text validation and Jotform input masks map to these settings on import (IMPORT-005 to IMPORT-007). LANG-001 inherits translation of FIELD-013 validation errors; IMPORT-005 and IMPORT-006 inherit faithful mappings of text lengths, masks, supported patterns and custom errors before their importers ship.
+**Requirement.** Operators constrain text answers and give respondents useful, matching validation in the form and API. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-013).
 
 **Acceptance.**
-1. a Worker test publishes a short-text question with minimum 3, maximum 10 and mask `###-####` and refuses 2-character, 11-character and mask-mismatched submissions with field-specific errors while accepting `555-0100`; publish refuses a pattern with a backreference; a browser journey shows the counter and the custom error; a Typeform fixture with `max_length: 150` imports as maximum 150.
-2. *Status: done — per-question length, masks, a bounded linear-time pattern subset, custom errors, a live counter and Typeform lengths ship (`src/core/shared/textValidation.ts`, `src/core/features/flows/ui/TextSettings.tsx`, `tests/runtime/new-question-types.worker.test.ts`, `tests/runtime/form-import.worker.test.ts`, `tests/e2e/text-validation.spec.ts`).
-3. The named browser journey at 1440 and 390 proves saved short/long-text settings, live counters, field-specific custom errors, correction, Back persistence, released submission, ledger and lossless export.
-4. LANG-001 inherits translation of FIELD-013 validation errors; IMPORT-005 and IMPORT-006 inherit faithful mappings of text lengths, masks, supported patterns and custom errors before their importers ship.*
+1. Short and long text support operator-set minimum and maximum character counts within the question-type limits, with a live character counter whenever a maximum is set.
+2. Short text may use a digit/letter/alphanumeric input mask or a bounded linear-time pattern without backreferences or lookaround, with a custom error message translated under LANG-001 and LANG-003; publication refuses patterns outside that subset.
+3. The form and API apply the same rules: minimum three, maximum ten and a three-digit/four-digit phone mask refuse two characters, eleven characters and a mask mismatch with a field-specific error while admitting 555-0100; the form shows the counter and custom error.
+4. Typeform maximum lengths, SurveyMonkey text validation and Jotform input masks retain faithful length, mask, supported-pattern and custom-error settings under IMPORT-005 through IMPORT-007; a Typeform maximum of 150 remains 150.
 
 **Evidence.** `src/core/shared/textValidation.ts`, `src/core/features/flows/ui/TextSettings.tsx`, `tests/runtime/new-question-types.worker.test.ts`, `tests/runtime/form-import.worker.test.ts`, `tests/e2e/text-validation.spec.ts`
-**Gap.** Per-question length, masks, a bounded linear-time pattern subset, custom errors, counter and Typeform lengths ship. The named browser journey at 1440 and 390 proves saved limits/mask, counters, custom errors, correction, retained answers and export. LANG-001 inherits translation of FIELD-013 validation errors; IMPORT-005 and IMPORT-006 inherit faithful mappings of text lengths, masks, supported patterns and custom errors before their importers ship.
+**Gap.** A cited public-door journey must refuse an unsupported pattern at publication and verify browser/API parity for the named invalid lengths and mask. The cited browser journey covers counters, custom errors, correction, submission and export; native precision checks reject these values and patterns through direct service calls, while the HTTP importer exercises only its supported imported pattern.
 
-#### FIELD-014 — Long choice lists and long forms
+#### FIELD-014 — Long choice lists
 
-Core · target · **partial**
+Core · target · **partial** · From FIELD-014 · Cites BASE-ACCESSIBILITY-001
 
-**Requirement.** A dropdown holds at least 1,000 choices and a single- or multiple-choice question at least 250. A dropdown filters as the respondent types, matching anywhere in the label, case- and accent-insensitively, and stays keyboard-operable and announced to screen readers under A11Y-001. In the builder an Editor can paste one choice per line, with duplicates and blank lines named before save, and can insert and then edit built-in lists: the 50 US states, the District of Columbia and the US territories with their USPS codes, and countries with their ISO 3166-1 alpha-2 codes. A revision holds at least 250 questions; each question counts once toward that limit whether it stands alone, sits in a FIELD-012 group or sits on a FIELD-008 page, and statements (FIELD-011), groups and pages count toward a separate structure limit, so neither layout shrinks the question budget. Activation raises `seed.json → limits.questions.dropdownChoices`, `limits.steps.choiceOptionsPerStep` and `limits.steps.perRevision` to load-tested values that meet these floors, records the load test, and keeps `p95Milliseconds.publicScreen` and `answerTransition` on the longest permitted form. An import with a list or form over the limit is never truncated silently: the review names the step and the count (IMPORT-001). FIELD-014 is done only when every requirement and acceptance step in this clause and its target dependencies FIELD-008 (classic pages), FIELD-011 (statement screens), FIELD-012 (question groups) and A11Y-001 (accessible collection) are done.
+**Requirement.** Operators create large choice lists and respondents find an answer without losing keyboard or screen-reader access. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-014).
 
 **Acceptance.**
-1. a Worker test publishes a dropdown built from the country list, a dropdown with 1,000 choices and a 250-question flow that mixes groups and pages, collects a response to each and asserts the stored stable choice IDs; publish refuses a question with one choice over the configured limit and names its step.
-2. A browser journey types "united" in the country dropdown, sees only matching countries, and picks "United States" with the keyboard alone.
-3. A builder journey pastes 300 lines containing one duplicate and sees the duplicate named before save.
-4. *Status: partial — Dropdowns up to 1,000 choices, single/multiple choice up to 250 and revisions of 250 questions with separate screen accounting ship.
-5. Native routes publish and collect a 250-question flow mixing an 80-question group, an 80-question classic page and standalone questions, with country and 1,000-choice dropdowns, preserved stable IDs and lossless exports.
-6. Publish refuses an over-limit question with its stable ID.
-7. The original 20-sample public-screen and answer-transition p95 checks remain within the configured limits.
-8. Browser journeys prove reviewed bulk paste, country search, keyboard collection and export at 1440 and 390. Timings are native local-route evidence; hosted capacity is not claimed. Evidence: `src/core/shared/formLimits.ts`, `src/core/shared/choiceLists.ts`, `tests/runtime/long-forms.worker.test.ts`, `tests/e2e/long-choices.spec.ts`. Remaining: Optional group media and statement items under FIELD-005/FIELD-011 remain dependencies; mixed-layout capacity alone does not complete this clause.*
+1. A dropdown supports at least 1,000 choices and single- and multiple-choice questions support at least 250 choices.
+2. A dropdown filters anywhere in each label, case- and accent-insensitively, and its filtering and selection remain accessible under A11Y-001.
+3. The builder accepts one choice per pasted line and names duplicate and blank lines before save; pasting 300 lines with one duplicate identifies that duplicate.
+4. Operators insert and edit built-in lists of the 50 US states, District of Columbia and US territories with their USPS codes, and countries with ISO 3166-1 alpha-2 codes.
+5. A respondent typing united sees only matching countries and selects United States by keyboard; country and 1,000-choice dropdowns collect stable choice identities.
+6. Publication refuses one choice above the configured limit and names the question; an imported list above the limit is reported with its question and count rather than silently truncated.
 
 **Evidence.** `src/core/shared/formLimits.ts`, `src/core/shared/choiceLists.ts`, `tests/runtime/long-forms.worker.test.ts`, `tests/e2e/long-choices.spec.ts`
 **Gap.** Remaining: Optional group media and statement items under FIELD-005/FIELD-011 remain dependencies; mixed-layout capacity alone does not complete this clause. 250 questions across pages, groups and standalone screens; country and 1,000-choice dropdowns; over-limit publication refusal, stable IDs, exports and original 20-sample p95 limits. Browser builder/keyboard/export proof at 1440 and 390. Hosted capacity is not claimed.
 
-#### FIELD-015 — Date entry and display format
+#### FIELD-019 — Long forms without layout penalties
 
-Core · target · **done**
+Core · target · **partial** · From FIELD-014
 
-**Requirement.** An Editor sets a date question's display format (MM/DD/YYYY, DD/MM/YYYY or YYYY-MM-DD) and separator (`/`, `-` or `.`). The default follows the form language under LANG-001, MM/DD/YYYY for `en-US` and `es-US`, and an Editor may override it per question. The respondent enters the date in labeled month, day and year fields in that order, or through an accessible date picker, independent of the browser's locale, and sees it in that format on the answer, in recall (LOGIC-001), on the review and completion screens, in the confirmation email (RESP-020) and in the submission PDF (WORK-005). An impossible date (for example 02/30/2026) or one outside the question's bounds is refused with a field-specific error that names the expected format. The stored value stays the FLOW-019 YYYY-MM-DD calendar date, so CSV, JSON, the API and integrations are unchanged; the ledger and response emails show dates in the form's display format. Imports keep the source format: Typeform date `structure` (`MMDDYYYY`, `DDMMYYYY`, `YYYYMMDD`) and `separator` (IMPORT-007) and Jotform date format (IMPORT-006). The RESP-024 respondent review screen now shows dates in the FIELD-015 published display format. NOTIFY-006 and RESP-020 inherit the display format in answer-bearing and confirmation emails, WORK-005 in the submission PDF, LANG-001 the per-language default and IMPORT-006 the Jotform date format, each before that capability ships.
+**Requirement.** A form's question capacity remains available when its questions are arranged in pages or groups. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-014).
 
 **Acceptance.**
-1. a browser journey with the browser locale set to `en-GB` answers an MM/DD/YYYY question by typing 07/04/2026, sees "07/04/2026" in the recalled next prompt and the review, and the CSV holds `2026-07-04`; 02/30/2026 is refused with an error naming MM/DD/YYYY; the same question set to DD/MM/YYYY stores `2026-04-07` for 07/04/2026.
-2. A Worker test imports a Typeform date field with `structure: DDMMYYYY` and `separator: '.'` and asserts the question's format setting.
-3. *Status: done — Published format/separator, labeled calendar entry independent of browser locale, formatted ledger values, ISO exports, Typeform format import and question-answer recall with the published date format ship.
-4. The 1440 and 390 journey under an `en-GB` browser types 07/04/2026 into an MM/DD/YYYY question, sees 07/04/2026 in the recalled next prompt, on the completion screen and in the ledger response review, finds `2026-07-04` in the CSV, sees 02/30/2026 refused with an error naming MM/DD/YYYY, and stores `2026-04-07` for 07/04/2026 under DD/MM/YYYY; the Worker case imports the Typeform format.
-5. NOTIFY-006 and RESP-020 inherit the display format in answer-bearing and confirmation emails, WORK-005 in the submission PDF, LANG-001 the per-language default and IMPORT-006 the Jotform date format, each before that capability ships.
-6. Evidence: `src/core/shared/dateFormat.ts`, `src/core/shared/ui/CalendarDateInput.tsx`, `src/core/shared/answerRecall.ts`, `src/core/features/reporting/repository.ts`, `tests/runtime/new-question-types.worker.test.ts`, `tests/runtime/form-import.worker.test.ts`, `tests/e2e/date-format.spec.ts`.*
+1. A published revision supports at least 250 questions; each question counts once whether standalone, grouped or on a classic page.
+2. Statements, groups and pages consume a separate structure allowance, so choosing those layouts does not shrink the question budget.
+3. The declared question, choice and structure limits meet these floors with recorded seeded load measurements, and the public-screen and answer-transition p95 bars continue to hold on the longest permitted form.
+4. A 250-question form mixing groups and pages collects a complete response; an imported form over the limit is reported with its count rather than silently truncated.
+5. FIELD-008 classic pages, FIELD-011 and FIELD-018 statements, FIELD-012 question groups and A11Y-001 retain their own acceptance obligations at these capacities.
+
+**Evidence.** `src/core/shared/formLimits.ts`, `src/core/shared/choiceLists.ts`, `tests/runtime/long-forms.worker.test.ts`, `tests/e2e/long-choices.spec.ts`
+**Gap.** Remaining: Optional group media and statement items under FIELD-005/FIELD-011 remain dependencies; mixed-layout capacity alone does not complete this clause. 250 questions across pages, groups and standalone screens; country and 1,000-choice dropdowns; over-limit publication refusal, stable IDs, exports and original 20-sample p95 limits. Browser builder/keyboard/export proof at 1440 and 390. Hosted capacity is not claimed.
+
+#### FIELD-015 — Locale-independent date entry and display
+
+Core · target · **partial** · From FIELD-015 · Cites BASE-ACCESSIBILITY-001
+
+**Requirement.** Operators choose a question's calendar format and respondents see that same format throughout their answer journey. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-015).
+
+**Acceptance.**
+1. Editors choose MM/DD/YYYY, DD/MM/YYYY or YYYY-MM-DD and a slash, hyphen or dot separator; the language default follows LANG-001 and LANG-003, including MM/DD/YYYY for US English and US Spanish, with a per-question override.
+2. Respondents enter labeled month, day and year fields in that order, or use an accessible date picker, independently of the browser locale; the answer is displayed in the chosen format.
+3. The answer, LOGIC-001 recall, review, completion, ledger and response emails use the published format; NOTIFY-006, NOTIFY-007, RESP-020, RESP-027 and WORK-005 carry it into answer-bearing emails, confirmations and submission PDFs.
+4. An impossible or out-of-bounds date is refused with a field-specific error naming the expected format.
+5. The stored calendar value remains YYYY-MM-DD under FLOW-019, leaving CSV, JSON, API and integration values unchanged.
+6. In an en-GB browser, 07/04/2026 entered under MM/DD/YYYY appears that way in recall and review and exports as 2026-07-04; 02/30/2026 is refused, and the same entered date under DD/MM/YYYY is stored as 2026-04-07.
 
 **Evidence.** `src/core/shared/dateFormat.ts`, `src/core/shared/ui/CalendarDateInput.tsx`, `src/core/shared/answerRecall.ts`, `src/core/features/reporting/repository.ts`, `tests/runtime/new-question-types.worker.test.ts`, `tests/runtime/form-import.worker.test.ts`, `tests/e2e/date-format.spec.ts`
-**Gap.** Published format/separator, labeled calendar entry independent of browser locale, formatted ledger values, ISO exports, Typeform format import and question-answer recall with the published date format ship. The 1440 and 390 journey under an `en-GB` browser types 07/04/2026 into an MM/DD/YYYY question, sees 07/04/2026 in the recalled next prompt, on the completion screen and in the ledger response review, finds `2026-07-04` in the CSV, sees 02/30/2026 refused with an error naming MM/DD/YYYY, and stores `2026-04-07` for 07/04/2026 under DD/MM/YYYY; the Worker case imports the Typeform format. NOTIFY-006 and RESP-020 inherit the display format in answer-bearing and confirmation emails, WORK-005 in the submission PDF, LANG-001 the per-language default and IMPORT-006 the Jotform date format, each before that capability ships. The RESP-024 respondent review screen now shows dates in the FIELD-015 published display format.
+**Gap.** A cited public-door journey must import a Typeform date structure/separator and read its retained setting. The browser journey proves locale-independent entry, refusal, recall, review/completion, ledger and ISO export, but the cited Typeform format check uses FormImports directly rather than an import route or command.
 
-#### FIELD-016 — Opinion scales with labels
+#### FIELD-020 — Import date formats
 
-Core · target · **done**
+Core · target · **partial** · From FIELD-015
 
-**Requirement.** A rating question (FLOW-003) sets its start (0 or 1), its number of steps (2 to 11, so 0–10 and 1–11 are the longest scales) and optional labels for the low end, the middle and the high end, each up to 100 characters and translatable under LANG-001. The labels sit over the first step, the middle step (between the two middle steps when the count is even) and the last step, on phones as on desktop, and each step's accessible name joins its number and any label (A11Y-001). The stored answer is the number, whatever the labels; LOGIC-006 numeric operators, LOGIC-003 calculations, recall and results use it, and results show the distribution across every step with the end labels on the axis. NPS keeps its fixed 0–10 and its two existing labels. Start, steps and labels belong to the published revision, so changing them makes a new revision (FLOW-001) and results keep each revision's own scale. Imports map Typeform opinion-scale `start_at_one`, `steps` and `labels.left`, `labels.center` and `labels.right`, Google Forms scale `low`, `high`, `lowLabel` and `highLabel`, and SurveyMonkey and Jotform scale labels (IMPORT-005 to IMPORT-007). When this clause activates, FLOW-003's rating options are rewritten to name these settings. LANG-001 inherits translation of the low, middle and high labels; IMPORT-005 and IMPORT-006 inherit SurveyMonkey and Jotform scale start, step and label mappings, each before that capability ships.
+**Requirement.** A moved form keeps its source date-entry format instead of adopting the installation's locale. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-015).
 
 **Acceptance.**
-1. a browser journey publishes a 0–6 scale labeled "Not at all", "Neutral" and "Completely", sees the labels over steps 0, 3 and 6 and accessible names that join each number and label, answers 0, finds 0 in the ledger and the CSV, and is routed by a LOGIC-006 `less than 2` rule; a Worker test refuses 1 or 12 steps and a 101-character label at publish; the IMPORT-007 Typeform fixture's opinion scale with `start_at_one: false`, 7 steps and three labels arrives as a 0–6 scale with those labels, and a Google Forms scale keeps its `lowLabel` and `highLabel`.
-2. *Status: done — Start 0/1, 2–11 steps, three labels, accessible numeric controls, full revision-specific distributions and Typeform/Google scale labels ship.
-3. The 1440 and 390 journey publishes a 0–6 scale labeled Not at all, Neutral and Completely, checks each label over steps 0, 3 and 6 and the accessible names that join number and label, answers 0, is routed by a LOGIC-006 `less than 2` rule, and finds 0 in the ledger, the results with end labels and the CSV; the Worker case refuses invalid steps and labels and the import fixtures keep Typeform and Google labels.
-4. LANG-001 inherits translation of the low, middle and high labels; IMPORT-005 and IMPORT-006 inherit SurveyMonkey and Jotform scale start, step and label mappings, each before that capability ships.
-5. Evidence: `src/core/shared/ratingScale.ts`, `src/core/shared/ui/RatingInput.tsx`, `tests/runtime/new-question-types.worker.test.ts`, `tests/runtime/form-import.worker.test.ts`, `tests/e2e/opinion-scale.spec.ts`.*
+1. Typeform month/day/year, day/month/year and year/month/day structures and separators map under IMPORT-007 to the corresponding question settings.
+2. Jotform date formats retain their source format under IMPORT-006.
+3. A Typeform day/month/year date with a dot separator arrives in the import review with that same format and separator.
+
+**Evidence.** `src/core/shared/dateFormat.ts`, `src/core/shared/ui/CalendarDateInput.tsx`, `src/core/shared/answerRecall.ts`, `src/core/features/reporting/repository.ts`, `tests/runtime/new-question-types.worker.test.ts`, `tests/runtime/form-import.worker.test.ts`, `tests/e2e/date-format.spec.ts`
+**Gap.** A cited public-door journey must import a Typeform date structure/separator and read its retained setting. The browser journey proves locale-independent entry, refusal, recall, review/completion, ledger and ISO export, but the cited Typeform format check uses FormImports directly rather than an import route or command.
+
+#### FIELD-016 — Labeled opinion scales
+
+Core · target · **partial** · From FIELD-016 · Cites BASE-ACCESSIBILITY-001
+
+**Requirement.** Operators publish a numeric rating scale with meaningful labels while keeping its answers and reports numeric. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-016).
+
+**Acceptance.**
+1. A rating question starts at zero or one, has two to eleven steps and may label its low, middle and high points with up to 100 characters each, translated under LANG-001 and LANG-003.
+2. On phone and desktop the low, middle and high labels sit over the corresponding steps, including between the two middle steps for an even count; each step's accessible name joins its number and any label.
+3. The stored answer is the number; numeric conditions, LOGIC-003 calculations, recall and results use it, and the results distribution includes every step with endpoint labels on its axis.
+4. NPS retains its fixed zero-to-ten scale and two labels. Other scale starts, lengths and labels belong to the published revision, and each revision's results retain that revision's scale.
+5. A labeled zero-to-six scale shows Not at all, Neutral and Completely over zero, three and six; answering zero routes through a less-than-two condition and retains zero in the ledger and CSV.
+6. Publication refuses one or twelve steps and a 101-character label.
 
 **Evidence.** `src/core/shared/ratingScale.ts`, `src/core/shared/ui/RatingInput.tsx`, `tests/runtime/new-question-types.worker.test.ts`, `tests/runtime/form-import.worker.test.ts`, `tests/e2e/opinion-scale.spec.ts`
-**Gap.** Start 0/1, 2–11 steps, three labels, accessible numeric controls, full revision-specific distributions and Typeform/Google scale labels ship. The 1440 and 390 journey publishes a 0–6 scale labeled Not at all, Neutral and Completely, checks each label over steps 0, 3 and 6 and the accessible names that join number and label, answers 0, is routed by a LOGIC-006 `less than 2` rule, and finds 0 in the ledger, the results with end labels and the CSV; the Worker case refuses invalid steps and labels and the import fixtures keep Typeform and Google labels. LANG-001 inherits translation of the low, middle and high labels; IMPORT-005 and IMPORT-006 inherit SurveyMonkey and Jotform scale start, step and label mappings, each before that capability ships.
+**Gap.** A cited public-door journey must refuse invalid scale settings at publication and import/read Typeform and Google scale labels. The browser journey covers labeled zero, routing, ledger, result labels and CSV; cited invalid settings are service-level saves, and the old Evidence set does not contain a Google Forms scale-import journey.
+
+#### FIELD-021 — Import opinion scales and labels
+
+Core · target · **partial** · From FIELD-016
+
+**Requirement.** Moving a form preserves its numeric scale and endpoint and midpoint labels. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#field-016).
+
+**Acceptance.**
+1. Typeform scale starts, step counts and low/middle/high labels map under IMPORT-007; a seven-step scale starting at zero arrives as zero through six with all three labels.
+2. Google Forms scale endpoints and low/high labels map under IMPORT-007 without losing either label.
+3. SurveyMonkey and Jotform scale starts, step counts and labels map under IMPORT-005 and IMPORT-006.
+
+**Evidence.** `src/core/shared/ratingScale.ts`, `src/core/shared/ui/RatingInput.tsx`, `tests/runtime/new-question-types.worker.test.ts`, `tests/runtime/form-import.worker.test.ts`, `tests/e2e/opinion-scale.spec.ts`
+**Gap.** A cited public-door journey must refuse invalid scale settings at publication and import/read Typeform and Google scale labels. The browser journey covers labeled zero, routing, ledger, result labels and CSV; cited invalid settings are service-level saves, and the old Evidence set does not contain a Google Forms scale-import journey.
 
 #### LOGIC-001 — Answer recall
 
-Core · target · **done**
+Core · target · **partial** · Cites BASE-INPUT-002
 
-**Requirement.** A prompt, supporting text, choice label, completion screen or email may insert an earlier answer, hidden field or calculated value. Question-answer references use the stable question ID (`{{<step-id>}}`); hidden-field and calculated references belong to FIELD-001 and LOGIC-003. Recall shows only valid values on the respondent's current path and renders them as escaped text; skipped or invalid answers insert blank text. Publish refuses missing, current, future or impossible off-path question references with the containing step ID, and duplication remaps references to the new question IDs. NOTIFY-006 and RESP-020 inherit LOGIC-001 answer, hidden-field and calculated-value recall in answer-bearing emails, including escaped output and blank skipped or invalid values, before shipping those consumers.
+**Requirement.** Forms reuse an earlier accepted answer in respondent-facing text without changing the underlying answer. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#logic-001).
 
 **Acceptance.**
-1. a browser journey answers a name question and sees it in the next prompt; going back and changing it updates the later prompt; an injected `<script>` answer renders inert.
-2. Worker checks also reject invalid references at publish, keep respondent-supplied tokens inert, leave stored answers unchanged and remap duplicate references; the phone and desktop browser journey checks preview, Back edits and recalled choice text.
-3. *Status: done — Stable question references render earlier valid on-path answers in prompts, supporting text, choice labels and completion screens in preview and published forms.
-4. Back edits update recalled values; skipped/invalid answers stay blank; respondent tokens and HTML remain inert.
-5. Publish refuses missing/future/off-path references and duplication remaps IDs.
-6. Declared hidden-field and calculated-value recall also ship.
-7. NOTIFY-006 and RESP-020 inherit LOGIC-001 answer, hidden-field and calculated-value recall in answer-bearing emails, including escaped output and blank skipped or invalid values, before shipping those consumers.
-8. Evidence: `src/core/shared/answerRecall.ts`, `src/core/features/flows/ui/RecallHelp.tsx`, `tests/runtime/answer-recall.worker.test.ts`, `tests/e2e/answer-recall.spec.ts`.*
+1. Prompts, supporting text, choice labels, completion screens and emails may include an earlier answer, a declared hidden value under FIELD-001 or a calculated value under LOGIC-003.
+2. Question references use stable question identities; missing, current, future or impossible off-path question references are refused at publication with the containing question named, and duplication remaps references to the copied identities.
+3. Only valid answers on the current path appear in recalled text; skipped or invalid answers insert blank text, and recalled HTML or respondent-supplied reference tokens remain inert.
+4. Changing a name by going Back updates the later prompt and recalled choice text, in preview and published collection, while stored answers remain unchanged.
+5. NOTIFY-006, NOTIFY-007, RESP-020 and RESP-027 retain answer, hidden-value and calculated-value recall, including escaped output and blank skipped or invalid values, in their answer-bearing emails.
 
 **Evidence.** `src/core/shared/answerRecall.ts`, `src/core/features/flows/ui/RecallHelp.tsx`, `tests/runtime/answer-recall.worker.test.ts`, `tests/e2e/answer-recall.spec.ts`
-**Gap.** Stable question references render earlier valid on-path answers in prompts, supporting text, choice labels and completion screens in preview and published forms. Back edits update recalled values; skipped/invalid answers stay blank; respondent tokens and HTML remain inert. Publish refuses missing/future/off-path references and duplication remaps IDs. Declared hidden-field and calculated-value recall also ship. NOTIFY-006 and RESP-020 inherit LOGIC-001 answer, hidden-field and calculated-value recall in answer-bearing emails, including escaped output and blank skipped or invalid values, before shipping those consumers.
+**Gap.** A cited public-door journey must exercise publication refusals for invalid recall references and duplicate/remap a recalled form, including blank skipped or invalid values. The browser journey proves preview, updated prompt/choice/completion recall and inert script text, while the remaining cited outcomes are direct service or interpolation checks.
 
-#### LOGIC-002 — Known-data prefill
+#### LOGIC-002 — Known-data prefill in invitations
 
-Core · target · **partial**
+Core · target · **partial** · From LOGIC-002 · Cites BASE-DATA-003, BASE-SECRET-001
 
-**Requirement.** An invitation, identified in-product survey or CRM-linked link may prefill questions from the contact's stored fields (AUD-001) or a connected CRM record (INTEG-003 to INTEG-005); prefilled answers are visibly marked, editable by the respondent unless locked by the operator, and recorded as prefilled in the response. Anonymous collection never prefills. Known-data mapping is explicit per question in the draft and frozen in its published revision; old revisions have no mapping. Only the invitation-token holder receives validated string-compatible stored contact values, never in a URL, audit row, log or analysis input before submission. Invalid values are dropped without coercion. The response retains the submitted answer and an unchanged, edited or locked prefill marker, not the original contact value; normal erasure, ledger/search, CSV/JSON and archives carry that answer and marker. Mapped invitations cannot save to another device; no public, embed, collector, preview or resume path supplies contact prefills. Publish refuses deleted or string-incompatible mappings by step ID. DIST-015 and INTEG-003 to INTEG-005 inherit these rules before their in-product/CRM doors ship.
+**Requirement.** Known invitation recipients can review and correct explicitly mapped contact data without exposing it to anonymous collection. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#logic-002).
 
 **Acceptance.**
-1. a Worker test launches invitations to contacts with a company field, the respondent sees it prefilled, edits it, and the ledger shows the edited value with a prefill marker.
-2. *Status: partial — Prefill obligations are complete for editable and locked invitation prefills and marker custody.
-3. The in-product and CRM halves remain inherited by DIST-015 and INTEG-003 to INTEG-005 before shipping and are unbuilt.
-4. Default APPROVED by ct (23 October 2026): revision-frozen explicit mapping, invitation-token-only values and no cross-device save on mapped invitations.
-5. No real mail provider call or consent was used.*
+1. A published revision freezes its explicit mapping from stored contact fields to questions; older revisions have no mapping, and anonymous collection never prefills.
+2. Only the invitation-token holder receives validated string-compatible stored values, visibly marked and editable unless locked by the operator; invalid values are dropped without coercion.
+3. The submitted answer retains an unchanged, edited or locked prefill marker rather than the original contact value; normal erasure, ledger/search, CSV/JSON and archives preserve that answer and marker.
+4. Contact-prefill values never appear in a URL, audit row, log or analysis input before submission, and public, embed, collector, preview and resume paths supply no contact prefills.
+5. Mapped invitations cannot save across devices, and publication refuses deleted or string-incompatible mappings with their question identities.
+6. An invited contact sees a mapped company value, edits it and finds the edited answer with its prefill marker in the ledger.
+
+**Evidence.** `tests/runtime/distribution.worker.test.ts` — "invitation prefill stays pinned, is editable and marked in the ledger, locks are enforced and one completion cancels reminders"; `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey” — "Audience CSV review, saved segment, email score 9, editable invitation prefill, confirmation receipt, identified ledger, cancellation, opt-out and erasure are keyboard accessible" (1440/390); `scripts/deployment-data.check.mjs` — “complete archive recovery retains exact data and attachment custody and refuses unsafe sources, archives and destinations without overwrites” — "full current-data roundtrip preserves prefill markers and disabled confirmation history, stable revisions, quarantine, receipts, historical actors, auth, effects, exact text and int64"
+**Gap.** Prefill obligations are complete for editable and locked invitation prefills and marker custody. The in-product and CRM halves remain inherited by DIST-015 and INTEG-003 to INTEG-005 before shipping and are unbuilt. Default APPROVED by ct (23 October 2026): revision-frozen explicit mapping, invitation-token-only values and no cross-device save on mapped invitations. No real mail provider call or consent was used.
+
+#### LOGIC-007 — Known-data prefill from connected records
+
+Core · target · **partial** · From LOGIC-002
+
+**Requirement.** Identified in-product surveys and CRM-linked collection use explicitly mapped known records under the same custody as invitation prefill. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#logic-002).
+
+**Acceptance.**
+1. An identified in-product survey under DIST-015 or a CRM-linked collection under INTEG-003, INTEG-018, INTEG-004 or INTEG-005 may prefill mapped stored fields or connected CRM values.
+2. These sources follow LOGIC-002's published mapping, visible marking, edit-or-lock behavior, validation, submitted-answer custody, erasure and exclusion from anonymous collection before their collection door is offered.
 
 **Evidence.** `tests/runtime/distribution.worker.test.ts` — "invitation prefill stays pinned, is editable and marked in the ledger, locks are enforced and one completion cancels reminders"; `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey” — "Audience CSV review, saved segment, email score 9, editable invitation prefill, confirmation receipt, identified ledger, cancellation, opt-out and erasure are keyboard accessible" (1440/390); `scripts/deployment-data.check.mjs` — “complete archive recovery retains exact data and attachment custody and refuses unsafe sources, archives and destinations without overwrites” — "full current-data roundtrip preserves prefill markers and disabled confirmation history, stable revisions, quarantine, receipts, historical actors, auth, effects, exact text and int64"
 **Gap.** Prefill obligations are complete for editable and locked invitation prefills and marker custody. The in-product and CRM halves remain inherited by DIST-015 and INTEG-003 to INTEG-005 before shipping and are unbuilt. Default APPROVED by ct (23 October 2026): revision-frozen explicit mapping, invitation-token-only values and no cross-device save on mapped invitations. No real mail provider call or consent was used.
@@ -1587,75 +2331,128 @@ Core · target · **partial**
 
 Core · target · **done**
 
-**Requirement.** Operators define numeric and text variables computed from answers and hidden fields with arithmetic, conditionals (whose tests are LOGIC-006 conditions), rounding and date differences (for example a price total, a lead score or a BMI); calculations are typed, validated at publish for missing references and division by zero, usable as LOGIC-006 operands in branching, completion and alerts, in recall, payments (PAY-001) and results, and stored with the response. Publication proves calculated branch conditions exactly over finite inputs (bounded integer numbers, ratings, scores, booleans, single choices and text equality classes) and refuses a destination they show unreachable; a calculated condition whose variable reads an unbounded or decimal number, a date, a multi-select, masked or patterned text or a numeric hidden field may be true or false, so its destinations count as reachable. Destinations stay forward-only and feasible cycles are refused, so every path still ends; stored values, preview and the runtime evaluator are unchanged. NOTIFY-005 inherits LOGIC-003 calculation operands in alert conditions; PAY-001 inherits calculated payment amounts, each before that capability ships.
+**Requirement.** Operators calculate typed response values and use them consistently to route, explain and report the result. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#logic-003).
 
 **Acceptance.**
-1. a Worker test publishes a form whose total depends on quantity and a conditional discount and asserts the stored total for ten answer sets; publish refuses an expression referencing a deleted question; a BMI rounded from two decimal answers (weight and height) gates a branch, preview shows the computed value on both branches, and the form publishes and routes both answer sets at 1440 and 390.
-2. *Status: done — Revision-bound numeric and text calculations ship with arithmetic, LOGIC-006 conditionals, rounding, calendar date differences, hidden/question/variable references, publish-time type/reference/cycle/zero-denominator checks, escaped recall, preview, branching and page/group visibility, server-computed stored values, ledger typed filters, CSV/JSON and copy/archive custody.
-3. Ten conditional quotes and private resume/replay are proved through Worker routes; builder, preview, both completion paths and ledger are proved at 1440 and 390.
-4. NOTIFY-005 inherits LOGIC-003 calculation operands in alert conditions; PAY-001 inherits calculated payment amounts, each before that capability ships.
-5. Calculated conditions publish over every typed input: finite inputs are proved exactly and refuse unreachable destinations; a calculated test over an unbounded or decimal number, date, multi-select, masked/patterned text or numeric hidden field may be true or false, so its destinations count as reachable.
-6. A BMI from two decimal answers gates a branch, previews both branches with its value and publishes through Worker routes and at 1440 and 390.
-7. Evidence: `src/core/shared/calculations.ts`, `src/core/shared/calculationValidation.ts`, `src/core/features/flows/calculation-proof.ts`, `tests/runtime/calculations.worker.test.ts`, `tests/e2e/calculations.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”.*
+1. Numeric and text variables derive from answers and hidden fields through arithmetic, LOGIC-006 conditionals, rounding and calendar-date differences, and are stored with the response.
+2. Publication refuses missing references, wrong types and possible division by zero; calculations may drive branching, completion, alerts, recall, PAY-001 amounts and results, with NOTIFY-005 and PAY-001 retaining those consumer obligations.
+3. Calculated conditions over bounded integer numbers, ratings, scores, booleans, single choices and text equality classes are proved exactly, and publication refuses an unreachable destination.
+4. A calculated condition reading unbounded or decimal numbers, dates, multi-select, masked or patterned text, or numeric hidden context may be true or false for reachability; destinations remain forward-only and feasible cycles are refused.
+5. A quantity-and-discount form stores the hand-computed total for ten answer sets and refuses an expression referencing a deleted question.
+6. A rounded BMI from decimal weight and height values previews both calculated branches and publishes and routes both answer sets through the form at 1440 and 390.
 
-**Evidence.** `src/core/shared/calculations.ts`, `src/core/shared/calculationValidation.ts`, `src/core/features/flows/calculation-proof.ts`, `tests/runtime/calculations.worker.test.ts`, `tests/e2e/calculations.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”
-**Gap.** Revision-bound numeric and text calculations ship with arithmetic, LOGIC-006 conditionals, rounding, calendar date differences, hidden/question/variable references, publish-time type/reference/cycle/zero-denominator checks, escaped recall, preview, branching and page/group visibility, server-computed stored values, ledger typed filters, CSV/JSON and copy/archive custody. Ten conditional quotes and private resume/replay are proved through Worker routes; builder, preview, both completion paths and ledger are proved at 1440 and 390. NOTIFY-005 inherits LOGIC-003 calculation operands in alert conditions; PAY-001 inherits calculated payment amounts, each before that capability ships. Calculated conditions publish over every typed input: finite inputs are proved exactly and refuse unreachable destinations; a calculated test over an unbounded or decimal number, date, multi-select, masked/patterned text or numeric hidden field may be true or false, so its destinations count as reachable. A BMI from two decimal answers gates a branch, previews both branches with its value and publishes through Worker routes and at 1440 and 390.
+**Evidence.** `tests/runtime/calculations.worker.test.ts` — "agrees across preview, collection, recall and exports for ten quotes and preserves committed values on replay"; `tests/runtime/calculations.worker.test.ts` — "refuses cyclic, deleted, mistyped and zero-denominator calculations, and misplaced or out-of-range payment steps, without publishing the draft"; `tests/runtime/calculations.worker.test.ts` — "calculates typed hidden inputs, arithmetic, calendar differences and dependent blanks after duplication"; `tests/runtime/calculations.worker.test.ts` — "a BMI from two decimal answers gates a branch and publishes"; `tests/e2e/calculations.spec.ts` — "a BMI from two decimal answers gates a branch and publishes"
+**Gap.** None.
 
-#### LOGIC-004 — Quizzes and outcomes
+#### LOGIC-004 — Quiz scores and outcomes
 
 Core · target · **missing**
 
-**Requirement.** A flow may score answers (correct answers, points per choice or personality outcome mapping), show the respondent their score, per-question feedback and an outcome screen chosen by score range or top outcome (the score and outcome are LOGIC-006 operands, so an outcome rule may also combine them with answers or hidden fields), and report score distributions, per-question correctness and pass rates. This clause inherits RSLT-006: a quiz score and an outcome are crosstab dimensions with the same stated shares, chi-square rule and ANLY-005 suppression.
+**Requirement.** Forms grade answers or identify an outcome and report both the respondent's result and the aggregate performance. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#logic-004).
 
 **Acceptance.**
-1. a Worker test publishes a graded quiz and a personality quiz and asserts scores, chosen outcome screens and the score report for fixed answer sets, and crosses the outcome against a question under RSLT-006.
-2. *Status: missing.*
+1. A quiz supports correct-answer grading, points per choice and personality-outcome mapping, and shows the respondent their score and per-question feedback.
+2. A score range or top outcome chooses a completion screen and may be combined with answers or hidden fields through LOGIC-006 conditions.
+3. Reports show score distributions, per-question correctness and pass rates for fixed answer sets from graded and personality quizzes.
+4. Quiz scores and outcomes are crosstab dimensions under RSLT-006 and RSLT-014 with stated shares, the same chi-square rule and ANLY-005 suppression; an outcome can be crossed against a question.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
-#### LOGIC-006 — Conditions across the form
+#### LOGIC-006 — One condition model and typed operands
 
-Core · target · **partial**
+Core · target · **partial** · From LOGIC-006
 
-**Requirement.** One condition model serves every rule that decides something from a response: a branch rule (FLOW-005), the choice of completion screen or redirect (LOGIC-005), show/hide inside a classic page (FIELD-008), the conditional terms of a calculation (LOGIC-003), a quiz outcome (LOGIC-004), a response-email rule (NOTIFY-006) and an alert rule (NOTIFY-005). A rule therefore means the same thing in the builder, in preview, in the published runtime and in the Worker, which all use one shared evaluator. A rule is a tree of conditions joined by AND and OR groups, up to `seed.json → limits.logic.conditionsPerRule` conditions and `limits.logic.groupDepth` levels of nesting; activation adds both keys with load-tested values against a design target of 20 conditions and 3 levels. The existing "always" default path stays. Each condition tests one operand that lies earlier on the respondent's path: any question (including the step being left and any question in a FIELD-012 group or FIELD-008 page), a FIELD-002 matrix row, the typed text of a FIELD-010 Other choice, a FIELD-001 hidden field, a LOGIC-003 variable, or a LOGIC-004 score or outcome; rules evaluated after submission (NOTIFY-005, NOTIFY-006) may also test the PAY-001 payment state. Operators by operand type: single choice, dropdown and matrix row take is, is not, is any of and is none of; multiple choice takes includes any of, includes all of, includes none of and is exactly; short text, long text, email, URL, phone, Other text and text hidden fields or variables take equals, does not equal, begins with, ends with, contains and does not contain, compared case-insensitively after trimming and Unicode NFC normalization; number, rating, NPS, CSAT, CES, currency, score, and numeric hidden fields or variables take equals, does not equal, less than, at most, greater than and at least; date takes before, on, not on, after, on or before and on or after, compared as calendar dates without timezone conversion (FLOW-019); yes/no and consent take is yes and is no; priority compares a choice's rank numerically (FLOW-005); and every operand takes is answered and is blank. An operand the respondent's path skipped, an optional question left empty and a hidden field absent from the link are all blank: a blank operand satisfies only "is blank", fails every other operator including the negative ones, and never raises an error or blocks progress (FLOW-020). FLOW-012 and FLOW-013 validation extends to every operand: publish (FLOW-006) is refused, naming the source step, the rule and the condition, for an operand that is a deleted question, row, choice, hidden field or variable; an operand that cannot precede the rule's step on any path (for example a later step); an operator that does not fit the operand's type; a choice ID that does not belong to the operand's question; or a tree beyond the limits. Destinations stay forward-only, so every path still terminates. The `flow.branch-selection.v1` policy is unchanged: the first matching rule in displayed order, then the default path. The Worker re-evaluates the same rules from accepted on-path answers when it accepts each answer and the final submission. Under RESP-004, an answer to a question off the respondent's path is discarded before final validation, never stored, scored or exported; final submission is validated only on its on-path answers, and new condition-tree paths are evaluated from accepted on-path answers. In the builder, an Editor adds conditions and groups, sets AND or OR per group, picks operands from a list of only the earlier questions, rows, hidden fields, variables and scores, and reads a plain-English summary of each rule beside the path (for example "Company size at least 50 and Role is Decision maker, or plan equals enterprise → Book a demo"); the editor is keyboard-operable under A11Y-001. Preview (FLOW-007) shows each rule's tree with every condition's operand value and true or false result, each group's result and the chosen next step, exactly as the published runtime evaluates them. Rules are part of the published revision (FLOW-008) and reference stable IDs (FLOW-015), so renaming a question, choice or hidden field never changes a rule. Imports map conditions faithfully: Typeform logic `condition` trees with `and` and `or`, `field`, `hidden`, `variable`, `choice` and `constant` operands and the operators `is`, `is_not`, `equal`, `not_equal`, `begins_with`, `ends_with`, `contains`, `not_contains`, `lower_than`, `lower_equal_than`, `greater_than`, `greater_equal_than`, `earlier_than`, `earlier_than_or_on`, `later_than`, `later_than_or_on`, `on`, `not_on` and `always`, from a definition file (IMPORT-001) or by connection (IMPORT-007); SurveyMonkey advanced branching with its AND/OR conditions on questions and custom variables (IMPORT-005); and Jotform conditions with their All/Any linking and equals, not equals, contains, does not contain, starts with, ends with, less than, greater than, before, after, is empty and is filled terms (IMPORT-006). A source condition with no faithful mapping is listed as unsupported and leaves its path incomplete, never guessed (IMPORT-001). On activation FLOW-005 and FLOW-012 are rewritten to this model. LOGIC-006 is done only when every requirement and acceptance step in this clause and its target dependencies FIELD-001 (hidden fields), FIELD-002 (matrix rows), FIELD-008 (classic pages), FIELD-010 (Other text), FIELD-012 (question groups), LOGIC-003 (calculations), LOGIC-004 (quizzes and outcomes), LOGIC-005 (completion and redirects), NOTIFY-005 (alerts), NOTIFY-006 (response emails), PAY-001 (payment state), IMPORT-005, IMPORT-006 and IMPORT-007 (condition imports), and A11Y-001 (keyboard access) are done.
+**Requirement.** The same typed conditions decide response-dependent behavior throughout the form. Its operand and consumer scope includes FIELD-001, FIELD-002, FIELD-008, FIELD-010, FIELD-012, FIELD-017, LOGIC-003, LOGIC-004, LOGIC-005, NOTIFY-005, NOTIFY-006, NOTIFY-007 and PAY-001; import mapping is governed by LOGIC-009 and accessible authoring by A11Y-001. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#logic-006).
 
 **Acceptance.**
-1. a browser journey publishes a lead form whose rule is (company size at least 50 AND role is "Decision maker") OR hidden field `plan` equals `enterprise`, drives four answer sets through the published form (both conditions true; size true and role false; both false with `plan=enterprise` on the link; all false) and asserts each lands on the expected step; an email `ends with gmail.com` rule routes an address whose domain is typed `GMAIL.COM` (case-insensitive) and not one whose domain is `gmail.co`; `is not` on a single choice routes every other choice; an `is blank` rule on an optional question the respondent skipped routes, and the same question's `does not equal` rule does not match it; preview shows each condition's value and result for one answer set.
-2. Worker tests refuse publish for a condition that references a later step and for one that references a deleted hidden field, each naming the rule; a submission carrying an off-path answer is accepted when its on-path answers are valid, with the off-path answer absent from stored answers, scoring and exports under RESP-004, and condition-tree routing computed from accepted on-path answers.
-3. A Worker test imports a Typeform fixture with an `and` jump over a field, a hidden field and a `contains` text condition, and a Jotform fixture with an Any-linked condition, and asserts both arrive intact as LOGIC-006 rules in the review.
-4. *Status: partial — Bounded AND/OR trees over current and earlier on-path structured, numeric, date and boolean questions, negative/set comparisons and blank/answered tests ship.
-5. The builder offers earlier operands and readable summaries; preview displays every operand value and group result; preview, published collection and Worker admission share the evaluator.
-6. Exact path-correlated publication validation rejects unreachable destinations and feasible cycles.
-7. Published revision pinning, duplicated/team-template IDs, 20 conditions across three group levels and archive custody are exercised.
-8. Text prefix/suffix/contains operators, Other-text operands, grids, quiz/payment operands, quiz, alert/email consumers and compound-condition import mappings remain unbuilt. Declared hidden fields, normalized text equality/inequality and supported calculated operands now share branching, preview and page/group visibility evaluation. Calculated conditions are proved exactly over finite inputs; over unbounded inputs they may be true or false for reachability (LOGIC-003). Classic-page and group visibility share the evaluator under FIELD-008/FIELD-012. Exact feasibility for required text or necessary Other answers with a pattern/mask is explicitly refused; proof-budget exhaustion refuses publication. Existing submission semantics discard off-path answers rather than rejecting the entire request. Browser builder, preview and four collection paths are proved at 1440 and 390. Evidence: `src/core/shared/conditions.ts`, `src/core/features/flows/condition-paths.ts`, `src/core/features/flows/ui/ConditionEditor.tsx`, `tests/runtime/conditions.worker.test.ts`, `tests/e2e/conditions.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”.*
+1. AND and OR groups serve FLOW-005 branches, LOGIC-005 completions, FIELD-008 visibility, LOGIC-003 conditionals, LOGIC-004 outcomes, NOTIFY-005 alerts and NOTIFY-006 and NOTIFY-007 response-email rules; the builder, preview, collection and server admission give the same result.
+2. The declared capacity supports at least 20 conditions and three nesting levels, while preserving the always-default path.
+3. A condition may read an earlier on-path question, including the question being left or a page/group member, a matrix row, Other text, a hidden field, a variable, a quiz score or outcome; post-submission rules may also read payment state.
+4. Single-choice, dropdown and matrix-row values support equality, inequality, any-of and none-of; multi-choice values support includes-any, includes-all, includes-none and exact-set comparisons.
+5. Text, email, URL, phone, Other text and text context or variables support equality, inequality, begins-with, ends-with, contains and does-not-contain after case-insensitive, trimmed Unicode normalization.
+6. Numbers, ratings, native scores, USD amounts and numeric context or variables support all equality and ordering comparisons; calendar dates support before/on/after and inclusive comparisons without timezone conversion; boolean/consent values support yes/no; priority compares a choice's rank numerically.
+7. Every operand supports answered and blank; skipped, empty optional or absent hidden values satisfy only blank, fail all other operators including negative comparisons and never block progress.
+8. Publication names the source, rule and condition when an operand is deleted or cannot precede the rule, an operator does not fit the operand's type, a choice belongs to another question or the tree exceeds its limits.
+
+**Evidence.** `src/core/shared/conditions.ts`, `src/core/features/flows/condition-paths.ts`, `src/core/features/flows/ui/ConditionEditor.tsx`, `tests/runtime/conditions.worker.test.ts`, `tests/e2e/conditions.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”
+**Gap.** Bounded AND/OR trees over current and earlier on-path structured, numeric, date and boolean questions, negative/set comparisons and blank/answered tests ship. The builder offers earlier operands and readable summaries; preview displays every operand value and group result; preview, published collection and Worker admission share the evaluator. Exact path-correlated publication validation rejects unreachable destinations and feasible cycles. Published revision pinning, duplicated/team-template IDs, 20 conditions across three group levels and archive custody are exercised. Remaining: Text prefix/suffix/contains operators, Other-text operands, grids, quiz/payment operands, quiz, alert/email consumers and compound-condition import mappings remain unbuilt. Declared hidden fields, normalized text equality/inequality and supported calculated operands now share branching, preview and page/group visibility evaluation. Calculated conditions are proved exactly over finite inputs; over unbounded inputs they may be true or false for reachability (LOGIC-003). Classic-page and group visibility share the evaluator under FIELD-008/FIELD-012. Exact feasibility for required text or necessary Other answers with a pattern/mask is explicitly refused; proof-budget exhaustion refuses publication. Existing submission semantics discard off-path answers rather than rejecting the entire request.
+
+#### LOGIC-008 — Condition authoring, preview and runtime custody
+
+Core · target · **partial** · From LOGIC-006 · Cites BASE-ACCESSIBILITY-001
+
+**Requirement.** Operators can read the rule they wrote, preview its exact decision and rely on that same decision after publication. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#logic-006).
+
+**Acceptance.**
+1. The builder provides only earlier operands, lets an Editor add conditions and groups and choose AND or OR, and displays a plain-language summary beside the path with keyboard access under A11Y-001.
+2. Preview displays the tree, each operand's value and result, each group's result and the selected next step exactly as collection evaluates it.
+3. Destinations remain forward-only so every path terminates, and branch selection uses the first matching rule in displayed order followed by the default path.
+4. Admission re-evaluates conditions from accepted on-path answers; an off-path answer is discarded before validation and never stored, scored or exported under RESP-004.
+5. Published rules retain stable references, so renaming a question, choice or hidden field cannot change a rule.
+6. A company-size/decision-maker AND rule combined with an enterprise-context OR rule routes all four stated truth cases correctly; uppercase GMAIL.COM matches an ends-with condition while gmail.co does not, single-choice inequality routes other choices, and blank optional answers match blank but not inequality.
+7. Publication refuses later-question and deleted-hidden-field operands with the rule named, while a submission containing an off-path answer is admitted when its on-path answers are valid and leaves the off-path value absent from storage, scoring and exports.
+
+**Evidence.** `src/core/shared/conditions.ts`, `src/core/features/flows/condition-paths.ts`, `src/core/features/flows/ui/ConditionEditor.tsx`, `tests/runtime/conditions.worker.test.ts`, `tests/e2e/conditions.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”
+**Gap.** Bounded AND/OR trees over current and earlier on-path structured, numeric, date and boolean questions, negative/set comparisons and blank/answered tests ship. The builder offers earlier operands and readable summaries; preview displays every operand value and group result; preview, published collection and Worker admission share the evaluator. Exact path-correlated publication validation rejects unreachable destinations and feasible cycles. Published revision pinning, duplicated/team-template IDs, 20 conditions across three group levels and archive custody are exercised. Remaining: Text prefix/suffix/contains operators, Other-text operands, grids, quiz/payment operands, quiz, alert/email consumers and compound-condition import mappings remain unbuilt. Declared hidden fields, normalized text equality/inequality and supported calculated operands now share branching, preview and page/group visibility evaluation. Calculated conditions are proved exactly over finite inputs; over unbounded inputs they may be true or false for reachability (LOGIC-003). Classic-page and group visibility share the evaluator under FIELD-008/FIELD-012. Exact feasibility for required text or necessary Other answers with a pattern/mask is explicitly refused; proof-budget exhaustion refuses publication. Existing submission semantics discard off-path answers rather than rejecting the entire request.
+
+#### LOGIC-009 — Import compound conditions faithfully
+
+Core · target · **partial** · From LOGIC-006
+
+**Requirement.** A moved form retains its source condition tree or explicitly reports an unsupported path rather than guessing its meaning. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#logic-006).
+
+**Acceptance.**
+1. Typeform AND/OR trees retain question, hidden-field, variable, choice and constant operands and equality, inequality, text prefix/suffix/containment, numeric/date ordering and always operators under IMPORT-001 and IMPORT-007.
+2. SurveyMonkey advanced branching retains its AND/OR conditions on questions and custom variables under IMPORT-005.
+3. Jotform conditions retain All/Any linking and equality, inequality, containment, prefix/suffix, numeric/date ordering and empty/filled terms under IMPORT-006.
+4. A source condition without a faithful mapping is listed as unsupported and leaves the path incomplete.
+5. A Typeform AND jump over a question, hidden value and text-contains condition, and a Jotform Any-linked condition, arrive intact in the import review.
 
 **Evidence.** `src/core/shared/conditions.ts`, `src/core/features/flows/condition-paths.ts`, `src/core/features/flows/ui/ConditionEditor.tsx`, `tests/runtime/conditions.worker.test.ts`, `tests/e2e/conditions.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”
 **Gap.** Bounded AND/OR trees over current and earlier on-path structured, numeric, date and boolean questions, negative/set comparisons and blank/answered tests ship. The builder offers earlier operands and readable summaries; preview displays every operand value and group result; preview, published collection and Worker admission share the evaluator. Exact path-correlated publication validation rejects unreachable destinations and feasible cycles. Published revision pinning, duplicated/team-template IDs, 20 conditions across three group levels and archive custody are exercised. Remaining: Text prefix/suffix/contains operators, Other-text operands, grids, quiz/payment operands, quiz, alert/email consumers and compound-condition import mappings remain unbuilt. Declared hidden fields, normalized text equality/inequality and supported calculated operands now share branching, preview and page/group visibility evaluation. Calculated conditions are proved exactly over finite inputs; over unbounded inputs they may be true or false for reachability (LOGIC-003). Classic-page and group visibility share the evaluator under FIELD-008/FIELD-012. Exact feasibility for required text or necessary Other answers with a pattern/mask is explicitly refused; proof-budget exhaustion refuses publication. Existing submission semantics discard off-path answers rather than rejecting the entire request.
 
 #### LANG-001 — Multi-language forms
 
-Core · target · **missing**
+Core · target · **missing** · From LANG-001
 
-**Requirement.** A form may have several languages (English and Spanish first-class for US buyers, any BCP 47 language allowed); the respondent sees the language matching their browser with a visible switcher, all steps, choices, errors, disclosures and emails are translated, and stable IDs are shared across languages so results merge with language as a filter. Each language carries its own default date display format for FIELD-015 (MM/DD/YYYY for `en-US` and `es-US`). Missing translations block publish for that language. Operators export and import translations as CSV or XLIFF, and may request an AI draft translation that is applied only after review (AI-002). This clause inherits FIELD-013: translated custom and default text-validation errors use the same published length, mask and pattern rules. This clause inherits FIELD-016: an opinion scale's low, middle and high labels are translated per language and stay over the same steps. This clause inherits RSLT-006: response language is a crosstab dimension with the same stated shares, chi-square rule and ANLY-005 suppression.
+**Requirement.** Pencil supports multi-language forms. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#lang-001).
 
 **Acceptance.**
-1. a browser journey answers the same form in English and Spanish, and a date question shows MM/DD/YYYY in both under `en-US` and `es-US`; results show one distribution with a language filter; publish is refused while one Spanish choice is untranslated.
-2. The journey also triggers FIELD-013 length and mask errors in each language and checks the translated custom message, and checks a FIELD-016 scale's translated labels over steps 0, 3 and 6 in each language, and crosses language against a question under RSLT-006.
-3. *Status: missing.*
+1. A form may have several languages (English and Spanish first-class for US buyers, any BCP 47 language allowed); the respondent sees the language matching their browser with a visible switcher, all steps, choices, errors, disclosures and emails are translated, and stable IDs are shared across languages so results merge with language as a filter.
+2. Each language carries its own default date display format for FIELD-015, FIELD-020 (MM/DD/YYYY for `en-US` and `es-US`).
+3. Missing translations block publish for that language.
+4. Operators export and import translations as CSV or XLIFF, and may request an AI draft translation whose application carries standard, adding external on publication, under the company’s policy (AI-002).
+5. This clause inherits FIELD-013: translated custom and default text-validation errors use the same published length, mask and pattern rules.
+6. This clause inherits FIELD-016, FIELD-021: an opinion scale's low, middle and high labels are translated per language and stay over the same steps.
+7. This clause inherits RSLT-006, RSLT-014: response language is a crosstab dimension with the same stated shares, chi-square rule and ANLY-005 suppression.
+8. Through the browser, answers the same form in English and Spanish, and a date question shows MM/DD/YYYY in both under `en-US` and `es-US`; results show one distribution with a language filter; publish is refused while one Spanish choice is untranslated.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
-#### AI-002 — Reviewed AI translation
+#### LANG-003 — Multi-language forms: The journey also triggers FIELD-013 length and mask errors in each language and check
 
-Core · target · **missing**
+Core · target · **missing** · From LANG-001
 
-**Requirement.** An operator can ask `ai.provider.v1` to draft a translation of every untranslated string; the draft is shown beside the source and applies only to strings the operator accepts.
+**Requirement.** This part of LANG-001 covers the journey also triggers FIELD-013 length and mask errors in each language and checks the translated custom message, and checks a FIELD-016 scale's translated labels over steps 0, 3 and 6 in each language, and crosses language against a question under RSLT-006.. Detailed field, format and door rules remain in [the operating rules](docs/contract/MECHANISM.md#lang-001).
 
 **Acceptance.**
-1. a Worker test with the AI receiver fixture drafts Spanish strings, accepts half, and the rest stay untranslated and block publish for Spanish.
-2. *Status: missing.*
+1. The journey also triggers FIELD-013 length and mask errors in each language and checks the translated custom message, and checks a FIELD-016, FIELD-021 scale's translated labels over steps 0, 3 and 6 in each language, and crosses language against a question under RSLT-006, RSLT-014.
+
+**Evidence.** None.
+**Gap.** No code yet.
+
+#### AI-002 — AI translation
+
+Core · target · **missing** · Cites BASE-AGENT-007, BASE-AGENT-008
+
+**Requirement.** An operator can request draft translations beside the source strings.
+
+**Acceptance.**
+1. An operator can ask ai provider adapter to draft a translation of every untranslated string; the draft is shown beside the source.
+2. Applying an agent translation carries standard, adding external when published to respondents; the company’s policy decides whether it applies alone or waits for the operator.
+3. Under the held company policy, With the AI receiver fixture, the specialist drafts Spanish, strings, accepts half, and the rest stay untranslated and block publish for Spanish.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -1664,28 +2461,26 @@ Core · target · **missing**
 
 Core · target · **partial**
 
-**Requirement.** An Editor overrides, per form, the closed-form message, the response-limit message (RESP-008, RESP-009), the button labels (Start, OK, Next, Submit), required-answer and validation messages, the progress text and the keyboard hint, with recall (LOGIC-001) in messages and a stated length limit. Overrides are part of the published revision, are translated per language under LANG-001, and an empty override falls back to Pencil's default; A11Y-002 refuses a label that would leave a control without an accessible name.
+**Requirement.** Pencil supports editable closed and system text. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#lang-002).
 
 **Acceptance.**
-1. a browser journey sets a custom Submit label and closed message, sees the label on the published form, closes the form and sees the closed message, and sees the Spanish translation of the label under LANG-001; a Worker test refuses publish with a whitespace-only button label.
-2. *Status: partial — An Editor sets per-form plain-text overrides for the Start, Next and Submit button labels, the progress text, the closed-form message and the response-limit message in the builder (Respondent text), each with a stated length limit (40 characters for labels, 300 for messages, `seed.json` limits).
-3. They are part of the published revision (editing the draft later changes nothing live until publish), render as escaped text, and an empty override falls back to Pencil's default string from one table (`respondentText.ts`).
-4. Publish refuses a whitespace-only button label, naming the field.
-5. The published form shows the custom Submit label and the closed or response-limit page shows its message.
-6. Gap: the Spanish translation sentence waits for LANG-001 (translation per language), and the OK button label, required-answer and validation messages and the keyboard hint are not yet overridable; none of these messages recalls earlier answers (LOGIC-001), because a closed page, a validation message and progress text have no answer path; the accessible-name refusal covers only the whitespace-only label, not the full A11Y-002 checker; the Kiosk screen keeps Pencil's wording.Evidence: `src/core/shared/respondentText.ts`, `src/core/shared/closedFlow.ts`, `src/core/features/flows/ui/RespondentTextSettings.tsx`, `tests/runtime/foundation.worker.test.ts`, `tests/e2e/closed-flow.spec.ts` — “closed flows refuse late submissions, retain their named document and embed boundaries, and disappear after archival”.*
+1. An Editor overrides, per form, the closed-form message, the response-limit message (RESP-008, RESP-009), the button labels (Start, OK, Next, Submit), required-answer and validation messages, the progress text and the keyboard hint, with recall (LOGIC-001) in messages and a stated length limit.
+2. Overrides are part of the published revision, are translated per language under LANG-001, LANG-003, and an empty override falls back to Pencil's default; A11Y-002 refuses a label that would leave a control without an accessible name.
+3. Through the browser, sets a custom Submit label and closed message, sees the label on the published form, closes the form and sees the closed message, and sees the Spanish translation of the label under LANG-001, LANG-003; Through the public door, refuses publish with a whitespace-only button label.
 
 **Evidence.** `src/core/shared/respondentText.ts`, `src/core/shared/closedFlow.ts`, `src/core/features/flows/ui/RespondentTextSettings.tsx`, `tests/runtime/foundation.worker.test.ts`, `tests/e2e/closed-flow.spec.ts` — “closed flows refuse late submissions, retain their named document and embed boundaries, and disappear after archival”
 **Gap.** Translation (LANG-001), the OK label, required and validation messages, the keyboard hint and recall in messages are not built.
 
-#### A11Y-002 — Accessibility checker before publish
+#### A11Y-002 — Accessibility checker before publication
 
-Core · target · **partial**
+Core · target · **partial** · Cites BASE-ACCESSIBILITY-001
 
-**Requirement.** The builder flags missing alt text, low-contrast brand choices, unlabeled matrix rows, overly long choice lists, timed elements and ambiguous link text, and blocks publish for failures that would breach A11Y-001 with a fix link to each step.
+**Requirement.** The builder identifies fixable form defects before they can reach respondents. Implementation details are in [the operating rules](docs/contract/MECHANISM.md#a11y-002).
 
 **Acceptance.**
-1. a Worker test publishes a draft with an image lacking alt text and a 2:1 contrast accent and receives both stable step IDs and reasons.
-2. *Status: partial — accent contrast is enforced and logos are validated (`src/core/features/brand/brand.ts`, `tests/runtime/brand.worker.test.ts`); there is no per-step checker.*
+1. The checker identifies missing alt text, low-contrast brand choices, unlabeled matrix rows, overly long choice lists, timed elements and ambiguous link text.
+2. A defect breaching A11Y-001 prevents publication and offers a fix link to its question or step.
+3. A draft containing an image without alt text and a two-to-one contrast accent returns both stable step identities and reasons when publication is attempted.
 
 **Evidence.** `src/core/features/brand/brand.ts`, `tests/runtime/brand.worker.test.ts`
 **Gap.** There is no per-step checker.
@@ -1694,50 +2489,62 @@ Core · target · **partial**
 
 #### DIST-011 — SMS invitations and reminders
 
-Core · target · **partial**
+Core · target · **partial** · Register R-8
 
-**Requirement.** Operators send invitations and reminders by text message through Twilio to contacts with a mobile number and recorded SMS consent (TCPA prior express consent: actor, time, source and wording). Messages carry the opaque link and "Reply STOP to opt out"; an inbound STOP, sent to a signed Twilio status and inbound webhook, opts the contact out of SMS immediately (DIST-005 for SMS), and HELP returns the business name. Delivery attempts, retries and terminal failures follow DIST-006, DIST-008 and DIST-010; quiet hours follow WS-002 in the contact's time zone where known. A2P 10DLC registration is the owner's Twilio account step and the settings page shows its state.
+**Requirement.** Pencil supports sMS invitations and reminders. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-011).
 
 **Acceptance.**
-1. a Worker test with a Twilio receiver fixture sends to a consented contact, refuses an unconsented one, records a STOP that blocks the scheduled reminder, and verifies the inbound webhook signature.
-2. *Status: partial — see the Status row for implementation evidence and the remaining Gap.* Scope ruling — The original Twilio-receiver Worker Acceptance remains unchanged.
-3. A2P 10DLC registration remains the owner’s Twilio-account step, and Pencil displays the owner-reported state; automatic carrier-state lookup is not required by this clause.
-4. Test-credential API responses and receiver fixtures prove only their recorded application and protocol behavior.
-5. Genuine handset delivery and genuine provider inbound and delivery-status callbacks remain named provider evidence gaps.
-6. Quiet hours in a known contact time zone remain required; workspace-zone scheduling is the current implementation and does not discharge that requirement.
-7. Owner-recorded consent wording and A2P state, whole-selection refusal, cancellation on mobile change and a fresh eligible launch remain the approved defaults.
-8. Status: partial.
+1. Operators send invitations and reminders by text message through Twilio to contacts with a mobile number and recorded SMS consent (TCPA prior express consent: actor, time, source and wording).
+2. Messages carry the opaque link and "Reply STOP to opt out"; an inbound STOP, sent to a signed Twilio status and inbound webhook, opts the contact out of SMS immediately (DIST-005 for SMS), and HELP returns the business name.
+3. Delivery attempts, retries and terminal failures follow DIST-006, DIST-008 and DIST-010; quiet hours follow WS-002 in the contact's time zone where known.
+4. A2P 10DLC registration is the owner's Twilio account step and the settings page shows its state.
+5. Through the a Twilio receiver fixture sends to a consented, contact, refuses an unconsented one, records a STOP that blocks the scheduled reminder, and verifies the inbound webhook signature.
 
 **Evidence.** `tests/runtime/sms.worker.test.ts` — “SMS invitations require recorded consent, use sealed owner custody, and signed STOP cancels the reminder while HELP names the business”; `src/core/features/sms/`, `migrations/core/0065_sms_invitations.sql`; Twilio test-credential receipt `docs/evidence/dist011-twilio-test-2026-10-26.json` (`scripts/proof/sms-twilio-test.mjs`, local only); the provider receipt was recorded locally before dd639754 and binds no runtime SHA; `migrations/core/0071_contact_time_zones.sql`, `tests/runtime/sms.worker.test.ts`:248 (known-zone deferral and workspace fallback on one launch, once-only opening), `tests/runtime/sms.worker.test.ts`:40 (unapproved A2P state makes no provider request), `tests/runtime/sms.worker.test.ts`:240 (invalid save and import), `tests/runtime/sms.worker.test.ts`:255 (erasure), `scripts/deployment-data-custody-replay.check.mjs`:269 (archive restoration), `tests/e2e/distribution-foundation.spec.ts`:11 (SMS Settings, recorded consent and invitation channel at 1440 and 390)
 **Gap.** Gap — genuine handset delivery after the owner’s carrier-registration step and genuine provider callback evidence. The shared integration-ledger join remains in INTEG-015; automatic carrier-state lookup is an unclaimed boundary, not completed evidence.
 
 #### DIST-013 — Embed modes and site plugins
 
-Core · target · **partial**
+Core · target · **partial** · Cites BASE-PUBLIC-002
 
-**Requirement.** Besides the inline script and iframe (DIST-002), the embed offers full-page, popup on click, popover bubble, slider and side tab modes, with open triggers on click, delay, scroll depth or exit intent, frequency capping per browser, and the same isolation as DIST-009. A WordPress plugin and a Webflow/Squarespace snippet install the embed without editing theme code. Every mode and the WordPress shortcode take DIST-021's forward, fixed-value, `hidden` and `_ga` options, so a popup on a paid-ad landing page carries the campaign like an inline embed.
+**Requirement.** Pencil supports embed modes and site plugins. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-013).
 
 **Acceptance.**
-1. a browser journey on a host fixture opens each mode by its trigger, completes a response, and proves the host receives only loaded, height and completed events; the popup and side-tab modes on `/landing?utm_campaign=spring` store the forwarded `utm_campaign`; the WordPress plugin renders a form via shortcode in a WordPress test container.
-2. *Status: partial — Inline, full-page, popup, popover, slider and side-tab modes with click/delay/scroll/exit triggers and per-browser opening caps ship.
-3. Campaign parameters are forwarded subject to declared hidden-field rules.
-4. WordPress plugin/container proof, Webflow/Squarespace-specific installation and DIST-021 forward/fixed-value/hidden/_ga options remain unbuilt.
-5. Defaults confirmed by ct (24 Oct): click trigger, one opening per host-origin/browser/form/mode, 1 s delay, 50% scroll; unavailable storage keeps modes closed.*
+1. Besides the inline script and iframe (DIST-002, DIST-022), the embed offers full-page, popup on click, popover bubble, slider and side tab modes, with open triggers on click, delay, scroll depth or exit intent, frequency capping per browser, and the same isolation as DIST-009.
+2. A WordPress plugin and a Webflow/Squarespace snippet install the embed without editing theme code.
+3. Every mode and the WordPress shortcode take DIST-021, DIST-024's forward, fixed-value, `hidden` and `_ga` options, so a popup on a paid-ad landing page carries the campaign like an inline embed.
+4. Through the browser, on a host fixture opens each mode by its trigger, completes a response, and proves the host receives only loaded, height and completed events; the popup and side-tab modes on the documented page or route store the forwarded `utm_campaign`; the WordPress plugin renders a form via shortcode in a WordPress test container.
 
 **Evidence.** `tests/e2e/script-embed.spec.ts` — copied async script mounts an opaque allowed-host iframe, resizes, emits only permitted events and rejects malicious messages (1440/390)
 **Gap.** Inline, full-page, popup, popover, slider and side-tab modes with click/delay/scroll/exit triggers and per-browser opening caps ship. Campaign parameters are forwarded subject to declared hidden-field rules. WordPress plugin/container proof, Webflow/Squarespace-specific installation and DIST-021 forward/fixed-value/hidden/_ga options remain unbuilt. Defaults confirmed by ct (24 Oct): click trigger, one opening per host-origin/browser/form/mode, 1 s delay, 50% scroll; unavailable storage keeps modes closed.
 
 #### DIST-014 — Email-embedded first question
 
-Core · target · **partial**
+Core · target · **partial** · From DIST-014
 
-**Requirement.** An invitation or program email may carry the first question (NPS 0–10, CSAT 1–5, or a short single choice) as buttons. Clicking opens the form with that answer selected and the rest of the flow ready; the click itself is a GET that records nothing, so mail-security link scanners cannot create answers, and the answer is saved only when the respondent confirms or continues. Invitation buttons use only the invitation's opaque token and a namespaced answer hint; their GET and HEAD perform no answer, session, response, view-counter or participant-state write. Selection remains in the page until explicit interaction, and normal completion, closure, opt-out and revision admission still apply. Unknown or out-of-range hints select nothing. Only an eligible first published-path question renders buttons: NPS, CSAT, a published rating scale, or a single choice with at most eight short labels (80 characters each); a different first type or an operator-locked contact prefill renders no buttons. Reminders share this same composer. PROG-002 inherits these rules before program email ships.
+**Requirement.** Pencil supports email-embedded first question. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-014).
 
 **Acceptance.**
-1. a Worker test fetches every embedded answer link as a scanner would and finds no answer or session recorded; a browser journey clicks "9", lands on question 2 with 9 selected and completes.
-2. *Status: partial — invitation/reminder buttons and deferred selection ship.
-3. Default APPROVED by ct (23 October 2026): opaque token plus answer hint with inert GET/HEAD; short-choice bounds as above.
-4. Program email is unbuilt and inherits before shipping.*
+1. An invitation or program email may carry the first question (NPS 0–10, CSAT 1–5, or a short single choice) as buttons.
+2. Clicking opens the form with that answer selected and the rest of the flow ready; the click itself is a GET that records nothing, so mail-security link scanners cannot create answers, and the answer is saved only when the respondent confirms or continues.
+3. Invitation buttons use only the invitation's opaque token and a namespaced answer hint; their GET and HEAD perform no answer, session, response, view-counter or participant-state write.
+4. Selection remains in the page until explicit interaction, and normal completion, closure, opt-out and revision admission still apply.
+5. Unknown or out-of-range hints select nothing.
+6. Only an eligible first published-path question renders buttons: NPS, CSAT, a published rating scale, or a single choice with at most eight short labels (80 characters each); a different first type or an operator-locked contact prefill renders no buttons.
+7. Reminders share this same composer.
+8. PROG-002 inherits these rules before program email ships.
+
+**Evidence.** `tests/runtime/distribution.worker.test.ts` — "invitation score buttons preserve the recipient snapshot, consent blocks sending and renewal records actor and source"; `tests/invitation-links.test.ts` — "emitted invitation answer links are inert for repeated GET and HEAD scanners, pinned to their revision and cannot reopen completed or closed responses"; `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey” — "Audience CSV review, saved segment, email score 9, editable invitation prefill, confirmation receipt, identified ledger, cancellation, opt-out and erasure are keyboard accessible" (1440/390)
+**Gap.** Default APPROVED by ct (23 October 2026): invitation-token link plus a namespaced answer hint, GET/HEAD with no response/session/answer/view/participant mutation, and short-choice bounds of eight options/80-character labels. Program email (PROG-002) inherits before shipping and remains unbuilt. No real mail provider call or consent was used.
+
+#### DIST-023 — Email-embedded first question: Through the public door, fetches every embedded answer link as a scanner would and fi
+
+Core · target · **partial** · From DIST-014
+
+**Requirement.** This part of DIST-014 covers through the public door, fetches every embedded answer link as a scanner would and finds no answer or session recorded. Detailed field, format and door rules remain in [the operating rules](docs/contract/MECHANISM.md#dist-014).
+
+**Acceptance.**
+1. Through the public door, fetches every embedded answer link as a scanner would and finds no answer or session recorded; Through the browser, clicks "9", lands on question 2 with 9 selected and completes.
 
 **Evidence.** `tests/runtime/distribution.worker.test.ts` — "invitation score buttons preserve the recipient snapshot, consent blocks sending and renewal records actor and source"; `tests/invitation-links.test.ts` — "emitted invitation answer links are inert for repeated GET and HEAD scanners, pinned to their revision and cannot reopen completed or closed responses"; `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey” — "Audience CSV review, saved segment, email score 9, editable invitation prefill, confirmation receipt, identified ledger, cancellation, opt-out and erasure are keyboard accessible" (1440/390)
 **Gap.** Default APPROVED by ct (23 October 2026): invitation-token link plus a namespaced answer hint, GET/HEAD with no response/session/answer/view/participant mutation, and short-choice bounds of eight options/80-character labels. Program email (PROG-002) inherits before shipping and remains unbuilt. No real mail provider call or consent was used.
@@ -1746,11 +2553,12 @@ Core · target · **partial**
 
 Core · target · **missing**
 
-**Requirement.** A JavaScript SDK served from the installation (no third-party origin) shows micro-surveys inside the business's web app or site, targeted by page, event, user attributes the host passes and a sampling rate, with global and per-survey fatigue limits (for example no more than one survey per user per 14 days). Identified targeting requires a server-signed user identity from the host, and RESP-005 discloses the identification; unsigned attributes keep the response anonymous.
+**Requirement.** Pencil supports in-product and website surveys. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-015).
 
 **Acceptance.**
-1. a browser journey on a host fixture fires an event, the survey appears for a matching user and not for a non-matching one, a second trigger inside the fatigue window shows nothing, and a forged unsigned identity yields an anonymous response.
-2. *Status: missing.*
+1. A JavaScript SDK served from the installation (no third-party origin) shows micro-surveys inside the business's web app or site, targeted by page, event, user attributes the host passes and a sampling rate, with global and per-survey fatigue limits (for example no more than one survey per user per 14 days).
+2. Identified targeting requires a server-signed user identity from the host, and RESP-005 discloses the identification; unsigned attributes keep the response anonymous.
+3. Through the browser, on a host fixture fires an event, the survey appears for a matching user and not for a non-matching one, a second trigger inside the fatigue window shows nothing, and a forged unsigned identity yields an anonymous response.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -1759,11 +2567,11 @@ Core · target · **missing**
 
 Core · target · **missing**
 
-**Requirement.** A form can repeat on a schedule (weekly, monthly, quarterly, or a cron in the WS-001 zone) to a segment or by a fresh public link per occurrence, each occurrence pinned to the then-current revision and reported as its own period in trends (RSLT-007); the distributor is reminded before each occurrence and can skip one.
+**Requirement.** Pencil supports recurring surveys. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-016).
 
 **Acceptance.**
-1. a Worker test advances a fake clock through three monthly occurrences and asserts three launches, three periods in the trend report and one skipped occurrence that sent nothing.
-2. *Status: missing.*
+1. A form can repeat on a schedule (weekly, monthly, quarterly, or a cron in the WS-001 zone) to a segment or by a fresh public link per occurrence, each occurrence pinned to the then-current revision and reported as its own period in trends (RSLT-007); the distributor is reminded before each occurrence and can skip one.
+2. Through the public door, advances a fake clock through three monthly occurrences and asserts three launches, three periods in the trend report and one skipped occurrence that sent nothing.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -1772,83 +2580,117 @@ Core · target · **missing**
 
 Core · target · **done**
 
-**Requirement.** An operator can create several named collectors per form (web link, embed on a named site, email campaign, SMS, QR, social post, partner), each with its own link, close date and response limit; every response records its collector, and results filter and compare by collector.
+**Requirement.** Pencil supports collectors and source labels. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-017).
 
 **Acceptance.**
-1. a Worker test collects through two collectors, closes one by limit while the other stays open, and the results comparison shows each collector's counts.
-2. The native-route journey also races the last collector place without exceeding its limit, pins a returning session to its collector, and checks independent close/reopen, collector filters and snapshot exports.
-3. *Status: done — named channel links, zoned deadlines, independent limits and closure, session-pinned attribution, comparisons, ledger filters and exports ship (`migrations/core/0041_collectors.sql`, `src/core/features/collectors/`, `src/core/features/reporting/scope.ts`, `tests/runtime/collectors-trends.worker.test.ts`).*
+1. An operator can create several named collectors per form (web link, embed on a named site, email campaign, SMS, QR, social post, partner), each with its own link, close date and response limit; every response records its collector, and results filter and compare by collector.
+2. Through the public door, collects through two collectors, closes one by limit while the other stays open, and the results comparison shows each collector's counts.
+3. The native-route journey also races the last collector place without exceeding its limit, pins a returning session to its collector, and checks independent close/reopen, collector filters and snapshot exports.
 
-**Evidence.** `migrations/core/0041_collectors.sql`, `src/core/features/collectors/`, `src/core/features/reporting/scope.ts`, `tests/runtime/collectors-trends.worker.test.ts`, `tests/runtime/calculations.worker.test.ts`
-**Gap.** None. Named channel links, zoned deadlines, independent limits and closure, session-pinned attribution, comparisons, ledger filters and exports ship. Two collectors, concurrent final-place admission, independent opaque embeds and retained receipts are proved through native routes and at 1440 and 390.
+**Evidence.** `tests/runtime/collectors-trends.worker.test.ts` — "named collectors enforce independent atomic limits and retain attribution in zoned, revision-marked score trends, exports, RSLT-006 crosstabs with stated shares, chi-square and suppression, and multi-part LEDG-005 XLSX and SAV exports"
+**Gap.** None.
 
 #### DIST-018 — Form addresses
 
 Core · target · **partial**
 
-**Requirement.** Each form has an editable readable slug on the installation's own domain (for example `/f/customer-survey`), additional custom domains or subdomains can be mapped to the installation through Cloudflare custom hostnames, and old slugs keep redirecting after a rename. Every address serves the form's DIST-020 link preview with its canonical `og:url` and robots setting.
+**Requirement.** Pencil supports form addresses. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-018).
 
 **Acceptance.**
-1. a Worker test renames a slug, the old one redirects with 301 to the new one, and a form served on a mapped test hostname renders with the same admission checks and the same DIST-020 preview tags, with `og:url` naming the canonical address.
-2. *Status: partial — Authenticated workspace operators rename a form address in builder settings.
-3. Current and retired slugs are unique across the installation, aliases redirect directly to the current address with 301 and keep queries on both direct and embedded doors.
-4. A second hostname served by the same Worker uses the same admission and preview code; og:url names APP_ORIGIN and alternate hosts remain noindex.
-5. Address history travels in archives and the owner restoration proof re-exports identically.
-6. Gap: Cloudflare custom-hostname provisioning is not built (Platform zone path).
-7. Current equal operators retain builder access until ROLE-001 grants ship.
-8. ADOPTED provisional default (ASK ct): retired addresses remain reserved permanently, including for their original form; no other form may claim them. Evidence: `tests/e2e/rendering-migration.spec.ts` — “emitted Worker serves revision previews and canonical-only indexing without weakening respondent admission” (rename through builder; direct/embed 301 with query; retired-slug refusal; second hostname admission and canonical preview; owner archive restoration and exact re-export; 1440/390, CPU throttle 4); `src/core/features/addresses/`, `migrations/core/0064_form_addresses.sql`.*
+1. Each form has an editable readable slug on the installation's own domain (for example the documented page or route), additional custom domains or subdomains can be mapped to the installation through Cloudflare custom hostnames, and old slugs keep redirecting after a rename.
+2. Every address serves the form's DIST-020 link preview with its canonical `og:url` and robots setting.
+3. Under RL-101, a retired slug stays bound to its existing form and may be explicitly restored as that form’s canonical slug in one atomic rename, with every other alias redirecting directly to the resulting canonical address; another form cannot claim an address while it remains an obligated redirect.
+4. Through the public door, renames a slug, the old one redirects with 301 to the new one, and a form served on a mapped test hostname renders with the same admission checks and the same DIST-020 preview tags, with `og:url` naming the canonical address.
 
 **Evidence.** `tests/e2e/rendering-migration.spec.ts` — “emitted Worker serves revision previews and canonical-only indexing without weakening respondent admission” (rename through builder; direct/embed 301 with query; retired-slug refusal; second hostname admission and canonical preview; owner archive restoration and exact re-export; 1440/390, CPU throttle 4); `src/core/features/addresses/`, `migrations/core/0064_form_addresses.sql`
-**Gap.** Cloudflare custom-hostname provisioning is not built (Platform zone path). Current equal operators retain builder access until ROLE-001 grants ship. ADOPTED provisional default (ASK ct): retired addresses remain reserved permanently, including for their original form; no other form may claim them.
+**Gap.** Cloudflare custom-hostname provisioning is not built (Platform zone path). Current equal operators retain builder access until ROLE-001 grants ship.
 
 #### DIST-020 — Link previews and search indexing
 
-Core · target · **done**
+Core · target · **partial**
 
-**Requirement.** Each form has a share title (default: the form title), description (default: the welcome screen's text, otherwise empty) and share image (default: the BRAND-001 business logo on the BRAND-002 theme background; an Editor may upload a PNG, JPEG or WebP within a stated size limit, with required alt text), which are part of the published revision and translated under LANG-001. The public form page, the embed page and every DIST-018 address serve them as `<title>`, `og:title`, `og:description`, `og:image` (an absolute URL on the installation's own origin), `og:image:alt`, `og:url` (the canonical DIST-018 address) and `twitter:card` set to `summary_large_image`, so a link pasted into an ad, a Facebook, LinkedIn or X post, Slack, or a text message shows that preview. Preview text never contains answers or recalled values (LOGIC-001), and rendering it makes no third-party request. Search indexing is off by default: every form, embed, invitation, save-and-resume (PART-002) and completion page sends `<meta name="robots" content="noindex, nofollow">` and `X-Robots-Tag: noindex`. An Editor may allow indexing for one public form, which removes both only from that form's canonical address; invitation-only, restricted (DIST-019), identified (RESP-023) and HIPAA-mode (GOV-001) forms can never be indexed. DIST-017 collectors and DIST-018 addresses share the form's preview. Typeform's meta title, description, image and `allow_indexing` setting import with the form (IMPORT-007).
+**Requirement.** Pencil supports link previews and search indexing. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-020).
 
 **Acceptance.**
-1. a Worker test fetches a published form's page and asserts its `og:title`, `og:description`, `og:image` (same origin and fetchable), `og:url` and `twitter:card` tags and the `noindex` meta tag and header; after an Editor sets a custom title and image and allows indexing, the republished form serves them without `noindex`; publish refuses the indexing setting on a DIST-019 restricted form, which keeps `noindex`; a browser journey sees the preview card in the builder's share panel.
-2. *Status: done.* DIST-020 current implementation and inherited doors: Current canonical addresses are `/f/:slug`; `/embed/:slug`, collectors and the selected installed `/` share that preview.
-3. Only the clean public anonymous canonical address may opt into indexing; every query-bearing address, invitation, private resume, completion, restricted or identified form stays noindex.
-4. Preview uploads are PNG/JPEG/WebP, at most 256 KiB, with required static alt text; immutable R2 objects and published snapshots retain prior revisions.
-5. Existing publications freeze their prior title/welcome/logo defaults on upgrade.
-6. The default logo is BRAND-001's image as served until BRAND-002 adds theme-background compositing (the c5 reserve's pattern-1 inheritance).
-7. LANG-001 inherits translated title, description and image alt text; DIST-018 inherits rename aliases, redirects and mapped-host preview/canonical rules; GOV-001 inherits the unconditional HIPAA indexing ban, each before those capabilities ship.
-8. Invitation capability pages already stay noindex; an invitation-only form mode is not offered. Typeform connection retrieval imports supported source images with the revision; file-only external image references are explicitly reported for retrieval or operator upload, never fetched while rendering.
+1. Each form has a share title (default: the form title), description (default: the welcome screen's text, otherwise empty) and share image (default: the BRAND-001, BRAND-003 business logo on the BRAND-002, BRAND-004 theme background; an Editor may upload a PNG, JPEG or WebP within a stated size limit, with required alt text), which are part of the published revision and translated under LANG-001, LANG-003.
+2. The public form page, the embed page and every DIST-018 address serve them as `<title>`, `og:title`, `og:description`, `og:image` (an absolute URL on the installation's own origin), `og:image:alt`, `og:url` (the canonical DIST-018 address) and `twitter:card` set to `summary_large_image`, so a link pasted into an ad, a Facebook, LinkedIn or X post, Slack, or a text message shows that preview.
+3. Preview text never contains answers or recalled values (LOGIC-001), and rendering it makes no third-party request.
+4. Search indexing is off by default: every form, embed, invitation, save-and-resume (PART-002) and completion page sends `<meta name="robots" content="noindex, nofollow">` and `X-Robots-Tag: noindex`.
+5. An Editor may allow indexing for one public form, which removes both only from that form's canonical address; invitation-only, restricted (DIST-019), identified (RESP-023, RESP-028) and HIPAA-mode (GOV-001) forms can never be indexed.
+6. DIST-017 collectors and DIST-018 addresses share the form's preview.
+7. Typeform's meta title, description, image and `allow_indexing` setting import with the form (IMPORT-007).
+8. Through the public door, fetches a published form's page and asserts its `og:title`, `og:description`, `og:image` (same origin and fetchable), `og:url` and `twitter:card` tags and the `noindex` meta tag and header; after an Editor sets a custom title and image and allows indexing, the republished form serves them without `noindex`; publish refuses the indexing setting on a DIST-019 restricted form, which keeps `noindex`; Through the browser, sees the preview card in the builder's share panel.
 
 **Evidence.** Published tags, fetchable same-origin image, defaults, canonical-only opt-in, collector/embed/selected-home and completion privacy, restricted refusal and no outbound requests: `tests/e2e/rendering-migration.spec.ts` — “emitted Worker serves revision previews and canonical-only indexing without weakening respondent admission”. Editor card, upload/alt, save/reload/publish at 1440/390: `tests/e2e/authoring.spec.ts` — “labels, one Save, real controls, reorder, branching, Share and a current dashboard”. Revision/default custody and bounded upload validation: `tests/runtime/brand.worker.test.ts` — “settings API preserves preview overrides and publication freezes defaults and images across later edits”; “settings API rejects recalled preview text and invalid, oversized or unlabelled image uploads without mutating the draft”; “upgrading existing publications freezes their logo preview without changing admission policy”. Valid invitation and private resume meta/header: `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey” — “Audience CSV review, saved segment, email score 9, editable invitation prefill, confirmation receipt, identified ledger, cancellation, opt-out and erasure are keyboard accessible”; `tests/e2e/save-resume.spec.ts` — “a respondent saves two answers, resumes privately on another device and sees completion on reuse”. Typeform metadata and bounded image retrieval/commit/publication: `tests/runtime/typeform-definition.worker.test.ts` — “the authenticated Typeform retrieval feeds the real reviewed import without retaining the credential or creating records early”. Image archive custody: `tests/runtime/brand.worker.test.ts` — “owner backup carries immutable R2 share images, checks their bytes and refuses missing attachment custody”; `tests/e2e/rendering-migration.spec.ts` — “owner browser backup restores preview image bytes with the same archive checksum”; `scripts/deployment-data.check.mjs` — “complete archive recovery retains exact data and attachment custody and refuses unsafe sources, archives and destinations without overwrites” — “complete archive restores R2 bytes and ownership metadata with D1, re-exports identically, and standalone proof keeps actual attachment custody”.
-**Gap.** None for current doors. BRAND-002, LANG-001, DIST-018 and GOV-001 inherit the obligations stated above before shipping.
+**Gap.** Missing cited public journeys for translated preview metadata, theme-background logo compositing and HIPAA-mode indexing refusal. Existing journeys comprehensively prove current preview/edit/import/archive and restricted/identified indexing, but inherited LANG-001/BRAND-002/GOV-001 outcomes are not performed.
 
 #### DIST-021 — Forwarded landing-page parameters
 
-Core · target · **missing**
+Core · target · **missing** · From DIST-021
 
-**Requirement.** A script embed (DIST-002), every DIST-013 mode (full-page, popup, popover, slider and side tab) and the WordPress plugin's shortcode take a list of parameter names to forward from the URL of the page the form sits on: `data-pencil-forward="utm_source,utm_medium,utm_campaign,gclid,fbclid"` on the snippet, `forward="…"` in the shortcode. The installation-origin script reads the host page's `location.search`, keeps only names that are both listed and declared as FIELD-001 fields on the published revision (the script `/embed.js` serves carries the revision's declared field names and nothing else about the form), and hands those values to the form in the `pencil:init` message it already sends after the frame loads, never in the frame's URL, so they reach no access log or Referer; every other parameter, listed or not, stays on the host page. The landing page can also supply values itself: `data-pencil-<field>="…"` sets a fixed value, and a documented `hidden` call, made before or after the snippet loads (`(window.pencil = window.pencil || []).push(['hidden', {utm_source: '…'}])`), hands over values the page holds from earlier in the visit, for example the first-visit UTMs it kept in its own first-party cookie. For GA4, `data-pencil-ga4="cookie"` makes the script read the host's own `_ga` cookie and pass its client ID (the last two dot-separated parts of `GA1.1.123456789.1700000000`, here `123456789.1700000000`) as `ga_client_id`, only when the form declares that field; Pencil sets no cookie of its own. One precedence holds: a fixed `data-pencil-<field>` value beats a `hidden` value, which beats a forwarded URL value; a declared field with none of them is blank (FIELD-001). The respondent page accepts the first answer only after `pencil:init` is processed, so no response loses a forwarded value to timing, and the Worker re-checks every received value against the revision's declared names and types, discarding and counting anything else whatever the script sent. Forwarded values follow every FIELD-001 rule: they drive LOGIC-001 recall and LOGIC-006 conditions, and are stored, filtered, exported and delivered like link values; an identifying field is accepted only on a RESP-023 identified form; on an anonymous form click IDs are held only for INTEG-017 delivery and purged once it ends. Values flow from the host page into the form only: DIST-002 and DIST-009 isolation are unchanged, and nothing about the response flows back beyond the loaded, height and completed events. The plain iframe takes the same values in its `src` query string (`/embed/<slug>?utm_campaign=spring`), written by the operator's page template, under the same declared-field filter at the Worker; DOCS-001 gives that recipe, the `hidden` first-visit cookie recipe and the `_ga` recipe. Forwarded names per snippet are capped by `seed.json → limits.embed.forwardedParameters` (design target 20, added with a load-tested value on activation) and each value by its declared type's FIELD-001 length. When this clause activates, DIST-002 is rewritten to name the forward, fixed-value, `hidden` and `_ga` options, and DIST-009's host-communication sentence to name the inbound `pencil:init` values.
+**Requirement.** Pencil supports forwarded landing-page parameters. Field, format and door details are recorded in [the operating rules](docs/contract/MECHANISM.md#dist-021).
 
 **Acceptance.**
-1. a browser journey loads a host fixture at `/landing?utm_campaign=spring&gclid=G1&fbclid=F1&secret=x` with the script embed forwarding `utm_campaign,gclid,fbclid,secret` on a form that declares `utm_campaign`, `gclid` and `fbclid`, is routed by a LOGIC-006 rule on `utm_campaign`, completes the response, and asserts that the stored response and the CSV hold `utm_campaign=spring`, that `secret` is in neither the stored response, the `pencil:init` message nor any request the frame makes, and that the INTEG-017 receiver fixtures get one Google Ads click conversion carrying `G1` and one Meta event whose `fbc` is built from `F1`; the same journey with `data-pencil-utm_campaign="fixed"` stores `fixed`; a host fixture with a `_ga` cookie and `data-pencil-ga4="cookie"` produces one GA4 event carrying that client ID, and one whose page calls `hidden` with a first-visit `utm_source` stores that value; the popup mode forwards the same values; a plain iframe whose `src` carries `?utm_campaign=spring&secret=x` stores only `utm_campaign`; on an anonymous form a forwarded `email` is not stored and is counted as discarded; and throughout, the host page receives only loaded, height and completed events.
-2. *Status: missing — the script embed (`src/core/features/embedding/script.ts`, `tests/e2e/script-embed.spec.ts`) mounts the frame with only its challenge and forwards no host parameter, and `/embed.js` accepts no option but `flow`.*
+1. A script embed (DIST-002, DIST-022), every DIST-013 mode (full-page, popup, popover, slider and side tab) and the WordPress plugin's shortcode take a list of parameter names to forward from the URL of the page the form sits on: `data-pencil-forward="utm_source,utm_medium,utm_campaign,gclid,fbclid"` on the snippet, `forward="…"` in the shortcode.
+2. The installation-origin script reads the host page's `location.search`, keeps only names that are both listed and declared as FIELD-001 fields on the published revision (the script the documented page or route serves carries the revision's declared field names and nothing else about the form), and hands those values to the form in the `pencil:init` message it already sends after the frame loads, never in the frame's URL, so they reach no access log or Referer; every other parameter, listed or not, stays on the host page.
+3. The landing page can also supply values itself: `data-pencil-<field>="…"` sets a fixed value, and a documented `hidden` call, made before or after the snippet loads (`(window.pencil = window.pencil || []).push(['hidden', {utm_source: '…'}])`), hands over values the page holds from earlier in the visit, for example the first-visit UTMs it kept in its own first-party cookie.
+4. For GA4, `data-pencil-ga4="cookie"` makes the script read the host's own `_ga` cookie and pass its client ID (the last two dot-separated parts of `GA1.1.123456789.1700000000`, here `123456789.1700000000`) as `ga_client_id`, only when the form declares that field; Pencil sets no cookie of its own.
+5. One precedence holds: a fixed `data-pencil-<field>` value beats a `hidden` value, which beats a forwarded URL value; a declared field with none of them is blank (FIELD-001).
+6. The respondent page accepts the first answer only after `pencil:init` is processed, so no response loses a forwarded value to timing, and the Worker re-checks every received value against the revision's declared names and types, discarding and counting anything else whatever the script sent.
+7. Forwarded values follow every FIELD-001 rule: they drive LOGIC-001 recall and LOGIC-006, LOGIC-008, LOGIC-009 conditions, and are stored, filtered, exported and delivered like link values; an identifying field is accepted only on a RESP-023, RESP-028 identified form; on an anonymous form click IDs are held only for INTEG-017, INTEG-020 delivery and purged once it ends.
+8. Values flow from the host page into the form only: DIST-002, DIST-022 and DIST-009 isolation are unchanged, and nothing about the response flows back beyond the loaded, height and completed events.
+
+**Evidence.** None.
+**Gap.** The script embed (`src/core/features/embedding/script.ts`, `tests/e2e/script-embed.spec.ts`) mounts the frame with only its challenge and forwards no host parameter, and `/embed.js` accepts no option but `flow`.
+
+#### DIST-024 — Forwarded landing-page parameters: The plain iframe takes the same values in its src query string (the documented page o
+
+Core · target · **missing** · From DIST-021
+
+**Requirement.** This part of DIST-021 covers the plain iframe takes the same values in its src query string (the documented page or route), written by the operator's page template, under the same declared-field filter at the Worker. Detailed field, format and door rules remain in [the operating rules](docs/contract/MECHANISM.md#dist-021).
+
+**Acceptance.**
+1. The plain iframe takes the same values in its `src` query string (the documented page or route), written by the operator's page template, under the same declared-field filter at the Worker; DOCS-001 gives that recipe, the `hidden` first-visit cookie recipe and the `_ga` recipe.
+2. Forwarded names per snippet are capped by the declared limits embed forwardedParameters limits (design target 20, added with a load-tested value on activation) and each value by its declared type's FIELD-001 length.
+3. When this clause activates, DIST-002, DIST-022 is rewritten to name the forward, fixed-value, `hidden` and `_ga` options, and DIST-009's host-communication sentence to name the inbound `pencil:init` values.
+4. Through the browser, loads a host fixture at the documented page or route with the script embed forwarding `utm_campaign,gclid,fbclid,secret` on a form that declares `utm_campaign`, `gclid` and `fbclid`, is routed by a LOGIC-006, LOGIC-008, LOGIC-009 rule on `utm_campaign`, completes the response, and asserts that the stored response and the CSV hold `utm_campaign=spring`, that `secret` is in neither the stored response, the `pencil:init` message nor any request the frame makes, and that the INTEG-017, INTEG-020 receiver fixtures get one Google Ads click conversion carrying `G1` and one Meta event whose `fbc` is built from `F1`; the same journey with `data-pencil-utm_campaign="fixed"` stores `fixed`; a host fixture with a `_ga` cookie and `data-pencil-ga4="cookie"` produces one GA4 event carrying that client ID, and one whose page calls `hidden` with a first-visit `utm_source` stores that value; the popup mode forwards the same values; a plain iframe whose `src` carries `?utm_campaign=spring&secret=x` stores only `utm_campaign`; on an anonymous form a forwarded `email` is not stored and is counted as discarded; and throughout, the host page receives only loaded, height and completed events.
 
 **Evidence.** None.
 **Gap.** The script embed (`src/core/features/embedding/script.ts`, `tests/e2e/script-embed.spec.ts`) mounts the frame with only its challenge and forwards no host parameter, and `/embed.js` accepts no option but `flow`.
 
 ### Target: respondent follow-through and partial responses
 
-#### RESP-020 — Respondent confirmation email
+#### RESP-020 — Respondent confirmation content
 
-Core · target · **partial**
+Core · target · **partial** · From RESP-020 · Cites BASE-INPUT-002
 
-**Requirement.** A form may send the respondent a branded confirmation (BRAND-001) after completion, optionally with a copy of their answers, their quiz result (LOGIC-004), their payment receipt link (PAY-001) or the signed PDF (SIGN-001), using recall (LOGIC-001). It goes only to an email the respondent typed into a question marked "send my confirmation here" or to an identified participant, is delivered through `mail.sender.v1` with DIST-006 retries, and never contains answers the operator marked sensitive (GOV-004). This clause inherits LOGIC-001 recall in email subjects and bodies: earlier answers, declared hidden fields and calculated values render as escaped text and HTML, with skipped or invalid values blank. This clause inherits FIELD-015: answer dates in the confirmation email render in the question's published display format. Confirmation is off by default per published revision, and an answer copy is a second opt-in with allowed question types defaulting to none. Only the one selected email question or the invitation participant supplies a recipient; no other typed or link-supplied address does. An unchanged/locked contact prefill supplies a recipient only when it is that identified participant’s own address. Opted-out participants, opted-out or bounced mailboxes, and excluded or quarantined responses receive none; release admits a live response. One durable delivery key per released response prevents submission replay and restored history from resending. Existing RESP-015 request rates and one delivery per response bound this mail path. The branded receipt has no Reply-To and no response-access link, except the single-use edit link when the workspace has explicitly enabled response editing (RESP-021). Delivery mailboxes, rendered bodies and attempts travel as private archive/export history, restore disabled and erase with their response. GOV-004 inherits withheld rendering before sensitive marking ships; LOGIC-004 quiz results, PAY-001 receipt links and SIGN-001 signed PDFs inherit this receipt’s recipient, escaping, exclusion and custody rules before those optional parts ship.
+**Requirement.** A form can send one branded respondent receipt after release; recipient custody is governed by RESP-027.
 
 **Acceptance.**
-1. a Worker test completes a form with a confirmation question and asserts one delivery with the escaped answer copy, none for an anonymous response without the question, and a retry on transient failure.
-2. Its mail receiver acceptance also proves those three recall sources, blank skipped values and inert injected markup.
-3. Its mail receiver acceptance also shows a FIELD-015 date in the published display format.
-4. *Status: partial — live released-response confirmations, permitted answer/hidden/calculated recall, published-format dates, guarded retries and private custody ship.
-5. Default APPROVED by ct (23 October 2026): revision-frozen opt-in, one marked typed mailbox or identified participant, second opt-in/type whitelist for copies, and no resend from restored history.
-6. GOV-004 sensitive withholding, LOGIC-004 quiz results, PAY-001 payment receipt links and SIGN-001 signed PDFs remain unbuilt and inherit before shipping.
-7. No real mail provider call or consent was used.*
+1. The receipt may include an opted-in answer copy, quiz result, payment receipt link or signed PDF under LOGIC-004, PAY-001/PAY-006/PAY-007 and SIGN-001.
+2. Subjects and bodies can recall earlier answers, declared hidden fields and calculated values under LOGIC-001; skipped or invalid values are blank and values render as escaped text and HTML.
+3. Dates use the question’s published FIELD-015/FIELD-020 display format.
+4. Sensitive answers under GOV-004 are never included.
+5. The receipt uses the saved business brand under BRAND-001/BRAND-003 and DIST-006 retry behavior.
+6. It has no Reply-To or response-access link, except the single-use edit link when response editing is explicitly enabled under RESP-021.
+
+**Evidence.** `tests/runtime/respondent-confirmations.worker.test.ts` — "released confirmations use only the marked mailbox or participant, escape permitted recall and dates, retry once and erase their retained copy"; `tests/runtime/notification-restore.worker.test.ts` — "restored failed and unknown mail can be explicitly retried with their original key while every other restored delivery remains unarmed"; `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey” — "Audience CSV review, saved segment, email score 9, editable invitation prefill, confirmation receipt, identified ledger, cancellation, opt-out and erasure are keyboard accessible" (1440/390); `scripts/deployment-data.check.mjs` — “complete archive recovery retains exact data and attachment custody and refuses unsafe sources, archives and destinations without overwrites” — "full current-data roundtrip preserves prefill markers and disabled confirmation history, stable revisions, quarantine, receipts, historical actors, auth, effects, exact text and int64"
+**Gap.** Receipt wording APPROVED by ct (25 October 2026). Default-off receipts have no link; enabled receipts carry exactly one single-use edit link, consumed through the public edit door with reuse refused. The receipt has no Reply-To or other response-access link. Default APPROVED by ct (23 October 2026): revision-frozen opt-in, one marked typed mailbox or identified participant, second opt-in/type whitelist for copies, and no resend from restored history. GOV-004 sensitive withholding, LOGIC-004 quiz results, PAY-001 payment receipt links and SIGN-001 signed PDFs remain unbuilt and inherit before shipping. No real mail provider call or consent was used.
+
+#### RESP-027 — Respondent confirmation custody
+
+Core · target · **partial** · From RESP-020 · Cites BASE-INPUT-002
+
+**Requirement.** Confirmation delivery is bound to one consented recipient and released response.
+
+**Acceptance.**
+1. Confirmation defaults off on each published revision; an answer copy is a separate opt-in whose allowed question types start empty.
+2. Only the selected “send my confirmation here” question or the identified invitation participant supplies a recipient. Other typed or link-supplied addresses do not; unchanged or locked contact prefill is eligible only when it is that participant’s own address.
+3. Opted-out participants and opted-out or bounced mailboxes receive none. Excluded or quarantined responses receive none until a live response is released.
+4. One durable key per released response prevents replay or restored history from resending; existing request rates and one delivery per response bound the mail path.
+5. Recipient mailboxes, rendered bodies and attempts remain private archive history, restore with sending disabled and erase with the response.
+6. The same custody, escaping and exclusion rules apply to the optional quiz, payment and signature receipt content of RESP-020.
+7. A form with the marked mailbox delivers once with escaped recall, blank skipped values and the published date format; an anonymous response without that mailbox delivers none, and a transient failure retries the same delivery.
 
 **Evidence.** `tests/runtime/respondent-confirmations.worker.test.ts` — "released confirmations use only the marked mailbox or participant, escape permitted recall and dates, retry once and erase their retained copy"; `tests/runtime/notification-restore.worker.test.ts` — "restored failed and unknown mail can be explicitly retried with their original key while every other restored delivery remains unarmed"; `tests/e2e/distribution-foundation.spec.ts` — “invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey” — "Audience CSV review, saved segment, email score 9, editable invitation prefill, confirmation receipt, identified ledger, cancellation, opt-out and erasure are keyboard accessible" (1440/390); `scripts/deployment-data.check.mjs` — “complete archive recovery retains exact data and attachment custody and refuses unsafe sources, archives and destinations without overwrites” — "full current-data roundtrip preserves prefill markers and disabled confirmation history, stable revisions, quarantine, receipts, historical actors, auth, effects, exact text and int64"
 **Gap.** Receipt wording APPROVED by ct (25 October 2026). Default-off receipts have no link; enabled receipts carry exactly one single-use edit link, consumed through the public edit door with reuse refused. The receipt has no Reply-To or other response-access link. Default APPROVED by ct (23 October 2026): revision-frozen opt-in, one marked typed mailbox or identified participant, second opt-in/type whitelist for copies, and no resend from restored history. GOV-004 sensitive withholding, LOGIC-004 quiz results, PAY-001 payment receipt links and SIGN-001 signed PDFs remain unbuilt and inherit before shipping. No real mail provider call or consent was used.
@@ -1857,157 +2699,208 @@ Core · target · **partial**
 
 Core · target · **done**
 
-**Requirement.** A form may allow a respondent to edit their submission until a deadline through a single-use edit link sent with the confirmation; an edit creates a new version of the response with the prior version retained, recomputes results and notifies integrations with an `updated` event.
+**Requirement.** A form may permit a respondent to change a completed submission until a stated deadline.
 
 **Acceptance.**
-1. a Worker test edits a submission through its link, sees both versions in the ledger and an `updated` webhook, and a second use of the same link is refused.
-2. *Status: done — DONE PROPOSAL — UNCOUNTED until landing and ct judgement.
-3. Gap: None.
-4. Public-door proofs cover enabled anonymous/no-recipient custody and authorized participant/marked-mailbox delivery; newest-100 ordering 102 down to 3 with only 102 current; all 102 archived numbers, answers and contexts; current-only CSV/JSON/XLSX/SPSS exports after a real edit; and authenticated JSONL metadata, complete newest-first history, current flags and concurrent edit/erasure aborts.
-5. Release gating is rer check, exact-SHA branch Verify and Run site.*
+1. A single-use edit link is delivered with the confirmation and opens the existing answers.
+2. A successful edit retains the prior response version, creates the new version, recomputes results and notifies integrations with an updated event.
+3. The ledger shows both versions and the updated event reaches the integration; a second use of the same edit link is refused.
 
-**Evidence.** `tests/runtime/response-webhooks.worker.test.ts` — “signed response events verify, retry on one event ID, replay, disable with an alert and list undelivered responses without ever blocking collection” (public edit link, both versions, numeric result/calculation recomputation, signed updated event, complete history download, paid-total refusal, ANLY-007 stale marking and reuse/expiry/closure refusals); `tests/runtime/respondent-confirmations.worker.test.ts` — “released confirmations use only the marked mailbox or participant, escape permitted recall and dates, retry once and erase their retained copy”; `tests/e2e/save-resume.spec.ts` — “a respondent saves two answers, resumes privately on another device and sees completion on reuse” (settings, prefilled edit and ledger history at 1440/390); `scripts/deployment-data.check.mjs` — “complete archive recovery retains exact data and attachment custody and refuses unsafe sources, archives and destinations without overwrites” — full current-data roundtrip; `src/core/features/responses/edits.ts`, `migrations/core/0067_response_edits.sql`
-**Gap.** DONE PROPOSAL — UNCOUNTED until landing and ct judgement. Gap: None. Public-door proofs cover enabled anonymous/no-recipient custody and authorized participant/marked-mailbox delivery; newest-100 ordering 102 down to 3 with only 102 current; all 102 archived numbers, answers and contexts; current-only CSV/JSON/XLSX/SPSS exports after a real edit; and authenticated JSONL metadata, complete newest-first history, current flags and concurrent edit/erasure aborts. Release gating is rer check, exact-SHA branch Verify and Run site.
+**Evidence.** `tests/runtime/response-webhooks.worker.test.ts` — "signed response events verify, retry on one event ID, replay, disable with an alert and list undelivered responses without ever blocking collection"; `tests/e2e/save-resume.spec.ts` — "a respondent saves two answers, resumes privately on another device and sees completion on reuse"
+**Gap.** None.
 
 #### PART-001 — Consented partial-response capture
 
 Core · target · **missing**
 
-**Requirement.** A form may opt in to keeping partial responses. The disclosure (RESP-005) states before the first answer that answers are saved as you go; each completed step is then stored against the RESP-013 session, shown to operators in a separate Partial view with the last step reached, excluded from completed counts, admission checks, analysis evidence and default exports unless an operator includes them, and deleted after a retention period (default 30 days) unless completed. Without the opt-in RESP-010 holds unchanged; on activation RESP-010 and the abandoned-session non-goal are amended to name this exception.
+**Requirement.** A form can opt into partial capture under RESP-005's advance disclosure; without that opt-in, RESP-010's no-partial rule applies.
 
 **Acceptance.**
-1. a Worker test answers three of six steps on an opted-in form and finds one partial with three answers that is absent from counts and analysis; the same journey on a form without the opt-in stores nothing; a fake clock past retention deletes the partial.
-2. *Status: missing.*
+1. Before the first answer, disclosure says answers are saved as the respondent goes; each completed step is retained against the RESP-013 session.
+2. Operators see partials separately with the last step reached; partials are excluded from completed counts, admission and analysis, and from exports unless explicitly included.
+3. Incomplete partials expire after a retention period, defaulting to 30 days; completion ends partial status.
+4. Three answered steps of a six-step form appear as one three-answer partial without affecting counts or analysis; the same activity without opt-in stores no partial, and advancing past retention deletes the partial.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
 #### PART-002 — Save and resume
 
-Core · target · **done**
+Core · target · **partial**
 
-**Requirement.** A respondent may choose "Save and finish later" and receive a resume link by email; the link resumes the same revision and answers on any device until it expires (default 30 days) or the form closes, the email is used only for that link unless the respondent also answers an email question, and a completed link shows the completion receipt while an erased, expired, closed or otherwise unavailable link offers where to start again. The explicit save exception in RESP-010 retains the original revision, answer path, collector and invitation across devices without creating a completion, contact, operator-visible partial or analysis evidence. Save mail failure is visible and retryable without duplicating the save. Completion, expiry (subject to GOV-003’s notice and legal hold) and erasure scrub the private saved state, and archive restoration removes delivery capabilities.
+**Requirement.** Respondents can explicitly email themselves a private link to resume the same answers and revision on another device, separately from partial-response capture.
 
 **Acceptance.**
-1. a browser journey saves after two steps, opens the emailed link in a new context, sees both answers, completes, and the link then shows the completed state.
-2. The same journey without choosing Save stores no partial; saved answers stay out of completed counts, results, analysis and default response exports until final submission.
-3. Worker journeys also prove revision pinning, separate delivery email, visible mail failure and idempotent retry, expiry, closure, erasure, collector/invitation custody and archive restoration without delivery capabilities.
-4. *Status: done — Explicit email-only saves retain the original revision, answer path, collector and invitation on another device until the default 30-day expiry or closure.
-5. Delivery addresses stay separate from contacts and answers.
-6. Reused completed links show the receipt; erased, expired or unavailable links offer Start again.
-7. Private state is scrubbed on completion, expiry (subject to GOV-003 notice and legal hold) and erasure; archive restore removes delivery capabilities.
-8. Evidence: `src/core/features/resuming/`, `src/core/features/responses/ui/SaveResponse.tsx`, `src/core/features/responses/ui/ResumeFlowPage.tsx`, `migrations/core/0043_saved_responses.sql`, `tests/runtime/resuming.worker.test.ts`, `tests/e2e/save-resume.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”.*
+1. Save and finish later resumes the same revision, answer path, collector and invitation until expiry (30 days by default) or closure; the delivery email is used only for the link unless independently answered in an email question.
+2. A completed link shows its completion receipt; erased, expired, closed or otherwise unavailable links offer Start again.
+3. Saving creates no completion, contact, operator-visible partial or analysis evidence, and saved answers remain absent from completed results and default exports until submission.
+4. Save-mail failure is visible and retryable without duplicating the save.
+5. Completion, expiry subject to GOV-003/GOV-008, and erasure scrub private saved state; archive restore removes delivery capabilities.
+6. After two answers, a fresh browser context opens the emailed link, reads both answers, completes and sees completion on link reuse; without choosing Save, answering stores no partial.
 
 **Evidence.** `src/core/features/resuming/`, `src/core/features/responses/ui/SaveResponse.tsx`, `src/core/features/responses/ui/ResumeFlowPage.tsx`, `migrations/core/0043_saved_responses.sql`, `tests/runtime/resuming.worker.test.ts`, `tests/e2e/save-resume.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”
-**Gap.** Explicit email-only saves retain the original revision, answer path, collector and invitation on another device until the default 30-day expiry or closure. Delivery addresses stay separate from contacts and answers. Reused completed links show the receipt; erased, expired or unavailable links offer Start again. Private state is scrubbed on completion, expiry (subject to GOV-003 notice and legal hold) and erasure; archive restore removes delivery capabilities.
+**Gap.** A cited journey must leave after answering without choosing Save and inspect that no partial answer state was stored; it must also exercise legal hold/notice custody before automatic private-save expiry. The cited save/resume journeys prove explicit saves, revision pinning, email separation, retries, expiry/closure/erasure and restored credential removal. The legal-hold journey is in tests/runtime/retention-schedule.worker.test.ts, outside the old PART-002 Evidence set.
 
 #### RESP-022 — Response-quality flags
 
 Core · target · **partial**
 
-**Requirement.** Beyond RESP-015's defenses, each completed response is checked for straight-lining on grids, completion far faster than the form's median, duplicate open text across responses and gibberish text. A flagged response is quarantined with the reasons (RESP-017, RESP-018) and nothing is discarded; operators set which checks apply per form. On activation the trust-scoring exclusion in RESP-015 is amended to name these checks.
+**Requirement.** Per-form checks can flag additional response-quality concerns without discarding the data.
 
 **Acceptance.**
-1. a Worker test submits a straight-lined grid and a 3-second completion against a 90-second median, both land in quarantine with their reasons, and release restores them to results.
-2. *Status: partial — minimum-time quarantine and operator release ship (`src/core/features/responses/service.ts`, `tests/runtime/journey.worker.test.ts`).*
+1. Completed responses can be checked for grid straight-lining, completion far faster than the form’s median, duplicated open text and gibberish.
+2. Operators choose the checks for a form; a flag quarantines the response with its reasons under RESP-017/RESP-018 rather than deleting it.
+3. A straight-lined grid and a three-second completion against a ninety-second median are held with their reasons, and release restores them to results.
 
 **Evidence.** `src/core/features/responses/service.ts`, `tests/runtime/journey.worker.test.ts`
 **Gap.** Only the behaviour named in Evidence ships; the rest of the clause is not built.
 
-#### RESP-023 — Identified public links
+#### RESP-023 — Identified public collection
 
-Core · target · **partial**
+Core · target · **partial** · From RESP-023
 
-**Requirement.** An Editor chooses per form, in the builder's share settings, whether public links, embeds, popups and QR codes collect *anonymous* responses (the default) or *identified* ones; the choice is part of the published revision and changes only by republishing. In identified mode, hidden fields declared identifying under FIELD-001 (for example `email`, `name`, `contact_id`) are accepted from the link, embed or popup, so a link pasted into Mailchimp, HubSpot, Mango or a CRM sequence as `?email=*|EMAIL|*&name=…` names the respondent without asking again. A public link carrying identifying hidden fields must bind exactly one form revision; its identifying values are fixed by that link and validated against that revision's declarations. A link built for one revision must be refused on another with a reason, without silently moving the identity to the new revision. Each value is validated against its declared type and stored on the response marked link-supplied and unverified; an unsubstituted merge tag (`*|EMAIL|*`, `{{contact.email}}`, `%%emailaddress%%`, `{email}`) or a value that fails its type is discarded and counted, never stored. When the Editor turns on contact matching, a supplied email links the response to the matching contact (AUD-001) and becomes the record key in CRM and email-platform deliveries (INTEG-003 to INTEG-009). Before the first answer, RESP-005's disclosure says the response is identified, shows the identifying values received ("Answering as jo@example.com") and that a forwarded link carries them, and offers "This isn't me", which clears them before anything is stored. Results, filters and exports show each response's identity mode. Anonymous mode keeps RESP-006 and FIELD-001's refusal of identifying parameters unchanged, and a response collected anonymously is never re-identified by switching modes. Publication already snapshots `response.identity.v1` as `anonymous-public-link` or `identified-public-link` from the form's chosen mode; RESP-005 states that policy. The current runtime validates submitted hidden values against the admitted session's revision. It does not yet bind the public URL itself to a revision or freeze identifying values: direct links resolve the current revision, and hidden values arrive with the submitted answers. Cross-revision identified-link refusal and fixed identifying values therefore remain obligations of this partial clause.
+**Requirement.** Editors choose whether each published form collects anonymous or identified public responses.
 
 **Acceptance.**
-1. a browser journey publishes an identified form, opens it with `?email=jo@example.com&name=Jo&utm_source=mailchimp`, sees the disclosure name the email, completes it, and finds the email on the response, in the CSV export and as the contact key in the HubSpot receiver fixture's delivery; the same link with `?email=*|EMAIL|*` stores no email and counts one discarded value; "This isn't me" yields a response with no supplied identity; on an anonymous form the same `email` parameter is refused at publish and discarded at runtime, with the RESP-006 assertions unchanged.
-2. A browser and Worker journey builds an identifying link for revision A, proves its identifying values cannot change during collection (except removal through This isn't me), publishes revision B, and proves that using A's link on B is refused with a reason and creates no response.
-3. *Status: partial — Per-revision anonymous/identified public-link mode, typed link-supplied unverified identity, pre-answer disclosure, This isn’t me, merge-tag rejection/counting and ledger/export identity mode ship.
-4. Remaining: public-link revision binding, fixed identifying values and reasoned cross-revision refusal; contact matching, CRM/email-platform identity deliveries, popup and QR tooling.
-5. Evidence: `src/core/shared/hiddenFields.ts`, `tests/runtime/hidden-fields.worker.test.ts`, `tests/e2e/hidden-fields.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”.*
+1. The builder’s share settings choose anonymous by default or identified collection for links, embeds, popups and QR codes; a change requires republication.
+2. Identifying hidden fields declared under FIELD-001 accept typed link, embed or popup values for uses such as Mailchimp, HubSpot, Mango and CRM sequences.
+3. Retained values are marked link-supplied and unverified. Unsubstituted merge tags and values failing their declared types are discarded and counted, never stored.
+4. Optional contact matching links a supplied email to the matching AUD-001 contact and uses it as the key for the applicable CRM/email-platform deliveries.
+5. Before answering, RESP-005 states the identified mode, shows the values received, explains forwarding and offers “This isn’t me” to clear them before storage.
+6. Results, filters and exports show the collected identity mode.
 
 **Evidence.** `src/core/shared/hiddenFields.ts`, `tests/runtime/hidden-fields.worker.test.ts`, `tests/e2e/hidden-fields.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”
-**Gap.** Per-revision anonymous/identified public-link mode, typed link-supplied unverified identity, pre-answer disclosure, This isn’t me, merge-tag rejection/counting and ledger/export identity mode ship. Remaining: public-link revision binding, fixed identifying values and reasoned cross-revision refusal; contact matching, CRM/email-platform identity deliveries, popup and QR tooling.
+**Gap.** Per-revision anonymous/identified public-link mode, typed link-supplied unverified identity, pre-answer disclosure, This isn’t me, merge-tag rejection/counting and ledger/export identity mode ship. Remaining: public-link revision binding, fixed identifying values and reasoned cross-revision refusal; contact matching, CRM/email-platform identity deliveries, popup and QR tooling. The current runtime validates submitted hidden values against the admitted session's revision. It does not yet bind the public URL itself to a revision or freeze identifying values: direct links resolve the current revision, and hidden values arrive with the submitted answers. Cross-revision identified-link refusal and fixed identifying values therefore remain obligations of this partial clause.
+
+#### RESP-028 — Revision-bound public identity
+
+Core · target · **partial** · From RESP-023
+
+**Requirement.** Identifying public links bind their values to one published revision, while anonymous collection keeps its identity boundary.
+
+**Acceptance.**
+1. An identifying link names exactly one form revision and fixes its identifying values against that revision’s declarations.
+2. Values cannot change during collection except by removal through “This isn’t me”.
+3. Using a revision-A identifying link on revision B is refused with a reason and creates no response; identity never silently moves to another revision.
+4. Anonymous mode keeps RESP-006 and FIELD-001’s refusal of identifying parameters, and changing modes never re-identifies an earlier anonymous response.
+5. A published identified form collects a typed email/name supplied by a link, shows the disclosure and retains the email in the response and CSV and as the contact key in the HubSpot delivery.
+6. An unsubstituted merge tag stores no email and increments the discarded-value count; “This isn’t me” collects no supplied identity; the same identifying parameter on an anonymous form is refused at publication and discarded at runtime.
+
+**Evidence.** `src/core/shared/hiddenFields.ts`, `tests/runtime/hidden-fields.worker.test.ts`, `tests/e2e/hidden-fields.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”
+**Gap.** Per-revision anonymous/identified public-link mode, typed link-supplied unverified identity, pre-answer disclosure, This isn’t me, merge-tag rejection/counting and ledger/export identity mode ship. Remaining: public-link revision binding, fixed identifying values and reasoned cross-revision refusal; contact matching, CRM/email-platform identity deliveries, popup and QR tooling. The current runtime validates submitted hidden values against the admitted session's revision. It does not yet bind the public URL itself to a revision or freeze identifying values: direct links resolve the current revision, and hidden values arrive with the submitted answers. Cross-revision identified-link refusal and fixed identifying values therefore remain obligations of this partial clause.
 
 #### RESP-024 — Review before submit
 
 Core · target · **done**
 
-**Requirement.** An Editor may turn on a review screen per flow. Before final submission the respondent sees every reachable answer in published order and display format (FIELD-015 dates, scale labels under FIELD-016, choice labels), with an edit link per answer that returns through RESP-004 back navigation and recomputes the path; submitting from the review is RESP-007's final submission with the same RESP-012 idempotency key; unreachable answers never appear; anonymous flows show nothing beyond the respondent's own answers.
+**Requirement.** Editors may enable a review screen before final submission.
 
 **Acceptance.**
-1. a 1440/390 journey answers a branching flow, opens the review, edits one answer that changes the branch, sees the dropped answer gone and the new one in display format, and submits once.
-2. *Status: done — A per-flow builder setting is pinned in the published review policy, with older snapshots defaulting off.
-3. The shared respondent screen lists only the current path, formats dates, choice and scale labels, and edits through Back before recomputing that path.
-4. Review uses the existing final submission and idempotency key.
-5. The 1440/390 journey proves a changed branch, anonymous separation, copied and team-template settings, and one retained response after an acknowledgement loss and retry.
-6. Evidence: `src/core/shared/flowPolicies.ts`, `src/core/features/responses/ui/ReviewAnswers.tsx`, `tests/e2e/date-format.spec.ts`, `tests/e2e/review-journey.ts`, `docs/evidence/resp024-review-after-desktop.png`, `docs/evidence/resp024-review-after-mobile.png`.*
+1. Review lists every reachable answer in published order and display format, including FIELD-015/FIELD-020 dates, FIELD-016/FIELD-021 scale labels and choice labels.
+2. Each answer has an edit link through RESP-004 Back navigation, which recomputes the path and removes newly unreachable answers from review.
+3. Final submission from review uses RESP-007 and the same RESP-012 submission key.
+4. An anonymous respondent sees only their own answers.
+5. In a branching form, editing one answer removes the old branch, shows the new branch in the published display format and submits exactly once.
 
-**Evidence.** `src/core/shared/flowPolicies.ts`, `src/core/features/responses/ui/RespondentFlowPage.tsx`, `src/core/features/responses/ui/ReviewAnswers.tsx`, `tests/e2e/date-format.spec.ts`, `tests/e2e/review-journey.ts`
-**Gap.** None. Published review defaults off for older revisions; per-answer Back navigation recomputes reachable answers, with FIELD-015 dates and FIELD-016 scale labels. At 1440/390 the journey changes branches, excludes the dropped answer and a separate anonymous respondent’s answers, preserves copied/template settings, and loses then retries the submission acknowledgement with one response row and one idempotency key.
+**Evidence.** `tests/e2e/date-format.spec.ts` — "RESP-024 reviews display formats, edits a branch and submits once; FIELD-015 keeps locale-independent entry, recall and ISO exports"
+**Gap.** None.
 
 ### Target: submission workflow
 
-#### LEDG-005 — Spreadsheet and statistics exports
+#### LEDG-005 — Spreadsheet exports
 
-Core · target · **done**
+Core · target · **partial** · From LEDG-005
 
-**Requirement.** Besides CSV and JSON (LEDG-004), exports are available as XLSX (one sheet of responses, one of question metadata) and SPSS `.sav` with variable labels and value labels from stable choice IDs, under the same filter, cutoff and quarantine rules. Both stream through LEDG-004's cursor-paged download with bounded memory and are named `pencil-responses-<cutoff>.xlsx` or `.sav`. XLSX sheet one holds the CSV's columns and values, with JSON-valued columns kept as JSON text; every text cell is an inline string, never a formula, so a value starting with = + - or @ is never evaluated, and a value longer than Excel's 32,767-character cell limit refuses that export rather than being cut. Sheet two lists, per revision, each question's stable step ID, position, type and label and each offered choice's stable ID, published value and label, with its SPSS variable and code. The `.sav` file is a UTF-8, bytecode-compressed SPSS system file with one case per response: the CSV's response columns (the omitted-question and presented-order JSON stay JSON text), typed variables for hidden fields and calculations, and variables coded from stable IDs for each question: a single-choice or dropdown code whose value label is the choice label and which keeps one code per stable choice ID in every revision, a 0/1 variable per multiple-choice option, a rank per priority option, 1/0 for yes/no, thumbs and consent, the number for scores and numbers, text for open and contact answers, and an Other write-in in its own variable. An answer the response's revision did not ask is system-missing. Text wider than 255 bytes uses SPSS very-long-string segments; a value over the 32,767-byte SPSS string limit refuses that export, never truncated. The format cuts variable labels at 255 bytes and value labels at 120 bytes; sheet two keeps the full text.
+**Requirement.** The LEDG-004 selection is available as XLSX with response and question-metadata sheets, using the documented spreadsheet format.
 
 **Acceptance.**
-1. a Worker test exports XLSX and SAV and reads them back with an independent reader, asserting the same response IDs and coded values as the CSV.
-2. *Status: done — The Worker case exports one selection as CSV, XLSX and SAV for the default, the explicit automated-exclusion option and a consent filter, reads XLSX with read-excel-file and SAV with sav-reader in Node (published readers that share no code with the writers), and asserts every XLSX cell equals the CSV's apart from each export's own cutoff, a `=1+2` collector name read back as text, the same response IDs in the same order in all three, SAV codes that match the CSV's choice values through sheet two, value labels equal to the choice labels, 0/1 multiple-choice and priority-rank variables, and the quarantined response absent by default and present, marked quarantined with its exclusion reason, only under the option.
-3. The collectors case exports 43 responses in two cursor parts as XLSX and SAV and reads back the same IDs and hidden-field values.
-4. The ledger journey at 1440 and 390 downloads both from the export buttons with their filenames.
-5. Evidence: `src/core/features/reporting/export.ts`, `src/core/features/reporting/xlsxExport.ts`, `src/core/features/reporting/zip.ts`, `src/core/features/reporting/savDictionary.ts`, `src/core/features/reporting/savWriter.ts`, `src/core/features/reporting/exportInventory.ts`, `tests/runtime/ledger-filters.worker.test.ts`, `tests/runtime/collectors-trends.worker.test.ts`, `tests/runtime/export-reader.global.ts`, `tests/e2e/ledger-filters.spec.ts`.*
+1. The response sheet has the CSV’s columns and values, retaining JSON-valued columns as JSON text.
+2. Text is inert rather than a formula, including values beginning with =, +, - or @.
+3. An answer beyond the spreadsheet cell limit refuses the whole export rather than being cut.
+4. The metadata sheet lists each revision’s stable question ID, position, type and label, and each offered choice’s stable ID, published value and label, including its statistics variable and code.
+5. The download is cursor-paged with bounded memory and a cutoff-bearing XLSX filename.
+6. An independent spreadsheet reader opens the export and reads back the same response IDs and values as CSV.
 
 **Evidence.** `src/core/features/reporting/export.ts`, `src/core/features/reporting/xlsxExport.ts`, `src/core/features/reporting/zip.ts`, `src/core/features/reporting/savDictionary.ts`, `src/core/features/reporting/savWriter.ts`, `src/core/features/reporting/exportInventory.ts`, `tests/runtime/ledger-filters.worker.test.ts`, `tests/runtime/collectors-trends.worker.test.ts`, `tests/runtime/export-reader.global.ts`, `tests/e2e/ledger-filters.spec.ts`, `docs/evidence/ledg005-exports-1440.png`, `docs/evidence/ledg005-exports-390.png`
-**Gap.** None. The Worker case exports one selection as CSV, XLSX and SAV for the default, the explicit automated-exclusion option and a consent filter, reads XLSX with read-excel-file and SAV with sav-reader in Node (published readers that share no code with the writers), and asserts every XLSX cell equals the CSV's apart from each export's own cutoff, a `=1+2` collector name read back as text, the same response IDs in the same order in all three, SAV codes that match the CSV's choice values through sheet two, value labels equal to the choice labels, 0/1 multiple-choice and priority-rank variables, and the quarantined response absent by default and present, marked quarantined with its exclusion reason, only under the option. The collectors case exports 43 responses in two cursor parts as XLSX and SAV and reads back the same IDs and hidden-field values. The ledger journey at 1440 and 390 downloads both from the export buttons with their filenames.
+**Gap.** Missing an over-limit spreadsheet-cell journey that attempts export and observes complete refusal rather than truncation with no partial success. Cited journeys read ordinary text and formula-like values and two-page exports, not this dangerous boundary.
+
+#### LEDG-007 — Statistics exports
+
+Core · target · **partial** · From LEDG-005
+
+**Requirement.** The LEDG-004 selection is available as an SPSS system file whose exact byte format and limits are documented with the operating rules.
+
+**Acceptance.**
+1. One case represents one response, preserving CSV response columns and JSON text for omitted questions and presentation order, with typed hidden-field and calculation variables.
+2. Stable question/choice IDs determine codes across revisions: single-choice/dropdown values carry choice labels; multiple choices use one binary variable per option; priorities use ranks; yes/no, thumbs and consent use binary values; scores/numbers remain numeric; open/contact answers and Other write-ins remain text.
+3. A question absent from the response’s revision is system-missing.
+4. Very long text uses the documented long-string representation; a value beyond the format limit refuses the export without truncation.
+5. Format-shortened variable/value labels retain their full text in the XLSX metadata sheet.
+6. The UTF-8 compressed download uses bounded cursor pages and a cutoff-bearing statistics filename, under the same filter, cutoff and quarantine rules as CSV.
+7. An independent statistics reader opens the file and reads back the same response IDs and coded values as CSV.
+
+**Evidence.** `src/core/features/reporting/export.ts`, `src/core/features/reporting/xlsxExport.ts`, `src/core/features/reporting/zip.ts`, `src/core/features/reporting/savDictionary.ts`, `src/core/features/reporting/savWriter.ts`, `src/core/features/reporting/exportInventory.ts`, `tests/runtime/ledger-filters.worker.test.ts`, `tests/runtime/collectors-trends.worker.test.ts`, `tests/runtime/export-reader.global.ts`, `tests/e2e/ledger-filters.spec.ts`, `docs/evidence/ledg005-exports-1440.png`, `docs/evidence/ledg005-exports-390.png`
+**Gap.** Missing a cited statistics-export journey for system-missing absent-revision questions, very-long strings, over-limit refusal without truncation and full metadata labels after format limits. Existing readers inspect ordinary coded values and cursor continuity only.
 
 #### LEDG-006 — Response search
 
-Core · target · **done**
+Core · target · **partial** · From LEDG-006 · Cites BASE-ROLE-001
 
-**Requirement.** The ledger has a free-text search box that matches open-text answers, Other write-ins (FIELD-010), choice labels, hidden-field values (FIELD-001) and, for operators whose ROLE-002 grant shows identity, an identified respondent's name and email. Search combines with every LEDG-003 filter, highlights the matching answer, keeps the same response IDs and fixes into an export (LEDG-004) like any filter. GOV-004 sensitive answers match only for operators allowed to see them, quarantined responses only in the RESP-018 review list, and responses erased under DATA-002 never. It answers within one second p95 at the response capacity in `seed.json → limits`. Matching uses Unicode 16.0 full case folding and NFC composition on stored search values, maintained on every answer write and backfilled for existing answers by migration `0053_response_search_values.sql`; search matches those values directly. Accents stay significant, so cafe does not match café; %, _, * and SQL punctuation are literal. A 200-letter mixed-script phrase matches without an expression-depth refusal. ROLE-002 and GOV-004 inherit grant-aware matching: identity values and sensitive answers match only for operators whose grant shows them, each before that grant ships; until then every operator sees identity in the ledger, so search reveals nothing more.
+**Requirement.** Operators can search the retained response content they are entitled to see.
 
 **Acceptance.**
-1. A Worker test finds responses by retained open text, a hidden-field value and an Other write-in, combines search with revision/source filters, and exports exactly the matching released response IDs while excluding quarantine and erasure.
-2. Accented, Cyrillic and Greek phrases match other-case answers and published choice labels; decomposed accents and expanding case folds match canonically, wildcards stay literal, a 200-letter mixed-script phrase returns its response, and an answer edit replaces its searchable text.
-3. An upgrade from release 0.7.0 makes existing answers searchable without changing retained answers; an archive round trip retains search values and proves exact re-export equality.
-4. A 1440/390 browser journey searches, highlights the original answer spelling and downloads the same filtered records.
-5. ROLE-002 and GOV-004 must extend these journeys with their grant-aware cases before those grants ship.
-6. *Status: done — Stored folded NFC search values remove per-answer query-time folding and the expression-depth refusal.
-7. At 100,000 released responses and 300,000 answers, 40 authenticated HTTP ledger requests (count plus first page and JSON decoding, after four warmups, concurrency one) measured p95 0.208 seconds on m1-runner’s local Workers D1 at normal load on 20 October 2026; per-query p95 was 0.081–0.210 seconds.
-8. The four phrases cover selective, all-match, accented and no-match literal searches. ROLE-002 and GOV-004 inherit grant-aware matching: identity values and sensitive answers match only for operators whose grant shows them, each before that grant ships; until then every operator sees identity in the ledger, so search reveals nothing more. Evidence: `migrations/core/0053_response_search_values.sql`, `src/core/features/reporting/search.ts`, `tests/runtime/ledger-filters.worker.test.ts`, `tests/runtime/ledger-search-upgrade.worker.test.ts`, `tests/runtime/other-choices.worker.test.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”, `tests/e2e/response-search.spec.ts`, `tests/release/ledger-search.worker.test.ts`, `docs/evidence/ledger-search-2026-10-20.json` Verify runtime (worker-2) via `scripts/run-contract-lane.mjs`: `tests/release/ledger-search.worker.test.ts` — “[LEDG-006] returns count and first page under one second p95 across 100,000 responses”.*
+1. Search matches open text, FIELD-010/FIELD-017 Other write-ins, choice labels, hidden fields and identified name/email when the ROLE-002 grant permits identity.
+2. GOV-004 sensitive answers match only when visible to the operator; quarantined matches appear only in RESP-018 review and erased responses never match.
+3. Search composes with every LEDG-003 filter, highlights the original matching answer and fixes the same response IDs into LEDG-004 exports.
+4. Count and first-page results complete within one second p95 at the declared response capacity.
+5. Matching follows the documented Unicode case-folding and canonical-composition rules; accents remain significant and wildcard/SQL punctuation is literal.
+6. Accented, Cyrillic, Greek and mixed-script text, decomposed accents and expanding case folds match correctly, including a two-hundred-letter phrase without query-depth refusal.
 
 **Evidence.** `migrations/core/0053_response_search_values.sql`, `src/core/features/reporting/search.ts`, `tests/runtime/ledger-filters.worker.test.ts`, `tests/runtime/ledger-search-upgrade.worker.test.ts`, `tests/runtime/other-choices.worker.test.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”, `tests/e2e/response-search.spec.ts`, `tests/release/ledger-search.worker.test.ts`, `docs/evidence/ledger-search-2026-10-20.json`; Verify runtime (worker-2) via `scripts/run-contract-lane.mjs`: `tests/release/ledger-search.worker.test.ts` — “[LEDG-006] returns count and first page under one second p95 across 100,000 responses”.
-**Gap.** None. ROLE-002 and GOV-004 inherit grant-aware matching: identity values and sensitive answers match only for operators whose grant shows them, each before that grant ships; until then every operator sees identity in the ledger, so search reveals nothing more.
+**Gap.** Missing the ROLE-002/GOV-004 identity/sensitive-grant search journey in the old evidence. Current cited journeys cover all-equal-operator Unicode/literal search, filters, highlighting, erasure and capacity; the retained grant-aware query scope is unbuilt.
+
+#### LEDG-008 — Search custody through change
+
+Core · target · **partial** · From LEDG-006
+
+**Requirement.** Searchable content follows answer changes, upgrades and archive custody without changing retained answers.
+
+**Acceptance.**
+1. Each answer write updates its searchable value; editing an answer replaces its old searchable text.
+2. Upgrading from release 0.7.0 makes existing answers searchable without changing the retained answers.
+3. An archive round trip preserves search values and produces an identical re-export.
+4. Searching retained open text, hidden values and Other write-ins with revision/source filters exports exactly the matching released IDs, excluding quarantine and erasure.
+5. The browser shows the original matching spelling and downloads those same filtered records.
+6. Grant-aware identity and sensitive-answer cases remain required under ROLE-002 and GOV-004.
+
+**Evidence.** `migrations/core/0053_response_search_values.sql`, `src/core/features/reporting/search.ts`, `tests/runtime/ledger-filters.worker.test.ts`, `tests/runtime/ledger-search-upgrade.worker.test.ts`, `tests/runtime/other-choices.worker.test.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”, `tests/e2e/response-search.spec.ts`, `tests/release/ledger-search.worker.test.ts`, `docs/evidence/ledger-search-2026-10-20.json`; Verify runtime (worker-2) via `scripts/run-contract-lane.mjs`: `tests/release/ledger-search.worker.test.ts` — “[LEDG-006] returns count and first page under one second p95 across 100,000 responses”.
+**Gap.** Missing the retained ROLE-002/GOV-004 identity/sensitive-grant custody cases in the old evidence. Current all-equal-operator search/upgrade/archive journeys cover the other retained outcomes; this part cannot be done before its grant-aware cases are shown.
 
 #### WORK-001 — Submission inbox
 
-Core · target · **partial**
+Core · target · **partial** · Cites BASE-OPS-005
 
-**Requirement.** Each form has an inbox where submissions carry a status (new, in review, approved, rejected, done or custom), an assignee, tags and internal notes that respondents never see; operators filter and bulk-update them and every change is audited.
+**Requirement.** Each form's submissions can be assigned, annotated and moved through a private workflow inbox.
 
 **Acceptance.**
-1. a browser journey assigns, tags, notes and moves a submission to done; the ledger filter by status returns it and the audit log names each change.
-2. A native-route test also refuses an unauthenticated request and a stale bulk write without partial changes, checks private paged notes and custom statuses, exports the selected workflow cohort, and preserves custody through import undo, erasure and operator removal.
-3. *Status: partial — Native-route triage, private notes, bulk version guards, filters, audit and custody are proved.
-4. Gap: the browser journey at 1440 and 390 assigning, tagging, noting and moving a submission to done is absent; done only when that journey exists.*
+1. Submissions hold a new, in review, approved, rejected, done or custom status, an assignee, tags and internal notes invisible to respondents.
+2. Operators filter and bulk-update submissions; assigning, tagging, noting and moving one to done makes it appear in that status filter and records each change.
+3. Unauthenticated requests and stale bulk writes are refused without partial changes; private notes are paged and custom statuses are retained.
+4. The selected workflow cohort exports, and workflow custody survives import undo, response erasure and operator removal.
 
 **Evidence.** `src/core/features/submissions/`, `src/core/features/reporting/scope.ts`, `tests/runtime/submissions.worker.test.ts`
 **Gap.** Native-route triage, private notes, bulk version guards, filters, audit and custody are proved. Gap: the browser journey at 1440 and 390 assigning, tagging, noting and moving a submission to done is absent; done only when that journey exists.
 
 #### WORK-002 — Approval flows
 
-Core · target · **missing**
+Core · target · **missing** · Cites BASE-OPS-005
 
-**Requirement.** A form may route each submission through one or more approval steps (sequential, parallel or chosen by answers, for example amounts over $5,000 to a second approver). Approvers are operators, or named external approvers who act through a single-use signed link scoped to that submission that shows only the fields the operator allowed. Approve, reject and request-changes are recorded with actor, time and comment, and can notify the respondent (RESP-020) and trigger integrations.
+**Requirement.** A submission can follow sequential, parallel or answer-selected approval steps, including a second approver above a configured amount.
 
 **Acceptance.**
-1. a Worker test routes a $6,000 request through two approvers, one by external link, asserts the decisions and audit, and proves the link cannot be reused or opened for another submission.
-2. *Status: missing.*
+1. Approvers are operators or named external people; each external approver receives a single-use signed link restricted to that submission and its permitted fields.
+2. Approve, reject and request-changes retain actor, time and comment, can notify the respondent under RESP-020/RESP-027 and can trigger integrations.
+3. A $6,000 request passes through two approvers, one external; both decisions appear in the audit, and the external link cannot be reused or opened for another submission.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2016,11 +2909,12 @@ Core · target · **missing**
 
 Core · target · **missing**
 
-**Requirement.** A form may hand a later section to another person (for example an employee fills part one, their manager part two): the first respondent names or is assigned the next person, who receives their own link to complete only their section with the earlier answers they are allowed to see; the response completes when every section does.
+**Requirement.** A response can pass a later section to another person while protecting the earlier person's answers.
 
 **Acceptance.**
-1. a Worker test completes a two-person form, proves the second person cannot alter part one, and the response counts as completed only after part two.
-2. *Status: missing.*
+1. The first respondent names, or is assigned, the next person, who receives their own link and can complete only their section while seeing only permitted earlier answers.
+2. The response becomes complete only after every section is complete.
+3. In a two-person form, the second person cannot alter part one, and completion counts increase only after part two.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2029,11 +2923,11 @@ Core · target · **missing**
 
 Core · target · **missing**
 
-**Requirement.** Pending approvals and handoffs remind their assignee on a schedule within WS-002 hours and escalate to a named operator after a deadline; completing or canceling stops reminders.
+**Requirement.** Pending approvals and section handoffs remind their assignees and escalate to a named operator after a deadline.
 
 **Acceptance.**
-1. a Worker test advances a fake clock past two reminders and an escalation for a pending approval, then approves and proves no further reminder is queued.
-2. *Status: missing.*
+1. Reminders follow the configured schedule within WS-002 sending hours; completion or cancellation stops them.
+2. Advancing a pending approval through two reminders and an escalation produces those notices; approving it then leaves no further reminder queued.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2042,47 +2936,63 @@ Core · target · **missing**
 
 Core · target · **missing**
 
-**Requirement.** Each submission can be rendered to a PDF from a default layout or an operator-designed template (Jotform-style PDF editor, including filled versions of an uploaded fillable PDF), downloadable by authorized operators, attachable to RESP-020 and WORK-002 emails, and deliverable to storage integrations (FILE-002). This clause inherits FIELD-015: dates in generated documents and submission PDFs render in the question's published display format.
+**Requirement.** Operators can render a submission as a PDF using a default or designed layout, including an uploaded fillable PDF.
 
 **Acceptance.**
-1. a Worker test renders a submission into a template with recalled values and a filled AcroForm PDF and asserts the text content of both.
-2. The rendered text also shows a FIELD-015 date in the published display format.
-3. *Status: missing.*
+1. Authorized operators can download PDFs, attach them to respondent or WORK-002 approval emails, and deliver them through FILE-002 storage integrations.
+2. Both a recalled-value template and a filled AcroForm retain their expected text content.
+3. Dates in documents and submission PDFs retain the question's FIELD-015/FIELD-020 published display format.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
 ### Target: reports buyers share
 
-#### RSLT-006 — Crosstabs
+#### RSLT-006 — Crosstab dimensions and statistics
 
-Core · target · **done**
+Core · target · **partial** · From RSLT-006
 
-**Requirement.** An operator can cross any structured question, hidden field, collector, language, calculated value or score against another, with counts, row and column percentages named under RSLT-003, a chi-square test flagged only when every expected cell count is at least 5, and ANLY-005 suppression for cells below the disclosure threshold. A crosstab reads the released responses of one revision (RSLT-005, stable step IDs, never merged across revisions) under the LEDG-003 filter and an evidence cutoff, so quarantined and erased responses stay out; every count is distinct responses. Unanswered is its own stated row or column, and the table says when there is none. A multiple-choice dimension is labelled multiple-select: a response counts in each option it chose, shares may total more than 100%, and no chi-square is offered. A priority question crosses by its first-priority choice; numeric questions, dates and calculated values (LOGIC-003) cross by their distinct finite values, at most 50 categories, stated in the table; collectors with no response in the selection are not listed. Suppression (`analysis.disclosure.v1`, default 5): a cell with fewer included responses than the threshold, including zero, shows "suppressed" with no count and no percentage, and exactly the threshold is shown; so that the table alone cannot be subtracted back, the row total, column total and grand total of a suppressed cell, every share divided by a withheld total, and the chi-square are withheld and the table says so. This protects the table's presentation only: in an operator's results view the RSLT-001 answer summaries and response count, the other results panels, the raw ledger and operator exports stay complete for operators who may read the form's responses, and the table's note says withheld figures can be derived from them. Pencil makes no non-reconstruction guarantee beyond the table there. Aggregate-only views follow RSLT-009's aggregate-only disclosure rule. This clause inherits LANG-001: response language is a crosstab dimension, before multi-language forms ship. This clause inherits LOGIC-004: quiz scores and outcomes are crosstab dimensions, before quizzes ship. This clause inherits FIELD-002: each matrix row is a crosstab dimension keyed by its stable row ID, before grids ship.
+**Requirement.** An operator can cross structured questions, hidden fields, collectors, language, calculations and scores over a stated response cohort.
 
 **Acceptance.**
-1. a Worker test crosses a 3-choice question with a 2-choice question over a fixed dataset and asserts every cell, percentage, the chi-square statistic and a suppressed small cell.
-2. LANG-001, LOGIC-004 and FIELD-002 each extend this proof with their own dimension.
-3. The results journey states the page boundary: over the 43-response fixture with no filter the Plan summary shows Scale 8 of 43 answered and Responses 43 while the crosstab shows Scale × Churn 5 and Scale × Renew suppressed; the crosstab note says its withheld figures can be derived from the answer summaries, ledger and exports, which stay complete for operators who may read responses; the ledger filtered to Plan = Scale and Renewal = Renew lists exactly 3 responses and the CSV/XLSX/SAV export holds them.
-4. No acceptance text claims suppression cannot be undone outside the table.
-5. *Status: done — The Worker case crosses a 3-choice plan question with a 2-choice renewal question over 43 fixed released responses and asserts every cell, every row and column share with its numerator and denominator, χ² 5.529 with 2 degrees of freedom, p = e^(−χ²/2), flagged because the smallest expected count is 5.74; at the default threshold the 3-response cell is suppressed, the 5-response cell is shown, and the Scale row total, Renew column total, grand total, their shares and the chi-square are withheld.
-6. It also crosses a hidden field with an Unanswered column, a collector, and a collector filter that moves numerator and denominator together.
-7. The results journey crosses two questions at 1440 and 390 and inspects suppressed cells, withheld totals and the stated chi-square refusal.
-8. Evidence: `src/core/features/reporting/crosstab.ts`, `src/core/features/reporting/crosstabDimensions.ts`, `src/core/features/reporting/crosstabStats.ts`, `src/core/features/results/ui/CrosstabPanel.tsx`, `tests/runtime/collectors-trends.worker.test.ts`, `tests/e2e/answer-results.spec.ts`.*
+1. The crosstab uses distinct released responses from one revision under LEDG-003 filters and an evidence cutoff, excluding quarantine and erasure.
+2. Cells show counts and RSLT-003 row/column shares; chi-square is flagged only when every expected cell count is at least five.
+3. Unanswered is a stated row or column, and the table says when none exists.
+4. A multiple-select dimension counts a response in each chosen option, labels shares that may exceed one hundred percent and offers no chi-square.
+5. Priority crosses by first-priority choice. Numeric/date/calculated dimensions use distinct finite values, up to fifty stated categories; empty collectors are omitted.
+6. Language under LANG-001/LANG-003, quiz scores/outcomes under LOGIC-004 and stable matrix rows under FIELD-002 are included before their respective capabilities ship.
+7. A fixed three-choice by two-choice cohort produces the correct cells, row/column shares and statistic; disclosure follows RSLT-014.
 
 **Evidence.** `src/core/features/reporting/crosstab.ts`, `src/core/features/reporting/crosstabDimensions.ts`, `src/core/features/reporting/crosstabStats.ts`, `src/core/features/results/ui/CrosstabPanel.tsx`, `tests/runtime/collectors-trends.worker.test.ts`, `tests/e2e/answer-results.spec.ts`, `docs/evidence/rslt006-crosstab-1440.png`, `docs/evidence/rslt006-crosstab-390.png`
-**Gap.** Table-only guarantee; displayed note copy corrected. None for existing dimensions. The Worker case crosses a 3-choice plan question with a 2-choice renewal question over 43 fixed released responses and asserts every cell, every row and column share with its numerator and denominator, χ² 5.529 with 2 degrees of freedom, p = e^(−χ²/2), flagged because the smallest expected count is 5.74; at the default threshold the 3-response cell is suppressed, the 5-response cell is shown, and the Scale row total, Renew column total, grand total, their shares and the chi-square are withheld. It also crosses a hidden field with an Unanswered column, a collector, and a collector filter that moves numerator and denominator together. The results journey crosses two questions at 1440 and 390 and inspects suppressed cells, withheld totals and the stated chi-square refusal. LANG-001 inherits the language dimension, LOGIC-004 quiz scores and outcomes, and FIELD-002 matrix rows, each before that capability ships.
+**Gap.** Missing cited language, quiz-score/outcome, stable matrix-row and remaining promised dimension journeys. Existing cited journeys prove question, hidden-field and collector matrices, shares and chi-square, but the retained LANG-001/LANG-003/LOGIC-004/FIELD-002 dimensions are unbuilt.
+
+#### RSLT-014 — Crosstab disclosure boundaries
+
+Core · target · **partial** · From RSLT-006
+
+**Requirement.** A crosstab protects its own table while accurately stating what other figures remain available.
+
+**Acceptance.**
+1. A cell below the ANLY-005 threshold, including zero, shows suppressed without a count or share; exactly the threshold is shown.
+2. The affected row total, column total, grand total, shares using withheld totals and chi-square are withheld, with the reason stated.
+3. A raw-authorized operator retains complete answer summaries, response count, other panels, ledger and exports. The note explains that these can recover withheld values and claims no non-reconstruction guarantee beyond the table.
+4. Aggregate-only reports apply the stronger whole-report rule of RSLT-015/RSLT-016, including code crosstabs.
+5. In the forty-three-response fixture, the Plan summary states Scale eight of forty-three and Responses forty-three; the table shows Scale × Churn five and suppresses Scale × Renew, while the raw ledger and CSV/XLSX/statistics exports retain its three matching responses.
+
+**Evidence.** `src/core/features/reporting/crosstab.ts`, `src/core/features/reporting/crosstabDimensions.ts`, `src/core/features/reporting/crosstabStats.ts`, `src/core/features/results/ui/CrosstabPanel.tsx`, `tests/runtime/collectors-trends.worker.test.ts`, `tests/e2e/answer-results.spec.ts`, `docs/evidence/rslt006-crosstab-1440.png`, `docs/evidence/rslt006-crosstab-390.png`
+**Gap.** Missing the retained aggregate-only whole-report crosstab/refusal fixture through a shared report/tool result. Old evidence proves the raw-authorized operator boundary only; RSLT-015/RSLT-016 aggregate protection remains unbuilt.
 
 #### RSLT-007 — Trends over time
 
 Core · target · **partial**
 
-**Requirement.** Results chart any score or answer share by day, week, month or quarter in the WS-001 zone, with the per-period denominator, a minimum-period-size rule, and revision boundaries marked; recurring occurrences (DIST-016) and programs (PROG-003) use the same series.
+**Requirement.** Results chart score and answer-share changes over the workspace calendar.
 
 **Acceptance.**
-1. a Worker test seeds responses across three months and asserts weekly and monthly NPS, denominators and a revision marker; a period below the minimum shows no value.
-2. The native-route journey also checks collector cohorts, primitive-answer shares and CSV; recurring occurrences, program dashboards and ranked/structured-contact shares remain acceptance obligations for the full clause.
-3. *Status: partial — zoned day/week/month/quarter score and primitive-answer-share charts, answered denominators, minimum-size gaps, revision markers, collector cohorts and CSV ship (`src/core/features/reporting/trends.ts`, `src/core/features/reporting/trendPeriods.ts`, `src/core/features/results/ui/TrendsPanel.tsx`, `tests/runtime/collectors-trends.worker.test.ts`); DIST-016 recurring occurrences, PROG-003 program dashboards, and shares of ranked/structured contact answers remain unbuilt.*
+1. Day, week, month and quarter charts state each period’s denominator, apply its minimum-size rule and mark revision boundaries in the WS-001 zone.
+2. DIST-016 recurring occurrences and PROG-003 programs use the same series.
+3. Three months of responses produce correct weekly/monthly NPS, denominators and revision markers; a period below the minimum has no value.
+4. Collector cohorts, primitive-answer shares and CSV use that series; recurring programs and ranked/structured-contact answer shares remain included.
 
 **Evidence.** `src/core/features/reporting/trends.ts`, `src/core/features/reporting/trendPeriods.ts`, `src/core/features/results/ui/TrendsPanel.tsx`, `tests/runtime/collectors-trends.worker.test.ts`
 **Gap.** Zoned day/week/month/quarter score and primitive-answer-share charts, answered denominators, minimum-size gaps, revision markers, collector cohorts and CSV ship. DIST-016 recurring occurrences, PROG-003 program dashboards, and shares of ranked/structured contact answers remain unbuilt.
@@ -2091,40 +3001,77 @@ Core · target · **partial**
 
 Core · target · **partial**
 
-**Requirement.** An operator can save a named view (filters, compared cohorts, crosstabs, chosen charts) and arrange several into a form or program dashboard; views reopen with the same numbers for the same cutoff and record who saved them. Saved/shared aggregate-only views record the disclosure threshold at save/share and use a threshold never lower than that record under RSLT-009 and ANLY-015; lowering the current policy reveals nothing in those views. This future obligation adds no snapshot machinery to the operator's current-threshold results page.
+**Requirement.** Operators can save report views and arrange them into form or program dashboards.
 
 **Acceptance.**
-1. a browser journey saves a filtered crosstab view, reloads it as another operator, and sees identical figures.
-2. *Status: partial — filters and revision comparisons ship (`src/core/features/reporting/answerFilter.ts`, `tests/runtime/ledger-filters.worker.test.ts`); saved views do not.*
+1. A named view retains filters, compared cohorts, crosstabs and chosen charts, and records who saved it.
+2. Reopening the view yields the same figures for the same cutoff, including when another operator opens it.
+3. A saved/shared aggregate view records its disclosure threshold and never applies a lower one later under ANLY-015 and RSLT-015/RSLT-016.
+4. Lowering current policy reveals nothing in the saved aggregate view; the operator’s current-threshold results page needs no saved-view snapshot.
 
 **Evidence.** `src/core/features/reporting/answerFilter.ts`, `tests/runtime/ledger-filters.worker.test.ts`
 **Gap.** Saved views do not.
 
 #### RSLT-009 — Shared report links
 
-Core · target · **missing**
+Core · target · **missing** · From RSLT-009
 
-**Requirement.** A saved view can be shared as a read-only link with optional password and expiry, revocable at any time; it shows aggregates only, applies ANLY-005 suppression, never shows respondent identity, excerpts below the threshold, uploads or payment details, and sets no cookies beyond its own session. *Raw-authorized operator*: an operator whose grant opens that form's ledger (LEDG-001) and response exports (LEDG-004/005). Today that is every operator. *Aggregate-only view*: RSLT-009 shared links, RSLT-010 report files, RSLT-011 report emails, INTEG-012 tool results, INTEG-011 tokens without a response-read scope, and any ROLE-001/ROLE-002 role without response access to the form. *Aggregate-only disclosure rule:* Every figure is computed for one stated cohort: revision, LEDG-003 filter including hidden-field, code and search filters, released responses, and evidence cutoff. It uses `analysis.disclosure.v1`, never lower than the threshold recorded when the view was saved or shared (as ANLY-015). Answer summaries stay complete. A crosstab, including an RSLT-012 code crosstab, is shown only when no suppressed cell is determined exactly by the figures that same report or tool result publishes for that cohort beyond what the answer summaries alone determine: its cells and totals, both dimensions' summaries and answered counts, Unanswered, and the response count. The check uses only sums that actually hold: a single-select dimension partitions its responses; a multiple-select one does not. Otherwise the view suppresses further cells until no cell is determined, or withholds that crosstab's cells, totals and chi-square and states that a suppressed cell would be recoverable from the report's other figures. A cell with fewer than the threshold, including zero, is suppressed; exactly the threshold is shown. A cohort with fewer included responses than the threshold, or a subset cohort differing from another cohort in the same report by 1 to threshold−1 responses, shows no breakdown. Observed-value categories (hidden-field, number, date and calculated values) with fewer responses than the threshold are not labelled. Identifying hidden fields (FIELD-001) are neither crossed nor summarised. Protection covers one report or tool result at one cutoff. It is not protection against differencing between separate links, files, emails, tool calls, filters or cutoffs, and the view says so. It is presentation protection, not anonymisation; raw-authorized operators keep the ledger and exports. Complementary suppression is a whole-report matrix/incidence feasibility check over non-negative integer response counts: every suppressed cell retains at least two feasible values, using only valid single-select partition equations; overlapping/multiple-select incidences are not partitions. This makes no differential-privacy or legal-protection claim.
+**Requirement.** A saved view can be shared as a read-only aggregate link, under the disclosure rules of RSLT-015 and RSLT-016.
 
 **Acceptance.**
-1. a browser journey opens a shared link without an operator session, sees the aggregates, finds no response ID or identity in the page, and gets 404 after revocation.
-2. A Worker and browser test shares a saved view of the same fixture with both summaries and the Plan × Renewal crosstab and opens it without an operator session: the summaries show Scale 8 and 43 responses; the crosstab is either withheld with the stated recovery reason, or shown with complementary suppression where solving the page's published sums over non-negative integers leaves every suppressed cell at least two feasible values; a nested collector cohort differing by 3 responses shows no breakdown; a multiple-select crossing applies no partition sum; an identifying hidden field is absent; lowering the threshold after sharing reveals nothing; and in the same run the operator's own results view and exports still show and contain the 3 Scale × Renew responses.
-3. This is future acceptance, not a runtime claim.
-4. *Status: missing.*
+1. The link offers an optional password and expiry and can be revoked at any time.
+2. Opening needs no operator session and reveals aggregates only, never respondent identity, below-threshold excerpts, uploads or payment details.
+3. It uses no cookies beyond its own session.
+4. The opened page contains no response ID or identity and returns not found after revocation.
 
 **Evidence.** None.
-**Gap.** No code yet.
+**Gap.** No code yet. Today that is every operator.
+
+#### RSLT-015 — Aggregate-only report cohorts
+
+Core · target · **missing** · From RSLT-009
+
+**Requirement.** Aggregate-only protection covers shared links, report files/emails, tool results, API tokens without response-read scope and roles without response access. Raw-authorized operators retain their ledger and exports.
+
+**Acceptance.**
+1. Every figure names one cohort: revision, response filters including hidden-field/code/search filters, released responses and cutoff.
+2. The view uses the ANLY-005 disclosure threshold, never below its save/share record; lowering current policy reveals nothing.
+3. Answer summaries remain complete, but a cohort below threshold or a nested subset differing by one through threshold-minus-one responses shows no breakdown.
+4. Rare observed-value categories of hidden fields, numbers, dates and calculations are not labeled, and identifying hidden fields are neither crossed nor summarized.
+5. Protection covers one report/tool result at one cutoff, not differencing across separate links, files, emails, calls, filters or cutoffs; the view states that limit.
+6. This is presentation protection, not anonymization, differential privacy or legal protection.
+
+**Evidence.** None.
+**Gap.** No code yet. Today that is every operator.
+
+#### RSLT-016 — Whole-report complementary suppression
+
+Core · target · **missing** · From RSLT-009
+
+**Requirement.** Aggregate-only crosstabs, including code crosstabs, remain protected against the equations in the same report. Exact matrix mechanics are documented with the operating rules.
+
+**Acceptance.**
+1. The check includes the crosstab’s cells/totals, both dimension summaries and answered counts, Unanswered and response count, beyond what the summaries alone determine.
+2. Only valid single-select partition sums constrain counts; overlapping and multiple-select incidences are never treated as partitions.
+3. The report suppresses further cells until each suppressed cell has at least two feasible non-negative integer values, or withholds cells/totals/chi-square and explains that other reported figures would recover a cell.
+4. A cell below threshold, including zero, is suppressed; exactly the threshold is visible.
+5. For the forty-three-response Plan/Renewal fixture with Scale eight, a shared report either withholds the crosstab with that explanation or leaves two feasible values for every suppressed cell while summaries stay complete.
+6. A nested collector cohort differing by three responses has no breakdown, a multiple-select crossing contributes no partition sum, and identifying hidden fields are absent.
+7. Lowering the shared threshold reveals nothing; in the same run the raw-authorized operator’s results and exports still contain the three Scale × Renew responses.
+
+**Evidence.** None.
+**Gap.** No code yet. Today that is every operator.
 
 #### RSLT-010 — Report exports
 
 Core · target · **missing**
 
-**Requirement.** Any view exports to PDF, PowerPoint (PPTX) and XLSX with its charts, denominators and filters stated on each page. This clause inherits RSLT-009's aggregate-only disclosure rule, before it ships.
+**Requirement.** Operators can export views as PDF, PowerPoint and XLSX reports.
 
 **Acceptance.**
-1. a Worker test exports a view to each format and asserts each contains the stated filter text and the same counts as the view.
-2. It inherits the RSLT-009 aggregate-only fixture: the same figures are refused or complemented identically.
-3. *Status: missing.*
+1. Each exported page states its charts, denominators and filters.
+2. Every format contains the same selected figures and filter text as the view.
+3. Aggregate-only exports apply RSLT-015/RSLT-016 to the same fixture, withholding or complementing its crosstab identically.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2133,55 +3080,80 @@ Core · target · **missing**
 
 Core · target · **missing**
 
-**Requirement.** An operator can schedule a view to be emailed weekly or monthly to named operators as aggregates with a link to the authenticated view, under NOTIFY-004's no-reply rules and WS-002 hours. This clause inherits RSLT-009's aggregate-only disclosure rule, before it ships.
+**Requirement.** Operators can schedule aggregate reports for named operators.
 
 **Acceptance.**
-1. a Worker test advances a fake clock to two scheduled sends and asserts two deliveries with aggregates and no answer text or respondent identity.
-2. It inherits the RSLT-009 aggregate-only fixture: the same figures are refused or complemented identically.
-3. *Status: missing.*
+1. Weekly or monthly report email includes aggregates and an authenticated-view link under NOTIFY-004 and WS-002 sending hours.
+2. Two scheduled occurrences produce two deliveries without answer text or respondent identity.
+3. Aggregate-only messages apply RSLT-015/RSLT-016 to the same fixture, withholding or complementing its crosstab identically.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
-#### RSLT-013 — Views and start rate
+#### RSLT-013 — Anonymous traffic and conversion
 
-Core · target · **done**
+Core · target · **done** · From RSLT-013
 
-**Requirement.** Results show views, starts and submissions per revision, per source (link, embed, popup, QR, collector) and per day, with start rate (starts ÷ views) and completion rate under RSLT-003's stated denominators. A view of a published form increments an anonymous aggregate counter keyed only by revision, source and day before interaction; no session or visitor record is created at load. The counter stores no identifier, cookie, IP address, user agent or host-page identifier and cannot be joined to a session or response. Preview loads are excluded. Automated exclusion runs at submission time only, using the honeypot field value and elapsed time from form load to submit, calculated from a signed, non-identifying load timestamp carried by the form and returned with its response; there is no server-side view record joined to it. RESP-015 uses this same elapsed-time rule. A filled honeypot or a submission under the minimum time in `seed.json → limits` excludes the submission from accepted responses, retains it with its reason under RESP-018 and allows an owner to reverse the exclusion. A human submission over the minimum time with an empty honeypot is not excluded by these checks. No later automation signal adjusts aggregate view counts. Reports state that views and starts are counted separately from accepted responses.
+**Requirement.** Results report aggregate traffic without creating visitor identities.
 
 **Acceptance.**
-1. a browser journey loads a published form three times, starts it twice and completes it once, and results show 3 views, 2 starts and 1 submission with each rate beside its numerator and denominator; a preview load is not counted; a Worker test proves the stored view data holds only revision, source, day and count, with no stored record linking a view to a response; a bot filling the honeypot and a submission under the minimum time are both retained and excluded with their respective reasons, an owner can reverse each exclusion, and a human over the minimum with an empty honeypot is not excluded; elapsed time uses the signed, non-identifying load timestamp returned with the submission, and exclusions and reversals leave view and start counters unchanged while reports distinguish them from accepted responses.
-2. *Status: done — Revision/source/day anonymous view aggregates, durable starts, accepted submissions and consistent rates ship with signed, revision-bound non-identifying form-load timing.
-3. Honeypot and minimum-time exclusions retain complete answers in reversible quarantine; exclusion, release and erasure never revise views or starts.
-4. Open saved-resume documents count under their pinned revision and collector without another start; completed and unavailable receipts, previews and prefetch remain excluded.
-5. Browser journeys at 1440 and 390 prove direct views, saved resume, QR collector links and an ordinary isolated embed inside a business-owned popup, with source filtering.
-6. QR generation and kiosk mode ship under DIST-012; popup tooling remains partial under DIST-013.
-7. Earlier traffic remains explicitly unavailable.
-8. Evidence: `src/core/features/traffic/`, `src/core/features/responses/service.ts`, `src/core/features/resuming/routes.ts`, `tests/runtime/traffic.worker.test.ts`, `tests/runtime/foundation.worker.test.ts`, `tests/e2e/traffic.spec.ts`, `tests/e2e/traffic-review.spec.ts`, `tests/e2e/save-resume.spec.ts`.*
+1. Views, starts and submissions are reported by revision, source (link/embed/popup/QR/collector) and day, with start/completion rates beside their numerators and denominators.
+2. Loading a published form before interaction increments only a revision/source/day aggregate counter; no visitor or session record is created.
+3. The counter has no identifier, cookie, IP, user agent or host-page identifier and cannot join to a response or session.
+4. Preview loads are excluded, and later automation signals never adjust view counts.
+5. Three real loads, two starts and one completion show three views, two starts and one submission, with preview excluded.
+6. Reports state that views and starts are counted separately from accepted responses.
 
-**Evidence.** `src/core/features/traffic/`, `src/core/features/results/ui/TrafficPanel.tsx`, `tests/runtime/traffic.worker.test.ts` — “signed form-load timing and retained bot exclusions leave anonymous view and start counters unchanged on review”, `tests/e2e/traffic.spec.ts`, `tests/e2e/traffic-review.spec.ts`, `tests/e2e/save-resume.spec.ts`
-**Gap.** None for aggregate conversion reporting and submission-time exclusion. Signed revision-bound load timing, retained/reversible honeypot and too-fast submissions, pinned resume views, QR collector links and business-owned popup embeds are proved at 1440 and 390. Earlier traffic is explicitly unavailable; QR generation and popup tooling remain their own target clauses.
+**Evidence.** `tests/e2e/traffic.spec.ts` — "three real form loads yield two starts and one submission, while preview remains isolated"; `tests/runtime/traffic.worker.test.ts` — "anonymous view and durable start buckets report native conversion cohorts without retaining visitor metadata"; `tests/runtime/traffic.worker.test.ts` — "signed form-load timing and retained bot exclusions leave anonymous view and start counters unchanged on review"
+**Gap.** None.
+
+#### RSLT-017 — Submission-time traffic exclusions
+
+Core · target · **done** · From RSLT-013
+
+**Requirement.** Traffic exclusions use the same owned checks as RESP-015 while keeping aggregates independent of response review.
+
+**Acceptance.**
+1. Honeypot and minimum-time checks run at submission, using the signed non-identifying form-load timestamp without a joined server-side view record.
+2. Either failed check retains all answers with its respective quarantine reason under RESP-018, while a mature human submission with an empty honeypot is accepted.
+3. An operator can reverse either exclusion; exclusions and reversals never change anonymous view or start counters.
+4. The reported view/start/submission figures distinguish excluded responses from accepted ones.
+5. The stored view fields remain only revision, source, day and count with no response linkage.
+
+**Evidence.** `tests/e2e/traffic.spec.ts` — "three real form loads yield two starts and one submission, while preview remains isolated"; `tests/runtime/traffic.worker.test.ts` — "anonymous view and durable start buckets report native conversion cohorts without retaining visitor metadata"; `tests/runtime/traffic.worker.test.ts` — "signed form-load timing and retained bot exclusions leave anonymous view and start counters unchanged on review"
+**Gap.** None.
 
 ### Target: actions that are chased
 
 #### ACT-009 — Action owner reminders
 
-Core · target · **done**
+Core · target · **partial** · From ACT-009
 
-**Requirement.** An action's owner is reminded by email and, when connected, Slack or Teams (INTEG-006) before its review date, on the date and weekly after it while unresolved, within WS-002 hours; a linked external task's status (INTEG-013) is shown on the action and refreshed. Pencil still never sets the verdict (ACT-005). Before means three calendar days before review; an action created during that lead period receives its before reminder at the next eligible sending opening. Existing delivery is email only. INTEG-006 inherits the same owner reminder timing, WS-002 deferral and verdict cancellation for Slack/Teams, and INTEG-013 inherits linked task status display and refresh on the action, each before that capability ships. No Slack/Teams connection or external status read-back ships today.
+**Requirement.** An action reminds its owner before, on and after review until its outcome is decided.
 
 **Acceptance.**
-1. A Worker test advances a fake clock across the review date and asserts the before, on-date and weekly overdue emails arrive once in order, outside-hours mail is deferred rather than lost, repeated and concurrent cron ticks do not duplicate a reminder, and an owner verdict cancels queued retries and stops future reminders.
-2. Missing/departed owners and owners without an email address receive no mail and have an honest action state.
-3. The 1440/390 action journey inspects the email-only reminder state and its stopped state after the verdict.
-4. INTEG-006 must extend this proof to connected Slack and Teams owner reminders with the same timing and cancellation before those ship; INTEG-013 must prove linked task status display and refresh on the action before its read-back ships.
-5. *Status: done — Email reminders use a unique action/kind/calendar-date outbox with retained attempts and no-loop headers.
-6. Due occurrences wait for WS-002 hours, preserve chronological catch-up and stop at the owner's verdict without setting one.
-7. Missing or departed owners and missing email are explained on the action; failures and unknown outcomes stay visible.
-8. The additive v0.7.0 upgrade retains every row, action erasure cascades the ledger, and archives retain history while pausing restored mail eligibility to prevent replay. INTEG-006 inherits connected Slack/Teams reminders; INTEG-013 inherits linked task status display/refresh, each before that capability ships. Evidence: `src/core/features/notifications/action-reminder-dispatcher.ts`, `src/core/features/actions/reminders.ts`, `migrations/core/0054_action_owner_reminders.sql`, `tests/runtime/actions-measurement.worker.test.ts`, `tests/e2e/actions.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”.*
+1. Email and connected Slack/Teams reminders occur three calendar days before review, on the review date and weekly afterward while unresolved, within WS-002 hours.
+2. An action created during the lead period gets its before reminder at the next eligible sending opening.
+3. Each occurrence delivers once in order; repeated or concurrent scheduling cannot duplicate it, and outside-hours work is deferred rather than lost.
+4. A verdict cancels queued retries and future reminders without the reminder setting a verdict itself.
+5. Missing/departed owners and missing email receive no mail and show an honest explanation.
+6. The action displays its reminder state and stopped state; INTEG-006 connections use the same timing, deferral and cancellation.
 
 **Evidence.** `src/core/features/notifications/action-reminder-dispatcher.ts`, `src/core/features/actions/reminders.ts`, `migrations/core/0054_action_owner_reminders.sql`, `tests/runtime/actions-measurement.worker.test.ts`, `tests/e2e/actions.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”
-**Gap.** None for existing email delivery. Before is three calendar days; once-per-occurrence delivery, WS-002 deferral, verdict stop, honest missing-owner/email states, additive upgrade, action erasure and archive custody are proved. INTEG-006 inherits Slack/Teams owner reminders and INTEG-013 linked task status display/refresh before those capabilities ship.
+**Gap.** Missing a cited connected Slack/Teams owner-reminder journey for the same before/on/weekly timing, sending-hour deferral and verdict cancellation. Existing cited journeys show email only; linked-task readback moved to ACT-010.
+
+#### ACT-010 — Linked task status
+
+Core · target · **partial** · From ACT-009
+
+**Requirement.** An action keeps the status of its linked external task visible and refreshed under INTEG-013.
+
+**Acceptance.**
+1. The action displays the linked task’s status.
+2. Refreshing reads back that task’s current status and updates the action’s displayed status.
+
+**Evidence.** `src/core/features/notifications/action-reminder-dispatcher.ts`, `src/core/features/actions/reminders.ts`, `migrations/core/0054_action_owner_reminders.sql`, `tests/runtime/actions-measurement.worker.test.ts`, `tests/e2e/actions.spec.ts`, `scripts/deployment-data-custody-replay.check.mjs` — “whole-data delivery recovery retains exact product custody and never replays restored capabilities”
+**Gap.** Missing a journey through the action detail and refresh door that reads linked external task status, changes it at the provider and reads the refreshed state. Existing cited evidence shows task delivery identity, not status display/readback.
 
 ### Target: alerts
 
@@ -2189,27 +3161,48 @@ Core · target · **done**
 
 Core · target · **partial**
 
-**Requirement.** An operator can define alert rules as LOGIC-006 conditions on answers, hidden fields, scores, calculations or payment state (for example NPS at or below 6, CSAT of 1 or 2, an order over $1,000) that notify named operators by email, in-app, Slack or Teams, and mobile push (MOB-003). Alerts carry the flow, the rule and an authenticated link, never answer text, unless the recipient has the identity grant (ROLE-002) and the operator chose to include the triggering answer in Slack or Teams. This clause inherits LOGIC-003: alert conditions accept stored numeric and text calculation operands under the same typed LOGIC-006 evaluator. This clause inherits PAY-001's payment state before it ships.
+**Requirement.** Operators can route form alerts using the shared conditions on answers, hidden fields, scores, calculations and payment state.
 
 **Acceptance.**
-1. a Worker test submits a detractor and a promoter and asserts one alert per rule recipient for the detractor only, with no answer text in the email; a second rule (NPS at most 6 AND hidden field `plan` equals `enterprise`) alerts only for the enterprise detractor.
-2. The Worker acceptance also proves an alert conditioned on a calculated total fires only for the matching total.
-3. *Status: partial — see the Status row for evidence and remaining Gap.*
+1. A matching rule notifies its named operators by email, in-app, Slack/Teams and MOB-003 push.
+2. Alerts carry the form, rule and authenticated link without answer text; Slack/Teams may include a triggering answer only when the author chose it and the recipient holds the ROLE-002 identity grant.
+3. Numeric and text calculations use the shared typed condition evaluator, and payment-state conditions follow PAY-001/PAY-006/PAY-007.
+4. A detractor-only rule alerts once per recipient for a detractor and never a promoter; adding enterprise-plan eligibility restricts it to an enterprise detractor.
+5. A calculated-total rule alerts only for its matching total.
 
 **Evidence.** `tests/runtime/notifications.worker.test.ts` — “publisher defaults Immediately only if unset, others Off; committed private mail has a durable attempt and replay cannot double send” with `tests/runtime/answer-alert-proof.ts`; `tests/e2e/notifications.spec.ts` — “notification preference and failed delivery controls are accessible on desktop and mobile with authenticated results” (rule editor and attention at 1440/390); `src/core/features/notifications/answer-alerts.ts`, `migrations/core/0068_answer_alerts.sql`
 **Gap.** Named operators receive durable email and in-app attention once per matching rule/recipient/released response. Typed LOGIC-006 conditions cover question answers, hidden fields, numeric/text calculations and payment state; proof covers detractor/promoter, enterprise conjunction, calculated total/text, pending/paid gating, no answer text, retries, unknown outcomes and erasure. Restored alert deliveries are disarmed. Configured Slack/Teams rule targets now receive one durable, identifier-only post per matching rule/released response, with failures in the integration ledger and public erasure custody; the existing notification registration includes `tests/runtime/answer-alert-chat-proof.ts`. Remaining: mobile push (MOB-003, no Apple/Google developer accounts), answer inclusion (ROLE-002), and derived quiz/outcome score operands (LOGIC-004). Ruled defaults (ct 24 Oct 19:47Z): at most 20 rules per form and 100 named recipients per rule; the recipient cohort freezes at first eligible evaluation, and later response edits do not generate another alert.
 
-#### NOTIFY-006 — Response emails with answers
+#### NOTIFY-006 — Conditional response-email content
 
-Core · target · **partial**
+Core · target · **partial** · From NOTIFY-006 · Cites BASE-INPUT-002
 
-**Requirement.** An Editor adds one or more response-email rules to a form. Each rule names its recipients, which may be operators or any other address (for example `sales@` or an office manager who never signs in), up to `seed.json → limits`; an optional LOGIC-006 condition on answers, hidden fields, scores, calculations or payment state, so enterprise inquiries go to sales and support requests to support; a subject and body that recall answers, hidden fields and calculated values with LOGIC-001; and an optional Reply-To taken from an email question on the respondent's path, so the recipient answers the lead straight from the inbox. A new non-operator address is sent one confirmation link before its first answer-bearing message, and responses that arrive meanwhile are delivered once it confirms (or dropped after 7 days, shown to the Editor); every message to a non-operator carries a one-click unsubscribe (RFC 8058 `List-Unsubscribe`) that stops that rule for that address. Messages are sent through `mail.sender.v1` from NOTIFY-004's no-reply address with the form's theme (BRAND-002), render every value as escaped text and escaped HTML, queue one delivery per rule recipient per released response (quarantined responses only on release, RESP-018) with DIST-006's durable attempts and retries, and link to the authenticated ledger without granting access. A Reply-To is set only from a value that passed the email question's validation, as one address; a value containing CR or LF is refused. Masking still holds: an answer marked sensitive (GOV-004) appears as "withheld, sign in to view"; a HIPAA-mode form (GOV-001) sends no answers and no respondent identity, only the form, time and authenticated link; invitation or contact identity is included only when the rule's author holds the ROLE-002 identity grant. Replies go to the respondent and never to Pencil, so NOTIFY-004 is unchanged. When this clause is activated, NOTIFY-002 is rewritten: per-operator answerless mail stays the default, and answers leave only through these rules. This clause inherits LOGIC-001 recall in email subjects and bodies: earlier answers, declared hidden fields and calculated values render as escaped text and HTML, with skipped or invalid values blank. This clause inherits FIELD-015: answer dates in subjects and bodies render in the question's published display format.
+**Requirement.** Editors can define answer-bearing email rules for a form, with recipient custody governed by NOTIFY-007.
 
 **Acceptance.**
-1. a Worker test with the mail receiver fixture adds a rule with a non-operator recipient, recall in subject and body, and Reply-To from an email question; the address confirms; a response with an `<b>bold</b>` answer and a sensitive answer yields one delivery to that address with the escaped answers, Reply-To equal to the respondent's typed address and the sensitive value absent; a second rule conditioned on "Enterprise" delivers only for that answer, and a third whose condition is (company size at least 50 OR email ends with `example.com`) delivers only when either holds; a Reply-To value containing CRLF is refused; the same rule on a HIPAA-mode form delivers no answer text; an unsubscribe stops the next delivery.
-2. Its mail receiver acceptance also proves those three recall sources, blank skipped values and inert injected markup.
-3. Its mail receiver acceptance also shows a FIELD-015 date in the published display format.
-4. *Status: partial — durable, answerless per-operator new-response mail with the saved business identity ships (`src/core/features/notifications/dispatcher.ts`, `src/core/features/notifications/compose.ts`, `tests/runtime/notifications.worker.test.ts`, `tests/e2e/notifications.spec.ts`); answers, non-operator recipients, rules and Reply-To do not.*
+1. A rule names operator or other recipients within the documented limit and may condition delivery on answers, hidden fields, scores, calculations or payment state through the shared LOGIC-006/LOGIC-008/LOGIC-009 evaluator.
+2. Its subject and body recall answers, declared hidden fields and calculated values under LOGIC-001, with skipped/invalid values blank and every value escaped as text and HTML.
+3. Dates use the question’s published FIELD-015/FIELD-020 display format and the message uses the form’s BRAND-002/BRAND-004 theme.
+4. Optional Reply-To is one validated email from a question on the respondent’s path; carriage returns or newlines are refused.
+5. Sensitive answers render “withheld, sign in to view”. HIPAA-mode forms include no answers or respondent identity, only form/time/authenticated link; contact/invitation identity needs the author’s ROLE-002 grant.
+6. An enterprise-only condition and an alternative company-size-or-email-domain condition deliver only for their matching responses, while injected markup remains inert.
+7. Per-operator answerless mail remains the default; answers leave only through these rules.
+
+**Evidence.** `src/core/features/notifications/dispatcher.ts`, `src/core/features/notifications/compose.ts`, `tests/runtime/notifications.worker.test.ts`, `tests/e2e/notifications.spec.ts`
+**Gap.** Answers, non-operator recipients, rules and Reply-To do not.
+
+#### NOTIFY-007 — Response-email recipient custody
+
+Core · target · **partial** · From NOTIFY-006 · Cites BASE-INPUT-002
+
+**Requirement.** Answer-bearing form messages require verified recipient custody and retain normal exclusion/retry boundaries.
+
+**Acceptance.**
+1. A new non-operator mailbox receives one confirmation link before its first answer-bearing message; queued responses deliver once it confirms or expire after seven days with that outcome shown to the Editor.
+2. Every message to a non-operator has a one-click unsubscribe that stops that rule for that address.
+3. One delivery is queued per rule/recipient/released response, with quarantine admitted only on release and DIST-006 durable attempts/retries.
+4. Messages use NOTIFY-004’s sender, link to the authenticated ledger without granting access, and route replies to the respondent rather than Pencil.
+5. A confirmed non-operator receives one escaped answer copy with permitted Reply-To and no sensitive value; an equivalent HIPAA message has no answer text, a CRLF Reply-To refuses and unsubscribe prevents the next delivery.
 
 **Evidence.** `src/core/features/notifications/dispatcher.ts`, `src/core/features/notifications/compose.ts`, `tests/runtime/notifications.worker.test.ts`, `tests/e2e/notifications.spec.ts`
 **Gap.** Answers, non-operator recipients, rules and Reply-To do not.
@@ -2218,13 +3211,14 @@ Core · target · **partial**
 
 #### GOV-001 — HIPAA mode
 
-Core · target · **missing**
+Core · target · **missing** · Cites BASE-DATA-004, BASE-ACCESS-002, BASE-OPS-005 · Register R-10
 
-**Requirement.** An Owner can enable HIPAA mode after recording the Business Associate Agreements the installation relies on (Cloudflare, the mail provider, and any AI provider or integration that will receive PHI). In HIPAA mode forms marked PHI keep answers out of every email, alert, Slack or Teams message and AI request unless that destination has a recorded BAA; integrations without a recorded BAA cannot be connected to PHI forms; every view, export and download of a PHI response is written to the audit log; operator sessions time out after 15 idle minutes; and exports are labeled as containing PHI.
+**Requirement.** Owners can enable HIPAA mode after recording the Business Associate Agreements relied on for Cloudflare, mail and every AI or integration destination receiving PHI.
 
 **Acceptance.**
-1. a Worker test enables HIPAA mode, proves a PHI form's alert and digest contain no answers, a Slack connection without a recorded BAA is refused, an AI analysis is refused until the AI provider BAA is recorded, and a ledger view writes an audit entry.
-2. *Status: missing.*
+1. PHI-form answers stay out of emails, alerts, Slack/Teams messages and AI requests unless that destination has a recorded BAA; a connection without one cannot attach to a PHI form.
+2. Every PHI response view, export and download is audited, sessions expire after 15 idle minutes, and exports are labelled as containing PHI.
+3. A PHI form's alert and digest contain no answers, a Slack connection without a BAA is refused, and AI analysis is refused until its provider BAA is recorded; a ledger view appears in audit.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2233,55 +3227,55 @@ Core · target · **missing**
 
 Core · target · **missing**
 
-**Requirement.** The Owner chooses where response data and uploads live (US by default, using D1 and R2 jurisdiction or location settings where Cloudflare offers them); the chosen location is recorded at creation, shown in settings and in exports, and cannot silently change.
+**Requirement.** Owners choose the response-data and upload location at installation creation, defaulting to the US where Cloudflare's jurisdiction or location controls support it.
 
 **Acceptance.**
-1. a deployment dry run with a US jurisdiction writes it into the generated Worker configuration, and the settings page and export manifest name it.
-2. *Status: missing.*
+1. The location is recorded at creation, shown in settings and exports, and never silently changes.
+2. A US-jurisdiction deployment dry run carries that choice into the generated configuration; settings and the export manifest name the same location.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
 #### GOV-004 — Sensitive fields
 
-Core · target · **missing**
+Core · target · **missing** · Cites BASE-ROLE-001, BASE-OPS-005
 
-**Requirement.** A question can be marked sensitive (for example SSN, taxpayer ID, date of birth, bank details, health answers): its values are encrypted at rest with an installation key separate from database backups, masked in the ledger, exports and integrations unless the operator has the identity grant and reveals them, and every reveal is audited. Sensitive values never enter AI requests, alerts or confirmation emails. This clause inherits LEDG-006: ledger search matches a sensitive answer only for an operator allowed to see it.
+**Requirement.** A question can be marked sensitive, including tax/identity numbers, dates of birth, bank details and health answers, with encryption and disclosure rules specific to those values.
 
 **Acceptance.**
-1. a Worker test reads the raw D1 row and finds ciphertext only; an Analyst sees a mask; an Admin reveal writes an audit entry; an analysis run's provider request contains no sensitive value.
-2. The acceptance also proves: a phrase from a sensitive answer finds the response only for an operator allowed to see it.
-3. *Status: missing.*
+1. Values are encrypted at rest with an installation key separate from database backups; the raw stored value is ciphertext.
+2. Ledger, exports and integrations mask values unless the operator has the identity grant and reveals them; every reveal is audited.
+3. Sensitive values never enter AI requests, alerts or confirmation emails.
+4. An Analyst sees a mask while an Admin reveal records an audit row; provider requests contain no sensitive value.
+5. LEDG-006/LEDG-008 search matches a phrase in a sensitive answer only for an operator permitted to see that answer.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
 #### GOV-005 — Audit log viewer
 
-Core · target · **partial**
+Core · target · **partial** · Cites BASE-AUDIT-001, BASE-DATA-003
 
-**Requirement.** Admins can search and export the audit log (sign-ins, role changes, publishes, exports, reveals, deletions, connection changes, approvals) by actor, form and time, with entries that cannot be edited or deleted except by the erasure tombstoning BASE-DATA-003 allows.
+**Requirement.** Admins can inspect Pencil's sign-in, role-change, publication, export, reveal, deletion, connection-change and approval events using the shared audit viewer.
 
 **Acceptance.**
-1. a browser journey performs an export and a role change and finds both in the audit viewer and its CSV export.
-2. The existing native-route journey separately proves actor/form/activity/time filters, bounded pagination, safe details, snapshot CSV stability across later writes, workspace isolation and actor tombstoning; the role-change and missing event-family journey remains required.
-3. *Status: partial — Bounded actor/form/activity/time viewer and snapshot CSV export are implemented.
-4. Publish (`flow.published`), connection changes (`connection.saved`, `tested`, `removed`, `rotated`, `paused`, `resumed` for the AI, task, Stripe and response-webhook connections), exports (`export.created` for a response export and a backup) and deletions (`response.erased`, `contact.erased` with counts) are recorded with their actor, form where there is one and time, appear in the viewer, its filters and the snapshot CSV, and carry only counts and enumerated kinds through the allowlist: never a key, secret, answer or address.
-5. No door writes or deletes entries.
-6. Gap: ROLE-001 role changes, GOV-004 reveals and WORK-002 approvals are unbuilt, so their event families are not recorded; current equal operators share access; a contact export does not exist yet; Twilio save/remove events now use the same safe audit allowlist.Evidence: `src/core/features/audit/`, `src/core/features/audit/events.ts`, `tests/runtime/audit-viewer.worker.test.ts`, `tests/e2e/response-webhooks.spec.ts`.*
+1. Filters include actor, form, activity and time; details remain safe and workspace-isolated.
+2. An export and a role change can each be found in the viewer and its CSV export.
+3. Pagination is bounded and an exported snapshot remains stable across later writes; erasing an actor tombstones its reference without losing the event.
 
 **Evidence.** `src/core/features/audit/`, `src/core/features/audit/events.ts`, `tests/runtime/audit-viewer.worker.test.ts`, `tests/e2e/response-webhooks.spec.ts`
 **Gap.** Publish, connection, export and deletion events are recorded; role-change (ROLE-001), reveal (GOV-004) and approval (WORK-002) events are unbuilt.
 
 #### GOV-006 — Respondent privacy requests
 
-Core · target · **partial**
+Core · target · **partial** · Cites BASE-DATA-003
 
-**Requirement.** An Admin can find every response, partial, contact, upload, signature and payment reference linked to an email address or phone number, export them as a portable file for a CCPA/CPRA access request, and delete them under DATA-002 with one confirmed command that also requests deletion in connected integrations that support it and lists those that do not.
+**Requirement.** Admins can handle a CCPA/CPRA access or deletion request across the data linked to an email address or phone number.
 
 **Acceptance.**
-1. a Worker test seeds data across three forms for one email, exports the bundle, deletes it, and asserts DATA-002 effects plus a deletion call to a connected Google Sheet fixture.
-2. *Status: partial — response and contact erasure ships (`tests/e2e/answer-results.spec.ts`, `tests/runtime/analysis-safety.worker.test.ts` under DATA-002); cross-form lookup, access export and integration deletion do not.*
+1. The search includes responses, partials, contacts, uploads, signatures and payment references across forms, and exports them as one portable file.
+2. One confirmed command applies DATA-002 erasure and requests deletion from supporting connected integrations, listing providers that cannot delete their copy.
+3. Data for one email across three forms appears in the bundle; deleting it produces DATA-002 effects and a deletion request at a connected Google Sheet.
 
 **Evidence.** `tests/e2e/answer-results.spec.ts`, `tests/runtime/analysis-safety.worker.test.ts`
 **Gap.** Cross-form lookup, access export and integration deletion do not.
@@ -2290,16 +3284,14 @@ Core · target · **partial**
 
 Core · target · **partial**
 
-**Requirement.** Consent questions can be bound to a purpose (email marketing, SMS marketing, transactional SMS) with the exact wording stored, and each response records per purpose whether consent was given, the wording shown and the time. For email marketing only, an Editor may instead mark the form itself as the opt-in, as a Typeform-style sign-up form does: the opt-in wording (for example "By subscribing you agree to receive our newsletter; unsubscribe any time") is shown directly above the submit button on every step that submits, is part of the published revision, and submitting the form stores it as that response's email-marketing consent record with its wording and time, so a rebuilt sign-up form needs no extra checkbox. SMS marketing consent is never form-level: it needs its own unticked consent question with the TCPA disclosure, and is never a condition of submitting. Pencil passes a typed or link-supplied email to Mango, Mailchimp (INTEG-007) or a contact to an SMS program only with the matching recorded consent, as CAN-SPAM and TCPA expect, and sends the consent time with it; a response without it is recorded in INTEG-015 as skipped with the reason "no marketing consent".
+**Requirement.** Forms record purpose-specific consent for email marketing, SMS marketing or transactional SMS, including the exact wording and time.
 
 **Acceptance.**
-1. a Worker test submits one response with marketing consent and one without and asserts only the first reaches the Mailchimp receiver fixture with its consent wording and time; a form marked as the email-marketing opt-in shows its wording above the submit button, a submitted response stores a consent record with that wording and time and reaches the Mailchimp fixture, and publishing a form that marks itself as the SMS-marketing opt-in is refused.
-2. *Status: partial — A consent question can be bound to a purpose (email marketing, SMS marketing or transactional SMS) in the builder; the exact wording is part of the published revision (FLOW-008).
-3. An Editor may mark the form itself as the email-marketing opt-in: its wording is shown directly above the submit button on every step that submits, is frozen in the published revision, and submitting stores it as that response's email-marketing consent record with its wording and time (in the response context, no second copy of an answer).
-4. Each response also records, per purpose, whether each purpose-bound consent question was ticked, with the published statement and the time.
-5. Publish refuses a form that marks itself as an SMS-marketing opt-in (field `marketing:purpose`, no revision created) and an SMS-marketing consent question that is required.
-6. Operators see the records per purpose on the response in the ledger only; they are not added to CSV or JSON exports.
-7. Gap: Mailchimp and Mango (INTEG-007) are not built, so no consent-gated delivery, fixture or INTEG-015 skip reason exists, and no marketing consent record is passed to a marketing integration; the TCPA disclosure wording of an SMS consent question is not checked.Evidence: `src/core/shared/marketingConsent.ts`, `tests/runtime/new-question-types.worker.test.ts`, `src/core/features/results/ui/ConsentRecords.tsx`, `src/core/features/flows/ui/MarketingOptInSettings.tsx`, `tests/runtime/foundation.worker.test.ts`, `tests/e2e/closed-flow.spec.ts` — “closed flows refuse late submissions, retain their named document and embed boundaries, and disappear after archival”.*
+1. Each response records whether consent was given, the wording shown and its time for every bound purpose.
+2. For email marketing only, an Editor can make the form itself an opt-in: wording appears immediately above every submitting button, belongs to the published revision and is stored with consent and time on submission, without an extra checkbox.
+3. SMS marketing requires its own initially unticked question with the TCPA disclosure, cannot be form-level, and cannot be a condition of submission.
+4. Mango/Mailchimp and SMS programs receive a typed or link-supplied address only with matching recorded consent and its time; missing consent appears as a skipped integration delivery with reason no marketing consent.
+5. Of two otherwise matching responses, only the consented one reaches the email platform with wording and time; form-level email opt-in works without a checkbox, while publishing form-level SMS-marketing opt-in is refused.
 
 **Evidence.** `src/core/shared/marketingConsent.ts`, `tests/runtime/new-question-types.worker.test.ts`, `src/core/features/results/ui/ConsentRecords.tsx`, `src/core/features/flows/ui/MarketingOptInSettings.tsx`, `tests/runtime/foundation.worker.test.ts`, `tests/e2e/closed-flow.spec.ts` — “closed flows refuse late submissions, retain their named document and embed boundaries, and disappear after archival”
 **Gap.** Mailchimp and Mango delivery and its fixture (INTEG-007) are not built; consent records are not in exports; the TCPA wording is not checked.
@@ -2310,13 +3302,13 @@ Core · target · **partial**
 
 Core · target · **partial**
 
-**Requirement.** An operator connects a SurveyMonkey account (OAuth) or uploads its survey export, chooses surveys, and receives the IMPORT-001 review for pages, question types (including matrix and ranking), skip and display logic and advanced branching with its AND/OR conditions (mapped to LOGIC-006), collectors and custom variables, then imports responses through IMPORT-002 to IMPORT-004 with collectors mapped to DIST-017 collectors and custom variables to hidden fields, "Other (please specify)" answers and their text to FIELD-010 Other write-ins, descriptive text to FIELD-011 statement steps and text validation to FIELD-013. This clause inherits FIELD-013: map the source's text minimum/maximum lengths, input masks, supported patterns and custom validation messages to the published text settings. This clause inherits FIELD-016: map the source's rating or scale start, step count and low, middle and high labels to the published scale settings.
+**Requirement.** Operators connect SurveyMonkey by OAuth or upload its survey export, review every element under IMPORT-001 and import historical responses under IMPORT-002 to IMPORT-004.
 
 **Acceptance.**
-1. a Worker test imports a documented SurveyMonkey API v3 survey and response fixture with logic, a matrix, an "Other (please specify)" answer and a descriptive-text item, asserts the write-in lands on the Other choice and the text becomes a statement step, asserts an advanced-branching rule with two AND conditions arrives as one LOGIC-006 rule, asserts the review lists every element's outcome, and undo removes it all.
-2. The importer acceptance includes a source fixture with those settings and a collected answer that obeys them, and a labeled scale that arrives with its start, steps and labels.
-3. *Status: partial — uploaded API v3 survey-details and responses-bulk files use the shared review/commit/undo door; supported text validation, labeled scales, Other write-ins and declared custom variables retain their values (`src/core/features/importing/surveymonkey-source.ts`, `tests/runtime/form-import.worker.test.ts`, `tests/e2e/surveymonkey-import.spec.ts`).
-4. OAuth account connection with survey choice, skip/display/advanced AND/OR logic, source collector attribution, general matrices/ranking, descriptive text after a leading welcome and other unsupported question types remain unbuilt and explicitly reported; retained questions with unsupported routing require repair before publication.*
+1. The review covers pages, question types including matrix/ranking, skip/display/advanced branching, collectors and custom variables; AND/OR branches map to LOGIC-006/LOGIC-008, collectors to DIST-017 and custom variables to FIELD-001.
+2. Other write-ins retain their selected choice and text under FIELD-010/FIELD-017; descriptive text becomes FIELD-011/FIELD-018 statement steps.
+3. FIELD-013 text minimum/maximum, masks, supported patterns and custom messages are retained, as are FIELD-016/FIELD-021 scale start, step count and low/middle/high labels.
+4. A documented survey-and-response example retains a two-AND-condition branch as one rule, a matrix outcome, an Other answer, descriptive text, constrained collected text and a labelled scale; every element has a reviewed outcome, and undo removes the import.
 
 **Evidence.** `tests/runtime/form-import.worker.test.ts` — two fresh databases produce equivalent reports, source structures, typed answers and 27 inert completions; `tests/e2e/surveymonkey-import.spec.ts` — SurveyMonkey file-pair upload reviews every supported field and names the omitted elements
 **Gap.** Uploaded API v3 survey-details and responses-bulk files use the shared review/commit/undo door. Supported text validation, labeled scales, Other write-ins and declared custom variables retain their values. OAuth account connection with survey choice, skip/display/advanced AND/OR logic, source collector attribution, general matrices/ranking, descriptive text after a leading welcome and other unsupported question types remain unbuilt and explicitly reported; retained questions with unsupported routing require repair before publication.
@@ -2325,26 +3317,32 @@ Core · target · **partial**
 
 Core · target · **missing**
 
-**Requirement.** An operator connects a Jotform API key or uploads its form export and receives the reviewed import for fields, conditions (with their All/Any linking and operators, mapped to LOGIC-006 rules and FIELD-008 show/hide), calculations, payment fields (mapped to PAY-001 with a reconnect prompt), upload fields (files copied into FILE-001 storage), signatures (kept as images with their submission dates, not re-signed), "Other" options on radio and checkbox fields with their write-in text (FIELD-010), paragraph and header fields as statement steps (FIELD-011), input masks (FIELD-013), date formats (FIELD-015) and submissions. This clause inherits FIELD-013: map the source's text minimum/maximum lengths, input masks, supported patterns and custom validation messages to the published text settings. This clause inherits FIELD-016: map the source's rating or scale start, step count and low, middle and high labels to the published scale settings. This clause inherits FIELD-015: map the Jotform date format and separator to the published date display settings.
+**Requirement.** Operators connect a Jotform key or upload a form export and receive reviewed import of its structure and submissions.
 
 **Acceptance.**
-1. a Worker test imports a Jotform API fixture with an Any-linked condition using `contains` and `isEmpty`, a calculation, an upload, a payment field, a radio field answered with Other text, a paragraph field and an input mask, and asserts each outcome, the condition as one LOGIC-006 rule, the copied file, the write-in on the Other choice, the statement step and the mask.
-2. The importer acceptance includes a source fixture with those settings and a collected answer that obeys them, and a labeled scale that arrives with its start, steps and labels.
-3. The fixture also carries a Jotform date format that arrives as the question's display format and separator.
-4. *Status: missing.*
+1. All/Any conditions and their operators map to LOGIC-006/LOGIC-008 and FIELD-008 show/hide; calculations retain LOGIC-003 meaning.
+2. Payment fields map to PAY-006 with a reconnect prompt, uploads copy into FILE-001 storage, and signatures remain images with original submission dates rather than being re-signed.
+3. Other answers on radio/checkbox fields retain their write-ins; paragraphs and headers become statements; input masks, text bounds, supported patterns and custom messages retain FIELD-013 settings.
+4. Dates preserve FIELD-015/FIELD-020 format and separator, and scales preserve FIELD-016/FIELD-021 start, step count and three labels.
+5. A documented example retains an Any-linked contains/empty condition as one rule, a calculation, a copied upload, payment field, radio Other text, paragraph and mask; collected answers obey imported text settings, and scale/date settings match the source.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
 #### IMPORT-007 — Typeform and Google Forms by connection
 
-Core · target · **partial**
+Core · target · **partial** · Register R-5
 
-**Requirement.** An operator retrieves a Typeform definition and its responses (including hidden fields, mapped to FIELD-001) with a Typeform token, with every Statement after the first as a FIELD-011 statement step, `group` and `inline_group` fields as FIELD-012 groups, `allow_other_choice` and its `choice.other` answers as FIELD-010 Other write-ins, `max_length` as a FIELD-013 maximum, date `structure` and `separator` as a FIELD-015 format, logic jumps with `and`/`or` conditions on fields, hidden fields and variables as LOGIC-006 rules, the `add`, `subtract`, `multiply`, `divide` and `set` actions that compute `score`, `price` and custom variables (with the definition's starting `variables` values and each action's condition) as LOGIC-003 calculations, where adding a constant to `score` when a choice is picked becomes that choice's LOGIC-004 points, opinion-scale `start_at_one`, `steps` and `labels` as FIELD-016 scales, and the meta title, description, image and `allow_indexing` setting as DIST-020 link-preview settings, together with its theme (fonts, element colors, background image and brightness, and screen layouts) as a BRAND-002 theme shown in the import review, where a font that cannot be self-hosted is replaced by the nearest bundled one and the review says so, and a Google Form and its responses through Google sign-in, with text items as statement steps and `isOther` options with their typed values as Other write-ins, without exporting files, under the same review, privacy and undo rules.
+**Requirement.** Operators retrieve a Typeform definition and responses with a token, or a Google Form and responses through Google sign-in, without first exporting files and under the same review, privacy and undo rules.
 
 **Acceptance.**
-1. Worker tests retrieve definition and responses from Typeform and Google Forms API fixtures, assert hidden fields map to declared fields, assert a Typeform theme fixture becomes a BRAND-002 theme in the review with its colors, background and brightness, assert a Typeform `and` jump over a field, a hidden field and a `contains` condition arrives as one LOGIC-006 rule, assert the Typeform meta settings arrive as DIST-020 settings, assert a fixture that adds 10 to `score` when one choice is picked and jumps when `score` is greater than or equal to 10 imports as LOGIC-004 points and a LOGIC-006 rule that routes that choice and no other, with no unsupported item, assert a `price` built by `multiply` and `divide` actions arrives as one LOGIC-003 expression whose stored total matches Typeform's for three answer sets, assert an opinion scale with `start_at_one: false`, 7 steps and three labels arrives as a FIELD-016 0–6 scale with those labels, assert a mid-flow Typeform Statement, a group and an Other write-in and a Google Forms text item and `isOther` answer arrive as statement steps, a group and Other write-ins, and assert no credential is retained.
-2. *Status: partial — Typeform definitions are retrieved by token into the reviewed import (`src/core/features/importing/typeform-definition.ts`, `tests/runtime/typeform-definition.worker.test.ts`); Google Forms and Typeform responses import from files (`tests/e2e/google-forms-import.spec.ts`, `tests/e2e/form-import.spec.ts`); Typeform calculation actions are reported unsupported (`src/core/features/importing/logic.ts`).*
+1. Typeform hidden fields become declared FIELD-001 fields; mid-flow statements, groups and inline groups, Other choices/write-ins, text maximums and date format/separator map to their corresponding FIELD clauses. Google text items and Other answers become statements and write-ins.
+2. Typeform AND/OR jumps over questions, hidden fields and variables, including contains conditions, become one LOGIC-006/LOGIC-008 rule with the same decision.
+3. Conditional add, subtract, multiply, divide and set actions retain starting score, price and custom-variable values as LOGIC-003 calculations; adding a constant to score for a choice becomes LOGIC-004 choice points.
+4. Opinion scales retain start, steps and low/middle/high labels; a seven-step scale starting at zero remains 0–6 with its labels.
+5. Typeform title, description, preview image and indexing choice map to DIST-020; fonts, element colours, background image/brightness and layouts become a reviewed BRAND-002/BRAND-004 theme. A font that cannot be self-hosted is replaced by the nearest bundled font, with the replacement disclosed.
+6. A source example adding ten points for a choice and branching at ten or more routes that choice alone, with no unsupported item; a price built with multiplication/division matches the source for three answer sets.
+7. Retrieved examples retain the stated theme, metadata, statements, groups and write-ins, and no source credential is retained.
 
 **Evidence.** `src/core/features/importing/typeform-definition.ts`, `tests/runtime/typeform-definition.worker.test.ts`, `tests/e2e/google-forms-import.spec.ts` — “Google CSV-only and definition imports preserve reviewed locale, omissions and historical answers without identity”, `tests/e2e/form-import.spec.ts`
 **Gap.** Typeform calculation actions are reported unsupported (`src/core/features/importing/logic.ts`).
@@ -2353,11 +3351,11 @@ Core · target · **partial**
 
 Core · target · **missing**
 
-**Requirement.** Tally, Fillout, Formbricks and Microsoft Forms definitions and responses import through their documented exports or APIs under IMPORT-001 to IMPORT-004, with their Other options and write-ins, text or statement blocks and text validation mapped to FIELD-010, FIELD-011 and FIELD-013.
+**Requirement.** Tally, Fillout, Formbricks and Microsoft Forms definitions and responses enter through documented exports or APIs under IMPORT-001 to IMPORT-004.
 
 **Acceptance.**
-1. one Worker fixture per source imports a form with branching, an Other write-in and a text block and its responses, asserts the write-in and the statement step, and undoes it.
-2. *Status: missing.*
+1. Other choices/write-ins, text/statement blocks and text validation map to FIELD-010/FIELD-017, FIELD-011/FIELD-018 and FIELD-013.
+2. A branching form with an Other answer, text block and responses can be imported from each source with those outcomes intact, then undone.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2366,94 +3364,120 @@ Core · target · **missing**
 
 Core · target · **missing**
 
-**Requirement.** Every import ends with a checklist of what the source form did that Pencil must be told to do again: webhooks and integrations to reconnect (with the matching INTEG connection pre-selected), embeds to replace (with the new snippet), payment and email notifications to re-enable, and public links to update, with self-notification rules (NOTIFY-006), ad conversion connections (INTEG-017) and identified links (RESP-023) carried as items of their own. A HubSpot, Salesforce, Orbit, Mailchimp or Mango item opens that connection's mapping (INTEG-003 to INTEG-005, INTEG-007) with the imported form's email question pre-chosen as the contact or member key when it has exactly one, and its hidden fields listed for mapping, so the operator only confirms the properties or merge fields. Each embed item writes the replacement snippet with the old embed's behavior: the operator pastes the old embed code into the item, and Pencil reads Typeform's `data-tf-transitive-search-params` and `data-tf-hidden` attributes (or the Embed SDK's `transitiveSearchParams` and `hidden` options) and its mode (`data-tf-widget`, `data-tf-popup`, `data-tf-slider`, `data-tf-popover`, `data-tf-sidetab`), and writes the forwarded names as DIST-021 `data-pencil-forward`, each static `hidden` value as a fixed `data-pencil-<field>` attribute and the mode as the matching DIST-013 mode; a forwarded or hidden name the imported form does not declare is listed with a one-click action that declares it under FIELD-001. Without pasted code, and for other sources, the forward list is pre-filled with the imported form's campaign and click-ID fields; each item is ticked when done. The checklist says plainly that Pencil cannot redirect the old provider's URLs, so printed QR codes, sent emails and old embeds keep pointing at the source form, and lists each with the new link and QR code and the source's own way to send respondents on (for example a Typeform ending that redirects to the new link).
+**Requirement.** Every import ends with an actionable checklist for restoring the source form's connections, distribution and delivery behavior.
 
 **Acceptance.**
-1. a Worker test imports a Typeform fixture with a webhook and a Google Sheets integration and asserts both appear as unchecked items that close when the matching connections exist, and that the checklist names the old public link as one Pencil cannot redirect; a pasted Typeform popup snippet with `data-tf-transitive-search-params="utm_source,gclid,ref"` and `data-tf-hidden="source=site"` yields a popup Pencil snippet with `data-pencil-forward="utm_source,gclid"` and `data-pencil-source="site"`, and lists `ref` as undeclared with its declare action; the Typeform fixture's HubSpot integration item opens the INTEG-003 mapping with its one email question pre-chosen as the contact key.
-2. *Status: missing.*
+1. Items cover integrations/webhooks with the matching connection preselected, replacement embeds with new snippets, payments and email notifications to re-enable, public links, NOTIFY-006 self-notification, INTEG-017 conversions and RESP-023 identity.
+2. HubSpot, Salesforce, Orbit, Mailchimp and Mango items open their mapping with the sole email question preselected as contact/member key and hidden fields listed, leaving property/merge-field confirmation to the operator.
+3. Pasting a Typeform snippet preserves its mode, forwarded parameter names and static hidden values in the matching Pencil embed; an undeclared forwarded/hidden name is listed with a one-click declare action. Without a snippet, other sources prefill campaign/click-ID forwarding.
+4. Items can be ticked as completed. The checklist identifies old public links, printed QR codes, sent mail and embeds as still pointing at the source, which Pencil cannot redirect, and provides each replacement link/QR plus the source's onward-redirect option.
+5. A Typeform example lists webhook and Sheets items unchecked until matching connections exist; its HubSpot item selects the sole email question, and its popup snippet retains campaign/click-ID forwarding and a fixed hidden value while exposing an undeclared ref for declaration.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
 ### Payments
 
-#### PAY-001 — Stripe payments on a form
+#### PAY-001 — Payment state and safe replacement
 
-Core · target · **partial**
+Core · target · **partial** · From PAY-001 · Cites BASE-OPS-003, BASE-DATA-001, BASE-DATA-003 · Register R-6
 
-**Requirement.** Stripe is connected through Connect OAuth or with a restricted key, and an operator adds a payment step: fixed products with prices in USD, quantities, option prices, or an amount from a calculation (LOGIC-003), with a minimum and maximum. The payment step may sit anywhere after every question whose answer sets its amount and before a completion screen; FLOW-006 refuses a payment step that a later answer could change. At the payment step the respondent is sent to Stripe Checkout, Stripe's hosted page, because an inline card field would load a third-party origin onto the respondent page (BASE-PUBLIC-001); success returns the respondent to the completion screen their path reached (RESP-011), and canceling returns them to the payment step with every answer kept, the pending response marked `cancelled` and replaced by their next attempt under RESP-012's key, so one session yields one response. The response is committed under RESP-007 with payment `pending`, becomes `paid` only on a signature-verified Stripe webhook for that Checkout Session, and shows `failed`, `expired` or `refunded` from later events. Admission limits (RESP-008, RESP-009) count only paid responses on payment forms, and an unpaid response never triggers a paid-only integration. This clause inherits LOGIC-003: payment amounts may use validated numeric calculations from the published revision, recomputed on the server. Today's door is the restricted key, and only the installation owner uses it: the owner connects Stripe with a restricted key and the signing secret of the webhook endpoint the owner creates; both are sealed under INTEG-016's custody, never returned, logged or exported, and only the owner saves, tests or removes them. Connect OAuth stays a named target step of this clause and is not built. FLOW-006 refuses, naming the payment step, a payment step after a completion screen, one that does not lead straight to a completion screen, one placed before a question that sets its amount, a calculated amount that reads a hidden field (a link value the respondent controls) or a question that a path to the step can skip, and any amount that can fall outside its minimum and maximum; a path therefore reaches at most one payment step. The amount sent to Stripe is the server's, and a submitted amount is refused. A webhook counts only with a valid Stripe v1 HMAC-SHA256 signature over the raw body within a five-minute timestamp tolerance, and each event ID applies once; canceling ends the old Checkout at Stripe before the next attempt replaces it, and an invitation's unpaid response is replaced by the invitee's next attempt rather than duplicated. On payment forms only paid responses complete an invitation and count toward a completion target or a collector's response limit, and operator response emails and daily digests (NOTIFY-002, NOTIFY-003), the paid-only integrations that exist today, wait for payment. Response state, payment state and Stripe Checkout Session and PaymentIntent IDs travel through DATA-001 export and import, without the live checkout link or return key, and DATA-002 erasure, and therefore GOV-003 retention, removes them with the response; card or bank numbers are never stored. An embedded payment form asks its host page to open Checkout at top level and returns to the form's own page. NOTIFY-005 alert conditions and PAY-002 to PAY-005 inherit this payment state, each before it ships.
+**Requirement.** Pencil owns the response's verified payment state and the safe replacement of closed Checkout attempts; RL-102 governs replacement custody.
 
 **Acceptance.**
-1. a Worker test with a Stripe receiver fixture completes a paid order, asserts the amount sent equals the calculated total, marks paid only on a correctly signed webhook, ignores a forged one, and leaves an abandoned Checkout as expired; a browser journey with the Stripe fixture returns from success to the branched completion screen, and returns from cancel to the payment step with every answer shown and one response after a second attempt.
-2. The payment acceptance also proves a calculated total reaches the provider unchanged and a client-supplied replacement amount is refused.
-3. *Status: partial — Proved against a loopback Stripe stand-in in CI and, in Stripe test mode, by the committed receipt `docs/evidence/pay005-stripe-test-2026-10-26.json` (sd-pencil-c46: a $40 Checkout Session created at the server total, paid with test card 4242 on checkout.stripe.com, marked paid only on the signed event, its amount_total read back from Stripe equal to Pencil’s total, and refunded in full; real Stripe event payloads were delivered re-signed with the app-saved secret because the Stripe CLI cannot run on that host); no live charge, tax or legal acceptance is claimed.
-4. CI-run Worker routes and a 1440/390 journey prove an owner-only, sealed restricted-key connection; the exact server-computed total sent to Stripe Checkout and a submitted amount refused; forged and stale signatures ignored, paid once on the signed event and a duplicate delivery changing nothing; expired and cancelled Checkouts, cancel returning to the payment step with every answer and replacing the response under the same key; one response per invitation; a completion target counting only paid responses; immediate new-response mail only after payment; archive and erasure custody; five publication refusals by payment step ID (an over-maximum calculated amount, a hidden-field amount, a later quantity question, a step that does not lead straight to a completion screen and one after a completion screen); and success returning to the branched completion screen.
-5. CI-run public-door tests also prove (a) a calculated amount that reads a question a path to the payment step can skip and (b) one that can fall below the minimum, each refused by payment step ID with no revision created and the repaired draft published; (c) `failed` and (d) `refunded` from signed webhooks, a replay changing nothing; (e) Daily digests that leave out unpaid responses and send a response paid after an opening it predates, once, at the next opening; (f) a collector's response limit counting only paid responses; (g) the script embed opening Checkout at top level and returning to the form's own page at 1440 and 390; and (h) GOV-003 retention deleting a response's payment state, Stripe IDs and events from storage, the ledger, exports and later archives while an in-period response stays.
-6. Remaining: payment forms in the plain iframe embed, which has no host script to open Checkout.
-7. Archives exported before a deletion keep their copies.
-8. PAY-001 was audited by ct audit80 at 015185c6 on 21 Oct: partial. Connect OAuth, a named target step of this clause, is not built; today's door is the owner-only restricted key. Evidence: `src/core/features/payments/`, `src/core/features/responses/payment-responses.ts`, `src/core/features/flows/payment-proof.ts`, `src/core/shared/payments.ts`, `migrations/core/0055_payments.sql`, `tests/runtime/calculations.worker.test.ts`, `tests/runtime/archive-stream.worker.test.ts`, `tests/e2e/calculations.spec.ts`.*
+1. Committing a payment response creates pending state; only a signature-verified event for its Checkout Session makes it paid. Later events show failed, expired or refunded state, and each provider event applies once.
+2. Only paid responses complete invitations and count toward admission targets, collector limits, response mail/digests and paid-only integrations; unpaid responses trigger none of those effects.
+3. Before replacement, the original Checkout must be terminal and unable to complete. Original attempt evidence is preserved, a fresh attempt is atomically bound to the same response and current Checkout preferences, and only derived current billing fields reset.
+4. Pending or uncertain attempts block replacement and paid attempts never retry; until the invariant is implemented, replacement is refused, leaving the safe retry door owed.
+5. Response/payment state and provider Session/PaymentIntent identities survive DATA-001 restoration without live Checkout links or return keys. DATA-002/GOV-003 erase those references with the response; no card or bank numbers are stored.
+6. A correctly signed payment completes once, a forged event has no effect, and abandoned Checkout becomes expired; PAY-002 to PAY-005 and NOTIFY-005 inherit this state.
 
 **Evidence.** `src/core/features/payments/`, `src/core/features/responses/payment-responses.ts`, `src/core/features/flows/payment-proof.ts`, `src/core/shared/payments.ts`, `migrations/core/0055_payments.sql`, `tests/runtime/calculations.worker.test.ts`, `tests/runtime/archive-stream.worker.test.ts`, `tests/e2e/calculations.spec.ts`
-**Gap.** Proved against a loopback Stripe stand-in in CI and, in Stripe test mode, by the committed receipt `docs/evidence/pay005-stripe-test-2026-10-26.json` (sd-pencil-c46: a $40 Checkout Session created at the server total, paid with test card 4242 on checkout.stripe.com, marked paid only on the signed event, its amount_total read back from Stripe equal to Pencil’s total, and refunded in full; real Stripe event payloads were delivered re-signed with the app-saved secret because the Stripe CLI cannot run on that host); no live charge, tax or legal acceptance is claimed. CI proves the owner-only, sealed restricted-key connection; the exact server-computed total sent and a submitted amount refused; forged and stale signatures ignored and a duplicate delivery changing nothing; expired and cancelled Checkouts, cancel replacing the response under the same key; one response per invitation; a completion target counting only paid responses; immediate mail only after payment; archive and erasure custody; five publication refusals by payment step ID; the 1440/390 journey. CI-run public-door tests also prove (a) a calculated amount that reads a question a path to the payment step can skip and (b) one that can fall below the minimum, each refused by payment step ID with no revision created and the repaired draft published; (c) `failed` and (d) `refunded` from signed webhooks, a replay changing nothing; (e) Daily digests that leave out unpaid responses and send a response paid after an opening it predates, once, at the next opening; (f) a collector's response limit counting only paid responses; (g) the script embed opening Checkout at top level and returning to the form's own page at 1440 and 390; and (h) GOV-003 retention deleting a response's payment state, Stripe IDs and events from storage, the ledger, exports and later archives while an in-period response stays. Remaining: payment forms in the plain iframe embed, which has no host script to open Checkout. Archives exported before a deletion keep their copies. PAY-001 was audited by ct audit80 at 015185c6 on 21 Oct: partial. Connect OAuth, a named target step of this clause, is not built; today's door is the owner-only restricted key. NOTIFY-005 and PAY-002 to PAY-005 inherit payment state before they ship.
+**Gap.** Proved against a loopback Stripe stand-in in CI and, in Stripe test mode, by the committed receipt `docs/evidence/pay005-stripe-test-2026-10-26.json` (sd-pencil-c46: a $40 Checkout Session created at the server total, paid with test card 4242 on checkout.stripe.com, marked paid only on the signed event, its amount_total read back from Stripe equal to Pencil’s total, and refunded in full; real Stripe event payloads were delivered re-signed with the app-saved secret because the Stripe CLI cannot run on that host); no live charge, tax or legal acceptance is claimed. CI proves the owner-only, sealed restricted-key connection; the exact server-computed total sent and a submitted amount refused; forged and stale signatures ignored and a duplicate delivery changing nothing; expired and cancelled Checkouts, cancel replacing the response under the same key; one response per invitation; a completion target counting only paid responses; immediate mail only after payment; archive and erasure custody; five publication refusals by payment step ID; the 1440/390 journey. CI-run public-door tests also prove (a) a calculated amount that reads a question a path to the payment step can skip and (b) one that can fall below the minimum, each refused by payment step ID with no revision created and the repaired draft published; (c) `failed` and (d) `refunded` from signed webhooks, a replay changing nothing; (e) Daily digests that leave out unpaid responses and send a response paid after an opening it predates, once, at the next opening; (f) a collector's response limit counting only paid responses; (g) the script embed opening Checkout at top level and returning to the form's own page at 1440 and 390; and (h) GOV-003 retention deleting a response's payment state, Stripe IDs and events from storage, the ledger, exports and later archives while an in-period response stays. Remaining: payment forms in the plain iframe embed, which has no host script to open Checkout. Archives exported before a deletion keep their copies. PAY-001 was audited by ct audit80 at 015185c6 on 21 Oct: partial. Connect OAuth, a named target step of this clause, is not built; today's door is the owner-only restricted key. NOTIFY-005 and PAY-002 to PAY-005 inherit payment state before they ship. Today's door is the restricted key, and only the installation owner uses it: the owner connects Stripe with a restricted key and the signing secret of the webhook endpoint the owner creates; both are sealed under INTEG-016's custody, never returned, logged or exported, and only the owner saves, tests or removes them. Connect OAuth stays a named target step of this clause and is not built.
+
+#### PAY-006 — Stripe payment pricing and placement
+
+Core · target · **partial** · From PAY-001 · Cites BASE-SECRET-001 · Register R-6
+
+**Requirement.** Operators connect Stripe through Connect OAuth or a restricted key and configure server-priced payment steps in a form.
+
+**Acceptance.**
+1. Prices are in USD and support fixed products, quantities, option prices or a LOGIC-003 calculation bounded by minimum and maximum.
+2. A payment step follows every answer setting its amount and leads directly to completion; a path reaches at most one payment step.
+3. FLOW-006 refuses, naming the step, payment after completion, non-completion destinations, placement before a price-setting answer, hidden-field or skippable-question price inputs, and amounts that can exceed the bounds.
+4. Calculated prices use the published revision and are recomputed on the server; the provider receives that total unchanged, and a respondent-supplied replacement amount is refused.
+
+**Evidence.** `src/core/features/payments/`, `src/core/features/responses/payment-responses.ts`, `src/core/features/flows/payment-proof.ts`, `src/core/shared/payments.ts`, `migrations/core/0055_payments.sql`, `tests/runtime/calculations.worker.test.ts`, `tests/runtime/archive-stream.worker.test.ts`, `tests/e2e/calculations.spec.ts`
+**Gap.** Proved against a loopback Stripe stand-in in CI and, in Stripe test mode, by the committed receipt `docs/evidence/pay005-stripe-test-2026-10-26.json` (sd-pencil-c46: a $40 Checkout Session created at the server total, paid with test card 4242 on checkout.stripe.com, marked paid only on the signed event, its amount_total read back from Stripe equal to Pencil’s total, and refunded in full; real Stripe event payloads were delivered re-signed with the app-saved secret because the Stripe CLI cannot run on that host); no live charge, tax or legal acceptance is claimed. CI proves the owner-only, sealed restricted-key connection; the exact server-computed total sent and a submitted amount refused; forged and stale signatures ignored and a duplicate delivery changing nothing; expired and cancelled Checkouts, cancel replacing the response under the same key; one response per invitation; a completion target counting only paid responses; immediate mail only after payment; archive and erasure custody; five publication refusals by payment step ID; the 1440/390 journey. CI-run public-door tests also prove (a) a calculated amount that reads a question a path to the payment step can skip and (b) one that can fall below the minimum, each refused by payment step ID with no revision created and the repaired draft published; (c) `failed` and (d) `refunded` from signed webhooks, a replay changing nothing; (e) Daily digests that leave out unpaid responses and send a response paid after an opening it predates, once, at the next opening; (f) a collector's response limit counting only paid responses; (g) the script embed opening Checkout at top level and returning to the form's own page at 1440 and 390; and (h) GOV-003 retention deleting a response's payment state, Stripe IDs and events from storage, the ledger, exports and later archives while an in-period response stays. Remaining: payment forms in the plain iframe embed, which has no host script to open Checkout. Archives exported before a deletion keep their copies. PAY-001 was audited by ct audit80 at 015185c6 on 21 Oct: partial. Connect OAuth, a named target step of this clause, is not built; today's door is the owner-only restricted key. NOTIFY-005 and PAY-002 to PAY-005 inherit payment state before they ship. Today's door is the restricted key, and only the installation owner uses it: the owner connects Stripe with a restricted key and the signing secret of the webhook endpoint the owner creates; both are sealed under INTEG-016's custody, never returned, logged or exported, and only the owner saves, tests or removes them. Connect OAuth stays a named target step of this clause and is not built.
+
+#### PAY-007 — Checkout and respondent return
+
+Core · target · **partial** · From PAY-001 · Cites BASE-PUBLIC-001 · Register R-6
+
+**Requirement.** Payment questions send respondents to Stripe's hosted Checkout and return them to their own form with their answers intact.
+
+**Acceptance.**
+1. Success returns to the completion screen reached by that respondent's branch under RESP-011.
+2. Cancel returns to the payment step showing every answer and marks the pending response cancelled. Stripe ends the old Checkout before PAY-001 permits its next replacement.
+3. RESP-012 keys ensure the invitee's or session's next unpaid attempt replaces its prior response rather than duplicating it; completing a second attempt leaves one response.
+4. An embedded form asks its host to open Checkout at top level and returns to the form's own page, without loading an inline third-party card field into the respondent surface.
+
+**Evidence.** `src/core/features/payments/`, `src/core/features/responses/payment-responses.ts`, `src/core/features/flows/payment-proof.ts`, `src/core/shared/payments.ts`, `migrations/core/0055_payments.sql`, `tests/runtime/calculations.worker.test.ts`, `tests/runtime/archive-stream.worker.test.ts`, `tests/e2e/calculations.spec.ts`
+**Gap.** Proved against a loopback Stripe stand-in in CI and, in Stripe test mode, by the committed receipt `docs/evidence/pay005-stripe-test-2026-10-26.json` (sd-pencil-c46: a $40 Checkout Session created at the server total, paid with test card 4242 on checkout.stripe.com, marked paid only on the signed event, its amount_total read back from Stripe equal to Pencil’s total, and refunded in full; real Stripe event payloads were delivered re-signed with the app-saved secret because the Stripe CLI cannot run on that host); no live charge, tax or legal acceptance is claimed. CI proves the owner-only, sealed restricted-key connection; the exact server-computed total sent and a submitted amount refused; forged and stale signatures ignored and a duplicate delivery changing nothing; expired and cancelled Checkouts, cancel replacing the response under the same key; one response per invitation; a completion target counting only paid responses; immediate mail only after payment; archive and erasure custody; five publication refusals by payment step ID; the 1440/390 journey. CI-run public-door tests also prove (a) a calculated amount that reads a question a path to the payment step can skip and (b) one that can fall below the minimum, each refused by payment step ID with no revision created and the repaired draft published; (c) `failed` and (d) `refunded` from signed webhooks, a replay changing nothing; (e) Daily digests that leave out unpaid responses and send a response paid after an opening it predates, once, at the next opening; (f) a collector's response limit counting only paid responses; (g) the script embed opening Checkout at top level and returning to the form's own page at 1440 and 390; and (h) GOV-003 retention deleting a response's payment state, Stripe IDs and events from storage, the ledger, exports and later archives while an in-period response stays. Remaining: payment forms in the plain iframe embed, which has no host script to open Checkout. Archives exported before a deletion keep their copies. PAY-001 was audited by ct audit80 at 015185c6 on 21 Oct: partial. Connect OAuth, a named target step of this clause, is not built; today's door is the owner-only restricted key. NOTIFY-005 and PAY-002 to PAY-005 inherit payment state before they ship. Today's door is the restricted key, and only the installation owner uses it: the owner connects Stripe with a restricted key and the signing secret of the webhook endpoint the owner creates; both are sealed under INTEG-016's custody, never returned, logged or exported, and only the owner saves, tests or removes them. Connect OAuth stays a named target step of this clause and is not built.
 
 #### PAY-002 — Sales tax, coupons and receipts
 
-Core · target · **partial**
+Core · target · **partial** · Register R-6
 
-**Requirement.** Payment steps can apply Stripe Tax for US sales tax by the respondent's address, Stripe coupons and promotion codes, and Stripe's receipt email; the response and exports carry subtotal, discount, tax and total. This clause inherits PAY-001's payment state before it ships.
+**Requirement.** Stripe payment steps can calculate US sales tax from the respondent's address, accept coupons/promotion codes and send Stripe receipts, using PAY-001's verified state and PAY-006 pricing.
 
 **Acceptance.**
-1. a Worker test with fixture tax and coupon responses asserts the stored subtotal, discount, tax and total columns.
-2. *Status: partial — Stripe Tax, promotion codes or a coupon, and Checkout email collection for account-controlled Stripe receipts ship; the signed subtotal is checked against Pencil’s server amount and subtotal, discount, tax and total appear on the response and CSV/JSON exports.
-3. Pencil stores no billing address and forwards no answer as an email address.
-4. Receipt delivery and per-payment receipt suppression are not proved; receipt delivery depends on the Stripe account’s receipt setting.
-5. Proof is against the loopback Stripe stand-in in CI, and the committed Stripe test-mode receipt `docs/evidence/pay005-stripe-test-2026-10-26.json` (sd-pencil-c46) stores subtotal 4000, discount 500, tax 0 and total 3500 for a coupon created through the Stripe API and deleted afterwards, matching Stripe’s Checkout Session.
-6. Stripe Tax reads active on that test account, but the run did not enable automatic tax, so the tax amount remains fixture-proved.*
+1. The response and exports retain subtotal, discount, tax and total.
+2. A taxed order with a coupon retains all four amounts exactly as the provider returns them.
 
 **Evidence.** `tests/runtime/calculations.worker.test.ts` — "preserves signed tax and discount totals in the ledger, exports, archives and erasure while refusing a changed subtotal"; `tests/e2e/calculations.spec.ts` — "authors Checkout tax, coupon and receipt settings and reads the signed totals on the response" (1440/390, CPU throttle 4)
 **Gap.** Receipt delivery and per-payment receipt suppression remain unproved; Checkout email collection and Stripe account receipt settings control delivery under the adopted PAY-002 default. Proof is against the loopback Stripe stand-in in CI, and the committed Stripe test-mode receipt `docs/evidence/pay005-stripe-test-2026-10-26.json` (sd-pencil-c46) stores subtotal 4000, discount 500, tax 0 and total 3500 for a coupon created through the Stripe API and deleted afterwards, matching Stripe’s Checkout Session. Stripe Tax reads active on that test account, but the run did not enable automatic tax, so the tax amount remains fixture-proved.
 
 #### PAY-003 — Subscriptions and donations
 
-Core · target · **partial**
+Core · target · **partial** · Register R-6
 
-**Requirement.** A payment step can start a Stripe subscription (monthly or yearly price) or take a donation with suggested and custom amounts, optionally recurring; subscription status changes arrive by webhook and appear on the response. Ongoing billing management belongs to Stripe's customer portal or the sibling Nectar. This clause inherits PAY-001's payment state before it ships.
+**Requirement.** A payment step can begin a monthly/yearly Stripe subscription or take suggested/custom donations, optionally recurring, under PAY-001's state and replacement rules.
 
 **Acceptance.**
-1. a Worker test starts a subscription and a custom donation and asserts both statuses and a later cancellation event on the response.
-2. *Status: partial.*
+1. The response displays subscription status changes, including later cancellation, from provider webhooks.
+2. Custom donation amounts are accepted alongside subscriptions; closed subscription/donation attempts retain the safe retry scope governed by RL-102 even while replacement is temporarily refused.
+3. Ongoing billing management hands off to Stripe's customer portal or Nectar.
 
 **Evidence.** `tests/runtime/calculations.worker.test.ts` — "preserves signed tax and discount totals in the ledger, exports, archives and erasure while refusing a changed subtotal" (monthly/yearly prices, bounded custom and recurring donations, signed cancellation, refused client amount, archive/erasure); `tests/e2e/calculations.spec.ts` — "builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals" (settings and response records at 1440/390, CPU throttle 4)
-**Gap.** Custom donation amounts are entered only on Stripe within the operator’s minimum and maximum, as ct approved on 24 October. Gap: pre-Stripe (in-form) amount entry; recurring custom amounts (recurring donations use fixed server-priced amounts); held-key Stripe test-mode proof. Ongoing billing management belongs to Stripe’s customer portal; no portal is built. Proof is against the loopback Stripe stand-in in CI; no real Stripe test-mode receipt is committed. ADOPTED provisional retry refusal (ASK ct): cancelled or expired subscription and donation checkouts cannot be replaced until the response-owned transaction carries Checkout preferences and resets billing fields; that write is in responses/repository.ts custody.
+**Gap.** Custom donation amounts are entered only on Stripe within the operator’s minimum and maximum, as ct approved on 24 October. Gap: pre-Stripe (in-form) amount entry; recurring custom amounts (recurring donations use fixed server-priced amounts); held-key Stripe test-mode proof. Ongoing billing management belongs to Stripe’s customer portal; no portal is built. Proof is against the loopback Stripe stand-in in CI; no real Stripe test-mode receipt is committed.
 
 #### PAY-004 — ACH and other US payment methods
 
-Core · target · **partial**
+Core · target · **partial** · Register R-6
 
-**Requirement.** Payment steps can offer ACH Direct Debit (Stripe US bank account), Apple Pay and Google Pay through Checkout, and PayPal or Square as alternative providers with the same pending/paid/failed states; ACH's delayed settlement is shown as `processing` until it succeeds or fails. This clause inherits PAY-001's payment state before it ships.
+**Requirement.** Payment steps offer Stripe ACH Direct Debit, Apple Pay and Google Pay through Checkout, plus PayPal or Square with equivalent payment states.
 
 **Acceptance.**
-1. a Worker test drives an ACH payment through processing to succeeded and to failed, and a PayPal fixture order to paid.
-2. *Status: partial.*
+1. ACH remains visibly processing until its delayed confirmation succeeds or fails; PayPal/Square use pending, paid and failed states under PAY-001.
+2. Both ACH success and failure paths retain their response state, and a PayPal order can become paid.
+3. Closed ACH attempts retain safe replacement under PAY-001 and RL-102; temporary refusal does not remove the retry door.
 
 **Evidence.** `tests/runtime/calculations.worker.test.ts` — "preserves signed tax and discount totals in the ledger, exports, archives and erasure while refusing a changed subtotal" (card/ACH Checkout methods, processing to paid/failed, replay, processing excluded from admission, archive/erasure); `tests/e2e/calculations.spec.ts` — "builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals" (ACH settings and processing/paid response records at 1440/390, CPU throttle 4)
-**Gap.** ACH and Checkout card wallets ship first under ct’s 24 October ruling. Gap: "and PayPal or Square as alternative providers with the same pending/paid/failed states"; "and a PayPal fixture order to paid" remain unmet, with no PayPal or Square sandbox accounts held. Real Apple Pay, Google Pay and ACH test-mode settlement are unproved. Failed ACH checkout retry and a dedicated respondent processing label remain unproved; the existing return says Stripe is confirming and the response record shows processing. Proof is against the loopback Stripe stand-in in CI; no real Stripe test-mode receipt is committed.  Provider target retained verbatim: Payment steps can offer ACH Direct Debit (Stripe US bank account), Apple Pay and Google Pay through Checkout, and PayPal or Square as alternative providers with the same pending/paid/failed states; ACH's delayed settlement is shown as `processing` until it succeeds or fails. Acceptance retained verbatim: a Worker test drives an ACH payment through processing to succeeded and to failed, and a PayPal fixture order to paid. ADOPTED provisional retry refusal (ASK ct): cancelled or expired ACH checkouts cannot be replaced until the response-owned transaction carries Checkout preferences and resets billing fields; that write is in responses/repository.ts custody.
+**Gap.** ACH and Checkout card wallets ship first under ct’s 24 October ruling. Gap: "and PayPal or Square as alternative providers with the same pending/paid/failed states"; "and a PayPal fixture order to paid" remain unmet, with no PayPal or Square sandbox accounts held. Real Apple Pay, Google Pay and ACH test-mode settlement are unproved. Failed ACH checkout retry and a dedicated respondent processing label remain unproved; the existing return says Stripe is confirming and the response record shows processing. Proof is against the loopback Stripe stand-in in CI; no real Stripe test-mode receipt is committed.  Provider target retained verbatim: Payment steps can offer ACH Direct Debit (Stripe US bank account), Apple Pay and Google Pay through Checkout, and PayPal or Square as alternative providers with the same pending/paid/failed states; ACH's delayed settlement is shown as `processing` until it succeeds or fails. Acceptance retained verbatim: a Worker test drives an ACH payment through processing to succeeded and to failed, and a PayPal fixture order to paid.
 
 #### PAY-005 — Payment ledger and refunds
 
-Core · target · **partial**
+Core · target · **partial** · Register R-6
 
-**Requirement.** Operators with the identity grant see each response's payment (provider, ID, amount, method type, status, last-4 only), filter and export by payment status, reconcile totals by period against the provider, and issue a full or partial refund through the provider after confirming the amount; the refund's status comes back by webhook. This clause inherits PAY-001's payment state before it ships.
+**Requirement.** Operators with the identity grant can inspect, reconcile and refund response payments; RL-103 governs period completeness and uncertain/legacy records.
 
 **Acceptance.**
-1. a browser journey refunds $10 of a $40 payment, sees `partially refunded` after the webhook, and the payments export shows both amounts.
-2. *Status: partial — see the Status row for implementation evidence and the remaining Gap.* Scope ruling — The original $10-of-$40 browser Acceptance and PAY-001 payment-state inheritance remain unchanged.
-3. Owner-only refunds and reconciliation are the current implementation.
-4. Identity-granted operator payment access, refunds and reconciliation remain PAY-005 requirements pending role and identity-grant implementation; the reference to ROLE-001 records a dependency, not a completed transfer of acceptance.
-5. The approved 1,000-record limit remains an explicit current limit, with no silent truncation or presentation of incomplete reconciliation as complete.
-6. Ledgers and reconciliation beyond that limit remain in the target.
-7. Uncertain refund reservations remain reserved until owner reconciliation in Stripe, and historical pre-upgrade period dates remain disclosed.
-8. Provider receipts retain their stated execution and webhook-delivery limits. Status: partial.
+1. Each ledger payment shows provider, ID, amount, method, status and last-four digits only, with status filters and export.
+2. Period reconciliation includes every cursor page, or explicitly reports incompleteness and cannot be accepted as reconciled until complete.
+3. Full or partial refunds use the provider after amount confirmation; their state returns by webhook. A ten-dollar refund of a forty-dollar payment shows partially refunded, with both amounts in export.
+4. Uncertain-refund reservations stay held until provider readback resolves them.
+5. Legacy source timestamps remain labelled historical last-change provenance, never asserted as known transaction dates, and closed totals are not silently rewritten.
 
 **Evidence.** `tests/runtime/calculations.worker.test.ts` — "preserves signed tax and discount totals in the ledger, exports, archives and erasure while refusing a changed subtotal" (owner refusal, over-refund, replay, filters, CSV, reconciliation mismatch, restoration and erasure); `tests/e2e/calculations.spec.ts` — "builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals" ($10 of $40, 1440/390, CPU throttle 4); `docs/evidence/pay005-stripe-test-2026-10-26.json` (real Stripe test-mode receipt, `scripts/proof/payments-stripe-test.mjs`, local only); the provider receipt was recorded locally before dd639754 and binds no runtime SHA; `tests/runtime/calculations.worker.test.ts`:569 (pre-upgrade dates and disclosure), `tests/runtime/calculations.worker.test.ts`:634 (unconfirmed refund makes no provider request), `tests/runtime/calculations.worker.test.ts`:644 (provider ID suffix), `tests/runtime/calculations.worker.test.ts`:679 (reservation survives provider failure), `tests/runtime/calculations.worker.test.ts`:699 (complete ledger and CSV at 1,000, explicit refusal at 1,001)
 **Gap.** Gap — Identity-granted operator payment access, refunds and reconciliation; ledgers and period reconciliation beyond 1,000 records. Direct Stripe webhook delivery and exact-head provider execution provenance remain unproved provider evidence, separate from the passing fixture Acceptance.
@@ -2462,13 +3486,16 @@ Core · target · **partial**
 
 #### FILE-001 — File-upload questions
 
-Core · target · **missing**
+Core · target · **missing** · Cites BASE-INPUT-003
 
-**Requirement.** A question accepts one or more files with operator-set limits on count, size (up to `seed.json → limits.upload`) and type; the server checks size, declared MIME and content signature, stores files privately in R2 under the response, and serves them only to authorized operators through short-lived signed URLs with nosniff. Uploads are part of the response: they follow RESP-010 or PART-001, DATA-001 export, DATA-002 erasure and GOV-003 retention, and are excluded from AI requests unless AI-003 applies. Files wait in quarantine until a configured malware scanner (FILE-003) passes them where one is configured.
+**Requirement.** Respondents can attach multiple files as question answers, with form-specific limits and the same custody as their response.
 
 **Acceptance.**
-1. a browser journey uploads a PDF and a JPEG, a renamed executable is refused, the operator downloads the PDF through a signed URL that expires, and deleting the response deletes the R2 objects.
-2. *Status: missing.*
+1. Files remain linked to their response, pass content-signature checks, and download through expiring signed URLs with nosniff.
+2. The operator sets file count, size within declared upload limits and allowed types; disguised disallowed content is refused.
+3. Uploads follow RESP-010/PART-001 capture, DATA-001 export, DATA-002 erasure and GOV-003/GOV-008 retention, and stay out of AI unless AI-003 applies.
+4. Where FILE-003 scanning is configured, files remain quarantined until it passes them.
+5. A PDF and JPEG can be uploaded; a renamed executable is refused, the operator's signed PDF download expires, and response erasure removes the objects.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2477,11 +3504,12 @@ Core · target · **missing**
 
 Core · target · **missing**
 
-**Requirement.** Uploaded files and submission PDFs (WORK-005) can be copied to Google Drive, Dropbox, OneDrive/SharePoint, Box or the sibling Chest, in a folder per form or per response named by a pattern; copies are tracked as integration deliveries (INTEG-015) and erasure lists copies the provider cannot delete.
+**Requirement.** Uploaded files and WORK-005 submission PDFs can be copied into Google Drive, Dropbox, OneDrive/SharePoint, Box or Chest.
 
 **Acceptance.**
-1. a Worker test with a Google Drive receiver fixture copies two uploads into a per-response folder and retries a transient failure with the same idempotency key.
-2. *Status: missing.*
+1. Operators choose a per-form or per-response folder naming pattern; copies appear in INTEG-015 delivery tracking.
+2. Erasure lists copies that their provider cannot delete.
+3. Two uploads reach a per-response folder, and retrying a transient failure keeps the same idempotency key.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2490,11 +3518,12 @@ Core · target · **missing**
 
 Core · target · **missing**
 
-**Requirement.** When a malware-scanning connection is configured (for example Cloudmersive or a VirusTotal private scanning key), every upload is scanned before operators can download it; infected files are kept in quarantine with the verdict and never forwarded to storage sync. Without a scanner, settings state that uploads are unscanned.
+**Requirement.** A configured malware scanner, including Cloudmersive or a VirusTotal private scanner, checks uploads before operator download or storage sync.
 
 **Acceptance.**
-1. a Worker test with a scanner receiver fixture marks one EICAR test file infected and keeps it from download and sync while a clean file proceeds.
-2. *Status: missing.*
+1. An infected file remains quarantined with its verdict and cannot be downloaded or forwarded to storage sync; clean files proceed.
+2. An EICAR example remains inaccessible while a clean example is released.
+3. Without a scanner, settings explicitly say uploads are unscanned.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2503,24 +3532,27 @@ Core · target · **missing**
 
 Core · target · **missing**
 
-**Requirement.** A form can ask for a typed or drawn signature after an ESIGN Act and UETA consent statement. Pencil stores the signature image, the consent wording, the signer's typed name and email, time, the published revision, and a SHA-256 hash of the signed answers, renders a signed PDF with an audit page (WORK-005), and makes any later change to the answers visible as a new version rather than altering the signed one. Multi-party envelopes, signing order, identity verification and certificate-based signatures belong to the sibling Inkwell, to which a submission can hand off its PDF.
+**Requirement.** Forms can collect a typed or drawn signature after ESIGN Act and UETA consent, and hand a PDF to Inkwell for multi-party envelopes, signing order, identity verification or certificate signatures.
 
 **Acceptance.**
-1. a browser journey signs a form by drawing, the signed PDF contains the consent text, signature and hash, and a recomputed hash over the stored answers matches.
-2. *Status: missing.*
+1. The signed record retains the signature image, exact consent, signer's typed name/email, time, published revision and an integrity hash of the signed answers.
+2. WORK-005 renders a signed PDF with its audit page; a drawn-signature example includes consent, signature and matching recomputed answer hash.
+3. Later answer changes create a visible new version and cannot alter the signed version.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
 #### AI-003 — Document extraction with respondent correction
 
-Core · target · **missing**
+Core · target · **missing** · Cites BASE-AGENT-007, BASE-AGENT-008
 
-**Requirement.** A form may ask the respondent to upload a document (for example an invoice, a W-9 or a business license) and prefill later questions from fields `ai.provider.v1` extracts; every prefilled value is shown to the respondent to confirm or correct before submission and is stored with an extracted/corrected marker. No identity, credit or eligibility decision is made from the extraction.
+**Requirement.** A document can prefill later questions with traceable extraction and correction.
 
 **Acceptance.**
-1. a Worker test with the AI receiver fixture extracts three fields from a fixture invoice, the respondent corrects one, and the response stores two `extracted` and one `corrected` values.
-2. *Status: missing.*
+1. A form may ask the respondent to upload a document (for example an invoice, a W-9 or a business license) and prefill later questions from fields ai provider adapter extracts; every prefilled value is shown for correction and stored with an extracted/corrected marker.
+2. Extraction carries standard, adding sensitive for regulated document fields; the company’s policy decides whether readings fill the fields or wait for confirmation.
+3. No identity, credit or eligibility decision is made from the extraction.
+4. With the AI receiver fixture, the specialist extracts three fields from a fixture, invoice, the respondent corrects one, and the response stores two `extracted` and one `corrected` values.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2531,11 +3563,11 @@ Core · target · **missing**
 
 Core · target · **partial**
 
-**Requirement.** An operator creates an NPS, CSAT or CES program with a question set (FIELD-003), audience (segment, CRM list, in-product users or ticket events), channels (email-embedded question DIST-014, SMS DIST-011, in-product DIST-015) and cadence (relationship surveys on DIST-016, or transactional triggers PROG-002), with a contact-level fatigue rule shared across programs.
+**Requirement.** Operators create recurring relationship or event-driven transactional NPS, CSAT and CES programs with a shared contact fatigue rule.
 
 **Acceptance.**
-1. a Worker test creates a quarterly NPS program and a transactional CSAT program for overlapping contacts and asserts the fatigue rule suppresses the second survey inside the window.
-2. *Status: partial — NPS questions and an NPS template ship (`src/core/features/flows/templates.ts`, `tests/runtime/new-question-types.worker.test.ts`); programs do not.*
+1. A program chooses a FIELD-003 question set, a segment/CRM/in-product/ticket-event audience, email-embedded/SMS/in-product channels and DIST-016 cadence or PROG-002 triggers.
+2. Overlapping contacts in quarterly NPS and transactional CSAT programs receive no second survey inside the fatigue window.
 
 **Evidence.** `src/core/features/flows/templates.ts`, `tests/runtime/new-question-types.worker.test.ts`
 **Gap.** Programs do not.
@@ -2544,11 +3576,12 @@ Core · target · **partial**
 
 Core · target · **missing**
 
-**Requirement.** A program sends its survey after an event: a ticket solved in HappyToHelp, Zendesk, Intercom or Help Scout; an order fulfilled in Stall or Shopify; a deal won in Orbit or HubSpot; or any signed API call (INTEG-011), after a configured delay and only once per event ID. The response records the triggering event (for example the ticket ID and agent) for reporting.
+**Requirement.** Programs survey after ticket resolution, order fulfilment, a won deal or a signed API event, after a configured delay.
 
 **Acceptance.**
-1. a Worker test posts a HappyToHelp "ticket solved" event twice and asserts one CSAT invitation after the delay, with the ticket ID on the response and in the per-agent CSAT report.
-2. *Status: missing.*
+1. Sources include HappyToHelp, Zendesk, Intercom, Help Scout, Stall, Shopify, Orbit, HubSpot and INTEG-011; each event ID triggers at most one survey.
+2. The response retains the triggering ticket/deal/order context, including its actor where provided, for reporting.
+3. Repeating a ticket-solved event creates one delayed CSAT invitation, with its ticket ID on the response and in per-agent reporting.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2557,11 +3590,11 @@ Core · target · **missing**
 
 Core · target · **missing**
 
-**Requirement.** Program dashboards show the score over time (RSLT-007) with promoter/passive/detractor or satisfied shares, margin of error at 95% confidence, response rate, and breakdowns by account, plan, agent, channel or any hidden field, with ANLY-005 suppression.
+**Requirement.** Program dashboards show score trends and comparable respondent segments with ANLY-005 suppression.
 
 **Acceptance.**
-1. a Worker test seeds a quarter of responses and asserts weekly NPS, its margin of error and the per-agent CSAT table against hand-computed values.
-2. *Status: missing.*
+1. Metrics include promoter/passive/detractor or satisfied shares, a 95% confidence margin, response rate and breakdowns by account, plan, agent, channel or hidden field.
+2. For a seeded quarter, weekly NPS, its margin and per-agent CSAT equal hand-computed values.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2570,11 +3603,12 @@ Core · target · **missing**
 
 Core · target · **missing**
 
-**Requirement.** A detractor, low CSAT or high-effort response opens a follow-up item with an owner, a due time and the respondent's permission state; the owner records the outreach and outcome, and the item can be sent as a ticket to HappyToHelp or Zendesk or as a task on the account in Orbit or HubSpot. Program reports show the share of detractors followed up within the target time. Anonymous responses open follow-up items with no contact route.
+**Requirement.** Detractor, low-CSAT and high-effort responses create owned follow-up work with due time and the respondent's permission state.
 
 **Acceptance.**
-1. a Worker test submits an identified detractor and asserts a follow-up item, a ticket created at the help-desk receiver fixture with the confirmed fields only, and a closed item counted in the follow-up rate.
-2. *Status: missing.*
+1. Owners record outreach and outcome and can send the item to HappyToHelp/Zendesk as a ticket or Orbit/HubSpot as an account task.
+2. Reports show the share of detractors followed up inside the target time; anonymous items retain no contact route.
+3. An identified detractor creates a follow-up item and a help-desk ticket containing only confirmed fields; closing it contributes to the follow-up rate.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2583,45 +3617,62 @@ Core · target · **missing**
 
 #### INTEG-001 — Google Sheets
 
-Core · target · **done**
+Core · target · **done** · Register R-7
 
-**Requirement.** A form syncs each released response to a chosen Google Sheet as a row with columns keyed by stable step ID (labels in the header, new columns appended when questions are added), backfills existing responses on connection, updates rows on edit (RESP-021) and deletes or blanks them on erasure (DATA-002).
+**Requirement.** A form synchronizes its released responses to a chosen Google Sheet, retaining one stable row per response.
 
 **Acceptance.**
-1. a Worker test with a Sheets receiver fixture backfills three responses, appends a fourth, adds a column after a republish, and deletes a row on erasure.
-2. *Status: done — DONE PROPOSAL — UNCOUNTED until landing and ct judgement.
-3. The owner connects Google through an owner-bound, one-use PKCE OAuth callback at /api/app/connections/google/callback.
-4. Client credentials and access/refresh tokens are sealed and excluded from exports.
-5. An operator publishes the revision-bound Google Sheets disclosure, chooses a worksheet in builder settings and backfills released responses.
-6. Rows use random stable delivery keys, headers retain stable step IDs and append new columns after republish even without another response; native answer writes enqueue in-place updates, and erasure queues a row clear.
-7. Failed deliveries, each attempt and reason, exact undelivered response IDs, alerts and replay share INTEG-015; a broken connection never blocks collection.
-8. Known read failures have bounded retries, while uncertain writes require explicit reconciliation/replay with the same row key. The receiver proves three-row backfill, a fourth append, a new column after republish, five failed deliveries repaired/replayed without duplicates, and external erasure. Hidden-field columns use declaration IDs and stored typed values; absent values are blank, and empty worksheets receive headers on connection. Gap: Real Google consent and Sheets API are NOT RUN. RESP-021 DONE proposal awaits ct judgement. Ruled limits/defaults (ct 24 Oct 19:47Z): one form per reserved worksheet, one fixed destination per form, at most 1,000 worksheet rows, 499 question columns, 100 selectable worksheets and a 2 MiB provider response; restored links stay disarmed until explicitly reattached; cells use RAW canonical values/JSON and erasure blanks the row. Evidence: `tests/runtime/google-sheets.worker.test.ts` — “Google OAuth seals owner tokens and Sheets backfills, appends stable columns, replays failed rows without duplicates and clears an erased response”; `src/core/features/google-sheets/`, `migrations/core/0066_google_sheets.sql`; local Google card, worksheet picker, respondent disclosure and ledger browser proof at 1440/390 with CPU throttle 4 and accessibility checks is retained in the lane evidence directory outside this repository.*
+1. Connecting backfills existing responses; three existing responses create three rows, and a fourth submission appends one row.
+2. Headers identify columns by stable step ID and label; publishing a new question appends its column.
+3. RESP-021 edits update the existing row, while DATA-002 erasure deletes or blanks that row.
 
-**Evidence.** `tests/runtime/google-sheets.worker.test.ts` — “Google OAuth seals owner tokens and Sheets backfills, appends stable columns, replays failed rows without duplicates and clears an erased response”; `src/core/features/google-sheets/`, `migrations/core/0066_google_sheets.sql`; local Google card, worksheet picker, respondent disclosure and ledger browser proof at 1440/390 with CPU throttle 4 and accessibility checks is retained in the lane evidence directory outside this repository
-**Gap.** DONE PROPOSAL — UNCOUNTED until landing and ct judgement. Real Google consent and Sheets API are NOT RUN; non-claim. RESP-021 DONE proposal awaits ct judgement. Ruled limits/defaults (ct 24 Oct 19:47Z): one form per reserved worksheet, one fixed destination per form, at most 1,000 worksheet rows, 499 question columns, 100 selectable worksheets and a 2 MiB provider response; restored links stay disarmed until explicitly reattached; cells use RAW canonical values/JSON and erasure blanks the row.
+**Evidence.** `tests/runtime/google-sheets.worker.test.ts` — "Google OAuth seals owner tokens and Sheets backfills, appends stable columns, replays failed rows without duplicates and clears an erased response"
+**Gap.** None.
 
 #### INTEG-002 — Microsoft Excel
 
 Core · target · **missing**
 
-**Requirement.** The same sync as INTEG-001 writes to an Excel workbook table in OneDrive or SharePoint through Microsoft Graph.
+**Requirement.** INTEG-001's response synchronization also writes to workbook tables in OneDrive or SharePoint through Microsoft Graph.
 
 **Acceptance.**
-1. a Worker test with a Graph receiver fixture appends rows to a workbook table and deletes one on erasure.
-2. *Status: missing.*
+1. New responses append rows to the chosen workbook table.
+2. DATA-002 erasure removes the corresponding row under the same custody as Sheets.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
-#### INTEG-003 — HubSpot
+#### INTEG-003 — HubSpot contact delivery
 
-Core · target · **missing**
+Core · target · **missing** · From INTEG-003
 
-**Requirement.** An Admin connects a HubSpot account by OAuth under INTEG-016's custody (contacts, companies, deals, notes and property-schema read scopes), and an Editor attaches it to a form whose published RESP-005 disclosure names HubSpot. **The typed-email lead is the primary path:** on a form in the default anonymous mode (RESP-005, RESP-023), the Editor chooses one email question as the contact key, and a released response (RESP-007) that answered it creates the HubSpot contact, or updates the existing one, matched by that email (trimmed, validated as an email and compared case-insensitively, as HubSpot matches it), so a lead who reaches an ordinary public link, ad link or embed and types a work email reaches sales with no `?email=` on the link. A RESP-023 identified response uses its link-supplied email when no email question is chosen or the chosen one is left blank. Inside Pencil RESP-006 still holds: the typed email is stored only as that answer, the response gets no Pencil contact, participant or link-supplied identity, and RESP-005's disclosure says before the first answer that the email and mapped answers are sent to the business's HubSpot. **The mapping is defined:** the connection lists the account's existing contact, company and deal properties from HubSpot's properties API (refreshed on open and on demand), and the Editor maps to them any answer (a choice as its label or a per-option value; a multi-select as HubSpot's semicolon-separated checkbox value; a date as a HubSpot date; a number as a number), the FIELD-001 hidden fields including `utm_*` and click IDs, LOGIC-003 calculations and LOGIC-004 scores and outcomes, the form name, the submission time and the authenticated response link. Pencil creates no HubSpot property of its own. A mapping to a property that does not exist, is read-only or calculated, or whose type does not fit the source (text into a number, a free answer into an enumeration whose options it does not match) is refused when it is saved, and the refusal names the property and the reason; a property deleted or changed in HubSpot after saving is reported at delivery in INTEG-015 with HubSpot's error reason and named on the form's connection page, and the rest of the delivery is not silently dropped. A blank or skipped answer (FLOW-020) never clears an existing HubSpot value, and each mapped property is set to overwrite (default) or fill only when empty. Optionally the delivery creates or updates a company matched by a mapped domain property and associates the contact to it, creates a deal in a chosen pipeline and stage associated to the contact, and adds a note on the contact timeline carrying the form name and the response link, never answers outside the mapping. One delivery per released response carries an idempotency key, so a retry or replay never creates a second contact or deal; an edit (RESP-021) re-sends the mapped properties as an update. **Nothing is sent** for a response whose published revision's disclosure does not name HubSpot, and for a response with neither a typed nor a link-supplied email: Pencil never creates a contact keyed by anything else, and INTEG-015 records that delivery as skipped with the reason "no contact email". From an anonymous form no session, invitation, host-page or network identifier is ever sent (RESP-006, DIST-021); only the mapped answers and hidden fields go. **Partial leads:** on a form that also opts in to PART-001, the Editor may turn on early upsert, which sends the contact once the contact-key question's step is saved, under PART-001's disclosure naming HubSpot, with the mapped answers given so far and a mapped status property set to `partial`; the completed response updates the same contact and sets it to `completed`, and a partial deleted at PART-001 retention sends nothing further. When this clause activates, RESP-006's typed-answer sentence is amended to name delivery of a typed email as the contact key to a CRM connection the disclosure names.
+**Requirement.** Admins connect HubSpot by OAuth under INTEG-016 and Editors attach a form whose published disclosure names it; INTEG-018 defines property mapping and related CRM records.
 
 **Acceptance.**
-1. a Worker test with a HubSpot receiver fixture publishes a form in the default anonymous mode whose disclosure names HubSpot, with an email question chosen as the contact key, a company question mapped to `company` and a `utm_campaign` hidden field mapped to a contact property, and asserts that (1) a response opened with `?utm_campaign=spring` that types `lead@example.com` produces one contact upsert by that email carrying the mapped company and `utm_campaign=spring`, and Pencil's stored response has no contact link or participant (RESP-006); (2) a second response typing the same email in a different case updates that contact and creates no new one; (3) a response that leaves the optional email blank sends nothing and records a skipped delivery naming "no contact email"; (4) the same form republished with a disclosure that omits HubSpot sends nothing; (5) a mapping to a property the fixture account lacks is refused at save, and the refusal names the property; a blank answer leaves the fixture's existing value in place; a replayed delivery creates no second contact; a property deleted in the fixture after saving yields a failed INTEG-015 delivery carrying HubSpot's error reason; a RESP-023 identified response with `?email=` and no chosen email question upserts by the link-supplied email; and on a PART-001 form with early upsert, answering the email step and abandoning sends one contact marked `partial`, and completing a second session with the same email updates it to `completed`.
-2. *Status: missing.*
+1. A chosen email question is the primary contact key on an anonymous form: released typed emails are trimmed, validated and matched case-insensitively to create or update one contact, including ordinary public/ad/embed visits without an identity parameter.
+2. Identified responses use the link email only when no email question is chosen or its answer is blank. Typed answers create no Pencil contact, participant or link identity, and disclosure names the email and mapped-answer transfer before the first answer.
+3. Absent disclosure sends nothing; absent typed/link email produces a skipped delivery naming no contact email. Anonymous deliveries contain no session, invitation, host-page or network identifier, only mapped answers and hidden fields.
+4. Retries/replay never duplicate a contact or deal, and RESP-021 edits update mapped values on the same record.
+5. Optional PART-001 early upsert sends once the email step is saved, with only answered mapped fields and partial status under the named disclosure; completion updates that contact to completed, and a retained partial's deletion sends nothing further.
+6. A second differently cased email updates the first contact; blank email and omitted disclosure send nothing; abandoning an early-upsert response and completing another with the same email shows partial then completed.
+
+**Evidence.** None.
+**Gap.** No code yet.
+
+#### INTEG-018 — HubSpot property mapping
+
+Core · target · **missing** · From INTEG-003
+
+**Requirement.** Editors map form data to HubSpot's existing contact, company and deal properties, and can associate related CRM work without disclosing unmapped answers.
+
+**Acceptance.**
+1. Properties and schema refresh on opening and on demand; sources include answers, FIELD-001 campaign/click-ID fields, LOGIC-003 calculations, LOGIC-004 scores/outcomes, form name, submission time and authenticated response link.
+2. Choices map as labels or per-option values, multiple choices as checkbox selections, dates as dates and numbers as numbers; Pencil creates no provider property.
+3. Saving refuses missing, read-only, calculated or incompatible properties and unmatched enumeration options, naming the property and reason.
+4. A later deleted/changed property produces an INTEG-015 failure with HubSpot's reason and a connection-page notice; the rest of the delivery is not silently dropped.
+5. Blank/skipped answers never clear a value; each property chooses overwrite, the default, or fill-only-when-empty.
+6. Optional company upsert matches a mapped domain and associates the contact; optional deals use a chosen pipeline/stage, and timeline notes contain the form name and response link, never unmapped answers.
+7. A typed-email example delivers mapped company and campaign values, preserves existing values for blanks, refuses missing properties by name and records a later-deleted property's provider error.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2630,11 +3681,14 @@ Core · target · **missing**
 
 Core · target · **missing**
 
-**Requirement.** An Admin connects a Salesforce org by OAuth under INTEG-016's custody, and an Editor attaches it to a form whose disclosure names Salesforce. INTEG-003's contact-key rules hold unchanged: the chosen email question's typed answer on a default anonymous form (or, when none is chosen or it is blank, a RESP-023 link-supplied email) is the key, RESP-006 holds inside Pencil, and a response with no email, or whose disclosure omits Salesforce, sends nothing and is recorded as skipped with its reason. The Editor chooses Lead or Contact as the record type: Pencil looks the email up case-insensitively, updates the matching Contact (if any) or else the matching Lead, choosing the most recently modified when several match and recording that choice on the delivery, and otherwise creates a Lead (with a mapped or default `Company`, which Salesforce requires). INTEG-003's mapping rules hold against Salesforce's own schema: the connection lists the record type's existing fields from the describe API, the Editor maps answers, FIELD-001 hidden fields including `utm_*`, LOGIC-003 calculations, LOGIC-004 scores and the response link to them (picklist answers only to matching picklist values), a missing, read-only or type-incompatible field is refused at save with its name, a field changed later is reported at delivery in INTEG-015 with Salesforce's error, blank answers never clear values, and deliveries are idempotent. Optionally the delivery adds the record as a member of a chosen campaign (or of the campaign named by a mapped `utm_campaign`) and opens a case. PART-001 early upsert works as in INTEG-003.
+**Requirement.** Admins connect Salesforce by OAuth under INTEG-016, and Editors attach disclosed forms using INTEG-003's typed/link-email, Pencil privacy, early-upsert and nothing-sent rules.
 
 **Acceptance.**
-1. the INTEG-003 journey against a Salesforce receiver fixture: a default anonymous form typing `lead@example.com` upserts one Lead carrying the mapped company and `utm_campaign=spring`, a second response in a different case updates that Lead, a blank email sends nothing, a disclosure omitting Salesforce sends nothing, a mapping to a field the fixture org lacks is refused at save naming the field, an email matching an existing Contact updates the Contact and creates no Lead, and a field-type mismatch introduced after saving is reported as a failed delivery with its reason.
-2. *Status: missing.*
+1. Editors choose Lead or Contact; matching is case-insensitive and prefers an existing Contact, otherwise a Lead. Multiple matches choose the most recently modified and record that choice; absent matches create a Lead with mapped or default company.
+2. The selected record schema lists existing fields; Editors map answers, hidden/campaign fields, calculations, scores and response link, with picklists restricted to matching options.
+3. Missing, read-only or incompatible fields are refused by name at save; later changes produce INTEG-015 provider errors. Blank answers preserve values and replay never duplicates a record.
+4. Optional delivery joins a chosen or campaign-mapped campaign and opens a case.
+5. Two differently cased typed emails update one Lead with mapped company/campaign data; a matching Contact creates no Lead. Blank email or omitted disclosure sends nothing, and missing fields or later type mismatches show their named refusal/failure.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2643,43 +3697,63 @@ Core · target · **missing**
 
 Core · target · **missing**
 
-**Requirement.** The sibling CRM Orbit receives contacts, deal notes and response links natively under INTEG-003's contact-key, mapping and nothing-sent rules: the chosen email question's typed answer on a default anonymous form, or a RESP-023 link-supplied email, creates or updates the Orbit contact by that email (case-insensitively), answers, FIELD-001 hidden fields including `utm_*`, calculations and scores are mapped to Orbit's existing contact and custom fields as listed from Orbit's API and refused at save when missing or mistyped, a response with no email or whose disclosure omits Orbit sends nothing, and RESP-006 holds inside Pencil; Orbit can launch a Pencil invitation from a contact or deal.
+**Requirement.** Orbit natively receives contacts, deal notes and response links using INTEG-003's contact-key, privacy, disclosure and nothing-sent rules.
 
 **Acceptance.**
-1. a Worker test with an Orbit receiver fixture sends a default anonymous response typing `lead@example.com` and finds one Orbit contact carrying the mapped company and `utm_campaign`, a second response in a different case updates it, a blank email sends nothing, a mapping to a missing custom field is refused at save naming it, and an Orbit-initiated invitation is accepted for one contact.
-2. *Status: missing.*
+1. Typed email on an anonymous form, or identified link email where allowed, upserts one case-insensitively matched Orbit contact; Pencil retains RESP-006 separation.
+2. Answers, hidden/campaign fields, calculations and scores map to Orbit's listed contact/custom schema; missing or mistyped fields are refused by name at save.
+3. Repeated differently cased emails update one contact with mapped company/campaign data; blank email sends nothing.
+4. Orbit can launch a Pencil invitation from a contact or deal; a one-contact launch is accepted.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
 #### INTEG-006 — Slack and Microsoft Teams
 
-Core · target · **partial**
+Core · target · **partial** · Register R-9
 
-**Requirement.** A form or alert rule (NOTIFY-005) posts to a Slack or Teams channel (and the sibling Nook) with the flow, time, a summary of non-sensitive answers when allowed, and an authenticated link; actions can be created from the message. This clause inherits ACT-009: connected Slack and Teams remind the action owner three calendar days before review, on the review date and weekly while unresolved, within WS-002 hours, deferring outside-hours work and stopping on the owner verdict, before those connections ship.
+**Requirement.** Forms and NOTIFY-005 alerts can post response summaries to Slack, Teams and Nook, and create Pencil actions from their messages.
 
 **Acceptance.**
-1. a Worker test with Slack and Teams receiver fixtures posts a new response, refuses sensitive fields, and creates an action from the Slack interaction payload after verifying its signature.
-2. The receiver proof also advances the review clock and verifies ACT-009 owner reminder timing, once-only delivery, sending-window deferral and cancellation after the owner verdict for both Slack and Teams.
-3. *Status: partial — see the Status row for implementation evidence and the remaining Gap.* Scope ruling — The original receiver Acceptance and ACT-009 owner-reminder inheritance remain unchanged.
-4. Nook delivery and action creation from Teams messages remain INTEG-006 requirements beyond the original receiver example.
-5. Teams message-action creation requires Pencil implementation and cannot be described solely as a missing provider account.
-6. Genuine Teams posting, a genuine signed Slack interaction and the Nook receiving connection remain named provider gaps until proved.
-7. The approved summary restrictions, explicit account mapping and authored action template, invalidation of old controls, replacement and restoration disarming, uncertain-outcome safeguards and transport bounds remain unchanged.
-8. Their implementation and asserting evidence are assessed separately. Chat-only answer-alert policy remains under NOTIFY-005. Chat-post replay interface custody is explicitly retained under INTEG-015. Status: partial.
+1. Messages contain form, time, an allowed non-sensitive-answer summary and an authenticated link; sensitive fields are refused.
+2. Slack interaction signatures are checked before a message creates an action.
+3. Slack and Teams remind the action owner three calendar days before review, on review day and weekly while unresolved, under ACT-009/ACT-010 and WS-002.
+4. Clock advancement shows once-only reminders, sending-window deferral and cancellation after the owner verdict for both platforms.
 
 **Evidence.** `tests/runtime/response-webhooks.worker.test.ts` — signed response events registration with `tests/runtime/chat-integrations-proof.ts` (Slack and Teams loopback posts, sensitive type refusal, signed action, calendar reminders and verdict stop); `tests/e2e/response-webhooks.spec.ts` with `tests/e2e/chat-settings-proof.ts` (Settings and form cards at 1440/390); `src/core/features/chat-integrations/`, `migrations/core/0069_chat_integrations.sql`; `docs/evidence/integ006-slack-live-2026-10-26.json` (live Slack receipt, `scripts/proof/chat-slack-live.mjs`, local only); the provider receipt was recorded locally before dd639754 and binds no runtime SHA; `tests/runtime/chat-integrations-proof.ts`:59 (authored flow and response-time metadata), `tests/runtime/chat-integrations-proof.ts`:75 (signed actor and channel refusals), `tests/runtime/chat-integrations-proof.ts`:89 (authored action fields), `tests/runtime/chat-integrations-proof.ts`:190 (old signed control refused); transport size and signature assertions at `tests/runtime/chat-integrations-proof.ts`:79, `tests/runtime/chat-integrations-proof.ts`:210 and `tests/runtime/chat-integrations-proof.ts`:221; the ten-second timeout remains unasserted
 **Gap.** Gap — Nook delivery and its receiving connection; Teams message-action creation; a genuine Teams post through a licensed Microsoft 365 tenant’s incoming webhook; a genuine signed Slack interaction through the owner-configured public Interactivity Request URL; asserting proof of the approved transport boundaries. INTEG-015 retains the unbuilt chat-post replay interface under the existing uip gate.
 
-#### INTEG-007 — Mailchimp and Mango
+#### INTEG-007 — Mailchimp and Mango members
 
-Core · target · **missing**
+Core · target · **missing** · From INTEG-007
 
-**Requirement.** An Admin connects a Mailchimp account by OAuth (or a sibling Mango workspace) under INTEG-016's custody, and an Editor attaches one Mailchimp audience or Mango list to a form whose published RESP-005 disclosure names that platform. **The typed email is the primary path:** on a form in the default anonymous mode (RESP-005, RESP-023), the Editor chooses one email question as the member key, and a released response (RESP-007) that answered it and holds GOV-007 email-marketing consent adds the audience member, or updates the existing one, by that email (trimmed, validated as an email and matched case-insensitively, as Mailchimp's subscriber hash of the lower-cased address matches it), so a visitor who types their email into an ordinary public link, a blog embed or a popup joins the audience with no `?email=` on the link. A RESP-023 identified response uses its link-supplied email only when no email question is chosen or the chosen one is left blank. Inside Pencil RESP-006 still holds: the typed email is stored only as that answer, the response gets no Pencil contact, participant or link-supplied identity, and RESP-005's disclosure says before the first answer that the email and mapped answers are sent to the business's Mailchimp (or Mango). When this clause activates, RESP-006's typed-answer amendment (INTEG-003) names email-platform connections as well as CRM connections. **The mapping is defined:** the connection lists the audience's existing merge fields (with their types, options and required flag), tags and interest groups from Mailchimp's API, or the list's fields and tags from Mango's API, refreshed on open and on demand; the Editor maps to merge fields any answer (a name question to `FNAME` and `LNAME`; a choice to a dropdown or radio merge field only through matching options; a date in the audience's date format; a number to a number; a phone to a phone), FIELD-001 hidden fields including `utm_*`, LOGIC-003 calculations, LOGIC-004 scores and outcomes, the form name and the submission time. A choice, multiple-choice, yes/no or ranking answer, or a LOGIC-004 quiz outcome, becomes one tag per selected option (its label or a per-option tag name) or sets the matching Mailchimp interest group, and the Editor can set fixed tags added to every delivery from that form (for example `newsletter-form`); a free-text answer never becomes a tag. A mapping to a merge field that does not exist or whose type or options do not fit the source, and an audience merge field marked required that no mapping fills, is refused when it is saved, and the refusal names the merge field and the reason; a tag the audience does not have yet is shown as new and is created only when the Editor confirms it at save. A merge field deleted or changed in Mailchimp after saving is reported at delivery in INTEG-015 with Mailchimp's error reason and named on the form's connection page. A blank or skipped answer (FLOW-020) never clears an existing merge field, and tags are only ever added, never removed. **Status and consent are precise:** a new member gets the status the Editor chose for the connection, subscribed or pending (Mailchimp's double opt-in, which sends Mailchimp's confirmation email), with GOV-007's consent time sent as the opt-in time and no IP address ever sent; an existing subscribed or pending member keeps that status and has its merge fields and tags updated; an existing member who unsubscribed or was cleaned, or that Mailchimp holds in a compliance state, is never resubscribed and is not changed, and INTEG-015 records that delivery as skipped with the reason ("unsubscribed", "cleaned" or Mailchimp's compliance reason). **Nothing is sent** for a response whose published revision's disclosure does not name the platform, for a response without matching GOV-007 email-marketing consent (reason "no marketing consent"), and for a response with neither a typed nor a link-supplied email (reason "no member email"), each recorded in INTEG-015 as skipped. Partial responses (PART-001) are never sent to an audience. One delivery per released response carries an idempotency key, so a retry or replay never adds a second member or repeats a tag; an edit (RESP-021) re-sends the mapped merge fields and adds any new tags. Mango lists take the same rules against Mango's own list fields and tags.
+**Requirement.** Admins connect Mailchimp by OAuth or Mango under INTEG-016; Editors attach one disclosed audience/list, with field and tag mapping governed by INTEG-019.
 
 **Acceptance.**
-1. a Worker test with a Mailchimp receiver fixture publishes a form in the default anonymous mode whose disclosure names Mailchimp, with an email question chosen as the member key, a name question mapped to `FNAME`, an interest choice mapped to tags, a fixed tag `newsletter-form` and a consent question bound to email marketing, and asserts that (1) a response typing `Reader@Example.com` with consent produces one member upsert by that email (the fixture receives the lower-case subscriber hash) carrying `FNAME`, the interest tag and `newsletter-form`, with status `subscribed`, and Pencil's stored response has no contact link or participant (RESP-006); (2) a second response typing the same email in a different case updates that member and adds no new one; (3) a response without consent and one that leaves the email blank each send nothing and record a skipped delivery naming "no marketing consent" and "no member email"; (4) a fixture member already unsubscribed stays unsubscribed with its merge fields unchanged, and that delivery is recorded as skipped naming "unsubscribed"; (5) a mapping to a merge field the fixture audience lacks is refused at save naming the field, and so is a form that leaves the fixture's required `LNAME` unmapped; (6) with pending status chosen, a new member arrives as `pending`; a blank name answer leaves the fixture's existing `FNAME` in place; a replayed delivery adds no second member; a merge field deleted in the fixture after saving yields a failed INTEG-015 delivery carrying Mailchimp's error reason; a RESP-023 identified response with `?email=` and no chosen email question upserts by the link-supplied email; a form using GOV-007's form-level opt-in, with no consent checkbox, delivers its typed email; and the same journey against a Mango receiver fixture adds one list member with the mapped field and tags.
-2. *Status: missing — no Mailchimp or Mango connection exists in `src/` or `tests/`.*
+1. A released response with GOV-007 consent upserts by the chosen typed email, trimmed, validated and case-insensitively matched; an identified link email is fallback only when no email question is chosen or it is blank.
+2. An anonymous form's typed email remains only its answer, with no Pencil contact, participant or link identity; disclosure names email and mapped-answer transfer before the first answer.
+3. New members take the chosen subscribed or pending/double-opt-in state, which sends Mailchimp confirmation mail for pending, with consent time and no IP address. Existing subscribed/pending members retain state while mapped fields/tags update.
+4. Unsubscribed, cleaned or compliance-held members remain entirely unchanged and are skipped with the provider's reason; they are never resubscribed.
+5. Missing disclosure sends nothing; absent consent or email is skipped as no marketing consent or no member email respectively. Partial responses never enter an audience.
+6. Replay never duplicates members/tags; edits update mapped fields and add tags. Mango applies the same rules to its own schema.
+7. Differently cased emails update one member; explicit-question or form-level email consent works, while no-consent and blank-email cases skip. An unsubscribed member stays unchanged, and choosing pending creates a pending member.
+
+**Evidence.** None.
+**Gap.** No Mailchimp or Mango connection exists in `src/` or `tests/`.
+
+#### INTEG-019 — Email-platform fields and tags
+
+Core · target · **missing** · From INTEG-007
+
+**Requirement.** Editors map form data into existing Mailchimp merge fields, tags and interests or Mango list fields/tags, refreshed with schema on opening and on demand.
+
+**Acceptance.**
+1. Sources include answers, hidden/campaign fields, calculations, scores/outcomes, form name and submission time; names map to first/last names, choices to matching dropdown/radio options, dates to the audience's format, numbers to numbers and phones to phones.
+2. Choice, multiple-choice, yes/no, ranking and quiz outcomes add one label/per-option tag per selected option or set matching interests; fixed form tags are supported, and free text never becomes a tag.
+3. Saving refuses absent or incompatible fields/options and required fields left unmapped, naming field and reason. New tags are shown as new and created only after confirmation at save; agent-created changes carry external and the company's policy decides their disposition.
+4. Later deleted/changed merge fields produce INTEG-015 provider errors and connection-page notices; blank/skipped answers preserve existing values, and tags are added but never removed.
+5. A consented member receives mapped first name, interest tag and fixed newsletter tag; required last-name omission and missing field are refused, and a blank name preserves the prior first name.
+6. A replay adds no member; deleting a mapped provider field produces its named failure. The same mapped-field/tag example adds one Mango list member.
 
 **Evidence.** None.
 **Gap.** No Mailchimp or Mango connection exists in `src/` or `tests/`.
@@ -2688,11 +3762,16 @@ Core · target · **missing**
 
 Core · target · **missing**
 
-**Requirement.** A form creates or updates a record per released response in a Notion database, an Airtable table or a sibling Cradle base, under INTEG-016's custody and with the same delivery tracking (INTEG-015). **The mapping is defined:** the connection lists the destination's existing columns and their types from Notion's database API, Airtable's base-schema API or Cradle's schema, refreshed on open and on demand, and the Editor maps to them any answer, FIELD-001 hidden fields including `utm_*`, LOGIC-003 calculations, LOGIC-004 scores and outcomes, the form name, the submission time, the response ID and the authenticated response link. Types are converted, never guessed: a choice goes to a single select (Notion `select` or `status`, Airtable single select) by option name, a multiple-choice answer to a multi-select (Notion `multi_select`, Airtable multiple selects), a yes/no to a checkbox, a number, rating, opinion scale or score to a number, a date to a date, an email, phone or URL answer to the matching typed column, text to text, and a FILE-001 upload to a text or URL column as authenticated links, never as a public attachment. A mapping to a column that does not exist, is computed (formula, rollup, lookup, created time) or whose type does not fit the source is refused when it is saved, and the refusal names the column and the reason; a choice whose options are not all present on the mapped select column is refused at save naming the missing options, unless the Editor turns on "add missing options" for that column, in which case Notion or Airtable (with `typecast`) creates them on first use. A column deleted, renamed or retyped after saving is reported at delivery in INTEG-015 with the platform's error reason and named on the form's connection page. Each record is keyed by a mapped Pencil response ID column, so a retry or replay never creates a second record and an edit (RESP-021) updates the same record; optionally the Editor chooses a match column (for example an email answer) to update an existing record instead of creating one. A blank or skipped answer never clears an existing value. Rate limits are honored: a 429 from Notion or Airtable is retried after the platform's `Retry-After` within INTEG-015's bounded retries.
+**Requirement.** A form creates or updates one record per released response in Notion, Airtable or Cradle, using INTEG-016 custody and INTEG-015 delivery tracking.
 
 **Acceptance.**
-1. a Worker test creates one record in each receiver fixture and retries a rate-limited Airtable call after its `Retry-After`; against the Airtable fixture, a form maps a choice to a single select, a multiple-choice answer to a multiple-selects column, a date and a number, and the created record carries those values; a choice with an option the select column lacks is refused at save naming the option, and is accepted and delivered with `typecast` once "add missing options" is on; a mapping to a column the fixture table lacks is refused at save naming it; an edited response updates the same record; a column deleted in the fixture after saving yields a failed INTEG-015 delivery carrying Airtable's error reason; and against the Notion fixture the record is a page whose title, `select` and `multi_select` properties carry the mapped answers.
-2. *Status: missing.*
+1. Destination columns/types refresh on opening and demand; sources include answers, hidden/campaign fields, calculations, scores/outcomes, form name, submission time, response ID and authenticated link.
+2. Choices map by option name to single/status selects, multiple choices to multiple selects, yes/no to checkboxes, numeric answers/scales/scores to numbers, dates to dates, email/phone/URL to matching types and text to text. Uploads become authenticated text/URL links, never public attachments.
+3. Save refuses absent, computed or incompatible columns by name/reason, and missing select options by name unless add missing options is enabled; then the provider creates options on first use.
+4. Columns later deleted, renamed or retyped produce provider errors in the delivery ledger and connection page; blank/skipped answers never clear values.
+5. A mapped response ID deduplicates retry/replay and preserves same-record updates on edit; an optional match column updates a pre-existing record instead.
+6. Provider rate-limit responses honor the requested retry delay within bounded retries.
+7. Each destination receives its typed record; Airtable retains choice/multiple-choice/date/number values and Notion retains title/single/multiple selects. Missing columns/options refuse by name, option creation enables delivery, rate-limited calls retry, edits update the same record and later deleted columns produce their provider error.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2701,58 +3780,56 @@ Core · target · **missing**
 
 Core · target · **missing**
 
-**Requirement.** Pencil publishes a Zapier app and Make and n8n modules with triggers (new response, updated response, partial saved, payment paid, approval decided) and actions (find response, create contact and send invitation), built on INTEG-010 and INTEG-011, and is a native source in the sibling Crank. DOCS-001 gives a tested recipe for each CRM in Typeform's catalog that Pencil does not connect natively (ActiveCampaign, Pipedrive, monday.com and Zoho CRM), mapping answers, hidden fields and the RESP-023 identity to that app's create-or-update action.
+**Requirement.** Pencil publishes Zapier, Make and n8n integrations over its webhook/API doors and serves as a native Crank source.
 
 **Acceptance.**
-1. a Worker test subscribes a REST-hook trigger the way Zapier does, receives a new-response event, and unsubscribes; the published app definition validates with the Zapier CLI in CI; each documented recipe's sample payload validates against the trigger's published output schema.
-2. *Status: missing.*
+1. Triggers cover new/updated responses, partial saves, paid payments and approval decisions; actions find responses, create contacts and send invitations.
+2. DOCS-001 recipes map answers, hidden fields and response identity into create/update actions for ActiveCampaign, Pipedrive, monday.com and Zoho CRM.
+3. A REST-hook subscription receives a new-response event and can unsubscribe; the published Zapier definition validates, and each recipe's sample matches the trigger output schema.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
 #### INTEG-010 — Signed response webhooks
 
-Core · target · **partial**
+Core · target · **partial** · Cites BASE-OPS-003
 
-**Requirement.** An operator registers HTTPS endpoints per form or workspace for response created, updated, deleted, partial saved, payment changed and approval decided events. Each delivery carries an event ID, timestamp and HMAC-SHA256 signature over the body, is retried with backoff for 24 hours on failure, records every attempt, can be replayed, and is disabled with an alert after sustained failure.
+**Requirement.** Operators register secure per-form or workspace destinations for response-created/updated/deleted, partial-save, payment-change and approval-decision events.
 
 **Acceptance.**
-1. a Worker test receives a signed event, verifies the signature, returns 500 twice and sees two retries with the same event ID, then replays it; a disabled endpoint shows its alert.
-2. *Status: partial — Owner-registered HTTPS endpoints per form or workspace emit signed `response.created` (a quarantined response only on release), `response.deleted`, `response.partial_saved` and `payment.changed` events.
-3. Each delivery is one `POST` carrying `Pencil-Event-Id`, `Pencil-Event-Type`, `Pencil-Timestamp` and `Pencil-Signature: sha256=<HMAC-SHA256 of the exact body>`, with no redirect followed, a ten-second limit and the response body ignored; a failed attempt is retried on the same event ID after 1, 5, 15 and 30 minutes and 1, 2, 4, 8, 16 and 24 hours, every attempt is recorded with its reason, an owner can replay an event, and an endpoint with ten consecutive failures across 24 hours is disabled with an in-app alert on every operator page.
-4. The signing secret is generated by Pencil, sealed, shown once, rotatable and excluded from backups (a restored endpoint sends nothing until a new secret is rotated in).
-5. A failing endpoint never blocks collection, and erasing a response removes its deliveries.
-6. Confirmed-action task webhooks keep shipping (`src/core/features/actions/webhook.ts`, `tests/runtime/actions-task.worker.test.ts`).
-7. Gap: `updated` events cannot be sent until RESP-021 (edit after submission) exists and `approval decided` events until WORK-002 exists; bodies carry identifiers only (no answer values) until GOV-004 masking exists; the alert shows in the operator pages, not by email.
-8. Evidence: `src/core/features/webhooks/`, `migrations/core/0063_response_event_webhooks.sql`, `tests/runtime/response-webhooks.worker.test.ts`, `tests/e2e/notifications.spec.ts`, `scripts/deployment-data.check.mjs` — “complete archive recovery retains exact data and attachment custody and refuses unsafe sources, archives and destinations without overwrites”, `docs/guide/results.md`.*
+1. Each delivery has a verifiable body signature, stable event ID and timestamp, with every attempt recorded, backoff retries for 24 hours and manual replay.
+2. Sustained failure disables the destination and shows an alert.
+3. A receiver can verify an event, fail twice, receive two retries with the same event ID and then a replay; disabled status and its alert are visible.
 
 **Evidence.** `src/core/features/webhooks/`, `migrations/core/0063_response_event_webhooks.sql`, `tests/runtime/response-webhooks.worker.test.ts`, `tests/e2e/notifications.spec.ts`, `scripts/deployment-data.check.mjs` — “complete archive recovery retains exact data and attachment custody and refuses unsafe sources, archives and destinations without overwrites”, `docs/guide/results.md`, `src/core/features/actions/webhook.ts`, `tests/runtime/actions-task.worker.test.ts`
 **Gap.** `response.updated` is now asserted through the single-use edit link in the existing signed-response-event registration. `approval decided` events (WORK-002) cannot be sent yet; bodies carry identifiers only until GOV-004 masking exists.
 
 #### INTEG-011 — Public REST API
 
-Core · target · **partial**
+Core · target · **partial** · Cites BASE-ACCESS-004, BASE-ROLE-001
 
-**Requirement.** A versioned REST API (`/api/v1`) with an OpenAPI document lets scoped API tokens list and read forms; create, update, duplicate and publish forms (`forms:write`: definitions in the same JSON as the import format, refused unless they pass FLOW-006 and FLOW-012 to FLOW-014, with publish creating an immutable FLOW-008 revision); manage hidden fields, themes (BRAND-002) and webhooks (INTEG-010); read and delete responses with filters and cursor pagination, create contacts and launch invitations, and fetch results aggregates; tokens are created by Admins with scopes and expiry, are hashed at rest, rate-limited, audited, and respect ROLE-002 form access and masking. For results-aggregate tokens without a response-read scope, this clause inherits RSLT-009's aggregate-only disclosure rule, before it ships.
+**Requirement.** A versioned, documented API gives scoped integration tokens the form, response, contact, invitation and result actions available to their granted role and form access.
 
 **Acceptance.**
-1. a Worker test creates a read-only token, pages through 250 responses, is refused a delete, and the OpenAPI document validates; a `forms:write` token creates a branching form and publishes it, and a definition with a dangling branch is refused with the step ID.
-2. For results-aggregate tokens without a response-read scope, it inherits the RSLT-009 aggregate-only fixture: the same figures are refused or complemented identically.
-3. *Status: partial — authenticated, session-only JSON routes serve the ledger and exports (`src/core/features/reporting/routes.ts`, `tests/runtime/ledger-filters.worker.test.ts`); there are no tokens, versioning or OpenAPI document.*
+1. The API lists/reads forms and creates, updates, duplicates and publishes import-format definitions; validation reports dangling branches by step and publication creates an immutable revision. It also manages hidden fields, themes and webhooks.
+2. Responses can be read/deleted with filters and cursor pages; contacts can be created, invitations launched and aggregates read. Admin-created tokens have scopes/expiry, hashed storage, rate limits and audit, with ROLE-002 masking/access.
+3. A read-only token can page through 250 responses and is refused deletion; a form-write token creates/publishes a branching form, while invalid definitions are refused. The published OpenAPI description validates.
+4. An aggregate-only token follows RSLT-009/RSLT-015 disclosure within a result: complementary figures and refusals equal those doors' aggregate-only cases.
 
 **Evidence.** `src/core/features/reporting/routes.ts`, `tests/runtime/ledger-filters.worker.test.ts`
 **Gap.** There are no tokens, versioning or OpenAPI document.
 
 #### INTEG-012 — MCP server for Claude and ChatGPT
 
-Core · target · **missing**
+Core · target · **missing** · Cites BASE-AGENT-001, BASE-AGENT-004, BASE-AGENT-005, BASE-AGENT-006, BASE-AGENT-007 · Register R-11
 
-**Requirement.** An authenticated MCP endpoint lets an operator's Claude or ChatGPT client list forms, draft a form (AI-001 rules: never published by the tool), query results and crosstabs with ANLY-005 suppression, read cited excerpts, and propose an invitation or action that the operator confirms in Pencil. Tool calls carry the operator's identity and role. Within one tool result, this clause inherits RSLT-009's aggregate-only disclosure rule, before it ships.
+**Requirement.** An authenticated MCP client can do Pencil's form and evidence jobs under the company's policy; INTEG-012 adds suppression and draft-to-outreach workflows to the Base agent door.
 
 **Acceptance.**
-1. a Worker test connects an MCP client over OAuth, drafts a form, queries a suppressed cohort and receives no excerpts, and a proposed invitation stays unsent until confirmed in the app.
-2. Within one tool result, it inherits the RSLT-009 aggregate-only fixture: the same figures are refused or complemented identically.
-3. *Status: missing.*
+1. Tools list forms, draft under AI-001, query results/crosstabs with ANLY-005 suppression, read permitted cited excerpts and prepare invitations or actions.
+2. Drafting carries standard; publication or invitations carry external, and an action carries its server-computed classes. The company's policy decides each call, including whether a person confirms it in Pencil.
+3. Within one result, aggregate-only disclosure follows RSLT-009/RSLT-015: complementary figures receive identical suppression/refusal.
+4. Under the held company policy, an OAuth client drafts a form, receives no excerpts for a suppressed cohort and prepares an invitation without sending it until the policy's person confirms the exact action in Pencil.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2761,12 +3838,12 @@ Core · target · **missing**
 
 Core · target · **partial**
 
-**Requirement.** Actions (ACT-003) can be sent to Linear, Jira, Asana, GitHub Issues and the sibling Vector as well as Todoist and a generic webhook, with the same create-or-get idempotency, confirmed payload and delivery states, and the linked task's status is read back for ACT-009. This clause inherits ACT-009: the linked external task status is shown on the action and refreshed, before status read-back ships; task status never sets the Pencil verdict.
+**Requirement.** Pencil actions can create-or-get linked work in Linear, Jira, Asana, GitHub Issues, Vector, Todoist or a generic webhook destination.
 
 **Acceptance.**
-1. a Worker test sends one action to each receiver fixture, repeats delivery without creating a second task, and reads back a closed status.
-2. The receiver proof also refreshes a changed external status on the action page for ACT-009 while leaving the Pencil verdict unset.
-3. *Status: partial — Todoist and the generic webhook destination ship with idempotent delivery (`src/core/features/actions/todoist.ts`, `src/core/features/actions/webhook.ts`, `tests/runtime/actions-task.worker.test.ts`).*
+1. Each destination receives the confirmed payload with idempotent delivery states; repeat delivery creates no second task.
+2. ACT-009/ACT-010 reads the linked task's status back onto the action and refreshes it after changes, including closed state.
+3. The external status never sets Pencil's own outcome verdict.
 
 **Evidence.** `src/core/features/actions/todoist.ts`, `src/core/features/actions/webhook.ts`, `tests/runtime/actions-task.worker.test.ts`
 **Gap.** Only the behavior named in Evidence ships; the rest of the clause is not built.
@@ -2775,56 +3852,72 @@ Core · target · **partial**
 
 Core · target · **missing**
 
-**Requirement.** HappyToHelp, Zendesk, Intercom, Help Scout, Stall and Shopify connect as event sources for PROG-002 through their signed webhooks, and Buoy receives program scores per account.
+**Requirement.** HappyToHelp, Zendesk, Intercom, Help Scout, Stall and Shopify provide PROG-002 event sources, while Buoy receives per-account program scores.
 
 **Acceptance.**
-1. a Worker test verifies each source's webhook signature, refuses an unsigned event, and sends an account score to a Buoy receiver fixture.
-2. *Status: missing.*
+1. Each source's signed webhook is verified and unsigned events are refused.
+2. An account score can be delivered to Buoy.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
 #### INTEG-015 — Integration delivery ledger
 
-Core · target · **partial**
+Core · target · **partial** · Cites BASE-OPS-004
 
-**Requirement.** Every outbound integration delivery (rows, records, contacts, messages, files, webhooks, tasks) has a durable state (pending, confirmed, unknown, failed), an idempotency key, every attempt with its reason, bounded retries, a replay action and an in-app alert on failure; a broken connection never blocks collection, and operators see exactly which response IDs were not delivered.
+**Requirement.** Operators can trace each response's outbound rows, records, contacts, messages, files, webhooks and tasks independently of ongoing collection.
 
 **Acceptance.**
-1. a Worker test breaks a Sheets connection, collects five responses, sees five failed deliveries and an alert, repairs the connection, replays, and asserts five confirmed rows with no duplicates.
-2. *Status: partial — Response-event webhook deliveries and confirmed-action task deliveries share one operator ledger (Settings → Delivery ledger, `GET /api/app/integration-deliveries`): each shows its state, idempotency key (the event ID or the action's task key), every attempt with its HTTP status and reason, and the exact response IDs not delivered per endpoint; a failure raises an in-app alert, an owner replays a webhook event with the same key, and a broken endpoint never blocks collection.
-3. The webhook/task recovery journey uses the Sheets acceptance pattern: five responses collected while a receiver is down are five failed deliveries with an alert, and after repair and replay five confirmed deliveries with no duplicate row or delivery.
-4. Google Sheets rows, attempt histories, bounded read retries, failure alerts and replay now share this ledger, with five failed/repaired rows proved by the Sheets receiver.
-5. Gap: Other rows, records, contacts and files destinations are not built; SMS invitations retain their per-invitation screen (INTEG-001 to INTEG-009 own them); invitation and reminder mail deliveries (DIST-006) keep their own per-invitation screen and are not joined into this ledger; the alert shows in the operator pages, not by email.Evidence: `tests/runtime/google-sheets.worker.test.ts`, `src/core/features/webhooks/ledger.ts`, `src/core/features/webhooks/deliveries.ts`, `tests/runtime/response-webhooks.worker.test.ts`, `tests/runtime/actions-task.worker.test.ts`, `tests/e2e/response-webhooks.spec.ts`, `src/core/features/actions/deliveries.ts`.* This clause includes INTEG-006 Slack and Teams delivery recovery.
-6. Its operator interface must expose the existing owner-only failed and unknown-post replay route, retain the original idempotency key and explicit replay reason, and preserve confirmed, stale and disarmed refusals.
-7. The chat-post replay interface remains unbuilt and subject to the existing uip gate.
-8. This addition accepts no completion and leaves the other INTEG-015 gaps unchanged.
+1. Every delivery retains pending, confirmed, unknown or failed state, its idempotency key and every attempt/reason, with bounded retries, replay and an in-app failure alert.
+2. Operators see the exact undelivered response IDs; a broken connection never prevents collecting responses.
+3. With Sheets unavailable, five responses collect and show five failures plus an alert; repair/replay yields five confirmed rows without duplicates.
 
 **Evidence.** `src/core/features/webhooks/ledger.ts`, `src/core/features/webhooks/deliveries.ts`, `tests/runtime/response-webhooks.worker.test.ts`, `tests/runtime/actions-task.worker.test.ts`, `tests/e2e/response-webhooks.spec.ts`, `src/core/features/actions/deliveries.ts`; `tests/runtime/google-sheets.worker.test.ts` (five failed Sheets rows, alert, repair and replay and no duplicates)
 **Gap.** Other row, record, contact, message and file destinations (INTEG-002 to INTEG-009), and email and SMS invitations (DIST-006), are not in the shared ledger. Google Sheets rows, attempts, failure alerts and replay now join webhook and task deliveries. The chat-post replay interface remains unbuilt and subject to the existing uip gate.
 
 #### INTEG-016 — Connection custody
 
-Core · target · **partial**
+Core · target · **partial** · Cites BASE-SECRET-001, BASE-DATA-004
 
-**Requirement.** Connections use OAuth with least-privilege scopes where the provider offers it, store secrets encrypted with an installation key bound to the setting's identity, can be tested, rotated and revoked from their page, are excluded from data exports, and update the disclosure (RESP-005) of every attached form automatically.
+**Requirement.** Each provider connection has one managed custody page and automatically updates the disclosure of every attached form.
 
 **Acceptance.**
-1. a Worker test connects, tests, revokes and reconnects a Sheets connection, proves the export excludes the token, and the attached form's disclosure gains and loses Google Sheets.
-2. *Status: partial — AI and task connections are set on their pages, stored with authenticated encryption, tested without echoing the key, and removable (`src/core/platform/config/connections.ts`, `tests/e2e/actions.spec.ts`, `tests/e2e/analysis.spec.ts`).*
+1. Connections use least-privilege OAuth where offered; secrets are encrypted under an installation key bound to the setting's identity and excluded from data exports.
+2. Operators can test, rotate and revoke the connection from its page.
+3. Connecting, testing, revoking and reconnecting Sheets adds/removes Google Sheets in attached-form disclosure while exports contain no provider token.
 
 **Evidence.** `src/core/platform/config/connections.ts`, `tests/e2e/actions.spec.ts`, `tests/e2e/analysis.spec.ts`
 **Gap.** Only the behavior named in Evidence ships; the rest of the clause is not built.
 
-#### INTEG-017 — Ad conversion events
+#### INTEG-017 — Server-side ad conversion delivery
 
-Core · target · **partial**
+Core · target · **partial** · From INTEG-017
 
-**Requirement.** An Admin connects Meta (Conversions API: dataset or pixel ID and a system-user token), Google Analytics 4 (Measurement Protocol: measurement ID and API secret) and Google Ads (click-conversion upload through the Google Ads API with Google sign-in and a chosen conversion action) under INTEG-016's custody, and an Editor turns conversion events on per form. Pencil sends `completed` when a response is released (RESP-007, or RESP-018 on quarantine release) and `paid` when PAY-001 records a verified payment, with its amount in USD. Each event carries only the event name and time, the form's public ID, a random event ID for platform deduplication (also passed to the embed's host-page event), the click-ID fields the form declared under FIELD-001 (`fbclid` as Meta's `fbc`; `gclid`, `gbraid`, `wbraid` for Google), whether they arrived on the link or were forwarded from the landing page by a script embed (DIST-021), the declared campaign fields (`utm_*`), the GA4 client ID when a script embed reads it from the host's `_ga` cookie (`data-pencil-ga4="cookie"`) or receives it in a `hidden` call (DIST-021), or the link carries it in a declared `ga_client_id` field (FIELD-001), and for `paid` the value; it never carries answer text, response IDs or scores. Hashed identifiers (SHA-256 of normalized email and phone, as Meta `em`/`ph` and Google Ads enhanced conversions) are sent only from an identified form (RESP-023). On every form an event is sent only when the published revision's RESP-005 disclosure names that destination, and a respondent whose browser sends Global Privacy Control (`Sec-GPC: 1`) is treated as opting out of that sharing under CCPA/CPRA, so no event is sent for that response. On an anonymous form, click IDs are held only in the delivery record and purged once the delivery is confirmed or terminally failed, never stored on the response (RESP-006). A response with no GA4 client ID (a direct link, QR code, email or SMS visit, or an embed whose snippet neither reads `_ga` nor receives a client ID in a `hidden` call) sends no GA4 event: Pencil never invents a client ID, because a random one adds a GA4 user with no attribution. The delivery list records that GA4 delivery as skipped with the reason "no GA4 client ID", and Meta and Google Ads events for the same response, attributed through `fbclid`, `gclid`, `gbraid` or `wbraid`, are unaffected. Deliveries are tracked under INTEG-015 with retries, replay and each platform's error reason, and each connection's test action sends to Meta's test event code or the GA4 validation endpoint. For embeds, the script embed's `pencil:completed` host-page event (DIST-002) is documented as a Google Tag Manager trigger: when the snippet sets `data-pencil-datalayer`, it also pushes `{event: 'pencil_completed', pencil_form, pencil_event_id}` to `window.dataLayer`, and DOCS-001 gives the GTM Custom Event recipe. No answer or response ID ever reaches the host page.
+**Requirement.** Admins connect Meta Conversions API, GA4 Measurement Protocol and Google Ads click-conversion upload under INTEG-016; Editors enable them per form. Google Ads uses Google sign-in and a chosen conversion action; provider field encodings are in the operating rules.
 
 **Acceptance.**
-1. a Worker test with Meta Conversions API, GA4 Measurement Protocol and Google Ads receiver fixtures submits a response opened with `?fbclid=…&gclid=…&utm_campaign=spring` on a form whose disclosure names all three, and asserts exactly one Meta event, one GA4 event and one Google Ads click conversion per submission, with the declared click IDs, one shared event ID and no answer text; a `paid` event carries the verified amount; a response sent with `Sec-GPC: 1` produces no event; an anonymous form whose disclosure does not name Meta produces no event, and its stored response holds no click ID; a hashed email appears only for an identified form; a direct-link response opened with `?gclid=…` and no client ID produces one Google Ads click conversion, no GA4 event and a skipped GA4 delivery naming the reason, while the same link with `&ga_client_id=…` produces one GA4 event carrying that client ID; a browser journey on a host fixture at `/landing?gclid=G1&fbclid=F1` whose script embed forwards both produces one Google Ads click conversion carrying `G1` and one Meta event whose `fbc` is built from `F1`, and the same host page with a `_ga` cookie and `data-pencil-ga4="cookie"` produces one GA4 event carrying that cookie's client ID; a browser journey on a host fixture with a `dataLayer` sees one `pencil_completed` push carrying no answer or response ID.
-2. *Status: partial — the script embed already dispatches a bubbling `pencil:completed` event on the host page with no answers or identifiers (`src/core/features/embedding/script.ts`, `tests/e2e/script-embed.spec.ts`); there is no `dataLayer` push, event ID or server-side conversion connection.*
+1. Released responses, including quarantine releases, emit completed events; PAY-001 verified payments emit paid events carrying USD amount. Each destination receives one event per submission with a shared random deduplication ID.
+2. Only event/time, public form ID, declared click/campaign fields, eligible GA4 client ID and paid value travel; answer text, response IDs and scores never do. Click IDs may arrive by link or DIST-024 forwarding.
+3. Hashed normalized email/phone identifiers reach Meta/Google Ads only for an identified RESP-023 form.
+4. A destination receives no event unless named in that revision's RESP-005 disclosure, and Global Privacy Control opts the response out of all conversion sharing.
+5. Anonymous click IDs exist only in delivery custody, never on the response, and are purged on confirmation or terminal failure.
+6. Without a genuine GA4 client ID from the declared link field, opted-in host cookie or embed hidden input, GA4 is skipped as no GA4 client ID; one is never invented. Meta/Ads attribution for the same response remains unaffected.
+7. Declared campaign and platform click IDs yield the matching Meta/GA4/Ads events; verified payment amount survives, missing disclosure/privacy-control refuses sharing, and the same direct ad link sends Ads alone without a client ID or adds GA4 when a declared client ID is present.
+
+**Evidence.** `src/core/features/embedding/script.ts`, `tests/e2e/script-embed.spec.ts`
+**Gap.** There is no `dataLayer` push, event ID or server-side conversion connection.
+
+#### INTEG-020 — Embed conversion events and diagnostics
+
+Core · target · **partial** · From INTEG-017
+
+**Requirement.** Script embeds expose a privacy-preserving completion trigger for host-page analytics, with conversion connection diagnostics tracked alongside server delivery.
+
+**Acceptance.**
+1. The host completion event shares INTEG-017's deduplication ID; enabling the data-layer option emits one completed push containing only the event name, public form ID and event ID, never answers or response IDs.
+2. DOCS-001 documents the Google Tag Manager Custom Event recipe.
+3. An embed forwarding the host's Google/Meta click IDs produces the matching attributed conversions; its opted-in host analytics cookie supplies GA4's existing client ID.
+4. Deliveries use INTEG-015 retries/replay and each provider's error reason; connection test actions send to Meta's test code or GA4's validation service.
 
 **Evidence.** `src/core/features/embedding/script.ts`, `tests/e2e/script-embed.spec.ts`
 **Gap.** There is no `dataLayer` push, event ID or server-side conversion connection.
@@ -2833,14 +3926,13 @@ Core · target · **partial**
 
 #### MOB-001 — Operator app on a phone
 
-Core · target · **partial**
+Core · target · **partial** · Cites BASE-ACCESSIBILITY-001
 
-**Requirement.** Every operator page (dashboard, builder, results, ledger, inbox, actions, settings) works at 360 CSS pixels wide with touch targets of at least 44 pixels and no horizontal scroll.
+**Requirement.** Pencil's operator workflow remains usable on a narrow touch screen, in addition to the shared accessibility bar.
 
 **Acceptance.**
-1. browser journeys at phone width build and publish a form, review a response and approve a submission.
-2. *Status: partial — Axe and keyboard checks cover the operator shell, builder and reports at declared viewports (`tests/e2e/accessibility-foundation.spec.ts`).
-3. The submission inbox ships under WORK-001; complete 360-pixel journeys over every operator page and approval flows remain unproved.*
+1. Dashboard, builder, results, ledger, inbox, actions and settings fit 360 CSS pixels with no horizontal scroll and touch targets at least 44 pixels.
+2. On a phone, an operator can build/publish a form, review a response and approve a submission.
 
 **Evidence.** `tests/e2e/accessibility-foundation.spec.ts`
 **Gap.** The submission inbox ships under WORK-001. Complete 360-pixel journeys over every operator page remain unproved, and WORK-002 approval flows remain unbuilt.
@@ -2849,24 +3941,26 @@ Core · target · **partial**
 
 Core · target · **missing**
 
-**Requirement.** An installable progressive web app collects responses on a phone or tablet with no connection (events, field visits, kiosks), stores them encrypted on the device, and submits them with their RESP-012 idempotency keys when back online so retries never duplicate; the device shows how many responses await upload and the operator sees each response's capture time and upload time.
+**Requirement.** An installable progressive web app collects responses offline on phones/tablets for field visits, events and kiosks.
 
 **Acceptance.**
-1. a browser journey goes offline, completes three responses, comes back online, and the ledger shows exactly three with capture times earlier than upload times.
-2. *Status: missing.*
+1. Responses are encrypted on device and uploaded after reconnection using RESP-012 keys, so retries create no duplicate.
+2. The device shows pending-upload count; the ledger distinguishes each response's capture time from upload time.
+3. Three responses completed offline arrive exactly once after reconnection, each with capture earlier than upload.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
 #### MOB-003 — Native iOS and Android apps
 
-Core · target · **missing**
+Core · target · **missing** · Cites BASE-ACCESS-001, BASE-SIGNIN-001 · Register R-3
 
-**Requirement.** Native apps for operators offer push notifications for new responses, alerts (NOTIFY-005) and approvals (WORK-002), results and inbox views, offline kiosk collection (MOB-002), and sign-in through the installation's own authentication or SSO, published in the App Store and Google Play under the owner's account.
+**Requirement.** Native operator apps provide response/alert/approval push, results and inbox views, offline kiosk collection and installation-native or SSO sign-in; store publication is field proof.
 
 **Acceptance.**
-1. a Maestro flow runs in CI on an iOS Simulator and an Android Emulator against a local installation: it signs in, receives the push the installation sends for a new response (through APNs and FCM receiver fixtures, delivered to the devices with `xcrun simctl push` and `adb`), and approves a submission from the notification.
-2. *Status: missing.*
+1. Both iOS and Android receive a new-response push and open it to approve the submission.
+2. Push paths include new responses, NOTIFY-005 alerts and WORK-002 approvals; offline kiosk collection follows MOB-002.
+3. An iOS simulator and Android emulator against a local installation exercise sign-in, provider-shaped push delivery and approval from the notification.
 
 **Evidence.** None.
 **Gap.** No code yet.
@@ -2875,127 +3969,228 @@ Core · target · **missing**
 
 #### AGENT-001 — Study designer
 
-Core · push-further · **partial**
+Core · push-further · **partial** · Cites BASE-AGENT-007, BASE-AGENT-008
 
-**Requirement.** From a business question ("why are trial users not converting?") and optional context (prior forms, findings, CRM segments), the agent drafts a short study: the decision it informs, hypotheses, questions with neutral wording, a branching plan, the audience and channel, the sample needed for a stated margin of error, and the analysis plan. It flags leading, double-barreled, loaded and unbalanced questions and invalid branches before the operator sees the draft. *Human control:* the operator edits and approves the draft, audience and analysis plan; nothing is published or sent by the agent.
+**Requirement.** The specialist designs a short neutral study from a business question and available context.
 
 **Acceptance.**
-1. a Worker test with the AI receiver fixture turns a question into a draft whose graph validates, whose bias check flags a planted leading question, and which stays a draft until an operator publishes it.
-2. *Status: partial — the agent proposes guarded sharper or broader rewrites of saved questions that apply only on acceptance, and Studio drafts an editable decision, hypotheses, audience/channel and analysis plan with validated questions, deterministic advisory bias flags and finite-population sample sizes (`src/core/features/analysis/rewrites.ts`, `src/core/features/studio/`, `tests/runtime/feedback-rewrites.worker.test.ts`, `tests/runtime/studio-scenario.ts`, `tests/e2e/studio-journey.ts`).
-3. Context includes typed text and prompts of explicitly selected prior forms only; prior findings and CRM segments as context remain unbuilt.
-4. Provider semantic quality and neutral wording are not established by fixture proof; advisory flags never rewrite questions.*
+1. From a business question ("why are trial users not converting?") and optional context (prior forms, findings, CRM segments), the agent drafts a short study: the decision it informs, hypotheses, questions with neutral wording, a branching plan, the audience and channel, the sample needed for a stated margin of error, and the analysis plan.
+2. It flags leading, double-barreled, loaded and unbalanced questions and invalid branches before the operator sees the draft.
+3. Editing the draft and plan carries standard; publication and invitations carry external with the recipient and audience facts.
+4. The company’s policy decides each call, and the operator can edit the study.
+5. Under the held company policy, With the AI receiver fixture, the specialist turns a question into a draft whose graph, validates, whose bias check flags a planted leading question, and which stays a draft until an operator publishes it.
 
 **Evidence.** `tests/runtime/feedback-rewrites.worker.test.ts` — rewrite requests preserve the source and draft until explicit guarded acceptance, with real provider calls, failure and usage attribution; `tests/e2e/analysis.spec.ts` — an operator requests analysis, reads a quoted finding back to its response, sees a small theme withheld, turns the recommendation into an action and retries a failed run; Studio generation runs inside both tagged tests (`tests/runtime/studio-scenario.ts`, `tests/e2e/studio-journey.ts`)
 **Gap.** Studio drafts an editable decision, hypotheses, audience/channel and analysis plan with validated questions, deterministic advisory bias flags and finite-population sample sizes. Context includes typed text and prompts of explicitly selected prior forms only; prior findings and CRM segments as context remain unbuilt. Provider semantic quality and neutral wording are not established by fixture proof; advisory flags never rewrite questions.
 
 #### AGENT-002 — Themes and contradictions
 
-Core · push-further · **partial**
+Core · push-further · **partial** · Cites BASE-AGENT-007, BASE-AGENT-008
 
-**Requirement.** Over a fixed evidence set (ANLY-002), the agent codes open text into themes with exact excerpts and also finds contradictions: cohorts whose open text disagrees with their scores, themes that reverse between revisions, collectors or segments, and questions whose answers conflict within one response. Each contradiction cites the response IDs on both sides and is suppressed below the disclosure threshold. *Human control:* findings are labeled as analysis; operators accept or dismiss each.
+**Requirement.** The specialist finds evidence-backed themes and contradictions in a fixed evidence set.
 
 **Acceptance.**
-1. a Worker test seeds promoters whose open text complains about price and asserts one contradiction citing both cohorts with verified excerpts, and no contradiction in a suppressed cohort.
-2. *Status: partial — evidence-checked themes, exact excerpts and suppression ship, and strict optional contradiction output validates both sides against this run, verifies exact excerpts, withholds the entire finding if either side is too small, and shares persisted accept/dismiss decisions with themes; text and explicitly selected numeric scores can support a finding (`src/core/features/analysis/runner.ts`, `src/core/features/analysis/validate.ts`, `tests/runtime/analysis-output.worker.test.ts`, `tests/e2e/analysis.spec.ts`).
-3. Cross-revision, collector and segment comparison evidence and systematic question-conflict discovery remain unbuilt; model semantic accuracy is not established by fixture proof.*
+1. Over a fixed evidence set (ANLY-002), the agent codes open text into themes with exact excerpts and also finds contradictions: cohorts whose open text disagrees with their scores, themes that reverse between revisions, collectors or segments, and questions whose answers conflict within one response.
+2. Each contradiction cites the response IDs on both sides and is suppressed below the disclosure threshold.
+3. Findings are labelled as analysis.
+4. Accepting or dismissing an agent finding carries standard; the company’s policy decides the call.
+5. Through the public door, the specialist seeds promoters whose open text complains about price and asserts one contradiction citing both cohorts with verified excerpts, and no contradiction in a suppressed cohort.
 
 **Evidence.** `tests/runtime/analysis-output.worker.test.ts` — findings rank themes by recomputed support, quote exact stored excerpts, link every figure to its responses and withhold a theme below the disclosure threshold; `tests/e2e/analysis.spec.ts` — operator analysis and finding review
 **Gap.** Strict optional contradiction output validates both sides against this run, verifies exact excerpts, withholds the entire finding if either side is too small, and shares persisted accept/dismiss decisions with themes. Text and explicitly selected numeric scores can support a finding. Cross-revision, collector and segment comparison evidence and systematic question-conflict discovery remain unbuilt; model semantic accuracy is not established by fixture proof.
 
 #### AGENT-003 — Follow-up that settles it
 
-Core · push-further · **missing**
+Core · push-further · **missing** · Cites BASE-AGENT-007, BASE-AGENT-008
 
-**Requirement.** For an accepted contradiction or an insufficient-evidence result, the agent proposes the smallest discriminating follow-up: two to five questions, the cohort to ask (only contacts who consented to follow-up, or a new public collector), and the result that would settle each hypothesis. *Human control:* the operator approves the follow-up form and its audience before anything is published or sent; the follow-up links to the finding it tests.
+**Requirement.** The specialist proposes the smallest follow-up that settles a contradiction or evidence gap.
 
 **Acceptance.**
-1. a Worker test proposes a follow-up for a seeded contradiction, targets only consenting contacts, and launches nothing until approval.
-2. *Status: missing.*
+1. For an accepted contradiction or an insufficient-evidence result, the agent proposes the smallest discriminating follow-up: two to five questions, the cohort to ask (only contacts who consented to follow-up, or a new public collector), and the result that would settle each hypothesis.
+2. Drafting the follow-up carries standard; publishing and sending carry external with audience facts.
+3. The company’s policy decides each call.
+4. The follow-up links to the finding it tests.
+5. Under the held company policy, the specialist uses the public door, proposes a follow-up for a seeded contradiction, targets only consenting contacts, and launches nothing until approval.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
 #### AGENT-004 — Finding into owned work, and the outcome checked
 
-Core · push-further · **partial**
+Core · push-further · **partial** · Cites BASE-AGENT-007, BASE-AGENT-008
 
-**Requirement.** After an operator accepts a finding as an action (ACT-001), the agent drafts the task for the owner's tool (INTEG-013), watches its status, proposes a comparable re-measurement (the same questions to a comparable cohort after the change ships), and reports the before/after difference with its margin of error and whether it exceeds noise. *Human control:* the owner confirms the task payload (ACT-006), approves the re-survey, and sets the verdict themselves (ACT-005); the agent never marks an action effective.
+**Requirement.** The specialist carries an accepted finding through an owned task and comparable measurement.
 
 **Acceptance.**
-1. a Worker test accepts a finding, sends the confirmed task, reads it closed, proposes and (after approval) launches the re-survey, and reports a difference with its interval while the verdict stays unset.
-2. *Status: partial — owned actions, confirmed task payloads and human-interpreted comparable measurements ship (`src/core/features/actions/service.ts`, `tests/runtime/actions-measurement.worker.test.ts`).*
+1. After an operator accepts a finding as an action (ACT-001), the agent drafts the task for the owner's tool (INTEG-013), watches its status, proposes a comparable re-measurement (the same questions to a comparable cohort after the change ships), and reports the before/after difference with its margin of error and whether it exceeds noise.
+2. Task dispatch and the re-survey carry external; recording a relied-on verdict carries commitment.
+3. The company’s policy decides each agent call.
+4. After a person sets a verdict, the record attributes that verdict to that person.
+5. Under the held company policy, the specialist uses the public door, accepts a finding, sends the confirmed task, reads it closed, proposes and (after approval) launches the re-survey, and reports a difference with its interval while the verdict stays unset.
 
 **Evidence.** `src/core/features/actions/service.ts`, `tests/runtime/actions-measurement.worker.test.ts`
 **Gap.** Only the behavior named in Evidence ships; the rest of the clause is not built.
 
 #### AGENT-005 — Feedback-loop sentinel
 
-Core · push-further · **partial**
+Core · push-further · **partial** · Cites BASE-AGENT-007, BASE-AGENT-008
 
-**Requirement.** The agent watches integration deliveries, mail and SMS bounces, completion and drop-off, quarantine volume and evidence gaps, and explains in plain language what broke ("12 responses since Tuesday never reached the HubSpot list because the token expired"), which response IDs or tasks are affected, and a bounded repair plan. *Human control:* replay, reconnection, recipient changes and any disclosure outside the form require operator approval; affected IDs are shown only to authorized operators.
+**Requirement.** The specialist explains broken feedback loops and proposes a bounded repair.
 
 **Acceptance.**
-1. a Worker test breaks a connection and a reminder schedule, and the sentinel reports both with the exact affected IDs and a replay that runs only after approval.
-2. *Status: partial — task delivery failures, completion-path metrics and analysis attention are visible (`src/core/features/actions/deliveries.ts`, `src/core/features/responses/completionMetrics.ts`, `src/core/features/analysis/attention.ts`).*
+1. The agent watches integration deliveries, mail and SMS bounces, completion and drop-off, quarantine volume and evidence gaps, and explains in plain language what broke ("12 responses since Tuesday never reached the HubSpot list because the token expired"), which response IDs or tasks are affected, and a bounded repair plan.
+2. Replays and outside disclosures carry external; credential reconnection carries security and gated where the provider keeps consent for a person; recipient-authority changes carry access.
+3. The company’s policy decides each call.
+4. The affected IDs are available through the operator’s form access.
+5. Under the held company policy, the specialist uses the public door, breaks a connection and a reminder schedule, and the sentinel reports both with the exact affected IDs and a replay that runs only after approval.
 
 **Evidence.** `src/core/features/actions/deliveries.ts`, `src/core/features/responses/completionMetrics.ts`, `src/core/features/analysis/attention.ts`
 **Gap.** Only the behavior named in Evidence ships; the rest of the clause is not built.
 
 #### AGENT-006 — Adaptive probe
 
-Core · push-further · **missing**
+Core · push-further · **missing** · Cites BASE-AGENT-007, BASE-AGENT-008
 
-**Requirement.** On an open-text question an operator marks probe-able, the agent may ask one generated follow-up ("You mentioned setup was slow; which step took longest?") based only on that answer, labeled to the respondent as automatically generated, disclosed in RESP-005, skippable, and stored with the exact generated prompt. *Human control:* the operator enables probing per question, sets topics it must not raise, and reviews all generated prompts; probes never ask for identity or sensitive data.
+**Requirement.** An enabled open-text question can offer one disclosed, skippable generated follow-up.
 
 **Acceptance.**
-1. a browser journey with the AI receiver fixture answers a probe-able question, sees one labeled follow-up, and the ledger stores the generated prompt and answer; a fixture prompt asking for an email is refused before display.
-2. *Status: missing.*
+1. On an open-text question an operator marks probe-able, the agent may ask one generated follow-up ("You mentioned setup was slow; which step took longest?") based only on that answer, labeled to the respondent as automatically generated, disclosed in RESP-005, skippable, and stored with the exact generated prompt.
+2. Per-question configuration keeps the topics probing must not raise.
+3. Generating a respondent-facing probe carries external; the company’s policy decides whether it runs or waits for review.
+4. Probe content asks for neither identity nor sensitive data.
+5. With the AI receiver fixture, the specialist answers a probe-able, question, sees one labeled follow-up, and the ledger stores the generated prompt and answer; a fixture prompt asking for an email is refused before display.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
 #### AGENT-007 — Close-the-loop drafter
 
-Core · push-further · **missing**
+Core · push-further · **missing** · Cites BASE-AGENT-007, BASE-AGENT-008
 
-**Requirement.** For each PROG-004 follow-up item, the agent drafts a personal reply to the respondent that addresses their actual words, citing the excerpt, and a suggested next step. *Human control:* the owner edits and sends it (by email or as a HappyToHelp ticket reply); the agent sends nothing itself and never drafts for anonymous responses.
+**Requirement.** The specialist drafts a response grounded in an identified respondent’s own words.
 
 **Acceptance.**
-1. a Worker test drafts a reply for an identified detractor citing its excerpt, refuses an anonymous one, and nothing is sent until the owner clicks Send.
-2. *Status: missing.*
+1. For each PROG-004 follow-up item, the agent drafts a personal reply to the respondent that addresses their actual words, citing the excerpt, and a suggested next step.
+2. The owner can edit it.
+3. Sending by email or as a HappyToHelp reply carries external with recipient facts, and the company’s policy decides the agent’s call.
+4. Anonymous responses supply no recipient for this drafting job.
+5. Under the held company policy, the specialist uses the public door, drafts a reply for an identified detractor citing its excerpt, refuses an anonymous one, and nothing is sent until the owner clicks Send.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
 #### AGENT-008 — Completion optimizer
 
-Core · push-further · **missing**
+Core · push-further · **missing** · Cites BASE-AGENT-007, BASE-AGENT-008
 
-**Requirement.** From drop-off (RSLT-002), time per step and quality flags, the agent identifies the steps losing respondents, proposes specific edits, and can run them as a randomized experiment between two revisions with a stated stopping rule, reporting completion rates with intervals. *Human control:* the operator approves the variant and the experiment, and chooses the winner.
+**Requirement.** The specialist proposes and measures changes to questions losing respondents.
 
 **Acceptance.**
-1. a Worker test seeds drop-off on one step, receives a proposal for that step, runs an approved two-revision experiment with balanced assignment, and reports both completion rates with intervals.
-2. *Status: missing.*
+1. From drop-off (RSLT-002), time per step and quality flags, the agent identifies the steps losing respondents, proposes specific edits, and can run them as a randomized experiment between two revisions with a stated stopping rule, reporting completion rates with intervals.
+2. Draft changes carry standard and a respondent-facing experiment carries external; selecting a relied-on winner carries commitment.
+3. The company’s policy decides each agent step.
+4. Under the held company policy, the specialist uses the public door, seeds drop-off on one step, receives a proposal for that step, runs an approved two-revision experiment with balanced assignment, and reports both completion rates with intervals.
 
 **Evidence.** None.
 **Gap.** No code yet.
 
 #### AGENT-009 — Migration agent
 
-Core · push-further · **partial**
+Core · push-further · **partial** · Cites BASE-AGENT-007, BASE-AGENT-008
 
-**Requirement.** Given a connected Typeform, SurveyMonkey, Jotform or Google account, the agent inventories every form, its responses, logic, integrations, webhooks and embeds, proposes a migration plan (which to import, which to archive, what to reconnect), runs the approved imports through IMPORT-001 to IMPORT-008, and tracks the IMPORT-009 checklist to completion. *Human control:* each import batch and each reconnection is approved; undo remains available per IMPORT-004.
+**Requirement.** The specialist inventories an incumbent account and follows a reviewed move-in plan.
 
 **Acceptance.**
-1. a Worker test with Typeform fixtures inventories three forms, imports the two approved, leaves the third, and reports the checklist.
-2. *Status: partial — single Typeform definitions are retrieved by token into the reviewed import (`src/core/features/importing/typeform-definition.ts`, `tests/runtime/typeform-definition.worker.test.ts`).*
+1. Given a connected Typeform, SurveyMonkey, Jotform or Google account, the agent inventories every form, its responses, logic, integrations, webhooks and embeds, proposes a migration plan (which to import, which to archive, what to reconnect), runs the approved imports through IMPORT-001 to IMPORT-008, and tracks the IMPORT-009 checklist to completion.
+2. Import batches carry standard, adding destructive when an operation is irreversible; reconnections carry security and gated when the provider requires a person’s consent.
+3. The company’s policy decides each call; undo remains available per IMPORT-004.
+4. Under the held company policy, the specialist uses the Typeform fixtures inventories three, forms, imports the two approved, leaves the third, and reports the checklist.
 
 **Evidence.** `src/core/features/importing/typeform-definition.ts`, `tests/runtime/typeform-definition.worker.test.ts`
 **Gap.** Only the behavior named in Evidence ships; the rest of the clause is not built.
 
 ## Agent surface
 
-None.
+### Agent surface
+
+#### SURFACE-001 — Pencil job registry
+
+Agent surface · target · **missing** · From new · Cites BASE-AGENT-002, BASE-AGENT-006, BASE-AGENT-013
+
+**Requirement.** Pencil exposes pencil job registry for its study and feedback operator.
+
+**Acceptance.**
+1. The registry covers every Core clause through the table above or its stated personal-screen, device, connector, import-door or installation reason.
+2. Each listed tool binds the Pencil action and Core ids stated in that row; the registry and the table agree.
+3. The Base conformance harness runs Pencil’s seeded forms, response cohorts, provider receivers and specialist jobs under both company policies.
+
+**Evidence.** None.
+**Gap.** No Pencil MCP registry, class fixtures or two-policy conformance journey is implemented.
+
+#### SURFACE-002 — Pencil records and changes
+
+Agent surface · target · **missing** · From new · Cites BASE-AGENT-003, BASE-AGENT-010
+
+**Requirement.** Pencil exposes pencil records and changes for its study and feedback operator.
+
+**Acceptance.**
+1. Every listed form, revision, response, contact, analysis, finding, action, delivery and program resource opens its corresponding Pencil record.
+2. Publishing and closing a form, releasing, editing or erasing a response, completing analysis and changing an action or delivery emit the named Pencil event with that record’s resource link.
+3. A suppressed cohort does not yield response excerpts through a result tool; raw response access and aggregate-only output keep RSLT-009’s distinct disclosure boundary.
+
+**Evidence.** None.
+**Gap.** No Pencil MCP registry, class fixtures or two-policy conformance journey is implemented.
+
+#### SURFACE-003 — Draft, exposure and authority classes
+
+Agent surface · target · **missing** · From new · Cites BASE-AGENT-006
+
+**Requirement.** Pencil exposes draft, exposure and authority classes for its study and feedback operator.
+
+**Acceptance.**
+1. An internal draft edit computes standard with the form and item count; making that edit visible to outsiders also computes external with the actual audience.
+2. Invitation, connector delivery and report sharing compute external with recipient count and the known, new or public counterparty from current Pencil records.
+3. An operator or per-form permission change computes access with people and widening or narrowing direction.
+4. A connection credential or protective setting change computes security with its setting and provider.
+5. Reading a regulated response or extracting a regulated document field computes sensitive with record count and kind; ordinary feedback does not acquire that class from an agent-supplied label.
+
+**Evidence.** None.
+**Gap.** No Pencil MCP registry, class fixtures or two-policy conformance journey is implemented.
+
+#### SURFACE-004 — Payment, decisions and running forms
+
+Agent surface · target · **missing** · From new · Cites BASE-AGENT-006
+
+**Requirement.** Pencil exposes payment, decisions and running forms for its study and feedback operator.
+
+**Acceptance.**
+1. A payment, subscription, donation or refund computes money from the saved server-priced attempt, amount, currency and provider counterparty.
+2. A signature, relied-on approval or effectiveness verdict computes commitment with the exact submission or action, counterparty and stated value.
+3. An irreversible response erasure or retention run computes destructive with the records selected after holds and item count.
+4. Publishing or closing a running form, collector or program computes live with its saved revision and affected service.
+5. Provider-owned consent, verification and hosted payment steps compute gated with provider and exact step; the provider’s person-required answer adds gated before continuation.
+
+**Evidence.** None.
+**Gap.** No Pencil MCP registry, class fixtures or two-policy conformance journey is implemented.
+
+#### SURFACE-005 — Study-to-action specialist week
+
+Agent surface · target · **missing** · From new · Cites BASE-AGENT-007, BASE-AGENT-013
+
+**Requirement.** Pencil exposes study-to-action specialist week for its study and feedback operator.
+
+**Acceptance.**
+1. A stranger specialist given only the installation URL inventories seeded forms and responses, designs a branching study and checks the audience and analysis plan through MCP.
+2. It publishes the study, sends the selected invitations and reads completion and delivery outcomes from Pencil.
+3. It identifies an evidence-backed contradiction with exact excerpts, prepares the smallest consenting follow-up and links it to that finding.
+4. It creates an owned action, dispatches the selected task payload, reads the task’s changed status and compares the re-measured outcome.
+5. With the all-autonomous company policy the complete week runs without a policy hold or a policy refusal.
+6. With the held company policy the same week follows the decisions for each computed class, completes the exact saved steps when the named person acts and reads the resulting records.
+7. The two runs retain the same study, response, finding and action linkages; delivery retries create no second invitations or external tasks.
+8. Before a complete company policy is supplied, the first specialist step changes no Pencil record and offers the policy setup link.
+
+**Evidence.** None.
+**Gap.** No Pencil MCP registry, class fixtures or two-policy conformance journey is implemented.
 
 ## Later
 
@@ -3003,4 +4198,16 @@ None.
 
 ## Field proof register
 
-No field proof is recorded yet.
+| ID | Proof | Clauses | State | Date | Receipt |
+| --- | --- | --- | --- | --- | --- |
+| R-1 | Human screen-reader review | A11Y-001 | not run | | |
+| R-2 | Accessibility VPAT | A11Y-001 | not run | | |
+| R-3 | Native iOS and Android store approval | MOB-003 | not run | | |
+| R-4 | Real licensed Okta and Entra tenant certification | ROLE-003 | not run | | |
+| R-5 | Real Typeform and Google Forms export confirmation | IMPORT-001, IMPORT-002, IMPORT-007 | not run | | |
+| R-6 | Real Stripe, wallet and bank settlement receipts | PAY-001, PAY-006, PAY-007, PAY-002, PAY-003, PAY-004, PAY-005 | not run | | |
+| R-7 | Real Google consent and Sheets tenant receipt | INTEG-001 | not run | | |
+| R-8 | Carrier registration and genuine handset/callback delivery | DIST-011 | not run | | |
+| R-9 | Licensed Microsoft Teams tenant and genuine signed Slack interaction | INTEG-006 | not run | | |
+| R-10 | HIPAA business associate agreement and independent certification | GOV-001 | not run | | |
+| R-11 | Claude, ChatGPT, Codex and Copilot client receipts | INTEG-012 | not run | | |

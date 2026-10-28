@@ -5,7 +5,7 @@ import { signInEmptyWorkspace } from './authoring-helpers'
 import { csvRows, downloadedText } from './export-helpers'
 import type { BuilderDraft } from '../../src/core/app/api'
 
-contract(["FIELD-010"], "Other write-ins survive native collection, results export and explicit import column review", async ({ page }, info) => {
+contract(["FIELD-010","FIELD-017"], "Other write-ins survive native collection, results export and explicit import column review", async ({ page }, info) => {
   await test.step("a buyer builds Other and None, collects write-ins and reads their counts and CSV at both widths", async () => {
     const origin=new URL(info.project.use.baseURL!).origin
     await signInEmptyWorkspace(page)

@@ -32,7 +32,7 @@ async function trainingForm(page:import('@playwright/test').Page,withOther=false
   return {flow,root,call,origin,revisionId:published.revision.id}
 }
 
-contract(['RSLT-013','RESP-016'],'an operator reviews and releases a retained bot exclusion without changing views or starts',async({page},info)=>{
+contract(["RSLT-013","RSLT-017","RESP-016","RESP-026"],'an operator reviews and releases a retained bot exclusion without changing views or starts',async({page},info)=>{
   const f=await trainingForm(page,true)
   await page.goto(`/f/${f.flow.slug}`)
   await expect(page.locator('.respondent-shell[data-hydrated=true]')).toBeVisible()
@@ -82,7 +82,7 @@ contract(['RSLT-013','RESP-016'],'an operator reviews and releases a retained bo
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
 })
 
-contract('RSLT-013','QR-labelled links and a business website popup keep independent source conversion counts',async({page,browser},info)=>{
+contract(["RSLT-013","RSLT-017"],'QR-labelled links and a business website popup keep independent source conversion counts',async({page,browser},info)=>{
   test.setTimeout(120_000)
   const f=await trainingForm(page)
   const qr=await f.call<{id:string;publicPath:string}>(f.root+'/collectors',{name:'Workshop poster QR',channel:'qr'})

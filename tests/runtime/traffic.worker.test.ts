@@ -28,7 +28,7 @@ beforeAll(async () => {
   expect(login.status).toBe(303)
   cookie = login.headers.get('set-cookie')!.split(';')[0]
 })
-contract('RSLT-013','anonymous view and durable start buckets report native conversion cohorts without retaining visitor metadata',async()=>{
+contract(["RSLT-013","RSLT-017"],'anonymous view and durable start buckets report native conversion cohorts without retaining visitor metadata',async()=>{
   const {id}=await call<{id:string}>('/api/app/flows',{title:'Workshop feedback',slug:'traffic-form',template:'feedback'})
   const root=`/api/app/flows/${id}`
   let draft=await call<BuilderDraft>(root+'/draft')
@@ -104,7 +104,7 @@ contract('RSLT-013','anonymous view and durable start buckets report native conv
   expect((await report()).totals.views).toBe(6)
 })
 
-contract(['RSLT-013','RESP-016'],'signed form-load timing and retained bot exclusions leave anonymous view and start counters unchanged on review',async()=>{
+contract(["RSLT-013","RSLT-017","RESP-016","RESP-026"],'signed form-load timing and retained bot exclusions leave anonymous view and start counters unchanged on review',async()=>{
   const {id}=await call<{id:string}>('/api/app/flows',{title:'Training evaluation',slug:'traffic-load-time'})
   const root=`/api/app/flows/${id}`
   for (const step of [

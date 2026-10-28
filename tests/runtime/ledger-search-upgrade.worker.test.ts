@@ -6,7 +6,7 @@ import type { Ledger } from '../../src/core/app/api'
 
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 
-contract('LEDG-006', 'answers collected before the stored-search migration become searchable without changing the retained answers', async () => {
+contract(["LEDG-006","LEDG-008"], 'answers collected before the stored-search migration become searchable without changing the retained answers', async () => {
   // 0.7.0 ends at 0052. Write the rows its response door stored on that schema, then apply the additive search
   // migration and successors. Current code needs those successors (PAY-001's 0055), so it starts only afterwards.
   const before = __PENCIL_CORE_MIGRATIONS__.filter(migration => migration.name < '0053')

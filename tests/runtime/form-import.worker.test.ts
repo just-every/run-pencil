@@ -36,7 +36,7 @@ async function nativeSnapshot(db: D1Database, flowId: string) {
     count: await db.prepare('SELECT count(*) AS total FROM responses WHERE flow_id=?').bind(flowId).first(),
   }
 }
-contract(['IMPORT-001', 'IMPORT-002', 'IMPORT-003', 'IMPORT-004', 'LEDG-002', 'IMPORT-005', 'FIELD-013', 'FIELD-016', 'FIELD-010'], 'two fresh databases produce equivalent reports, source structures, typed answers and 27 inert completions', async () => {
+contract(["IMPORT-001","IMPORT-002","IMPORT-003","IMPORT-004","LEDG-002","IMPORT-005","FIELD-013","FIELD-016","FIELD-021","FIELD-010","FIELD-017"], 'two fresh databases produce equivalent reports, source structures, typed answers and 27 inert completions', async () => {
   const a = await fixture(), b = await fixture(second)
   const first = await committed(a), next = await committed(b)
   expect(first.review.report).toEqual(next.review.report)

@@ -82,7 +82,7 @@ contract('RSLT-012','codes twenty answers by hand and twenty by exact AI quotes,
   expect((await f.call(assign(manual[1]),{},'DELETE')).status).toBe(204)
 })
 
-contract(['RSLT-012','FIELD-010'],'codes retained Other write-ins as text while refusing plain choice labels and quarantined or foreign answers',async()=>{
+contract(["RSLT-012","FIELD-010","FIELD-017"],'codes retained Other write-ins as text while refusing plain choice labels and quarantined or foreign answers',async()=>{
   const f=await analysisHttp({},'coding-other')
   const created=await f.services.flows.createDraftFlow({workspaceId:f.workspaceId,title:'Other coding',slug:'coding-other-text'})
   const draft=()=>f.services.flows.getBuilderDraft(f.workspaceId,created.id)

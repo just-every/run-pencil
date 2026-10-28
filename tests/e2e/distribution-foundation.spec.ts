@@ -8,7 +8,7 @@ import { expect, test } from './fixtures'
 import { contract } from './contract'
 // Isolate this new journey's API traffic; actual per-address rate limits stay enabled.
 test.use({ extraHTTPHeaders: { 'CF-Connecting-IP': '198.18.240.11' } })
-contract(["DIST-011","BASE-PUBLIC-003","RESP-020","DIST-014","LOGIC-002","AUD-001","AUD-002","AUD-003","RESP-005","RESP-008","DIST-005","LEDG-001","LEDG-003","RSLT-001","RSLT-003","RSLT-004"], "invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey", async ({ page }, info) => {
+contract(["DIST-011","BASE-PUBLIC-003","RESP-020","RESP-027","DIST-014","DIST-023","LOGIC-002","LOGIC-007","AUD-001","AUD-002","AUD-003","RESP-005","RESP-008","DIST-005","LEDG-001","LEDG-003","RSLT-001","RSLT-003","RSLT-004"], "invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey", async ({ page }, info) => {
   await test.step("production invitation capability paths reject malformed and unknown tokens without echoing them", async () => {
     for (const path of ['/i/private-invalid-capability', '/optout/private-invalid-capability', '/i/%E0%A4%A', '/optout/' + 'A'.repeat(64)]) {
     const refused = await page.request.get(path)
