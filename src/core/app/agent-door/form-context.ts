@@ -23,6 +23,7 @@ export function formContext(db: D1Database, services: PencilServices) {
   const write = (verb: string, title: string, inputSchema: JsonSchemaObject, clauses: string[], run: (args: Record<string, unknown>, ctx: ToolContext) => Promise<unknown>): ToolDefinition => defineTool({
     name: `pencil.forms.${verb}`, title, description: title, scope: 'pencil:forms', readOnly: false,
     inputSchema, outputSchema: { type: 'object' }, clauses, classes: ['standard'], untrusted: true,
+    async target(args, ctx) { return { kind: 'flow', id: (await draft(args, ctx)).flow.id } },
     revision: async (args, ctx) => (await draft(args, ctx)).flow.draftVersion,
     async classify(args, ctx) { await draft(args, ctx); return standard() },
     async summary(args, ctx) { const saved = await draft(args, ctx); return { target: { id: saved.flow.id, name: saved.flow.title }, items: [title, JSON.stringify(args)] } },

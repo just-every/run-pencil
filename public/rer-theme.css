@@ -19,5 +19,3 @@
   --rer-radius: 14px;
   --rer-logo: url('/brand/pencil-mark.svg');
 }
-/* Native agent pages retain a full touch target for short navigation labels. */
-body:has(> header a[href="/agents"]) > header a { min-width: 44px; }

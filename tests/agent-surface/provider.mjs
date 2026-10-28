@@ -2,7 +2,7 @@
 export default {
   async fetch(request) {
     if (request.url !== 'https://api.openai.com/v1/responses' || request.method !== 'POST'
-      || request.headers.get('authorization') !== 'Bearer synthetic-pencil-provider-key') return new Response('Unexpected provider request', { status: 400 });
+      || !/^Bearer [A-Za-z0-9_-]{20,}$/.test(request.headers.get('authorization') ?? '')) return new Response('Unexpected provider request', { status: 400 });
     const body = await request.json();
     if (body.store !== false || body.text?.format?.name !== 'pencil_studio' || body.text.format.strict !== true
       || !body.metadata?.prepared_by?.includes(' for ')) return new Response('Invalid native provider payload', { status: 400 });

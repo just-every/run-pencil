@@ -51,6 +51,7 @@ export function studyTools(db: D1Database, services: PencilServices): ToolDefini
     }),
     defineTool({ ...base, name: 'pencil.studies.update', title: 'Save the study plan', description: 'Save the native study decision, hypotheses, audience and analysis plan at the current draft version.', readOnly: false,
       inputSchema: schema({ formId: id, study: z.toJSONSchema(studySchema) }, ['formId', 'study']),
+      async target(args, ctx) { return { kind: 'flow', id: (await saved(args, ctx)).flowId } },
       async revision(args, ctx) { return (await saved(args, ctx)).version },
       async summary(args, ctx) { const record = await saved(args, ctx); return { target: { id: record.flowId, name: record.title }, items: [JSON.stringify(studySchema.parse(args.study))] } },
       async run(args, ctx) {

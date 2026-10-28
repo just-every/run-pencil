@@ -20,6 +20,7 @@ export function formTools(db: D1Database, services: PencilServices): ToolDefinit
   const base = { scope: 'pencil:forms', outputSchema: output, classes: ['standard' as const], classify: standard, untrusted: true }
   const edit = (verb: string, title: string, inputSchema: JsonSchemaObject, clauses: string[], run: (args: Record<string, unknown>, ctx: ToolContext) => Promise<unknown>): ToolDefinition => defineTool({
     ...base, name: `pencil.forms.${verb}`, title, description: title, readOnly: false, inputSchema, clauses,
+    async target(args, ctx) { return args.formId ? { kind: 'flow', id: (await draft(args, ctx)).flow.id } : null },
     ...(inputSchema.properties?.formId ? { revision: async (args: Record<string, unknown>, ctx: ToolContext) => (await draft(args, ctx)).flow.draftVersion } : {}),
     async classify(args, ctx) { if (args.formId) await draft(args, ctx); return standard() },
     async summary(args, ctx) { const saved = args.formId ? await draft(args, ctx) : null; return { target: { ...(saved ? { id: saved.flow.id } : {}), name: String(args.title ?? saved?.flow.title ?? title) }, items: [title, ...(typeof args.prompt === 'string' ? [args.prompt] : [])] } },

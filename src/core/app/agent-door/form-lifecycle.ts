@@ -11,6 +11,7 @@ export function formLifecycleTools(db: D1Database, services: PencilServices): To
     scope: 'pencil:forms', readOnly: false, untrusted: true, clauses: verb === 'publish' ? ['FLOW-008'] : ['FLOW-010'],
     inputSchema: schema({ formId: id }, ['formId']), outputSchema: { type: 'object' },
     classes: verb === 'archive' ? ['standard', 'external', 'live'] : ['external', 'live'],
+    async target(args, ctx) { return { kind: 'flow', id: (await native.draft(args, ctx)).flow.id } },
     revisionType: 'string', async revision(args, ctx) { const { flow } = await native.draft(args, ctx); return `${flow.draftVersion}:${flow.status}` },
     async classify(args, ctx) { const { flow } = await native.draft(args, ctx); return verb === 'archive' && flow.status === 'draft' ? [{ class: 'standard', facts: { measure: 1 } }] : live(flow.id) },
     async summary(args, ctx) { const saved = await native.draft(args, ctx); return { target: { id: saved.flow.id, name: saved.flow.title }, items: [verb, `Draft ${saved.flow.draftVersion}`, ...saved.steps.map(step => step.prompt)] } },

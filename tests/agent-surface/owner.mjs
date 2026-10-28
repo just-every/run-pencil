@@ -8,7 +8,7 @@ export default async function initialize({ request, origin, claim, displayName }
   const cookie = bootstrap.headers.getSetCookie().map(value => value.split(';', 1)[0]).join('; ');
   const saved = await request(new URL('/api/app/connections/analysis', origin).href, {
     method: 'PUT', headers: { Cookie: cookie, Origin: origin, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ provider: 'openai', model: 'synthetic-pencil-study', baseUrl: 'https://api.openai.com/v1', apiKey: 'synthetic-pencil-provider-key' }),
+    body: JSON.stringify({ provider: 'openai', model: 'synthetic-pencil-study', baseUrl: 'https://api.openai.com/v1', apiKey: crypto.randomUUID() }),
   });
   if (!saved.ok) throw new Error('Native provider connection setup failed');
   await saved.body?.cancel();
