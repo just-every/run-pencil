@@ -6365,11 +6365,11 @@
       "executable": false
     },
     "src/core/features/submissions/ui/inbox.css": {
-      "sha256": "366c9147fb24f71162ca8dd4423392946e2d0939aa6ba182e999ed897c297caa",
+      "sha256": "026c577f9932c5b756794989627541b878d430aa5aa0d2e23c94e76da1518878",
       "executable": false
     },
     "src/core/features/submissions/ui/InboxList.tsx": {
-      "sha256": "77ddfcca11c627d2d7fc62eee74f7db97bd863aa718b9cfab47c81e5ab5481f3",
+      "sha256": "4cbae365c928f273a808168040af3a8669e73ba4df312d7065bfe68369375982",
       "executable": false
     },
     "src/core/features/submissions/ui/InboxPage.tsx": {
@@ -7393,7 +7393,7 @@
       "executable": false
     },
     "tests/e2e/response-search.spec.ts": {
-      "sha256": "7a4d18ffdde275f4229751ffcd7f2e98ffc0b9345d5f9cf59ddc5d271e90be32",
+      "sha256": "5cb46a27bf7d2e7bb5eeac86a0456f1bdbf26459324a9bec3fc0ed0a98925d6d",
       "executable": false
     },
     "tests/e2e/response-webhooks.spec.ts": {
@@ -7458,6 +7458,10 @@
     },
     "tests/e2e/studio-journey.ts": {
       "sha256": "f8daf22c31c11f79583ac21afe04f244aa8383e6067141d8edb765d75204e6c8",
+      "executable": false
+    },
+    "tests/e2e/submission-inbox-journey.ts": {
+      "sha256": "98d145df924db0471503b842a493ca56016aaa6e755634d94335ea54be57bd13",
       "executable": false
     },
     "tests/e2e/surveymonkey-import.spec.ts": {
