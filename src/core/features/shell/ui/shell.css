@@ -7,6 +7,9 @@
 .operator-header { display: flex; min-height: 72px; align-items: center; gap: 32px; border-bottom: 1px solid var(--line); }
 .operator-nav { display: flex; align-items: center; gap: 40px; font-size: 16px; }
 .operator-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
   padding-block: 6px;
   color: var(--ink);
   text-decoration: none;
@@ -16,6 +19,7 @@
 .operator-nav a:hover { background-size: 100% 1.5px; }
 .operator-nav a[aria-current='page'] { background-size: 100% 3px; }
 .operator-signout { min-height: 44px; margin-left: auto; padding: 0 16px; font-size: 14px; }
+.operator-header .pencil-wordmark { min-height: 44px; }
 .operator-shell > .status-note { width: min(100% - 2 * var(--page-gutter), var(--page-max)); margin: 16px auto 0; }
 .operator-content { padding: 40px 0 80px; }
 /* Controls brought into view (by focus or scrolling) keep a little room from the viewport edge. */
