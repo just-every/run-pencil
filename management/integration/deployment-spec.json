@@ -442,6 +442,12 @@
       "name": "0071_contact_time_zones.sql",
       "sha256": "491d41da089bbf79731086cb65b9dfb5ae37cae04f8ccbce4c2ce361523d91a8",
       "sql": "ALTER TABLE distribution_contacts ADD COLUMN time_zone TEXT;\n"
+    },
+    {
+      "binding": "DB",
+      "name": "0072_privacy_save_lookup.sql",
+      "sha256": "72fb4d44445c6dd47a00aad2146ba62ce75d3f814c9e90b19a36cb551dc7b0c7",
+      "sql": "-- A non-bearer digest locates explicitly saved responses after delivery removes\n-- its plaintext address. It expires and is erased with that saved response.\nALTER TABLE respondent_saves ADD COLUMN privacy_email_hash TEXT;\nCREATE INDEX respondent_saves_privacy_email ON respondent_saves(privacy_email_hash);\n\n-- Completion returns the response to its published identity rules. The mailbox\n-- chosen only for a resume link must not become an identity on an anonymous answer.\nCREATE TRIGGER privacy_save_completed AFTER INSERT ON responses BEGIN\n  UPDATE respondent_saves SET privacy_email_hash=NULL WHERE session_id=NEW.session_id;\nEND;\n"
     }
   ],
   "compatibilityDate": "2026-09-08",

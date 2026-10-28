@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "8cda5cfff9478be3c9716d09d9d6f99a1f89cc2799b6a28ff969f98958826a7b",
+      "sha256": "145fd24628e53bb7fce047677a7d7b94394629e8676faec63ac715f5d87b671e",
       "executable": false
     },
     "DEMO.md": {
@@ -1117,7 +1117,7 @@
       "executable": false
     },
     "management/integration/deployment-spec.json": {
-      "sha256": "80dd82c192e26dd79e46f2229352ea5b53d991923b0c4854aa29de329b5f57b9",
+      "sha256": "a11a086b3cb24d9b5b967fd3b1850972ca67d19286a1bc145b780d719c5f36d5",
       "executable": false
     },
     "migrations/core/0000_seeded_flowly_data_spine.sql": {

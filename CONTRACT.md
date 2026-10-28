@@ -548,7 +548,7 @@ are data, compiled into the owned source and applied by one local runtime.
 
 ## Status
 
-Judged from the code and tests at commit `9bae921b88a9f7eb7fb46363dd1b7030a8c79b0e` (28 October 2026). GOV-006 journeys passed at `c7a8d2c9354d7c3fb629c0a1fe6eb5e479919218`; its relevant application and test bytes are unchanged by this rebase. WORK-001 is the only new completion in this round; other clause judgments carry forward unchanged.
+Judged from the code and tests at commit `dd4e178548dedc067ed6ec48abc897b5d446ae08` (28 October 2026). GOV-006 journeys passed at `c7a8d2c9354d7c3fb629c0a1fe6eb5e479919218`; its relevant application and test bytes are unchanged by the rebase and deployment-spec regeneration. GOV-006 is this candidate's new completion; WORK-001 and all other main judgments carry forward unchanged.
 
 ct reviewed `dd63975478b100f7df5e52799eea1e5663da6a0e` on 27 October 2026 for PAY-005, INTEG-006 and DIST-011 scope only, crediting no completion. Applying ct’s 05:00Z contract rulings; these text-only corrections claim no new DONE evidence. Subsequent target completions are maintained alongside their cited clause-tagged tests. RSLT-001, RSLT-003 and RSLT-004 include the combined-filter and response device-class implementation with native and browser journeys from sd-pencil-c10, repaired in sd-pencil-c12; they remain PARTIAL under ct's 05:00Z wording and no restoration is counted DONE. Release 0.7.0 was cut before these completions: on top of 0.6.0 it adds FIELD-006 and GOV-003 and fixes backup and restore on a database installed by Run Edit Run Platform (CHANGELOG.md). Each done row's evidence is its tagged tests, which `rer verify` runs.
 
