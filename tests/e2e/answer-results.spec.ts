@@ -18,6 +18,10 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
     if (!process.env.PENCIL_CAPTURE_DIR) return
     await mkdir(process.env.PENCIL_CAPTURE_DIR, { recursive: true })
     const path = join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-results-${name}.png`)
+    if (name.startsWith('sharing-')) {
+      const sharing = page.getByRole('region', { name: 'Opened saved view', exact: true }).locator('.report-sharing')
+      await sharing.scrollIntoViewIfNeeded(); await sharing.screenshot({ path }); return
+    }
     if (name === 'saved-editor' || name.startsWith('saved-') || name === 'dashboard' || name === 'program-dashboard') {
       const anchor = name === 'saved-editor' ? page.locator('details.saved-reports > summary') : name.startsWith('saved-') ? page.getByRole('region', { name: 'Opened saved view', exact: true }).locator('h2').first() : page.getByText('Arrange a dashboard', { exact: true })
       await anchor.scrollIntoViewIfNeeded(); await page.screenshot({ path })

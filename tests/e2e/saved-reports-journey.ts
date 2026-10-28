@@ -144,6 +144,7 @@ export async function savedReportsJourney(page: Page, call: ScenarioCall, slug: 
     const operatorCross = await call<{ cells: Array<Array<{ count?: number; suppressed: boolean }>> }>(scenario.path + '/crosstab?' + new URLSearchParams({ revisionId: scenario.revisionId, rows: `question:${scenario.planId}`, columns: `question:${scenario.renewalId}` }))
     expect(operatorCross.cells[2][0]).toMatchObject({ count: 3, suppressed: false })
 
+    await capture('sharing-open')
     await opened.getByLabel('Report password (optional)', { exact: true }).fill('synthetic-pencil-26')
     await opened.getByLabel('Link expiry (optional)', { exact: true }).fill(new Date(Date.now() + 86400000).toISOString().slice(0, 16))
     const protectedPending = page.waitForResponse(response => new URL(response.url()).pathname === `/api/app/saved-views/${created.view.id}/shares` && response.request().method() === 'POST')
@@ -159,11 +160,13 @@ export async function savedReportsJourney(page: Page, call: ScenarioCall, slug: 
     await reader.getByRole('button', { name: 'Open report', exact: true }).click()
     await expect(publicReport.getByText('8 of 43 answers', { exact: true })).toBeVisible()
     expect(await anonymous.cookies()).toEqual([])
+    await capture('sharing-protected')
     await opened.locator('li').filter({ hasText: 'Link access' }).getByRole('button', { name: 'Revoke link', exact: true }).click()
     expect((await reader.goto(base + shared.url))!.status()).toBe(404)
     await expect(reader.getByRole('heading', { name: 'Report not found' })).toBeVisible()
     expect((await reader.request.get(base + `/api/public/reports/${shared.token}`)).status()).toBe(404)
     await captureReader('revoked')
+    await capture('sharing-revoked')
     const refused = await reader.request.post(base + scenario.path + '/saved-views', { headers: appHeaders, data: created.view.definition })
     expect(refused.status()).toBe(401)
   } finally { await anonymous.close(); await call('/api/app/analysis/policies', { autorunEnabled: true, autorunMinimum: 5, selection: 'highest-impact', disclosureThreshold: 5 }, 'PUT') }
