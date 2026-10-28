@@ -17,7 +17,11 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
   const capture = async (name: string) => {
     if (!process.env.PENCIL_CAPTURE_DIR) return
     await mkdir(process.env.PENCIL_CAPTURE_DIR, { recursive: true })
-    await page.screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-results-${name}.png`), fullPage: true })
+    const path = join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-results-${name}.png`)
+    if (name === 'saved-editor') await page.locator('details.saved-reports').screenshot({ path })
+    else if (name.startsWith('saved-')) await page.getByRole('region', { name: 'Opened saved view', exact: true }).screenshot({ path })
+    else if (name === 'dashboard' || name === 'program-dashboard') await page.getByText('Arrange a dashboard', { exact: true }).locator('..').screenshot({ path })
+    else await page.screenshot({ path, fullPage: true })
     if (name === 'operator-exposure') await page.locator('section.crosstab').screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-results-exposure-note.png`) })
   }
   await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })

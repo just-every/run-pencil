@@ -7249,7 +7249,7 @@
       "executable": false
     },
     "tests/e2e/answer-results.spec.ts": {
-      "sha256": "1aa0ed4c456962f1e4696dca37ab67cce518653f77f29babbf8e63e87349c04b",
+      "sha256": "a18cd95ad34d21703035a445988dca3b4b93d35997e7baeecd77ee6df57ef1bc",
       "executable": false
     },
     "tests/e2e/api-headers.ts": {
@@ -7541,7 +7541,7 @@
       "executable": false
     },
     "tests/e2e/saved-reports-journey.ts": {
-      "sha256": "c0feb2c476fb7016d50127fb2da21b40796d3f7bea4d60246f752d85d319e14e",
+      "sha256": "3c402622ce96ee7fe28a0b47b744695afed1e5200a1af7566e4ba28e55a5bb97",
       "executable": false
     },
     "tests/e2e/script-embed.spec.ts": {

@@ -39,6 +39,7 @@ export async function savedReportsJourney(page: Page, call: ScenarioCall, slug: 
   await saved.getByRole('combobox', { name: 'Column code', exact: true }).selectOption(columnCode.id)
   await saved.getByRole('button', { name: 'Include code crosstab', exact: true }).click()
   await saved.getByLabel('View name', { exact: true }).fill('Renewal dashboard view')
+  await capture('saved-editor')
   const pending = page.waitForResponse(response => new URL(response.url()).pathname === scenario.path + '/saved-views' && response.request().method() === 'POST')
   await saved.getByRole('button', { name: 'Save current view', exact: true }).click()
   const created = await (await pending).json() as SavedViewDetail
