@@ -7,6 +7,7 @@ import { appHeaders } from './api-headers'
 
 type ShareResult = { share: SavedReportShare; token: string; url: string }
 export async function savedReportsJourney(page: Page, call: ScenarioCall, slug: string, capture: (name: string) => Promise<void>) {
+  page.setDefaultTimeout(15_000)
   const scenario = await collectSharedReportScenario(call, slug)
   const rowCode = await call<{ id: string }>('/api/app/codes', { label: 'Needs guidance' })
   const columnCode = await call<{ id: string }>('/api/app/codes', { label: 'Requests follow-up' })
@@ -34,8 +35,8 @@ export async function savedReportsJourney(page: Page, call: ScenarioCall, slug: 
   await saved.getByRole('group', { name: 'Chosen charts' }).getByLabel('Plan', { exact: true }).check()
   await saved.getByRole('group', { name: 'Chosen charts' }).getByLabel('Renewal', { exact: true }).check()
   await saved.getByText('Add a code crosstab', { exact: true }).click()
-  await saved.getByLabel('Row code', { exact: true }).selectOption(rowCode.id)
-  await saved.getByLabel('Column code', { exact: true }).selectOption(columnCode.id)
+  await saved.getByRole('combobox', { name: 'Row code', exact: true }).selectOption(rowCode.id)
+  await saved.getByRole('combobox', { name: 'Column code', exact: true }).selectOption(columnCode.id)
   await saved.getByRole('button', { name: 'Include code crosstab', exact: true }).click()
   await saved.getByLabel('View name', { exact: true }).fill('Renewal dashboard view')
   const pending = page.waitForResponse(response => new URL(response.url()).pathname === scenario.path + '/saved-views' && response.request().method() === 'POST')
@@ -81,7 +82,7 @@ export async function savedReportsJourney(page: Page, call: ScenarioCall, slug: 
   await capture('dashboard')
   await saved.getByRole('button', { name: 'New dashboard', exact: true }).click()
   await saved.getByLabel('Dashboard name', { exact: true }).fill('Program renewal board')
-  await saved.getByLabel('Dashboard scope', { exact: true }).selectOption('program')
+  await saved.getByRole('combobox', { name: 'Dashboard scope', exact: true }).selectOption('program')
   await saved.getByRole('group', { name: 'Views in this dashboard' }).getByLabel(created.view.name, { exact: true }).check()
   await saved.getByRole('group', { name: 'Views in this dashboard' }).getByLabel(second.view.name, { exact: true }).check()
   const programSaved = page.waitForResponse(response => new URL(response.url()).pathname === '/api/app/report-dashboards' && response.request().method() === 'POST')
