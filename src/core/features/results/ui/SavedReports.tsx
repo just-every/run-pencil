@@ -9,7 +9,12 @@ import { ReportDashboards } from './ReportDashboards'
 import './saved-reports.css'
 export type ReportCrossSelection = { rows: string; columns: string; collectorId?: string }
 
-export function SavedReports({ flowId, revisionId, filter, questions, crossing }: { flowId: string; revisionId: string; filter: LedgerFilter; questions: QuestionReport[]; crossing?: ReportCrossSelection }) {
+type SavedReportsProps = { flowId: string; revisionId: string; filter: LedgerFilter; questions: QuestionReport[]; crossing?: ReportCrossSelection }
+export function SavedReports(props: SavedReportsProps) {
+  const [activated, setActivated] = useState(false)
+  return <details className="panel results-card saved-reports" onToggle={event => { if (event.currentTarget.open) setActivated(true) }}><summary>Saved views and dashboards</summary>{activated ? <SavedReportManager {...props} /> : null}</details>
+}
+function SavedReportManager({ flowId, revisionId, filter, questions, crossing }: SavedReportsProps) {
   const [views, setViews] = useState<SavedView[]>([]), [opened, setOpened] = useState<SavedViewDetail>()
   const [name, setName] = useState(''), [charts, setCharts] = useState<string[]>([]), [cohorts, setCohorts] = useState<SavedViewDefinition['cohorts']>([])
   const [crosses, setCrosses] = useState<SavedViewDefinition['crosstabs']>([])
@@ -26,7 +31,7 @@ export function SavedReports({ flowId, revisionId, filter, questions, crossing }
   }
   const open = async (id: string) => { setError(''); try { setOpened(await savedReportApi.open(id)) } catch (reason) { setError((reason as Error).message) } }
   const addCohort = () => { if (!cohortName.trim()) return; setCohorts(current => [...current, { id: crypto.randomUUID(), name: cohortName.trim(), filter: selected }]); setCohortName('') }
-  return <details className="panel results-card saved-reports"><summary>Saved views and dashboards</summary>
+  return <>
     <p>Save the current response filters and the last crossed dimensions at one evidence cutoff. Add the current selection as a comparison before changing filters.</p>
     <form className="report-form" onSubmit={save}>
       <label className="inspector-field">View name<input className="text-input" required maxLength={160} value={name} onChange={event => setName(event.target.value)} /></label>
@@ -40,5 +45,5 @@ export function SavedReports({ flowId, revisionId, filter, questions, crossing }
     <ul className="report-list" aria-label="Saved views">{views.map(view => <li key={view.id}><button className="quiet-button focus-ring" type="button" onClick={() => void open(view.id)}>{view.name}</button><span className="report-provenance">Saved by {view.savedBy.name} · {view.cutoff}</span></li>)}</ul>
     {opened ? <section aria-label="Opened saved view"><p className="report-provenance">Saved by {opened.view.savedBy.name} · Threshold recorded at save: {opened.view.threshold}</p><ReportFigures report={opened.report} /><ReportSharing key={opened.view.id} viewId={opened.view.id} /></section> : null}
     <ReportDashboards flowId={flowId} views={views} />
-  </details>
+  </>
 }

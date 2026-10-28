@@ -22,11 +22,19 @@ async function reportRuntime() {
 
 // Add D1's single-statement write door to the existing real SQLite transport.
 function writable(database) {
-  const wrap = statement => ({ ...statement,
-    bind(...values) { return wrap(statement.bind(...values)); },
-    async run() { return (await database.batch([statement]))[0]; },
-  });
-  return { ...database, prepare: sql => wrap(database.prepare(sql)) };
+  const originals = new WeakMap();
+  const wrap = statement => {
+    const wrapped = { ...statement,
+      bind(...values) { return wrap(statement.bind(...values)); },
+      async run() {
+        const [result, changed] = await database.batch([statement, database.prepare('SELECT changes() AS n')]);
+        return { ...result, meta: { changes: changed.results[0].n } };
+      },
+    };
+    originals.set(wrapped, statement);
+    return wrapped;
+  };
+  return { prepare: sql => wrap(database.prepare(sql)), batch: statements => database.batch(statements.map(statement => originals.get(statement) ?? statement)) };
 }
 
 export async function savedReportCustody(database, actor) {
