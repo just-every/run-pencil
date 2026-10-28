@@ -8,7 +8,7 @@ test('native public input failures use safe 400 JSON and retain read-only invali
     ['/auth/magic-link', { email: 'private-secret' }],
     ['/api/public/flows/aurora-coffee-post-visit/sessions', { deviceClass: 'private-secret' }],
     ['/api/public/flows/aurora-coffee-post-visit/sessions/advance', { sessionId: 'session', sessionToken: 'private-secret', stepId: 'step' }],
-    ['/api/public/flows/aurora-coffee-post-visit/responses', { sessionId: 'session', sessionToken: 'x'.repeat(64), idempotencyKey: 'synthetic-native-input-key', answers: [{ stepId: 'step', value: { unexpected: 'private-secret' } }] }],
+    ['/api/public/flows/aurora-coffee-post-visit/responses', { sessionId: 'session', sessionToken: 'x'.repeat(64), idempotencyKey: 'synthetic-native-input-key', answers: [{ stepId: 'step', value: { unexpected: { nested: 'private-secret' } } }] }],
   ] as const) {
     const response = await request.post(path, { headers: appHeaders, data })
     expect(response.status()).toBe(400)
