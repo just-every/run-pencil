@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "0093163e4b750d5a3e6fb6919e5bde9b919cf90c49af81e238bbf4be12b47950",
+      "sha256": "b8a5cd43a794d5b3115a588088bd901257f779b29120e3d9d5165952c49c5d25",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -833,7 +833,7 @@
       "executable": false
     },
     "AGENTS.md": {
-      "sha256": "1a9c5dd8f034dd1875aa71eada731ace275bc99e83ed7ef6c9064a4b8709fda3",
+      "sha256": "8aacd261f2717231df6407efb75e5359f55a66d82ed27b7f67ead5c756ae8246",
       "executable": false
     },
     "ASSET-PROVENANCE.md": {
@@ -890,6 +890,10 @@
     },
     "DIVERGENCE.md": {
       "sha256": "f3c53d093b88f530d46efb676374f40260ecd89be2b57b4dad5086f80d28d01e",
+      "executable": false
+    },
+    "docs/CLAIMS.md": {
+      "sha256": "2553e25dbd02f7ce12d80c94e2ddd087690caeb8e4094ea0f78a300df69832bd",
       "executable": false
     },
     "docs/contract-changes-20261002.json": {
@@ -1518,6 +1522,10 @@
     },
     "scripts/ci-contract-evidence.mjs": {
       "sha256": "ab48b252f9bb86b4cb38eee94f7a5a80efc641e222cf5d3cc9a0fe6d0d37f355",
+      "executable": false
+    },
+    "scripts/contract-docs.mjs": {
+      "sha256": "e9644037a5e252131c50bbb9f8bca4ce90687837a6c52d52b87ee45c0eccd901",
       "executable": false
     },
     "scripts/contract-evidence.mjs": {
@@ -8085,7 +8093,7 @@
       "executable": false
     },
     "tests/runtime/submissions.worker.test.ts": {
-      "sha256": "e8be85ee9a2946a0ef5102122038a47cb676ccfd0edad673e62ec14832381c42",
+      "sha256": "8a933a5f18f78aa349ca62b4a431699ee37a36538987ae81c8f0d6543a8f76b8",
       "executable": false
     },
     "tests/runtime/task-receiver.global.ts": {
