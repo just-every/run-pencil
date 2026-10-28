@@ -43,8 +43,9 @@ export async function matrixScenario() {
   const refusedRule = await request(root + '/draft/branches', { expectedVersion: draft.flow.draftVersion, rules: [invalidRule] }, 'PUT')
   // Invalid operand references are refused at publication, even when a draft may retain an incomplete edit.
   if (refusedRule.ok) {
-    const refused = await call<{ kind: string }>(root + '/publish', { expectedVersion: (await read()).flow.draftVersion })
-    expect(refused.kind).not.toBe('published')
+    const refused = await request(root + '/publish', { expectedVersion: (await read()).flow.draftVersion })
+    expect(refused.status).toBe(400)
+    expect(await refused.json()).toMatchObject({ error: 'VALIDATION_ERROR' })
     await call(root + '/draft/branches', { expectedVersion: (await read()).flow.draftVersion, rules: draft.branchRules }, 'PUT')
   } else expect(refusedRule.status).toBe(400)
   const published = await call<{ kind: string; revision: { id: string } }>(root + '/publish', { expectedVersion: (await read()).flow.draftVersion })
