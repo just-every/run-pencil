@@ -102,6 +102,19 @@ contract(['WORK-001', 'BASE-ACCESS-004', 'BASE-DATA-003', 'BASE-OPS-005', 'IMPOR
   for (const kind of ['submission.status_changed', 'submission.assignment_changed', 'submission.tags_changed', 'submission.note_added', 'submission.status_created']) expect(audit.rows).toContainEqual(expect.objectContaining({ kind, form: expect.objectContaining({ id: flow.id }), actor: expect.any(Object) }))
   expect(JSON.stringify(audit)).not.toContain(note)
   expect(JSON.stringify(audit)).not.toContain('Repair the front door')
+  // Read a full page and its remainder through the same private document door.
+  for (let index = 0; index < 50; index++) await call(inboxRoot + '/bulk', {
+    responses: [{ id: ids[0], version: index + 1 }], changes: { note: `synthetic-pencil-${index + 2}` },
+  })
+  expect((await request(inboxRoot + '/' + ids[0], undefined, 'GET', false)).status).toBe(401)
+  const firstPage = await call<SubmissionDetail>(inboxRoot + '/' + ids[0])
+  expect(firstPage.notes).toHaveLength(50)
+  expect(firstPage.nextNotesOffset).toBe(50)
+  const remainder = await call<SubmissionDetail>(inboxRoot + '/' + ids[0] + '?notesOffset=' + firstPage.nextNotesOffset)
+  expect(remainder.notes).toHaveLength(1)
+  expect(remainder.nextNotesOffset).toBeUndefined()
+  expect(new Set([...firstPage.notes, ...remainder.notes].map(row => row.id)).size).toBe(51)
+  expect([...firstPage.notes, ...remainder.notes].map(row => row.text).sort()).toEqual([note, ...Array.from({ length: 50 }, (_, index) => `synthetic-pencil-${index + 2}`)].sort())
   await call(`/api/app/responses/${ids[0]}`, undefined, 'DELETE')
   for (const table of ['submission_workflows', 'submission_tags', 'submission_notes']) expect(await env.DB.prepare(`SELECT count(*) AS n FROM ${table} WHERE response_id=?`).bind(ids[0]).first()).toEqual({ n: 0 })
 
