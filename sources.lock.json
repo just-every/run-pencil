@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "f69abac687b0bd21c808996c8e74aec178e6f90dcc9ed108abf143be45263cd4",
+      "sha256": "b9d48dad754326ab519748b6982b234a386b49d4eee473a009fae64b4630f1e8",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "e7d38ca2af9d5c5ce7d7fad1981e5d3a6cb5052cb94775140843d2c9ffb285f8",
+      "sha256": "d89f14735e4849b48df8bde5c0cb9f1265df3c2cb7cabf3f36d3c4bcc85c1c1d",
       "executable": false
     },
     "DEMO.md": {
@@ -893,7 +893,7 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "2fb776105e8909b6cbed8464d740fffcfa077163e1fa34b20fb3ae0f81e82805",
+      "sha256": "4661c55e2ee9aa517330be31f57d52cfe36402c60d3741d7317fcd39efeef8b1",
       "executable": false
     },
     "docs/contract-changes-20261002.json": {
@@ -5937,11 +5937,11 @@
       "executable": false
     },
     "src/core/features/reporting/sharedDimensions.ts": {
-      "sha256": "1e49ff3c953b846f7a1bbe38a1f9815f4005b4d282689efea966d85fde964fa5",
+      "sha256": "468a85bd4834ae8a878d957cee0691712fd44e5951cbe4e8811dc29aab59d028",
       "executable": false
     },
     "src/core/features/reporting/sharedQuestionCounts.ts": {
-      "sha256": "baecfa1bacaa3544219e0740fd8ea5947862d3997bc016bec6e02e2d498efadc",
+      "sha256": "4c853db7d29dd237614db73bf3f948acaaad9c3684b222150dad049ba41aa0a4",
       "executable": false
     },
     "src/core/features/reporting/sharedReport.ts": {
@@ -5949,7 +5949,7 @@
       "executable": false
     },
     "src/core/features/reporting/sharedSummaries.ts": {
-      "sha256": "0de94e60de16c3f239ef98c1139610085f30a0083998a4a28ea02d6ca2d9f965",
+      "sha256": "e1b38ffa7801853d7fbf5387d27a24a40da553e94b8cd3abaf161b3c8cb9521e",
       "executable": false
     },
     "src/core/features/reporting/summary.ts": {
@@ -7513,11 +7513,11 @@
       "executable": false
     },
     "tests/e2e/matrix-journey.ts": {
-      "sha256": "c123f06ba4efe84f9252cb411a86cf9d3355d8fe80e4203c899aede8349ce184",
+      "sha256": "d7a5f311d99f43a31587c757f2c28714432866d1060d3f30fc5f5f959bba595a",
       "executable": false
     },
     "tests/e2e/new-question-types.spec.ts": {
-      "sha256": "e04efd8a061d7cabaec09fb28178fbbe51236dfeb57ae00cdc38d0d90f9beb27",
+      "sha256": "e513256270b79ed3cc09f3211040d997a9ba04530b77ea649637d3bf22acb31a",
       "executable": false
     },
     "tests/e2e/notifications.spec.ts": {
@@ -8181,11 +8181,11 @@
       "executable": false
     },
     "tests/runtime/matrix-scenario.ts": {
-      "sha256": "7da189e7a92c561c28910c2e94496ec23839ecb657d6cfddbf547b6ba5df9bf6",
+      "sha256": "6f8f880b799424510300993a532f3d988eb722ec184eefdaf187ba12978b687a",
       "executable": false
     },
     "tests/runtime/new-question-types.worker.test.ts": {
-      "sha256": "58be8210ddadad22f7098c8374ab1161eda7d0cbf9b61c9db05e6601f9ca6bd1",
+      "sha256": "a21c52b8ec2b4d3269d75db4d4005a54a5e8316cba783f99da7879351de7de84",
       "executable": false
     },
     "tests/runtime/notification-restore.worker.test.ts": {
@@ -8289,7 +8289,7 @@
       "executable": false
     },
     "tests/runtime/saved-report-proof.ts": {
-      "sha256": "861a6b35f1887cba006cdfc093578cc53dd796b049385918658dff2e8f196f43",
+      "sha256": "9796c5d7df642a33276fa427841a0b92f71db39015e19b3813cc8c6a00faa49e",
       "executable": false
     },
     "tests/runtime/shared-code-proof.ts": {

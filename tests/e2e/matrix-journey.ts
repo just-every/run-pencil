@@ -2,6 +2,7 @@ import type { Page, TestInfo } from '@playwright/test'
 import { expect } from './fixtures'
 import { csvRows, downloadedText } from './export-helpers'
 import type { BuilderDraft, Ledger } from '../../src/core/app/api'
+import type { SavedViewDetail } from '../../src/core/features/reporting'
 
 export async function matrixJourney(page: Page, info: TestInfo) {
   const origin = new URL(info.project.use.baseURL!).origin
@@ -14,6 +15,12 @@ export async function matrixJourney(page: Page, info: TestInfo) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     const path = info.outputPath(`matrix-${state}-${info.project.name}.png`)
     await page.screenshot({ path, fullPage: true }); await info.attach(`Matrix ${state}`, { path, contentType: 'image/png' })
+    if (process.env.PENCIL_CAPTURE_DIR && state.startsWith('saved-')) {
+      const { mkdir } = await import('node:fs/promises'), { join } = await import('node:path')
+      await mkdir(process.env.PENCIL_CAPTURE_DIR, { recursive: true })
+      await page.getByRole('region', { name: 'Opened saved view', exact: true }).scrollIntoViewIfNeeded()
+      await page.screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-matrix-${state}.png`) })
+    }
   }
   const slug = `matrix-${info.project.name}-${Date.now()}`, flow = await call<{ id: string }>('/api/app/flows', { title: 'Service experience', slug })
   const root = `/api/app/flows/${flow.id}`, read = () => call<BuilderDraft>(root + '/draft')
@@ -78,6 +85,24 @@ export async function matrixJourney(page: Page, info: TestInfo) {
   await cross.getByRole('button', { name: 'Cross', exact: true }).click()
   await expect(cross.getByRole('region', { name: 'Crosstab table', exact: true })).toContainText('suppressed')
   await screenshot('results')
+  const savedViews = page.locator('details.saved-reports')
+  await savedViews.locator(':scope > summary').click()
+  await savedViews.getByLabel('View name', { exact: true }).fill('Service experience crossing')
+  const savedResponse = page.waitForResponse(response => response.request().method() === 'POST' && new URL(response.url()).pathname === root + '/saved-views')
+  await savedViews.getByRole('button', { name: 'Save current view', exact: true }).click()
+  const savedView = await (await savedResponse).json() as SavedViewDetail
+  expect(savedView.view.definition.crosstabs).toEqual([expect.objectContaining({ rows: `matrix:${matrix.id}:${rows[0].id}`, columns: `matrix:${matrix.id}:${rows[1].id}` })])
+  expect(savedView.report.cohorts[0]).toMatchObject({ responseCount: 2, breakdownWithheld: true, questions: [], crosstabs: [] })
+  const opened = page.getByRole('region', { name: 'Opened saved view', exact: true })
+  await expect(opened.getByText(/fewer included responses than the disclosure threshold/)).toBeVisible()
+  await screenshot('saved-view')
+  await page.reload()
+  await savedViews.locator(':scope > summary').click()
+  await savedViews.getByRole('list', { name: 'Saved views', exact: true }).getByRole('button', { name: savedView.view.name, exact: true }).click()
+  await expect(opened.locator('time')).toHaveText(savedView.view.cutoff)
+  await expect(opened.getByText(/fewer included responses than the disclosure threshold/)).toBeVisible()
+  expect(await call('/api/app/saved-views/' + savedView.view.id)).toEqual(savedView)
+  await screenshot('saved-reopened')
   const ledger = page.getByRole('region', { name: 'Response ledger', exact: true })
   await ledger.getByRole('button', { name: 'View answers', exact: true }).first().click()
   await expect(ledger).toContainText('Clarity of instructions: Strongly agree')

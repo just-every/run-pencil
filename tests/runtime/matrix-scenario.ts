@@ -5,7 +5,7 @@ import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { matureLoad } from './load-time-fixture'
 import { csvRows } from '../e2e/export-helpers'
 import type { BuilderDraft, Ledger, QuestionReport } from '../../src/core/app/api'
-import type { Crosstab } from '../../src/core/features/reporting'
+import type { Crosstab, SavedViewDetail } from '../../src/core/features/reporting'
 
 type Session = { sessionId: string; sessionToken: string; loadTime: string; revisionId: string }
 /** One native-door journey covers grid authoring, collection and downstream custody. */
@@ -118,7 +118,18 @@ export async function matrixScenario() {
   expect(crossed.cells.map(row => row.map(cell => cell.suppressed ? null : cell.count))).toEqual([[5, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1]])
   expect(crossed.cells[0][0].suppressed ? null : crossed.cells[0][0].rowShare).toEqual({ numerator: 5, denominator: 9, percentage: 5 / 9 * 100 })
   expect(crossed.chiSquare).toMatchObject({ offered: true, flagged: false })
+  const saved = await call<SavedViewDetail>(root + '/saved-views', {
+    name: 'Service experience crossing', revisionId: published.revision.id,
+    crosstabs: [{ id: 'synthetic-pencil-saved-matrix', rows: `matrix:${matrix.id}:${rows[0].id}`, columns: `matrix:${matrix.id}:${rows[1].id}` }],
+  })
+  const savedCross = saved.report.cohorts[0].crosstabs[0]
+  expect(savedCross.withheld).toBe(false)
+  if (savedCross.withheld) throw new Error('The saved matrix crossing was withheld unexpectedly')
+  expect(savedCross.table.cells.map(row => row.map(cell => cell.suppressed ? null : cell.count))).toEqual([[5, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1]])
+  expect(saved.report.cohorts[0].questions.find(question => question.id === `matrix:${matrix.id}:${rows[0].id}`)?.distribution.map(bucket => bucket.count)).toEqual([9, 5, 5, 5, 5])
+  expect(await call('/api/app/saved-views/' + saved.view.id)).toEqual(saved)
   await call('/api/app/analysis/policies', { ...policies, disclosureThreshold: 5 }, 'PUT')
+  expect((await call<SavedViewDetail>('/api/app/saved-views/' + saved.view.id)).report.cohorts[0].crosstabs[0]).toMatchObject({ withheld: true })
   const suppressed = await call<Crosstab>(crossPath)
   expect(suppressed.cells[0][0]).toMatchObject({ count: 5, suppressed: false })
   expect(suppressed.cells[0][1]).toMatchObject({ suppressed: true })
