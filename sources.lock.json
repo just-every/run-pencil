@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "b9d48dad754326ab519748b6982b234a386b49d4eee473a009fae64b4630f1e8",
+      "sha256": "ab72992f82850856f6b79bfa1322b291db8d94a1da0967710bee4d3df690b18f",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "d89f14735e4849b48df8bde5c0cb9f1265df3c2cb7cabf3f36d3c4bcc85c1c1d",
+      "sha256": "bcd54437ab67d145a786d760b03b8d834dbfe776353d6b9b2ce4b4dc5e6be9a6",
       "executable": false
     },
     "DEMO.md": {
@@ -893,7 +893,7 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "4661c55e2ee9aa517330be31f57d52cfe36402c60d3741d7317fcd39efeef8b1",
+      "sha256": "d5108abf424e7e70b41195aa712ec000a7f5df855f8b81049e41ded2f9f7bf74",
       "executable": false
     },
     "docs/contract-changes-20261002.json": {
@@ -7329,7 +7329,7 @@
       "executable": false
     },
     "tests/e2e/answer-results.spec.ts": {
-      "sha256": "b52a0b0e8a4daa73c03214c7b27117ab7e2abf8da0f7d4ae6d4bb05db2d1293b",
+      "sha256": "2fdc5e36006b7693648f21a09447fd7961e7c3ff18aa99a3fd3e6e41b9bcfc5b",
       "executable": false
     },
     "tests/e2e/api-headers.ts": {

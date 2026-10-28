@@ -228,6 +228,8 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
       await trends.scrollIntoViewIfNeeded()
       await page.screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-${type}-score-viewport.png`) })
       await trends.screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-${type}-score-trend.png`) })
+      await trendValues.getByRole('cell', { name: value, exact: true }).scrollIntoViewIfNeeded()
+      await trendValues.screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-${type}-score-values.png`) })
     }
   }
 })
