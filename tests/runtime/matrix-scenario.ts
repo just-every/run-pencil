@@ -111,4 +111,17 @@ export async function matrixScenario() {
   await call(root + '/draft', { stepId: matrix.id, prompt: matrix.prompt, required: true, expectedVersion: draft.flow.draftVersion, questionSettings: { matrixRows: [...rows].reverse().map(row => ({ ...row, label: 'Updated ' + row.label })), matrixMode: 'likert7' }, choices: [...options.map(option => ({ id: option.id, value: option.value, label: option.label })), { value: '6', label: 'Very much agree' }, { value: '7', label: 'Completely agree' }] }, 'PUT')
   expect((await read()).steps[0].questionSettings!.matrixRows).toEqual([...rows].reverse().map(row => ({ ...row, label: 'Updated ' + row.label })))
   expect((await call<QuestionReport[]>(root + '/questions?revisionId=' + published.revision.id)).find(question => question.id === matrix.id)!.summary.matrixRows!.map(row => row.label)).toEqual(rows.map(row => row.label))
+  const seven = await call<{ kind: string; revision: { id: string } }>(root + '/publish', { expectedVersion: (await read()).flow.draftVersion })
+  expect(seven.kind).toBe('published')
+  const sevenChoices = (await read()).choices.filter(choice => choice.stepId === matrix.id)
+  const sevenAnswer = Object.fromEntries(rows.map(row => [row.id, sevenChoices[6].id]))
+  const sevenReceipt = await call<{ responseId: string }>(`/api/public/flows/${slug}/responses`, body(await start(), sevenAnswer))
+  expect(sevenReceipt.responseId).toBeTruthy()
+  const sevenGrid = (await call<QuestionReport[]>(root + '/questions?revisionId=' + seven.revision.id)).find(question => question.id === matrix.id)!.summary.matrixRows!
+  expect(sevenGrid.map(row => row.distribution.map(bucket => bucket.count))).toEqual(rows.map(() => [0, 0, 0, 0, 0, 0, 1]))
+  const exportedToken = await call<{ token: string }>(root + '/responses/export/start?format=csv')
+  const signout = await request('/auth/signout', {})
+  expect(signout.status).toBeLessThan(400)
+  expect((await request(root + '/questions')).status).toBe(401)
+  expect((await request(root + '/responses/export', { token: exportedToken.token })).status).toBe(401)
 }

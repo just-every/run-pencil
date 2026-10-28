@@ -1,3 +1,4 @@
+import { matrixJourney } from './matrix-journey'
 import { developmentInbox } from '../helpers/development-outbox'
 import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { downloadedText, csvRows } from './export-helpers'
@@ -8,9 +9,9 @@ import { expect, test } from './fixtures'
 import type { BuilderDraft } from '../../src/core/app/api'
 // Isolate this new journey's API traffic; actual per-address rate limits stay enabled.
 test.use({ locale: 'en-GB', extraHTTPHeaders: { 'CF-Connecting-IP': '198.18.240.31' } })
-contract(['FLOW-003', 'RESP-003', 'LEDG-004', 'BASE-PUBLIC-003'], 'six additional question types reject an empty required answer and complete through native controls at both widths', async ({ page }, info) => {
+contract(['FLOW-003', 'RESP-003', 'LEDG-004', 'BASE-PUBLIC-003', 'FIELD-002'], 'six additional question types reject an empty required answer and complete through native controls at both widths', async ({ page }, info) => {
   const request = page.request
-  test.setTimeout(120_000)
+  test.setTimeout(180_000)
   await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
   const origin = new URL(info.project.use.baseURL!).origin
   const slug = `question-matrix-${info.project.name}-${Date.now()}`
@@ -105,5 +106,7 @@ contract(['FLOW-003', 'RESP-003', 'LEDG-004', 'BASE-PUBLIC-003'], 'six additiona
   expect(csv).toHaveLength(2)
   expect(csv[1][0]).toBe(exported.responses[0].id)
   expect(JSON.parse(csv[1][8])).toEqual(exported.responses[0].answers)
+
+  await matrixJourney(page, info)
 
 })

@@ -1,9 +1,9 @@
 .matrix-input { display: grid; gap: 1.25rem; min-width: 0; }
-.matrix-input__row { padding: 1rem; margin: 0; min-width: 0; border: 1px solid var(--border); border-radius: 12px; }
+.matrix-input__row { padding: 1rem; margin: 0; min-width: 0; border: 1px solid var(--line); border-radius: 12px; }
 .matrix-input__row legend { padding: 0 .4rem; font-size: 1rem; font-weight: 600; }
 .matrix-input__scale { display: flex; flex-wrap: wrap; gap: .6rem; }
-.matrix-input__option { display: flex; align-items: center; gap: .5rem; flex: 1 1 6rem; min-height: 44px; padding: .6rem; border-radius: 8px; cursor: pointer; background: var(--surface); font-size: 1rem; }
-.matrix-input__option[data-selected="true"] { background: var(--accent-soft, #e8ede3); }
+.matrix-input__option { display: flex; align-items: center; gap: .5rem; flex: 1 1 6rem; min-height: 44px; padding: .6rem; border-radius: 8px; cursor: pointer; background: var(--paper-deep); font-size: 1rem; }
+.matrix-input__option[data-selected="true"] { background: var(--wash-great); }
 .matrix-input__option:focus-within { outline: 2px solid currentColor; outline-offset: 2px; }
 .matrix-input__option input { width: 18px; height: 18px; flex-shrink: 0; }
 @media (max-width: 480px) { .matrix-input__option { flex-basis: 100%; } }

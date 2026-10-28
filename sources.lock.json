@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "0093163e4b750d5a3e6fb6919e5bde9b919cf90c49af81e238bbf4be12b47950",
+      "sha256": "d070f5ba34020d56b7abfdd07ac116aafd9149168bc1bf941ff4433f743787d8",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -833,7 +833,7 @@
       "executable": false
     },
     "AGENTS.md": {
-      "sha256": "1a9c5dd8f034dd1875aa71eada731ace275bc99e83ed7ef6c9064a4b8709fda3",
+      "sha256": "0f73b65d3f108dce141f673c10cdfc0ed0f07a6c5760f33b01ea8afc03892224",
       "executable": false
     },
     "ASSET-PROVENANCE.md": {
@@ -853,7 +853,7 @@
       "executable": false
     },
     "CLAIMS.md": {
-      "sha256": "31afe03bda9c996e34e578fdab9e16f07378053bc38a222b9f76d3a77ff702e0",
+      "sha256": "0567a84d2df05a34af0c5ceca13db7effa8110fa44e57fd45bcc7fc84bd9861b",
       "executable": false
     },
     "CLAUDE.md": {
@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "5c0133fdaddeda17428a878db5e15e17a1fdcd6e6ae0ec4686cd81b68b684df8",
+      "sha256": "cbe5a665d71987bf741543150aae16df5c9ed233cb6d362c8d88d6ab4b9341de",
       "executable": false
     },
     "DEMO.md": {
@@ -890,6 +890,10 @@
     },
     "DIVERGENCE.md": {
       "sha256": "f3c53d093b88f530d46efb676374f40260ecd89be2b57b4dad5086f80d28d01e",
+      "executable": false
+    },
+    "docs/CLAIMS.md": {
+      "sha256": "1d6d5dfdafee4c55becd1ac658a6070bf60a825de43d10494213844a1d144b32",
       "executable": false
     },
     "docs/contract-changes-20261002.json": {
@@ -1524,6 +1528,10 @@
       "sha256": "ab48b252f9bb86b4cb38eee94f7a5a80efc641e222cf5d3cc9a0fe6d0d37f355",
       "executable": false
     },
+    "scripts/contract-docs.mjs": {
+      "sha256": "c3b11176a92c01d51e3264da9f84b1d5f6ab383e78591edb6485cc32041e4e0c",
+      "executable": false
+    },
     "scripts/contract-evidence.mjs": {
       "sha256": "f60ca5f4d08db795b412337d6cf5c5ca4a57f73b640521012150ceaf85009815",
       "executable": false
@@ -2057,7 +2065,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "48736f65710eed627f0a4b83c2b9ddcb1561db3d474f89082a066d14aaf90292",
+      "sha256": "83d55f05a9f1abc3db6d84cf87cfbafb8b956b788cfef497e68b9f40e88ee198",
       "executable": false
     },
     "src/base/ai/client.mjs": {
@@ -6853,7 +6861,7 @@
       "executable": false
     },
     "src/core/shared/ui/matrix.css": {
-      "sha256": "c1d8372ff94f74e995e48d41ec5a64dee70404e53c1c692c1e6012edf99afe44",
+      "sha256": "ec07cb3c7a8acf5ab11546859f7b56ff804db211b2d2484ed205683c7c81ad50",
       "executable": false
     },
     "src/core/shared/ui/MatrixQuestionInput.tsx": {
@@ -6889,7 +6897,7 @@
       "executable": false
     },
     "src/core/shared/ui/tooltip.css": {
-      "sha256": "af16e06232df5c4e74198b036cc1fbcd9cf7b8fa6ae43c4c43e2397647fde319",
+      "sha256": "600a0d21f4bb3c7994dfe04e5cc0b23e5bc21f12b8291954bc40f3bf6e8ffb0f",
       "executable": false
     },
     "src/core/shared/ui/Tooltip.tsx": {
@@ -7356,8 +7364,12 @@
       "sha256": "96db27ec4dcd9da9b3fedaf2b49924bf4109a16bd4074516d01344944f1c114b",
       "executable": false
     },
+    "tests/e2e/matrix-journey.ts": {
+      "sha256": "dbd5184994a3bbd4c4984d8aefc6fa6be7e70b88b258f57d2e5920427e88b53a",
+      "executable": false
+    },
     "tests/e2e/new-question-types.spec.ts": {
-      "sha256": "1cf9fe9bc42a6d3f8984f7e4c009f11659d603b49901ee1fb8023a6ef6ca30f1",
+      "sha256": "2b6eea5bb0acea8ad8fad757f6b558dd9840cce523a89b19a03341b257b21bb3",
       "executable": false
     },
     "tests/e2e/notifications.spec.ts": {
@@ -8009,7 +8021,7 @@
       "executable": false
     },
     "tests/runtime/matrix-scenario.ts": {
-      "sha256": "88d42cdebbf575b0a87cabc1e5fc3622b637b4257bc865f4f1c77dd4531a1c40",
+      "sha256": "f3f8ce03b2f163fe5c35b9267ba1db6788ae2bf745a485feee3fd02f4632f1a8",
       "executable": false
     },
     "tests/runtime/new-question-types.worker.test.ts": {
