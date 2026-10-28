@@ -1033,7 +1033,7 @@
       "executable": false
     },
     "docs/guide/agents.md": {
-      "sha256": "a2dcc5b4ab4f06467ce9a769fc3f6268e66466a8c59762f9b782df730df261ed",
+      "sha256": "b0b231a5d9338220be3010e8979fc7683df863bde516cbe27dac40b2296a629b",
       "executable": false
     },
     "docs/guide/analysis.md": {
@@ -4249,7 +4249,7 @@
       "executable": false
     },
     "src/core/app/agent-door/people.ts": {
-      "sha256": "9babf8ef513d53263f841eda6f3d42d3899aa75bed20c36a26505c25227754c9",
+      "sha256": "ab5bce6c1682b60da940afb3aa02d74ddf73903ab3a789f293b805d0c5d678a0",
       "executable": false
     },
     "src/core/app/agent-door/person-events.ts": {

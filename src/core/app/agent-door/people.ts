@@ -53,7 +53,9 @@ export function pencilPeople(db: D1Database, auth: PencilServices['auth']) {
       const rows: ManagedMember[] = await Promise.all(members.map(async member => {
         const previous = managed.find(row => member.id && row.businessId === member.id)
           ?? managed.find(row => row.email === member.email)
-        const candidate = previous ? previous.operatorId ? await read(previous.operatorId) : null
+        // A roster may arrive before native invitation confirmation. Retry only
+        // the first binding; an established native id never moves by email.
+        const candidate = previous?.operatorId ? await read(previous.operatorId)
           : await db.prepare('SELECT id FROM operators WHERE lower(email)=? AND is_setup_operator=0')
             .bind(member.email).first<{ id: string }>().then(row => row ? read(row.id) : null)
         const active = candidate && member.email !== ownerEmail && !candidate.setup
