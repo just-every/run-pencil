@@ -54,6 +54,22 @@ export async function proveSavedReports(call: ScenarioCall, request: Request, db
   expect(dashboard.views.map(detail => detail.view.id)).toEqual(rearranged.viewIds)
   expect(dashboard.views[1].report).toEqual(created.report)
 
+  const otherForm = await collectSharedReportScenario(call, 'synthetic-pencil-28')
+  const otherView = await call<SavedViewDetail>(otherForm.path + '/saved-views', {
+    name: 'Other form scale responses', revisionId: otherForm.revisionId,
+    filter: { answerStepId: otherForm.planId, answerValue: otherForm.scaleId },
+    cohorts: [], crosstabs: [], charts: [otherForm.planId],
+  })
+  const programOrder = [otherView.view.id, created.view.id]
+  await call('/api/app/report-dashboards/' + programDashboard.id, { name: programDashboard.name, scope: 'program', viewIds: programOrder }, 'PUT')
+  const reopenedProgram = await call<{ dashboard: SavedDashboard; views: SavedViewDetail[] }>('/api/app/report-dashboards/' + programDashboard.id)
+  expect(reopenedProgram.dashboard.viewIds).toEqual(programOrder)
+  expect(reopenedProgram.views.map(detail => detail.view.flowId)).toEqual([otherForm.flow.id, exposure.flow.id])
+  expect(reopenedProgram.views.map(detail => detail.report.cohorts[0].responseCount)).toEqual([8, 43])
+  expect(reopenedProgram.views.map(detail => detail.report)).toEqual([otherView.report, created.report])
+  expect((await request('/api/app/report-dashboards/' + formDashboard.id, { name: formDashboard.name, scope: 'form', flowId: exposure.flow.id, viewIds: programOrder }, 'PUT')).status).toBe(400)
+  expect(await call('/api/app/report-dashboards/' + formDashboard.id)).toEqual(dashboard)
+
   const shared = await call<ShareResult>(`/api/app/saved-views/${created.view.id}/shares`, {})
   const response = await anonymous(shared.token)
   expect(response.status).toBe(200); expect(response.headers.get('set-cookie')).toBeNull(); expect(response.headers.get('cache-control')).toBe('no-store')
