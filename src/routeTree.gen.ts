@@ -35,6 +35,8 @@ import { Route as AppActionsNewRouteImport } from './routes/app.actions.new'
 import { Route as AppAnalysisIndexRouteImport } from './routes/app.analysis.index'
 import { Route as AppAnalysisRunIdRouteImport } from './routes/app.analysis.$runId'
 import { Route as AppAnalysisNewRouteImport } from './routes/app.analysis.new'
+import { Route as AppFlowsIndexRouteImport } from './routes/app.flows.index'
+import { Route as AppFlowsFlowIdIndexRouteImport } from './routes/app.flows.$flowId.index'
 import { Route as AppFlowsFlowIdBuilderRouteImport } from './routes/app.flows.$flowId.builder'
 import { Route as AppFlowsFlowIdInboxRouteImport } from './routes/app.flows.$flowId.inbox'
 import { Route as AppFlowsFlowIdResultsRouteImport } from './routes/app.flows.$flowId.results'
@@ -169,6 +171,16 @@ const AppAnalysisNewRoute = AppAnalysisNewRouteImport.update({
   path: '/analysis/new',
   getParentRoute: () => AppRoute,
 } as any)
+const AppFlowsIndexRoute = AppFlowsIndexRouteImport.update({
+  id: '/flows/',
+  path: '/flows/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFlowsFlowIdIndexRoute = AppFlowsFlowIdIndexRouteImport.update({
+  id: '/flows/$flowId/',
+  path: '/flows/$flowId/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppFlowsFlowIdBuilderRoute = AppFlowsFlowIdBuilderRouteImport.update({
   id: '/flows/$flowId/builder',
   path: '/flows/$flowId/builder',
@@ -212,9 +224,11 @@ export interface FileRoutesByFullPath {
   '/app/analysis/new': typeof AppAnalysisNewRoute
   '/app/actions/': typeof AppActionsIndexRoute
   '/app/analysis/': typeof AppAnalysisIndexRoute
+  '/app/flows/': typeof AppFlowsIndexRoute
   '/app/flows/$flowId/builder': typeof AppFlowsFlowIdBuilderRoute
   '/app/flows/$flowId/inbox': typeof AppFlowsFlowIdInboxRoute
   '/app/flows/$flowId/results': typeof AppFlowsFlowIdResultsRoute
+  '/app/flows/$flowId/': typeof AppFlowsFlowIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -242,9 +256,11 @@ export interface FileRoutesByTo {
   '/app/analysis/new': typeof AppAnalysisNewRoute
   '/app/actions': typeof AppActionsIndexRoute
   '/app/analysis': typeof AppAnalysisIndexRoute
+  '/app/flows': typeof AppFlowsIndexRoute
   '/app/flows/$flowId/builder': typeof AppFlowsFlowIdBuilderRoute
   '/app/flows/$flowId/inbox': typeof AppFlowsFlowIdInboxRoute
   '/app/flows/$flowId/results': typeof AppFlowsFlowIdResultsRoute
+  '/app/flows/$flowId': typeof AppFlowsFlowIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -274,9 +290,11 @@ export interface FileRoutesById {
   '/app/analysis/new': typeof AppAnalysisNewRoute
   '/app/actions/': typeof AppActionsIndexRoute
   '/app/analysis/': typeof AppAnalysisIndexRoute
+  '/app/flows/': typeof AppFlowsIndexRoute
   '/app/flows/$flowId/builder': typeof AppFlowsFlowIdBuilderRoute
   '/app/flows/$flowId/inbox': typeof AppFlowsFlowIdInboxRoute
   '/app/flows/$flowId/results': typeof AppFlowsFlowIdResultsRoute
+  '/app/flows/$flowId/': typeof AppFlowsFlowIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -307,9 +325,11 @@ export interface FileRouteTypes {
     | '/app/analysis/new'
     | '/app/actions/'
     | '/app/analysis/'
+    | '/app/flows/'
     | '/app/flows/$flowId/builder'
     | '/app/flows/$flowId/inbox'
     | '/app/flows/$flowId/results'
+    | '/app/flows/$flowId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -337,9 +357,11 @@ export interface FileRouteTypes {
     | '/app/analysis/new'
     | '/app/actions'
     | '/app/analysis'
+    | '/app/flows'
     | '/app/flows/$flowId/builder'
     | '/app/flows/$flowId/inbox'
     | '/app/flows/$flowId/results'
+    | '/app/flows/$flowId'
   id:
     | '__root__'
     | '/'
@@ -368,9 +390,11 @@ export interface FileRouteTypes {
     | '/app/analysis/new'
     | '/app/actions/'
     | '/app/analysis/'
+    | '/app/flows/'
     | '/app/flows/$flowId/builder'
     | '/app/flows/$flowId/inbox'
     | '/app/flows/$flowId/results'
+    | '/app/flows/$flowId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -573,6 +597,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAnalysisNewRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/flows/': {
+      id: '/app/flows/'
+      path: '/flows'
+      fullPath: '/app/flows/'
+      preLoaderRoute: typeof AppFlowsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/flows/$flowId/': {
+      id: '/app/flows/$flowId/'
+      path: '/flows/$flowId'
+      fullPath: '/app/flows/$flowId/'
+      preLoaderRoute: typeof AppFlowsFlowIdIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/flows/$flowId/builder': {
       id: '/app/flows/$flowId/builder'
       path: '/flows/$flowId/builder'
@@ -611,9 +649,11 @@ interface AppRouteChildren {
   AppAnalysisNewRoute: typeof AppAnalysisNewRoute
   AppActionsIndexRoute: typeof AppActionsIndexRoute
   AppAnalysisIndexRoute: typeof AppAnalysisIndexRoute
+  AppFlowsIndexRoute: typeof AppFlowsIndexRoute
   AppFlowsFlowIdBuilderRoute: typeof AppFlowsFlowIdBuilderRoute
   AppFlowsFlowIdInboxRoute: typeof AppFlowsFlowIdInboxRoute
   AppFlowsFlowIdResultsRoute: typeof AppFlowsFlowIdResultsRoute
+  AppFlowsFlowIdIndexRoute: typeof AppFlowsFlowIdIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -630,9 +670,11 @@ const AppRouteChildren: AppRouteChildren = {
   AppAnalysisNewRoute: AppAnalysisNewRoute,
   AppActionsIndexRoute: AppActionsIndexRoute,
   AppAnalysisIndexRoute: AppAnalysisIndexRoute,
+  AppFlowsIndexRoute: AppFlowsIndexRoute,
   AppFlowsFlowIdBuilderRoute: AppFlowsFlowIdBuilderRoute,
   AppFlowsFlowIdInboxRoute: AppFlowsFlowIdInboxRoute,
   AppFlowsFlowIdResultsRoute: AppFlowsFlowIdResultsRoute,
+  AppFlowsFlowIdIndexRoute: AppFlowsFlowIdIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
