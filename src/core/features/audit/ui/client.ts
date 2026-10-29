@@ -6,4 +6,6 @@ export const auditApi={
  options:(actorSearch='',formSearch='')=>read<AuditOptions>('/api/app/audit/options?'+new URLSearchParams({actorSearch,formSearch})),
  exportUrl:(filters:AuditFilters,cursor:string)=>'/api/app/audit/export?'+auditQuery({...filters,cursor}),
 }
-export function activity(kind:string){return kind.replaceAll('.',' · ').replaceAll('_',' ').replaceAll('-',' ')}
+const plainActivity:Record<string,string>={'operator.setup_bootstrapped':'Workspace set up','operator.invitation_retained':'Invitation kept','auth.magic_link_prepared':'Sign-in link prepared','auth.magic_link_sent':'Sign-in link sent','auth.magic_link_failed':'Sign-in link failed'}
+/** An event kind in people's words: "action.created" reads "Action created". */
+export function activity(kind:string){if(Object.hasOwn(plainActivity,kind))return plainActivity[kind];const words=kind.replace(/[._-]+/g,' ').trim();return words.charAt(0).toUpperCase()+words.slice(1)}

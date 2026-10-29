@@ -43,7 +43,7 @@ contract('RSLT-012','operators code retained text, accept and reject exact sugge
     provider.script.push(answer({outcome:'findings',reason:'',themes:[{title:'Hands-on practice',summary:'Visitors want more support for exercises.',responseIds:ids,count:6,quotes:[{responseId:ids[1],questionId:question,start:0,end:texts[1].length,text:texts[1]},{responseId:ids[2],questionId:question,start:0,end:texts[2].length,text:texts[2]}]}],recommendations:[]}))
     expect(await call<{state:string}>('/api/app/analysis',{flowId:flow.id,revisionId:published.revision.id,questionIds:[question]})).toMatchObject({state:'completed'})
     await page.goto(`/app/flows/${flow.id}/results`)
-    const panel=page.getByRole('region',{name:'Organize feedback with codes'})
+    const panel=page.getByRole('region',{name:'Organise feedback with codes'})
     await expect(panel.getByText('6 released responses · 6 nonempty text answers and Other write-ins',{exact:true})).toBeVisible()
     await panel.screenshot({path:`test-results/${info.project.name}-coding-empty.png`})
     for(const name of [practiceName,staffingName]) {await panel.getByLabel('New code',{exact:true}).fill(name);await panel.getByRole('button',{name:'Create code',exact:true}).click();await expect(panel.getByLabel('New code',{exact:true})).toHaveValue('')}
@@ -77,7 +77,7 @@ contract('RSLT-012','operators code retained text, accept and reject exact sugge
     await expect(first.getByRole('button',{name:`Remove ${staffingName} from this answer`})).toHaveCount(0)
     await page.reload();await expect(panel.locator('.coding-suggestion').filter({hasText:texts[1]}).getByText(/Accepted · operator/)).toBeVisible()
     await page.goto('/docs/results')
-    const help=page.getByRole('heading',{name:'Organize open text with codes',exact:true})
+    const help=page.getByRole('heading',{name:'Organise open text with codes',exact:true})
     await help.scrollIntoViewIfNeeded();await expect(help).toBeVisible()
     await page.screenshot({path:`test-results/${info.project.name}-coding-help.png`})
   } finally {try {await page.request.delete('/api/app/connections/analysis',{headers:appHeaders,data:{},timeout:5000})} finally {await provider.close()}}

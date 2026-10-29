@@ -31,7 +31,7 @@ export function CrosstabPanel({ flowId, revision, questions, onSelection }: { on
   return <section className="panel results-card crosstab" aria-labelledby="crosstab-title">
     <p className="eyebrow">Crosstab</p>
     <h2 id="crosstab-title" className="display">Cross two answers</h2>
-    <p className="muted">Released responses of revision {revision.number} only. Each count is responses; a share names its numerator and denominator.</p>
+    <p className="muted">Released responses of revision {revision.number} only. Each count is responses, and a share is its count out of the row or column total.</p>
     <form className="crosstab-form" onSubmit={load}>
       {select('Rows', rows, setRows)}{select('Columns', columns, setColumns)}
       <label className="inspector-field">Filter by collector<select className="text-input" value={collectorId} onChange={event => setCollectorId(event.target.value)}><option value="">All collectors</option>{collectors.map(collector => <option key={collector.id} value={collector.id}>{collector.name}</option>)}</select></label>

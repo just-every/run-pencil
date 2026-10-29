@@ -31,8 +31,8 @@ export function ProviderSetup({ provider, baseUrl }: { provider: 'openai' | 'com
   </>
   const origin = serviceOrigin(baseUrl)
   return <>
-    <p>Models is a separate application your organization runs to share model access between apps, control spending and report costs. Its administrator keeps the upstream provider keys; Pencil receives a dedicated <strong>app key</strong>. It is useful when you already use Models. Pencil includes no hosted Models account or public signup.</p>
-    <p>Enter your organization’s Models service HTTPS address below. Setup links will open that service in a new tab. If you do not have one, choose OpenAI or Other compatible provider above to create a provider account directly.</p>
+    <p>Models is a separate application your organisation runs to share model access between apps, control spending and report costs. Its administrator keeps the upstream provider keys; Pencil receives a dedicated <strong>app key</strong>. It is useful when you already use Models. Pencil includes no hosted Models account or public signup.</p>
+    <p>Enter your organisation’s Models service HTTPS address below. Setup links will open that service in a new tab. If you do not have one, choose OpenAI or Other compatible provider above to create a provider account directly.</p>
     {origin ? <ol>
       <li>Sign in as an administrator at <a className="analysis-link focus-ring" href={`${origin}/app/providers`} target="_blank" rel="noreferrer">your Models service → Providers</a>. Add a provider key, verify its model catalogue and record the account’s data policies.</li>
       <li>In <a className="analysis-link focus-ring" href={`${origin}/app/routes`} target="_blank" rel="noreferrer">Routes</a>, add an exact model with Responses and strict JSON-schema support and confirm its prices. Copy its complete name, including the provider prefix.</li>

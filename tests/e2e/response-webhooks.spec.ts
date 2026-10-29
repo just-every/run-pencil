@@ -74,7 +74,7 @@ contract(['INTEG-010', 'INTEG-015', 'INTEG-006'], 'an owner adds a response webh
     // GOV-005: the connection events are in the audit log, without the secret, at both widths.
     await page.goto('/app/audit'); await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
     const recorded = page.getByRole('region', { name: 'Recorded activity' })
-    await expect(recorded.getByText('connection · saved').first()).toBeVisible(); await expect(recorded.getByText('connection · tested').first()).toBeVisible()
+    await expect(recorded.getByText('Connection saved').first()).toBeVisible(); await expect(recorded.getByText('Connection tested').first()).toBeVisible()
     expect(await page.content()).not.toContain(shown)
     for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
       await page.setViewportSize(viewport)

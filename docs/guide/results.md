@@ -105,9 +105,9 @@ At the bottom of the results page, **Response notifications** lets each operator
 
 On Managed hosting, emails use RER's assigned verified relay sender automatically. With SendGrid or Resend, emails come from your no-reply sender address (`MAIL_FROM`): if it is not a plain `noreply@` or `no-reply@` address, collecting responses and sign-in email carry on but this page says why response notification mail is off. Analysis outcomes have their own [in-app notifications](analysis.md#analysis-notifications), separate from these email choices.
 
-## Organize open text with codes
+## Organise open text with codes
 
-In Results, **Organize feedback with codes** lets you create a workspace vocabulary and assign several codes to each retained text answer or Other write-in. Remove a code with its × button. Coding history records who assigned it and whether it was manual or an accepted AI suggestion.
+In Results, **Organise feedback with codes** lets you create a workspace vocabulary and assign several codes to each retained text answer or Other write-in. Remove a code with its × button. Coding history records who assigned it and whether it was manual or an accepted AI suggestion.
 
 Validated analysis themes supply exact quoted suggestions. Choose a workspace code and **Accept**, or **Reject** to leave the answer uncoded. Manual coding needs no AI connection. Withheld or redacted findings never supply visible suggestions; erasure withdraws affected AI coding while unrelated manual assignments remain.
 

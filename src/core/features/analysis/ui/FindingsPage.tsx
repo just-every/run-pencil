@@ -1,8 +1,8 @@
 import './analysis.css'
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { ArrowLeft, ArrowRight, RotateCcw, TriangleAlert } from 'lucide-react'
-import { analysisApi, costLabel, shortId, stateLabels, transportLabel, when, type RunDetail, type ThemeResponses, type ThemeView } from './analysisApi'
+import { analysisApi, costLabel, providerParts, stateLabels, transportLabel, when, type RunDetail, type ThemeResponses, type ThemeView } from './analysisApi'
 
 type Shown = Extract<ThemeView, { withheld: false }>
 
@@ -20,7 +20,7 @@ function Responses({ runId, theme, focus }: { runId: string; theme: Shown; focus
     {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
     {!responses && !error ? <p className="status-note" role="status">Loading responses…</p> : null}
     {responses ? <ol>{responses.responses.map(response => <li key={response.id} id={`response-${response.id}`} data-focused={response.id === focus}>
-      <p className="analysis-figure" style={{ marginTop: 0 }}>Response {shortId(response.id)} · {response.source === 'imported' ? 'Imported' : 'Completed'} {when(response.completedAt, responses.timeZone)}</p>
+      <p className="analysis-figure" style={{ marginTop: 0 }}>{response.source === 'imported' ? 'Imported' : 'Completed'} {when(response.completedAt, responses.timeZone)}</p>
       {response.answers.map(answer => <p key={answer.questionId} style={{ margin: '.4rem 0 0' }}><span className="muted">{answer.prompt}: </span>{answer.text}</p>)}
     </li>)}</ol> : null}
     <p style={{ marginTop: '.8rem' }}><Link className="analysis-link" to="/app/flows/$flowId/results" params={{ flowId: responses?.flowId ?? '' }} disabled={!responses}>Open the flow's results and ledger</Link></p>
@@ -32,7 +32,7 @@ function ThemeBody({ runId, theme, open, focus, onOpen }: { runId: string; theme
     {theme.summary ? <><p className="analysis-label">Analysis</p><p className="muted" style={{ margin: 0 }}>{theme.summary}</p></> : null}
     {theme.quotes.length ? <ul className="analysis-quotes" aria-label="Exact excerpts">{theme.quotes.map(quote => <li key={quote.id}>
       <blockquote>“{quote.excerpt}”</blockquote>
-      <button className="analysis-link focus-ring" type="button" onClick={() => onOpen(quote.responseId)}>Response {shortId(quote.responseId)}</button>
+      <button className="analysis-link focus-ring" type="button" onClick={() => onOpen(quote.responseId)}>See this response</button>
     </li>)}</ul> : null}
     <hr className="analysis-divider" />
     <button className="analysis-link focus-ring" type="button" aria-expanded={open} onClick={() => onOpen()}>See the {theme.count} responses <ArrowRight aria-hidden="true" size={14} style={{ verticalAlign: 'middle' }} /></button>
@@ -64,7 +64,7 @@ export function FindingsPage({ runId }: { runId: string }) {
       <p className="analysis-status">
         <span className="badge" data-status={run.state}>{stateLabels[run.state]}</span>
         <span>Evidence cutoff {when(run.evidenceCutoff, run.timeZone)}</span><span aria-hidden="true">·</span><span>{run.evidenceCount} responses read</span>
-        {run.providerOrigin ? <><span aria-hidden="true">·</span><span>{run.calls[0] ? transportLabel(run.calls[0].provider) : run.providerOrigin}</span><span aria-hidden="true">·</span><span>{run.model}</span></> : null}
+        {run.providerOrigin ? providerParts(run).map(part => <Fragment key={part}><span aria-hidden="true">·</span><span>{part}</span></Fragment>) : null}
       </p>
       {run.stale ? <p className="analysis-stale"><TriangleAlert aria-hidden="true" size={15} /> Stale{run.redacted ? ' after erasure' : ''}: {run.staleResponses} {run.staleResponses === 1 ? 'response arrived' : 'responses arrived'} after the cutoff. <Link to="/app/analysis/new" search={{ flowId: run.flowId, revisionId: run.revisionId }}>Run a new analysis</Link></p> : null}
       {run.redacted ? <p className="status-note" style={{ marginTop: '.8rem' }}>A response this analysis read was erased afterwards. It is no longer counted or quoted, and text that may have described it is withheld.</p> : null}
@@ -126,7 +126,7 @@ function RunFacts({ run }: { run: RunDetail }) {
       <dt>Finished</dt><dd>{run.finishedAt ? when(run.finishedAt,run.timeZone) : 'Not finished'}</dd>
       <dt>Provider calls</dt><dd>{run.calls.length ? <ul>{run.calls.map((call,index)=><li key={index}>{when(call.createdAt,run.timeZone)} · {call.outcome} · {costLabel([call])}</li>)}</ul> : 'No provider calls'}</dd>
       <dt>Policies</dt><dd>Disclosure threshold {run.policy.disclosure.threshold} · highest-impact recommendation</dd>
-      <dt>Requested</dt><dd>{run.trigger === 'autorun' ? 'Automatically when the flow closed' : 'By an operator'} · {when(run.createdAt, run.timeZone)}</dd>
+      <dt>Requested</dt><dd>{run.trigger === 'autorun' ? 'Automatically when the flow closed' : 'By a team member'} · {when(run.createdAt, run.timeZone)}</dd>
     </dl>
   </section>
 }

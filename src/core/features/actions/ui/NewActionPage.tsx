@@ -48,7 +48,7 @@ export function NewActionPage({ search, operatorId }: { search: EvidenceSearch; 
   return <section aria-labelledby="new-action-title">
     <header className="page-heading">
       <div className="builder-actions"><Link className="quiet-button focus-ring" to="/app/actions"><ArrowLeft aria-hidden="true" size={15} /> All actions</Link></div>
-      <p className="eyebrow">{search.analysisId ? 'Recommendation from an analysis' : 'Recommendation written by an operator'}</p><h1 className="display" id="new-action-title">New action</h1>
+      <p className="eyebrow">{search.analysisId ? 'Recommendation from an analysis' : 'Your recommendation'}</p><h1 className="display" id="new-action-title">New action</h1>
       {recommendation ? <p className="status-note" style={{ marginTop: '.8rem' }}>From the analysis of {analysis!.flowTitle}, revision {analysis!.revisionNumber}: “{recommendation.title}” is the provider's suggestion; edit it as yours.</p> : null}
     </header>
     {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}

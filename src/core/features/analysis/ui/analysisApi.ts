@@ -27,8 +27,12 @@ export const analysisApi = {
 }
 
 export const stateLabels: Record<RunSummary['state'], string> = { queued: 'Queued', running: 'Running', completed: 'Completed', insufficient_evidence: 'Insufficient evidence', failed: 'Failed' }
-export const shortId = (id: string) => `${id.slice(0, 3)}…${id.slice(-2)}`
 export const when = shortDateTime
+/** Who answered, once: the service and its model, unless the model is only the service's own name (a demo's "Demo · demo"). */
+export function providerParts(run: { providerOrigin: string | null; model: string | null; calls: Array<{ provider: string }> }) {
+  const service = run.calls[0] ? transportLabel(run.calls[0].provider) : run.providerOrigin ?? ''
+  return [service, ...(run.model && run.model.toLowerCase() !== service.toLowerCase() ? [run.model] : [])].filter(Boolean)
+}
 export const transportLabel = (transport: string) => transport === 'demo' ? 'Demo' : transport === 'models' ? 'Models service' : transport === 'dev' ? 'Local dev double' : 'Direct key'
 export function costLabel(calls: Array<{ inputTokens: number | null; outputTokens: number | null; costMicrousd: number | null }>) {
   const input = calls.reduce((sum, call) => sum + (call.inputTokens ?? 0), 0), output = calls.reduce((sum, call) => sum + (call.outputTokens ?? 0), 0)

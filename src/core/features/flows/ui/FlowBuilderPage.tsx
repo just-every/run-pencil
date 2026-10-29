@@ -275,7 +275,7 @@ export function FlowBuilderPage() {
       <div className="builder-grid" hidden={sharing}>
         <aside className="builder-rail" aria-label="Flow steps">
           <p className="eyebrow">Steps</p>
-          <p className="display builder-count">{draft.steps.length} steps</p>
+          <p className="display builder-count">{draft.steps.length} {draft.steps.length === 1 ? 'step' : 'steps'}</p>
           {!draft.steps.length ? <p className="muted builder-start-guidance">Start with a question, then add a completion screen.</p> : null}
           <div className="builder-add">
             <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={addQuestion} type="button"><Plus aria-hidden="true" size={15} /> Add question</button>

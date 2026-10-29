@@ -47,8 +47,8 @@ contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019', 'IMPORT-00
     if (source === 'imported') await expect(page.getByText('0 live · 2 imported', { exact: true })).toBeVisible()
     await ledger.getByLabel('Device class',{exact:true}).selectOption(source === 'direct' ? 'desktop' : 'unknown')
     await expect(ledger.getByRole('button',{name:'View answers',exact:true})).toHaveCount(2)
-    await expect(page.locator('.device-card')).toContainText(source === 'direct' ? '2 filtered native responses' : '0 filtered native responses')
-    if(source === 'imported') await expect(page.locator('.device-card')).toContainText('2 imported responses have no native session')
+    await expect(page.locator('.device-card')).toContainText(source === 'direct' ? '2 filtered responses' : '0 filtered responses')
+    if(source === 'imported') await expect(page.locator('.device-card')).toContainText('2 imported responses have no session')
     await ledger.getByLabel('Device class',{exact:true}).selectOption('')
 
     const choice = scenario.current.choices.find(choice => choice.stepId === scenario.stepId('dropdown'))!
