@@ -4,7 +4,10 @@ import type { KeyboardEvent } from 'react'
 export function moveAnswerFocus(event: KeyboardEvent<HTMLButtonElement>, select: boolean) {
   const key = event.key
   if (!['ArrowDown', 'ArrowRight', 'ArrowUp', 'ArrowLeft', 'Home', 'End'].includes(key)) return
-  const options = Array.from(event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>('[role="radio"],[role="option"]') ?? [])
+  // An icon option is wrapped in its Tooltip; the group is the wrapper's parent.
+  const parent = event.currentTarget.parentElement
+  const group = parent?.classList.contains('control-tooltip') ? parent.parentElement : parent
+  const options = Array.from(group?.querySelectorAll<HTMLButtonElement>('[role="radio"],[role="option"]') ?? [])
   const index = options.indexOf(event.currentTarget)
   if (index < 0 || !options.length) return
   event.preventDefault()

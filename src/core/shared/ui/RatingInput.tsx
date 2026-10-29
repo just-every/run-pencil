@@ -4,6 +4,7 @@ import { Star } from 'lucide-react'
 import type { FlowStep } from '../../app/api'
 import { ratingScale, ratingSettingsValid } from '../ratingScale'
 import { moveAnswerFocus } from './answerKeyboard'
+import { Tooltip } from './Tooltip'
 import './rating-scale.css'
 
 type Props = { step: FlowStep; value: unknown; onChange: (value: unknown) => void }
@@ -29,8 +30,9 @@ export function RatingInput({ step, value, onChange }: Props) {
       {Array.from({ length: steps }, (_, offset) => min + offset).map(rating => {
         // With an even count the middle label belongs to the two adjacent steps.
         const labels = [rating === min ? lowLabel : '', Math.abs(rating - middle) <= 0.5 ? middleLabel : '', rating === max ? highLabel : ''].filter(Boolean)
-        return <button
-          aria-label={`${rating} out of ${max}${labels.length ? `, ${labels.join(', ')}` : ''}`}
+        const name = `${rating} out of ${max}${labels.length ? `, ${labels.join(', ')}` : ''}`
+        const button = <button
+          aria-label={name}
           role="radio"
           aria-checked={value === rating}
           tabIndex={value === rating || (!selected && rating === min) ? 0 : -1}
@@ -41,6 +43,8 @@ export function RatingInput({ step, value, onChange }: Props) {
           onClick={() => onChange(rating)}
           type="button"
         >{numeric ? <span>{rating}</span> : <Star aria-hidden="true" fill={value === rating ? 'currentColor' : 'none'} size={24} />}</button>
+        // Stars carry no text, so each shows its name in the shared tooltip; numbers are their own label.
+        return numeric ? button : <Tooltip key={rating} label={name}>{button}</Tooltip>
       })}
     </div>
   </div>
