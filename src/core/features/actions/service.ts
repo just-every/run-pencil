@@ -82,9 +82,11 @@ export class ActionService {
         return { ...measurement, difference, direction: difference === 0 ? 'unchanged' : (difference > 0) === (row.metricDirection === 'increase') ? 'desired' : 'undesired' }
       }),
       history: (history.results as Array<Omit<ActionEvent, 'changes'> & { changes: string | null }>).map(event => {
-        const { prepared_by, approvers: _approvers, ...changes } = event.changes ? JSON.parse(event.changes) : {}
+        const { prepared_by, approvers, ...changes } = event.changes ? JSON.parse(event.changes) : {}
         const agent = prepared_by?.agent?.name
-        return { ...event, operator: agent && event.operator ? `${agent} for ${event.operator}` : event.operator, changes: Object.keys(changes).length ? changes : null }
+        const approved = Array.isArray(approvers) ? approvers.map(person => person.name).filter(name => typeof name === 'string' && name) : []
+        const actor = agent && event.operator ? `${agent} for ${event.operator}` : event.operator
+        return { ...event, operator: actor && approved.length ? `${actor}; approved by ${approved.join(', ')}` : actor, changes: Object.keys(changes).length ? changes : null }
       }),
     }
   }

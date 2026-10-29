@@ -12,7 +12,8 @@ export const segmentSchema=z.object({name:z.string().trim().min(1).max(100),rule
 export type SegmentRule=z.infer<typeof ruleSchema>
 type SegmentRow={id:string;name:string;rulesJson:string}
 export class DistributionSegments {
-  constructor(private readonly db:D1Database){}
+  constructor(private readonly db:D1Database,private readonly attribution:Record<string,unknown>={}){}
+  attributed(attribution:Record<string,unknown>){return new DistributionSegments(this.db,attribution)}
   private predicate(rules:SegmentRule[]) {
     const values:string[]=[]
     const sql=rules.map(r=>{
@@ -38,16 +39,17 @@ export class DistributionSegments {
       return {...row,rules,matchCount:count!.n}
     }))
   }
-  async save(workspaceId:string,input:unknown,id?:string) {
+  async save(workspaceId:string,input:unknown,id?:string,operatorId?:string) {
     const valid=segmentSchema.safeParse(input); if(!valid.success) throw new ValidationError('Provide a segment name and valid field rules. Use domains, never exact email addresses.')
     const now=new Date().toISOString(),segmentId=id??ulid()
     const result=id?await this.db.prepare('UPDATE distribution_segments SET name=?,rules_json=?,updated_at=? WHERE id=? AND workspace_id=?').bind(valid.data.name,JSON.stringify(valid.data.rules),now,id,workspaceId).run():await this.db.prepare('INSERT INTO distribution_segments(id,workspace_id,name,rules_json,created_at,updated_at) VALUES(?,?,?,?,?,?)').bind(segmentId,workspaceId,valid.data.name,JSON.stringify(valid.data.rules),now,now).run()
     if(!result.meta.changes) throw new NotFoundError('This segment is not in your workspace.')
+    if(operatorId&&Object.keys(this.attribution).length)await this.db.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at) VALUES(?,?,?,?,?,?,?,?)`).bind(ulid(),workspaceId,id?'segment.updated':'segment.created',operatorId,'segment',segmentId,JSON.stringify(this.attribution),now).run()
     return (await this.list(workspaceId)).find(s=>s.id===segmentId)!
   }
   async erase(workspaceId:string,id:string,operatorId:string) {
     const result=await this.db.batch([
-      this.db.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at) SELECT ?,workspace_id,'segment.deleted',?,'segment',NULL,'{"segments":1}',? FROM distribution_segments WHERE id=? AND workspace_id=?`).bind(ulid(),operatorId,new Date().toISOString(),id,workspaceId),
+      this.db.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at) SELECT ?,workspace_id,'segment.deleted',?,'segment',NULL,?,? FROM distribution_segments WHERE id=? AND workspace_id=?`).bind(ulid(),operatorId,JSON.stringify({segments:1,...this.attribution}),new Date().toISOString(),id,workspaceId),
       this.db.prepare('DELETE FROM distribution_segments WHERE id=? AND workspace_id=?').bind(id,workspaceId),
     ])
     if(!result[1].meta.changes) throw new NotFoundError('This segment is not in your workspace.')

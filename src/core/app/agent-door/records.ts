@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { defineTool, type JsonSchemaObject, type ToolContext, type ToolDefinition } from '../../../base/agent-door/index.ts'
 import { ledgerFilterSchema } from '../../features/reporting/filter'
+import { ResponseEdits } from '../../features/responses/edits'
 import type { PencilServices } from '../services'
 import { nativeCall, nativeScope } from './native'
 import { identifier as id, objectSchema as schema, standard } from './form-context'
@@ -31,6 +32,8 @@ export function recordTools(db: D1Database, services: PencilServices): ToolDefin
     read('analyses', 'options', 'Read native revision and question eligibility for analysis', ['ANLY-002'], form, async (args, who) => services.analysis.options(who.workspaceId, String(args.formId))),
     read('actions', 'list', 'Read accountable actions and their current states', ['ACT-001', 'ACT-002'], schema({}), async (_args, who) => ({ actions: await services.actions.records.list(who.workspaceId) })),
     read('responses', 'list', 'Read the native response ledger under its filters', ['LEDG-001', 'LEDG-006'], schema({ formId: id, filter: z.toJSONSchema(ledgerFilterSchema, { io: 'input' }) }, ['formId']), async (args, who) => services.reporting.ledger(who.workspaceId, String(args.formId), ledgerFilterSchema.parse(args.filter ?? {}))),
+    read('responses', 'versions', 'Read retained response versions', ['RESP-021'], schema({ responseId: id }, ['responseId']), async (args, who) => new ResponseEdits(db).versions(who.workspaceId, String(args.responseId))),
+    read('responses', 'quarantine', 'Read native quarantined responses', ['RESP-016', 'RESP-017', 'RESP-018'], schema({ revisionId: id }, ['revisionId']), async (args, who) => ({ responses: await services.responses.listQuarantinedResponses({ workspaceId: who.workspaceId, revisionId: String(args.revisionId) }) })),
     read('results', 'questions', 'Read native question reports', ['RSLT-001'], schema({ formId: id, filter: z.toJSONSchema(ledgerFilterSchema, { io: 'input' }) }, ['formId']), async (args, who) => ({ questions: await services.reporting.questions(who.workspaceId, String(args.formId), undefined, ledgerFilterSchema.parse(args.filter ?? {})) })),
     read('results', 'compare', 'Read native revision comparisons', ['RSLT-005'], schema({ formId: id, offset: { type: 'integer', minimum: 0 } }, ['formId']), async (args, who) => services.reporting.compareRevisions(who.workspaceId, String(args.formId), Number(args.offset ?? 0))),
     read('deliveries', 'list', 'Read invitation and reminder delivery truth', ['DIST-004', 'DIST-008'], form, async (args, who) => ({ deliveries: await services.distribution.launches.list(who.workspaceId, String(args.formId)) })),

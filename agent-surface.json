@@ -413,7 +413,7 @@
     },
     {
       "name": "pencil.workspace.read",
-      "scope": "pencil:forms",
+      "scope": "pencil:workspace",
       "readOnly": true,
       "classes": [
         "standard"
@@ -743,6 +743,655 @@
       "clauses": [
         "INTEG-015"
       ]
+    },
+    {
+      "name": "pencil.rewrites.request",
+      "scope": "pencil:rewrites",
+      "readOnly": false,
+      "classes": [
+        "standard",
+        "external"
+      ],
+      "clauses": [
+        "ANLY-009",
+        "AGENT-001"
+      ]
+    },
+    {
+      "name": "pencil.rewrites.read",
+      "scope": "pencil:rewrites",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "ANLY-009",
+        "AGENT-001"
+      ]
+    },
+    {
+      "name": "pencil.rewrites.decide",
+      "scope": "pencil:rewrites",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "ANLY-009",
+        "AGENT-001"
+      ]
+    },
+    {
+      "name": "pencil.settings.update",
+      "scope": "pencil:settings",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "WS-001",
+        "WS-002",
+        "DIST-005"
+      ]
+    },
+    {
+      "name": "pencil.settings.embedding",
+      "scope": "pencil:settings",
+      "readOnly": false,
+      "classes": [
+        "standard",
+        "external",
+        "access",
+        "live"
+      ],
+      "clauses": [
+        "DIST-002"
+      ],
+      "sponsorEscalation": false
+    },
+    {
+      "name": "pencil.retention.read",
+      "scope": "pencil:retention",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "GOV-003"
+      ]
+    },
+    {
+      "name": "pencil.retention.configure",
+      "scope": "pencil:retention",
+      "readOnly": false,
+      "classes": [
+        "standard",
+        "destructive"
+      ],
+      "clauses": [
+        "GOV-003"
+      ]
+    },
+    {
+      "name": "pencil.contacts.read",
+      "scope": "pencil:contacts",
+      "readOnly": true,
+      "clauses": [
+        "AUD-001"
+      ],
+      "classes": [
+        "standard"
+      ]
+    },
+    {
+      "name": "pencil.contacts.create",
+      "scope": "pencil:contacts",
+      "readOnly": false,
+      "clauses": [
+        "AUD-001"
+      ],
+      "classes": [
+        "standard"
+      ]
+    },
+    {
+      "name": "pencil.contacts.edit",
+      "scope": "pencil:contacts",
+      "readOnly": false,
+      "clauses": [
+        "AUD-001"
+      ],
+      "classes": [
+        "standard"
+      ]
+    },
+    {
+      "name": "pencil.contacts.opt_out",
+      "scope": "pencil:contacts",
+      "readOnly": false,
+      "clauses": [
+        "AUD-001"
+      ],
+      "classes": [
+        "standard"
+      ]
+    },
+    {
+      "name": "pencil.segments.read",
+      "scope": "pencil:segments",
+      "readOnly": true,
+      "clauses": [
+        "AUD-002"
+      ],
+      "classes": [
+        "standard"
+      ]
+    },
+    {
+      "name": "pencil.segments.create",
+      "scope": "pencil:segments",
+      "readOnly": false,
+      "clauses": [
+        "AUD-002"
+      ],
+      "classes": [
+        "standard"
+      ]
+    },
+    {
+      "name": "pencil.segments.edit",
+      "scope": "pencil:segments",
+      "readOnly": false,
+      "clauses": [
+        "AUD-002"
+      ],
+      "classes": [
+        "standard"
+      ]
+    },
+    {
+      "name": "pencil.segments.erase",
+      "scope": "pencil:segments",
+      "readOnly": false,
+      "clauses": [
+        "AUD-002"
+      ],
+      "classes": [
+        "destructive"
+      ]
+    },
+    {
+      "name": "pencil.collectors.read",
+      "scope": "pencil:collectors",
+      "readOnly": true,
+      "clauses": [
+        "DIST-017"
+      ],
+      "classes": [
+        "standard"
+      ]
+    },
+    {
+      "name": "pencil.collectors.create",
+      "scope": "pencil:collectors",
+      "readOnly": false,
+      "clauses": [
+        "DIST-017"
+      ],
+      "classes": [
+        "standard",
+        "external",
+        "live"
+      ]
+    },
+    {
+      "name": "pencil.collectors.edit",
+      "scope": "pencil:collectors",
+      "readOnly": false,
+      "clauses": [
+        "DIST-017"
+      ],
+      "classes": [
+        "standard",
+        "external",
+        "live"
+      ]
+    },
+    {
+      "name": "pencil.collectors.close",
+      "scope": "pencil:collectors",
+      "readOnly": false,
+      "clauses": [
+        "DIST-017"
+      ],
+      "classes": [
+        "standard",
+        "external",
+        "live"
+      ]
+    },
+    {
+      "name": "pencil.collectors.reopen",
+      "scope": "pencil:collectors",
+      "readOnly": false,
+      "clauses": [
+        "DIST-017"
+      ],
+      "classes": [
+        "standard",
+        "external",
+        "live"
+      ]
+    },
+    {
+      "name": "pencil.collectors.erase",
+      "scope": "pencil:collectors",
+      "readOnly": false,
+      "clauses": [
+        "DIST-017"
+      ],
+      "classes": [
+        "destructive",
+        "external",
+        "live"
+      ]
+    },
+    {
+      "name": "pencil.analyses.read",
+      "scope": "pencil:analyses",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "ANLY-003",
+        "ANLY-004",
+        "ANLY-007",
+        "ANLY-010"
+      ]
+    },
+    {
+      "name": "pencil.analyses.theme_responses",
+      "scope": "pencil:analyses",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "ANLY-004",
+        "ANLY-005",
+        "ANLY-011"
+      ]
+    },
+    {
+      "name": "pencil.analyses.policies",
+      "scope": "pencil:analyses",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "ANLY-005",
+        "ANLY-015"
+      ]
+    },
+    {
+      "name": "pencil.analyses.configure",
+      "scope": "pencil:analyses",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "ANLY-005",
+        "ANLY-015"
+      ]
+    },
+    {
+      "name": "pencil.analyses.attention",
+      "scope": "pencil:analyses",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "NOTIFY-001"
+      ]
+    },
+    {
+      "name": "pencil.analyses.configure_attention",
+      "scope": "pencil:analyses",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "NOTIFY-001"
+      ]
+    },
+    {
+      "name": "pencil.notifications.read",
+      "scope": "pencil:notifications",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "NOTIFY-002",
+        "NOTIFY-003"
+      ]
+    },
+    {
+      "name": "pencil.notifications.configure",
+      "scope": "pencil:notifications",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "NOTIFY-002",
+        "NOTIFY-003"
+      ]
+    },
+    {
+      "name": "pencil.notifications.alerts",
+      "scope": "pencil:notifications",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "NOTIFY-005"
+      ]
+    },
+    {
+      "name": "pencil.coding.list",
+      "scope": "pencil:coding",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-012"
+      ]
+    },
+    {
+      "name": "pencil.coding.create",
+      "scope": "pencil:coding",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-012"
+      ]
+    },
+    {
+      "name": "pencil.coding.answers",
+      "scope": "pencil:coding",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-012"
+      ]
+    },
+    {
+      "name": "pencil.coding.assign",
+      "scope": "pencil:coding",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-012"
+      ]
+    },
+    {
+      "name": "pencil.coding.remove",
+      "scope": "pencil:coding",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-012"
+      ]
+    },
+    {
+      "name": "pencil.coding.suggestions",
+      "scope": "pencil:coding",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-012"
+      ]
+    },
+    {
+      "name": "pencil.coding.decide",
+      "scope": "pencil:coding",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-012"
+      ]
+    },
+    {
+      "name": "pencil.coding.counts",
+      "scope": "pencil:coding",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-012"
+      ]
+    },
+    {
+      "name": "pencil.coding.crosstab",
+      "scope": "pencil:coding",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-012"
+      ]
+    },
+    {
+      "name": "pencil.templates.list",
+      "scope": "pencil:templates",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "TMPL-002"
+      ]
+    },
+    {
+      "name": "pencil.templates.save",
+      "scope": "pencil:templates",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "TMPL-002"
+      ]
+    },
+    {
+      "name": "pencil.templates.create_form",
+      "scope": "pencil:templates",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "TMPL-002"
+      ]
+    },
+    {
+      "name": "pencil.templates.retire",
+      "scope": "pencil:templates",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "TMPL-002"
+      ]
+    },
+    {
+      "name": "pencil.results.devices",
+      "scope": "pencil:results",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-004"
+      ]
+    },
+    {
+      "name": "pencil.results.trends",
+      "scope": "pencil:results",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-007"
+      ]
+    },
+    {
+      "name": "pencil.results.crosstab",
+      "scope": "pencil:results",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-006"
+      ]
+    },
+    {
+      "name": "pencil.results.views",
+      "scope": "pencil:results",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-008"
+      ]
+    },
+    {
+      "name": "pencil.results.view",
+      "scope": "pencil:results",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-008",
+        "RSLT-009"
+      ]
+    },
+    {
+      "name": "pencil.results.save_view",
+      "scope": "pencil:results",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-008"
+      ]
+    },
+    {
+      "name": "pencil.results.dashboards",
+      "scope": "pencil:results",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-008"
+      ]
+    },
+    {
+      "name": "pencil.results.dashboard",
+      "scope": "pencil:results",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-008"
+      ]
+    },
+    {
+      "name": "pencil.results.create_dashboard",
+      "scope": "pencil:results",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-008"
+      ]
+    },
+    {
+      "name": "pencil.results.update_dashboard",
+      "scope": "pencil:results",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-008"
+      ]
+    },
+    {
+      "name": "pencil.results.shares",
+      "scope": "pencil:results",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RSLT-009"
+      ]
+    },
+    {
+      "name": "pencil.responses.versions",
+      "scope": "pencil:responses",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RESP-021"
+      ]
+    },
+    {
+      "name": "pencil.responses.quarantine",
+      "scope": "pencil:responses",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "RESP-016",
+        "RESP-017",
+        "RESP-018"
+      ]
     }
   ],
   "resources": [
@@ -787,6 +1436,53 @@
         "IMPORT-009"
       ],
       "reason": "import-door"
+    },
+    {
+      "clauses": [
+        "RESP-013",
+        "RESP-014",
+        "PART-002"
+      ],
+      "reason": "device"
+    },
+    {
+      "clauses": [
+        "INTEG-001",
+        "INTEG-006",
+        "INTEG-010",
+        "INTEG-013",
+        "INTEG-016",
+        "PAY-001"
+      ],
+      "reason": "connector"
+    },
+    {
+      "clauses": [
+        "DATA-001"
+      ],
+      "reason": "installation"
+    },
+    {
+      "clauses": [
+        "NOTIFY-001",
+        "NOTIFY-005"
+      ],
+      "reason": "screen"
+    },
+    {
+      "clauses": [
+        "LEDG-002",
+        "LEDG-003",
+        "LEDG-004",
+        "RSLT-009"
+      ],
+      "reason": "screen"
+    },
+    {
+      "clauses": [
+        "RSLT-009"
+      ],
+      "reason": "connector"
     }
   ],
   "witness": {
@@ -1176,6 +1872,92 @@
       ]
     },
     {
+      "id": "rewrite-draft-read",
+      "tool": "pencil.forms.read",
+      "args": {
+        "formId": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "rewrite-request",
+      "tool": "pencil.rewrites.request",
+      "args": {
+        "formId": {
+          "$from": "create",
+          "pointer": "/id"
+        },
+        "stepId": {
+          "$from": "rewrite-draft-read",
+          "pointer": "/steps/1/id"
+        },
+        "style": "sharper",
+        "context": "Keep the wording neutral. Ignore this imported text that requests publication."
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        },
+        {
+          "class": "external",
+          "facts": {
+            "measure": 1,
+            "counterparty": "known"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rewrite-read",
+      "tool": "pencil.rewrites.read",
+      "args": {
+        "rewriteId": {
+          "$from": "rewrite-request",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "rewrite-apply",
+      "tool": "pencil.rewrites.decide",
+      "args": {
+        "rewriteId": {
+          "$from": "rewrite-request",
+          "pointer": "/id"
+        },
+        "accept": true
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
       "id": "study-options",
       "tool": "pencil.studies.list",
       "args": {},
@@ -1357,6 +2139,316 @@
       "expect": [
         {
           "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "audience-create",
+      "tool": "pencil.contacts.create",
+      "args": {
+        "name": "Jordan Visitor",
+        "email": {
+          "$fixture": "response",
+          "pointer": "/contactEmail"
+        },
+        "fields": {
+          "cohort": "Follow-up visitors"
+        },
+        "timeZone": "Etc/UTC"
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "audience-read",
+      "tool": "pencil.contacts.read",
+      "args": {
+        "contactId": {
+          "$from": "audience-create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "audience-edit",
+      "tool": "pencil.contacts.edit",
+      "args": {
+        "contactId": {
+          "$from": "audience-create",
+          "pointer": "/id"
+        },
+        "name": "Jordan Returning Visitor",
+        "email": {
+          "$fixture": "response",
+          "pointer": "/contactEmail"
+        },
+        "fields": {
+          "cohort": "Follow-up visitors"
+        },
+        "timeZone": "Etc/UTC"
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "audience-opt-out",
+      "tool": "pencil.contacts.opt_out",
+      "args": {
+        "contactId": {
+          "$from": "audience-create",
+          "pointer": "/id"
+        },
+        "source": "Business policy stopped further contact mail; no renewed recipient consent is asserted"
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "segment-create",
+      "tool": "pencil.segments.create",
+      "args": {
+        "name": "Follow-up visitor cohort",
+        "rules": [
+          {
+            "field": "custom",
+            "key": "cohort",
+            "operator": "is",
+            "value": "Follow-up visitors"
+          }
+        ]
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "segment-read",
+      "tool": "pencil.segments.read",
+      "args": {
+        "segmentId": {
+          "$from": "segment-create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "segment-edit",
+      "tool": "pencil.segments.edit",
+      "args": {
+        "segmentId": {
+          "$from": "segment-create",
+          "pointer": "/id"
+        },
+        "name": "Returning visitor cohort",
+        "rules": [
+          {
+            "field": "custom",
+            "key": "cohort",
+            "operator": "contains",
+            "value": "visitors"
+          }
+        ]
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "segment-erase",
+      "tool": "pencil.segments.erase",
+      "args": {
+        "segmentId": {
+          "$from": "segment-create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "destructive",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "collector-draft-create",
+      "tool": "pencil.collectors.create",
+      "args": {
+        "formId": {
+          "$from": "create",
+          "pointer": "/id"
+        },
+        "settings": {
+          "name": "Draft campaign",
+          "channel": "web"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "collector-draft-read",
+      "tool": "pencil.collectors.read",
+      "args": {
+        "formId": {
+          "$from": "create",
+          "pointer": "/id"
+        },
+        "collectorId": {
+          "$from": "collector-draft-create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "collector-draft-edit",
+      "tool": "pencil.collectors.edit",
+      "args": {
+        "formId": {
+          "$from": "create",
+          "pointer": "/id"
+        },
+        "collectorId": {
+          "$from": "collector-draft-create",
+          "pointer": "/id"
+        },
+        "settings": {
+          "name": "Draft follow-up campaign",
+          "channel": "web",
+          "responseLimit": 20
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "collector-draft-close",
+      "tool": "pencil.collectors.close",
+      "args": {
+        "formId": {
+          "$from": "create",
+          "pointer": "/id"
+        },
+        "collectorId": {
+          "$from": "collector-draft-create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "collector-draft-reopen",
+      "tool": "pencil.collectors.reopen",
+      "args": {
+        "formId": {
+          "$from": "create",
+          "pointer": "/id"
+        },
+        "collectorId": {
+          "$from": "collector-draft-create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "collector-draft-erase",
+      "tool": "pencil.collectors.erase",
+      "args": {
+        "formId": {
+          "$from": "create",
+          "pointer": "/id"
+        },
+        "collectorId": {
+          "$from": "collector-draft-create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "destructive",
           "facts": {
             "measure": 1
           }
@@ -1577,6 +2669,365 @@
       "id": "operators-list",
       "tool": "pencil.operators.list",
       "args": {},
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "collector-live-create",
+      "tool": "pencil.collectors.create",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        },
+        "settings": {
+          "name": "Live campaign",
+          "channel": "web"
+        }
+      },
+      "expect": [
+        {
+          "class": "external",
+          "facts": {
+            "measure": 1,
+            "counterparty": "public"
+          }
+        },
+        {
+          "class": "live",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "collector-live-read",
+      "tool": "pencil.collectors.read",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        },
+        "collectorId": {
+          "$from": "collector-live-create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "collector-live-edit",
+      "tool": "pencil.collectors.edit",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        },
+        "collectorId": {
+          "$from": "collector-live-create",
+          "pointer": "/id"
+        },
+        "settings": {
+          "name": "Live follow-up campaign",
+          "channel": "web",
+          "responseLimit": 20
+        }
+      },
+      "expect": [
+        {
+          "class": "external",
+          "facts": {
+            "measure": 1,
+            "counterparty": "public"
+          }
+        },
+        {
+          "class": "live",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "collector-live-close",
+      "tool": "pencil.collectors.close",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        },
+        "collectorId": {
+          "$from": "collector-live-create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "external",
+          "facts": {
+            "measure": 1,
+            "counterparty": "public"
+          }
+        },
+        {
+          "class": "live",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "collector-live-reopen",
+      "tool": "pencil.collectors.reopen",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        },
+        "collectorId": {
+          "$from": "collector-live-create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "external",
+          "facts": {
+            "measure": 1,
+            "counterparty": "public"
+          }
+        },
+        {
+          "class": "live",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "collector-live-erase",
+      "tool": "pencil.collectors.erase",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        },
+        "collectorId": {
+          "$from": "collector-live-create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "external",
+          "facts": {
+            "measure": 1,
+            "counterparty": "public"
+          }
+        },
+        {
+          "class": "live",
+          "facts": {
+            "measure": 1
+          }
+        },
+        {
+          "class": "destructive",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "retained-analysis",
+      "tool": "pencil.analyses.read",
+      "args": {
+        "runId": {
+          "$fixture": "response",
+          "pointer": "/analysisId"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "theme-evidence",
+      "tool": "pencil.analyses.theme_responses",
+      "args": {
+        "runId": {
+          "$fixture": "response",
+          "pointer": "/analysisId"
+        },
+        "themeId": {
+          "$fixture": "response",
+          "pointer": "/findingId"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "analysis-policies",
+      "tool": "pencil.analyses.policies",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "analysis-configure",
+      "tool": "pencil.analyses.configure",
+      "args": {
+        "autorunEnabled": false,
+        "autorunMinimum": 6,
+        "disclosureThreshold": 1,
+        "selection": "highest-impact"
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "inject": {
+        "confirm": true,
+        "runNow": true
+      }
+    },
+    {
+      "id": "analysis-attention",
+      "tool": "pencil.analyses.attention",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "analysis-attention-configure",
+      "tool": "pencil.analyses.configure_attention",
+      "args": {
+        "muted": true
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "notification-read",
+      "tool": "pencil.notifications.read",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "notification-configure",
+      "tool": "pencil.notifications.configure",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        },
+        "mode": "daily"
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "inject": {
+        "sendNow": true,
+        "recipient": "another-person@example.invalid"
+      }
+    },
+    {
+      "id": "notification-stop",
+      "tool": "pencil.notifications.configure",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        },
+        "mode": "off"
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "answer-alert-truth",
+      "tool": "pencil.notifications.alerts",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        }
+      },
       "expect": [
         {
           "class": "standard",
@@ -1975,6 +3426,811 @@
       "id": "integration-alerts",
       "tool": "pencil.integrations.alerts",
       "args": {},
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "sending-settings",
+      "tool": "pencil.settings.update",
+      "args": {
+        "timeZone": "Europe/London",
+        "sendingWindowStart": "08:00",
+        "sendingWindowEnd": "18:00",
+        "reminderDelayHours": 36
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "embedding-add",
+      "tool": "pencil.settings.embedding",
+      "args": {
+        "origins": [
+          {
+            "$fixture": "response",
+            "pointer": "/embeddingOrigin"
+          }
+        ]
+      },
+      "expect": [
+        {
+          "class": "external",
+          "facts": {
+            "measure": 1,
+            "counterparty": "known"
+          }
+        },
+        {
+          "class": "access",
+          "facts": {
+            "measure": 1
+          }
+        },
+        {
+          "class": "live",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "embedding-clear",
+      "tool": "pencil.settings.embedding",
+      "args": {
+        "origins": []
+      },
+      "expect": [
+        {
+          "class": "access",
+          "facts": {
+            "measure": 1
+          }
+        },
+        {
+          "class": "live",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "embedding-unchanged",
+      "tool": "pencil.settings.embedding",
+      "args": {
+        "origins": []
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "retention-read",
+      "tool": "pencil.retention.read",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "retention-configure",
+      "tool": "pencil.retention.configure",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        },
+        "days": 30,
+        "legalHold": false
+      },
+      "expect": [
+        {
+          "class": "destructive",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "retention-hold",
+      "tool": "pencil.retention.configure",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        },
+        "days": 30,
+        "legalHold": true
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "coding-list",
+      "tool": "pencil.coding.list",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "coding-create",
+      "tool": "pencil.coding.create",
+      "args": {
+        "label": {
+          "$fixture": "response",
+          "pointer": "/codeLabel"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "coding-create-other",
+      "tool": "pencil.coding.create",
+      "args": {
+        "label": {
+          "$fixture": "response",
+          "pointer": "/otherCodeLabel"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "coding-answers",
+      "tool": "pencil.coding.answers",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        },
+        "questionId": {
+          "$fixture": "response",
+          "pointer": "/textQuestionId"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "coding-assign",
+      "tool": "pencil.coding.assign",
+      "args": {
+        "responseId": {
+          "$fixture": "response",
+          "pointer": "/id"
+        },
+        "questionId": {
+          "$fixture": "response",
+          "pointer": "/textQuestionId"
+        },
+        "codeId": {
+          "$from": "coding-create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "response",
+        "id": {
+          "$fixture": "response",
+          "pointer": "/id"
+        }
+      },
+      "inject": {
+        "confirm": true,
+        "class": "standard"
+      }
+    },
+    {
+      "id": "coding-counts",
+      "tool": "pencil.coding.counts",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "coding-crosstab",
+      "tool": "pencil.coding.crosstab",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        },
+        "rowCodeId": {
+          "$from": "coding-create",
+          "pointer": "/id"
+        },
+        "columnCodeId": {
+          "$from": "coding-create-other",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "coding-remove",
+      "tool": "pencil.coding.remove",
+      "args": {
+        "responseId": {
+          "$fixture": "response",
+          "pointer": "/id"
+        },
+        "questionId": {
+          "$fixture": "response",
+          "pointer": "/textQuestionId"
+        },
+        "codeId": {
+          "$from": "coding-create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "response",
+        "id": {
+          "$fixture": "response",
+          "pointer": "/id"
+        }
+      },
+      "inject": {
+        "confirm": true,
+        "class": "standard"
+      }
+    },
+    {
+      "id": "coding-suggestions",
+      "tool": "pencil.coding.suggestions",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "coding-decide",
+      "tool": "pencil.coding.decide",
+      "args": {
+        "quoteId": {
+          "$fixture": "response",
+          "pointer": "/quoteId"
+        },
+        "decision": "accepted",
+        "codeId": {
+          "$from": "coding-create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "coding-quote",
+        "id": {
+          "$fixture": "response",
+          "pointer": "/quoteId"
+        }
+      },
+      "inject": {
+        "confirm": true,
+        "class": "standard"
+      }
+    },
+    {
+      "id": "team-templates-list",
+      "tool": "pencil.templates.list",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "team-template-save",
+      "tool": "pencil.templates.save",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        },
+        "name": "Visitor study template",
+        "source": "published"
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        }
+      },
+      "inject": {
+        "confirm": true,
+        "class": "standard"
+      }
+    },
+    {
+      "id": "team-template-create",
+      "tool": "pencil.templates.create_form",
+      "args": {
+        "templateId": {
+          "$from": "team-template-save",
+          "pointer": "/id"
+        },
+        "title": "Private follow-up from team template",
+        "slug": {
+          "$fixture": "response",
+          "pointer": "/templateSlug"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "team-template",
+        "id": {
+          "$from": "team-template-save",
+          "pointer": "/id"
+        }
+      },
+      "inject": {
+        "confirm": true,
+        "class": "standard"
+      }
+    },
+    {
+      "id": "team-template-retire",
+      "tool": "pencil.templates.retire",
+      "args": {
+        "templateId": {
+          "$from": "team-template-save",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "team-template",
+        "id": {
+          "$from": "team-template-save",
+          "pointer": "/id"
+        }
+      },
+      "inject": {
+        "confirm": true,
+        "class": "standard"
+      }
+    },
+    {
+      "id": "results-devices",
+      "tool": "pencil.results.devices",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "results-trends",
+      "tool": "pencil.results.trends",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        },
+        "stepId": {
+          "$fixture": "response",
+          "pointer": "/scoreQuestionId"
+        },
+        "metric": "score",
+        "unit": "day",
+        "minimum": 1,
+        "from": {
+          "$fixture": "response",
+          "pointer": "/trendFrom"
+        },
+        "to": {
+          "$fixture": "response",
+          "pointer": "/trendTo"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "results-crosstab",
+      "tool": "pencil.results.crosstab",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        },
+        "revisionId": {
+          "$fixture": "response",
+          "pointer": "/revisionId"
+        },
+        "rows": {
+          "$fixture": "response",
+          "pointer": "/scoreDimension"
+        },
+        "columns": "collector"
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "results-views",
+      "tool": "pencil.results.views",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "results-save-view",
+      "tool": "pencil.results.save_view",
+      "args": {
+        "formId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        },
+        "name": "Visitor score report",
+        "revisionId": {
+          "$fixture": "response",
+          "pointer": "/revisionId"
+        },
+        "filter": {},
+        "cohorts": [],
+        "crosstabs": [],
+        "charts": []
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        }
+      },
+      "inject": {
+        "confirm": true,
+        "class": "standard"
+      }
+    },
+    {
+      "id": "results-view",
+      "tool": "pencil.results.view",
+      "args": {
+        "viewId": {
+          "$from": "results-save-view",
+          "pointer": "/view/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "results-dashboards",
+      "tool": "pencil.results.dashboards",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "results-create-dashboard",
+      "tool": "pencil.results.create_dashboard",
+      "args": {
+        "name": "Visitor follow-up dashboard",
+        "scope": "form",
+        "flowId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        },
+        "viewIds": [
+          {
+            "$from": "results-save-view",
+            "pointer": "/view/id"
+          }
+        ]
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "inject": {
+        "confirm": true,
+        "class": "standard"
+      }
+    },
+    {
+      "id": "results-dashboard",
+      "tool": "pencil.results.dashboard",
+      "args": {
+        "dashboardId": {
+          "$from": "results-create-dashboard",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "results-update-dashboard",
+      "tool": "pencil.results.update_dashboard",
+      "args": {
+        "dashboardId": {
+          "$from": "results-create-dashboard",
+          "pointer": "/id"
+        },
+        "name": "Visitor follow-up report",
+        "scope": "form",
+        "flowId": {
+          "$fixture": "response",
+          "pointer": "/formId"
+        },
+        "viewIds": [
+          {
+            "$from": "results-save-view",
+            "pointer": "/view/id"
+          }
+        ],
+        "expected_revision": {
+          "$from": "results-dashboard",
+          "pointer": "/dashboard/updatedAt"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "report-dashboard",
+        "id": {
+          "$from": "results-create-dashboard",
+          "pointer": "/id"
+        }
+      },
+      "inject": {
+        "confirm": true,
+        "class": "standard"
+      }
+    },
+    {
+      "id": "results-shares",
+      "tool": "pencil.results.shares",
+      "args": {
+        "viewId": {
+          "$from": "results-save-view",
+          "pointer": "/view/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "response-versions",
+      "tool": "pencil.responses.versions",
+      "args": {
+        "responseId": {
+          "$fixture": "response",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "response-quarantine",
+      "tool": "pencil.responses.quarantine",
+      "args": {
+        "revisionId": {
+          "$fixture": "response",
+          "pointer": "/revisionId"
+        }
+      },
       "expect": [
         {
           "class": "standard",

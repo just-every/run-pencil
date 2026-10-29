@@ -3,7 +3,8 @@ import { NotFoundError, ValidationError } from '../../shared/errors'
 export type NotificationMode = 'immediately' | 'off' | 'daily'
 export type NotificationState = { localMail?: boolean; hostedDemo?: boolean; timerLastStartedAt?: string | null; mode: NotificationMode; daily?: {zone:string;opening:string;nextOpening:string}; failureReason: string | null; senderError: string | null; deliveries: Array<{ id: string; status: string; reason: string | null; attempts: number; updatedAt: string; recipient: string; day?:string; cutoffStart?:string; cutoffEnd?:string; replayEnabled?:number }> }
 export class NotificationRepository {
-  constructor(readonly db: D1Database, readonly senderError: string | null = null, readonly localMail = false, readonly hostedDemo = false) {}
+  constructor(readonly db: D1Database, readonly senderError: string | null = null, readonly localMail = false, readonly hostedDemo = false, readonly attribution: Record<string, unknown> = {}) {}
+  attributed(attribution: Record<string, unknown>) { return new NotificationRepository(this.db, this.senderError, this.localMail, this.hostedDemo, attribution) }
   async scope(workspaceId: string, flowId: string, operatorId: string) {
     if (!await this.db.prepare('SELECT f.id FROM flows f JOIN operators o ON o.workspace_id=f.workspace_id WHERE f.id=? AND f.workspace_id=? AND o.id=?').bind(flowId,workspaceId,operatorId).first()) throw new NotFoundError('This flow is not in your workspace.')
   }
@@ -38,6 +39,7 @@ export class NotificationRepository {
       this.db.prepare(`UPDATE digest_deliveries SET status='cancelled',reason='Daily email turned off.',updated_at=? WHERE flow_id=? AND operator_id=? AND status='pending' AND ?<>'daily'`).bind(now,flowId,operatorId,mode),
       this.db.prepare(`INSERT INTO notification_preferences(flow_id,operator_id,mode,updated_at) VALUES(?,?,?,?) ON CONFLICT(flow_id,operator_id) DO UPDATE SET mode=excluded.mode,updated_at=excluded.updated_at`).bind(flowId,operatorId,mode==='daily'?'off':mode,now),
       this.db.prepare(`UPDATE notification_deliveries SET status='cancelled',reason='Notifications turned off.',updated_at=? WHERE operator_id=? AND status='pending' AND ?<>'immediately' AND response_id IN (SELECT id FROM responses WHERE flow_id=?)`).bind(now,operatorId,mode,flowId),
+      ...(Object.keys(this.attribution).length ? [this.db.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at) VALUES(?,?,'notification.preference_changed',?,'flow',?,?,?)`).bind(crypto.randomUUID(),workspaceId,operatorId,flowId,JSON.stringify(this.attribution),now)] : []),
     ])
     return this.read(workspaceId,flowId,operatorId)
   }

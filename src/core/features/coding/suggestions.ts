@@ -1,3 +1,4 @@
+import { codingActivity } from './activity'
 import { ulid } from 'ulid'
 import { ConflictError, NotFoundError, ValidationError } from '../../shared/errors'
 import { answerJoins, answerColumns, codableAnswer, answerText, ownedFlow, releasedAnswerResponse, type AnswerRow } from './answers'
@@ -19,10 +20,14 @@ export async function suggestions(db:D1Database,workspaceId:string,flowId:string
     FROM code_suggestion_decisions WHERE workspace_id=? AND quote_id IN (SELECT value FROM json_each(?))`).bind(workspaceId,JSON.stringify(page.map(row=>row.quoteId))).all()).results : []
   return {suggestions:page.filter(exactQuote).map(row=>({id:row.quoteId,runId:row.runId,themeId:row.themeId,responseId:row.responseId,questionId:row.questionId,prompt:row.prompt,suggestedLabel:row.suggestedLabel,start:row.start,end:row.end,excerpt:row.excerpt,decision:decisions.find(d=>d.quoteId===row.quoteId) ?? null})),nextAfter:rows.length>50 ? page.at(-1)!.quoteId : null}
 }
-export async function decideSuggestion(db:D1Database,workspaceId:string,operatorId:string,quoteId:string,input:{decision:'accepted'|'rejected';codeId?:string}) {
-  if ((input.decision==='accepted')!==!!input.codeId) throw new ValidationError('Accept a suggestion with a workspace code; reject it without a code.')
+export async function codingSuggestion(db:D1Database,workspaceId:string,quoteId:string) {
   const row=await db.prepare(`SELECT ${quoteColumns} ${quoteFrom} WHERE aq.id=? AND r.workspace_id=? AND ${releasedAnswerResponse} AND ${codableAnswer} AND ${visibleSuggestion}`).bind(quoteId,workspaceId).first<QuoteRow>()
   if (!row || !exactQuote(row)) throw new NotFoundError('This exact analysis quote is not available for coding.')
+  return row
+}
+export async function decideSuggestion(db:D1Database,workspaceId:string,operatorId:string,quoteId:string,input:{decision:'accepted'|'rejected';codeId?:string},attribution:Record<string,unknown>={}) {
+  if ((input.decision==='accepted')!==!!input.codeId) throw new ValidationError('Accept a suggestion with a workspace code; reject it without a code.')
+  const row=await codingSuggestion(db,workspaceId,quoteId)
   if(input.codeId) await workspaceCode(db,workspaceId,input.codeId)
   const previous=await db.prepare('SELECT quote_id AS quoteId,decision,code_id AS codeId,actor_operator_id AS actorOperatorId,decided_at AS decidedAt FROM code_suggestion_decisions WHERE quote_id=? AND workspace_id=?').bind(quoteId,workspaceId).first<{quoteId:string;decision:string;codeId:string|null;actorOperatorId:string;decidedAt:string}>()
   if(previous) {
@@ -42,6 +47,7 @@ export async function decideSuggestion(db:D1Database,workspaceId:string,operator
       ON CONFLICT(answer_id,code_id) DO UPDATE SET quote_id=excluded.quote_id,actor_operator_id=excluded.actor_operator_id,created_at=excluded.created_at
       WHERE EXISTS (SELECT 1 FROM answer_code_assignments ca JOIN response_answers caa ON caa.id=ca.answer_id JOIN responses r ON r.id=caa.response_id
         WHERE ca.id=answer_code_assignments.id AND NOT ${activeAssignment})`).bind(ulid(),row.answerId,quoteId,workspaceId,input.codeId ?? null,operatorId,at,quoteId,row.valueJson,workspaceId),
+    codingActivity(db,workspaceId,operatorId,row.responseId,'coding.suggestion_decided',at,attribution,'EXISTS(SELECT 1 FROM code_suggestion_decisions WHERE quote_id=? AND workspace_id=? AND actor_operator_id=? AND decided_at=?)',[quoteId,workspaceId,operatorId,at]),
   ])
   const decision=await db.prepare('SELECT quote_id AS quoteId,decision,code_id AS codeId,actor_operator_id AS actorOperatorId,decided_at AS decidedAt FROM code_suggestion_decisions WHERE quote_id=? AND workspace_id=?').bind(quoteId,workspaceId).first<{quoteId:string;decision:string;codeId:string|null;actorOperatorId:string;decidedAt:string}>()
   if(!decision || decision.decision!==input.decision || decision.codeId!==(input.codeId ?? null)) throw new ConflictError('This suggestion has already been decided differently or its evidence changed.')
