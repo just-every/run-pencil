@@ -7,7 +7,7 @@ import { operatorEmail } from './auth-identity'
 import { contract } from './contract'
 import { expect, test, openMailLink } from './fixtures'
 import AxeBuilder from '@axe-core/playwright'
-import { collectAnswerScenario, type ScenarioCall } from '../results-scenario'
+import { collectAnswerScenario, collectScoreTrendScenario, type ScenarioCall } from '../results-scenario'
 import type { FlowResults } from '../../src/core/app/api'
 contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006', 'RSLT-008', 'RSLT-009', 'LEDG-001', 'DATA-002', 'BASE-PUBLIC-003'], 'answers first across every type, an RSLT-006 crosstab states shares and suppression, comparison replaces results and ledger confirms erasure', async ({ page }, info) => {
   test.setTimeout(300000)
@@ -121,6 +121,7 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
   await expect(metric('Completion rate').locator('strong')).toHaveText('No rate')
   await expect(metric('Average time')).toContainText('0ms total / 0 native completed responses')
   await responseFilters.getByLabel('Device class',{exact:true}).selectOption('')
+  await expect(devices.locator('.device-row').filter({hasText:'desktop'})).toContainText('6 / 6 · 100%')
   await responseFilters.getByLabel('Answer contains / equals').selectOption('false')
   await expect(devices.locator('.device-row').filter({hasText:'mobile'})).toContainText('6 / 6 · 100%')
   await page.getByLabel('Published revision').selectOption('all')
@@ -208,4 +209,27 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
   expect((await new AxeBuilder({ page }).include('.operator-content').analyze()).violations).toEqual([])
   await operatorDisclosureExposure(page, call, `disclosure-${info.project.name}-${Date.now()}`, capture)
   await savedReportsJourney(page, call, `shared-${info.project.name}-${Date.now()}`, capture)
+
+  const scores = await collectScoreTrendScenario(call, `scores-${info.project.name}-${Date.now()}`)
+  await page.goto(`/app/flows/${scores.flow.id}/results`)
+  await expect(page.locator('.results-summary').getByText('6', { exact: true }).first()).toBeVisible()
+  for (const [type, mode, value] of [
+    ['csat', 'CSAT satisfied share', '50% 2 satisfied answers (4–5) / 4 answered responses'],
+    ['thumbs_rating', 'Thumbs-up share', '60% 3 thumbs-up answers / 5 answered responses'],
+  ]) {
+    await trends.getByLabel('Trend question', { exact: true }).selectOption(scores.questions.find(question => question.questionType === type)!.id)
+    await expect(trends.getByLabel('Trend metric', { exact: true }).locator('option:checked')).toHaveText(mode)
+    await trends.getByLabel('Minimum answers per period', { exact: true }).fill('1')
+    await trends.getByLabel('Period', { exact: true }).selectOption('quarter')
+    await trends.getByRole('button', { name: 'Show trends', exact: true }).click()
+    await expect(trendValues.getByRole('cell', { name: value, exact: true })).toBeVisible()
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    if (process.env.PENCIL_CAPTURE_DIR) {
+      await trends.scrollIntoViewIfNeeded()
+      await page.screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-${type}-score-viewport.png`) })
+      await trends.screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-${type}-score-trend.png`) })
+      await trendValues.getByRole('cell', { name: value, exact: true }).scrollIntoViewIfNeeded()
+      await trendValues.screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-${type}-score-values.png`) })
+    }
+  }
 })

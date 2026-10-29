@@ -51,3 +51,39 @@ export async function collectAnswerScenario(call: ScenarioCall, slug: string) {
   const comparison = await call<RevisionComparison>(`${path}/questions/compare`)
   return { flow, path, revisionId: publication.revision.id, receipts, questions, ledger, comparison }
 }
+
+/** Different optional omissions keep each score's answered cohort distinct. */
+export async function collectScoreTrendScenario(call: ScenarioCall, slug: string) {
+  const flow = await call<{ id: string }>('/api/app/flows', { title: 'Workshop satisfaction', slug })
+  const path = `/api/app/flows/${flow.id}`
+  const draft = () => call<BuilderDraft>(`${path}/draft`)
+  for (const [questionType, prompt] of [['csat', 'How satisfied were you?'], ['thumbs_rating', 'Was the workshop helpful?']]) {
+    const current = await draft()
+    await call(`${path}/draft/steps`, { expectedVersion: current.flow.draftVersion,
+      step: { kind: 'question', questionType, prompt, required: false } })
+  }
+  let current = await draft()
+  await call(`${path}/draft/steps`, { expectedVersion: current.flow.draftVersion,
+    step: { kind: 'completion', questionType: null, prompt: 'Thank you for your feedback.' } })
+  current = await draft()
+  await call(`${path}/publish`, { expectedVersion: current.flow.draftVersion })
+  const rows = [
+    { csat: 5, thumbs_rating: true },
+    { csat: 4, thumbs_rating: false },
+    { csat: 1, thumbs_rating: true },
+    { thumbs_rating: false },
+    { thumbs_rating: true },
+    { csat: 2 },
+  ]
+  for (const [index, row] of rows.entries()) {
+    const session = await call<{ sessionId: string; sessionToken: string }>(`/api/public/flows/${slug}/sessions`, { deviceClass: 'desktop', source: 'direct' })
+    const answers = current.steps.filter(step => step.kind === 'question' && Object.hasOwn(row, step.questionType!))
+      .map(step => ({ stepId: step.id, value: row[step.questionType as keyof typeof row] }))
+    const receipt = await call<{ responseId: string; disposition: string }>(`/api/public/flows/${slug}/responses`,
+      { ...session, idempotencyKey: `${slug}-response-${index}`, answers })
+    if (receipt.disposition === 'quarantined') await call(`/api/app/responses/${receipt.responseId}/release`, {})
+    if (receipt.disposition !== 'quarantined' && receipt.disposition !== 'released') throw new Error('Score response was not retained')
+  }
+  const questions = await call<QuestionReport[]>(`${path}/questions`)
+  return { flow, questions }
+}

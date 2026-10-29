@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "1a90ab5e603d32ba5b20ca29a174cca0615cbd266abe20987dad9e49d3911745",
+      "sha256": "2a5e33438f866a32d280b13273a61ef24c2bbad55103fad40aac5b3127c54ce9",
       "executable": false
     },
     "agent-surface.json": {
@@ -869,7 +869,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "2ab832ad51aace71af5646b5e354b4efb6cf5c154a931956030025a4f11dea99",
+      "sha256": "21aa6c64e3d17abceb506f6432993e44724facc727890adf7d3e7f306138e173",
       "executable": false
     },
     "DEMO.md": {
@@ -897,7 +897,7 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "4661c55e2ee9aa517330be31f57d52cfe36402c60d3741d7317fcd39efeef8b1",
+      "sha256": "d5108abf424e7e70b41195aa712ec000a7f5df855f8b81049e41ded2f9f7bf74",
       "executable": false
     },
     "docs/contract-changes-20261002.json": {
@@ -993,7 +993,7 @@
       "executable": false
     },
     "docs/evidence/resp024-builder-desktop.png": {
-      "sha256": "ad23321d5ef17b17a93713fd230d9c0ed2ded24c9d3b24337b57eed26c879d2e",
+      "sha256": "5634596588c5020f3c2e5fd90d4aa067bb5caaf55b5bb8d06d9bebf3b107bcda",
       "executable": false
     },
     "docs/evidence/resp024-builder-mobile.png": {
@@ -1001,7 +1001,7 @@
       "executable": false
     },
     "docs/evidence/resp024-review-after-desktop.png": {
-      "sha256": "918b936d3cf743f270189a53f31d988c3f2a27af45049259f89bc29b5f89098f",
+      "sha256": "dbd3753471f9c974a1d3723d921a256a9e75235a402dc62b128be4d3223c604e",
       "executable": false
     },
     "docs/evidence/resp024-review-after-mobile.png": {
@@ -1009,7 +1009,7 @@
       "executable": false
     },
     "docs/evidence/resp024-review-before-desktop.png": {
-      "sha256": "a568226e89be63317c57191774282798e68be963a11e8d924f5562dd34b1a8c8",
+      "sha256": "cf0f12800ab4a7a6e8d77185ac1086ed81308bca725c75feeb4cc77cbcdcb718",
       "executable": false
     },
     "docs/evidence/resp024-review-before-mobile.png": {
@@ -7801,7 +7801,7 @@
       "executable": false
     },
     "tests/e2e/answer-results.spec.ts": {
-      "sha256": "b60c4a462fd4cddf0878b71d48fc9a0c96b1a6dd591fdd7f160f0eab064d95af",
+      "sha256": "2fdc5e36006b7693648f21a09447fd7961e7c3ff18aa99a3fd3e6e41b9bcfc5b",
       "executable": false
     },
     "tests/e2e/api-headers.ts": {
@@ -8413,7 +8413,7 @@
       "executable": false
     },
     "tests/results-scenario.ts": {
-      "sha256": "a53cb1212cac791a7289e3a68f17afabe44fb564c50182c8a2d163c8149b0bbd",
+      "sha256": "f9cad4a5a2a550b6caf9be471ef04d7925ab1d5e054e0b27c3e83241e4e71129",
       "executable": false
     },
     "tests/runtime/access-foundation.worker.test.ts": {
