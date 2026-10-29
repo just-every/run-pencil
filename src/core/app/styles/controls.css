@@ -103,6 +103,9 @@ select.text-input:disabled { background-color: var(--paper-deep); }
   cursor: pointer;
 }
 .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--ink); }
+/* A checkbox with its label beside it: the whole row is one 44px target. */
+.check-row { display: flex; align-items: center; gap: 12px; min-height: 44px; color: var(--ink); }
+.check-row > input[type='checkbox'] { flex: none; }
 .pencil-canvas details > summary { cursor: pointer; color: var(--ink); }
 /* Phone: a disclosure row is a 44px target (TMPL-001), on the builder's step editor and publication options, results and settings. */
 @media (max-width: 620px) { :is(.builder-inspector, .results, .workspace-settings) details > summary, .publication-options > summary { min-height: 44px; align-content: center; } }

@@ -22,7 +22,7 @@ export function ContactEditor({ contact, saved, cancel }: { contact?: Contact; s
       <label className="inspector-field">Contact email<input className="text-input" required type="email" maxLength={320} value={email} onChange={e => setEmail(e.target.value)} /></label>
       <label className="inspector-field">Contact mobile<input className="text-input" type="tel" placeholder="+15555550100" value={mobile} onChange={e=>setMobile(e.target.value)}/></label>
       {contact?.smsConsentAt?<p>SMS consent recorded {contact.smsConsentAt}{contact.smsStoppedAt?' · stopped':''}</p>:null}
-      <label className="toggle-row"><input type="checkbox" checked={smsConsent} onChange={e=>setSmsConsent(e.target.checked)}/>Record explicit SMS consent</label>
+      <label className="check-row"><input type="checkbox" checked={smsConsent} onChange={e=>setSmsConsent(e.target.checked)}/>Record explicit SMS consent</label>
       {smsConsent?<label className="inspector-field">SMS consent wording<textarea className="textarea-input" required maxLength={500} value={smsWording} onChange={e=>setSmsWording(e.target.value)}/></label>:null}
       {fields.map((field, index) => <div key={index} style={{ marginTop: '.75rem' }}>
         <label className="inspector-field">Field {index + 1} key<input className="text-input" required maxLength={64} value={field.key} onChange={e => setFields(fields.map((f, i) => i === index ? { ...f, key: e.target.value } : f))} /></label>
