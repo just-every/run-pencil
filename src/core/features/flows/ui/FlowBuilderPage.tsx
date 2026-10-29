@@ -237,6 +237,8 @@ export function FlowBuilderPage() {
   const preview = () => setPreviewing(true)
 
   if (!draft) return <section aria-label="Load draft">{notice?.tone === 'error' ? <LoadProblem message={notice.message} notFound={notice.notFound} retryLabel="Retry loading draft" onRetry={() => { setNotice(undefined); void load() }} /> : <><Link className="quiet-button focus-ring" to="/app"><ArrowLeft aria-hidden="true" size={15} /> All flows</Link><p className="status-note">Loading draft…</p></>}</section>
+  // A published flow whose draft equals its published revision, with no new deadline or target, has nothing to publish: the button says so and makes no revision.
+  const nothingToPublish = draft.flow.status !== 'draft' && !draft.flow.hasUnpublishedChanges && !dirty && !deadline && !target
   const selectedIndex = selected ? draft.steps.findIndex((step) => step.id === selected.id) : -1
 
   return (
@@ -251,7 +253,7 @@ export function FlowBuilderPage() {
           {draft.flow.status === 'open' || draft.flow.status === 'closed' ? <><a className="secondary-button focus-ring" href={`/f/${draft.flow.slug}`} target="_blank" rel="noopener">View public flow</a><Link className="secondary-button focus-ring" to="/app/flows/$flowId/results" params={{ flowId }}>Results</Link></> : null}
           {draft.flow.status === 'archived' ? null : <button className="secondary-button focus-ring flow-share-toggle" disabled={saving || shareDirty} aria-expanded={sharing} aria-controls="flow-share-panel" onClick={() => setSharing(current => !current)} type="button">{sharing ? 'Edit steps' : 'Share'}</button>}
           <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={preview} type="button"><Eye aria-hidden="true" size={16} /> Preview draft</button>
-          {draft.flow.status === 'archived' ? null : <button className="primary-button focus-ring" disabled={saving || dirty || !timeZone} onClick={publish} type="button"><Send aria-hidden="true" size={16} /> Publish</button>}
+          {draft.flow.status === 'archived' ? null : <button className="primary-button focus-ring" disabled={saving || dirty || !timeZone || nothingToPublish} onClick={publish} type="button"><Send aria-hidden="true" size={16} /> {nothingToPublish ? 'Nothing to publish' : 'Publish'}</button>}
         </div>
       </header>
       {notice && (notice.tone !== 'success' || !dirty) ? <p className="status-note" data-tone={notice.tone} role={notice.tone === 'error' ? 'alert' : 'status'}>{notice.message}</p> : null}
