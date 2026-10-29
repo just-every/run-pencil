@@ -23,7 +23,9 @@ export function pencilPeople(db: D1Database, services: PencilServices) {
   const people: PeopleAdapter = {
     person: nativeOperator,
     async sponsor({ sub }) {
-      if ((await settings())?.owner_id === sub) {
+      const binding = await settings()
+      if (!binding?.owner_id) return null
+      if (binding.owner_id === sub) {
         const claimed = await owner()
         return claimed ? nativeOperator(claimed.id) : null
       }
@@ -35,7 +37,8 @@ export function pencilPeople(db: D1Database, services: PencilServices) {
       const current = await nativeOperator(person.id)
       if (!current?.active) return null
       const binding = await settings()
-      if (binding?.owner_id && (await owner())?.id === current.id) return { id: binding.owner_id, role: 'owner' }
+      if (!binding?.owner_id) return null
+      if ((await owner())?.id === current.id) return { id: binding.owner_id, role: 'owner' }
       const member = await db.prepare(`SELECT business_id,business_role FROM bs_team
         WHERE operator_id=? AND state IN ('active','invited') AND business_id IS NOT NULL`)
         .bind(current.id).first<{ business_id: string; business_role: string }>()

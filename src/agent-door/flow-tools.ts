@@ -78,9 +78,14 @@ export function flowTools(services: PencilServices, resolve: ResolveFlowOperator
     scope: spec.readOnly ? 'pencil.flows.read' : 'pencil.flows.write', readOnly: Boolean(spec.readOnly),
     inputSchema: spec.inputSchema, outputSchema: spec.outputSchema ?? resultObject,
     classes: spec.classes ?? ['standard'], clauses: spec.clauses, untrusted: true,
-    classify: async (args, ctx) => {
+    classify: async (args, ctx, completed) => {
       await operator(resolve, ctx.person.id)
-      if (typeof args.flowId === 'string') await draft(services, resolve, ctx.person.id, args.flowId)
+      if ('flowId' in (spec.inputSchema.properties ?? {}) && typeof args.flowId === 'string') {
+        const current = await draft(services, resolve, ctx.person.id, args.flowId)
+        if (!completed && 'stepId' in (spec.inputSchema.properties ?? {}) && !current.steps.some(step => step.id === args.stepId)) {
+          throw new ToolRefusal('not_found', 'The requested draft step does not exist.')
+        }
+      }
       return spec.classification ? spec.classification(args, ctx) : standard()
     },
     ...(!spec.readOnly ? { summary: async (args: Args, ctx: ToolContext) => {
