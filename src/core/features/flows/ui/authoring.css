@@ -10,7 +10,6 @@
 .builder-header h1 { margin: 14px 0 0; font-size: 48px; line-height: 1.04; overflow-wrap: anywhere; }
 .builder-status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 10px 0 0; color: var(--subtle); font-size: 14px; }
 .builder-header .builder-actions { gap: 10px; }
-.builder-nothing { align-self: center; font-size: 15px; }
 
 .builder-grid { display: grid; grid-template-columns: minmax(250px, 0.75fr) minmax(0, 1.35fr) minmax(340px, 1.15fr); align-items: stretch; gap: 16px; }
 .builder-rail, .builder-canvas, .builder-inspector { position: relative; min-width: 0; border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
@@ -127,7 +126,6 @@
   .builder-header h1 { margin-top: 10px; font-size: 38px; }
   .builder-header .builder-actions { gap: 8px; }
   .builder-header .builder-actions > * { flex: 1 1 auto; min-height: 38px; padding: 0 12px; font-size: 14px; white-space: nowrap; }
-  .builder-header .builder-actions > .builder-nothing { flex: 1 1 100%; min-height: 0; padding: 0; text-align: right; }
   .builder-note { display: none; }
   .step-button { grid-template-columns: 1fr; gap: 6px; }
   .step-prompt { overflow-wrap: normal; word-break: normal; }
