@@ -104,6 +104,8 @@ select.text-input:disabled { background-color: var(--paper-deep); }
 }
 .toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--ink); }
 .pencil-canvas details > summary { cursor: pointer; color: var(--ink); }
+/* Phone: a disclosure row is a 44px target (TMPL-001), on the builder's step editor and publication options, results and settings. */
+@media (max-width: 620px) { :is(.builder-inspector, .results, .workspace-settings) details > summary, .publication-options > summary { min-height: 44px; align-content: center; } }
 
 /* Badges */
 .badge { display: inline-flex; width: fit-content; align-items: center; gap: 6px; border: 1px solid transparent; border-radius: 999px; padding: 4px 10px; color: var(--subtle); background-color: var(--paper-deep); font-size: 13px; font-weight: 600; line-height: 1.3; text-transform: capitalize; }

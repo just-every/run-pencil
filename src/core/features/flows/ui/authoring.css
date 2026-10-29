@@ -132,10 +132,11 @@
   .builder-add svg { display: none; }
   .builder-add .secondary-button { font-size: 13px; }
   .choice-editor-row details, .choice-editor-row details[open] { padding-left: 0; }
-  .builder-inspector { padding: 16px; }
+  .builder-inspector { padding: 12px 16px; }
   /* Compact editing: the whole builder stays within three phone screens. */
   /* Whole-pixel line heights keep the controls below on whole pixels, so scrolling one into view never leaves it a fraction clipped. */
-  .builder-back { font-size: 15px; line-height: 22px; }
+  /* A 44px target that takes no height: its padding box overlaps the gaps around it. */
+  .builder-back { min-height: 44px; margin-block: -11px; font-size: 15px; line-height: 22px; }
   .builder-header h1 { margin-top: 6px; font-size: 34px; line-height: 36px; }
   .builder-header .status-note, .flow-authoring .status-note { line-height: 20px; }
   .builder-status { margin-top: 6px; min-height: 26px; }
@@ -148,9 +149,9 @@
   .builder-add { margin-top: 8px; }
   .builder-add .secondary-button { min-height: 36px; }
   /* Level on a phone: a turned sheet clips its own controls by a fraction, and the builder must keep every control fully reachable. */
-  .builder-canvas .preview-surface { padding: 16px; rotate: none; }
+  .builder-canvas .preview-surface { margin: 4px 4px 0; padding: 12px 16px; rotate: none; }
   .canvas-chip { padding: 2px 10px; font-size: 13px; }
-  .preview-surface h2 { margin-top: 10px; font-size: 24px; }
+  .preview-surface h2 { margin-top: 6px; font-size: 24px; }
   .builder-canvas .answer-stack { gap: 6px; margin-top: 12px; }
   .builder-canvas .choice-button { min-height: 40px; padding: 4px 12px; font-size: 16px; }
   .builder-canvas .answer-stack > .choice-button { min-height: 40px; padding: 4px 6px; font-size: 17px; }
@@ -158,6 +159,10 @@
   .rating-row { gap: 6px; }
   .builder-canvas .rating-row { margin-top: 12px; }
   .builder-inspector .inspector-field, .builder-inspector .toggle-row, .builder-inspector details { margin-top: 8px; }
+  .builder-inspector > details { margin-top: 0; }
+  .builder-inspector .question-options { margin-top: 4px; padding-bottom: 4px; }
+  .builder-inspector > .inspector-field { margin-top: 4px; }
+  .builder-inspector > .eyebrow + .inspector-field { margin-top: 0; }
   .builder-inspector .inspector-field { gap: 4px; }
   /* A choice is one row: its field (named "Choice N label" for assistive technology), Remove, then Advanced. */
   .choice-editor-row { grid-template-columns: minmax(0, 1fr) auto auto; }
@@ -170,18 +175,21 @@
   .branch-rule > legend, .branch-rule > :not(.inspector-field) { grid-column: 1 / -1; }
   .builder-inspector .text-area { min-height: 52px; }
   .builder-inspector details > summary { padding: 2px 0; }
-  .choice-editor { gap: 6px; margin-top: 10px; }
+  /* Content's own disclosures keep each name on one line; the row wraps rather than squeezing them. */
+  .step-content-heading { flex-wrap: wrap; gap: 0 6px; letter-spacing: 0.12em; }
+  .step-content-heading > details > summary { white-space: nowrap; }
+  .choice-editor { gap: 0; margin-top: 4px; }
   .builder-inspector > .toggle-row { padding-bottom: 10px; }
-  .builder-step-tools { gap: 6px; margin-top: 10px; padding-bottom: 10px; }
-  .builder-step-tools .secondary-button { min-height: 32px; padding: 0 10px; font-size: 13px; }
-  .branch-editor { margin-top: 10px; }
+  .builder-step-tools { gap: 6px; margin-top: 0; padding-bottom: 2px; }
+  .builder-step-tools .secondary-button { min-width: 44px; min-height: 44px; padding: 0 10px; font-size: 13px; }
+  .branch-editor { margin-top: 4px; }
   .branch-rule { margin: 8px 0; padding: 10px; }
-  .builder-save { margin-top: 12px; }
+  .builder-save { margin-top: 8px; }
   .publication-options, .builder-lifecycle { margin-top: 12px; }
-  .builder-lifecycle { gap: 8px; padding: 12px 14px; }
+  .builder-lifecycle { gap: 8px; padding: 8px 14px; }
   .builder-lifecycle-status { gap: 6px 12px; }
   .builder-lifecycle-status p:last-child { border: 0; padding: 0; font-size: 14px; }
-  .publication-options { padding: 14px 16px; }
+  .publication-options { padding: 4px 16px; }
   .draft-preview, .flow-share-panel { padding: 14px; }
   /* Share stays within three phone screens too: the builder's 12px gap after each card, and each copy button on its field's label line as a full 44px tap target. */
   .flow-share-panel { margin-bottom: 12px; }

@@ -67,9 +67,11 @@
   .dashboard-actions .primary-button { order: -1; }
   .dashboard-actions .quiet-button { padding: 0 4px; }
   .filter-row { flex-wrap: nowrap; justify-content: space-between; gap: 0; padding: 6px 4px 12px 6px; }
-  .filter-row .quiet-button { min-height: 36px; padding: 0 4px; font-size: 15px; white-space: nowrap; }
+  .filter-row .quiet-button { min-height: 44px; padding: 0 4px; font-size: 15px; white-space: nowrap; }
   .filter-row .quiet-button[aria-pressed='true'] { padding: 0 11px; }
   .flow-card { padding: 20px; }
+  .flow-card-analysis { display: flex; flex-wrap: wrap; align-items: center; column-gap: .3em; }
+  .flow-card-analysis a { display: inline-flex; align-items: center; min-height: 44px; }
   .flow-card-actions { flex-wrap: nowrap; gap: 8px; }
   .flow-card-actions > * { min-height: 38px; padding: 0 12px; font-size: 14px; white-space: nowrap; }
   .flow-card-actions .quiet-button { padding: 0 2px; }

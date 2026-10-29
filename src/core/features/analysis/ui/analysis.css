@@ -50,6 +50,7 @@
 @media (max-width: 900px) { .analysis-grid { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 620px) {
   .analysis-card { padding: 1.1rem 1rem; }
+  .analysis-run-list li > a, button.analysis-link { display: inline-flex; align-items: center; min-height: 44px; }
   .analysis-facts { grid-template-columns: minmax(0, 1fr); gap: .2rem; }
   .analysis-facts dd { margin-bottom: .6rem; }
   .analysis-theme-row { flex-wrap: wrap; }
