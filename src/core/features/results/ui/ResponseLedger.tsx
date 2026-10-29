@@ -8,6 +8,7 @@ import { LedgerSearch, SearchHighlight } from './LedgerSearch'
 import { WorkflowFields, useSubmissionOptions } from '../../submissions'
 import { FilterBar } from '../../../shared/ui/FilterBar'
 import { ledgerChips, sourceLabels } from './ledgerChips'
+import { keepIfSame, useQuietRefresh } from '../../../shared/ui/useQuietRefresh'
 import { systemCollectorId, type Collector, type CollectorSource } from '../../collectors'
 import { downloadResponses } from './download'
 import { StructuredAnswerFilter } from './StructuredAnswerFilter'
@@ -59,6 +60,10 @@ export function ResponseLedger({ flowId, timeZone, questions, onChanged, exportS
   const filterScope = JSON.stringify({...filter,offset:undefined})
   useEffect(() => { setHistory([]) }, [flowId,filterScope])
   useEffect(() => { load(); return () => { requestVersion.current++ } }, [flowId, filter])
+  useQuietRefresh(async () => {
+    const result = await reportingApi.ledger(flowId, filter)
+    setLedger(current => current ? keepIfSame(current, result, ['cutoff']) : current); setContextRevisions(current => keepIfSame(current, result.revisions))
+  })
   const exportResponses = async (format: ExportFormat) => {
     setExporting(true); setError(undefined); setExportNotice(undefined)
     try {

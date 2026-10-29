@@ -5,7 +5,7 @@ import type { NotificationMode } from './repository'
 import { shortDateTime } from '../../shared/ui/shortDate'
 export function NotificationsPanel({flowId,timeZone}:{flowId:string;timeZone:string}) {
   const when=(value:string)=>shortDateTime(value,timeZone)
-  const id=useId(), {state,error,busy,notice,setMode,retry,refresh}=useNotifications(flowId)
+  const id=useId(), {state,error,busy,notice,setMode,retry}=useNotifications(flowId)
   return <section className="panel" aria-labelledby={id} style={{minWidth:0,overflowWrap:'anywhere'}}>
     <h2 id={id}>Response notifications</h2>
     <p>Choose when this flow emails you. Each message names the business and flow and links to signed-in results. Answers and respondent details stay in Pencil.</p>
@@ -18,7 +18,6 @@ export function NotificationsPanel({flowId,timeZone}:{flowId:string;timeZone:str
       {state.daily && <p>Daily at {state.daily.opening} ({state.daily.zone}). Next cutoff: {when(state.daily.nextOpening)} ({timeZone}).</p>}
       {state.failureReason && <p role="alert">{state.failureReason}</p>}
       <h3>Recent notification deliveries</h3>
-      <button className="quiet-button focus-ring" type="button" disabled={busy} onClick={()=>void refresh()}>Refresh delivery status</button>
       {state.deliveries.length ? <ul>{state.deliveries.map(delivery=><li key={delivery.id}>
         <strong>{delivery.status.charAt(0).toUpperCase()+delivery.status.slice(1)}</strong> · {delivery.attempts===1?'1 attempt':`${delivery.attempts} attempts`} · {when(delivery.updatedAt)} · to {delivery.recipient}
         {delivery.day && <p>Digest for {delivery.day} · {when(delivery.cutoffStart!)} to {when(delivery.cutoffEnd!)} ({timeZone})</p>}

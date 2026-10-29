@@ -4,6 +4,7 @@ import {codingQuery,codingRequest,type Code,type CodedAnswer,type Suggestion,typ
 import {CodeMetrics} from './CodeMetrics'
 import {CodingAnswers} from './CodingAnswers'
 import {CodingSuggestions} from './CodingSuggestions'
+import {keepIfSame,useQuietRefresh} from '../../../shared/ui/useQuietRefresh'
 export function CodingPanel({flowId,filter,onCodeFilter,onChanged,timeZone}:{flowId:string;filter:LedgerFilter;onCodeFilter:(codeId?:string)=>void;onChanged:()=>void;timeZone:string}) {
   const [codes,setCodes]=useState<Code[]>([]),[catalogNext,setCatalogNext]=useState<string|null>(null),[label,setLabel]=useState('')
   const [answers,setAnswers]=useState<{answers:CodedAnswer[];nextAfter:string|null}>(),[suggestions,setSuggestions]=useState<{suggestions:Suggestion[];nextAfter:string|null}>()
@@ -32,6 +33,16 @@ export function CodingPanel({flowId,filter,onCodeFilter,onChanged,timeZone}:{flo
     if(row&&column)codingRequest<Cross>(root+'/crosstab?'+codingQuery(filter,{rowCodeId:row,columnCodeId:column})).then(result=>{if(active)setCross(result)}).catch(reason=>{if(active)setError((reason as Error).message)})
     return()=>{active=false}
   },[flowId,scope,row,column,refresh])
+  useQuietRefresh(async()=>{
+    const [a,c,suggested,crossed]=await Promise.all([
+      codingRequest<{answers:CodedAnswer[];nextAfter:string|null}>(root+'/answers?'+codingQuery(filter,{after:answerAfter})),
+      codingRequest<Counts>(root+'/counts?'+codingQuery(filter,{after:countAfter})),
+      codingRequest<{suggestions:Suggestion[];nextAfter:string|null}>(root+'/suggestions?'+new URLSearchParams(suggestionAfter?{after:suggestionAfter}:{})),
+      row&&column?codingRequest<Cross>(root+'/crosstab?'+codingQuery(filter,{rowCodeId:row,columnCodeId:column})):undefined,
+    ])
+    setAnswers(current=>keepIfSame(current,a));setCounts(current=>keepIfSame(current,c));setSuggestions(current=>keepIfSame(current,suggested))
+    if(crossed)setCross(current=>keepIfSame(current,crossed))
+  })
   const mutate=async(action:()=>Promise<unknown>,message:string)=>{
     setBusy(true);setError(undefined);setNotice(undefined)
     try{await action();setNotice(message);onChanged();setRefresh(current=>current+1)}catch(reason){setError((reason as Error).message)}finally{setBusy(false)}
@@ -39,7 +50,7 @@ export function CodingPanel({flowId,filter,onCodeFilter,onChanged,timeZone}:{flo
   const assignment=(answer:CodedAnswer,codeId:string)=>`responses/${encodeURIComponent(answer.responseId)}/answers/${encodeURIComponent(answer.questionId)}/codes/${encodeURIComponent(codeId)}`
   return <section className="panel results-card coding-panel" aria-labelledby="coding-title">
     <p className="eyebrow">Codes</p><h2 className="display" id="coding-title">Organise feedback with codes</h2><p className="muted">Create a workspace vocabulary, tag retained answers, and compare the feedback. Counts and answers use the ledger filters; suggestions retain their analysis evidence.</p>
-    <form className="coding-create" onSubmit={event=>{event.preventDefault();void mutate(async()=>{await codingRequest('codes',{label});await loadCodes();setLabel('')},'Workspace code created.')}}><label className="inspector-field">New code<input className="text-input" maxLength={100} required value={label} onChange={event=>setLabel(event.target.value)} /></label><button className="secondary-button focus-ring" disabled={busy||!label.trim()} type="submit">Create code</button><button className="quiet-button" type="button" disabled={busy} onClick={()=>setRefresh(current=>current+1)}>Refresh coding</button></form>
+    <form className="coding-create" onSubmit={event=>{event.preventDefault();void mutate(async()=>{await codingRequest('codes',{label});await loadCodes();setLabel('')},'Workspace code created.')}}><label className="inspector-field">New code<input className="text-input" maxLength={100} required value={label} onChange={event=>setLabel(event.target.value)} /></label><button className="secondary-button focus-ring" disabled={busy||!label.trim()} type="submit">Create code</button></form>
     <label className="inspector-field coding-filter">Code filter for answers, ledger and exports<select className="text-input" value={filter.codeId ?? ''} onChange={event=>onCodeFilter(event.target.value||undefined)}><option value="">All codes and uncoded responses</option>{codes.map(code=><option key={code.id} value={code.id}>{code.label}</option>)}</select></label>
     {catalogNext?<button className="quiet-button" type="button" onClick={()=>void loadCodes(catalogNext).catch(reason=>setError((reason as Error).message))}>Load more workspace codes</button>:null}
     {error?<p role="alert" className="status-note" data-tone="error">{error}</p>:null}{notice?<p className="status-note" role="status">{notice}</p>:null}

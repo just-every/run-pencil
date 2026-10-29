@@ -7,6 +7,7 @@ import { ReviewReport } from './ReviewReport'
 import { GoogleOptions, GoogleQuestions } from './GoogleOptions'
 import { ImportFileHelp } from './ImportFileHelp'
 import { TypeformConnection } from './TypeformConnection'
+import { keepIfSame, useQuietRefresh } from '../../../shared/ui/useQuietRefresh'
 const preparation = (job: Job) => job.state === 'preparing' || job.state === 'preparation-interrupted'
 const progressLabel = (job: Job) => job.state === 'preparing' ? 'Ready to verify' : job.state === 'preparation-interrupted' ? 'Preparation needs attention' : job.state === 'cancelled' ? 'Preparation cancelled' : job.state
 export function ImportPage() {
@@ -19,8 +20,9 @@ export function ImportPage() {
   const [pendingCustody, setPendingCustody] = useState<string>()
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [jobs, setJobs] = useState<Job[]>([])
   const progress = useImportProgress(job => { setJobs(current => current.some(j => j.id === job.id) ? current.map(j => j.id === job.id ? job : j) : [...current, job]); setReview(current => current?.jobId === job.id ? { ...current, jobState: job.state, alreadyImported: job.state === 'completed' } : current) })
-  const refresh = async () => { const next = await importsApi.list(); setJobs(next); setReview(current => current?.jobId ? { ...current, alreadyImported: next.some(job => job.id === current.jobId && job.state === 'completed'), jobState: next.find(job => job.id === current.jobId)?.state } : current) }
+  const refresh = async () => { const next = await importsApi.list(); setJobs(current => keepIfSame(current, next)); setReview(current => current?.jobId ? { ...current, alreadyImported: next.some(job => job.id === current.jobId && job.state === 'completed'), jobState: next.find(job => job.id === current.jobId)?.state } : current) }
   useEffect(() => { void refresh().catch(e => setError(e.message)) }, [])
+  useQuietRefresh(() => { if (!busy && !progress.active) return refresh() })
   const run = async (action: () => Promise<void>) => { setBusy(true); setError(''); try { await action() } catch (e) { setError((e as Error).message) } finally { setBusy(false) } }
   const reset = () => { setDefinition(''); setLoadedTitle(''); setCsv(''); setColumns([]); setReview(undefined); setAcknowledged(false); setDirty(false); setError(''); setFileVersion(v => v + 1) }
   const showPublication = (job: Job, previousId = review?.jobId) => {
@@ -92,7 +94,6 @@ export function ImportPage() {
       {review.alreadyImported || jobs.some(j => j.id === review.jobId && j.state === 'completed') ? <p><Link to="/app/flows/$flowId/builder" params={{ flowId: review.flowId }}>Open the imported draft</Link></p> : null}
     </> : null}
     <section className="import-history" aria-labelledby="import-history"><h2 id="import-history" className="display">Import history</h2>
-      <button className="quiet-button focus-ring" type="button" disabled={busy} onClick={() => void run(refresh)}>Refresh history</button>
       {progress.active ? <button className="secondary-button focus-ring" type="button" onClick={progress.pause}>Pause after this batch</button> : null}
       {jobs.map(job => <article className="quiet-panel" style={{ padding: '1rem', marginTop: '.75rem', overflowWrap: 'anywhere' }} key={job.id}><h3>{progressLabel(job)} · {job.checkpoint} / {job.total}</h3><small>{job.id}</small>{preparation(job) ? <p>No form or responses have been created. {job.state === 'preparing' ? 'Continue to verify the stored preparation and begin importing.' : 'Retry the reviewed files to prepare again, or cancel to remove the private data.'}</p> : null}{job.erasedRecords ? <p>{job.erasedRecords} response {job.erasedRecords === 1 ? 'record was' : 'records were'} already erased. Import and undo cannot restore those answers.</p> : null}{job.error ? <p role="alert">{job.error}</p> : null}<div className="builder-actions">
         {!['completed', 'undone', 'rolled_back', 'cancelled', 'preparation-interrupted'].includes(job.state) ? <button className="secondary-button focus-ring" disabled={busy} onClick={() => void run(async () => { await progress.follow(job) })}>Continue {job.state === 'undoing' || job.state === 'rolling_back' ? 'undo' : 'import'}</button> : null}

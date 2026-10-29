@@ -16,6 +16,7 @@ import { ResponseLedger } from './ResponseLedger'
 import { QuarantineReview } from './QuarantineReview'
 import { api, reportingApi, type QuestionReport, type FlowResults, type LedgerFilter, type Ledger } from '../../../app/api'
 import { LoadProblem } from '../../../app/ui/LoadProblem'
+import { keepIfSame, useQuietRefresh } from '../../../shared/ui/useQuietRefresh'
 
 export function ResultsPage() {
   const { flowId } = useParams({ from: '/app/flows/$flowId/results' })
@@ -59,6 +60,17 @@ export function ResultsPage() {
     void reportingApi.devices(flowId, filter).then(report => { if (active) setDevices(report) }).catch(reason => { if (active) setError(reason instanceof Error ? reason.message : 'Device counts could not load.') })
     return () => { active = false }
   }, [flowId, filterKey, refresh, results?.revision.id])
+
+  useQuietRefresh(async () => {
+    if (!results || busy || comparing) return
+    const all = selectedRevision === 'all'
+    const result = await api.results(flowId, all ? undefined : selectedRevision, responseFilter, all)
+    const [nextQuestions, nextDevices] = await Promise.all([
+      reportingApi.questions(flowId, all ? undefined : result.revision.id, responseFilter),
+      reportingApi.devices(flowId, { ...responseFilter, revisionId: all ? undefined : selectedRevision ?? result.revision.id }),
+    ])
+    setResults(current => keepIfSame(current, result, ['cutoff'])); setQuestions(current => keepIfSame(current, nextQuestions)); setDevices(current => keepIfSame(current, nextDevices))
+  })
 
   return (
     <section className="results" aria-labelledby="results-title" aria-busy={busy}>
