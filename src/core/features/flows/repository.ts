@@ -1,5 +1,5 @@
 import { admittedResponseSql } from '../payments/admission'
-import { agentAuditDetails, type NativeAgentAttribution } from '../audit/agent-attribution'
+import { agentAuditDetails, type NativeAgentAttribution } from '../audit'
 import { createFlowStructure, type FlowStructure } from './structure'
 import { readCurrentPublicSnapshot } from './publicSnapshot'
 import { and, desc, eq, inArray, ne, sql } from 'drizzle-orm'

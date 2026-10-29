@@ -1,6 +1,6 @@
 import { answerAlertPublicationIssues, remapAnswerAlerts } from '../../shared/answerAlerts'
 import type { LedgerFilter } from '../reporting'
-import type { NativeAgentAttribution } from '../audit/agent-attribution'
+import type { NativeAgentAttribution } from '../audit'
 import { closedFlowFor } from '../../shared/closedFlow'
 import { marketingPublicationIssues } from '../../shared/marketingConsent'
 import { respondentTextPublicationIssues } from '../../shared/respondentText'
