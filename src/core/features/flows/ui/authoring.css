@@ -58,6 +58,9 @@
 .builder-inspector > .eyebrow + .inspector-field { margin-top: 12px; }
 .builder-inspector .text-area { min-height: 46px; height: 48px; }
 .builder-inspector details > summary { color: var(--muted); font-size: 14px; padding: 6px 0; }
+.builder-inspector .rewrite-panel { padding: 0 14px; }
+.builder-inspector .rewrite-panel > summary { padding: 10px 0; }
+.builder-inspector .rewrite-panel[open] { padding-bottom: 14px; }
 .choice-editor { display: grid; gap: 10px; margin-top: 16px; }
 .choice-editor > .toggle-row .secondary-button, .branch-add { min-height: 34px; padding: 0 14px; font-size: 14px; }
 /* A choice is one row: "Choice N" and its field, Remove, then Advanced; an open Advanced takes the row below. */
