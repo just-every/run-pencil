@@ -53,7 +53,7 @@ export function BackupPage({loadRestoreTest}: {loadRestoreTest?: () => Promise<{
     <div className="settings-grid">
       <section className="panel settings-card" aria-labelledby="backup-download"><h2 className="display" id="backup-download">1. Download your backup</h2>
         <p>Pencil reads your complete product data in one consistent transaction. Your forms can stay open while it works.</p>
-        <p>This file includes personal data and quarantined answers. Store it privately. Passwords, sign-in links, active sessions, captured mail and private integration settings are excluded. Everyone signs in again after restoration.</p>
+        <p>This file includes personal data and quarantined answers. Store it privately. Passwords, sign-in links, active sessions and private integration settings are excluded. Everyone signs in again after restoration.</p>
         <button className="primary-button focus-ring" disabled={!!busy} type="button" onClick={() => void download()}>{busy === 'download' ? 'Creating backup…' : 'Download backup'}</button>
         <p className="muted settings-help">Browser backups have an 8 MiB file limit and a conservative workspace size limit. Larger workspaces need the <a href="/docs/backup#large-workspace-export">large-workspace export</a>.</p>
       </section>
