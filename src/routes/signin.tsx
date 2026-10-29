@@ -9,9 +9,8 @@ function emailHint(value: unknown) {
 }
 
 export const Route = createFileRoute('/signin')({
-  validateSearch: (search: Record<string, unknown>): { invalid?: string; notice?: 'access-removed'; login_hint?: string } => ({
+  validateSearch: (search: Record<string, unknown>): { invalid?: string; login_hint?: string } => ({
     invalid: typeof search.invalid === 'string' ? search.invalid : undefined,
-    notice: search.notice === 'access-removed' ? 'access-removed' : undefined,
     login_hint: emailHint(search.login_hint) ?? emailHint(search.email),
   }),
   loader: () => loadSignIn(),
@@ -21,5 +20,5 @@ export const Route = createFileRoute('/signin')({
 function Page() {
   const data = Route.useLoaderData()
   const search = Route.useSearch()
-  return <SignInPage {...data} emailHint={search.login_hint} invalid={search.invalid} notice={search.notice} />
+  return <SignInPage {...data} emailHint={search.login_hint} invalid={search.invalid} />
 }
