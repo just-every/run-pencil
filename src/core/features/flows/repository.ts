@@ -1,4 +1,5 @@
 import { admittedResponseSql } from '../payments/admission'
+import { agentAuditDetails, type NativeAgentAttribution } from '../audit/agent-attribution'
 import { createFlowStructure, type FlowStructure } from './structure'
 import { readCurrentPublicSnapshot } from './publicSnapshot'
 import { and, desc, eq, inArray, ne, sql } from 'drizzle-orm'
@@ -19,21 +20,24 @@ export class FlowRepository {
   constructor(
     private readonly database: PencilDatabase,
     private readonly binding: D1Database,
+    private readonly agentActor?: NativeAgentAttribution,
   ) {}
+
+  asAgent(actor: NativeAgentAttribution) { return new FlowRepository(this.database, this.binding, actor) }
 
   private async auditedDraft(input: DraftVersion, statements: D1PreparedStatement[]) {
     const result = await this.binding.batch([
       this.binding.prepare(`INSERT INTO audit_entries (id, workspace_id, kind, actor_operator_id, subject_type, subject_id, details_json, created_at)
-        SELECT ?, workspace_id, 'flow.draft-mutated', (SELECT id FROM operators WHERE id = ? AND workspace_id = flows.workspace_id), 'flow', id, '{"feature":"flow-builder"}', ?
-        FROM flows WHERE id = ? AND draft_version = ?`).bind(crypto.randomUUID(), input.operatorId ?? null, input.now, input.flowId, input.expectedVersion),
+        SELECT ?, workspace_id, 'flow.draft-mutated', (SELECT id FROM operators WHERE id = ? AND workspace_id = flows.workspace_id), 'flow', id, ?, ?
+        FROM flows WHERE id = ? AND draft_version = ?`).bind(crypto.randomUUID(), input.operatorId ?? null, agentAuditDetails(this.agentActor, 'flow-builder'), input.now, input.flowId, input.expectedVersion),
       ...statements,
     ])
     return result.slice(1)
   }
   private lifecycleAudit(flowId: string, now: string, operatorId: string | undefined, kind: string) {
     return this.binding.prepare(`INSERT INTO audit_entries (id, workspace_id, kind, actor_operator_id, subject_type, subject_id, details_json, created_at)
-      SELECT ?, workspace_id, ?, (SELECT id FROM operators WHERE id = ? AND workspace_id = flows.workspace_id), 'flow', id, '{"feature":"flow-lifecycle"}', ? FROM flows WHERE id = ?`)
-      .bind(crypto.randomUUID(), kind, operatorId ?? null, now, flowId)
+      SELECT ?, workspace_id, ?, (SELECT id FROM operators WHERE id = ? AND workspace_id = flows.workspace_id), 'flow', id, ?, ? FROM flows WHERE id = ?`)
+      .bind(crypto.randomUUID(), kind, operatorId ?? null, agentAuditDetails(this.agentActor, 'flow-lifecycle'), now, flowId)
   }
 
   async validAlertRecipients(workspaceId:string,ids:string[]) {
@@ -48,7 +52,10 @@ export class FlowRepository {
       .bind(workspaceId,flowId,JSON.stringify(platforms)).all<{platform:string}>()
     return platforms.every(platform=>rows.results.some(row=>row.platform===platform))
   }
-  async createStructure(input: FlowStructure) { return createFlowStructure(this.binding, input) }
+  async createStructure(input: FlowStructure) {
+    const audit = this.agentActor ? { id: crypto.randomUUID(), operatorId: this.agentActor.for.id, feature: 'agent-door', detailsJson: agentAuditDetails(this.agentActor, 'flow-builder') } : input.audit
+    return createFlowStructure(this.binding, { ...input, ...(audit ? { audit } : {}) })
+  }
 
   async updateScreen(input: DraftVersion & {changes:Array<{id:string;settings:Record<string,unknown>|null;nextStepId:string|null}>}) {
     const result = await this.auditedDraft(input,[
@@ -391,10 +398,10 @@ export class FlowRepository {
     const auditId = crypto.randomUUID()
     const results = await this.binding.batch([
       this.binding.prepare(`INSERT INTO audit_entries (id, workspace_id, kind, actor_operator_id, subject_type, subject_id, details_json, created_at)
-        SELECT ?, workspace_id, 'flow.reopened', (SELECT id FROM operators WHERE id = ? AND workspace_id = flows.workspace_id), 'flow', id, '{}', ? FROM flows
+        SELECT ?, workspace_id, 'flow.reopened', (SELECT id FROM operators WHERE id = ? AND workspace_id = flows.workspace_id), 'flow', id, ?, ? FROM flows
         WHERE id = ? AND status = 'closed' AND EXISTS (SELECT 1 FROM flow_revisions r WHERE r.flow_id = flows.id AND r.state = 'published' AND r.is_current = 1
           AND (r.deadline_at IS NULL OR r.deadline_at > ?) AND (r.target_completed_responses IS NULL OR
-            (SELECT COUNT(*) FROM responses admitted WHERE admitted.revision_id = r.id AND ${admittedResponseSql('admitted')}) < r.target_completed_responses))`).bind(auditId, operatorId, now, flowId, now),
+            (SELECT COUNT(*) FROM responses admitted WHERE admitted.revision_id = r.id AND ${admittedResponseSql('admitted')}) < r.target_completed_responses))`).bind(auditId, operatorId, agentAuditDetails(this.agentActor, 'flow-lifecycle'), now, flowId, now),
       this.binding.prepare(`UPDATE flow_revisions SET admission_closed_at = NULL, admission_close_reason = NULL, updated_at = ? WHERE flow_id = ? AND state = 'published' AND is_current = 1 AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?)`).bind(now, flowId, auditId),
       this.binding.prepare(`UPDATE flows SET status = 'open', last_activity_at = ?, updated_at = ? WHERE id = ? AND status = 'closed' AND EXISTS (SELECT 1 FROM audit_entries WHERE id = ?) RETURNING id`).bind(now, now, flowId, auditId),
     ])

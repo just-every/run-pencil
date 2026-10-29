@@ -13,7 +13,8 @@
       { "slug": "results", "source": "docs/guide/results.md", "label": "Results, review and exports" },
       { "slug": "actions", "source": "docs/guide/actions.md", "label": "Actions and follow-up" },
       { "slug": "analysis", "source": "docs/guide/analysis.md", "label": "Analysis" },
-      { "slug": "moving-in", "source": "docs/guide/moving-in.md", "label": "Moving in" }
+      { "slug": "moving-in", "source": "docs/guide/moving-in.md", "label": "Moving in" },
+      { "slug": "agents", "source": "docs/guide/agents.md", "label": "Company agents" }
     ]},
     { "title": "Run it", "pages": [
       { "slug": "hosting", "source": "docs/guide/hosting.md", "label": "Hosting on Cloudflare" },

@@ -1,5 +1,5 @@
 import type { flows, flowRevisions, flowSteps, choiceOptions, flowBranchRules } from '../../platform/db/schema'
-export type FlowStructure = { audit?: {id:string;operatorId:string;feature:string}; flow: typeof flows.$inferInsert; revision: typeof flowRevisions.$inferInsert; steps?: Array<typeof flowSteps.$inferInsert>; choices?: Array<typeof choiceOptions.$inferInsert>; rules?: Array<typeof flowBranchRules.$inferInsert> }
+export type FlowStructure = { audit?: {id:string;operatorId:string;feature:string;detailsJson?:string}; flow: typeof flows.$inferInsert; revision: typeof flowRevisions.$inferInsert; steps?: Array<typeof flowSteps.$inferInsert>; choices?: Array<typeof choiceOptions.$inferInsert>; rules?: Array<typeof flowBranchRules.$inferInsert> }
 export async function createFlowStructure(binding: D1Database, input: FlowStructure) {
   const f = input.flow, r = input.revision
   const statements = [
@@ -13,7 +13,7 @@ export async function createFlowStructure(binding: D1Database, input: FlowStruct
       SELECT ?, ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM flow_steps WHERE id = ?)`).bind(c.id, c.stepId, c.stableId, c.value, c.label, c.position, c.createdAt, c.updatedAt, c.stepId)),
     ...(input.rules ?? []).map((rule) => binding.prepare(`INSERT INTO flow_branch_rules (id, revision_id, source_step_stable_id, predicate_kind, expected_value_json, condition_json, destination_step_stable_id, position, created_at, updated_at)
       SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM flow_revisions WHERE id = ?)`).bind(rule.id, r.id, rule.sourceStepStableId, rule.predicateKind, rule.expectedValueJson, rule.conditionJson ?? null, rule.destinationStepStableId, rule.position, rule.createdAt, rule.updatedAt, r.id)),
-    ...(input.audit ? [binding.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at) SELECT ?,workspace_id,'flow.draft-created',?,'flow',id,?,? FROM flows WHERE id=?`).bind(input.audit.id,input.audit.operatorId,JSON.stringify({feature:input.audit.feature}),f.createdAt,f.id)] : []),
+    ...(input.audit ? [binding.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at) SELECT ?,workspace_id,'flow.draft-created',?,'flow',id,?,? FROM flows WHERE id=?`).bind(input.audit.id,input.audit.operatorId,input.audit.detailsJson ?? JSON.stringify({feature:input.audit.feature}),f.createdAt,f.id)] : []),
   ]
   const result = await binding.batch<{id:string}>(statements)
   return result[0].results.some(row => row.id === f.id)
