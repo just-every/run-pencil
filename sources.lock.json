@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "2f213b1f82d41aa11ad91ba1cbab00303192cf36b5987c184bad2787db705f59",
+      "sha256": "aee98960e6e2da29218576adfd1b4594b7adab162f07acbe940d064fcd8575a6",
       "executable": false
     },
     "DEMO.md": {
@@ -4873,7 +4873,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/authoring.css": {
-      "sha256": "00472e6830c37efb74f6c7df883a6a265ce024d6d95c08cfb0e30b066faa0972",
+      "sha256": "596aa6310b7a3bee2434e1943619e4e81053e62119ac2e01bea2a87558ef064e",
       "executable": false
     },
     "src/core/features/flows/ui/BranchEditor.tsx": {
@@ -4921,7 +4921,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/FlowBuilderPage.tsx": {
-      "sha256": "fc158b107152259d0b36a2eb9c6f331b68a6774a917825d99776cf35474abae6",
+      "sha256": "c9be3a2c363976fd363987533443f6a7dc3f5ce31f7a646c92b4f0c1ba8ddea2",
       "executable": false
     },
     "src/core/features/flows/ui/FlowLifecycle.tsx": {
@@ -7549,7 +7549,7 @@
       "executable": false
     },
     "tests/e2e/notifications.spec.ts": {
-      "sha256": "948d80f5e0ef87143113055103ae3a90c66a7644c959e1fd2e0645bc2fb0f3e0",
+      "sha256": "e73b66ea2346edafbc9e44d30a5568df0b844b0e9e84365247aa64a06987af45",
       "executable": false
     },
     "tests/e2e/operator-custody.spec.ts": {
@@ -7609,7 +7609,7 @@
       "executable": false
     },
     "tests/e2e/reporting-counts.spec.ts": {
-      "sha256": "86ce4d01888a049dfb5ebc6db3f4aac04c6545a02eb1732c97135d44080748d2",
+      "sha256": "aeee017e0d49d25112b850d287895dac146d2732571ef2f009b8101bf307a3fc",
       "executable": false
     },
     "tests/e2e/request-notifications.spec.ts": {
