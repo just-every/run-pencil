@@ -65,6 +65,8 @@ export function FlowBuilderPage() {
   const [draftRead, setDraftRead] = useState(0)
   const [selectedId, setSelectedId] = useState<string>()
   const [prompt, setPrompt] = useState('')
+  const promptField = useRef<HTMLTextAreaElement>(null)
+  const focusNewQuestion = useRef(false)
   const [helperText, setHelperText] = useState('')
   const [nextStepId, setNextStepId] = useState<string | null>(null)
   const [required, setRequired] = useState(false)
@@ -178,7 +180,13 @@ export function FlowBuilderPage() {
     void reloadAfterMutation(() => api.saveDraft(flowId, input))
   }
 
-  const addQuestion = () => reloadAfterMutation(() => api.addDraftStep(flowId, {
+  // A new question opens with the caret in its prompt, once the draft has re-rendered with it selected.
+  useEffect(() => {
+    if (!focusNewQuestion.current || saving || selected?.kind !== 'question' || prompt !== selected.prompt) return
+    focusNewQuestion.current = false
+    promptField.current?.focus(); promptField.current?.select()
+  }, [saving, selected, prompt])
+  const addQuestion = () => { focusNewQuestion.current = true; return reloadAfterMutation(() => api.addDraftStep(flowId, {
     expectedVersion: draft!.flow.draftVersion,
     step: {
       kind: 'question',
@@ -187,7 +195,7 @@ export function FlowBuilderPage() {
       required: false,
       nextStepId: draft!.steps.find((step) => step.kind === 'completion')?.id ?? null,
     },
-  }))
+  })) }
 
   // PAY-001: a payment step sits after the questions that set its amount and leads straight to a completion screen.
   const addPayment = () => reloadAfterMutation(() => api.addDraftStep(flowId, {
@@ -300,7 +308,7 @@ export function FlowBuilderPage() {
         <aside className="builder-inspector" aria-label="Step settings">
           {selected ? <>
             <div className="eyebrow step-content-heading"><span>Content</span>{selected.kind === 'question' ? <PrefillSettings key={`prefill-${draftRead}-${selected.id}`} draft={draft} stepId={selected.id} disabled={saving||dirty} onSave={async prefill=>{setNotice(undefined);const result=await api.saveFormSettings(flowId,{...draft.formSettings!,prefill},draft.flow.draftVersion);if(result.kind==='conflict')throw new Error('Another operator saved first. Reload the draft.');await load();setNotice({tone:'success',message:'Prefill mapping saved to the draft. Publish to apply it.'})}}/> : null}{selected.kind === 'question' ? <ScreenSettings allowGroups key={`${draftRead}-${selected.id}`} draft={draft} selected={{...selected,questionSettings:settings}} disabled={saving} saveDisabled={dirty} onSave={layout=>void reloadAfterMutation(()=>api.saveScreen(flowId,{stepId:selected.id,expectedVersion:draft.flow.draftVersion,layout}))} onVisibility={condition=>{const next:Record<string,unknown>={...settings};if(condition)next.showWhen=condition;else delete next.showWhen;setSettingsText(JSON.stringify(next,null,2))}}/> : null}</div>
-            <label className="inspector-field">Prompt<textarea aria-label="Prompt" disabled={saving} className="text-area" onChange={(event) => setPrompt(event.target.value)} value={prompt} /></label>
+            <label className="inspector-field">Prompt<textarea ref={promptField} aria-label="Prompt" disabled={saving} className="text-area" onChange={(event) => setPrompt(event.target.value)} value={prompt} /></label>
             {selected.kind === 'question' ? <DraftRewritePanel key={`${flowId}:${selected.id}`} flowId={flowId} stepId={selected.id} version={draft.flow.draftVersion} source={selected.prompt} disabled={saving || dirty} onAccepted={load} onBusy={setSaving} /> : null}
             <RecallHelp flow={draft} currentStepId={selected.id} disabled={saving} onInsert={reference => setPrompt(current => current + (current && !/\s$/.test(current) ? ' ' : '') + reference)} />
             <details><summary className="focus-ring">Extra wording</summary><label className="inspector-field">Why ask this?<textarea aria-label="Why ask this?" disabled={saving} className="text-area" onChange={(event) => setHelperText(event.target.value)} value={helperText} /></label></details>

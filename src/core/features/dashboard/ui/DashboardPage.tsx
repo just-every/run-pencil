@@ -1,6 +1,6 @@
 import { StudioPanel } from '../../studio/ui'
 import { TeamTemplatePicker } from './TeamTemplatePicker'
-import { flowTemplates, type FlowTemplateId } from '../../flows'
+import { flowTemplates, starterTemplateIds, type FlowTemplateId } from '../../flows'
 import { Plus, RefreshCw } from 'lucide-react'
 import { Link, useNavigate, useRouter } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -93,6 +93,8 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
 
   const openCreate = () => { if (dirty && !window.confirm('Discard the unfinished copy and create a new flow?')) return; createRequested.current = true; setError(undefined); setShowCreate(true) }
   const firstFlow = !hasFlows && status === 'active'
+  const browsing = templateSearch.trim() !== '' || templateCategory !== 'All categories'
+  const shownTemplates = flowTemplates.filter(item => browsing ? (templateCategory === 'All categories' || item.category === templateCategory) && `${item.title} ${item.category}`.toLowerCase().includes(templateSearch.toLowerCase()) : starterTemplateIds.has(item.id) || item.id === template)
 
   return <section className="dashboard" aria-labelledby="dashboard-title">
     <header className="dashboard-heading">
@@ -111,18 +113,19 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
     {showCreate && !showStudio ? <form className="panel dashboard-create-panel" onSubmit={(event) => { event.preventDefault(); void createFlow() }}>
       <div className="dashboard-create">
         {!hasFlows ? <><p className="eyebrow">Ask → Signal → Act</p><h2 className="display">Create your first flow</h2><p className="muted">Ask a clear question, use the answers to make a decision, then act.</p></> : <h2 className="display">New flow</h2>}
-        <button className="secondary-button focus-ring" type="button" disabled={creating} onClick={()=>setShowStudio(true)}>Generate with AI</button>
-        <label className="inspector-field">Search templates<input className="text-input" type="search" value={templateSearch} onChange={event => setTemplateSearch(event.target.value)} /></label>
-        <label className="inspector-field">Template category<select aria-label="Template category" className="text-input" value={templateCategory} onChange={event => setTemplateCategory(event.target.value)}><option>All categories</option>{[...new Set(flowTemplates.map(item => item.category))].map(category => <option key={category}>{category}</option>)}</select></label>
+        <label className="inspector-field">Flow name<input autoFocus disabled={creating} required className="text-input" onChange={(event) => { const name = event.target.value; setTitle(name); if (!slugEdited) setSlug(suggestedSlug(name)) }} placeholder="Post-visit feedback" value={title} /></label>
+        <label className="inspector-field">Public link<input disabled={creating} required maxLength={120} className="text-input" onChange={(event) => { setSlugEdited(true); setSlug(event.target.value) }} placeholder="post-visit-feedback" value={slug} /></label>
+        <div className="template-find">
+          <label className="inspector-field">Search templates<input className="text-input" type="search" value={templateSearch} onChange={event => setTemplateSearch(event.target.value)} /></label>
+          <label className="inspector-field">Template category<select aria-label="Template category" className="text-input" value={templateCategory} onChange={event => setTemplateCategory(event.target.value)}><option>All categories</option>{[...new Set(flowTemplates.map(item => item.category))].map(category => <option key={category}>{category}</option>)}</select></label>
+        </div>
         <div aria-label="Flow templates" className="template-gallery">
-          {flowTemplates.filter(item => (templateCategory === 'All categories' || item.category === templateCategory) && `${item.title} ${item.category}`.toLowerCase().includes(templateSearch.toLowerCase())).map(item => <button className="secondary-button focus-ring" aria-pressed={template === item.id} disabled={creating} type="button" key={item.id} onClick={() => { setTeamTemplate(undefined); setTemplate(item.id); setTitle(item.title); setSlug(`${suggestedSlug(item.title)}-${crypto.randomUUID().slice(0, 8)}`); setSlugEdited(false) }}>{item.title}</button>)}
+          {shownTemplates.map(item => <button className="secondary-button focus-ring" aria-pressed={template === item.id} disabled={creating} type="button" key={item.id} onClick={() => { setTeamTemplate(undefined); setTemplate(item.id); setTitle(item.title); setSlug(`${suggestedSlug(item.title)}-${crypto.randomUUID().slice(0, 8)}`); setSlugEdited(false) }}>{item.title}</button>)}
           <button className="secondary-button focus-ring" aria-pressed={!template && !teamTemplate} disabled={creating} type="button" onClick={() => { setTemplate(undefined); setTeamTemplate(undefined); setTitle(''); setSlug(''); setSlugEdited(false) }}>Blank flow</button>
         </div>
         <TeamTemplatePicker selected={teamTemplate} disabled={creating} onSelect={item=>{setTeamTemplate(item?.id);setTemplate(undefined);if(item){setTitle(item.name);setSlug(`${suggestedSlug(item.name)}-${crypto.randomUUID().slice(0,8)}`);setSlugEdited(false)}}} />
         {template ? <p className="muted">{flowTemplates.find(item => item.id === template)?.description} You can edit every question before publishing.</p> : null}
-        <label className="inspector-field">Flow name<input disabled={creating} required className="text-input" onChange={(event) => { const name = event.target.value; setTitle(name); if (!slugEdited) setSlug(suggestedSlug(name)) }} placeholder="Post-visit feedback" value={title} /></label>
-        <label className="inspector-field">Public link<input disabled={creating} required maxLength={120} className="text-input" onChange={(event) => { setSlugEdited(true); setSlug(event.target.value) }} placeholder="post-visit-feedback" value={slug} /></label>
-        <div className="builder-actions dashboard-create-actions"><button className="primary-button focus-ring" disabled={creating || !title.trim() || !slug.trim()} type="submit"><Plus aria-hidden="true" size={16} /> {creating ? 'Creating…' : 'Create draft flow'}</button><button className="quiet-button focus-ring" disabled={creating} onClick={cancel} type="button">Cancel</button></div>
+        <div className="builder-actions dashboard-create-actions"><button className="primary-button focus-ring" disabled={creating || !title.trim() || !slug.trim()} type="submit"><Plus aria-hidden="true" size={16} /> {creating ? 'Creating…' : 'Create draft flow'}</button><button className="secondary-button focus-ring" type="button" disabled={creating} onClick={()=>setShowStudio(true)}>Generate with AI</button><button className="quiet-button focus-ring" disabled={creating} onClick={cancel} type="button">Cancel</button></div>
       </div>
       {template ? <div className="dashboard-create-preview"><TemplatePreview template={template} /><AppNote className="create-note" wideOnly>you can edit every question</AppNote></div> : null}
     </form> : null}

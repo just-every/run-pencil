@@ -7,6 +7,8 @@ const originalTemplates = [
   { id: 'lead', title: 'Contact/lead', description: 'Collect a name, email and enquiry.' },
 ] as const
 export const flowTemplates = [...originalTemplates.map(item => ({ ...item, category: item.id === 'feedback' ? 'Customer feedback' : item.id === 'nps' ? 'NPS' : 'Contact and lead capture' })), ...catalog]
+/** The three starters shown before anyone searches or picks a category. */
+export const starterTemplateIds: ReadonlySet<string> = new Set(originalTemplates.map(item => item.id))
 export type FlowTemplateId = string
 
 type TemplateQuestion = { prompt: string; questionType: 'single_choice' | 'rating' | 'nps' | 'long_text' | 'short_text' | 'email' | 'csat' | 'ces'; labels?: string[]; questionSettings?: Record<string, unknown> }

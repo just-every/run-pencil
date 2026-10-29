@@ -18,7 +18,7 @@ export function ContactEditor({ contact, saved, cancel }: { contact?: Contact; s
     <h2>{contact ? 'Edit contact' : 'Add contact'}</h2>
     {error ? <p role="alert" className="status-note" data-tone="error">{error}</p> : null}
     <fieldset style={{ minWidth: 0 }} disabled={busy}><legend>Contact details</legend>
-      <label className="inspector-field">Contact name<input className="text-input" required maxLength={200} value={name} onChange={e => setName(e.target.value)} /></label>
+      <label className="inspector-field">Contact name<input autoFocus className="text-input" required maxLength={200} value={name} onChange={e => setName(e.target.value)} /></label>
       <label className="inspector-field">Contact email<input className="text-input" required type="email" maxLength={320} value={email} onChange={e => setEmail(e.target.value)} /></label>
       <label className="inspector-field">Contact mobile<input className="text-input" type="tel" placeholder="+15555550100" value={mobile} onChange={e=>setMobile(e.target.value)}/></label>
       {contact?.smsConsentAt?<p>SMS consent recorded {contact.smsConsentAt}{contact.smsStoppedAt?' · stopped':''}</p>:null}

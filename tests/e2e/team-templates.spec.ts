@@ -32,6 +32,6 @@ contract('TMPL-002','save and reuse a team form, then retire its template',async
   await page.getByLabel('Workspace template').selectOption({label:'Post-visit client survey'})
   page.once('dialog',dialog=>dialog.accept())
   await page.getByRole('button',{name:'Retire template',exact:true}).click()
-  await expect(page.getByText('Save a form as a team template from its builder.')).toBeVisible()
+  await expect(page.getByLabel('Workspace template')).toHaveCount(0)
   await page.screenshot({path:`test-results/${info.project.name}-team-template-retired.png`,fullPage:true})
 })
