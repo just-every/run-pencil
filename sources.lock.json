@@ -4001,7 +4001,7 @@
       "executable": false
     },
     "src/core/features/actions/ui/ActionPage.tsx": {
-      "sha256": "b4c3ec43e6aa8054371b0bd007d85eb8340a9a8d7106738f0735087d28739483",
+      "sha256": "bab444801bccd9edf2e9b6ea02bbfb89789a7934866b68a3168e09ae64b2616b",
       "executable": false
     },
     "src/core/features/actions/ui/ActionReminders.tsx": {
@@ -4009,7 +4009,7 @@
       "executable": false
     },
     "src/core/features/actions/ui/actionsApi.ts": {
-      "sha256": "f70bdd6d268762178fcaecadfbbd2a52ab61819edd684fcdd94da5e3aa58537d",
+      "sha256": "d33f85ff7b916c7912d4249b28d9e5250f4195f78ef736db3e7a76fa4abd39b5",
       "executable": false
     },
     "src/core/features/actions/ui/ActionsPage.tsx": {
@@ -4125,7 +4125,7 @@
       "executable": false
     },
     "src/core/features/analysis/ui/analysisApi.ts": {
-      "sha256": "f659ae30cc81908880688777d904aed13e28e722f0751e767d9ee3e41a0bbc2a",
+      "sha256": "ee4b2abaabdcc3351187fb429110841cc50c7289e7ab75e8f7ac820e2dabd717",
       "executable": false
     },
     "src/core/features/analysis/ui/AnalysisAttentionPanel.tsx": {
@@ -4141,7 +4141,7 @@
       "executable": false
     },
     "src/core/features/analysis/ui/FindingsPage.tsx": {
-      "sha256": "b9c9f617c7599a18678b422f05a9996bb57dd78490eb4eb2d9c000ce2378e388",
+      "sha256": "bdf39edeac1b559c0c17f9efbf10941d67224eaf584e5c30c7beb2a33e8ceaac",
       "executable": false
     },
     "src/core/features/analysis/ui/index.ts": {
@@ -6545,7 +6545,7 @@
       "executable": false
     },
     "src/core/features/submissions/ui/client.ts": {
-      "sha256": "63b3ef8434c4269bba06eba5e41f545dbb929653ed9dfaf3a0554eabcbd7dbcf",
+      "sha256": "8d7304bbf90853c9f5f78b979aa637a729c87e6091c3c9c5dbd9fb95c0fc0d08",
       "executable": false
     },
     "src/core/features/submissions/ui/inbox.css": {
@@ -6557,7 +6557,7 @@
       "executable": false
     },
     "src/core/features/submissions/ui/InboxPage.tsx": {
-      "sha256": "5e83ef55223bde2e2715724513f14a854971b0bb14ea7d54e1a78296ee21796a",
+      "sha256": "1d5be5ede6cd55372b9e1e0602251ec1489c4c8240605d5e7d8df62258e2bfff",
       "executable": false
     },
     "src/core/features/submissions/ui/SubmissionDetail.tsx": {

@@ -1,6 +1,7 @@
 import type { ActionDetail, ActionState, ActionSummary } from '../model'
 import type { TaskStatus } from '../deliveries'
 import type { TaskPayload } from '../task-destination'
+import { ApiError } from '../../../app/api'
 
 export type { ActionDetail, ActionState, ActionSummary, TaskStatus, TaskPayload }
 export type ActionView = ActionDetail & { task: TaskStatus }
@@ -9,8 +10,8 @@ export type ActionFieldsInput = { title: string; rationale: string; ownerOperato
 
 export async function actionRequest<T>(path: string, body?: unknown, method = body === undefined ? 'GET' : 'POST'): Promise<T> {
   const response = await fetch(path, { method, credentials: 'same-origin', ...(body === undefined ? {} : { headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }) })
-  const data = await response.json().catch(() => ({})) as T & { message?: string }
-  if (!response.ok) throw new Error(data.message ?? 'The action request failed.')
+  const data = await response.json().catch(() => ({})) as T & { error?: string; message?: string }
+  if (!response.ok) throw new ApiError(data.error ?? 'REQUEST_FAILED', data.message ?? 'The action request failed.', response.status)
   return data
 }
 
