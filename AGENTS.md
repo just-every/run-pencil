@@ -24,6 +24,8 @@ Use OPERATIONS.md and docs/HOSTING.md for setup, deployment and recovery. Remote
 
 # Lander-Regenerate
 
+Lander-Regenerate: node scripts/contract-docs.mjs write BASE-AGENT-001 BASE-AGENT-002 BASE-AGENT-003 BASE-AGENT-004 BASE-AGENT-005 BASE-AGENT-006 BASE-AGENT-007 BASE-AGENT-008 BASE-AGENT-009 BASE-AGENT-010 BASE-AGENT-011 BASE-AGENT-012 BASE-AGENT-013
+
 CONTRACT.md is the acceptance and status source. After changing its rows, run
 `node scripts/contract-docs.mjs write CLAUSE...`, then
 `node scripts/contract-docs.mjs check CLAUSE...`, substituting the touched clause
