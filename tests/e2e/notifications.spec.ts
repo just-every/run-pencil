@@ -29,6 +29,9 @@ contract(['NOTIFY-002','NOTIFY-004','NOTIFY-005','BASE-PUBLIC-003'],'notificatio
   await Promise.all(['slack','teams'].map(platform=>put(path+'/chat',{platform,postResponses:platform==='slack',answerStepIds:[],operatorId:chatOwner.id,...(platform==='slack'?{channel:'synthetic-pencil-channel',slackUserId:'synthetic-pencil-slack-user'}:{teamsUserId:'synthetic-pencil-microsoft-user'})})))
   const draft=await call(`${path}/draft`),nps=draft.steps.find((step:{questionType:string})=>step.questionType==='nps')
   await call(`${path}/publish`,{expectedVersion:draft.flow.draftVersion})
+  // Publish is available only while the draft differs from the published revision, so the builder opens on a draft with one change.
+  const published=await call(`${path}/draft`)
+  await put(`${path}/draft/settings`,{expectedVersion:published.flow.draftVersion,settings:{...published.formSettings,reviewBeforeSubmit:true}})
   await page.goto(`/app/flows/${flow.id}/builder`)
   await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
   await page.locator('.step-button').filter({hasText:'Recorded'}).click()
