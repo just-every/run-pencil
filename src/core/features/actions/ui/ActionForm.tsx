@@ -26,8 +26,7 @@ export function ActionForm({ initial, operators, timeZone, busy, submitLabel, on
     {children}
     <fieldset disabled={busy} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
       <label className="inspector-field">Title<input className="text-input" required maxLength={200} value={title} onChange={event => setTitle(event.target.value)} /></label>
-      <label className="inspector-field">Rationale<textarea className="text-input text-area" required maxLength={4000} value={rationale} aria-describedby="rationale-note" onChange={event => setRationale(event.target.value)} /></label>
-      <p className="muted" id="rationale-note">Write the recommendation in your own words. Do not paste respondent answers or names: if you create an external task, the rationale is sent with it.</p>
+      <label className="inspector-field">Rationale<textarea className="text-input text-area" required maxLength={4000} value={rationale} placeholder="In your own words, without respondent names" onChange={event => setRationale(event.target.value)} /></label>
       <label className="inspector-field">Owner<select className="text-input" required value={owner} onChange={event => setOwner(event.target.value)}><option value="">Choose an operator</option>{operators.map(operator => <option key={operator.id} value={operator.id}>{operator.displayName}</option>)}</select></label>
       <label className="inspector-field">Review date<input className="text-input" type="date" required value={reviewDate} onChange={event => setReviewDate(event.target.value)} /></label>
       <fieldset style={{ border: 0, padding: 0, margin: '1rem 0 0', minWidth: 0 }}><legend>Target metric</legend>

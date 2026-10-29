@@ -16,7 +16,6 @@ export function ActionsPage() {
       <div><p className="eyebrow">Owned follow-through</p><h1 className="display" id="actions-title">Actions</h1></div>
       <div className="builder-actions"><Link className="primary-button focus-ring" to="/app/actions/new"><Plus aria-hidden="true" size={16} /> New action</Link></div>
     </header>
-    <p className="muted">Recommendations are written by people: turn what results show into an action with an owner, a metric and a review date, then record what changed. Pencil never decides whether an action worked.</p>
     {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
     {!actions && !error ? <p className="status-note" role="status">Loading actions…</p> : null}
     {actions && !actions.length ? <section className="quiet-panel" style={{ padding: '1.5rem' }}><h2>No actions yet</h2><p className="muted">Open a flow's results and choose “Turn this into an action”, or start one here.</p></section> : null}

@@ -8,7 +8,7 @@ export function AudienceSegments({ segments, changed }: { segments: Segment[]; c
   const reset = () => { setEditing(undefined); setName(''); setRules([{ field: 'emailDomain', operator: 'is', value: '' }]) }
   const patch = (index: number, change: Partial<Rule>) => setRules(rules.map((rule, i) => i === index ? { ...rule, ...change } : rule))
   return <section className="panel" style={{ padding: '1.25rem', minWidth: 0 }} aria-labelledby="segments-title">
-    <h2 id="segments-title">Saved segments</h2><p>All rules must match. Rule values are operator configuration. Use an email domain, never a person's exact email.</p>
+    <h2 id="segments-title">Saved segments</h2>
     {error ? <p role="alert" className="status-note" data-tone="error">{error}</p> : null}{notice ? <p role="status" className="status-note">{notice}</p> : null}
     <ul>{segments.map(segment => <li key={segment.id} style={{ overflowWrap: 'anywhere' }}><strong>{segment.name}</strong> · {segment.matchCount} current matches{' '}
       <button className="quiet-button focus-ring" type="button" disabled={busy} aria-label={`Edit segment ${segment.name}`} onClick={() => { setEditing(segment.id); setName(segment.name); setRules(segment.rules) }}>Edit</button>{' '}

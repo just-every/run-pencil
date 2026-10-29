@@ -33,7 +33,6 @@ export function RequestAnalysisPage({ search }: { search: RequestSearch }) {
     <header className="page-heading">
       <div className="builder-actions"><Link className="quiet-button focus-ring" to="/app/analysis"><ArrowLeft aria-hidden="true" size={15} /> All analyses</Link></div>
       <p className="eyebrow">Analysis</p><h1 className="display" id="request-title">Request analysis</h1>
-      <p className="muted">Choose a published revision and the text or score questions to read. The run fixes the completed responses it reads now; later responses mark it stale and never change it.</p>
     </header>
     {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
     <div className="analysis-grid">
@@ -51,8 +50,7 @@ export function RequestAnalysisPage({ search }: { search: RequestSearch }) {
         <p className="eyebrow" id="leaves-title">What leaves Pencil</p>
         {options ? <ProviderNote provider={options.provider} /> : <p className="muted">Choose a flow to see where its answers would go.</p>}
         <div className="analysis-leaves"><p style={{ margin: 0 }}>Only the answers to the questions you tick, and each response’s ID.</p>
-          <p className="muted" style={{ margin: '.4rem 0 0' }}>Separate contact, invitation and session identity, email-type answers, unselected answers, network addresses and devices are excluded. Identifying text typed into a selected short or long text answer, including names and emails, is sent to the configured provider. Answers are treated as data, never as instructions.</p></div>
-        {options ? <p className="analysis-figure">A theme needs at least {options.policies.disclosureThreshold} responses before it is shown.</p> : null}
+          <details><summary className="focus-ring">What stays out</summary><p className="muted" style={{ margin: '.4rem 0 0' }}>Contact, invitation and session identity, email-type answers, unselected answers, network addresses and devices are excluded. Names and emails typed into a selected text answer are sent.</p></details></div>
         <button className="primary-button focus-ring" type="button" style={{ marginTop: '1.2rem' }} disabled={!ready || busy} onClick={submit}><Sparkle aria-hidden="true" size={15} /> {busy ? 'Analysing…' : 'Request analysis'}</button>
       </section>
     </div>
