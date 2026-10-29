@@ -12,8 +12,8 @@ export function pencilPeople(db: D1Database, services: PencilServices) {
       JOIN oa_operators o ON o.id=l.auth_id WHERE p.id=?`).bind(id)
       .first<{ id: string; workspaceId: string; email: string; name: string; role: string; status: string; version: number; createdAt: number }>()
     if (!row) return null
-    return { id: row.id, workspaceId: row.workspaceId, email: row.email, name: row.name, role: row.role,
-      active: isActiveOperator({ ...row, displayName: row.name } as Operator) }
+    if (!isActiveOperator({ ...row, displayName: row.name } as Operator)) return null
+    return { id: row.id, workspaceId: row.workspaceId, email: row.email, name: row.name, role: row.role, active: true }
   }
   const owner = () => db.prepare(`SELECT p.id FROM operators p
     JOIN operator_auth_links l ON l.operator_id=p.id JOIN oa_operators o ON o.id=l.auth_id
