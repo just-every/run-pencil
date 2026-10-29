@@ -114,7 +114,7 @@ contract(['ANLY-001', 'ANLY-003', 'ANLY-004', 'ANLY-005', 'ANLY-006', 'ANLY-008'
     await expect(contradictions).toContainText('Decision: dismissed')
     await capture('findings')
     await axe(page)
-    await page.getByRole('button', { name: /^Response / }).last().click()
+    await page.getByRole('button', { name: /^See this response/ }).last().click()
     const evidence = page.getByRole('region', { name: 'Responses behind theme 1' })
     await expect(evidence).toContainText('Long queue, only one till open.')
     await capture('findings-evidence')
