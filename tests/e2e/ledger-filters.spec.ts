@@ -110,7 +110,7 @@ contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019', 'IMPORT-00
       }
       const article = ledger.locator('.ledger-list article')
       const date = await page.evaluate(({ value, timeZone }) => new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short', timeZone }).format(new Date(value)), { value: downloaded!.completedAt, timeZone: workspace.timeZone })
-      await expect(article.locator(':scope > p').first()).toHaveText(`${date} · ${downloaded!.identityMode === 'identified' ? 'Identified' : 'Anonymous'} · ${source === 'direct' ? 'Direct link' : 'Imported'}`)
+      await expect(article.locator(':scope > p').first()).toHaveText(`${date}${downloaded!.identityMode === 'identified' ? ' · Identified' : ''}${source === 'direct' ? '' : ' · Imported'}`)
       await expect(article.getByText(`Revision ${downloaded!.revisionNumber}`, { exact: true })).toHaveCount(0)
       const answers = article.getByRole('button', { name: 'View answers', exact: true })
       await answers.click()

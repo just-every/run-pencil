@@ -227,3 +227,15 @@
 .submission-inbox .primary-button { color: white; background: var(--ink); border-color: var(--ink); }
 
 .submission-inbox .control-tooltip-label { font-size: 13px; }
+
+/* Rows: the response first, then one quiet line of time and anything that is not a default; the arrow keeps the last column. */
+.submission-inbox .table col:nth-child(2) { width: auto; }
+.submission-inbox .table .preview { padding: 10px 12px 10px 0; }
+.submission-inbox .inbox-preview { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.submission-inbox .inbox-meta { display: block; margin-top: 2px; color: #5c6470; font-size: 13px; line-height: 20px; }
+.submission-inbox .inbox-meta .tag { margin: 0; padding: 0 8px; }
+.submission-inbox .table td { height: 64px; }
+@media(max-width:599px) {
+ .submission-inbox .table td.preview { padding: 2px 0 2px; }
+ .submission-inbox .table td { height: auto; }
+}
