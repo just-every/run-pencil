@@ -3,19 +3,17 @@
  * then the answers (choice chips with hatched bars, quoted text answers, the device split), then the ledger, review,
  * notifications and comparisons in the same cards.
  */
-.results-heading { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px 32px; margin-bottom: 28px; }
-.results-heading__nav { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; grid-column: 1 / -1; }
+.results-heading { display: grid; grid-template-columns: minmax(0, 1fr); align-items: end; gap: 12px 32px; margin-bottom: 28px; }
+.results-heading__nav { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; }
 .results-heading__nav .secondary-button { min-height: 36px; font-size: 14px; }
 .results-heading h1 { margin: 0; font-size: clamp(40px, 5vw, 64px); line-height: 1.02; overflow-wrap: anywhere; }
-.results-heading__tools { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: flex-end; gap: 12px 16px; }
+/* The title first, then one toolbar row in the content column: the revision picker, the inbox and the exports wrap together, never past the column. */
+.results-heading__tools { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px 16px; min-width: 0; }
 .results-heading__tools .inspector-field { width: min(100%, 320px); margin: 0; }
-.results-heading__exports { display: flex; flex-wrap: wrap; gap: 12px; }
+.results-heading__tools .secondary-button, .results-heading__exports .secondary-button { min-height: 44px; padding: 0 24px; }
+.results-heading__exports { display: contents; }
 .results-heading__exports:empty { display: none; }
-.results-compare { grid-column: 1 / -1; justify-self: end; margin-top: 6px; }
-@media (max-width: 760px) { .results-compare { justify-self: start; } }
-/* Four export formats keep one row; beside a long title they wrap below the revision picker instead of overlapping it. */
-@media (min-width: 1101px) { .results-heading__exports { flex-wrap: nowrap; flex: none; } }
-.results-heading__exports .secondary-button { min-height: 44px; padding: 0 24px; }
+.results-compare { justify-self: start; margin-top: 6px; }
 
 .results-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin: 24px 0 0; }
 .metric-card { display: grid; align-content: start; gap: 4px; min-width: 0; padding: 24px; }
@@ -98,10 +96,9 @@
 
 @media (max-width: 1100px) { .results-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 760px) {
-  .results-heading { grid-template-columns: 1fr; }
-  .results-heading__tools { justify-content: flex-start; }
   .results-heading__tools .inspector-field { width: 100%; }
-  .results-heading__exports { width: 100%; display: grid; grid-template-columns: 1fr 1fr; }
+  .results-heading__tools > .secondary-button { flex: 1 1 100%; }
+  .results-heading__exports { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 }
 @media (max-width: 650px) {
   .ledger-filters { grid-template-columns: 1fr; }
