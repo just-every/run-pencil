@@ -7,7 +7,7 @@ import type { BuilderDraft, Ledger } from '../../src/core/app/api'
 import { parseCsv } from '../../src/core/features/importing/csv'
 import { contract } from './contract'
 import { expect, test } from './fixtures'
-import { signInEmptyWorkspace } from './authoring-helpers'
+import { signInEmptyWorkspace, addStep } from './authoring-helpers'
 import { nativeHost, observeEmbedMessages } from './brand-helpers'
 import { startStripeReceiver, stripeFixture } from './stripe-receiver'
 
@@ -113,7 +113,7 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001', 'PAY-005', 'PAY-003', 'PAY-004'],
   // Each branch pays the calculated total on its own payment step, authored in the builder, before its completion screen.
   await page.reload()
   for (const [label, completion] of [['Pay for the standard order', normal], ['Pay for the large order', high]] as const) {
-    await page.getByRole('button', { name: 'Add payment step', exact: true }).click()
+    await addStep(page, 'Add payment step')
     await expect(page.getByRole('region', { name: 'Payment pricing', exact: true })).toBeVisible()
     await page.getByLabel('Prompt', { exact: true }).fill(label)
     await page.getByRole('radio', { name: 'Calculated amount', exact: true }).check()
@@ -615,7 +615,7 @@ contract('PAY-002', 'authors Checkout tax, coupon and receipt settings and reads
     ]) await call(`${base}/draft/steps`, 'POST', { expectedVersion: (await read()).flow.draftVersion, step })
     await page.goto(`/app/flows/${id}/builder`)
     await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
-    await page.getByRole('button', { name: 'Add payment step', exact: true }).click()
+    await addStep(page, 'Add payment step')
     await expect(page.getByRole('region', { name: 'Payment pricing', exact: true })).toBeVisible()
     await page.getByLabel('Prompt', { exact: true }).fill('Pay order')
     await page.getByRole('button', { name: 'Add product', exact: true }).click()

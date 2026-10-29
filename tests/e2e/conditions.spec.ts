@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright'
 import type { BuilderDraft } from '../../src/core/app/api'
 import { contract } from './contract'
 import { expect, test } from './fixtures'
-import { signInEmptyWorkspace } from './authoring-helpers'
+import { signInEmptyWorkspace, addConditionRule } from './authoring-helpers'
 
 contract('LOGIC-006', 'builds nested lead conditions, inspects their values and collects both published paths', async ({ page }, info) => {
   test.setTimeout(90_000)
@@ -29,7 +29,7 @@ contract('LOGIC-006', 'builds nested lead conditions, inspects their values and 
   await page.getByRole('complementary', {name:'Flow steps'}).getByRole('button', {name:/How can we help/}).click()
   const editor = page.getByRole('complementary', {name:'Step settings'})
   await editor.getByRole('button', {name:'Answer paths',exact:true}).click()
-  await editor.getByRole('button', {name:'Add condition rule',exact:true}).click()
+  await addConditionRule(editor)
   const rule = editor.getByRole('group', {name:'Rule 1',exact:true})
   const root = rule.getByRole('group', {name:'Condition group',exact:true}).first()
   await root.getByLabel('Match',{exact:true}).selectOption('or')

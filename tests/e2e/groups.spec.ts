@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright'
 import type { BuilderDraft } from '../../src/core/app/api'
 import { contract } from './contract'
 import { expect, test } from './fixtures'
-import { signInEmptyWorkspace } from './authoring-helpers'
+import { signInEmptyWorkspace, addConditionRule } from './authoring-helpers'
 import { questionGroupDefinition } from '../fixtures/question-groups'
 
 contract('FIELD-012','builds and collects a required three-question group, branches on a grouped answer and reviews imported groups',async({page},info)=>{
@@ -35,7 +35,7 @@ contract('FIELD-012','builds and collects a required three-question group, branc
   await settings.getByRole('button',{name:'Save screen layout',exact:true}).click()
   await expect(page.getByText('Saved.',{exact:true})).toBeVisible()
   await rail.getByRole('button',{name:/Ready to talk/}).click()
-  await settings.getByRole('button',{name:'Add condition rule',exact:true}).click()
+  await addConditionRule(settings)
   const rule=settings.getByRole('group',{name:'Rule 1',exact:true})
   await rule.getByLabel('Question',{exact:true}).selectOption(size.id)
   await rule.getByLabel('Condition',{exact:true}).selectOption('greater_than_or_equal')

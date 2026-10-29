@@ -1,7 +1,7 @@
 import { openStateDatabase, stateDatabaseFile } from './state-database'
 import { createHash } from 'node:crypto'
 import { ulid } from 'ulid'
-import type { Page } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 import { expect, openMailLink } from './fixtures'
 
 export async function signInEmptyWorkspace(page: Page) {
@@ -44,4 +44,17 @@ export async function checkAuthoringLayout(page: Page) {
   expect(copy).not.toMatch(/immutable|persisted|stable ID|draft v\d+/i)
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
   if (page.viewportSize()!.width === 390) expect(await page.evaluate(() => document.documentElement.scrollHeight / window.innerHeight)).toBeLessThanOrEqual(3)
+}
+
+/** Adds a step through the builder's one Add step menu. */
+export async function addStep(scope: Locator | Page, name: 'Add question' | 'Add completion screen' | 'Add payment step' | 'Add welcome screen') {
+  await scope.getByRole('button', { name: 'Add step', exact: true }).click()
+  await scope.getByRole('menuitem', { name, exact: true }).click()
+}
+
+/** Adds a rule that matches on several conditions: the one Add rule button, then the rule's own switch when it starts as a simple answer rule. */
+export async function addConditionRule(scope: Locator) {
+  await scope.getByRole('button', { name: 'Add rule', exact: true }).click()
+  const several = scope.getByRole('button', { name: 'Match several conditions', exact: true })
+  if (await several.count()) await several.click()
 }

@@ -1,6 +1,6 @@
 import { appHeaders } from './api-headers'
 import { expect, test } from './fixtures'
-import { checkAuthoringLayout, signInEmptyWorkspace } from './authoring-helpers'
+import { checkAuthoringLayout, signInEmptyWorkspace, addStep } from './authoring-helpers'
 import { browserLogo } from './brand-helpers'
 
 test('labels, one Save, real controls, reorder, branching, Share and a current dashboard', async ({ page, context }, info) => {
@@ -24,7 +24,7 @@ test('labels, one Save, real controls, reorder, branching, Share and a current d
     await expect(page.getByText('Saved.', { exact: true })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Publish', exact: true })).toBeEnabled()
   }
-  await rail.getByRole('button', { name: 'Add question', exact: true }).click()
+  await addStep(rail, 'Add question')
   await editor.getByLabel('Prompt', { exact: true }).fill('Which path?')
   await editor.getByLabel('Question type').selectOption('single_choice')
   for (const label of ['More detail', 'Finish here']) {
@@ -46,17 +46,17 @@ test('labels, one Save, real controls, reorder, branching, Share and a current d
   await editor.getByLabel('Choice 1 value').fill('detail')
   await editor.getByText('Advanced', { exact: true }).first().click()
   await save()
-  await rail.getByRole('button', { name: 'Add question', exact: true }).click()
+  await addStep(rail, 'Add question')
   await editor.getByLabel('Prompt', { exact: true }).fill('Your rating')
   await editor.getByLabel('Question type').selectOption('rating')
   await canvas.getByRole('radio', { name: '4 out of 5' }).click()
   await expect(canvas.getByRole('radio', { name: '4 out of 5' })).toHaveAttribute('data-selected', 'true')
   await save()
-  await rail.getByRole('button', { name: 'Add question', exact: true }).click()
+  await addStep(rail, 'Add question')
   await editor.getByLabel('Prompt', { exact: true }).fill('Any details?')
   await canvas.getByRole('textbox', { name: 'Any details?' }).fill('Preview only')
   await save()
-  await rail.getByRole('button', { name: 'Add completion screen', exact: true }).click()
+  await addStep(rail, 'Add completion screen')
   await editor.getByLabel('Prompt', { exact: true }).fill('All done')
   await save()
   await editor.getByRole('button', { name: 'Move up', exact: true }).click()

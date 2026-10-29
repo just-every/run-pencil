@@ -4,6 +4,7 @@ import { contract } from './contract'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, openMailLink } from './fixtures'
 import { mkdir } from 'node:fs/promises'
+import { addStep } from './authoring-helpers'
 
 contract(['FLOW-002','FLOW-005','RESP-004','RESP-007','RESP-014','LEDG-004','BASE-PUBLIC-003'], 'an operator builds and previews an adaptive form, a respondent changes branches, and the report retains only final reachable answers', async ({ page, request }, info) => {
   test.setTimeout(120_000)
@@ -33,7 +34,7 @@ contract(['FLOW-002','FLOW-005','RESP-004','RESP-007','RESP-014','LEDG-004','BAS
     await expect(page.getByText('Saved.', { exact: true })).toBeVisible()
     await expect(page.getByText('Unsaved step changes.', { exact: false })).toHaveCount(0)
   }
-  await rail.getByRole('button', { name: 'Add question', exact: true }).click()
+  await addStep(rail, 'Add question')
   await inspector.getByLabel('Prompt', { exact: true }).fill('Which route should we take?')
   await inspector.getByLabel('Question type').selectOption('single_choice')
   await inspector.getByRole('button', { name: 'Choice', exact: true }).click()
@@ -51,15 +52,15 @@ contract(['FLOW-002','FLOW-005','RESP-004','RESP-007','RESP-014','LEDG-004','BAS
   }
   await inspector.getByLabel('Required response').check()
   await saved()
-  await rail.getByRole('button', { name: 'Add question', exact: true }).click()
+  await addStep(rail, 'Add question')
   await inspector.getByLabel('Prompt', { exact: true }).fill('Tell us the detail')
   await inspector.getByLabel('Question type').selectOption('long_text')
   await inspector.getByLabel('Required response').check()
   await saved()
-  await rail.getByRole('button', { name: 'Add completion screen', exact: true }).click()
+  await addStep(rail, 'Add completion screen')
   await inspector.getByLabel('Prompt', { exact: true }).fill('Your feedback is recorded.')
   await saved()
-  await rail.getByRole('button', { name: 'Add welcome' }).click()
+  await addStep(rail, 'Add welcome screen')
   await saved()
   await rail.getByRole('button', { name: /Which route should we take/ }).click()
   await inspector.getByRole('button', { name: 'Add rule' }).click()
