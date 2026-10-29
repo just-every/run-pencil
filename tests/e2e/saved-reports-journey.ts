@@ -4,6 +4,7 @@ import type { ScenarioCall } from '../results-scenario'
 import { collectSharedReportScenario } from '../shared-report-scenario'
 import type { SavedViewDetail, SavedReportShare, SharedReport } from '../../src/core/features/reporting/savedModel'
 import { appHeaders } from './api-headers'
+import { openFilters, clearResponseFilters } from './filter-helpers'
 
 type ShareResult = { share: SavedReportShare; token: string; url: string }
 export async function savedReportsJourney(page: Page, call: ScenarioCall, slug: string, capture: (name: string) => Promise<void>) {
@@ -23,6 +24,7 @@ export async function savedReportsJourney(page: Page, call: ScenarioCall, slug: 
   await saved.locator(':scope > summary').click()
   await saved.getByText('Compared cohorts', { exact: true }).click()
   const ledger = page.getByRole('region', { name: 'Response ledger', exact: true })
+  await openFilters(ledger)
   await ledger.getByRole('combobox', { name: 'Collector', exact: true }).selectOption(scenario.subsetCollectorId)
   await saved.getByLabel('Comparison name', { exact: true }).fill('Collector comparison')
   await saved.getByRole('button', { name: 'Add current cohort', exact: true }).click()

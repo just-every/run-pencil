@@ -5,6 +5,7 @@ import type { Ledger } from '../../src/core/app/api'
 import type { SubmissionOptions } from '../../src/core/features/submissions/model'
 import type { ScenarioCall } from '../results-scenario'
 import { expect } from './fixtures'
+import { openFilters, clearResponseFilters } from './filter-helpers'
 
 /** Continue the response search journey through the team's real triage screens. */
 export async function triageSubmission(page: Page, info: TestInfo, call: ScenarioCall, flowId: string, responseId: string) {
@@ -37,8 +38,8 @@ export async function triageSubmission(page: Page, info: TestInfo, call: Scenari
   await inbox.getByRole('combobox', { name: 'Set status', exact: true }).selectOption('done')
   await inbox.getByRole('button', { name: 'Apply changes', exact: true }).click()
   await expect(row.locator('.workflow-badge')).toHaveText('Done')
+  await openFilters(inbox)
   await inbox.getByRole('combobox', { name: 'Workflow status', exact: true }).selectOption('done')
-  await inbox.getByRole('button', { name: 'Apply filters', exact: true }).click()
   await expect(inbox.locator('tbody tr')).toHaveCount(1)
   await row.getByRole('button', { name: /^Open / }).click()
   await expect(detail.locator('.history .note')).toContainText(note)
@@ -69,6 +70,7 @@ export async function triageSubmission(page: Page, info: TestInfo, call: Scenari
   await page.getByLabel('Published revision').selectOption('all')
   expect((await allRevisions).ok()).toBe(true)
   await expect(page.locator('section.results')).toHaveAttribute('aria-busy', 'false')
+  await openFilters(ledger)
   await ledger.getByRole('combobox', { name: 'Workflow status', exact: true }).selectOption('done')
   await expect(ledger.getByRole('button', { name: 'View answers', exact: true })).toHaveCount(1)
   await ledger.getByRole('button', { name: 'View answers', exact: true }).click()

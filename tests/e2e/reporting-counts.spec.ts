@@ -6,6 +6,7 @@ import { expect, test, openMailLink } from './fixtures'
 import { operatorEmail } from './auth-identity'
 import AxeBuilder from '@axe-core/playwright'
 import type { BuilderDraft, FlowResults } from '../../src/core/app/api'
+import { openFilters, clearResponseFilters } from './filter-helpers'
 contract(['RSLT-001','RSLT-003','LEDG-001','LEDG-003','BASE-PUBLIC-003'], 'full text counts and Previous retain every byte-bounded response page',async({page},info)=> {
   test.setTimeout(180000)
   const capture=async(name:string)=> { if(process.env.PENCIL_CAPTURE_DIR) { await mkdir(process.env.PENCIL_CAPTURE_DIR,{recursive:true});await page.screenshot({path:join(process.env.PENCIL_CAPTURE_DIR,`${info.project.name}-${name}.png`)}) } }
@@ -52,10 +53,11 @@ contract(['RSLT-001','RSLT-003','LEDG-001','LEDG-003','BASE-PUBLIC-003'], 'full 
   await answers.getByRole('searchbox').fill('');await answers.getByRole('button',{name:'Show more answers'}).click()
   await expect(answers.getByText('71 matching answers · latest first · 10 on this page')).toBeVisible()
   const ledger=page.getByRole('region',{name:'Response ledger'})
+  await openFilters(ledger)
   await ledger.getByLabel('Source',{exact:true}).selectOption('direct')
   await ledger.getByLabel('Device class',{exact:true}).selectOption('desktop')
   await ledger.getByRole('searchbox',{name:'Search responses',exact:true}).fill('answer 000')
-  await ledger.getByRole('button',{name:'Search',exact:true}).click()
+  await ledger.getByRole('searchbox',{name:'Search responses',exact:true}).press('Enter')
   const filtered=await call<FlowResults>(`${path}/results?${new URLSearchParams({revisionId:publication.revision.id,source:'direct',deviceClass:'desktop',search:'answer 000'})}`)
   expect(filtered).toMatchObject({completedResponses:1,starts:1,rateBasis:'responses',rateNumerator:1,rateDenominator:1,views:73,durationSamples:1})
   await expect(metric('Responses').locator('strong')).toHaveText('1')
@@ -109,6 +111,7 @@ contract(['RSLT-001','RSLT-003','LEDG-001','LEDG-003','BASE-PUBLIC-003'], 'full 
   const from=()=>ledger.getByLabel('Submitted from'), through=()=>ledger.getByLabel('Submitted through')
   // Each bound alone excludes the real responses; a surrounding range includes them.
   // Different dates expose swapped or mirrored inputs and tolerate a midnight boundary.
+  await clearResponseFilters(ledger);await openFilters(ledger)
   await from().fill(shifted(2))
   await expect(metric('Responses').locator('strong')).toHaveText('0')
   await expect(metric('Starts').locator('strong')).toHaveText('0')
@@ -124,6 +127,7 @@ contract(['RSLT-001','RSLT-003','LEDG-001','LEDG-003','BASE-PUBLIC-003'], 'full 
   await expect(metric('Responses').locator('strong')).toHaveText('72')
   await expect(metric('Completion rate')).toContainText('72 completions / 73 views')
   await expect(from()).toHaveValue(firstDay);await expect(through()).toHaveValue(lastDay)
+  await openFilters(ledger)
   await ledger.getByLabel('Source',{exact:true}).selectOption('direct')
   await expect(metric('Completion rate')).toContainText('72 completions / 72 filtered starts')
   // Changing revisions remounts the ledger; the dates must still state the applied scope.
@@ -135,11 +139,12 @@ contract(['RSLT-001','RSLT-003','LEDG-001','LEDG-003','BASE-PUBLIC-003'], 'full 
   await expect(metric('Responses').locator('strong')).toHaveText('0')
   await expect(metric('Completion rate')).toContainText('0 completions / 0 filtered starts')
   await expect(ledger.locator('.ledger-row')).toHaveCount(0)
+  await openFilters(ledger)
   await from().fill(firstDay);await through().fill(lastDay)
   await expect(metric('Responses').locator('strong')).toHaveText('71')
   await capture('combined-dates-revision')
   if(process.env.PENCIL_CAPTURE_DIR) await ledger.locator('.ledger-filters').screenshot({path:join(process.env.PENCIL_CAPTURE_DIR,`${info.project.name}-applied-date-inputs.png`)})
-  await ledger.getByRole('button',{name:'Clear response filters',exact:true}).click()
+  await clearResponseFilters(ledger);await openFilters(ledger)
   await expect(from()).toHaveValue('');await expect(through()).toHaveValue('')
   await expect(metric('Completion rate')).toContainText('71 completions / 73 views')
 
@@ -148,6 +153,7 @@ contract(['RSLT-001','RSLT-003','LEDG-001','LEDG-003','BASE-PUBLIC-003'], 'full 
   const quarantine=await call<{responseId:string;disposition:string}>(`/api/public/flows/${slug}/responses`,{...held,idempotencyKey:`held-${held.sessionId}`,honeypot:'bot',answers:[{stepId:draft.steps[0].id,value:'Only revision two'}]})
   expect(quarantine.disposition).toBe('quarantined')
   await page.getByLabel('Published revision').selectOption(second.revision.id)
+  await openFilters(ledger)
   await ledger.getByLabel('Source',{exact:true}).selectOption('direct')
   await expect(metric('Responses').locator('strong')).toHaveText('1')
   await expect(metric('Starts').locator('strong')).toHaveText('2')

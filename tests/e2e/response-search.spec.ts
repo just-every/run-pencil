@@ -8,6 +8,7 @@ import { downloadedText } from './export-helpers'
 import { collectResponseSearchScenario } from '../response-search-scenario'
 import type { ScenarioCall } from '../results-scenario'
 import { triageSubmission } from './submission-inbox-journey'
+import { openFilters, clearResponseFilters } from './filter-helpers'
 
 contract(['LEDG-006', 'WORK-001'], 'operators search responses, see matching answers and download the same filtered records', async ({ page }, info) => {
   test.setTimeout(120_000)
@@ -43,7 +44,7 @@ contract(['LEDG-006', 'WORK-001'], 'operators search responses, see matching ans
   await expect(ledger.getByText('matching completed responses', { exact: false })).toBeVisible()
   await selectRevision('all')
   await ledger.getByRole('searchbox', { name: 'Search responses', exact: true }).fill('queue')
-  await ledger.getByRole('button', { name: 'Search', exact: true }).click()
+  await ledger.getByRole('searchbox', { name: 'Search responses', exact: true }).press('Enter')
   await expect(ledger.getByRole('button', { name: 'View answers', exact: true })).toHaveCount(2)
   await expect(ledger.locator('mark')).toHaveCount(2)
   await selectRevision(scenario.firstRevision)
@@ -61,11 +62,11 @@ contract(['LEDG-006', 'WORK-001'], 'operators search responses, see matching ans
     await ledger.locator('.ledger-answer mark').scrollIntoViewIfNeeded()
     await page.screenshot({ scale: 'css', path: join(process.env.PENCIL_CAPTURE_DIR, `response-search-${info.project.name}.png`) })
   }
-  await ledger.getByRole('button', { name: 'Clear search' }).click()
+  await ledger.getByRole('button', { name: 'Remove Search filter' }).click()
   await expect(ledger.getByRole('button', { name: 'View answers', exact: true })).toHaveCount(2)
   await selectRevision('all')
   await ledger.getByRole('searchbox', { name: 'Search responses', exact: true }).fill('café et la STRASSE')
-  await ledger.getByRole('button', { name: 'Search', exact: true }).click()
+  await ledger.getByRole('searchbox', { name: 'Search responses', exact: true }).press('Enter')
   await expect(ledger.getByRole('button', { name: 'View answers', exact: true })).toHaveCount(1)
   await ledger.getByRole('button', { name: 'View answers', exact: true }).click()
   await expect(ledger.locator('.ledger-answer mark')).toHaveText('CAFE\u0301 et la Straße')

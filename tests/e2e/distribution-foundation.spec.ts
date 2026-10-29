@@ -6,6 +6,7 @@ import { audienceOutboxHeaders, audienceScreen, invitationMail, inviteAudienceOp
 import { operatorEmail } from './auth-identity'
 import { expect, test } from './fixtures'
 import { contract } from './contract'
+import { openFilters, clearResponseFilters } from './filter-helpers'
 // Isolate this new journey's API traffic; actual per-address rate limits stay enabled.
 test.use({ extraHTTPHeaders: { 'CF-Connecting-IP': '198.18.240.11' } })
 contract(["DIST-011","BASE-PUBLIC-003","RESP-020","DIST-014","LOGIC-002","AUD-001","AUD-002","AUD-003","RESP-005","RESP-008","DIST-005","LEDG-001","LEDG-003","RSLT-001","RSLT-003","RSLT-004"], "invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey", async ({ page }, info) => {
@@ -215,6 +216,7 @@ contract(["DIST-011","BASE-PUBLIC-003","RESP-020","DIST-014","LOGIC-002","AUD-00
     await expect(page.getByText(/Summary scope: revision 1/)).toBeHidden()
     await page.locator('details').filter({ hasText: /Summary scope: revision 1/ }).locator('summary').click()
     await expect(page.getByText(/Summary scope: revision 1/)).toBeVisible()
+    await openFilters(page.getByRole('region',{name:'Response ledger',exact:true}))
     await page.getByLabel('Source', { exact: true }).selectOption('direct')
     await expect(page.getByText('No released response matches this filter.')).toBeVisible()
     await expect(metric('Responses').locator('strong')).toHaveText('0')
@@ -250,7 +252,7 @@ contract(["DIST-011","BASE-PUBLIC-003","RESP-020","DIST-014","LOGIC-002","AUD-00
     await invitationLedger.screenshot({path:info.outputPath(`identified-ledger-${info.project.name}.png`)})
     if(process.env.PENCIL_CAPTURE_DIR) await invitationLedger.locator('.ledger-row').first().screenshot({path:`${process.env.PENCIL_CAPTURE_DIR}/${info.project.name}-prefill-ledger.png`})
     await expect(page.getByText('Synthetic identified answer', { exact: true }).last()).toBeVisible()
-    await invitationLedger.getByRole('button',{name:'Clear response filters',exact:true}).click()
+    await clearResponseFilters(invitationLedger)
     await expect(metric('Completion rate')).toContainText('1 completion / 1 view')
     await expect(metric('Responses').locator('strong')).toHaveText('1')
     await expect(page.locator('.device-card')).toContainText('1 recorded starts')
