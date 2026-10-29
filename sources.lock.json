@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "d6c8cf447de24bd12f1f16e93e52332a50f8ff7cabaef43ac73424f71ca68cb7",
+      "sha256": "153e2036f4240d7544c5bf7ee195e09807a1b2d30aef17d5fa7f935758ae6086",
       "executable": false
     },
     "agent-surface.json": {
@@ -869,7 +869,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "e5a2fd133467b2e67ddb256f22f0dbcc2dbdf5c66fbc8250ad96689de9aff53a",
+      "sha256": "114f8ec101f766e9b55c7bf824ee8bea661707e7dfd076fa7f13c7821d557618",
       "executable": false
     },
     "DEMO.md": {
@@ -2101,7 +2101,7 @@
       "executable": false
     },
     "src/agent-door/flow-tools.ts": {
-      "sha256": "a00fdc17ab99bfb9a652a3f6526147fcb06b103ce168fa4f44325a13cdc633aa",
+      "sha256": "0de3b224907d70d9ec76e12cabc5f2cf057a35e161fd0a5dcc6de6737074f96d",
       "executable": false
     },
     "src/agent-door/index.ts": {
@@ -2109,7 +2109,7 @@
       "executable": false
     },
     "src/agent-door/people.ts": {
-      "sha256": "41dce5669c67751d5dc5c920d7cbc31817711ccd41583ef992c39cbb07bd412d",
+      "sha256": "48e0f2834e147653131bc79f662b9d0b70be88031f6077e07ff860934e25a957",
       "executable": false
     },
     "src/agent-door/trust.ts": {
@@ -4609,7 +4609,7 @@
       "executable": false
     },
     "src/core/features/audit/ui/AuditTable.tsx": {
-      "sha256": "a37232981c6dfad74575f9bf80903f285f9457fc3bed8d00a7700ae55c6d34c1",
+      "sha256": "c41c1595ca63df0a47459d8089233e884b73907a4866e3068d6f13574da8e481",
       "executable": false
     },
     "src/core/features/audit/ui/client.ts": {
@@ -6737,7 +6737,7 @@
       "executable": false
     },
     "src/core/features/shell/ui/shell.css": {
-      "sha256": "337bd0a4fe0b929a3dc9f5f57f9e1b98a732f533a8db383a4ef72065a14e1fd9",
+      "sha256": "929532a3ef3a5523ef52e4f43912d7d3d903aa9cbb62908a9026c355908c7cab",
       "executable": false
     },
     "src/core/features/site/brand/apple-touch-icon.png": {
