@@ -51,7 +51,7 @@ The status table at the end lists every clause with its status and evidence path
 ## Operators
 
 - **OPER-001 — Equal operators.** Every operator can see and act on every flow, audience, response, analysis, and action. There are no roles.
-- **OPER-002 — Management.** Operators are invited and removed in settings. Any operator may invite another and may remove any other operator, except that the setup operator can be removed only by themselves and the last operator cannot be removed There are no roles (OPER-001), so there is no seam that narrows who may do this.
+- **OPER-002 — Management.** Operators are invited and removed in settings. Any operator may invite another and may remove any other operator, except that the setup operator can be removed only by themselves and the last operator cannot be removed; Settings offers Remove on other operators' rows only, never on the signed-in operator's own row. There are no roles (OPER-001), so there is no seam that narrows who may do this.
 - **OPER-003 — Sign-in depends on mail.** `BASE-ACCESS-001` magic links are delivered through `mail.sender.v1`, so mail is a required external, not an optional one: startup fails under WS-003 naming the missing variable when `MAIL_PROVIDER`, `MAIL_API_KEY`, or `MAIL_FROM` is absent. No deployment starts in a state where no operator can sign in.
 
 ## Workspace
