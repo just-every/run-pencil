@@ -86,7 +86,15 @@ export class ActionService {
         const agent = prepared_by?.agent?.name
         const approved = Array.isArray(approvers) ? approvers.map(person => person.name).filter(name => typeof name === 'string' && name) : []
         const actor = agent && event.operator ? `${agent} for ${event.operator}` : event.operator
-        return { ...event, operator: actor && approved.length ? `${actor}; approved by ${approved.join(', ')}` : actor, changes: Object.keys(changes).length ? changes : null }
+        const preparedBy = typeof prepared_by?.agent?.id === 'string' && typeof agent === 'string'
+          && typeof prepared_by?.for?.id === 'string' && typeof prepared_by?.for?.name === 'string'
+          ? { agent: { id: prepared_by.agent.id, name: agent }, for: { id: prepared_by.for.id, name: prepared_by.for.name } } : undefined
+        const namedApprovers = Array.isArray(approvers) ? approvers
+          .filter(person => typeof person?.id === 'string' && typeof person?.name === 'string')
+          .map(person => ({ id: person.id, name: person.name })) : []
+        return { ...event, operator: actor && approved.length ? `${actor}; approved by ${approved.join(', ')}` : actor,
+          changes: Object.keys(changes).length ? changes : null,
+          ...(preparedBy ? { preparedBy, approvers: namedApprovers } : {}) }
       }),
     }
   }

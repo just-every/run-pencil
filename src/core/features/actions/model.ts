@@ -44,7 +44,12 @@ export type ActionSummary = {
   metric: { name: string; unit: string; direction: 'increase' | 'decrease' }
   reviewDate: string; reviewDue: boolean; updatedAt: string
 }
-export type ActionEvent = { id: string; kind: 'created' | 'transition' | 'edited' | 'measurement'; fromState: ActionState | null; toState: ActionState | null; note: string | null; changes: Record<string, { from: unknown; to: unknown }> | null; operator: string | null; createdAt: string }
+export type ActionEvent = {
+  id: string; kind: 'created' | 'transition' | 'edited' | 'measurement'; fromState: ActionState | null; toState: ActionState | null
+  note: string | null; changes: Record<string, { from: unknown; to: unknown }> | null; operator: string | null; createdAt: string
+  preparedBy?: { agent: { id: string; name: string }; for: { id: string; name: string } }
+  approvers?: Array<{ id: string; name: string }>
+}
 export type Measurement = { id: string; flowId: string; flowTitle: string; revisionId: string | null; revisionNumber: number | null; observedValue: number; unit: string; observedAt: string; operator: string | null; createdAt: string; difference: number; direction: 'desired' | 'undesired' | 'unchanged' }
 export type ActionDetail = ActionSummary & {
   reminders: ActionReminders

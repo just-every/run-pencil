@@ -1,4 +1,5 @@
 import { ActionReminders } from './ActionReminders'
+import './action-page.css'
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
@@ -30,11 +31,13 @@ export function ActionPage({ actionId }: { actionId: string }) {
   if (!action || !timeZone) return <section aria-labelledby="action-title"><h1 className="display" id="action-title">Action</h1>{error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : <p className="status-note" role="status">Loading action…</p>}</section>
   const moves = action.legalTransitions.filter(state => state !== 'effective' && state !== 'ineffective')
   const verdicts = action.legalTransitions.filter(state => state === 'effective' || state === 'ineffective')
-  return <section aria-labelledby="action-title">
+  const creation = action.history.find(event => event.kind === 'created'), preparer = creation?.preparedBy
+  return <section className="action-detail" aria-labelledby="action-title">
     <header className="page-heading">
       <div className="builder-actions"><Link className="quiet-button focus-ring" to="/app/actions"><ArrowLeft aria-hidden="true" size={15} /> All actions</Link><Link className="quiet-button focus-ring" to="/app/flows/$flowId/results" params={{ flowId: action.evidence.flowId }}>Results</Link></div>
-      <p className="eyebrow">{stateLabels[action.state]}{action.verdict && action.state === 'closed' ? ` · verdict ${stateLabels[action.verdict].toLowerCase()}` : ''} · recommendation written by an operator</p>
+      <p className="eyebrow">{stateLabels[action.state]}{action.verdict && action.state === 'closed' ? ` · verdict ${stateLabels[action.verdict].toLowerCase()}` : ''} · {preparer ? `prepared by ${preparer.agent.name} for ${preparer.for.name}` : 'recommendation written by an operator'}</p>
       <h1 className="display" id="action-title" style={{ overflowWrap: 'anywhere' }}>{action.title}</h1>
+      {preparer && creation?.approvers?.length ? <p className="muted">Approved by {creation.approvers.map(person => person.name).join(', ')}</p> : null}
       {action.reviewDue ? <ReviewDue /> : null}
     </header>
     {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}{notice ? <p className="status-note" role="status">{notice}</p> : null}

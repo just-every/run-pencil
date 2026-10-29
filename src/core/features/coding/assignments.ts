@@ -1,4 +1,4 @@
-import { codingActivity } from './activity'
+import { codingActivity, codingAssignmentActivity } from './activity'
 import { activeAssignment } from './visibility'
 import { ulid } from 'ulid'
 import { ConflictError } from '../../shared/errors'
@@ -15,7 +15,7 @@ export async function assignManually(db: D1Database, workspaceId: string, operat
     ON CONFLICT(answer_id,code_id) DO UPDATE SET source='manual',actor_operator_id=excluded.actor_operator_id,quote_id=NULL,created_at=excluded.created_at
       WHERE EXISTS (SELECT 1 FROM answer_code_assignments ca JOIN response_answers caa ON caa.id=ca.answer_id JOIN responses r ON r.id=caa.response_id
         WHERE ca.id=answer_code_assignments.id AND NOT ${activeAssignment})`).bind(ulid(),workspaceId,answer.answerId,codeId,operatorId,at,answer.answerId,answer.valueJson,workspaceId,codeId,workspaceId),
-    codingActivity(db,workspaceId,operatorId,responseId,'coding.assigned',at,attribution,'EXISTS(SELECT 1 FROM answer_code_assignments WHERE workspace_id=? AND answer_id=? AND code_id=? AND actor_operator_id=? AND created_at=?)',[workspaceId,answer.answerId,codeId,operatorId,at])])
+    codingAssignmentActivity(db,workspaceId,operatorId,responseId,answer.answerId,codeId,at,attribution)])
   const stored=await db.prepare(`SELECT ${assignmentColumns} ${assignmentJoins} WHERE ca.workspace_id=? AND ca.answer_id=? AND ca.code_id=?`).bind(workspaceId,answer.answerId,codeId).first()
   if (!stored) throw new ConflictError('This answer changed while its code was being saved. Refresh the answers.')
   return stored

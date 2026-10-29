@@ -4473,7 +4473,7 @@
       "executable": false
     },
     "src/core/features/actions/model.ts": {
-      "sha256": "003031ef9deb414ecb9ae8b4665eabc7982f27348ef4ccd43f1cef3332d3c1b6",
+      "sha256": "95871cb5e52ea08ad195bcce4376247790f6f248880ee9b9e833ea74cdca34da",
       "executable": false
     },
     "src/core/features/actions/reminder-schedule.ts": {
@@ -4489,7 +4489,7 @@
       "executable": false
     },
     "src/core/features/actions/service.ts": {
-      "sha256": "b8e8819fa8efa70bb0744e6e30f8830ea31422344450bf7591ea09086f6063f7",
+      "sha256": "674a68fae0bc96ce3336a44f1ab6e722f4a366d46c7d71d12df7d62928c50eed",
       "executable": false
     },
     "src/core/features/actions/shared/index.ts": {
@@ -4512,6 +4512,10 @@
       "sha256": "cd9d055e2a21036188446a21a346043f8c083940cfe6d6214de8bb8ba099e24f",
       "executable": false
     },
+    "src/core/features/actions/ui/action-page.css": {
+      "sha256": "b86da57ff6c8f26571eb22cb91a4870916705b87a7db47f50ff00a3a3dd93a21",
+      "executable": false
+    },
     "src/core/features/actions/ui/ActionForm.tsx": {
       "sha256": "37d011124f50c2b0cc336f352edb64a7aa838610a791745e461d1df566803e9c",
       "executable": false
@@ -4525,7 +4529,7 @@
       "executable": false
     },
     "src/core/features/actions/ui/ActionPage.tsx": {
-      "sha256": "b4c3ec43e6aa8054371b0bd007d85eb8340a9a8d7106738f0735087d28739483",
+      "sha256": "66e4169b68b34aa17a5043715c9081fadf4dc6d86b7447c259967563eb48b7d1",
       "executable": false
     },
     "src/core/features/actions/ui/ActionReminders.tsx": {
@@ -4937,19 +4941,19 @@
       "executable": false
     },
     "src/core/features/coding/activity.ts": {
-      "sha256": "fe7e47187a706fbe6a3da762ed7b4c919c383b6e8523a4e5b32240278b038e07",
+      "sha256": "3137b0ad238d86cd25562714ae1d5a2fb0acdd892ed7af34bec108829221f6ea",
       "executable": false
     },
     "src/core/features/coding/answers.ts": {
-      "sha256": "b967a5a354d023d3368e416e59b1d710ec0dc5dd68369a4648a4a72379bab272",
+      "sha256": "7d71c4e8438a7ff7e2afb7bde1cc2bf79f152247ea88930f91efd1921addcf9b",
       "executable": false
     },
     "src/core/features/coding/assignments.ts": {
-      "sha256": "3fad6513de41df6745effcfc9ed252c3e6968ce5bf39f10ca64907e72171755b",
+      "sha256": "9bdbc6d6863aadc4416587dcf6cc60ac9564f38ddd924659fb586ccb59c9b5e7",
       "executable": false
     },
     "src/core/features/coding/catalog.ts": {
-      "sha256": "005493ad459b829976391497ae038adfd00a04fc70f5d6a2b4b055f9e1786346",
+      "sha256": "e1390933fa235367027fbea0bae65d2a017a5e8aefc66f0daf5000e74d697c59",
       "executable": false
     },
     "src/core/features/coding/filter.ts": {
@@ -4969,11 +4973,11 @@
       "executable": false
     },
     "src/core/features/coding/suggestions.ts": {
-      "sha256": "d9176f4356a1c51e1b1f688dfab54ff2638543267e58eb43d55d862fbe7c7b59",
+      "sha256": "255fe0fc91b8555a2f548fbfa7acd0cdb2aef411928d2eaf28a6b67234c47b9a",
       "executable": false
     },
     "src/core/features/coding/ui/api.ts": {
-      "sha256": "7c795e2f3ba4324e98b85ffed9e60accf32e594d8a7f490dcf7caa5978cb3f7a",
+      "sha256": "c1fc95af5d232e935b07c0db65ad76a69d179105ada7712d78a8810bd5cecdb1",
       "executable": false
     },
     "src/core/features/coding/ui/CodeMetrics.tsx": {
@@ -4981,11 +4985,11 @@
       "executable": false
     },
     "src/core/features/coding/ui/coding.css": {
-      "sha256": "12eeeb415808d9fab69cbf31db50dd225adb093f78e52808da8309bc627a878d",
+      "sha256": "a89de187ceb526c44e8b27d5f1617e69ad1bb35075f940ae9e22de9d41664183",
       "executable": false
     },
     "src/core/features/coding/ui/CodingAnswers.tsx": {
-      "sha256": "553ca764a7c9d34cdc07db6b8b43a0411a6db08fe4b05b1e0d530abb47f57501",
+      "sha256": "eaa72f60c8741d21e3563a4c72af05e5134b3aafb20b4720a6e3a6fbf653449d",
       "executable": false
     },
     "src/core/features/coding/ui/CodingPanel.tsx": {
@@ -4993,7 +4997,7 @@
       "executable": false
     },
     "src/core/features/coding/ui/CodingSuggestions.tsx": {
-      "sha256": "f24fa57dbe763868be078290dc963a930524899c4ea8714635f6624173d134d9",
+      "sha256": "7eff3c0f10d1fada30bbae515ee16f7ac0a00520129da7f201a7bb51ac85396b",
       "executable": false
     },
     "src/core/features/coding/visibility.ts": {

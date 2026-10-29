@@ -1,0 +1,9 @@
+.action-detail :is(button, a[href], input:not([type="hidden"]), select, textarea, summary) {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.action-detail a[href] {
+  display: inline-flex;
+  align-items: center;
+}
