@@ -1,5 +1,5 @@
 import manifest from '../../../seed.json'
-import { PencilError } from '../shared/errors'
+import { PencilError, RateLimitError } from '../shared/errors'
 import type { PencilServices } from './services'
 
 export function isDeclaredPublicPath(pathname: string) {
@@ -11,7 +11,7 @@ export async function publicRequestRateLimitResponse(request: Request, responses
   try {
     await responses.enforcePublicRequestRateLimit({ clientAddress: request.headers.get('CF-Connecting-IP') ?? undefined, scope: 'request' })
   } catch (error) {
-    if (error instanceof PencilError && error.code === 'RATE_LIMITED') return Response.json({ error: error.code, message: error.message }, { status: 429, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } })
+    if (error instanceof PencilError && error.code === 'RATE_LIMITED') return Response.json({ error: error.code, message: error.message }, { status: 429, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...(error instanceof RateLimitError && error.retryAfterSeconds ? { 'Retry-After': String(error.retryAfterSeconds) } : {}) } })
     throw error
   }
 }
