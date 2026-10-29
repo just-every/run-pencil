@@ -17,12 +17,14 @@ export const notTools = [
 
 export function pencilAgentDoor(bindings: WorkerBindings, platform: PencilPlatform, services: PencilServices) {
   const { people, nativeOperator, ownerEmail } = pencilPeople(bindings.DB, services)
-  const settings = createBusinessSettings({ db: bindings.DB, trust: bindings.RER_BUSINESS_TRUST,
+  const trust = pencilTrust(platform)
+  const settings = createBusinessSettings({ db: bindings.DB,
+    trust: trust ? { v: 1, issuer: trust.issuer, audience: trust.appOrigin, subject: trust.installationId, keys: trust.publicKeys } : null,
     business: { settings: 1, values: ['display_name'] }, team: { ownerEmail, async prepare() {
       throw new Error('Pencil has not declared Business team reconciliation')
     } } })
   const door = createAgentDoor({ seed: 'pencil', name: 'Pencil', specialist: 'form-design',
-    db: bindings.DB, origin: platform.configuration.appOrigin, trust: pencilTrust(platform), capabilities,
+    db: bindings.DB, origin: platform.configuration.appOrigin, trust, capabilities,
     people, tools: flowTools(services, nativeOperator), resources: flowResources(services, nativeOperator), notTools })
   return { door, settings, async handle(request: Request) {
     return await settings.handle(request) ?? await door.handle(request)

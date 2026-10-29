@@ -677,6 +677,32 @@ Target.
 4. Every acceptance point runs under both policies, every decision matches the policy in force, and under all autonomous no call waits for a person or is refused by policy.
 5. A stranger agent given only the seed URL completes the specialist journey through MCP.
 
+### Agent surface
+
+The declared door offers native form design and lifecycle through the current owner. CORE capabilities are tools, policy, pause, audit and idempotency, plus form resources so every record-writing outcome can be inspected through the same door. Business roles never widen the native operator workspace. This is a sequenced subset: product-agent goals AGENT-001 through AGENT-009 retain their existing judgments.
+
+| Native tool | Classes | Existing clauses |
+| --- | --- | --- |
+| `pencil.flows.list` | standard | `DASH-002` |
+| `pencil.flows.read` | standard | `FLOW-002`, `FLOW-004` |
+| `pencil.flows.create` | standard | `DASH-001`, `FLOW-001` |
+| `pencil.flows.duplicate` | standard | `FLOW-011` |
+| `pencil.flows.update_step` | standard | `FLOW-002`, `FLOW-003`, `FLOW-004`, `FLOW-009`, `FLOW-015` |
+| `pencil.flows.add_step` | standard | `FLOW-002`, `FLOW-003`, `FLOW-004`, `FLOW-015` |
+| `pencil.flows.duplicate_step` | standard | `FLOW-002`, `FLOW-004`, `FLOW-015` |
+| `pencil.flows.delete_step` | destructive | `FLOW-002`, `FLOW-004`, `FLOW-021` |
+| `pencil.flows.reorder_steps` | standard | `FLOW-002`, `FLOW-004` |
+| `pencil.flows.replace_rules` | standard | `FLOW-004`, `FLOW-005`, `FLOW-012` |
+| `pencil.flows.preview` | standard | `FLOW-005`, `FLOW-007` |
+| `pencil.flows.publish` | external, live | `FLOW-001`, `FLOW-006`, `FLOW-008`, `FLOW-009`, `FLOW-012`, `FLOW-013`, `FLOW-014`, `FLOW-016` |
+| `pencil.flows.close` | live | `FLOW-001`, `FLOW-010`, `FLOW-018` |
+| `pencil.flows.reopen` | live | `FLOW-001`, `FLOW-010`, `FLOW-018` |
+| `pencil.flows.archive` | standard, live | `FLOW-001` |
+
+Resource: `pencil://flows/{flowId}` reads the current workspace-authorized builder draft, classified from the native record and marked untrusted. It contains no response ledger or connection credential. Writes return a resource link. No cost is registered; the journey uses `spend: {none: true}`.
+
+Import, installation, connector and screen operations retain their existing doors and explicit `notTools` entries. Audience, response, analysis, action, settings/access, template and provider work remain native product capabilities awaiting door adapters. Events, subscriptions and prompts are undeclared. Multi-sponsor, mail edges, resource refresh, queued lifecycle and owner-native administration are unscoped; the corresponding shared clauses remain partial. No current source evidence establishes a wider agent surface.
+
 ## Push further
 
 Target. Agents serve the whole job beyond what Typeform, SurveyMonkey, Tally, Fillout and Formbricks offer today. Every agent reads only data the requesting operator may see, runs through `ai.provider.v1` with ANLY-012 to ANLY-016's validation, cost recording and untrusted-evidence rules, cites stable response IDs and exact excerpts, never invents an answer or a respondent, and takes no outward effect (publishing, sending, connecting, deleting or contacting anyone) without an operator approving that specific effect.
@@ -766,8 +792,8 @@ These totals are computed from the current Status rows; done targets remain dist
 | Clauses | Done | Partial | Missing | Total |
 | --- | ---: | ---: | ---: | ---: |
 | Published | 117 | 3 | 0 | 120 |
-| Target and push further | 25 | 45 | 62 | 132 |
-| All | 142 | 48 | 62 | 252 |
+| Target and push further | 25 | 58 | 49 | 132 |
+| All | 142 | 61 | 49 | 252 |
 
 | Clause | Title | Kind | Status | Evidence | Gap |
 | --- | --- | --- | --- | --- | --- |
@@ -1010,19 +1036,19 @@ These totals are computed from the current Status rows; done targets remain dist
 | `AGENT-007` | Close-the-loop drafter | push-further | missing |  | No code yet. |
 | `AGENT-008` | Completion optimizer | push-further | missing |  | No code yet. |
 | `AGENT-009` | Migration agent | push-further | partial | `src/core/features/importing/typeform-definition.ts`, `tests/runtime/typeform-definition.worker.test.ts` | Only the behavior named in Evidence ships; the rest of the clause is not built. |
-| `BASE-AGENT-001` | One MCP door per seed | target | missing | | Not yet judged through this seed's own doors. |
-| `BASE-AGENT-002` | The seed's jobs are tools, through the UI's own actions | target | missing | | Not yet judged through this seed's own doors. |
-| `BASE-AGENT-003` | Records are resources | target | missing | | Not yet judged through this seed's own doors. |
-| `BASE-AGENT-004` | Business identity and short-lived, audience-bound tokens | target | missing | | Not yet judged through this seed's own doors. |
-| `BASE-AGENT-005` | An agent acts as a person in a role, never more | target | missing | | Not yet judged through this seed's own doors. |
-| `BASE-AGENT-006` | Every action declares its risk class | target | missing | | Not yet judged through this seed's own doors. |
-| `BASE-AGENT-007` | The company's policy decides, at one chokepoint | target | missing | | Not yet judged through this seed's own doors. |
-| `BASE-AGENT-008` | Truthful attribution | target | missing | | Not yet judged through this seed's own doors. |
-| `BASE-AGENT-009` | Every agent action is audited with its class and decision | target | missing | | Not yet judged through this seed's own doors. |
-| `BASE-AGENT-010` | Agents can follow changes | target | missing | | Not yet judged through this seed's own doors. |
-| `BASE-AGENT-011` | Limits are policy, and Pause stops everything | target | missing | | Not yet judged through this seed's own doors. |
-| `BASE-AGENT-012` | Writes are idempotent and conflict-safe | target | missing | | Not yet judged through this seed's own doors. |
-| `BASE-AGENT-013` | Manifest, docs and the conformance journey | target | missing | | Not yet judged through this seed's own doors. |
+| `BASE-AGENT-001` | One MCP door per seed | target | partial | `agent-surface.json`, `tests/agent-door/native-journey.mjs`, `src/agent-door/flow-tools.ts` — production conformance: 2219/2219 points; native effects, attribution and no-effect witnesses | Prompts and subscriptions families are undeclared; only the declared CORE plus form resources door is proved. |
+| `BASE-AGENT-002` | The seed's jobs are tools, through the UI's own actions | target | partial | `agent-surface.json`, `tests/agent-door/native-journey.mjs`, `src/agent-door/flow-tools.ts` — production conformance: 2219/2219 points; native effects, attribution and no-effect witnesses | Native tools are currently limited to form design and lifecycle; audience, responses, analysis, actions, settings, access and templates remain outside this declared tool set. |
+| `BASE-AGENT-003` | Records are resources | target | partial | `agent-surface.json`, `tests/agent-door/native-journey.mjs`, `src/agent-door/flow-tools.ts` — production conformance: 2219/2219 points; native effects, attribution and no-effect witnesses | Only current form drafts are resources. Other primary native records, resource refresh and client erasure custody are not integrated. |
+| `BASE-AGENT-004` | Business identity and short-lived, audience-bound tokens | target | partial | `agent-surface.json`, `tests/agent-door/native-journey.mjs`, `src/agent-door/flow-tools.ts` — production conformance: 2219/2219 points; native effects, attribution and no-effect witnesses | Business teammate reconciliation, multi-sponsor and inactive/excluded native lifecycle fixtures are unscoped; local agent credentials are not offered. |
+| `BASE-AGENT-005` | An agent acts as a person in a role, never more | target | partial | `agent-surface.json`, `tests/agent-door/native-journey.mjs`, `src/agent-door/flow-tools.ts` — production conformance: 2219/2219 points; native effects, attribution and no-effect witnesses | No native access or security verbs are declared. Native self-escalation fixtures and cross-sponsor authority journeys are not claimed. |
+| `BASE-AGENT-006` | Every action declares its risk class | target | partial | `agent-surface.json`, `tests/agent-door/native-journey.mjs`, `src/agent-door/flow-tools.ts` — production conformance: 2219/2219 points; native effects, attribution and no-effect witnesses | Declared form effects cover standard, destructive, external and live. Provider, money, accounts, access and security effects are outside this native tool set. |
+| `BASE-AGENT-007` | The company's policy decides, at one chokepoint | target | partial | `agent-surface.json`, `tests/agent-door/native-journey.mjs`, `src/agent-door/flow-tools.ts` — production conformance: 2219/2219 points; native effects, attribution and no-effect witnesses | Declared CORE signed-policy, approval, blocked, unset and Pause checks pass. Broader specialist and queued-effect policy journeys are not integrated. |
+| `BASE-AGENT-008` | Truthful attribution | target | partial | `agent-surface.json`, `tests/agent-door/native-journey.mjs`, `src/agent-door/flow-tools.ts` — production conformance: 2219/2219 points; native effects, attribution and no-effect witnesses | Native form activity and named approval attribution are proved. Outbound content, native Undo and queued execution are outside this subset. |
+| `BASE-AGENT-009` | Every agent action is audited with its class and decision | target | partial | `agent-surface.json`, `tests/agent-door/native-journey.mjs`, `src/agent-door/flow-tools.ts` — production conformance: 2219/2219 points; native effects, attribution and no-effect witnesses | Declared tool, resource, policy and refusal audits pass with zero differs_from_policy. Other native product actions do not yet enter this door. |
+| `BASE-AGENT-010` | Agents can follow changes | target | partial | `agent-surface.json`, `tests/agent-door/native-journey.mjs`, `src/agent-door/flow-tools.ts` — production conformance: 2219/2219 points; native effects, attribution and no-effect witnesses | Events and subscriptions families are undeclared and refused; retained-event replay and live subscription proof are not claimed. |
+| `BASE-AGENT-011` | Limits are policy, and Pause stops everything | target | partial | `agent-surface.json`, `tests/agent-door/native-journey.mjs`, `src/agent-door/flow-tools.ts` — production conformance: 2219/2219 points; native effects, attribution and no-effect witnesses | Pause and consent revocation are proved for immediate declared calls. Spend reservations, multi-sponsor, mail edges and queued lifecycle are unscoped. |
+| `BASE-AGENT-012` | Writes are idempotent and conflict-safe | target | partial | `agent-surface.json`, `tests/agent-door/native-journey.mjs`, `src/agent-door/flow-tools.ts` — production conformance: 2219/2219 points; native effects, attribution and no-effect witnesses | Declared mutation replay, changed-argument conflict and stale native revision refusal are proved. Queued/provider uncertain outcomes are outside this subset. |
+| `BASE-AGENT-013` | Manifest, docs and the conformance journey | target | partial | `agent-surface.json`, `tests/agent-door/native-journey.mjs`, `src/agent-door/flow-tools.ts` — production conformance: 2219/2219 points; native effects, attribution and no-effect witnesses | The exact declared registry and journey pass 2219/2219 production door points. Full product-native surface, optional families and normal CLI/CI proof remain separate. |
 
 PAY-001 receiving duties remain unchanged: NOTIFY-005 and PAY-002..005 inherit PAY-001 payment state before shipping; FLOW-006 refuses misplaced payment steps by stable step ID; NOTIFY-002/003 wait for payment. Connect OAuth remains UNBUILT; the owner-only restricted-key door is the current implementation.
 

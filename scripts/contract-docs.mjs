@@ -8,7 +8,8 @@ if (!['write', 'check'].includes(mode) || !ids.length) throw Error('Use write or
 const read = path => readFile(path, 'utf8')
 const source = await read('CONTRACT.md')
 const cells = line => line.slice(1, -1).split(/(?<!\\)\|/).map(cell => cell.trim())
-const rows = source.split('\n').filter(line => /^\| `[^`]+` \|/.test(line)).map(cells)
+const statusSource = source.slice(source.indexOf('\n## Status\n'))
+const rows = statusSource.split('\n').filter(line => /^\| `[^`]+` \|/.test(line)).map(cells)
 const tally = rows => ['done', 'partial', 'missing'].map(status => rows.filter(row => row[3] === status).length).concat(rows.length)
 const contract = source.replace(/^\| (Published|Target and push further|All) \|.*$/gm, (_, label) => {
   const selected = rows.filter(row => label === 'All' || (label === 'Published' ? row[2] === 'published' : row[2] !== 'published'))

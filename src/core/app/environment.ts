@@ -2,7 +2,6 @@ import type { PencilServices } from './services'
 import type { PencilPlatform } from '../platform/runtime'
 
 export interface WorkerBindings {
-  readonly RER_BUSINESS_TRUST?: string
   readonly RER_MANAGEMENT_ORIGIN?: string
   readonly RER_INSTALLATION_ID?: string
   readonly RER_OWNER_CLAIM_ISSUER?: string

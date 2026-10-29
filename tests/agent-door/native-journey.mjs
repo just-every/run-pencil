@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { isDeepStrictEqual } from 'node:util'
+import { ulid } from 'ulid'
 
 const ensure = (condition, message) => {
   if (!condition) {
@@ -110,6 +111,18 @@ export default async function nativeJourney(context) {
   const stale = await tool('pencil.flows.update_step', { ...args, idempotency_key: randomUUID() })
   ensure(code(stale) === 'revision_conflict', 'A stale native revision was accepted.')
   ensure(isDeepStrictEqual(current, await nativeDraft(context, created.id)), 'The stale revision changed the native draft.')
+  const beforeMissingDelete = await nativeDraft(context, created.id)
+  let absentStepId
+  do { absentStepId = ulid() } while (beforeMissingDelete.steps.some(step => step.id === absentStepId))
+  const missingDelete = await tool('pencil.flows.delete_step', {
+    flowId: created.id, stepId: absentStepId,
+    expectedVersion: beforeMissingDelete.flow.draftVersion,
+    expected_revision: beforeMissingDelete.flow.draftVersion,
+    idempotency_key: randomUUID(),
+  })
+  ensure(code(missingDelete) === 'not_found', 'Deleting an absent native step must refuse with not_found.')
+  const afterMissingDelete = await nativeDraft(context, created.id)
+  ensure(afterMissingDelete.flow.draftVersion === beforeMissingDelete.flow.draftVersion && isDeepStrictEqual(beforeMissingDelete, afterMissingDelete), 'Deleting an absent native step changed the draft or its version.')
   await nativeAttribution(context, created.id, key, false)
   const beforePause = await personJson(context, '/api/app/dashboard')
   const paused = await personRequest(context, '/agents/api/pause', { method: 'POST', body: JSON.stringify({ paused: true }) })
