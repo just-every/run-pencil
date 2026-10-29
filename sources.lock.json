@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "aee98960e6e2da29218576adfd1b4594b7adab162f07acbe940d064fcd8575a6",
+      "sha256": "f2b6222c7fc55e248614792a5dfcb20182baa3278890f98ab456c68434839bad",
       "executable": false
     },
     "DEMO.md": {
@@ -4873,7 +4873,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/authoring.css": {
-      "sha256": "596aa6310b7a3bee2434e1943619e4e81053e62119ac2e01bea2a87558ef064e",
+      "sha256": "00472e6830c37efb74f6c7df883a6a265ce024d6d95c08cfb0e30b066faa0972",
       "executable": false
     },
     "src/core/features/flows/ui/BranchEditor.tsx": {
@@ -4921,7 +4921,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/FlowBuilderPage.tsx": {
-      "sha256": "065147c2b618651294596be841f01a4b326e28c5373ca0abdfdd7a068beb933c",
+      "sha256": "f83ce83bd0938867b1c641b29fb235b92b896ec3777dba06d69ce70412db82b3",
       "executable": false
     },
     "src/core/features/flows/ui/FlowLifecycle.tsx": {
