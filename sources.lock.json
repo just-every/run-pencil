@@ -865,7 +865,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "f2b6222c7fc55e248614792a5dfcb20182baa3278890f98ab456c68434839bad",
+      "sha256": "20dcfd582638e10f20731efa2b3a93472e4e78e6a172adee2f4ac7e2f7341e56",
       "executable": false
     },
     "DEMO.md": {
@@ -4281,7 +4281,7 @@
       "executable": false
     },
     "src/core/features/auth/ui/SignInPage.tsx": {
-      "sha256": "20fd5702061fd86d832faa2f87ea55f5b25718f6023e66570e556e99ac84f53f",
+      "sha256": "0bcfad5eeff44c47219889c20899c5886bb62db7bf980a1b9f6267b5cd56e2d9",
       "executable": false
     },
     "src/core/features/backup/BackupPage.tsx": {
@@ -6673,7 +6673,7 @@
       "executable": false
     },
     "src/core/features/workspace/ui/OperatorAccess.tsx": {
-      "sha256": "f9b4933ba71d83ead5838b8f556363608ac5bb26dcaa1a3ae823b1c58e33d6e9",
+      "sha256": "46996b18077fa12b5816da7c880199c5500c8ee238f2baca20303fa32a90030a",
       "executable": false
     },
     "src/core/features/workspace/ui/settings.css": {
@@ -7261,7 +7261,7 @@
       "executable": false
     },
     "src/routes/signin.tsx": {
-      "sha256": "45465cb9baa56284e4425f17b5a09ecdc250ed2a0b0badef1148615f5e6c14df",
+      "sha256": "0a68e79460cb4992620f229f6e22bbb09500421cd9cc543c3016b09b95fd9961",
       "executable": false
     },
     "src/routeTree.gen.ts": {

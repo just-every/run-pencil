@@ -6,7 +6,7 @@ import { api } from '../../../app/api'
 import type { PublicSeedConfig } from '../../../shared/config'
 import { HydrationUnit } from '../../../../base/hydration/unit'
 
-export function SignInPage({ config, local, emailHint, invalid }: { local?: boolean; config: Pick<PublicSeedConfig, 'productName'>; emailHint?: string; invalid?: string }) {
+export function SignInPage({ config, local, emailHint, invalid, notice }: { local?: boolean; config: Pick<PublicSeedConfig, 'productName'>; emailHint?: string; invalid?: string; notice?: 'access-removed' }) {
   const [email, setEmail] = useState(emailHint ?? '')
   const [hydrated, setHydrated] = useState(false)
   useEffect(() => { setHydrated(true) }, [])
@@ -31,6 +31,7 @@ export function SignInPage({ config, local, emailHint, invalid }: { local?: bool
       <BrandMark name={config.productName} />
       <p className="eyebrow">Operator access</p>
       <h1 id="sign-in-title" className="display">Sign in</h1>
+      {notice === 'access-removed' ? <p className="status-note" role="status">Your operator access was removed. Use another operator email to sign in.</p> : null}
       {status === 'sent' ? <>
         <p className="muted">Check your email. If this address is an operator, a sign-in link is on its way. The link works once and expires in 15 minutes.</p>
         <div className="access-actions">
