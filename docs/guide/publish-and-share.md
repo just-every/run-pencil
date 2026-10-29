@@ -109,9 +109,9 @@ Respondents need no account and no cookie. They see one screen at a time:
 - A progress line, for example **Question 2 of 3** and **1 remaining**, which only counts questions they can still reach.
 - A **Required** note on required questions.
 - **Begin**, **Continue** or **Submit response**, and **Back** to change an earlier answer.
-- A **Before you share** note before the first answer. It gives your supporting line, says whether the response is anonymous or identified through an invitation, who can see answers, and that anything personal they type, such as an email address, identifies them to your operators.
+- One privacy line on the first screen. It says whether the response is anonymous or identified through an invitation, and **How your answers are used** opens who can see answers and that anything personal they type, such as an email address, identifies them to your team.
 - If sending fails, an error and **Retry submission**. A retry never creates a second response.
-- On finishing, your completion screen and the note that the link cannot edit a completed response.
+- On finishing, your completion screen.
 
 Next: [Invitations, reminders and consent](invitations.md), or read what comes back in [Results, review and exports](results.md).
 

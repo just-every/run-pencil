@@ -15,7 +15,7 @@ Nothing else is sent: no contact names or emails, no answers to email questions 
 
 For a draft rewrite, the provider receives the saved question text, selected rewrite style and the context you enter. It receives no response evidence. Do not put private respondent details in that context. Pencil shows the source beside the proposal and changes no wording until you choose **Accept and save wording**.
 
-While AI is on, the **Before you share** note on your forms adds that, if you analyse feedback, a respondent's written answers may be sent to the AI service you chose, and that their name, email address and network address are never sent. With AI off the note does not mention it.
+While AI is on, the **How your answers are used** note on your forms adds that, if you analyse feedback, a respondent's written answers may be sent to the AI service you chose, and that their name, email address and network address are never sent. With AI off the note does not mention it.
 
 Pencil asks the provider not to store the request (`store: false`). What the provider keeps or logs under its own terms is outside Pencil's control; read your provider's data policy before you turn analysis on.
 

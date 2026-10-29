@@ -93,7 +93,7 @@ try {
   assert.notEqual((await ok(`/api/public/flows/${slug}`)).revision.id, session.revisionId)
   assert.deepEqual(await ok(`/api/public/flows/${slug}/responses`, { ...payload, answers: [{ stepId: current.steps[0].id, value: 'Changed payload must never replace original' }] }), { ...receipt, idempotent: true })
   const html = await (await request(`/f/${slug}`, undefined, { authenticated: false })).text()
-  assert.ok(html.includes('Changed publication prompt')); privateAbsent(html, [...secrets, receipt.responseId]); assert.ok(html.includes('Before you share'))
+  assert.ok(html.includes('Changed publication prompt')); privateAbsent(html, [...secrets, receipt.responseId]); assert.ok(html.includes('How your answers are used'))
   assert.equal((await request('/app', undefined, { authenticated: false })).status, 302)
   assert.equal((await request(`${path}/responses/export`, undefined, { authenticated: false })).status, 401)
   const limit = JSON.parse(await readFile('seed.json', 'utf8')).limits.publicRateLimits.finalSubmissionsPerIpPerMinute

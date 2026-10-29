@@ -33,7 +33,7 @@ A launch freezes its participant set, each person's name and email, and the eval
 
 For a hand-picked launch, search and page through contacts; your checked IDs remain selected when the page changes. Segment launch counts cover the full evaluated segment.
 
-An invited person's response is **identified**: it is linked to them, and the **Before you share** note on the form says so. Responses through your public link stay anonymous. By default, each invitation admits one completed response. Opening the link again after finishing shows the completion screen and creates nothing new.
+An invited person's response is **identified**: it is linked to them, and the first-screen privacy line on the form says so. Responses through your public link stay anonymous. By default, each invitation admits one completed response. Opening the link again after finishing shows the completion screen and creates nothing new.
 
 Below the buttons, each delivery is listed with a line such as **invitation: sent · response: not-started · 1 attempts**. The first status is the email's, and the second is whether the person has started or finished the form.
 

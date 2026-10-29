@@ -22,7 +22,7 @@ It holds no answers, no contact details, no IP address and no browser identifica
 
 **Anonymous means anonymous.** A response from your public link records no link to a contact, no name or email taken from elsewhere, no raw IP address and nothing from the page it was embedded on. It gets a random ID that cannot be reversed to identify the person. If someone knowingly types their name or email into a question, that is stored as their answer and nothing more. It creates no contact. The note people see before the first answer says so.
 
-**People are told before they share.** The **Before you share** note says why you are asking, whether the response is anonymous or identified through an invitation, who can see individual answers (your operators), and that personal details they type identify them to those operators.
+**People are told before they share.** The first screen says whether the response is anonymous or identified through an invitation. The **How your answers are used** link under it says who can see individual answers (your team), that personal details they type identify them, and where answers may go.
 
 **Abandoned forms are not captured automatically.** Pencil counts that a session started and how far it got. Choosing **Save and finish later** explicitly keeps private answers for that respondent to resume; operators, completed results and ordinary response exports cannot read those saved answers. Without that choice, abandoned answers are not retained.
 

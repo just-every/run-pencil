@@ -86,3 +86,9 @@
 .screen-question { min-width:0; padding-top:1.5rem; border-top:1px solid var(--line, #ddd8cd); }
 .screen-question h2 { font-size:clamp(1.4rem, 3vw, 1.9rem); margin:0 0 1rem; }
 .respondent-marketing { margin: 0 0 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; font-size: 15px; line-height: 1.45; overflow-wrap: anywhere; }
+
+/* The first-screen privacy line: one sentence, with the rest behind one control on the same line. */
+.respondent-privacy-details { display: contents; }
+.respondent-privacy-details summary { display: inline; color: var(--ink); text-decoration: underline; cursor: pointer; list-style: none; }
+.respondent-privacy-details summary::-webkit-details-marker { display: none; }
+.respondent-privacy-body { display: block; margin-top: 8px; }
