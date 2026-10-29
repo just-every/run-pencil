@@ -889,7 +889,7 @@
       "executable": false
     },
     "deploy/wrangler.template.toml": {
-      "sha256": "82c20b509dd857f280c24785ed4c2ea2633890ff5e4cbd89c93e81668a161e66",
+      "sha256": "46ac100467169e3a599d3025a0df658a8b83ec2b99d53f504689ad9877b75318",
       "executable": false
     },
     "DIVERGENCE.md": {
@@ -2021,7 +2021,7 @@
       "executable": false
     },
     "scripts/run-e2e-server.mjs": {
-      "sha256": "a8a49ab922ab3abb487a542f3a095455f92378fc3aa93a7c36873d02574d9cc0",
+      "sha256": "81a0375e140cadcff031f18ca57e74d16bccafd219ba882e15fd4e1d4a598ec5",
       "executable": false
     },
     "scripts/run-site-server.mjs": {
