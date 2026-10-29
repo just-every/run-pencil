@@ -1,0 +1,13 @@
+/* The file field (FileInput.tsx): the box is drawn like every text field; the real input sits over it, so the whole box is the target. */
+.file-field { position: relative; display: block; min-width: 0; }
+.file-field__input { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.pencil-canvas .file-field__input:focus-visible { outline: none; }
+.file-field__input:disabled { cursor: not-allowed; }
+.file-field__box { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.file-field__box::before { content: attr(data-name); min-width: 0; overflow: hidden; color: var(--ink); text-overflow: ellipsis; white-space: nowrap; }
+.file-field__box[data-empty]::before { color: var(--subtle); }
+.file-field__box::after { content: "Choose file"; flex: none; border: 1.5px solid var(--line-bright); border-radius: 999px; padding: 1px 14px; color: var(--ink); font-size: 14px; font-weight: 500; line-height: 1.2; }
+.file-field:hover .file-field__box { border-color: var(--line-bright); }
+.file-field__input:focus-visible + .file-field__box { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink), 0 0 0 5px rgba(242, 179, 61, 0.35); }
+.file-field__input:disabled + .file-field__box { background-color: var(--paper-deep); }
+.file-field__input:disabled + .file-field__box::before, .file-field__input:disabled + .file-field__box::after { color: var(--subtle); }

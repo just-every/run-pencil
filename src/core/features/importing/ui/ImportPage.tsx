@@ -7,6 +7,7 @@ import { ReviewReport } from './ReviewReport'
 import { GoogleOptions, GoogleQuestions } from './GoogleOptions'
 import { ImportFileHelp } from './ImportFileHelp'
 import { TypeformConnection } from './TypeformConnection'
+import { FileInput } from '../../../shared/ui/FileInput'
 const preparation = (job: Job) => job.state === 'preparing' || job.state === 'preparation-interrupted'
 const progressLabel = (job: Job) => job.state === 'preparing' ? 'Ready to verify' : job.state === 'preparation-interrupted' ? 'Preparation needs attention' : job.state === 'cancelled' ? 'Preparation cancelled' : job.state
 export function ImportPage() {
@@ -81,8 +82,8 @@ export function ImportPage() {
       {source === 'surveymonkey' ? <p>Upload the API v3 survey-details JSON and its responses-bulk JSON, including an empty data array for a structure-only import. Review every question and answer outcome. OAuth, matrix and ranking questions, later descriptive text, source routing and collector attribution are not imported.</p> : <ImportFileHelp source={source} />}
       {source === 'typeform' ? <TypeformConnection key={fileVersion} busy={busy} loadedTitle={loadedTitle} load={loadTypeform} /> : null}
       {source === 'google-forms' ? <GoogleOptions value={google} change={settingsChanged} busy={busy} /> : null}
-      <label className="inspector-field">Form definition JSON{source === 'google-forms' ? ' (optional forms.get JSON)' : ''}<input key={`definition-${fileVersion}`} style={{ maxWidth: '100%' }} type="file" accept=".json,application/json" disabled={busy} onChange={e => void run(() => read(e.target, 'definition'))} /></label>
-      <label className="inspector-field">{source === 'surveymonkey' ? 'Responses-bulk JSON' : 'Response CSV'} {source === 'google-forms' ? '(or choose a definition alone)' : source === 'surveymonkey' ? '(required)' : '(optional)'}<input key={`csv-${fileVersion}`} style={{ maxWidth: '100%' }} type="file" accept={source === 'surveymonkey' ? '.json,application/json' : '.csv,text/csv'} disabled={busy} onChange={e => void run(() => read(e.target, 'csv'))} /></label>
+      <label className="inspector-field">Form definition JSON{source === 'google-forms' ? ' (optional forms.get JSON)' : ''}<FileInput key={`definition-${fileVersion}`} accept=".json,application/json" disabled={busy} onChange={e => void run(() => read(e.target, 'definition'))} /></label>
+      <label className="inspector-field">{source === 'surveymonkey' ? 'Responses-bulk JSON' : 'Response CSV'} {source === 'google-forms' ? '(or choose a definition alone)' : source === 'surveymonkey' ? '(required)' : '(optional)'}<FileInput key={`csv-${fileVersion}`} accept={source === 'surveymonkey' ? '.json,application/json' : '.csv,text/csv'} disabled={busy} onChange={e => void run(() => read(e.target, 'csv'))} /></label>
       <div className="builder-actions"><button className="primary-button focus-ring" disabled={busy || (!definition && (source !== 'google-forms' || !csv)) || (source === 'surveymonkey' && !csv)} type="submit">{busy ? 'Working…' : review ? 'Refresh mapping report' : 'Review import'}</button><button className="quiet-button focus-ring" disabled={busy} type="button" onClick={() => void cancel()}>Cancel</button></div>
       <p className="muted">Review creates no stored import, flow or response. Cancellation removes private preparation; if verification finishes first, inspect its progress and use Undo import. Original file bytes are never retained; keep your copies privately.</p>
     </form>

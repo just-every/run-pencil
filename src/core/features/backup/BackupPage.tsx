@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import type { BackupSummary } from './model'
 import type { BrowserRestoreResult, testBrowserRestore } from './browser-restore'
+import { FileInput } from '../../shared/ui/FileInput'
 
 const restoreCommand = 'node scripts/deployment-data-restore-test.mjs --input exports/pencil-backup.rer --output exports/restore-test.sqlite'
 async function responseError(response: Response) {
@@ -58,7 +59,7 @@ export function BackupPage({loadRestoreTest}: {loadRestoreTest?: () => Promise<{
         <p className="muted settings-help">Browser backups have an 8 MiB file limit and a conservative workspace size limit. Larger workspaces need the <a href="/docs/backup#large-workspace-export">large-workspace export</a>.</p>
       </section>
       <form className="panel settings-card" onSubmit={event => void check(event)} aria-labelledby="backup-check"><h2 className="display" id="backup-check">2. Check the saved file</h2>
-        <label className="inspector-field">Pencil backup file<input disabled={!!busy} type="file" accept=".rer,application/json" required onChange={event => {setFile(event.target.files?.[0]);setChecked(undefined);setRestored(undefined)}} /></label>
+        <label className="inspector-field">Pencil backup file<FileInput disabled={!!busy} accept=".rer,application/json" required onChange={event => {setFile(event.target.files?.[0]);setChecked(undefined);setRestored(undefined)}} /></label>
         <p>This checks the file’s checksum, version, data inventory, privacy rules and linked records. It does not change your workspace or send email.</p>
         <button className="secondary-button focus-ring" disabled={!file || !!busy} type="submit">{busy === 'check' ? 'Checking…' : 'Check backup'}</button>
         {checked ? <div className="status-note" role="status" data-tone="success"><strong>Backup contents checked.</strong><p>{checked.records.toLocaleString()} records across {checked.tables} tables. The saved file’s checksum and linked records pass.</p><p>Checksum: <code style={{overflowWrap:'anywhere'}}>{checked.sha256}</code></p><p>Contents passed. Use Test restoration below to restore the saved file into a new test database.</p></div> : null}
@@ -66,7 +67,7 @@ export function BackupPage({loadRestoreTest}: {loadRestoreTest?: () => Promise<{
       <section className="panel settings-card" aria-labelledby="backup-restore"><h2 className="display" id="backup-restore">3. Test restoration</h2>
         <p>Restore the selected backup into a new, empty database in this browser. Pencil checks database constraints and linked records, then exports it again and compares every archived value through its checksum.</p>
         <p>Your selected file stays in this browser. The test database is discarded afterwards. Your running workspace is never changed, and no mail or external tasks are sent.</p>
-        <label className="inspector-field">Newer backup for erasure protection (optional)<input disabled={!!busy} type="file" accept=".rer,application/json" onChange={event => {setLaterFile(event.target.files?.[0]);setRestored(undefined)}} /></label>
+        <label className="inspector-field">Newer backup for erasure protection (optional)<FileInput disabled={!!busy} accept=".rer,application/json" onChange={event => {setLaterFile(event.target.files?.[0]);setRestored(undefined)}} /></label>
         <p className="muted settings-help">If people or answers were erased after this backup, select a newer backup from the same installation. Pencil refuses the older file when that newer copy records an erasure. Without it, the test cannot know about later erasures.</p>
         {!file ? <p>Choose your saved backup file in step 2 first.</p> : <p>Selected backup: <strong>{file.name}</strong></p>}
         <button className="primary-button focus-ring" disabled={!file || !!busy} type="button" onClick={() => void restore()}>{busy === 'restore' ? 'Testing restoration…' : 'Test restoration'}</button>

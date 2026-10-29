@@ -6,6 +6,7 @@ import { brandStyle, publicBrandConfig, type BrandInput, type WorkspaceBrand } f
 import { BrandIdentity } from './BrandIdentity'
 import { logoByteLimit } from '../logo'
 import { Tag } from 'lucide-react'
+import { FileInput } from '../../../shared/ui/FileInput'
 
 export function BrandSettings() {
   const [saved, setSaved] = useState<WorkspaceBrand>()
@@ -39,7 +40,7 @@ export function BrandSettings() {
         <label className="inspector-field">Public landing flow<select className="text-input" disabled={busy} value={form.publicFlowSlug ?? ''} onChange={e => setForm({ ...form, publicFlowSlug: e.target.value || null })}><option value="">No public landing</option>{flows.filter(flow => flow.status === 'open' || flow.slug === saved?.publicFlowSlug).map(flow => <option key={flow.slug} value={flow.slug}>{flow.title}{flow.status !== 'open' ? ' (closed)' : ''}</option>)}{saved?.publicFlowSlug && !flows.some(flow => flow.slug === saved.publicFlowSlug) ? <option value={saved.publicFlowSlug}>Selected flow is unavailable</option> : null}</select></label>
         <button className="primary-button focus-ring settings-save" disabled={busy} type="submit">Save business branding</button>
       </form>
-      <label className="inspector-field">Business logo<input type="file" accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={e => { const file = e.target.files?.[0]; e.target.value = ''; if (file) void perform(() => brandApi.upload(file), 'Business logo saved.', false) }} /></label>
+      <label className="inspector-field">Business logo<FileInput accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={e => { const file = e.target.files?.[0]; e.target.value = ''; if (file) void perform(() => brandApi.upload(file), 'Business logo saved.', false) }} /></label>
       <p className="muted settings-help">PNG, JPEG or WebP, up to {logoByteLimit / 1024} KB. SVG is not accepted.</p>
       {saved?.logoVersion ? <button className="quiet-button focus-ring" type="button" disabled={busy} onClick={() => void perform(brandApi.removeLogo, 'Business logo removed.', false)}>Remove business logo</button> : null}
       {preview ? <div className="brand-surface brand-saved-preview" style={brandStyle(preview)} aria-label="Saved business branding"><BrandIdentity config={preview} /><button className="primary-button" type="button" tabIndex={-1}>Button preview</button></div> : null}
