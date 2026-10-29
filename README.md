@@ -33,6 +33,10 @@
 
 Pencil is an editable form builder and feedback workspace with branching questions, published forms, results, branding, response email, embeds, a bounded Typeform JSON/CSV importer and a Google Forms CSV-first importer with an optional `forms.get` definition. To bring existing forms and historical responses into an editable draft, read the [moving-in guide](docs/guide/moving-in.md).
 
+## Company agents
+
+The shared `/mcp` door supports native form design and lifecycle work for a linked company owner under signed policy. People review approvals and Pause at `/agents`; draft edits retain native version guards and activity attribution. See the [company-agent guide](docs/guide/agents.md) for supported jobs, record links and current limits.
+
 ## Run it on your computer
 
 Pencil runs on macOS, Linux or Windows with WSL2. One line starts it. It needs **Node.js 22 or later, including npm, and Git**; check `node --version` and `npm --version`. The command matches the [Run page](https://run-pencil.com/run); rer installs Pencil's pinned runtime and pnpm for its own commands, so you do not need global pnpm:

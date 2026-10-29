@@ -19,8 +19,16 @@ let acceptance = await read('ACCEPTANCE.md')
 for (const id of ids) {
   const clause = model.clauses.find(row => row.id === id)
   if (!clause) throw Error('Unknown clause: ' + id)
-  const entries = acceptance.split('\n'), index = entries.findIndex(line => line.startsWith(`- ${id} — `))
-  if (index < 0) throw Error('Missing legacy acceptance journey: ' + id)
+  const entries = acceptance.split('\n')
+  let index = entries.findIndex(line => line.startsWith(`- ${id} — `))
+  // Add newly delivered numbered clauses without rewriting legacy journeys.
+  if (index < 0) {
+    if (!lines[clause.line - 1].startsWith('#### ') || !clause.text.includes('**Acceptance.**')) throw Error('Missing legacy acceptance journey: ' + id)
+    if (!entries.includes('### Agent surface (Base-delivered)')) entries.push('', '### Agent surface (Base-delivered)', '')
+    const acceptanceText = clause.text.split('**Acceptance.**')[1].trim().replace(/\n+/g, ' ')
+    index = entries.length
+    entries.push(`- ${id} — ${clause.title} — ${clause.status}. Acceptance: ${acceptanceText}`)
+  }
   const boundary = entries[index].search(/ (?:Evidence|Gap): /)
   let journey = (boundary < 0 ? entries[index] : entries[index].slice(0, boundary))
     .replace(/ — (?:done|partial|missing)\./, ` — ${clause.status}.`)

@@ -1,5 +1,6 @@
 import { answerAlertPublicationIssues, remapAnswerAlerts } from '../../shared/answerAlerts'
 import type { LedgerFilter } from '../reporting'
+import type { NativeAgentAttribution } from '../audit/agent-attribution'
 import { closedFlowFor } from '../../shared/closedFlow'
 import { marketingPublicationIssues } from '../../shared/marketingConsent'
 import { respondentTextPublicationIssues } from '../../shared/respondentText'
@@ -69,6 +70,11 @@ export class FlowService {
     private readonly previewDefaults?: (workspaceId: string) => Promise<LinkPreviewDefaults>,
     private readonly previewAssets?: LinkPreviewAssetStore,
   ) {}
+
+  /** One invocation gets its own native repository context; UI calls retain their own actor. */
+  asAgent(actor: NativeAgentAttribution) {
+    return new FlowService(this.repository.asAgent(actor), this.responseRepository, this.policyConfiguration, this.access, this.previewDefaults, this.previewAssets)
+  }
 
   async ensureSampleFlow(input: {
     workspaceId: string
@@ -362,6 +368,7 @@ export class FlowService {
     const source = draft.steps.find((step) => step.id === input.stepId)
     if (!source) throw new NotFoundError('The requested draft step does not exist.')
     return this.addDraftStep({
+      operatorId: input.operatorId,
       workspaceId: input.workspaceId,
       flowId: input.flowId,
       expectedVersion: input.expectedVersion,

@@ -3,6 +3,22 @@ import { failure } from './deployment-data-errors.mjs';
 // Every persisted column is reviewed here. A migration cannot silently add data
 // to an archive: both new tables and new columns fail closed until classified.
 const retained = {
+  // Door decisions contain private product data. Pending authority and signed
+  // Business bindings are inventoried but never travel to another installation.
+  agent_door_agents: 'id name specialist sponsor sponsor_name revoked window requests',
+  agent_door_approvals: 'id state saved approvals result version',
+  agent_door_audit: 'sequence id at agent classes row evidence',
+  agent_door_calls: 'agent key digest decision_id created_at state outcome',
+  agent_door_events: 'sequence id uri event',
+  agent_door_reviews: 'id state saved marked_by marked_at',
+  agent_door_state: 'id envelope local_document local_revision local_paused decision_lock decision_until',
+  agent_door_usage: 'decision_id at seed specialist agent classes',
+  bs_assert: 'value',
+  bs_audit: 'id actor action field changed_at',
+  bs_logo: 'singleton sha256 type bytes',
+  bs_overrides: 'field value actor changed_at',
+  bs_settings: 'singleton rev document applied_at stopped token owner_id',
+  bs_team: 'email operator_id invite state business_id business_role',
   chat_form_links: 'id workspace_id flow_id platform settings_json updated_at',
   chat_action_targets: 'id action_id link_id operator_id platform user_id',
   chat_deliveries: 'id link_id response_id action_target_id kind due_date review_date idempotency_key state attempts available_at started_at reason updated_at',
@@ -268,7 +284,7 @@ const excludedCaptureTables = new Set(['notification_timer', 'local_mail_outbox'
 // Sign-in authorization never travels: sessions (native, dev, review, provider), sign-in and invitation links, step-up
 // challenges, minted API credentials and the provider bindings of those sessions. A restore cannot revive a session that
 // was signed out or revoked after the backup, so everyone signs in again. Operators, roles and the audit history stay.
-export const authorizationTables = new Set(['saved_report_shares','access_challenges','session_access','oa_sessions', 'oa_tokens', 'oa_owner_signins', 'oa_credentials', 'oa_step_up_challenges', 'oa_provider_sessions', 'oa_provider_session_pins', 'operator_sessions', 'auth_magic_links']);
+export const authorizationTables = new Set(['agent_door_agents', 'agent_door_approvals', 'agent_door_calls', 'agent_door_reviews', 'agent_door_state', 'bs_settings', 'bs_team', 'bs_assert', 'saved_report_shares','access_challenges','session_access','oa_sessions', 'oa_tokens', 'oa_owner_signins', 'oa_credentials', 'oa_step_up_challenges', 'oa_provider_sessions', 'oa_provider_session_pins', 'operator_sessions', 'auth_magic_links']);
 export const rowsNeverTravel = name => excludedCaptureTables.has(name) || authorizationTables.has(name);
 export function refuseAuthorization(table, rows) {
   if (authorizationTables.has(table.name) && rows.length) throw failure('LIVE_AUTHORIZATION', 'Archive holds sign-in authorization (sessions, sign-in or invitation links, or credentials). Export again from the source; sign-in authorization never travels.');

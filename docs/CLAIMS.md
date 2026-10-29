@@ -245,3 +245,16 @@ Acceptance journeys and remaining obligations are recorded in CONTRACT.md and AC
 | AGENT-007 | Close-the-loop drafter | push-further | missing |  |
 | AGENT-008 | Completion optimizer | push-further | missing |  |
 | AGENT-009 | Migration agent | push-further | partial | `src/core/features/importing/typeform-definition.ts`; `tests/runtime/typeform-definition.worker.test.ts` |
+| BASE-AGENT-001 | One MCP door per seed | target | missing |  |
+| BASE-AGENT-002 | The seed's jobs are tools, through the UI's own actions | target | missing |  |
+| BASE-AGENT-003 | Records are resources | target | missing |  |
+| BASE-AGENT-004 | Business identity and short-lived, audience-bound tokens | target | missing |  |
+| BASE-AGENT-005 | An agent acts as a person in a role, never more | target | missing |  |
+| BASE-AGENT-006 | Every action declares its risk class | target | missing |  |
+| BASE-AGENT-007 | The company's policy decides, at one chokepoint | target | missing |  |
+| BASE-AGENT-008 | Truthful attribution | target | missing |  |
+| BASE-AGENT-009 | Every agent action is audited with its class and decision | target | missing |  |
+| BASE-AGENT-010 | Agents can follow changes | target | missing |  |
+| BASE-AGENT-011 | Limits are policy, and Pause stops everything | target | missing |  |
+| BASE-AGENT-012 | Writes are idempotent and conflict-safe | target | missing |  |
+| BASE-AGENT-013 | Manifest, docs and the conformance journey | target | missing |  |
