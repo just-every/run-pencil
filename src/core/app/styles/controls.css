@@ -106,7 +106,7 @@ select.text-input:disabled { background-color: var(--paper-deep); }
 .pencil-canvas details > summary { cursor: pointer; color: var(--ink); }
 
 /* Badges */
-.badge { display: inline-flex; width: fit-content; align-items: center; gap: 6px; border: 1px solid transparent; border-radius: 999px; padding: 4px 10px; color: var(--subtle); background-color: var(--paper-deep); font-size: 12px; font-weight: 600; line-height: 1.3; text-transform: capitalize; }
+.badge { display: inline-flex; width: fit-content; align-items: center; gap: 6px; border: 1px solid transparent; border-radius: 999px; padding: 4px 10px; color: var(--subtle); background-color: var(--paper-deep); font-size: 13px; font-weight: 600; line-height: 1.3; text-transform: capitalize; }
 .badge[data-status='open'], .badge[data-status='healthy'] { color: var(--green); background: var(--wash-great); }
 .badge[data-status='draft'] { color: var(--draft-ink); background: var(--yellow-wash); }
 .badge[data-status='closed'] { border-color: var(--line-bright); background: transparent; }

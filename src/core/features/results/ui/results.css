@@ -83,7 +83,7 @@
 .ledger-row--open > :nth-child(n + 3) { grid-column: 1 / -1; }
 .ledger-row > dl { margin: 4px 0 8px; }
 .ledger-pages { gap: 8px 16px; margin-top: 16px; }
-.ledger-id { display: block; overflow-wrap: anywhere; font-size: 12px; }
+.ledger-id { display: block; overflow-wrap: anywhere; font-size: 13px; }
 .ledger-answer { margin-top: 16px; }
 .ledger-answer dd { margin: 6px 0 0; }
 .results-notifications > .panel { padding: 24px; }

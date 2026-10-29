@@ -142,9 +142,9 @@
   .builder-rail { padding: 12px; }
   .step-list { margin-top: 8px; }
   .step-button { gap: 2px; padding: 8px; }
-  .step-index { width: 24px; height: 24px; font-size: 12px; }
+  .step-index { width: 24px; height: 24px; font-size: 13px; }
   .step-prompt { font-size: 13px; line-height: 1.25; }
-  .step-type { font-size: 12px; }
+  .step-type { font-size: 13px; }
   .builder-add { margin-top: 8px; }
   .builder-add .secondary-button { min-height: 36px; }
   /* Level on a phone: a turned sheet clips its own controls by a fraction, and the builder must keep every control fully reachable. */
@@ -212,7 +212,7 @@
 
 .step-content-heading { display:flex; align-items:baseline; justify-content:space-between; gap:12px; }
 .builder-inspector .step-content-heading .screen-layout-settings { min-width:0; margin-top:0; font-size:14px; font-weight:400; letter-spacing:normal; text-transform:none; }
-.builder-inspector .step-content-heading .screen-layout-settings > summary { padding:0; font-size:12px; line-height:1.5; }
+.builder-inspector .step-content-heading .screen-layout-settings > summary { padding:0; font-size:13px; line-height:1.5; }
 .step-content-heading:has(details[open]) { display:block; }
 
 .question-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px 12px; margin-top: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
@@ -229,7 +229,7 @@
 
 /* Question mappings share the existing compact content toolbar. */
 .builder-inspector .step-content-heading > details { margin-top:0; min-width:0; font-size:14px; font-weight:400; letter-spacing:normal; text-transform:none; }
-.builder-inspector .step-content-heading > details > summary { padding:0; font-size:12px; line-height:1.5; }
+.builder-inspector .step-content-heading > details > summary { padding:0; font-size:13px; line-height:1.5; }
 .builder-inspector .step-content-heading:has(> details[open]) { display:block; }
 
 .known-data-settings .toggle-row { min-height:44px; align-items:center; }
