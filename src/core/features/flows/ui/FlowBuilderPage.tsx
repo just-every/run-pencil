@@ -44,7 +44,7 @@ import { DraftPreview } from './DraftPreview'
 import { FlowSharePanel } from './FlowSharePanel'
 import { api, ApiError, type FlowStep } from '../../../app/api'
 import { AppNote } from '../../../app/ui/AppNote'
-import { LoadProblem } from '../../../app/ui/LoadProblem'
+import { LoadProblem, loadFailure } from '../../../app/ui/LoadProblem'
 
 function stepLabel(step: FlowStep) {
   if (step.kind === 'welcome') return 'Welcome'
@@ -76,7 +76,7 @@ export function FlowBuilderPage() {
   const [questionType, setQuestionType] = useState<FlowStep['questionType']>(null)
   const [choices, setChoices] = useState<EditableChoice[]>([])
   const [settingsText, setSettingsText] = useState('')
-  const [notice, setNotice] = useState<{ tone: 'error' | 'success'; message: string }>()
+  const [notice, setNotice] = useState<{ tone: 'error' | 'success'; message: string; notFound?: boolean }>()
   const [savingDraft, setSaving] = useState(false)
   const [loadingDraft, setLoadingDraft] = useState(false)
   const saving = savingDraft || loadingDraft
@@ -106,7 +106,7 @@ export function FlowBuilderPage() {
       setDraftRead((previous) => previous + 1)
       const initial = next.steps.find((step) => step.kind === 'question') ?? next.steps[0]
       setSelectedId((previous) => previous && next.steps.some((step) => step.id === previous) ? previous : initial?.id)
-    }).catch((reason: unknown) => { if (mounted.current && loadVersion.current === version) setNotice({ tone: 'error', message: reason instanceof Error ? reason.message : 'The draft could not load.' }) }).finally(() => { if (mounted.current && loadVersion.current === version) setLoadingDraft(false) })
+    }).catch((reason: unknown) => { if (mounted.current && loadVersion.current === version) setNotice({ tone: 'error', ...loadFailure(reason, 'The draft could not load.') }) }).finally(() => { if (mounted.current && loadVersion.current === version) setLoadingDraft(false) })
   }
 
   const loadTimeZone = () => { setTimeZoneError(undefined); return api.workspace().then((workspace) => setTimeZone(workspace.timeZone)).catch((reason: unknown) => setTimeZoneError(reason instanceof Error ? reason.message : 'Workspace time zone could not load.')) }
@@ -245,7 +245,7 @@ export function FlowBuilderPage() {
 
   const preview = () => setPreviewing(true)
 
-  if (!draft) return <section aria-label="Load draft">{notice?.tone === 'error' ? <LoadProblem message={notice.message} retryLabel="Retry loading draft" onRetry={() => { setNotice(undefined); void load() }} /> : <><Link className="quiet-button focus-ring" to="/app"><ArrowLeft aria-hidden="true" size={15} /> All flows</Link><p className="status-note">Loading draft…</p></>}</section>
+  if (!draft) return <section aria-label="Load draft">{notice?.tone === 'error' ? <LoadProblem message={notice.message} notFound={notice.notFound} retryLabel="Retry loading draft" onRetry={() => { setNotice(undefined); void load() }} /> : <><Link className="quiet-button focus-ring" to="/app"><ArrowLeft aria-hidden="true" size={15} /> All flows</Link><p className="status-note">Loading draft…</p></>}</section>
   const selectedIndex = selected ? draft.steps.findIndex((step) => step.id === selected.id) : -1
 
   return (
