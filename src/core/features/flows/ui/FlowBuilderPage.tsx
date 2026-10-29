@@ -10,6 +10,7 @@ import { MarketingOptInSettings } from './MarketingOptInSettings'
 import { Tooltip } from '../../../shared/ui/Tooltip'
 import { usePhoneWidth } from '../../../shared/ui/usePhoneWidth'
 import { nextScreenLabel } from './nextScreenLabel'
+import { FlowLifecycle } from './FlowLifecycle'
 import { PrefillSettings } from './PrefillSettings'
 import { RetentionPanel } from '../../retention'
 import { PaymentStepSettings } from '../../payments/ui'
@@ -226,14 +227,15 @@ export function FlowBuilderPage() {
     try { const deadlineAt = deadline ? zonedInstant(deadline, timeZone) : null; if (target && (!Number.isInteger(Number(target)) || Number(target) < 1)) throw new Error('Set a positive whole-number response target.'); void reloadAfterMutation(() => api.publishDraft(flowId, { expectedVersion: draft!.flow.draftVersion, deadlineAt, targetCompletedResponses: target ? Number(target) : null })) } catch (error) { setNotice({ tone: 'error', message: error instanceof Error ? error.message : 'Check publication settings.' }) }
   }
 
-  const changeLifecycle = async (action: 'close' | 'reopen' | 'archive') => {
+  const changeLifecycle = async (action: 'close' | 'reopen' | 'archive' | 'restore') => {
     setSaving(true)
     setNotice(undefined)
     try {
       if (action === 'close') await api.closeFlow(flowId)
       if (action === 'reopen') await api.reopenFlow(flowId)
       if (action === 'archive') await api.archiveFlow(flowId)
-      setNotice({ tone: 'success', message: `Flow ${action === 'archive' ? 'archived' : action === 'close' ? 'closed' : 'reopened'}. Existing responses are kept.` })
+      if (action === 'restore') await api.restoreFlow(flowId)
+      setNotice({ tone: 'success', message: action === 'restore' ? 'Flow restored. Reopen or publish it when you are ready to share.' : `Flow ${action === 'archive' ? 'archived' : action === 'close' ? 'closed' : 'reopened'}. Existing responses are kept.` })
       await load()
       router.clearCache({ filter: match => match.routeId === '/app/' })
     } catch (reason) {
@@ -258,13 +260,13 @@ export function FlowBuilderPage() {
         </div>
         <div className="builder-actions">
           {draft.flow.status === 'open' || draft.flow.status === 'closed' ? <><a className="secondary-button focus-ring" href={`/f/${draft.flow.slug}`} target="_blank" rel="noopener">View public flow</a><Link className="secondary-button focus-ring" to="/app/flows/$flowId/results" params={{ flowId }}>Results</Link></> : null}
-          <button className="secondary-button focus-ring flow-share-toggle" disabled={saving || shareDirty} aria-expanded={sharing} aria-controls="flow-share-panel" onClick={() => setSharing(current => !current)} type="button">{sharing ? 'Edit steps' : 'Share'}</button>
+          {draft.flow.status === 'archived' ? null : <button className="secondary-button focus-ring flow-share-toggle" disabled={saving || shareDirty} aria-expanded={sharing} aria-controls="flow-share-panel" onClick={() => setSharing(current => !current)} type="button">{sharing ? 'Edit steps' : 'Share'}</button>}
           <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={preview} type="button"><Eye aria-hidden="true" size={16} /> Preview draft</button>
-          <button className="primary-button focus-ring" disabled={saving || dirty || !timeZone || draft.flow.status === 'archived'} onClick={publish} type="button"><Send aria-hidden="true" size={16} /> Publish</button>
+          {draft.flow.status === 'archived' ? null : <button className="primary-button focus-ring" disabled={saving || dirty || !timeZone} onClick={publish} type="button"><Send aria-hidden="true" size={16} /> Publish</button>}
         </div>
       </header>
       {notice && (notice.tone !== 'success' || !dirty) ? <p className="status-note" data-tone={notice.tone} role={notice.tone === 'error' ? 'alert' : 'status'}>{notice.message}</p> : null}
-      {sharing ? <><FlowSharePanel key={`share-${draftRead}`} draft={draft} disabled={saving || stepDirty || branchDirty || settingsDirty || calculationDirty || redirectDirty || chatDirty || alertsDirty || draft.flow.status === 'archived'} onDirtyChange={setShareDirty} onSave={async settings => { setSaving(true); try { const result = await api.saveFormSettings(flowId, settings, draft.flow.draftVersion); if (result.kind === 'conflict') throw new Error('Another operator saved first. Reload before saving the link preview.'); await load(); setNotice({ tone: 'success', message: 'Link preview saved to the draft. Publish to apply it.' }) } finally { setSaving(false) } }} /><details className="retention-settings"><summary className="focus-ring">Retention and legal hold</summary><RetentionPanel key={`retention-${draft.flow.id}`} flowId={flowId} /></details><AccessSettings key={`access-${draft.flow.id}`} draft={draft} disabled={saving||stepDirty||branchDirty||settingsDirty||calculationDirty||redirectDirty||shareDirty||chatDirty||alertsDirty||draft.flow.status==='archived'} onSaved={load}/>{['open', 'closed'].includes(draft.flow.status) ? <>{timeZone ? <details className="named-collectors-disclosure"><summary>Manage named collectors</summary><CollectorsPanel flowId={draft.flow.id} timeZone={timeZone} /></details> : null}<DistributionPanel flowId={draft.flow.id} /></> : null}</> : null}
+      {sharing && draft.flow.status !== 'archived' ? <><FlowSharePanel key={`share-${draftRead}`} draft={draft} disabled={saving || stepDirty || branchDirty || settingsDirty || calculationDirty || redirectDirty || chatDirty || alertsDirty} onDirtyChange={setShareDirty} onSave={async settings => { setSaving(true); try { const result = await api.saveFormSettings(flowId, settings, draft.flow.draftVersion); if (result.kind === 'conflict') throw new Error('Another operator saved first. Reload before saving the link preview.'); await load(); setNotice({ tone: 'success', message: 'Link preview saved to the draft. Publish to apply it.' }) } finally { setSaving(false) } }} /><details className="retention-settings"><summary className="focus-ring">Retention and legal hold</summary><RetentionPanel key={`retention-${draft.flow.id}`} flowId={flowId} /></details><AccessSettings key={`access-${draft.flow.id}`} draft={draft} disabled={saving||stepDirty||branchDirty||settingsDirty||calculationDirty||redirectDirty||shareDirty||chatDirty||alertsDirty} onSaved={load}/>{['open', 'closed'].includes(draft.flow.status) ? <>{timeZone ? <details className="named-collectors-disclosure"><summary>Manage named collectors</summary><CollectorsPanel flowId={draft.flow.id} timeZone={timeZone} /></details> : null}<DistributionPanel flowId={draft.flow.id} /></> : null}</> : null}
       {dirty ? <p className="status-note" role="status">{chatDirty ? 'Unsaved chat changes.' : alertsDirty ? 'Unsaved alert changes.' : shareDirty ? 'Unsaved link-preview changes.' : calculationDirty ? 'Unsaved calculation changes.' : settingsDirty ? 'Unsaved hidden-field changes.' : stepDirty ? 'Unsaved step changes.' : 'Unsaved answer-path changes.'} Save or discard before switching steps, changing structure, previewing or publishing. <button className="quiet-button" disabled={saving} type="button" onClick={() => { setPanelDiscard(value=>value+1); void load() }}>Discard changes</button></p> : null}
 
       {!timeZone ? <p className="status-note" data-tone={timeZoneError ? 'error' : undefined} role={timeZoneError ? 'alert' : 'status'}>{timeZoneError ?? 'Loading workspace time zone…'}{timeZoneError ? <button className="quiet-button focus-ring" type="button" onClick={() => void loadTimeZone()}>Retry workspace settings</button> : null}</p> : null}
@@ -375,14 +377,7 @@ export function FlowBuilderPage() {
       <CalculationSettings key={`calculations-${draftRead}`} draft={draft} calculations={draft.formSettings?.calculations ?? []} onDirtyChange={setCalculationDirty} disabled={saving||stepDirty||branchDirty||settingsDirty||redirectDirty||chatDirty||alertsDirty||draft.flow.status==='archived'} onSave={async calculations=>{setSaving(true);try {const result=await api.saveFormSettings(flowId,{...draft.formSettings!,calculations},draft.flow.draftVersion);if(result.kind==='conflict')throw new Error('Another operator saved first. Reload before saving calculations.');await load();setNotice({tone:'success',message:'Saved.'})}finally{setSaving(false)}}}/>
       </div>
       <SaveTeamTemplate key={draft.flow.id} flowId={flowId} version={draft.flow.draftVersion} title={draft.flow.title} published={draft.flow.status !== 'draft'} disabled={saving||dirty} /></details>
-      <footer className="builder-lifecycle" aria-label="Flow lifecycle">
-        <div className="builder-lifecycle-status"><p className="eyebrow">Flow lifecycle</p><span className="badge" data-status={draft.flow.status}>{draft.flow.status[0].toUpperCase() + draft.flow.status.slice(1)}</span><p>Publish your saved changes when you are ready to share.</p></div>
-        <div className="builder-actions">
-          {draft.flow.status === 'open' || draft.flow.status === 'closed' ? <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={() => changeLifecycle('close')} type="button">Close responses</button> : null}
-          {draft.flow.status === 'closed' ? <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={() => changeLifecycle('reopen')} type="button">Reopen current revision</button> : null}
-          {draft.flow.status !== 'archived' ? <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={() => changeLifecycle('archive')} type="button">Archive flow</button> : null}
-        </div>
-      </footer>
+      <FlowLifecycle title={draft.flow.title} status={draft.flow.status} disabled={saving || dirty} onChange={changeLifecycle} />
     </section>
   )
 }

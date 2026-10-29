@@ -163,6 +163,7 @@ export const api = {
   closeFlow: (flowId: string) => request<void>(`/api/app/flows/${encodeURIComponent(flowId)}/close`, { method: 'POST' }),
   reopenFlow: (flowId: string) => request<void>(`/api/app/flows/${encodeURIComponent(flowId)}/reopen`, { method: 'POST' }),
   archiveFlow: (flowId: string) => request<void>(`/api/app/flows/${encodeURIComponent(flowId)}/archive`, { method: 'POST' }),
+  restoreFlow: (flowId: string) => request<void>(`/api/app/flows/${encodeURIComponent(flowId)}/restore`, { method: 'POST' }),
   results: (flowId: string, revisionId?: string, filter: LedgerFilter = {}, allRevisions = false) => request<FlowResults>(`/api/app/flows/${encodeURIComponent(flowId)}/results?${query({...filter,revisionId})}${allRevisions ? '&allRevisions=true' : ''}`),
   publicFlow: (slug: string) => request<PublicFlow>(`/api/public/flows/${encodeURIComponent(slug)}`),
   startSession: (slug: string, deviceClass: 'mobile' | 'tablet' | 'desktop', source: 'direct' | 'embed', invitationToken?: string, collectorKey?: string, accessToken?:string, presentation?:import('../shared/presentationOrder').PresentationOrder) =>

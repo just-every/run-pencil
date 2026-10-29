@@ -494,6 +494,12 @@ export class FlowService {
     await this.repository.archiveFlow(flowId, new Date().toISOString(), operatorId)
   }
 
+  async restoreFlow(workspaceId: string, flowId: string, operatorId?: string) {
+    const flow = await this.requireWorkspaceFlow(workspaceId, flowId)
+    if (flow.status !== 'archived') throw new ValidationError('Only an archived flow can be restored.')
+    await this.repository.restoreFlow(flowId, new Date().toISOString(), operatorId)
+  }
+
   async getPublicFlow(slug: string, accessToken?:string) {
     const resolved = await this.repository.getCurrentPublicSnapshot(slug)
     const flow = resolved?.flow
