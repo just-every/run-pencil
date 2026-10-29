@@ -33,7 +33,7 @@ RSLT-006 remains done with a table-only guarantee; its displayed note copy is co
 ### Operators
 
 - OPER-001 — Equal operators — done. Tagged tests: `tests/runtime/access-foundation.worker.test.ts`.
-- OPER-002 — Management — done. Tagged tests: `tests/runtime/auth.worker.test.ts`, `tests/runtime/first-owner.worker.test.ts`.
+- OPER-002 — Management — done. Tagged tests: `tests/runtime/auth.worker.test.ts`, `tests/runtime/first-owner.worker.test.ts`. Evidence: `tests/runtime/auth.worker.test.ts`, `tests/runtime/first-owner.worker.test.ts`
 - OPER-003 — Sign-in depends on mail — done. Tagged tests: `tests/managed-mail.test.ts`, `tests/runtime/base-auth.worker.test.ts`, `tests/runtime/optional-configuration.worker.test.ts`.
 
 ### Roles, sharing and sign-in (target)
@@ -70,7 +70,7 @@ RSLT-006 remains done with a table-only guarantee; its displayed note copy is co
 
 ### Flows
 
-- FLOW-001 — Lifecycle — done. Tagged tests: `tests/runtime/foundation.worker.test.ts`.
+- FLOW-001 — Lifecycle — done. Tagged tests: `tests/runtime/foundation.worker.test.ts`. Evidence: `tests/runtime/foundation.worker.test.ts`
 - FLOW-002 — Ordered steps — done. Tagged tests: `tests/e2e/journey.spec.ts`.
 - FLOW-003 — Question types — done. Tagged tests: `tests/e2e/new-question-types.spec.ts`, `tests/runtime/new-question-types.worker.test.ts`.
 - FLOW-004 — Saved edits — done. Tagged tests: `tests/e2e/review-corrections.spec.ts`.

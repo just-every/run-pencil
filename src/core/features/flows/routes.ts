@@ -230,6 +230,16 @@ export function registerFlowRoutes(app: Hono<WorkerEnvironment>, services: Reque
     }
   })
 
+  app.post('/api/app/flows/:flowId/restore', zValidator('param', z.object({ flowId: resourceId })), emptyMutationBody, async (context) => {
+    try {
+      requireSameOriginRequest(context.req.raw)
+      await services(context).flows.restoreFlow(context.get('operatorSession').workspaceId, context.req.param('flowId'), context.get('operatorSession').operatorId)
+      return context.body(null, 204)
+    } catch (error) {
+      return failure(context, error)
+    }
+  })
+
   app.get('/api/public/flows/:slug', zValidator('param', z.object({ slug: flowSlug })), zValidator('query',z.object({collector:z.string().regex(/^[a-f0-9]{32}$/).optional(),source:z.enum(['direct','embed']).default('direct')})), async (context) => {
     try {
       const flow=await services(context).flows.getPublicFlow(context.req.param('slug'),context.req.header('x-pencil-access'))

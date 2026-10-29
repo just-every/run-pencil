@@ -230,3 +230,4 @@
 
 .known-data-settings .toggle-row { min-height:44px; align-items:center; }
 .known-data-settings[open] { margin-bottom:12px; }
+.builder-lifecycle-confirm { flex: 1 1 100%; margin: 0; color: var(--ink); font-size: 15px; }
