@@ -7845,7 +7845,7 @@
       "executable": false
     },
     "tests/agent-surface/native-journey.mjs": {
-      "sha256": "07dda0f64ceed9d8b8ef9155bd8393ab06f5a80c98660b2225dfd63b9f5d2118",
+      "sha256": "8746911ae0b84c13c72d7531fb348921e4a4e38a58cf493f7038365dc1de903c",
       "executable": false
     },
     "tests/agent-surface/owner.mjs": {

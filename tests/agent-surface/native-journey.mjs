@@ -7,14 +7,26 @@ export default async function journey({ request, origin, cookie, tool }) {
   });
   assert.equal(response.status, 201);
   const form = await response.json();
-  const events = await tool('pencil.events.list', { limit: 200 });
-  const native = events.result?.structuredContent?.events.find(event => event.uri === `pencil://forms/${form.id}`);
+  let native, eventCursor, eventPages = 0, eventCount = 0;
+  // The standard phases retain earlier events. Locate this new native effect
+  // through the public cursor instead of assuming it belongs to the first page.
+  for (; eventPages < 100; eventPages++) {
+    const events = await tool('pencil.events.list', { limit: 200, ...(eventCursor ? { after: eventCursor } : {}) });
+    const page = events.result?.structuredContent;
+    assert.ok(Array.isArray(page?.events), 'Native event page must contain events');
+    eventCount += page.events.length;
+    native = page.events.find(event => event.uri === `pencil://forms/${form.id}`);
+    if (native || page.events.length < 200) break;
+    assert.ok(page.cursor, 'A full native event page must have a cursor');
+    assert.notEqual(page.cursor, eventCursor, 'Native event pagination must advance');
+    eventCursor = page.cursor;
+  }
   assert.equal(native?.type, 'form.draft-changed');
   assert.equal(native?.actor.kind, 'person');
   assert.ok(native.actor.person.id);
+  console.log(`Native person event attribution: ${eventCount} retained events inspected across ${eventPages + 1} pages.`);
 
-  // The native audit is paginated. Inspect every page independently of Base's
-  // target fixture helper, which currently reads only the first 200 rows.
+  // Inspect every native audit page independently of Base's target fixture.
   const rows = [];
   let after = '';
   for (let page = 0; page < 30; page++) {
