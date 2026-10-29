@@ -829,7 +829,7 @@
       "executable": false
     },
     "agent-surface.json": {
-      "sha256": "7ac1a48dade3582e382e0887e3f18ed0d37883ebbacd7fa901f9bca67422264b",
+      "sha256": "563736e52510491c9d36cd4b5166fa3a5716b5cc27b9282263d54e17d4b8ddcd",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -1033,7 +1033,7 @@
       "executable": false
     },
     "docs/guide/agents.md": {
-      "sha256": "195b1dc9b986a977faa6f14d231bf4d802b227477b2a28086f8d53b5edd130cd",
+      "sha256": "e96acacffa3984cc7b1e4628334dac26341faac4f4bbf7d10dd984c6a2010001",
       "executable": false
     },
     "docs/guide/analysis.md": {
@@ -4249,7 +4249,7 @@
       "executable": false
     },
     "src/core/app/agent-door/analysis-records.ts": {
-      "sha256": "08bcb5420e91f95eaaae97a1c2695151e41004c24c6c97a469e55d7575153560",
+      "sha256": "82c7567bfa7cb69951280e54c0650e94c768c2949a8d10fb25e8be676856a9ef",
       "executable": false
     },
     "src/core/app/agent-door/audiences.ts": {
@@ -4321,7 +4321,7 @@
       "executable": false
     },
     "src/core/app/agent-door/retention.ts": {
-      "sha256": "6abc991f787ed2109cbef13ab8e9c78f93c2ef4fa57ada956f88ff8bfeea0001",
+      "sha256": "8372d7d646f4081cf8a8df0eedf457331bb6f97a2479511fdaaf5a86708c4499",
       "executable": false
     },
     "src/core/app/agent-door/rewrites.ts": {
@@ -4641,7 +4641,7 @@
       "executable": false
     },
     "src/core/features/analysis/service.ts": {
-      "sha256": "c130f770051c896f96a95b7921bc7fafdebd64201fbc70f551d57d5c5ab5f05b",
+      "sha256": "e00f076d3d152119ce85a4e5bd58ec39ecb92c7d912992c1041d4f07d28f4ce9",
       "executable": false
     },
     "src/core/features/analysis/ui/analysis.css": {
@@ -6837,7 +6837,7 @@
       "executable": false
     },
     "src/core/features/retention/model.ts": {
-      "sha256": "93c5f945487666322971dd4cbd662f794792b04ef8ef54a6644b1c421a4cde54",
+      "sha256": "a2e8d8eec56553285a8e89e2dd14bae99855f37c4e957fe76816bc0c5e23d4ca",
       "executable": false
     },
     "src/core/features/retention/policy.ts": {
@@ -6849,11 +6849,11 @@
       "executable": false
     },
     "src/core/features/retention/routes.ts": {
-      "sha256": "5921e50cbb4ac7d0e0b4c37a8f96e5d3b4d3f153ffc6373e3c6d42055cdc4d1e",
+      "sha256": "d087449ed0e571176073791f9dfc8af65a0f36ae2f5988c513a4ce54d93f9bc6",
       "executable": false
     },
     "src/core/features/retention/service.ts": {
-      "sha256": "6949049a13c9a3c5f4c68904aed1231840dd4dc7812e9c05eb70f7bce674547a",
+      "sha256": "bdee9997066291620d3f22ee066dc63b1450f0a41a3062df83362d76c81fc98a",
       "executable": false
     },
     "src/core/features/shell/ui/OperatorShellPage.tsx": {
@@ -7173,11 +7173,15 @@
       "executable": false
     },
     "src/core/features/workspace/routes.ts": {
-      "sha256": "74e3f00b998ccd8528c3942073c41ffe2bd11531296a18b6c7de17c0509c2ab0",
+      "sha256": "6cd131d4ff4f03a3ac156428d5bacb469f2add858053c424d2ca4460a818e03d",
       "executable": false
     },
     "src/core/features/workspace/service.ts": {
-      "sha256": "48084633d67be5f29dab3e0224c93c4bf29ffef809332ac33141c088e52f8100",
+      "sha256": "ada45ba72683ed1af8191ef91c8ada04e8d7c48b5ecb1bfb250ff9e6a96ab7c3",
+      "executable": false
+    },
+    "src/core/features/workspace/settings-input.ts": {
+      "sha256": "46a2498a8235be07ce6bddbd4310bf57facf9f4dc01555e155cf11a4abd040a9",
       "executable": false
     },
     "src/core/features/workspace/setup.ts": {

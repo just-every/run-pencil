@@ -2,7 +2,7 @@ import { ulid } from 'ulid'
 import { ConflictError, NotFoundError, ValidationError } from '../../shared/errors'
 import type { AiProvider } from '../../platform/ai/provider'
 import { analysableQuestions, releasedResponseIds } from './evidence'
-import { policySnapshot, type Policies, type RequestRunInput } from './model'
+import { policySnapshot, policiesSchema, type Policies, type RequestRunInput } from './model'
 import { AnalysisRepository } from './repository'
 import { AnalysisRunner } from './runner'
 
@@ -67,6 +67,7 @@ export class AnalysisService {
   }
 
   async setPolicies(workspaceId: string, operatorId: string, policies: Policies, now = new Date()) {
+    policies = policiesSchema.parse(policies)
     const write = this.db.prepare(`INSERT INTO analysis_policies (workspace_id, autorun_enabled, autorun_minimum, disclosure_threshold, selection, updated_by_operator_id, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(workspace_id) DO UPDATE SET autorun_enabled = excluded.autorun_enabled, autorun_minimum = excluded.autorun_minimum, disclosure_threshold = excluded.disclosure_threshold,
       selection = excluded.selection, updated_by_operator_id = excluded.updated_by_operator_id, updated_at = excluded.updated_at`)

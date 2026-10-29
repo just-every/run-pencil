@@ -91,7 +91,7 @@ Discovery publishes each tool's complete input/output schema, scope and contract
 | `pencil.analyses.read` | `pencil:analyses` | standard | ANLY-003, ANLY-004, ANLY-007, ANLY-010 |
 | `pencil.analyses.theme_responses` | `pencil:analyses` | standard | ANLY-004, ANLY-005, ANLY-011 |
 | `pencil.analyses.policies` | `pencil:analyses` | standard | ANLY-005, ANLY-015 |
-| `pencil.analyses.configure` | `pencil:analyses` | standard | ANLY-005, ANLY-015 |
+| `pencil.analyses.configure` | `pencil:analyses` | standard, access | ANLY-005, ANLY-015 |
 | `pencil.analyses.attention` | `pencil:analyses` | standard | NOTIFY-001 |
 | `pencil.analyses.configure_attention` | `pencil:analyses` | standard | NOTIFY-001 |
 | `pencil.notifications.read` | `pencil:notifications` | standard | NOTIFY-002, NOTIFY-003 |
@@ -170,7 +170,7 @@ Native history and provider content name the agent for its sponsor. Approval rec
 | dualHost | No second host or separate agent dispatcher is offered. |
 | ownerNativeAdministration | Operator invitation/provisioning, role and authority changes stay in the existing native person lifecycle. Pencil's equal-owner invitation cannot be replaced with a fabricated lower role. |
 
-Native business settings such as retention, sending windows, notification preferences and analysis policy are saved synchronously. Later ordinary business automation uses those settings under its own native lifecycle; these tools do not dispatch queued agent work. Retention preserves owner authorization, native revision checks, legal hold and the complete seven-day notice/grace period.
+Native business settings such as retention, sending windows, notification preferences and analysis policy are saved synchronously. Later ordinary business automation uses those settings under its own native lifecycle; these tools do not dispatch queued agent work. Retention preserves owner authorization, native revision checks, legal hold and the complete seven-day notice/grace period. Enabling deletion requires explicit `confirmAutomaticDeletion` intent at the same shared native service used by the person API; the destructive class does not depend on that flag. Lowering or raising the analysis disclosure threshold computes an access change from the current native threshold, with its widening or narrowing direction.
 
 Personal effectiveness verdicts, task-payload confirmation, finding review decisions, contact consent renewal, personal notes and read acknowledgements remain native person acts. The agent never records them as if its sponsor had personally made them. Provider task confirmation is synchronous, but it writes a human confirmer before sending; it is excluded for that native confirmation boundary, not mislabeled as a queued operation or a Base network-hook gap. Cookie-bound downloads, bearer report sharing, device/session capabilities, connector proof and import/apply/undo retain their supported native doors. Owner-reviewed public pages, branding and navigation are outside this adoption's source changes.
 

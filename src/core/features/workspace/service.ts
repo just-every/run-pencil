@@ -1,6 +1,7 @@
 import type { WorkspaceRepository } from './repository'
 import { NotFoundError, ValidationError } from '../../shared/errors'
 import { canonicalTimeZone } from '../../shared/ianaTimeZone'
+import { workspaceSettingsSchema } from './settings-input'
 
 export const primaryWorkspaceId = '01K4Y1NH8N5DGBZX7HBDV00PEN'
 
@@ -73,6 +74,9 @@ export class WorkspaceService {
   }
 
   async updateSettings(input: { workspaceId: string; timeZone: string; sendingWindowStart: string; sendingWindowEnd: string; embedAllowedOrigins?: string[]; reminderDelayHours?:number }) {
+    const { workspaceId, ...values } = input, parsed = workspaceSettingsSchema.safeParse(values)
+    if (!parsed.success) throw new ValidationError('Check the workspace time zone, sending window, embed origins and reminder delay.')
+    input = { workspaceId, ...parsed.data }
     if(input.reminderDelayHours!==undefined && (!Number.isFinite(input.reminderDelayHours)||input.reminderDelayHours<0||input.reminderDelayHours>8760)) throw new ValidationError('Reminder delay must be between zero and 8760 hours.')
     const timeZone = canonicalTimeZone(input.timeZone)
     if (!timeZone) throw new ValidationError('Choose a valid IANA time zone, such as UTC or Australia/Brisbane.')

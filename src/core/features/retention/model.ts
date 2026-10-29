@@ -1,3 +1,12 @@
+import { z } from 'zod'
+
+/** Native acknowledgement expresses requested automation, never proof of a person’s act. */
+export const retentionSettingsSchema = z.object({
+  days: z.number().int().min(1).max(36500).nullable(), legalHold: z.boolean(),
+  version: z.number().int().nonnegative(), confirmAutomaticDeletion: z.boolean(),
+}).strict()
+export type RetentionSettings = z.infer<typeof retentionSettingsSchema>
+
 export const dayMilliseconds = 86_400_000
 export const noticeMilliseconds = 7 * dayMilliseconds
 export type RetentionPolicy = { flowId:string; days:number|null; legalHold:boolean; version:number }
