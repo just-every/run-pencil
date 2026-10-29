@@ -2,15 +2,27 @@ import { useId } from 'react'
 import type { FlowStep } from '../../../app/api'
 import { TEXT_MESSAGE_LIMIT, TEXT_PATTERN_LIMIT, textSettingsIssue, textTypeLimit } from '../../../shared/textValidation'
 
-type Props = { type: FlowStep['questionType']; settings: Record<string, unknown>; onChange: (key: string, value: unknown) => void; disabled: boolean }
+type Props = { type: FlowStep['questionType']; settings: Record<string, unknown>; onChange: (key: string, value: unknown) => void; disabled: boolean; folded?: boolean }
 
-export function TextSettings({ type, settings, onChange, disabled }: Props) {
+/** What is set, in a few words, for the closed Validation disclosure. */
+function validationSummary(settings: Record<string, unknown>) {
+  const { minLength, maxLength } = settings
+  const hasMin = typeof minLength === 'number', hasMax = typeof maxLength === 'number'
+  return [
+    hasMin && hasMax ? `${minLength}–${maxLength} characters` : hasMin ? `at least ${minLength} characters` : hasMax ? `up to ${maxLength} characters` : '',
+    settings.inputMask ? 'mask' : '',
+    settings.pattern ? 'pattern' : '',
+    settings.validationMessage ? 'custom message' : '',
+  ].filter(Boolean).join(', ')
+}
+
+export function TextSettings({ type, settings, onChange, disabled, folded = true }: Props) {
   const id = useId()
   if (type !== 'short_text' && type !== 'long_text') return null
   const limit = textTypeLimit(type)
   const issue = textSettingsIssue(type, settings)
   const fieldValue = (key: string) => typeof settings[key] === 'string' || typeof settings[key] === 'number' ? settings[key] as string | number : ''
-  return <>
+  const fields = <>
     <p className="muted" id={`${id}-limits`}>Optional character limits, up to {limit.toLocaleString('en-US')} characters for this question type.</p>
     {(['minLength', 'maxLength'] as const).map(key => <label className="inspector-field" key={key}>
       {key === 'minLength' ? 'Minimum characters' : 'Maximum characters'}
@@ -30,6 +42,15 @@ export function TextSettings({ type, settings, onChange, disabled }: Props) {
       <input aria-label="Custom validation message" className="text-input" type="text" disabled={disabled} maxLength={TEXT_MESSAGE_LIMIT} value={fieldValue('validationMessage')} placeholder="Explain the response you need" aria-describedby={`${id}-message`} onChange={event => onChange('validationMessage', event.target.value === '' ? undefined : event.target.value)} />
       <span className="muted" id={`${id}-message`}>Shown when an answer fails a character limit{type === 'short_text' ? ', mask or pattern' : ''}. Leave blank to use the standard message.</span>
     </label>
-    {issue ? <p className="status-note" data-tone="error" role="alert" id={`${id}-error`}>{issue}</p> : null}
+  </>
+  const error = issue ? <p className="status-note" data-tone="error" role="alert" id={`${id}-error`}>{issue}</p> : null
+  if (!folded) return <>{fields}{error}</>
+  const summary = validationSummary(settings)
+  return <>
+    <details className="text-validation">
+      <summary className="focus-ring"><span>Validation</span>{summary ? <span className="text-validation-summary"> · {summary}</span> : null}</summary>
+      {fields}
+    </details>
+    {error}
   </>
 }

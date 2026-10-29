@@ -41,6 +41,11 @@ contract('FIELD-013', 'an operator saves text limits and a phone mask, and a res
   const inspector = page.getByRole('complementary', { name: 'Step settings' })
   for (const setting of settings) {
     await rail.getByRole('button', { name: new RegExp(setting.prompt.replace('?', '\\?')) }).click()
+    // The Validation disclosure starts closed and closes again when the step settings remount, so open it until the fields show.
+    await expect(async () => {
+      if (!await inspector.getByLabel('Minimum characters', { exact: true }).isVisible()) await inspector.locator('summary', { hasText: /^Validation/ }).click()
+      await expect(inspector.getByLabel('Minimum characters', { exact: true })).toBeVisible({ timeout: 1000 })
+    }).toPass()
     await inspector.getByLabel('Minimum characters', { exact: true }).fill(String(setting.min))
     await inspector.getByLabel('Maximum characters', { exact: true }).fill(String(setting.max))
     await inspector.getByLabel('Custom validation message', { exact: true }).fill(setting.message)
