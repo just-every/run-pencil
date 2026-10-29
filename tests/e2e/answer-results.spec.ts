@@ -118,7 +118,7 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
   await expect(metric('Starts').locator('strong')).toHaveText('0')
   await expect(choiceCard('single_choice').locator('.answer-bucket strong')).toHaveText(['0 of 0 answers · No rate','0 of 0 answers · No rate'])
   await expect(metric('Completion rate')).toContainText('0 completions / 0 filtered starts')
-  await expect(metric('Completion rate').locator('strong')).toHaveText('No rate')
+  await expect(metric('Completion rate').locator('strong')).toHaveText('No samples')
   await expect(metric('Average time')).toContainText('0ms total / 0 completed responses')
   await responseFilters.getByLabel('Device class',{exact:true}).selectOption('')
   await expect(devices.locator('.device-row').filter({hasText:'desktop'})).toContainText('6 / 6 · 100%')
@@ -150,7 +150,7 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
   await expect(metric('Responses').locator('strong')).toHaveText('12')
   await expect(metric('Starts').locator('strong')).toHaveText('12')
   await expect(metric('Completion rate')).toContainText('12 completions / 0 views')
-  await expect(metric('Completion rate').locator('strong')).toHaveText('No rate')
+  await expect(metric('Completion rate').locator('strong')).toHaveText('No samples')
   await expect(metric('Average time')).toContainText('12 completed responses')
 
   const crosstab = page.locator('section.crosstab')

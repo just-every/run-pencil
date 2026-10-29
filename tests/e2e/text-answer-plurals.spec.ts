@@ -52,7 +52,7 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'BASE-PUBLIC-003'], 'selects answe
   draft = await call<BuilderDraft>(`${path}/draft`)
   await call(`${path}/publish`, { expectedVersion: draft.flow.draftVersion })
   await page.goto(`/app/flows/${flow.id}/results`)
-  await expect(page.locator('.results-summary article').filter({has:page.getByText('Completion rate',{exact:true})}).locator('strong')).toHaveText('No rate')
+  await expect(page.locator('.results-summary article').filter({has:page.getByText('Completion rate',{exact:true})}).locator('strong')).toHaveText('No samples')
   await page.getByRole('button',{name:'Compare revisions',exact:true}).click()
   await expect(page.getByText('No rate answered · 0 / 0 released responses from revisions containing this question',{exact:true})).toBeVisible()
   await capture('empty-comparison')
