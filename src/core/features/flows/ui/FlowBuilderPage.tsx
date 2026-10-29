@@ -247,13 +247,13 @@ export function FlowBuilderPage() {
         <div>
           <Link className="builder-back focus-ring" to="/app"><ArrowLeft aria-hidden="true" size={16} /> All flows</Link>
           <h1 id="builder-title" className="display">{draft.flow.title}</h1>
-          <p className="builder-status"><span className="badge" data-status={draft.flow.status}>{draft.flow.status[0].toUpperCase() + draft.flow.status.slice(1)}</span>{draft.flow.hasUnpublishedChanges ? <span> · Unpublished changes</span> : null}</p>
+          <p className="builder-status"><span className="badge" data-status={draft.flow.status}>{draft.flow.status[0].toUpperCase() + draft.flow.status.slice(1)}</span>{draft.flow.hasUnpublishedChanges ? <span> · Unpublished changes</span> : nothingToPublish ? <span id="nothing-to-publish"> · Nothing to publish</span> : null}</p>
         </div>
         <div className="builder-actions">
           {draft.flow.status === 'open' || draft.flow.status === 'closed' ? <><a className="secondary-button focus-ring" href={`/f/${draft.flow.slug}`} target="_blank" rel="noopener">View public flow</a><Link className="secondary-button focus-ring" to="/app/flows/$flowId/results" params={{ flowId }}>Results</Link></> : null}
           {draft.flow.status === 'archived' ? null : <button className="secondary-button focus-ring flow-share-toggle" disabled={saving || shareDirty} aria-expanded={sharing} aria-controls="flow-share-panel" onClick={() => setSharing(current => !current)} type="button">{sharing ? 'Edit steps' : 'Share'}</button>}
           <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={preview} type="button"><Eye aria-hidden="true" size={16} /> Preview draft</button>
-          {draft.flow.status === 'archived' ? null : <><button className="primary-button focus-ring" aria-describedby={nothingToPublish ? 'nothing-to-publish' : undefined} disabled={saving || dirty || !timeZone || nothingToPublish} onClick={publish} type="button"><Send aria-hidden="true" size={16} /> Publish</button>{nothingToPublish ? <span id="nothing-to-publish" className="muted builder-nothing">Nothing to publish</span> : null}</>}
+          {draft.flow.status === 'archived' ? null : <button className="primary-button focus-ring" aria-describedby={nothingToPublish ? 'nothing-to-publish' : undefined} disabled={saving || dirty || !timeZone || nothingToPublish} onClick={publish} type="button"><Send aria-hidden="true" size={16} /> Publish</button>}
         </div>
       </header>
       {notice && (notice.tone !== 'success' || !dirty) ? <p className="status-note" data-tone={notice.tone} role={notice.tone === 'error' ? 'alert' : 'status'}>{notice.message}</p> : null}
