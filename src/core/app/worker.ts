@@ -1,3 +1,6 @@
+import { pencilAgentDoor, isAgentDoorPath } from './agent-door/index.server'
+import { personResourceEvents } from './agent-door/person-events'
+import { pencilPeople } from './agent-door/people'
 import { registerPrivacyRoutes } from '../features/privacy/routes'
 import { registerChatRoutes } from '../features/chat-integrations'
 import { registerGoogleRoutes } from '../features/google-sheets'
@@ -90,8 +93,39 @@ export function createWorkerApp(services?: PencilServices, platform?: PencilPlat
     await next()
   }
 
+  // Shared discovery, policy and MCP keep the native public request budget.
   app.use('*', enforcePublicRateLimit)
+
+  app.use('*', async (context, next) => {
+    if (!isAgentDoorPath(context.req.path)) return next()
+    try {
+      const response = await pencilAgentDoor(context.get('platform'), context.get('services')).handle(context.req.raw)
+      if (response) return response
+    } catch {
+      return context.json({ code: 'agent_door_unavailable' }, 503)
+    }
+    return next()
+  })
+
   app.use('/api/public/*', opaqueEmbedCors)
+
+  app.use('*', async (context, next) => {
+    await next()
+    const match = /^\/api\/app\/flows(?:\/([A-Za-z0-9_-]+))?(?:\/(draft(?:\/.*)?|duplicate|publish|close|reopen|archive))?$/.exec(context.req.path)
+    if (!isCookieMutation(context.req.method) || context.res.status < 200 || context.res.status >= 300) return
+    let body: Record<string, unknown> = {}
+    if (context.res.headers.get('content-type')?.includes('application/json')) body = await context.res.clone().json()
+    if (body.kind === 'conflict' || body.kind === 'invalid') return
+    const session = context.get('operatorSession')
+    if (!session) return
+    const services = context.get('services'), platform = context.get('platform')
+    const person = await pencilPeople(platform.databaseBinding, services.auth).read(session.operatorId)
+    if (!person) return
+    const events = personResourceEvents(context.req.path, body)
+    const formId = body.id ?? match?.[1]
+    if (match && typeof formId === 'string') events.push({ type: match[2] === 'publish' ? 'form.published' : match[2] === 'close' ? 'form.closed' : 'form.draft-changed', uri: `pencil://forms/${formId}` })
+    for (const event of events) await pencilAgentDoor(platform, services).door.emit({ ...event, person })
+  })
 
 
   app.get('/health', async (context) => {

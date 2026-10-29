@@ -105,7 +105,7 @@ export class ResponseService {
     const addressHash = await this.hash(`public-rate:${input.clientAddress || 'unknown'}`)
     const limit = input.scope === 'submission' ? manifest.limits.publicRateLimits.finalSubmissionsPerIpPerMinute : manifest.limits.publicRateLimits.requestsPerIpPerMinute
     const admitted = await this.repository.incrementPublicRateLimit({ scope: input.scope, addressHash, windowStartedAt, expiresAt, limit, now: now.toISOString() })
-    if (!admitted) throw new RateLimitError()
+    if (!admitted) throw new RateLimitError(undefined, Math.max(1, Math.ceil((Date.parse(expiresAt) - Date.now()) / 1000)))
   }
 
   async invitationFlow(token: string, accessToken?:string) {
