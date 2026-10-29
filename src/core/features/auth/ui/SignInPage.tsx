@@ -6,7 +6,7 @@ import { api } from '../../../app/api'
 import type { PublicSeedConfig } from '../../../shared/config'
 import { HydrationUnit } from '../../../../base/hydration/unit'
 
-export function SignInPage({ config, emailHint, invalid, notice }: { local?: boolean; config: Pick<PublicSeedConfig, 'productName'>; emailHint?: string; invalid?: string; notice?: 'access-removed' }) {
+export function SignInPage({ config, local, emailHint, invalid }: { local?: boolean; config: Pick<PublicSeedConfig, 'productName'>; emailHint?: string; invalid?: string }) {
   const [email, setEmail] = useState(emailHint ?? '')
   const [hydrated, setHydrated] = useState(false)
   useEffect(() => { setHydrated(true) }, [])
@@ -31,14 +31,13 @@ export function SignInPage({ config, emailHint, invalid, notice }: { local?: boo
       <BrandMark name={config.productName} />
       <p className="eyebrow">Operator access</p>
       <h1 id="sign-in-title" className="display">Sign in</h1>
-      {notice === 'access-removed' ? <p className="status-note" role="status">Your operator access was removed. Use another operator email to sign in.</p> : null}
       {status === 'sent' ? <>
         <p className="muted">Check your email. If this address is an operator, a sign-in link is on its way. The link works once and expires in 15 minutes.</p>
         <div className="access-actions">
           <button className="quiet-button focus-ring" onClick={() => setStatus('form')} type="button"><ArrowLeft aria-hidden="true" size={17} /> Use another email</button>
         </div>
       </> : <form onSubmit={submit}>
-        <p className="muted">Enter your operator email to receive a one-time sign-in link.</p>
+        <p className="muted">{local ? 'Open the RER_OPEN link that rer prints on this computer.' : 'Enter your operator email to receive a one-time sign-in link.'}</p>
         <label className="inspector-field">Operator email<input disabled={!hydrated || status === 'sending'} autoComplete="email" className="text-input" onChange={(event) => setEmail(event.target.value)} required type="email" value={email} /></label>
         {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
         <button className="primary-button focus-ring" disabled={!hydrated || status === 'sending'} type="submit">{status === 'sending' ? 'Requesting…' : 'Send magic link'} <ArrowRight aria-hidden="true" size={17} /></button>
