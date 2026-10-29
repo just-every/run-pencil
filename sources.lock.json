@@ -829,7 +829,7 @@
       "executable": false
     },
     "agent-surface.json": {
-      "sha256": "563736e52510491c9d36cd4b5166fa3a5716b5cc27b9282263d54e17d4b8ddcd",
+      "sha256": "cd9a8700f2c1695d56fd3f8c0f54ab53ea7e53904caf526e3198e0692db5be8a",
       "executable": false
     },
     "AGENTS.consumer.md": {
@@ -4313,7 +4313,7 @@
       "executable": false
     },
     "src/core/app/agent-door/reports.ts": {
-      "sha256": "d5df71ff758ced317d5c9758b82a6fe3b993278ee559a315bab3bff4e1cd3d2b",
+      "sha256": "65e7e9c61ea6781fd4642cdf0b5dc9d8dae20821390f22562b0d8edcb99d981b",
       "executable": false
     },
     "src/core/app/agent-door/resources.ts": {
@@ -4329,7 +4329,7 @@
       "executable": false
     },
     "src/core/app/agent-door/settings.ts": {
-      "sha256": "81f73699c426d68edeb5a75a307d52fb9d6f727d2b8ec5dc76c4e1a1407559ae",
+      "sha256": "32ddccbd98f39310acfd377ecbf718815ffe5511eb3697209557acfbbc5d14dd",
       "executable": false
     },
     "src/core/app/agent-door/studies.ts": {
@@ -5385,7 +5385,7 @@
       "executable": false
     },
     "src/core/features/flows/service.ts": {
-      "sha256": "fda71777e5aa99b58b0e20da5f2490876acecdc5714093e623d0f226fd821154",
+      "sha256": "55d98a3d3c46776e61f3da1b8452543a39f632c8549db7ab9e0fe4627ada058a",
       "executable": false
     },
     "src/core/features/flows/structure.ts": {
@@ -7181,11 +7181,11 @@
       "executable": false
     },
     "src/core/features/workspace/service.ts": {
-      "sha256": "ada45ba72683ed1af8191ef91c8ada04e8d7c48b5ecb1bfb250ff9e6a96ab7c3",
+      "sha256": "aa0b3084465c6f158edaa86ce9db6740df87e2606acc1afe08555fec5799a60b",
       "executable": false
     },
     "src/core/features/workspace/settings-input.ts": {
-      "sha256": "46a2498a8235be07ce6bddbd4310bf57facf9f4dc01555e155cf11a4abd040a9",
+      "sha256": "5ffb13da057baa2944f13914b10173bba8850d135d7ce2db26a86e45617a2b6d",
       "executable": false
     },
     "src/core/features/workspace/setup.ts": {

@@ -1,5 +1,6 @@
 import { defineTool, type ClassAndFacts, type ToolContext, type ToolDefinition } from '../../../base/agent-door/index.ts'
 import type { PencilServices } from '../services'
+import { normalizeEmbedOrigins } from '../../features/workspace/settings-input'
 import { nativeActor, nativeCall, nativeScope } from './native'
 import { objectSchema, standard } from './form-context'
 
@@ -24,8 +25,8 @@ export function settingTools(db: D1Database, services: PencilServices): ToolDefi
       inputSchema: objectSchema({ origins: { type: 'array', maxItems: 30, items: { type: 'string', maxLength: 300 } } }, ['origins']), target, revisionType: 'string', revision,
       async authority() { return null },
       async classify(args, ctx): Promise<ClassAndFacts[]> {
-        const saved = await current(ctx), origins = [...new Set(args.origins as string[])], added = origins.filter(value => !saved.embedAllowedOrigins.includes(value)), removed = saved.embedAllowedOrigins.filter(value => !origins.includes(value))
-        return !added.length && !removed.length ? standard() : [...(added.length ? [{ class: 'external' as const, facts: { measure: added.length, counterparty: 'known' as const } }] : []), { class: 'access', facts: { measure: added.length + removed.length } }, { class: 'live', facts: { measure: 1 } }]
+        const saved = await current(ctx), origins = await nativeCall(async () => normalizeEmbedOrigins(args.origins as string[])), added = origins.filter(value => !saved.embedAllowedOrigins.includes(value)), removed = saved.embedAllowedOrigins.filter(value => !origins.includes(value))
+        return !added.length && !removed.length ? standard() : [...(added.length ? [{ class: 'external' as const, facts: { measure: added.length, counterparty: 'new' as const } }] : []), { class: 'access', facts: { measure: added.length + removed.length, direction: added.length ? 'widens' : 'narrows' } }, { class: 'live', facts: { measure: 1, service: `pencil:${saved.id}` } }]
       },
       async summary(args, ctx) { const saved = await current(ctx); return { target: { id: saved.id, name: saved.name }, items: [JSON.stringify({ previousOrigins: saved.embedAllowedOrigins, origins: args.origins })] } },
       async run(args, ctx) { const who = await scope(ctx), saved = await current(ctx); const result = await nativeCall(() => services.workspace.updateSettings({ workspaceId: who.workspaceId, timeZone: saved.timeZone, sendingWindowStart: saved.sendingWindowStart, sendingWindowEnd: saved.sendingWindowEnd, embedAllowedOrigins: args.origins as string[] })); await audit(ctx); return { result } },

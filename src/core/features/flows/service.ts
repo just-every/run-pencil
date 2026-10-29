@@ -384,6 +384,7 @@ export class FlowService {
   async deleteDraftStep(input: { operatorId?: string; workspaceId: string; flowId: string; expectedVersion: number; stepId: string }) {
     const draft = await this.getBuilderDraft(input.workspaceId, input.flowId)
     if (input.expectedVersion !== draft.flow.draftVersion) return draftConflict(draft.flow.draftVersion)
+    if (!draft.steps.some(step => step.id === input.stepId)) throw new NotFoundError('The requested draft step does not exist.')
     const now = new Date().toISOString()
     const deleted = await this.repository.deleteDraftStep({ operatorId: input.operatorId, flowId: input.flowId, revisionId: draft.revision.id, expectedVersion: input.expectedVersion, now, stepStableId: input.stepId })
     if (!deleted) return draftConflict((await this.requireWorkspaceFlow(input.workspaceId, input.flowId)).draftVersion)

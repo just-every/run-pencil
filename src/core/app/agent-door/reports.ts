@@ -23,7 +23,12 @@ export function reportTools(db: D1Database, services: PencilServices): ToolDefin
   const base = { scope: 'pencil:results', classes: ['standard' as const], classify: standard, untrusted: true, outputSchema: { type: 'object' } }
   const read = (verb: string, title: string, clauses: string[], inputSchema: JsonSchemaObject, run: (args: Record<string, unknown>, who: Awaited<ReturnType<typeof scope>>) => Promise<unknown>) => defineTool({
     ...base, name: `pencil.results.${verb}`, title, description: title, clauses, readOnly: true, inputSchema,
-    async run(args, ctx) { const who = await scope(ctx); return { result: await nativeCall(() => run(args, who)) } },
+    async run(args, ctx) {
+      const who = await scope(ctx), result = await nativeCall(() => run(args, who))
+      // Match the native HTTP report representation: absent optional fields
+      // are omitted before the door validates the complete JSON value.
+      return { result: JSON.parse(JSON.stringify(result)) }
+    },
   })
   const flow = async (args: Record<string, unknown>, ctx: ToolContext) => { const who = await scope(ctx); const value = await nativeCall(() => services.flows.getBuilderDraft(who.workspaceId, String(args.formId))); return value.flow }
   const dashboard = async (args: Record<string, unknown>, ctx: ToolContext) => { const who = await scope(ctx); return nativeCall(() => loadDashboard(db, who.workspaceId, String(args.dashboardId))) }
