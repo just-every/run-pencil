@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { analysisApi, stateLabels, transportLabel, when, type Policies, type ProviderStatus, type RunSummary, type UsageRow } from './analysisApi'
+import { shortDay } from '../../../shared/ui/shortDate'
 
 export function ProviderNote({ provider }: { provider: ProviderStatus }) {
   if (provider.state === 'on' && provider.transport === 'demo') return <p className="muted" style={{ margin: 0 }}>Analysis is ready to try with this workspace’s feedback. Nothing is sent to an AI provider.</p>
@@ -49,7 +50,7 @@ export function AnalysisPage() {
         <section className="panel analysis-card" aria-labelledby="usage-title">
           <p className="eyebrow" id="usage-title">Usage by day and feature ({data.timeZone})</p>
           {data.usage.length ? <div style={{ overflowX: 'auto' }} tabIndex={0} role="region" aria-label="Usage table" className="focus-ring"><table className="analysis-table"><thead><tr><th>Day</th><th>Feature</th><th>Calls</th><th>Tokens in / out</th><th>Cost</th></tr></thead>
-            <tbody>{data.usage.map(row => <tr key={`${row.day}:${row.feature}`}><td>{row.day}</td><td>{row.feature}</td><td>{row.calls}</td><td>{row.inputTokens?.toLocaleString() ?? 'Unknown'} / {row.outputTokens?.toLocaleString() ?? 'Unknown'}{row.unknownInputCalls || row.unknownOutputCalls ? ' + unreported usage' : ''}</td><td>{row.costMicrousd === null ? 'Not reported' : `US$${(row.costMicrousd / 1_000_000).toFixed(4)}${row.unreportedCalls ? ` + ${row.unreportedCalls} unreported` : ''}`}</td></tr>)}</tbody></table></div>
+            <tbody>{data.usage.map(row => <tr key={`${row.day}:${row.feature}`}><td>{shortDay(row.day)}</td><td>{row.feature}</td><td>{row.calls}</td><td>{row.inputTokens?.toLocaleString() ?? 'Unknown'} / {row.outputTokens?.toLocaleString() ?? 'Unknown'}{row.unknownInputCalls || row.unknownOutputCalls ? ' + unreported usage' : ''}</td><td>{row.costMicrousd === null ? 'Not reported' : `US$${(row.costMicrousd / 1_000_000).toFixed(4)}${row.unreportedCalls ? ` + ${row.unreportedCalls} unreported` : ''}`}</td></tr>)}</tbody></table></div>
             : <p className="muted">No provider call yet.</p>}
         </section>
         <section className="panel analysis-card" aria-labelledby="policy-title"><p className="eyebrow" id="policy-title">Settings</p><PolicyForm policies={data.policies} onSaved={policies => setData({ ...data, policies })} /></section>

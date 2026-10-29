@@ -1,5 +1,6 @@
 import type { RunDetail, RunSummary, ThemeView } from '../repository'
 import type { Policies } from '../model'
+import { shortDateTime } from '../../../shared/ui/shortDate'
 
 export type { RunDetail, RunSummary, ThemeView, Policies }
 export type ProviderStatus = { state: 'on'; origin: string; model: string; transport: 'direct' | 'models' | 'dev' | 'demo'; costReported: boolean } | { state: 'off' | 'misconfigured'; setup: string }
@@ -27,7 +28,7 @@ export const analysisApi = {
 
 export const stateLabels: Record<RunSummary['state'], string> = { queued: 'Queued', running: 'Running', completed: 'Completed', insufficient_evidence: 'Insufficient evidence', failed: 'Failed' }
 export const shortId = (id: string) => `${id.slice(0, 3)}…${id.slice(-2)}`
-export const when = (iso: string, timeZone: string) => new Date(iso).toLocaleString(undefined, { timeZone, day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+export const when = shortDateTime
 export const transportLabel = (transport: string) => transport === 'demo' ? 'Demo' : transport === 'models' ? 'Models service' : transport === 'dev' ? 'Local dev double' : 'Direct key'
 export function costLabel(calls: Array<{ inputTokens: number | null; outputTokens: number | null; costMicrousd: number | null }>) {
   const input = calls.reduce((sum, call) => sum + (call.inputTokens ?? 0), 0), output = calls.reduce((sum, call) => sum + (call.outputTokens ?? 0), 0)

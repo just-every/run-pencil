@@ -110,6 +110,7 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
     <nav className="filter-row" aria-label="Filter flows">
       {(['active', 'draft', 'open', 'closed', 'archived'] as const).map((item) => <button aria-pressed={status === item} className="quiet-button focus-ring" data-selected={status === item} key={item} disabled={loading || saving} onClick={() => { if (status !== item) updateList(item) }} type="button">{item === 'active' ? 'All flows' : item[0].toUpperCase() + item.slice(1)}</button>)}
     </nav>
+    {flows.length && !showCreate ? <p className="muted dashboard-zone">Times in {workspace.timeZone}</p> : null}
     {showCreate && !showStudio ? <form className="panel dashboard-create-panel" onSubmit={(event) => { event.preventDefault(); void createFlow() }}>
       <div className="dashboard-create">
         {!hasFlows ? <><p className="eyebrow">Ask → Signal → Act</p><h2 className="display">Create your first flow</h2><p className="muted">Ask a clear question, use the answers to make a decision, then act.</p></> : <h2 className="display">New flow</h2>}

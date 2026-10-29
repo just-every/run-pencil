@@ -7,12 +7,13 @@ import { WorkflowFields } from './WorkflowFilters'
 import { InboxList } from './InboxList'
 import { BulkChanges } from './BulkChanges'
 import { SubmissionDetail } from './SubmissionDetail'
+import { shortDateTime } from '../../../shared/ui/shortDate'
 export function InboxPage({flowId}:{flowId:string}) {
  const [ledger,setLedger]=useState<Ledger>(),[options,setOptions]=useState<SubmissionOptions>(),[metadata,setMetadata]=useState(new Map<string,SubmissionMetadata>()),[zone,setZone]=useState<string>(),[error,setError]=useState<string>(),[notice,setNotice]=useState<string>(),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[refresh,setRefresh]=useState(0)
  const [filter,setFilter]=useState<LedgerFilter>({}),[draft,setDraft]=useState<LedgerFilter>({}),[selected,setSelected]=useState<string>(),[checked,setChecked]=useState<string[]>([]),[customName,setCustomName]=useState('')
  const generation=useRef(0)
  useEffect(()=>{const current=++generation.current;setLoading(true);setLedger(undefined);setError(undefined);setChecked([]);Promise.all([reportingApi.ledger(flowId,filter),submissionsApi.options(flowId),api.workspace()]).then(async([data,choices,workspace])=>{const result=data.responses.length?await submissionsApi.read(flowId,data.responses.map(r=>r.id)):{submissions:[]};if(current===generation.current){setLedger(data);setOptions(choices);setZone(workspace.timeZone);setMetadata(new Map(result.submissions.map(m=>[m.responseId,m])))}}).catch(e=>{if(current===generation.current)setError(e.message)}).finally(()=>{if(current===generation.current)setLoading(false)});return()=>{generation.current++}},[flowId,filter,refresh])
- const time=(value:string)=>new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short',timeZone:zone}).format(new Date(value))
+ const time=(value:string)=>shortDateTime(value,zone)
  async function apply(changes:SubmissionBulkInput['changes']){setBusy(true);setError(undefined);setNotice(undefined);try{await submissionsApi.update(flowId,{responses:checked.map(id=>({id,version:metadata.get(id)!.version})),changes});setNotice(`${checked.length} submissions updated.`);setRefresh(n=>n+1)}catch(e){setError((e as Error).message)}finally{setBusy(false)}}
  async function createStatus(){setBusy(true);setError(undefined);try{await submissionsApi.createStatus(flowId,customName.trim());setCustomName('');setNotice('Custom status created. Select it under Set status to use it.');setRefresh(n=>n+1)}catch(e){setError((e as Error).message)}finally{setBusy(false)}}
  const row=ledger?.responses.find(r=>r.id===selected)

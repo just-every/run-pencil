@@ -3,6 +3,7 @@ import { Link, useNavigate, useRouter } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
 import { useProtectUnsavedChanges } from '../../../shared/ui/UnsavedChanges'
 import { api, type DashboardFlow } from '../../../app/api'
+import { shortDateTime } from '../../../shared/ui/shortDate'
 
 export function FlowCard({ flow, timeZone, refreshing = false, onSavingChange }: { flow: DashboardFlow & { hasUnpublishedChanges?: boolean }; timeZone: string; refreshing?: boolean; onSavingChange?: (id: string, busy: boolean) => void }) {
   const navigate = useNavigate()
@@ -29,7 +30,7 @@ export function FlowCard({ flow, timeZone, refreshing = false, onSavingChange }:
     finally { if (mounted.current) setBusy(false) }
   }
   const date = new Date(flow.lastActivityAt)
-  const activity = Number.isNaN(date.valueOf()) ? 'No recorded activity' : `Last activity ${new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeZone }).format(date)}`
+  const activity = Number.isNaN(date.valueOf()) ? 'No recorded activity' : `Last activity ${shortDateTime(date, timeZone)}`
   return <article className="panel flow-card">
     <header><span className="badge" data-status={flow.status}>{flow.status[0].toUpperCase() + flow.status.slice(1)}</span><span className="flow-card-note">{flow.hasUnpublishedChanges ? 'Unpublished changes' : ''}</span></header>
     <div><h2 className="display">{flow.title}</h2><p className="muted flow-card-activity">{activity}</p></div>

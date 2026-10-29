@@ -2,8 +2,9 @@ import { AnswerAlertAttention } from './AnswerAlertAttention'
 import { useId } from 'react'
 import { useNotifications } from './useNotifications'
 import type { NotificationMode } from './repository'
+import { shortDateTime } from '../../shared/ui/shortDate'
 export function NotificationsPanel({flowId,timeZone}:{flowId:string;timeZone:string}) {
-  const when=(value:string)=>new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short',timeZone}).format(new Date(value))
+  const when=(value:string)=>shortDateTime(value,timeZone)
   const id=useId(), {state,error,busy,notice,setMode,retry,refresh}=useNotifications(flowId)
   return <section className="panel" aria-labelledby={id} style={{minWidth:0,overflowWrap:'anywhere'}}>
     <h2 id={id}>Response notifications</h2>
