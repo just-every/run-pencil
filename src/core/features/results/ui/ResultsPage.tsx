@@ -64,10 +64,10 @@ export function ResultsPage() {
     <section className="results" aria-labelledby="results-title" aria-busy={busy}>
       <header className="results-heading">
         <div className="results-heading__nav"><Link className="quiet-button focus-ring" to="/app"><ArrowLeft aria-hidden="true" size={16} /> All flows</Link><Link className="secondary-button focus-ring" to="/app/flows/$flowId/builder" params={{ flowId }}><PencilLine aria-hidden="true" size={15} /> Builder</Link></div>
-        <Link className="secondary-button focus-ring" to="/app/flows/$flowId/inbox" params={{ flowId }}>Submission inbox</Link>
         <h1 id="results-title" className="display">{results?.flow.title ?? 'Results'}</h1>
         <div className="results-heading__tools">
           <label className="inspector-field">Published revision<select aria-label="Published revision" className="text-input" value={selectedRevision ?? ''} onChange={(event) => setSelectedRevision(event.target.value || undefined)}><option value="">Current published revision</option><option value="all">All published revisions</option>{revisions.map((revision) => <option key={revision.id} value={revision.id}>Revision {revision.number}{revision.isCurrent ? ' · current' : ''}</option>)}</select></label>
+          <Link className="secondary-button focus-ring" to="/app/flows/$flowId/inbox" params={{ flowId }}>Submission inbox</Link>
           <div className="results-heading__exports" ref={setExportSlot} />
         </div>
         {revisions.length > 1 ? <button className="quiet-button focus-ring results-compare" type="button" aria-expanded={comparing} aria-controls="revision-comparison" onClick={() => setComparing(true)}>Compare revisions</button> : null}
