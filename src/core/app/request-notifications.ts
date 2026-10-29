@@ -15,6 +15,8 @@ export async function deliverRequestNotifications(environment: WorkerBindings) {
 
 export function continueNotifications(request: Request, environment: WorkerBindings, execution: ExecutionContext) {
   const path = new URL(request.url).pathname
+  // Signed company control requests must not wake native provider deliveries.
+  if (path === '/api/rer' || path.startsWith('/api/rer/')) return
   if (!(path === '/app' || path.startsWith('/app/') || path.startsWith('/api/') || path.startsWith('/f/') || path.startsWith('/embed/'))) return
   execution.waitUntil(deliverRequestNotifications(environment).catch(() => {
     // Never log provider inputs, request contents or credentials.
