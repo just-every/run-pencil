@@ -44,7 +44,8 @@ export function TextAnswers({ flowId, revisionId, questionId, filter }: {flowId:
     } catch (reason) { if (!abort.signal.aborted) { countRequest.current?.abort(); setMatching(undefined); setTexts([]); setError(reason instanceof Error ? reason.message : 'Answers could not load.'); setCursor(undefined) } }
     finally { if (!abort.signal.aborted) setBusy(false) }
   }
-  useEffect(() => { void load(); return () => { request.current?.abort(); countRequest.current?.abort() } },[flowId,revisionId,questionId,search,JSON.stringify(filter)])
+  // The first read waits a tick so a mount that is discarded at once (React's development double mount) never sends it.
+  useEffect(() => { const start = setTimeout(() => void load(), 0); return () => { clearTimeout(start); request.current?.abort(); countRequest.current?.abort() } },[flowId,revisionId,questionId,search,JSON.stringify(filter)])
   return <>
     <label className="search-field"><span className="sr-only">Search answers</span><Search aria-hidden="true" size={18} strokeWidth={1.75} /><input className="text-input" type="search" placeholder="Search answers" maxLength={5000} value={search} onChange={event=>setSearch(event.target.value)} /></label>
     <p className="muted" aria-live="polite">{matching === undefined ? error ? 'Matching count unavailable.' : 'Counting all matching answers…' : `${matching} matching ${matching === 1 ? 'answer' : 'answers'} · latest first`}{busy ? ' Searching released answers…' : ` · ${texts.length} on this page`}</p>

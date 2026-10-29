@@ -37,9 +37,17 @@ export function ResultsPage() {
   const selectionKey = JSON.stringify({...responseFilter,offset:undefined})
   useEffect(() => {
     let active = true
-    void Promise.all([api.workspace(), reportingApi.ledger(flowId,{})]).then(([workspace,ledger])=>{if(active){setTimeZone(workspace.timeZone);setRevisions(ledger.revisions)}}).catch(reason=>{if(active)setError(reason instanceof Error?reason.message:'Results metadata could not load.')})
+    void api.workspace().then(workspace=>{if(active)setTimeZone(workspace.timeZone)}).catch(reason=>{if(active)setError(reason instanceof Error?reason.message:'Results metadata could not load.')})
     return ()=>{active=false}
   },[flowId,refresh])
+  // The revision list comes with the ledger's first page, read once here and shared with the ledger below it (same request).
+  const ledgerRevision = selectedRevision === 'all' ? undefined : selectedRevision ?? results?.revision.id
+  useEffect(() => {
+    if (!results) return
+    let active = true
+    void reportingApi.ledger(flowId,{revisionId:ledgerRevision}).then(ledger=>{if(active)setRevisions(ledger.revisions)}).catch(reason=>{if(active)setError(reason instanceof Error?reason.message:'Results metadata could not load.')})
+    return ()=>{active=false}
+  },[flowId,refresh,ledgerRevision,results?.revision.id])
   useEffect(() => {
     let active = true
     setError(undefined); setBusy(true)
