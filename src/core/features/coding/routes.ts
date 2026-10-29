@@ -27,7 +27,7 @@ export function registerCodingRoutes(app:Hono<WorkerEnvironment>) {
     const session=c.get('operatorSession'),p=c.req.valid('param');return c.json(await assignManually(c.get('platform').databaseBinding,session.workspaceId,session.operatorId,p.responseId,p.questionId,p.codeId))
   })
   app.delete('/api/app/responses/:responseId/answers/:questionId/codes/:codeId',assignmentParams,emptyMutationBody,async c=>{
-    const p=c.req.valid('param');await removeAssignment(c.get('platform').databaseBinding,c.get('operatorSession').workspaceId,p.responseId,p.questionId,p.codeId);return c.body(null,204)
+    const p=c.req.valid('param');await removeAssignment(c.get('platform').databaseBinding,c.get('operatorSession').workspaceId,p.responseId,p.questionId,p.codeId,c.get('operatorSession').operatorId);return c.body(null,204)
   })
   app.get('/api/app/flows/:flowId/coding/suggestions',flowParams,validateInput('query',z.object({after:resourceId.optional()})),async c=>c.json(await suggestions(c.get('platform').databaseBinding,c.get('operatorSession').workspaceId,c.req.param('flowId'),c.req.valid('query').after)))
   app.put('/api/app/coding/suggestions/:quoteId',validateInput('param',z.object({quoteId:resourceId})),validateInput('json',z.object({decision:z.enum(['accepted','rejected']),codeId:resourceId.optional()}).strict()),async c=>{

@@ -36,6 +36,8 @@
     "src/base/mail/tests/**",
     "src/base/operator-auth/tests/**",
     "src/base/operator-auth/oidc/tests/**",
-    "src/base/operator-auth/conformance/tests/**"
+    "src/base/operator-auth/conformance/tests/**",
+    "src/base/agent-door/tests/**",
+    "src/base/business-settings/testing/**"
   ]
 }

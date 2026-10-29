@@ -4,7 +4,8 @@ import { readSubmissions, submissionDetail, submissionOptions } from './read'
 import { submissionBulkSchema, submissionReadSchema, submissionStatusSchema, type SubmissionBulkInput, type SubmissionStatus } from './model'
 
 export class SubmissionService {
-  constructor(private readonly db: D1Database) {}
+  constructor(private readonly db: D1Database, private readonly attribution: Record<string, unknown> = {}) {}
+  attributed(attribution: Record<string, unknown>) { return new SubmissionService(this.db, attribution) }
   options(workspaceId: string, flowId: string) { return submissionOptions(this.db, workspaceId, flowId) }
   read(workspaceId: string, flowId: string, responseIds: string[]) { return readSubmissions(this.db, workspaceId, flowId, submissionReadSchema.parse({ responseIds }).responseIds) }
   detail(workspaceId: string, flowId: string, responseId: string, notesOffset = 0) { return submissionDetail(this.db, workspaceId, flowId, responseId, notesOffset) }
@@ -17,14 +18,14 @@ export class SubmissionService {
         AND (SELECT count(*) FROM submission_statuses WHERE flow_id=?)<50
         AND NOT EXISTS(SELECT 1 FROM submission_statuses WHERE flow_id=? AND lower(name)=lower(?)) THEN 1 ELSE 0 END`).bind(flowId, workspaceId, operatorId, workspaceId, flowId, flowId, name),
       this.db.prepare('INSERT INTO submission_statuses(id,flow_id,name,created_at) VALUES(?,?,?,?)').bind(id, flowId, name, now),
-      this.db.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at) VALUES(?,?,'submission.status_created',?,'flow',?,'{"fields":1}',?)`).bind(ulid(), workspaceId, operatorId, flowId, now),
+      this.db.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at) VALUES(?,?,'submission.status_created',?,'flow',?,?,?)`).bind(ulid(), workspaceId, operatorId, flowId, JSON.stringify({ fields: 1, ...this.attribution }), now),
       this.db.prepare('DELETE FROM submission_write_assertions'),
     ])
     return { status: { id, name, custom: true } }
   }
   async bulk(workspaceId: string, flowId: string, operatorId: string, input: SubmissionBulkInput) {
     input = submissionBulkSchema.parse(input)
-    await bulkSubmissions(this.db, workspaceId, flowId, operatorId, input)
+    await bulkSubmissions(this.db, workspaceId, flowId, operatorId, input, this.attribution)
     return this.read(workspaceId, flowId, input.responses.map(row => row.id))
   }
 }

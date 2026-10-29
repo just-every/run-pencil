@@ -236,12 +236,12 @@ Acceptance journeys and remaining obligations are recorded in CONTRACT.md and AC
 | MOB-001 | Operator app on a phone | target | partial | `tests/e2e/accessibility-foundation.spec.ts` |
 | MOB-002 | Offline field collection | target | missing |  |
 | MOB-003 | Native iOS and Android apps | target | missing |  |
-| AGENT-001 | Study designer | push-further | partial | `tests/runtime/feedback-rewrites.worker.test.ts`; `tests/e2e/analysis.spec.ts`; `tests/runtime/studio-scenario.ts`; `tests/e2e/studio-journey.ts` |
-| AGENT-002 | Themes and contradictions | push-further | partial | `tests/runtime/analysis-output.worker.test.ts`; `tests/e2e/analysis.spec.ts` |
+| AGENT-001 | Study designer | push-further | partial | `tests/runtime/feedback-rewrites.worker.test.ts`; `tests/e2e/analysis.spec.ts`; `tests/runtime/studio-scenario.ts`; `tests/e2e/studio-journey.ts`; `agent-surface.json`; `src/core/app/agent-door/` |
+| AGENT-002 | Themes and contradictions | push-further | partial | `tests/runtime/analysis-output.worker.test.ts`; `tests/e2e/analysis.spec.ts`; `agent-surface.json`; `src/core/app/agent-door/` |
 | AGENT-003 | Follow-up that settles it | push-further | missing |  |
-| AGENT-004 | Finding into owned work, and the outcome checked | push-further | partial | `src/core/features/actions/service.ts`; `tests/runtime/actions-measurement.worker.test.ts` |
-| AGENT-005 | Feedback-loop sentinel | push-further | partial | `src/core/features/actions/deliveries.ts`; `src/core/features/responses/completionMetrics.ts`; `src/core/features/analysis/attention.ts` |
+| AGENT-004 | Finding into owned work, and the outcome checked | push-further | partial | `src/core/features/actions/service.ts`; `tests/runtime/actions-measurement.worker.test.ts`; `agent-surface.json`; `src/core/app/agent-door/` |
+| AGENT-005 | Feedback-loop sentinel | push-further | partial | `src/core/features/actions/deliveries.ts`; `src/core/features/responses/completionMetrics.ts`; `src/core/features/analysis/attention.ts`; `agent-surface.json`; `src/core/app/agent-door/` |
 | AGENT-006 | Adaptive probe | push-further | missing |  |
 | AGENT-007 | Close-the-loop drafter | push-further | missing |  |
 | AGENT-008 | Completion optimizer | push-further | missing |  |
-| AGENT-009 | Migration agent | push-further | partial | `src/core/features/importing/typeform-definition.ts`; `tests/runtime/typeform-definition.worker.test.ts` |
+| AGENT-009 | Migration agent | push-further | partial | `src/core/features/importing/typeform-definition.ts`; `tests/runtime/typeform-definition.worker.test.ts`; `agent-surface.json`; `src/core/app/agent-door/` |

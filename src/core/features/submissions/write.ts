@@ -21,7 +21,7 @@ export async function submissionBatch(db: D1Database, statements: D1PreparedStat
     throw error
   }
 }
-export async function bulkSubmissions(db: D1Database, workspaceId: string, flowId: string, operatorId: string, input: SubmissionBulkInput) {
+export async function bulkSubmissions(db: D1Database, workspaceId: string, flowId: string, operatorId: string, input: SubmissionBulkInput, attribution: Record<string, unknown> = {}) {
   const args = [JSON.stringify(input.changes), workspaceId, flowId, operatorId, new Date().toISOString(), JSON.stringify(input.responses)]
   const statement = (sql: string) => db.prepare(cte + sql).bind(...args)
   const guard = `EXISTS(SELECT 1 FROM flows f,input i WHERE f.id=i.flow AND f.workspace_id=i.workspace)
@@ -36,8 +36,8 @@ export async function bulkSubmissions(db: D1Database, workspaceId: string, flowI
       (SELECT count(*) FROM (SELECT t.tag FROM submission_tags t WHERE t.response_id=s.id AND t.tag NOT IN(SELECT value FROM json_each(i.changes,'$.removeTags'))
         UNION SELECT value FROM json_each(i.changes,'$.addTags'))) > 20
       OR (json_type(i.changes,'$.note') IS NOT NULL AND (SELECT count(*) FROM submission_notes n WHERE n.response_id=s.id)>=200))`
-  const audit = (kind: string, predicate: string) => statement(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at)
-    SELECT lower(hex(randomblob(16))),i.workspace,'${kind}',i.actor,'response',r.id,'{"fields":1}',i.now ${cohort} AND ${predicate}`)
+  const audit = (kind: string, predicate: string) => db.prepare(cte + `INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at)
+    SELECT lower(hex(randomblob(16))),i.workspace,'${kind}',i.actor,'response',r.id,json(?),i.now ${cohort} AND ${predicate}`).bind(...args, JSON.stringify({ fields: 1, ...attribution }))
   await submissionBatch(db, [
     statement(`INSERT INTO submission_write_assertions(ok) SELECT CASE WHEN ${guard} THEN 1 ELSE 0 END`),
     audit('submission.status_changed', statusChanged), audit('submission.assignment_changed', assignmentChanged), audit('submission.tags_changed', tagsChanged), audit('submission.note_added', noteAdded),

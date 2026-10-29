@@ -1,6 +1,7 @@
 import type { WorkspaceRepository } from './repository'
 import { NotFoundError, ValidationError } from '../../shared/errors'
 import { canonicalTimeZone } from '../../shared/ianaTimeZone'
+import { normalizeEmbedOrigins, workspaceSettingsSchema } from './settings-input'
 
 export const primaryWorkspaceId = '01K4Y1NH8N5DGBZX7HBDV00PEN'
 
@@ -73,6 +74,9 @@ export class WorkspaceService {
   }
 
   async updateSettings(input: { workspaceId: string; timeZone: string; sendingWindowStart: string; sendingWindowEnd: string; embedAllowedOrigins?: string[]; reminderDelayHours?:number }) {
+    const { workspaceId, ...values } = input, parsed = workspaceSettingsSchema.safeParse(values)
+    if (!parsed.success) throw new ValidationError('Check the workspace time zone, sending window, embed origins and reminder delay.')
+    input = { workspaceId, ...parsed.data }
     if(input.reminderDelayHours!==undefined && (!Number.isFinite(input.reminderDelayHours)||input.reminderDelayHours<0||input.reminderDelayHours>8760)) throw new ValidationError('Reminder delay must be between zero and 8760 hours.')
     const timeZone = canonicalTimeZone(input.timeZone)
     if (!timeZone) throw new ValidationError('Choose a valid IANA time zone, such as UTC or Australia/Brisbane.')
@@ -82,12 +86,7 @@ export class WorkspaceService {
     if (input.sendingWindowStart === input.sendingWindowEnd) {
       throw new ValidationError('The sending window must have distinct start and end times; it may cross midnight.')
     }
-    const origins = input.embedAllowedOrigins?.map((value) => {
-      let origin: URL
-      try { origin = new URL(value) } catch { throw new ValidationError('Embed hosts must be complete HTTPS origins.') }
-      if (origin.hostname.includes('*') || origin.origin !== value || (origin.protocol !== 'https:' && !(origin.protocol === 'http:' && ['localhost', '127.0.0.1', '[::1]'].includes(origin.hostname)))) throw new ValidationError('Embed hosts must use HTTPS with no path, query or fragment. HTTP is allowed only for loopback review.')
-      return origin.origin
-    })
+    const origins = input.embedAllowedOrigins === undefined ? undefined : normalizeEmbedOrigins(input.embedAllowedOrigins)
     const workspace = await this.repository.updateSettings({
       id: input.workspaceId,
       timeZone,

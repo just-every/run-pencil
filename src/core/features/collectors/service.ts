@@ -12,6 +12,7 @@ export class CollectorClosedError extends PencilError {
 type Identity = { workspaceId: string; flowId: string; operatorId: string }
 export class CollectorService {
   constructor(private readonly repository: CollectorRepository) {}
+  attributed(attribution: Record<string, unknown>) { return new CollectorService(this.repository.attributed(attribution)) }
   private async flow(workspaceId: string, flowId: string) {
     const flow = await this.repository.flow(workspaceId, flowId)
     if (!flow) throw new NotFoundError('This flow is not available in your workspace.')

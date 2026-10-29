@@ -2,7 +2,7 @@ import { ulid } from 'ulid'
 import { ConflictError, NotFoundError, ValidationError } from '../../shared/errors'
 import type { AiProvider } from '../../platform/ai/provider'
 import { analysableQuestions, releasedResponseIds } from './evidence'
-import { policySnapshot, type Policies, type RequestRunInput } from './model'
+import { policySnapshot, policiesSchema, type Policies, type RequestRunInput } from './model'
 import { AnalysisRepository } from './repository'
 import { AnalysisRunner } from './runner'
 
@@ -16,10 +16,12 @@ export function providerStatus(provider: AiProvider) {
 export class AnalysisService {
   readonly records: AnalysisRepository
   private readonly runner: AnalysisRunner
-  constructor(private readonly db: D1Database, readonly provider: AiProvider) {
+  constructor(private readonly db: D1Database, readonly provider: AiProvider, private readonly attribution: Record<string, unknown> = {}) {
     this.records = new AnalysisRepository(db)
     this.runner = new AnalysisRunner(db, provider)
   }
+
+  attributed(attribution: Record<string, unknown>) { return new AnalysisService(this.db, this.provider, attribution) }
 
   /** The revisions an operator may analyse, with their completed responses and analysable questions. */
   async options(workspaceId: string, flowId: string) {
@@ -65,10 +67,13 @@ export class AnalysisService {
   }
 
   async setPolicies(workspaceId: string, operatorId: string, policies: Policies, now = new Date()) {
-    await this.db.prepare(`INSERT INTO analysis_policies (workspace_id, autorun_enabled, autorun_minimum, disclosure_threshold, selection, updated_by_operator_id, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)
+    policies = policiesSchema.parse(policies)
+    const write = this.db.prepare(`INSERT INTO analysis_policies (workspace_id, autorun_enabled, autorun_minimum, disclosure_threshold, selection, updated_by_operator_id, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(workspace_id) DO UPDATE SET autorun_enabled = excluded.autorun_enabled, autorun_minimum = excluded.autorun_minimum, disclosure_threshold = excluded.disclosure_threshold,
       selection = excluded.selection, updated_by_operator_id = excluded.updated_by_operator_id, updated_at = excluded.updated_at`)
-      .bind(workspaceId, policies.autorunEnabled ? 1 : 0, policies.autorunMinimum, policies.disclosureThreshold, policies.selection, operatorId, now.toISOString()).run()
+      .bind(workspaceId, policies.autorunEnabled ? 1 : 0, policies.autorunMinimum, policies.disclosureThreshold, policies.selection, operatorId, now.toISOString())
+    if (!Object.keys(this.attribution).length) { await write.run(); return }
+    await this.db.batch([write, this.db.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at) VALUES(?,?,'analysis.policies_changed',?,'workspace',?,?,?)`).bind(ulid(),workspaceId,operatorId,workspaceId,JSON.stringify(this.attribution),now.toISOString())])
   }
 
   /** The scheduled tick: interrupted runs fail (never resent), analysis.autorun.v1 starts close-time runs, due retries run. */

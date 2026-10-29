@@ -1,8 +1,8 @@
 import type { LedgerFilter } from '../../../app/api'
 export type Code = {id:string;label:string}
-export type Assignment = {id:string;codeId:string;label:string;source:'manual'|'ai_suggestion';actorOperatorId:string;createdAt:string;quoteId:string|null}
+export type Assignment = {id:string;codeId:string;label:string;source:'manual'|'ai_suggestion';actorOperatorId:string;actorLabel?:string|null;createdAt:string;quoteId:string|null}
 export type CodedAnswer = {answerId:string;responseId:string;questionId:string;revisionId:string;prompt:string;text:string;assignments:Assignment[]}
-export type Suggestion = {id:string;runId:string;responseId:string;questionId:string;prompt:string;suggestedLabel:string;start:number;end:number;excerpt:string;decision:null|{decision:'accepted'|'rejected';actorOperatorId:string;decidedAt:string;codeId:string|null}}
+export type Suggestion = {id:string;runId:string;responseId:string;questionId:string;prompt:string;suggestedLabel:string;start:number;end:number;excerpt:string;decision:null|{decision:'accepted'|'rejected';actorOperatorId:string;actorLabel?:string|null;decidedAt:string;codeId:string|null}}
 export type Counts = {responseDenominator:number;answerDenominator:number;codes:Array<Code & {answerCount:number;responseCount:number}>;nextAfter:string|null}
 export type Cross = {rowCode:Code;columnCode:Code;responseDenominator:number;cells:Array<{rowPresent:boolean;columnPresent:boolean;count:number}>}
 export async function codingRequest<T>(path:string,body?:unknown,method=body===undefined?'GET':'POST'):Promise<T> {

@@ -38,11 +38,19 @@ function copyContent(source: Content, revisionId: string, now: string): Content 
 }
 
 export class TeamTemplates {
-  constructor(private readonly db: D1Database, private readonly flows: FlowRepository, private readonly previewAssets?: LinkPreviewAssetStore) {}
+  constructor(private readonly db: D1Database, private readonly flows: FlowRepository, private readonly previewAssets?: LinkPreviewAssetStore, private readonly attribution: Record<string, unknown> = {}) {}
+  attributed(attribution: Record<string, unknown>) { return new TeamTemplates(this.db, this.flows.attributed(attribution), this.previewAssets, attribution) }
+  async current(workspaceId: string, id: string) {
+    const row = await this.db.prepare('SELECT id,name,created_at AS createdAt,retired_at AS retiredAt FROM team_templates WHERE workspace_id=? AND id=?').bind(workspaceId,id).first<{id:string;name:string;createdAt:string;retiredAt:string|null}>()
+    if (!row) throw new NotFoundError('This template is not available.')
+    return row
+  }
   async list(workspaceId: string) {
-    return (await this.db.prepare(`SELECT t.id,t.name,t.created_at AS createdAt,o.display_name AS createdBy FROM team_templates t LEFT JOIN operators o ON o.id=t.created_by WHERE t.workspace_id=? AND t.retired_at IS NULL ORDER BY t.name,t.id`).bind(workspaceId).all<{id:string;name:string;createdAt:string;createdBy:string|null}>()).results
+    return (await this.db.prepare(`SELECT t.id,t.name,t.created_at AS createdAt,CASE WHEN json_type(a.details_json,'$.prepared_by.agent.name')='text' THEN json_extract(a.details_json,'$.prepared_by.agent.name') || ' for ' || o.display_name ELSE o.display_name END AS createdBy FROM team_templates t LEFT JOIN operators o ON o.id=t.created_by LEFT JOIN audit_entries a ON a.subject_type='team-template' AND a.subject_id=t.id AND a.kind='template.saved' WHERE t.workspace_id=? AND t.retired_at IS NULL ORDER BY t.name,t.id`).bind(workspaceId).all<{id:string;name:string;createdAt:string;createdBy:string|null}>()).results
   }
   async save(input: {workspaceId:string;operatorId:string;flowId:string;name:string;source:'draft'|'published';expectedVersion:number}) {
+    const name=input.name.trim()
+    if (!name || name.length>100) throw new ValidationError('Enter a template name of at most 100 characters.')
     const flow = await this.flows.findWorkspaceFlow(input.flowId,input.workspaceId)
     if (!flow) throw new NotFoundError('This flow does not exist.')
     const revision = input.source === 'draft' ? await this.flows.findRevision(flow.id,'draft') : await this.flows.findCurrentPublishedRevision(flow.id)
@@ -54,15 +62,19 @@ export class TeamTemplates {
       if (!this.previewAssets) throw new ValidationError('Share image storage is not configured.')
       content.formSettings = await this.previewAssets.copyOwned(input.workspaceId, flow.id, id, content.formSettings)
     }
-    const saved = await this.db.prepare(`INSERT INTO team_templates (id,workspace_id,name,structure_json,created_by,created_at) SELECT ?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM flows WHERE id=? AND workspace_id=? AND draft_version=?) RETURNING id`).bind(id,input.workspaceId,input.name,JSON.stringify(content),input.operatorId,now,flow.id,input.workspaceId,input.expectedVersion).first()
-    if (!saved) throw new ValidationError('The flow changed. Reload it before saving a template.')
-    return {id,name:input.name}
+    const rows = await this.db.batch([this.db.prepare(`INSERT INTO team_templates (id,workspace_id,name,structure_json,created_by,created_at) SELECT ?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM flows WHERE id=? AND workspace_id=? AND draft_version=?) RETURNING id`).bind(id,input.workspaceId,name,JSON.stringify(content),input.operatorId,now,flow.id,input.workspaceId,input.expectedVersion),
+      this.db.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at) SELECT ?,workspace_id,'template.saved',?,'team-template',id,?,? FROM team_templates WHERE id=?`).bind(ulid(),input.operatorId,JSON.stringify({templates:1,...this.attribution}),now,id),
+    ])
+    if (!rows[0].results.length) throw new ValidationError('The flow changed. Reload it before saving a template.')
+    return {id,name}
   }
-  async retire(workspaceId:string,id:string) {
-    const row = await this.db.prepare('UPDATE team_templates SET retired_at=? WHERE id=? AND workspace_id=? AND retired_at IS NULL RETURNING id').bind(new Date().toISOString(),id,workspaceId).first()
-    if (!row) throw new NotFoundError('This template is not available.')
+  async retire(workspaceId:string,id:string,operatorId:string|null=null) {
+    const at=new Date().toISOString()
+    const rows = await this.db.batch([this.db.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at) SELECT ?,workspace_id,'template.retired',?,'team-template',id,?,? FROM team_templates WHERE id=? AND workspace_id=? AND retired_at IS NULL`).bind(ulid(),operatorId,JSON.stringify({templates:1,...this.attribution}),at,id,workspaceId),
+      this.db.prepare('UPDATE team_templates SET retired_at=? WHERE id=? AND workspace_id=? AND retired_at IS NULL RETURNING id').bind(at,id,workspaceId)])
+    if (!rows[1].results.length) throw new NotFoundError('This template is not available.')
   }
-  async create(input:{workspaceId:string;templateId:string;title:string;slug:string}) {
+  async create(input:{workspaceId:string;templateId:string;title:string;slug:string;operatorId?:string}) {
     const template = await this.db.prepare('SELECT structure_json AS content FROM team_templates WHERE id=? AND workspace_id=? AND retired_at IS NULL').bind(input.templateId,input.workspaceId).first<{content:string}>()
     if (!template) throw new NotFoundError('This template is not available.')
     const title=input.title.trim(), slug=input.slug.trim().toLowerCase()
@@ -74,6 +86,7 @@ export class TeamTemplates {
       content.formSettings = await this.previewAssets.copyOwned(input.workspaceId, input.templateId, id, content.formSettings)
     }
     const created=await this.flows.createStructure({
+      ...(input.operatorId ? {audit:{id:ulid(),operatorId:input.operatorId,feature:'team-template'}} : {}),
       flow:{id,workspaceId:input.workspaceId,title,slug,status:'draft',draftVersion:0,lastActivityAt:now,createdAt:now,updatedAt:now},
       revision:{formSettingsJson:JSON.stringify(content.formSettings),id:revisionId,flowId:id,number:1,state:'draft',title,publishedAt:null,isCurrent:false,createdAt:now,updatedAt:now},
       ...content,

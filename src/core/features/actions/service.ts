@@ -21,7 +21,11 @@ export function workspaceToday(timeZone: string, now = new Date()) {
 }
 
 export class ActionService {
-  constructor(private readonly db: D1Database, private readonly reminderSenderFailure: string | null = null, private readonly reminderMailSuppressed = false) {}
+  constructor(private readonly db: D1Database, private readonly reminderSenderFailure: string | null = null, private readonly reminderMailSuppressed = false, private readonly attribution: Record<string, unknown> = {}) {}
+
+  attributed(attribution: Record<string, unknown>) { return new ActionService(this.db, this.reminderSenderFailure, this.reminderMailSuppressed, attribution) }
+
+  private eventDetails(changes: Record<string, unknown> = {}) { return JSON.stringify({ ...changes, ...this.attribution }) }
 
   private async timeZone(workspaceId: string) {
     const row = await this.db.prepare('SELECT time_zone AS timeZone FROM workspaces WHERE id = ?').bind(workspaceId).first<{ timeZone: string }>()
@@ -60,8 +64,8 @@ export class ActionService {
     const [evidence, measurements, history] = await this.db.batch([
       this.db.prepare('SELECT flow_id AS flowId, revision_id AS revisionId, question_stable_id AS questionId, figures_json AS figures, captured_at AS capturedAt FROM action_evidence WHERE action_id = ?').bind(actionId),
       this.db.prepare(`SELECT m.id, m.flow_id AS flowId, f.title AS flowTitle, m.revision_id AS revisionId, v.number AS revisionNumber, m.observed_value AS observedValue, m.unit,
-        m.observed_at AS observedAt, o.display_name AS operator, m.created_at AS createdAt FROM action_measurements m JOIN flows f ON f.id = m.flow_id
-        LEFT JOIN flow_revisions v ON v.id = m.revision_id LEFT JOIN operators o ON o.id = m.operator_id WHERE m.action_id = ? ORDER BY m.created_at, m.id`).bind(actionId),
+        m.observed_at AS observedAt, CASE WHEN json_type(e.changes_json,'$.prepared_by.agent.name')='text' THEN json_extract(e.changes_json,'$.prepared_by.agent.name') || ' for ' || o.display_name ELSE o.display_name END AS operator, m.created_at AS createdAt FROM action_measurements m JOIN flows f ON f.id = m.flow_id
+        LEFT JOIN flow_revisions v ON v.id = m.revision_id LEFT JOIN operators o ON o.id = m.operator_id LEFT JOIN action_events e ON e.id=m.id AND e.action_id=m.action_id WHERE m.action_id = ? ORDER BY m.created_at, m.id`).bind(actionId),
       this.db.prepare(`SELECT e.id, e.kind, e.from_state AS fromState, e.to_state AS toState, e.note, e.changes_json AS changes, o.display_name AS operator, e.created_at AS createdAt
         FROM action_events e LEFT JOIN operators o ON o.id = e.operator_id WHERE e.action_id = ? ORDER BY e.created_at, e.id`).bind(actionId),
     ])
@@ -77,7 +81,21 @@ export class ActionService {
         const difference = measurement.observedValue - row.baselineValue
         return { ...measurement, difference, direction: difference === 0 ? 'unchanged' : (difference > 0) === (row.metricDirection === 'increase') ? 'desired' : 'undesired' }
       }),
-      history: (history.results as Array<Omit<ActionEvent, 'changes'> & { changes: string | null }>).map(event => ({ ...event, changes: event.changes ? JSON.parse(event.changes) : null })),
+      history: (history.results as Array<Omit<ActionEvent, 'changes'> & { changes: string | null }>).map(event => {
+        const { prepared_by, approvers, ...changes } = event.changes ? JSON.parse(event.changes) : {}
+        const agent = prepared_by?.agent?.name
+        const approved = Array.isArray(approvers) ? approvers.map(person => person.name).filter(name => typeof name === 'string' && name) : []
+        const actor = agent && event.operator ? `${agent} for ${event.operator}` : event.operator
+        const preparedBy = typeof prepared_by?.agent?.id === 'string' && typeof agent === 'string'
+          && typeof prepared_by?.for?.id === 'string' && typeof prepared_by?.for?.name === 'string'
+          ? { agent: { id: prepared_by.agent.id, name: agent }, for: { id: prepared_by.for.id, name: prepared_by.for.name } } : undefined
+        const namedApprovers = Array.isArray(approvers) ? approvers
+          .filter(person => typeof person?.id === 'string' && typeof person?.name === 'string')
+          .map(person => ({ id: person.id, name: person.name })) : []
+        return { ...event, operator: actor && approved.length ? `${actor}; approved by ${approved.join(', ')}` : actor,
+          changes: Object.keys(changes).length ? changes : null,
+          ...(preparedBy ? { preparedBy, approvers: namedApprovers } : {}) }
+      }),
     }
   }
 
@@ -85,7 +103,7 @@ export class ActionService {
     // Ids, kinds and counts only: an audit row never repeats the action's text.
     return this.db.prepare(`INSERT INTO audit_entries (id, workspace_id, kind, actor_operator_id, subject_type, subject_id, details_json, created_at)
       SELECT ?, workspace_id, ?, (SELECT id FROM operators WHERE id = ? AND workspace_id = ?), 'action', id, ?, ? FROM actions WHERE id = ? AND last_event_id = ?`)
-      .bind(ulid(), kind, operatorId, workspaceId, JSON.stringify(details), new Date().toISOString(), actionId, eventId)
+      .bind(ulid(), kind, operatorId, workspaceId, JSON.stringify({ ...details, ...this.attribution }), new Date().toISOString(), actionId, eventId)
   }
 
   async create(workspaceId: string, operatorId: string, input: CreateActionInput, figures: EvidenceFigures) {
@@ -98,7 +116,7 @@ export class ActionService {
         .bind(id, workspaceId, input.title, input.rationale, input.ownerOperatorId, input.reviewDate, input.analysisId ? 'analysis' : 'manual', input.analysisId ?? null, metric.name, metric.unit, metric.direction, metric.baselineValue, metric.baselineSource, metric.baselineObservedAt, eventId, operatorId, now, now),
       this.db.prepare('INSERT INTO action_evidence (action_id, flow_id, revision_id, question_stable_id, figures_json, captured_at) VALUES (?, ?, ?, ?, ?, ?)')
         .bind(id, input.evidence.flowId, input.evidence.revisionId, input.evidence.questionId ?? null, JSON.stringify(figures), now),
-      this.db.prepare("INSERT INTO action_events (id, action_id, kind, from_state, to_state, note, changes_json, operator_id, created_at) VALUES (?, ?, 'created', NULL, 'planned', NULL, NULL, ?, ?)").bind(eventId, id, operatorId, now),
+      this.db.prepare("INSERT INTO action_events (id, action_id, kind, from_state, to_state, note, changes_json, operator_id, created_at) VALUES (?, ?, 'created', NULL, 'planned', NULL, ?, ?, ?)").bind(eventId, id, this.eventDetails(), operatorId, now),
       this.audit(workspaceId, id, eventId, operatorId, 'action.created', { actions: 1 }),
     ])
     return id
@@ -135,7 +153,7 @@ export class ActionService {
       this.db.prepare(`UPDATE actions SET ${assignments.join(', ')}, version = version + 1, last_event_id = ?, updated_at = ? WHERE id = ? AND workspace_id = ? AND version = ? AND state IN ('planned','in_progress','ready_for_review')`)
         .bind(...values, eventId, now, actionId, workspaceId, current.version),
       this.db.prepare("INSERT INTO action_events (id, action_id, kind, from_state, to_state, note, changes_json, operator_id, created_at) SELECT ?, id, 'edited', state, state, NULL, ?, ?, ? FROM actions WHERE id = ? AND last_event_id = ?")
-        .bind(eventId, JSON.stringify(changes), operatorId, now, actionId, eventId),
+        .bind(eventId, this.eventDetails(changes), operatorId, now, actionId, eventId),
       this.audit(workspaceId, actionId, eventId, operatorId, 'action.edited', { fields: Object.keys(changes).length }),
     ])
     if (!updated.meta.changes) throw new ConflictError('This action changed since you opened it. Reload it and edit again.')
@@ -153,15 +171,16 @@ export class ActionService {
     const [updated] = await this.db.batch([
       this.db.prepare(`UPDATE actions SET state = ?1, verdict = CASE WHEN ?1 IN ('effective','ineffective') THEN ?1 ELSE verdict END, version = version + 1, last_event_id = ?2, updated_at = ?3
         WHERE id = ?4 AND workspace_id = ?5 AND state = ?6 AND version = ?7`).bind(to, eventId, now, actionId, workspaceId, current.state, current.version),
-      this.db.prepare("INSERT INTO action_events (id, action_id, kind, from_state, to_state, note, changes_json, operator_id, created_at) SELECT ?, id, 'transition', ?, state, ?, NULL, ?, ? FROM actions WHERE id = ? AND last_event_id = ?")
-        .bind(eventId, current.state, note?.trim() || null, operatorId, now, actionId, eventId),
+      this.db.prepare("INSERT INTO action_events (id, action_id, kind, from_state, to_state, note, changes_json, operator_id, created_at) SELECT ?, id, 'transition', ?, state, ?, ?, ?, ? FROM actions WHERE id = ? AND last_event_id = ?")
+        .bind(eventId, current.state, note?.trim() || null, this.eventDetails(), operatorId, now, actionId, eventId),
       this.audit(workspaceId, actionId, eventId, operatorId, to === 'effective' || to === 'ineffective' ? 'action.verdict_recorded' : 'action.state_changed', { actions: 1 }),
     ])
     if (!updated.meta.changes) throw new ConflictError('This action changed since you opened it. Reload it and try again.')
   }
 
-  async measure(workspaceId: string, operatorId: string, actionId: string, input: { flowId: string; revisionId?: string; observedValue: number; unit: string; observedAt: string }) {
+  async measure(workspaceId: string, operatorId: string, actionId: string, input: { flowId: string; revisionId?: string; observedValue: number; unit: string; observedAt: string }, expectedVersion?: number) {
     const current = await this.row(workspaceId, actionId)
+    if (expectedVersion !== undefined && expectedVersion !== current.version) throw new ConflictError('This action changed since you opened it. Reload it and try again.')
     if (current.state === 'closed') throw new ConflictError('A closed action keeps its measurements as they were.')
     if (!sameUnit(current.metricUnit, input.unit)) throw new ValidationError(`Record the observed value in ${current.metricUnit}, the unit of the baseline, so the two can be compared.`)
     const flow = await this.db.prepare('SELECT id FROM flows WHERE id = ? AND workspace_id = ?').bind(input.flowId, workspaceId).first()
@@ -169,15 +188,16 @@ export class ActionService {
     if (input.revisionId && !await this.db.prepare("SELECT id FROM flow_revisions WHERE id = ? AND flow_id = ? AND state = 'published'").bind(input.revisionId, input.flowId).first()) {
       throw new NotFoundError('This published revision is not part of the selected flow.')
     }
-    const id = ulid(), eventId = ulid(), now = new Date().toISOString()
-    await this.db.batch([
-      this.db.prepare('UPDATE actions SET last_event_id = ? WHERE id = ? AND workspace_id = ?').bind(eventId, actionId, workspaceId),
-      this.db.prepare('INSERT INTO action_measurements (id, action_id, flow_id, revision_id, observed_value, unit, observed_at, operator_id, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
-        .bind(id, actionId, input.flowId, input.revisionId ?? null, input.observedValue, current.metricUnit, input.observedAt, operatorId, now),
+    const id = ulid(), eventId = id, now = new Date().toISOString()
+    const [updated] = await this.db.batch([
+      this.db.prepare('UPDATE actions SET last_event_id = ? WHERE id = ? AND workspace_id = ? AND version = ? AND state != ?').bind(eventId, actionId, workspaceId, current.version, 'closed'),
+      this.db.prepare('INSERT INTO action_measurements (id, action_id, flow_id, revision_id, observed_value, unit, observed_at, operator_id, created_at) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ? FROM actions WHERE id=? AND last_event_id=?')
+        .bind(id, actionId, input.flowId, input.revisionId ?? null, input.observedValue, current.metricUnit, input.observedAt, operatorId, now, actionId, eventId),
       this.db.prepare("INSERT INTO action_events (id, action_id, kind, from_state, to_state, note, changes_json, operator_id, created_at) SELECT ?, id, 'measurement', state, state, NULL, ?, ?, ? FROM actions WHERE id = ? AND last_event_id = ?")
-        .bind(eventId, JSON.stringify({ observedValue: { from: null, to: input.observedValue } }), operatorId, now, actionId, eventId),
+        .bind(eventId, this.eventDetails({ observedValue: { from: null, to: input.observedValue } }), operatorId, now, actionId, eventId),
       this.audit(workspaceId, actionId, eventId, operatorId, 'action.measurement_recorded', { measurements: 1 }),
     ])
+    if (!updated.meta.changes) throw new ConflictError('This action changed since you opened it. Reload it and try again.')
     return id
   }
 }

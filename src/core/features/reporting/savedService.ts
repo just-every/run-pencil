@@ -8,7 +8,7 @@ import { sharedReport } from './sharedReport'
 import { loadSavedView, viewMetadata, type StoredSavedView } from './savedRepository'
 import type { SavedViewDefinition, SavedViewDetail } from './savedModel'
 
-export type ReportActor = { workspaceId: string; operatorId: string; displayName: string }
+export type ReportActor = { workspaceId: string; operatorId: string; displayName: string; attribution?: Record<string, unknown> }
 export async function savedViewDetail(db: D1Database, workspaceId: string, id: string): Promise<SavedViewDetail> {
   const view = await loadSavedView(db, workspaceId, id)
   return { view: viewMetadata(view), report: await sharedReport(db, view) }
@@ -30,6 +30,7 @@ export async function createSavedView(db: D1Database, actor: ReportActor, flowId
   }
   const view: StoredSavedView = { id: ulid(), workspaceId: actor.workspaceId, flowId, revisionId: definition.revisionId, name: definition.name, definition, cutoff: now, threshold: await disclosureThreshold(db, actor.workspaceId), savedBy: { id: actor.operatorId, name: actor.displayName }, createdAt: now }
   const report = await sharedReport(db, view)
-  await db.prepare('INSERT INTO saved_report_views(id,workspace_id,flow_id,revision_id,name,definition_json,cutoff,threshold,saved_by,saved_by_name,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)').bind(view.id, view.workspaceId, flowId, view.revisionId, view.name, JSON.stringify(definition), view.cutoff, view.threshold, actor.operatorId, actor.displayName, now).run()
+  await db.batch([db.prepare('INSERT INTO saved_report_views(id,workspace_id,flow_id,revision_id,name,definition_json,cutoff,threshold,saved_by,saved_by_name,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)').bind(view.id, view.workspaceId, flowId, view.revisionId, view.name, JSON.stringify(definition), view.cutoff, view.threshold, actor.operatorId, actor.displayName, now),
+    db.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at) VALUES(?,?,'report.saved',?,'saved-view',?,?,?)`).bind(ulid(),actor.workspaceId,actor.operatorId,view.id,JSON.stringify({views:1,...actor.attribution}),now)])
   return { view: viewMetadata(view), report }
 }

@@ -1,10 +1,20 @@
 import { RetentionPolicies } from './policy'
 import { retainedItemsSql } from './items'
 import { eraseRetainedItem } from './erase'
-import { noticeMilliseconds, type RetainedItem } from './model'
+import { noticeMilliseconds, retentionSettingsSchema, type RetainedItem, type RetentionSettings } from './model'
+import { ForbiddenError } from '../../shared/errors'
 
 export class RetentionService extends RetentionPolicies {
-  constructor(private readonly binding:D1Database) {super(binding)}
+  constructor(private readonly binding:D1Database, attribution:Record<string,unknown>={}) {super(binding,attribution)}
+  override attributed(attribution:Record<string,unknown>) { return new RetentionService(this.binding,attribution) }
+
+  async configure(workspaceId:string,operatorId:string,input:RetentionSettings & {flowId:string},now:string) {
+    const {flowId,...values}=input,settings=retentionSettingsSchema.parse(values)
+    if(settings.days!==null && !settings.legalHold && !settings.confirmAutomaticDeletion)throw new ForbiddenError('Confirm automatic deletion before enabling a retention schedule.')
+    await this.save(workspaceId,operatorId,{flowId,days:settings.days,legalHold:settings.legalHold,version:settings.version},now)
+    await this.run(now,flowId)
+    return this.read(workspaceId,flowId)
+  }
   /** Bounded cron batches; a missed tick grants more time, never less notice. */
   async run(now:string,flowId?:string) {
     const windowEnd=new Date(Date.parse(now)+noticeMilliseconds).toISOString()

@@ -1,3 +1,4 @@
+import { assignmentActorLabel } from './activity'
 import { activeAssignment } from './visibility'
 import { NotFoundError, ValidationError } from '../../shared/errors'
 import { isOtherAnswer } from '../../shared/otherChoices'
@@ -39,7 +40,7 @@ export async function retainedAnswer(db: D1Database, workspaceId: string, respon
   return row
 }
 export const assignmentColumns = `ca.id,ca.answer_id AS answerId,ca.code_id AS codeId,cc.label,ca.source,
-  ca.actor_operator_id AS actorOperatorId,ca.quote_id AS quoteId,aq.run_id AS runId,aq.theme_id AS themeId,ca.created_at AS createdAt`
+  ca.actor_operator_id AS actorOperatorId,${assignmentActorLabel} AS actorLabel,ca.quote_id AS quoteId,aq.run_id AS runId,aq.theme_id AS themeId,ca.created_at AS createdAt`
 export const assignmentJoins = `FROM answer_code_assignments ca JOIN workspace_codes cc ON cc.id=ca.code_id AND cc.workspace_id=ca.workspace_id
   LEFT JOIN analysis_quotes aq ON aq.id=ca.quote_id
   JOIN response_answers caa ON caa.id=ca.answer_id JOIN responses r ON r.id=caa.response_id`

@@ -22,6 +22,7 @@
     ]}
   ],
   "githubOnly": [
+    { "source": "docs/guide/agents.md", "reason": "Company-agent registry, core declaration and native admission reference; retained in the source repository while public documentation navigation stays owner-reviewed" },
     { "source": "scripts/delivery/README.md", "reason": "Developer documentation for the managed source artifact and its build contract" },
     { "source": "src/base/owner-claim/README.md", "reason": "Developer documentation for the copied native owner admission module" },
     { "source": "src/base/demo/README.md", "reason": "Developer documentation for the copied demo-mode guard module" },

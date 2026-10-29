@@ -14,7 +14,8 @@ const selection = `SELECT c.id,c.flow_id AS flowId,c.name,c.channel,c.public_key
  FROM collectors c JOIN flows f ON f.id=c.flow_id`
 type MutationIdentity = { workspaceId: string; flowId: string; operatorId: string; id: string; now: string }
 export class CollectorRepository {
-  constructor(private readonly db: D1Database) {}
+  constructor(private readonly db: D1Database, private readonly attribution: Record<string, unknown> = {}) {}
+  attributed(attribution: Record<string, unknown>) { return new CollectorRepository(this.db, attribution) }
   async flow(workspaceId: string, flowId: string) {
     return this.db.prepare(`SELECT f.id,f.slug,f.status,w.time_zone AS timeZone FROM flows f JOIN workspaces w ON w.id=f.workspace_id
       WHERE f.id=? AND f.workspace_id=?`).bind(flowId, workspaceId).first<{ id: string; slug: string; status: string; timeZone: string }>()
@@ -54,9 +55,9 @@ export class CollectorRepository {
   }
   private audit(input: MutationIdentity, kind: string) {
     return this.db.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at)
-      SELECT ?,?,?,(SELECT id FROM operators WHERE id=? AND workspace_id=?),'collector',c.id,'{}',?
+      SELECT ?,?,?,(SELECT id FROM operators WHERE id=? AND workspace_id=?),'collector',c.id,?,?
       FROM collectors c JOIN flows f ON f.id=c.flow_id WHERE c.id=? AND f.id=? AND f.workspace_id=? AND c.system_source IS NULL`)
-      .bind(ulid(), input.workspaceId, kind, input.operatorId, input.workspaceId, input.now, input.id, input.flowId, input.workspaceId)
+      .bind(ulid(), input.workspaceId, kind, input.operatorId, input.workspaceId, JSON.stringify(this.attribution), input.now, input.id, input.flowId, input.workspaceId)
   }
   async create(input: MutationIdentity & CollectorSettings & { publicKey: string }) {
     const results = await this.db.batch<{ id: string }>([
@@ -65,8 +66,8 @@ export class CollectorRepository {
         AND (SELECT count(*) FROM collectors WHERE flow_id=f.id AND system_source IS NULL)<? RETURNING id`)
         .bind(input.id, input.name, input.channel, input.publicKey, input.deadlineAt, input.deadlineTimeZone, input.responseLimit, input.now, input.now, input.flowId, input.workspaceId, collectorLimits.perFlow),
       this.db.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at)
-        SELECT ?,?,'collector.created',(SELECT id FROM operators WHERE id=? AND workspace_id=?),'collector',id,'{}',? FROM collectors WHERE id=?`)
-        .bind(ulid(), input.workspaceId, input.operatorId, input.workspaceId, input.now, input.id),
+        SELECT ?,?,'collector.created',(SELECT id FROM operators WHERE id=? AND workspace_id=?),'collector',id,?,? FROM collectors WHERE id=?`)
+        .bind(ulid(), input.workspaceId, input.operatorId, input.workspaceId, JSON.stringify(this.attribution), input.now, input.id),
     ])
     return results[0].results.some(row => row.id === input.id)
   }
@@ -92,12 +93,12 @@ export class CollectorRepository {
     const auditId = ulid()
     const results = await this.db.batch<{ id: string }>([
       this.db.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at)
-        SELECT ?,?,'collector.deleted',(SELECT id FROM operators WHERE id=? AND workspace_id=?),'collector',NULL,'{}',?
+        SELECT ?,?,'collector.deleted',(SELECT id FROM operators WHERE id=? AND workspace_id=?),'collector',NULL,?,?
         FROM collectors c JOIN flows f ON f.id=c.flow_id WHERE c.id=? AND c.flow_id=? AND f.workspace_id=? AND c.system_source IS NULL
         AND NOT EXISTS(SELECT 1 FROM session_collector WHERE collector_id=c.id)
         AND NOT EXISTS(SELECT 1 FROM response_collector WHERE collector_id=c.id)
         AND NOT EXISTS(SELECT 1 FROM invitation_launch_collector WHERE collector_id=c.id)`)
-        .bind(auditId, input.workspaceId, input.operatorId, input.workspaceId, input.now, input.id, input.flowId, input.workspaceId),
+        .bind(auditId, input.workspaceId, input.operatorId, input.workspaceId, JSON.stringify(this.attribution), input.now, input.id, input.flowId, input.workspaceId),
       this.db.prepare(`DELETE FROM collectors WHERE id=? AND flow_id=? AND system_source IS NULL
         AND EXISTS(SELECT 1 FROM flows WHERE id=collectors.flow_id AND workspace_id=?)
         AND EXISTS(SELECT 1 FROM audit_entries WHERE id=?) RETURNING id`)

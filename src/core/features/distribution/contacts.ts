@@ -4,7 +4,8 @@ import { NotFoundError, ValidationError, ConflictError } from '../../shared/erro
 import { eraseContact } from './erasure'
 import { contactSchema, contactColumns, contactLimits, decodeContact, type ContactRow } from './contact-model'
 export class DistributionContacts {
-  constructor(private readonly db: D1Database, private readonly sms?: SmsService) {}
+  constructor(private readonly db: D1Database, private readonly sms?: SmsService, private readonly attribution: Record<string, unknown> = {}) {}
+  attributed(attribution: Record<string, unknown>) { return new DistributionContacts(this.db, this.sms, attribution) }
   async save(workspaceId: string, input: unknown, actor?:string) { return this.write(workspaceId, input,undefined,actor) }
   async edit(workspaceId: string, id: string, input: unknown, actor?:string) { return this.write(workspaceId, input, id,actor) }
   private async write(workspaceId: string, input: unknown, id?: string, actor?:string) {
@@ -25,10 +26,16 @@ export class DistributionContacts {
     if(data.timeZone!==undefined)await this.db.prepare('UPDATE distribution_contacts SET time_zone=?,updated_at=? WHERE id=? AND workspace_id=?').bind(data.timeZone,now,contactId,workspaceId).run()
     if(data.mobile!==undefined)await this.db.prepare('UPDATE distribution_contacts SET mobile=?,updated_at=? WHERE id=? AND workspace_id=?').bind(data.mobile,now,contactId,workspaceId).run()
     if(data.smsConsent&&data.mobile&&this.sms)await this.sms.consent(contactId,data.mobile,data.smsConsent.given,data.smsConsent.wording,'operator-recorded',actor)
+    if (actor && Object.keys(this.attribution).length) await this.db.prepare(`INSERT INTO audit_entries(id,workspace_id,kind,actor_operator_id,subject_type,subject_id,details_json,created_at) VALUES(?,?,?,?,?,?,?,?)`).bind(ulid(),workspaceId,id?'contact.updated':'contact.created',actor,'contact',contactId,JSON.stringify(this.attribution),now).run()
     return decodeContact((await this.db.prepare(`SELECT ${contactColumns} FROM distribution_contacts WHERE id=?`).bind(contactId).first<ContactRow>())!)
   }
   async list(workspaceId: string, query = '', offset = 0, limit = 250) {
     return (await this.db.prepare(`SELECT ${contactColumns} FROM distribution_contacts WHERE workspace_id=? AND (instr(lower(name),lower(?))>0 OR instr(lower(email),lower(?))>0) ORDER BY name,id LIMIT ? OFFSET ?`).bind(workspaceId,query,query,limit,offset).all<ContactRow>()).results.map(decodeContact)
+  }
+  async get(workspaceId: string, id: string) {
+    const row = await this.db.prepare(`SELECT ${contactColumns} FROM distribution_contacts WHERE workspace_id=? AND id=?`).bind(workspaceId, id).first<ContactRow>()
+    if (!row) throw new NotFoundError('This contact is not in your workspace.')
+    return decodeContact(row)
   }
   async consent(input: { workspaceId: string; contactId: string; actor: string; source: string; renewed: boolean }) {
     if (!input.actor.trim() || !input.source.trim() || input.source.length > 200) throw new ValidationError('Consent requires its actor and source.')
@@ -40,7 +47,7 @@ export class DistributionContacts {
       this.db.prepare(`INSERT INTO audit_entries (id, workspace_id, kind, actor_operator_id, subject_type, subject_id, details_json, created_at)
         SELECT ?, workspace_id, 'contact.consent-changed', (SELECT id FROM operators WHERE id = ? AND workspace_id = distribution_contacts.workspace_id), 'contact', id, ?, ? FROM distribution_contacts
         WHERE id = ? AND workspace_id = ? AND EXISTS (SELECT 1 FROM contact_consent_events WHERE id = ?)` )
-        .bind(ulid(), input.actor, JSON.stringify({ feature: 'distribution-consent', consent: input.renewed ? 'renewed' : 'opted-out' }), now, input.contactId, input.workspaceId, id),
+        .bind(ulid(), input.actor, JSON.stringify({ feature: 'distribution-consent', consent: input.renewed ? 'renewed' : 'opted-out', ...this.attribution }), now, input.contactId, input.workspaceId, id),
       this.db.prepare('UPDATE distribution_contacts SET opted_out_at = ?, updated_at = ? WHERE id = ? AND workspace_id = ? AND EXISTS (SELECT 1 FROM contact_consent_events WHERE id = ?)')
         .bind(input.renewed ? null : now, now, input.contactId, input.workspaceId, id),
       this.db.prepare(`UPDATE mail_deliveries SET status = 'cancelled', reason = 'Contact opted out.', updated_at = ?

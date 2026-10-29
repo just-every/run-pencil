@@ -29,7 +29,7 @@ import { defaultFlowPolicies, evaluateFlowPolicies, revisionReviewEnabled, revis
 import { presentFlow } from '../../shared/presentationOrder'
 import { publicSteps, publicChoices, publicRules } from './serialization'
 import { ulid } from 'ulid'
-import { FlowClosedError, NotFoundError, ValidationError } from '../../shared/errors'
+import { ConflictError, FlowClosedError, NotFoundError, ValidationError } from '../../shared/errors'
 import type { ResponseRepository } from '../responses'
 import { resolveNextStep, validateRevisionGraph, type BranchPredicateKind } from './graph'
 import type { FlowRepository, StoredBranchRule, StoredChoice, StoredStep } from './repository'
@@ -69,6 +69,10 @@ export class FlowService {
     private readonly previewDefaults?: (workspaceId: string) => Promise<LinkPreviewDefaults>,
     private readonly previewAssets?: LinkPreviewAssetStore,
   ) {}
+
+  attributed(attribution: Record<string, unknown>) {
+    return new FlowService(this.repository.attributed(attribution), this.responseRepository, this.policyConfiguration, this.access, this.previewDefaults, this.previewAssets)
+  }
 
   async ensureSampleFlow(input: {
     workspaceId: string
@@ -133,7 +137,7 @@ export class FlowService {
     }))
   }
 
-  async createDraftFlow(input: { workspaceId: string; title: string; slug: string; template?: FlowTemplateId }) {
+  async createDraftFlow(input: { operatorId?: string; workspaceId: string; title: string; slug: string; template?: FlowTemplateId }) {
     const title = input.title.trim()
     const slug = input.slug.trim().toLowerCase()
     if (!title || title.length > 200) throw new ValidationError('A flow title must be between 1 and 200 characters.')
@@ -142,6 +146,7 @@ export class FlowService {
     const flowId = ulid()
     const revisionId = ulid()
     const created = await this.repository.createStructure({
+      ...(input.operatorId ? { audit: { id: ulid(), operatorId: input.operatorId, feature: 'flow-builder' } } : {}),
       flow: { id: flowId, workspaceId: input.workspaceId, title, slug, status: 'draft', draftVersion: 0, lastActivityAt: now, createdAt: now, updatedAt: now },
       revision: { id: revisionId, flowId, number: 1, state: 'draft', title, publishedAt: null, isCurrent: false, admissionClosedAt: null, admissionCloseReason: null, deadlineAt: null, deadlineTimeZone: null, targetCompletedResponses: null, policySnapshotJson: null, createdAt: now, updatedAt: now },
       ...(input.template ? templateStructure(input.template, revisionId, now) : {}),
@@ -150,8 +155,9 @@ export class FlowService {
     return { id: flowId, slug, title }
   }
 
-  async duplicateFlow(input: { operatorId?: string; workspaceId: string; flowId: string; title: string; slug: string }) {
+  async duplicateFlow(input: { operatorId?: string; workspaceId: string; flowId: string; title: string; slug: string; expectedVersion?: number }) {
     const sourceFlow = await this.requireWorkspaceFlow(input.workspaceId, input.flowId)
+    if (input.expectedVersion !== undefined && input.expectedVersion !== sourceFlow.draftVersion) throw new ConflictError('The source draft changed. Read its current version before duplicating.')
     const title = input.title.trim()
     const slug = input.slug.trim().toLowerCase()
     if (!title || title.length > 200) throw new ValidationError('A flow title must be between 1 and 200 characters.')
@@ -181,6 +187,8 @@ export class FlowService {
     copiedSettings.answerAlerts=remapAnswerAlerts(copiedSettings.answerAlerts,stableIdByOldStableId,choiceStableIdByOldStableId)
     copiedSettings.calculations=remapCalculations(copiedSettings.calculations ?? [],stableIdByOldStableId,fieldIds,variableIds,choiceStableIdByOldStableId)
     const created = await this.repository.createStructure({
+      source: { id: sourceFlow.id, version: sourceFlow.draftVersion },
+      ...(input.operatorId ? { audit: { id: ulid(), operatorId: input.operatorId, feature: 'flow-builder' } } : {}),
       flow: { id: flowId, workspaceId: input.workspaceId, title, slug, status: 'draft', draftVersion: 0, lastActivityAt: now, createdAt: now, updatedAt: now },
       revision: { formSettingsJson: JSON.stringify(copiedSettings), id: revisionId, flowId, number: 1, state: 'draft', title, publishedAt: null, isCurrent: false, admissionClosedAt: null, admissionCloseReason: null, deadlineAt: null, deadlineTimeZone: null, targetCompletedResponses: null, policySnapshotJson: null, createdAt: now, updatedAt: now },
       steps: sourceSteps.map((step) => ({ ...step, id: rowIdByOldRowId.get(step.id)!, revisionId, stableId: stableIdByOldStableId.get(step.stableId)!, prompt: remapAnswerRecall(step.prompt, stableIdByOldStableId), helperText: step.helperText === null ? null : remapAnswerRecall(step.helperText, stableIdByOldStableId), questionSettingsJson: remapLayoutSettings(remapChoiceSettings(step.questionSettingsJson, choiceStableIdByOldStableId), stableIdByOldStableId, choiceStableIdByOldStableId), nextStepStableId: step.nextStepStableId ? stableIdByOldStableId.get(step.nextStepStableId) ?? null : null, createdAt: now, updatedAt: now })),
@@ -193,7 +201,10 @@ export class FlowService {
         return { ...rule, id: ulid(), revisionId, sourceStepStableId: stableIdByOldStableId.get(rule.sourceStepStableId)!, destinationStepStableId: stableIdByOldStableId.get(rule.destinationStepStableId)!, expectedValueJson: JSON.stringify(remappedExpected), conditionJson: rule.conditionJson ? JSON.stringify(remapCondition(JSON.parse(rule.conditionJson), stableIdByOldStableId, choiceStableIdByOldStableId)) : null, createdAt: now, updatedAt: now }
       }),
     })
-    if (!created) throw new ValidationError('That flow link is already in use.')
+    if (!created) {
+      if ((await this.requireWorkspaceFlow(input.workspaceId, input.flowId)).draftVersion !== sourceFlow.draftVersion) throw new ConflictError('The source draft changed before duplication committed.')
+      throw new ValidationError('That flow link is already in use.')
+    }
     return { id: flowId, title, slug }
   }
 
@@ -362,6 +373,7 @@ export class FlowService {
     const source = draft.steps.find((step) => step.id === input.stepId)
     if (!source) throw new NotFoundError('The requested draft step does not exist.')
     return this.addDraftStep({
+      operatorId: input.operatorId,
       workspaceId: input.workspaceId,
       flowId: input.flowId,
       expectedVersion: input.expectedVersion,
@@ -372,6 +384,7 @@ export class FlowService {
   async deleteDraftStep(input: { operatorId?: string; workspaceId: string; flowId: string; expectedVersion: number; stepId: string }) {
     const draft = await this.getBuilderDraft(input.workspaceId, input.flowId)
     if (input.expectedVersion !== draft.flow.draftVersion) return draftConflict(draft.flow.draftVersion)
+    if (!draft.steps.some(step => step.id === input.stepId)) throw new NotFoundError('The requested draft step does not exist.')
     const now = new Date().toISOString()
     const deleted = await this.repository.deleteDraftStep({ operatorId: input.operatorId, flowId: input.flowId, revisionId: draft.revision.id, expectedVersion: input.expectedVersion, now, stepStableId: input.stepId })
     if (!deleted) return draftConflict((await this.requireWorkspaceFlow(input.workspaceId, input.flowId)).draftVersion)
@@ -473,25 +486,26 @@ export class FlowService {
     return { kind: 'published' as const, revision: { id: draft.revision.id, number: draft.revision.number }, draftVersion: input.expectedVersion + 1 }
   }
 
-  async closeFlow(workspaceId: string, flowId: string, operatorId?: string) {
+  async closeFlow(workspaceId: string, flowId: string, operatorId?: string, expectedVersion?: number) {
     const flow = await this.requireWorkspaceFlow(workspaceId, flowId)
     if (!['open', 'closed'].includes(flow.status)) throw new ValidationError('Only a published flow can be closed.')
-    await this.repository.closeFlow(flowId, new Date().toISOString(), operatorId)
+    if (!await this.repository.closeFlow(flowId, new Date().toISOString(), operatorId, expectedVersion)) throw new ConflictError('The form changed before it could close.')
   }
 
-  async reopenFlow(workspaceId: string, flowId: string, operatorId: string) {
+  async reopenFlow(workspaceId: string, flowId: string, operatorId: string, expectedVersion?: number) {
     const flow = await this.requireWorkspaceFlow(workspaceId, flowId)
     if (flow.status !== 'closed') throw new ValidationError('Only a closed flow can be reopened.')
     const revision = await this.repository.findCurrentPublishedRevision(flowId)
     if (!revision) throw new NotFoundError('This flow has no published revision to reopen.')
     if ((revision.deadlineAt && Date.parse(revision.deadlineAt) <= Date.now()) || (revision.targetCompletedResponses !== null && await this.responseRepository.countAdmittedResponses(revision.id) >= revision.targetCompletedResponses)) throw new ValidationError('This revision cannot reopen while its deadline or completion target is still satisfied.')
-    if (!await this.repository.reopenFlow(flowId, new Date().toISOString(), operatorId)) throw new ValidationError('This revision cannot reopen while its deadline or completion target is still satisfied.')
+    if (expectedVersion !== undefined && flow.draftVersion !== expectedVersion) throw new ConflictError('The form changed before it could reopen.')
+    if (!await this.repository.reopenFlow(flowId, new Date().toISOString(), operatorId, expectedVersion)) throw new ValidationError('This revision cannot reopen while its deadline or completion target is still satisfied.')
   }
 
-  async archiveFlow(workspaceId: string, flowId: string, operatorId?: string) {
+  async archiveFlow(workspaceId: string, flowId: string, operatorId?: string, expectedVersion?: number) {
     const flow = await this.requireWorkspaceFlow(workspaceId, flowId)
     if (flow.status === 'archived') throw new ValidationError('An archived flow cannot reopen.')
-    await this.repository.archiveFlow(flowId, new Date().toISOString(), operatorId)
+    if (!await this.repository.archiveFlow(flowId, new Date().toISOString(), operatorId, expectedVersion)) throw new ConflictError('The form changed before it could be archived.')
   }
 
   async getPublicFlow(slug: string, accessToken?:string) {
