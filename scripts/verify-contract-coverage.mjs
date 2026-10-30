@@ -30,7 +30,7 @@ const profileMode = process.argv[2] ?? 'first-release'
 const deferred = await readProfile(root, ids, profileMode)
 const browserContracts = [...registry.values()].flatMap((entry) => entry.covered).filter((entry) => entry.browser)
 // Local verification extracts fresh predecessor inputs. CI accepts only every lane
-// from this commit and this run attempt.
+// from this commit and this run (across its attempts).
 const ci = process.env.PENCIL_CONTRACT_EVIDENCE_DIR
   ? await readCiContractEvidence(root, process.env.PENCIL_CONTRACT_EVIDENCE_DIR) : undefined
 const runtime = ci?.runtime ?? await withReleaseUpgradeInputs(root, async (upgrade) => [
