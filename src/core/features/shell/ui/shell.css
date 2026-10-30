@@ -2,7 +2,9 @@
 .pencil-wordmark { display: inline-flex; flex: none; align-items: center; gap: 10px; color: var(--ink); font-size: 24px; font-weight: 600; letter-spacing: -0.035em; line-height: 1; text-decoration: none; }
 .pencil-mark { flex: none; }
 
-.operator-shell { min-height: 100svh; }
+.operator-shell { --canvas: #ffffff; min-height: 100svh; }
+/* The signed-in app's main column is pure white whatever the canvas token (owner, 30 Oct); panels, quiet panels and fields keep their hairline or sunk tone. */
+.operator-content { background: var(--canvas); }
 .operator-header, .operator-content { width: min(100% - 2 * var(--page-gutter), var(--page-max)); margin-inline: auto; }
 .operator-header { display: flex; min-height: 72px; align-items: center; gap: 32px; border-bottom: 1px solid var(--line); }
 .operator-nav { display: flex; align-items: center; gap: 40px; font-size: 16px; }
