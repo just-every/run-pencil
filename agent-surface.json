@@ -934,6 +934,11 @@
       "prepare": [
         "create"
       ]
+    },
+    "owner": {
+      "bindings": {
+        "MAIL_FROM": "email"
+      }
     }
   }
 }

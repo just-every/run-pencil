@@ -247,7 +247,7 @@ Acceptance journeys and remaining obligations are recorded in CONTRACT.md and AC
 | AGENT-009 | Migration agent | push-further | partial | `src/core/features/importing/typeform-definition.ts`; `tests/runtime/typeform-definition.worker.test.ts` |
 | BASE-AGENT-001 | One MCP door per seed | target | partial | `agent-surface.json`; `tests/agent-door/native-journey.mjs`; `src/agent-door/flow-tools.ts` |
 | BASE-AGENT-002 | The seed's jobs are tools, through the UI's own actions | target | partial | `agent-surface.json`; `tests/agent-door/native-journey.mjs`; `src/agent-door/flow-tools.ts` |
-| BASE-AGENT-003 | Records are resources | target | partial | `agent-surface.json`; `tests/agent-door/native-journey.mjs`; `src/agent-door/flow-tools.ts` |
+| BASE-AGENT-003 | Records are resources | target | partial | `agent-surface.json`; `tests/agent-door/native-journey.mjs`; `src/agent-door/flow-tools.ts`; `tests/agent-door/resources.mjs` |
 | BASE-AGENT-004 | Business identity and short-lived, audience-bound tokens | target | partial | `agent-surface.json`; `tests/agent-door/native-journey.mjs`; `src/agent-door/flow-tools.ts` |
 | BASE-AGENT-005 | An agent acts as a person in a role, never more | target | partial | `agent-surface.json`; `tests/agent-door/native-journey.mjs`; `src/agent-door/flow-tools.ts` |
 | BASE-AGENT-006 | Every action declares its risk class | target | partial | `agent-surface.json`; `tests/agent-door/native-journey.mjs`; `src/agent-door/flow-tools.ts` |

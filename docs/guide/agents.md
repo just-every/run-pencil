@@ -4,7 +4,7 @@ A linked company agent can work on Pencil forms for the installation's current o
 
 The agent can list and read forms, create and duplicate drafts, edit questions and choices, add, duplicate, delete and reorder draft steps, replace branching rules, and preview answer paths. Company policy can also permit publishing, closing, reopening and archiving. Publishing exposes the form to respondents; closing, reopening and archiving change collection availability. Deleting a draft step discards its draft content. There is no agent Undo for these operations. Editing a published form edits its draft until it is published again.
 
-Each write returns a link to the current form record. The agent reads that link through the same policy-controlled door. Form text and imported content remain untrusted data. Native workspace checks and current draft versions apply to agent calls as they do to the builder.
+Each write returns a link to the current form record. The agent needs the `evidence:read` scope to read that link through the same policy-controlled door. Form text and imported content remain untrusted data. Native workspace checks and current draft versions apply to agent calls as they do to the builder.
 
 Open `/agents` while signed in to inspect policy, audit and pending approvals, or pause agents. A held action waits for the named person's decision on the exact saved summary and revision. Native form activity names the agent and the person it acted for; approval names the person who decided. Retrying the same completed operation key returns its receipt without repeating the native effect; changed arguments conflict. Unset or paused policy cannot make a change.
 

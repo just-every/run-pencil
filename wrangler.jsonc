@@ -12,7 +12,7 @@
   "assets": { "binding": "ASSETS", "run_worker_first": true },
   // Retain anonymous metrics and dispatch due durable invitations/reminders.
   "triggers": { "crons": ["* * * * *"] },
-  // MAIL_PROVIDER is a deploy secret (deploy.json), so it is never baked in here: rer setup writes MAIL_PROVIDER=local to the
-  // private .dev.vars for local runtimes, and the container image (rer build --platform container) takes it from its settings.
-  "vars": { "SEED_SAMPLE_DATA": "false", "PENCIL_LOCAL_DEVELOPMENT": "true" }
+  // Sender and relay are public configuration. rer setup supplies the local mail provider
+  // in private local settings; deploy.json supplies the hosted provider.
+  "vars": { "SEED_SAMPLE_DATA": "false", "PENCIL_LOCAL_DEVELOPMENT": "true", "MAIL_FROM": "", "MAIL_RELAY_URL": "" }
 }
