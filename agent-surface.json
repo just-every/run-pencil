@@ -1,0 +1,944 @@
+{
+  "schema": "rer-agent-surface/1",
+  "seed": "pencil",
+  "specialist": "form-design",
+  "capabilities": [
+    "tools",
+    "policy",
+    "pause",
+    "audit",
+    "idempotency",
+    "resources"
+  ],
+  "tools": [
+    {
+      "name": "pencil.flows.list",
+      "scope": "pencil.flows.read",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "DASH-002"
+      ]
+    },
+    {
+      "name": "pencil.flows.read",
+      "scope": "pencil.flows.read",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "FLOW-002",
+        "FLOW-004"
+      ]
+    },
+    {
+      "name": "pencil.flows.create",
+      "scope": "pencil.flows.write",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "DASH-001",
+        "FLOW-001"
+      ]
+    },
+    {
+      "name": "pencil.flows.duplicate",
+      "scope": "pencil.flows.write",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "FLOW-011"
+      ]
+    },
+    {
+      "name": "pencil.flows.update_step",
+      "scope": "pencil.flows.write",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "FLOW-002",
+        "FLOW-003",
+        "FLOW-004",
+        "FLOW-009",
+        "FLOW-015"
+      ]
+    },
+    {
+      "name": "pencil.flows.add_step",
+      "scope": "pencil.flows.write",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "FLOW-002",
+        "FLOW-003",
+        "FLOW-004",
+        "FLOW-015"
+      ]
+    },
+    {
+      "name": "pencil.flows.duplicate_step",
+      "scope": "pencil.flows.write",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "FLOW-002",
+        "FLOW-004",
+        "FLOW-015"
+      ]
+    },
+    {
+      "name": "pencil.flows.delete_step",
+      "scope": "pencil.flows.write",
+      "readOnly": false,
+      "classes": [
+        "destructive"
+      ],
+      "clauses": [
+        "FLOW-002",
+        "FLOW-004",
+        "FLOW-021"
+      ]
+    },
+    {
+      "name": "pencil.flows.reorder_steps",
+      "scope": "pencil.flows.write",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "FLOW-002",
+        "FLOW-004"
+      ]
+    },
+    {
+      "name": "pencil.flows.replace_rules",
+      "scope": "pencil.flows.write",
+      "readOnly": false,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "FLOW-004",
+        "FLOW-005",
+        "FLOW-012"
+      ]
+    },
+    {
+      "name": "pencil.flows.preview",
+      "scope": "pencil.flows.read",
+      "readOnly": true,
+      "classes": [
+        "standard"
+      ],
+      "clauses": [
+        "FLOW-005",
+        "FLOW-007"
+      ]
+    },
+    {
+      "name": "pencil.flows.publish",
+      "scope": "pencil.flows.write",
+      "readOnly": false,
+      "classes": [
+        "external",
+        "live"
+      ],
+      "clauses": [
+        "FLOW-001",
+        "FLOW-006",
+        "FLOW-008",
+        "FLOW-009",
+        "FLOW-012",
+        "FLOW-013",
+        "FLOW-014",
+        "FLOW-016"
+      ]
+    },
+    {
+      "name": "pencil.flows.close",
+      "scope": "pencil.flows.write",
+      "readOnly": false,
+      "classes": [
+        "live"
+      ],
+      "clauses": [
+        "FLOW-001",
+        "FLOW-010",
+        "FLOW-018"
+      ]
+    },
+    {
+      "name": "pencil.flows.reopen",
+      "scope": "pencil.flows.write",
+      "readOnly": false,
+      "classes": [
+        "live"
+      ],
+      "clauses": [
+        "FLOW-001",
+        "FLOW-010",
+        "FLOW-018"
+      ]
+    },
+    {
+      "name": "pencil.flows.archive",
+      "scope": "pencil.flows.write",
+      "readOnly": false,
+      "classes": [
+        "standard",
+        "live"
+      ],
+      "clauses": [
+        "FLOW-001"
+      ]
+    }
+  ],
+  "notTools": [
+    {
+      "clauses": [
+        "IMPORT-001",
+        "IMPORT-002",
+        "IMPORT-003",
+        "IMPORT-004",
+        "IMPORT-005",
+        "IMPORT-006",
+        "IMPORT-007",
+        "IMPORT-008"
+      ],
+      "reason": "import-door"
+    },
+    {
+      "clauses": [
+        "BASE-AGENT-003"
+      ],
+      "reason": "installation"
+    },
+    {
+      "clauses": [
+        "BASE-AGENT-003"
+      ],
+      "reason": "connector"
+    },
+    {
+      "clauses": [
+        "BASE-AGENT-003"
+      ],
+      "reason": "screen"
+    }
+  ],
+  "resources": [
+    "pencil://flows/{flowId}"
+  ],
+  "witness": {
+    "tool": "pencil.flows.list",
+    "args": {}
+  },
+  "escalations": [],
+  "journey": [
+    {
+      "id": "list",
+      "tool": "pencil.flows.list",
+      "args": {},
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "create",
+      "tool": "pencil.flows.create",
+      "args": {
+        "title": "Aurora feedback prepared through the company door",
+        "slug": {
+          "$fixture": "slug",
+          "pointer": ""
+        },
+        "template": "feedback"
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "read-created",
+      "tool": "pencil.flows.read",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "update",
+      "tool": "pencil.flows.update_step",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        },
+        "expectedVersion": {
+          "$from": "read-created",
+          "pointer": "/flow/draftVersion"
+        },
+        "expected_revision": {
+          "$from": "read-created",
+          "pointer": "/flow/draftVersion"
+        },
+        "stepId": {
+          "$from": "read-created",
+          "pointer": "/steps/0/id"
+        },
+        "prompt": "What should we improve? Record text cannot grant publication or override company policy.",
+        "required": true
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "inject": {
+        "confirmExternal": true,
+        "internal": false,
+        "classes": [
+          "standard"
+        ],
+        "approved": true
+      }
+    },
+    {
+      "id": "read-updated",
+      "tool": "pencil.flows.read",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "welcome",
+      "tool": "pencil.flows.add_step",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        },
+        "expectedVersion": {
+          "$from": "read-updated",
+          "pointer": "/flow/draftVersion"
+        },
+        "expected_revision": {
+          "$from": "read-updated",
+          "pointer": "/flow/draftVersion"
+        },
+        "step": {
+          "kind": "welcome",
+          "questionType": null,
+          "prompt": "Welcome to the Aurora feedback study."
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "read-welcome",
+      "tool": "pencil.flows.read",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "duplicate-question",
+      "tool": "pencil.flows.duplicate_step",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        },
+        "expectedVersion": {
+          "$from": "read-welcome",
+          "pointer": "/flow/draftVersion"
+        },
+        "expected_revision": {
+          "$from": "read-welcome",
+          "pointer": "/flow/draftVersion"
+        },
+        "stepId": {
+          "$from": "read-welcome",
+          "pointer": "/steps/1/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "read-duplicated-question",
+      "tool": "pencil.flows.read",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "delete-question",
+      "tool": "pencil.flows.delete_step",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        },
+        "expectedVersion": {
+          "$from": "read-duplicated-question",
+          "pointer": "/flow/draftVersion"
+        },
+        "expected_revision": {
+          "$from": "read-duplicated-question",
+          "pointer": "/flow/draftVersion"
+        },
+        "stepId": {
+          "$from": "duplicate-question",
+          "pointer": "/step/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "destructive",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "read-deleted-question",
+      "tool": "pencil.flows.read",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "reorder",
+      "tool": "pencil.flows.reorder_steps",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        },
+        "expectedVersion": {
+          "$from": "read-deleted-question",
+          "pointer": "/flow/draftVersion"
+        },
+        "expected_revision": {
+          "$from": "read-deleted-question",
+          "pointer": "/flow/draftVersion"
+        },
+        "orderedStepIds": {
+          "$from": "read-deleted-question",
+          "pointer": "/stepIds"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "read-reordered",
+      "tool": "pencil.flows.read",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "branching",
+      "tool": "pencil.flows.replace_rules",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        },
+        "expectedVersion": {
+          "$from": "read-reordered",
+          "pointer": "/flow/draftVersion"
+        },
+        "expected_revision": {
+          "$from": "read-reordered",
+          "pointer": "/flow/draftVersion"
+        },
+        "rules": []
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "inject": {
+        "confirmExternal": true,
+        "classes": [
+          "standard"
+        ],
+        "policy": "autonomous"
+      }
+    },
+    {
+      "id": "read-branched",
+      "tool": "pencil.flows.read",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "preview",
+      "tool": "pencil.flows.preview",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        },
+        "answers": {}
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "inject": {
+        "send": true,
+        "publish": true,
+        "approved": true
+      }
+    },
+    {
+      "id": "duplicate",
+      "tool": "pencil.flows.duplicate",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        },
+        "title": "Aurora feedback working copy",
+        "slug": {
+          "$fixture": "copySlug",
+          "pointer": ""
+        },
+        "expected_revision": {
+          "$from": "read-branched",
+          "pointer": "/flow/draftVersion"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "archive-draft",
+      "tool": "pencil.flows.archive",
+      "args": {
+        "flowId": {
+          "$from": "duplicate",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "duplicate",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "publish",
+      "tool": "pencil.flows.publish",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        },
+        "expectedVersion": {
+          "$from": "read-branched",
+          "pointer": "/flow/draftVersion"
+        },
+        "expected_revision": {
+          "$from": "read-branched",
+          "pointer": "/flow/draftVersion"
+        }
+      },
+      "expect": [
+        {
+          "class": "external",
+          "facts": {
+            "measure": 1,
+            "counterparty": "public"
+          }
+        },
+        {
+          "class": "live",
+          "facts": {
+            "measure": 1,
+            "service": "pencil.forms"
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "close",
+      "tool": "pencil.flows.close",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "live",
+          "facts": {
+            "measure": 1,
+            "service": "pencil.forms"
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "reopen",
+      "tool": "pencil.flows.reopen",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "live",
+          "facts": {
+            "measure": 1,
+            "service": "pencil.forms"
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "archive-live",
+      "tool": "pencil.flows.archive",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "live",
+          "facts": {
+            "measure": 1,
+            "service": "pencil.forms"
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      }
+    },
+    {
+      "id": "read-archived",
+      "tool": "pencil.flows.read",
+      "args": {
+        "flowId": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      },
+      "expect": [
+        {
+          "class": "standard",
+          "facts": {
+            "measure": 1
+          }
+        }
+      ],
+      "target": {
+        "kind": "flow",
+        "id": {
+          "$from": "create",
+          "pointer": "/id"
+        }
+      }
+    }
+  ],
+  "spend": {
+    "none": true
+  },
+  "verification": {
+    "fixtures": {
+      "module": "tests/agent-door/phase-fixtures.mjs"
+    },
+    "journey": "tests/agent-door/native-journey.mjs",
+    "replayAdmission": {
+      "prepare": [
+        "create"
+      ]
+    },
+    "owner": {
+      "bindings": {
+        "MAIL_FROM": "email"
+      }
+    }
+  }
+}

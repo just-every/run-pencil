@@ -1,5 +1,6 @@
 import { answerAlertPublicationIssues, remapAnswerAlerts } from '../../shared/answerAlerts'
 import type { LedgerFilter } from '../reporting'
+import type { NativeAgentAttribution } from '../audit'
 import { closedFlowFor } from '../../shared/closedFlow'
 import { marketingPublicationIssues } from '../../shared/marketingConsent'
 import { respondentTextPublicationIssues } from '../../shared/respondentText'
@@ -69,6 +70,11 @@ export class FlowService {
     private readonly previewDefaults?: (workspaceId: string) => Promise<LinkPreviewDefaults>,
     private readonly previewAssets?: LinkPreviewAssetStore,
   ) {}
+
+  /** One invocation gets its own native repository context; UI calls retain their own actor. */
+  asAgent(actor: NativeAgentAttribution) {
+    return new FlowService(this.repository.asAgent(actor), this.responseRepository, this.policyConfiguration, this.access, this.previewDefaults, this.previewAssets)
+  }
 
   async ensureSampleFlow(input: {
     workspaceId: string
@@ -362,6 +368,7 @@ export class FlowService {
     const source = draft.steps.find((step) => step.id === input.stepId)
     if (!source) throw new NotFoundError('The requested draft step does not exist.')
     return this.addDraftStep({
+      operatorId: input.operatorId,
       workspaceId: input.workspaceId,
       flowId: input.flowId,
       expectedVersion: input.expectedVersion,
@@ -372,6 +379,7 @@ export class FlowService {
   async deleteDraftStep(input: { operatorId?: string; workspaceId: string; flowId: string; expectedVersion: number; stepId: string }) {
     const draft = await this.getBuilderDraft(input.workspaceId, input.flowId)
     if (input.expectedVersion !== draft.flow.draftVersion) return draftConflict(draft.flow.draftVersion)
+    if (!draft.steps.some(step => step.id === input.stepId)) throw new NotFoundError('The requested draft step does not exist.')
     const now = new Date().toISOString()
     const deleted = await this.repository.deleteDraftStep({ operatorId: input.operatorId, flowId: input.flowId, revisionId: draft.revision.id, expectedVersion: input.expectedVersion, now, stepStableId: input.stepId })
     if (!deleted) return draftConflict((await this.requireWorkspaceFlow(input.workspaceId, input.flowId)).draftVersion)

@@ -23,6 +23,5 @@ crons = ["* * * * *"]
 
 # Configure supplies these values for hosted mail; Managed assigns all three.
 [vars]
-MAIL_PROVIDER = "resend"
 MAIL_FROM = ""
 MAIL_RELAY_URL = ""

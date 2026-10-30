@@ -49,7 +49,7 @@ const config = resolve(state, 'wrangler.toml')
 const template = (await readFile(resolve(root, 'deploy/wrangler.template.toml'), 'utf8'))
   .replace('main = "src/server.ts"', 'main = "../tests/helpers/mail-browser-worker.ts"')
   .replace('migrations_dir = "migrations/core"', 'migrations_dir = "../migrations/core"')
-  .replace('MAIL_PROVIDER = "resend"', 'MAIL_PROVIDER = "local"')
+  + '\nMAIL_PROVIDER = "local"\n'
 const managementVars = process.argv[3] === '--management' ? `\nRER_MANAGEMENT_ORIGIN = "http://127.0.0.1:${Number(port) + 1}"\nRER_INSTALLATION_ID = "synthetic-pencil-admission"\n` : ''
 // The actions journey starts its own loopback task receiver on this port (tests/e2e/task-receiver.ts).
 const taskPort = process.env.PENCIL_E2E_TASK_PORT ?? String(Number(port) + 2)

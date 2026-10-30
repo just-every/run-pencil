@@ -12,6 +12,7 @@ try {
   const template = (await readFile(join(root, 'deploy/wrangler.template.toml'), 'utf8'))
     .replace('main = "src/server.ts"', 'main = "../src/server.ts"')
     .replace('migrations_dir = "migrations/core"', 'migrations_dir = "../migrations/core"')
+    + '\nMAIL_PROVIDER = "resend"\n'
   const config = join(directory, 'wrangler.toml')
   await writeFile(config, template, { flag: 'wx' })
   const child = spawn('pnpm', ['run', 'build:app'], { cwd: root, env: { ...process.env, PENCIL_WRANGLER_CONFIG: config, PENCIL_MANAGED_SOURCE_SHA: sourceSha }, stdio: 'inherit' })

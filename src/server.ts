@@ -19,6 +19,7 @@ import { staticAssetResponse } from './base/static-assets'
 import { claimedWhen, setupStateResponse } from './base/setup-state'
 import { identity } from './identity'
 import { continueNotifications } from './core/app/request-notifications'
+import { pencilAgentDoor } from './agent-door/index.ts'
 
 const HASHED_ASSET = /^\/assets\/[^/]+-[A-Za-z0-9_-]{8}\.[A-Za-z0-9]+$/
 // public/: the declared theme (rer-theme.css) and the files it names, served at stable paths by the installer and the confirmation page.
@@ -59,6 +60,12 @@ async function fetchPencil(request: Request, bindings: WorkerBindings, execution
       return Response.json({ status: 'not-ready', message: error instanceof DeploymentConfigurationError ? error.message : 'Invalid deployment configuration.' }, { status: 503, headers: { 'Cache-Control': 'no-store' } })
     }
     const path = new URL(request.url).pathname
+    // Shared agent credentials and signed policy are admitted before native app redirects.
+    if (path === '/mcp' || path.startsWith('/.well-known/oauth-protected-resource') || path === '/agents' || path.startsWith('/agents/') || path === '/api/rer/agent-policy' || path === '/api/rer/business-settings' || path === '/rer-business-logo' || path === '/rer-business.css') {
+      const services = await initializePencil(platform)
+      const response = await pencilAgentDoor(bindings, platform, services).handle(request)
+      if (response) return response
+    }
     if ((path === '/setup' && request.method === 'POST') || path === '/embed.js' || path === '/health' || path === '/api' || path.startsWith('/api/') || path === '/auth' || path.startsWith('/auth/')) {
       return workerApp.fetch(request, bindings, execution)
     }
