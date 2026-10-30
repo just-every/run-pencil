@@ -1,4 +1,4 @@
-// Share build output only within this exact Actions run/attempt and commit.
+// Share build output only within this exact Actions run and commit, across its attempts: a rerun of failed jobs reuses the run's build.
 // Runtime state, migrations, sessions and rate ledgers are always created afresh.
 import { execFileSync } from 'node:child_process'
 import { cp, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
@@ -8,9 +8,9 @@ import { pathToFileURL } from 'node:url'
 const profiles = { production: ['client', 'server'], browser: ['client', 'server'], admission: ['client', 'server'], site: ['site'] }
 function identity(root, profile) {
   if (!Object.hasOwn(profiles, profile)) throw new Error('Unknown CI build profile.')
-  const { GITHUB_RUN_ID: run, GITHUB_RUN_ATTEMPT: attempt } = process.env
-  if (!run || !attempt) throw new Error('Shared CI builds require a run and attempt.')
-  return { run, attempt, commit: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(), profile }
+  const { GITHUB_RUN_ID: run } = process.env
+  if (!run) throw new Error('Shared CI builds require a run.')
+  return { run, commit: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim(), profile }
 }
 function directory(profile) {
   if (!process.env.PENCIL_CI_BUILDS) throw new Error('Set PENCIL_CI_BUILDS for shared build output.')
