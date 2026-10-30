@@ -170,7 +170,7 @@ export function flowTools(services: PencilServices, resolve: ResolveFlowOperator
 }
 
 export function flowResources(services: PencilServices, resolve: ResolveFlowOperator): ResourceDefinition[] {
-  return [{ uriTemplate: 'pencil://flows/{flowId}', name: 'Pencil form draft', description: 'A current native builder record, with draft version and untrusted form text. It contains no respondent answers or connection credentials.', mimeType: 'application/json', scope: 'pencil.flows.read', classes: ['standard'],
+  return [{ uriTemplate: 'pencil://flows/{flowId}', name: 'Pencil form draft', description: 'A current native builder record, with draft version and untrusted form text. It contains no respondent answers or connection credentials.', mimeType: 'application/json', scope: 'evidence:read', classes: ['standard'],
     classify: record => standard(record.json && typeof record.json === 'object' && 'flow' in record.json ? 1 : 0),
     read: async (address, ctx) => {
       const match = /^pencil:\/\/flows\/([0-9A-HJKMNP-TV-Z]{26})$/.exec(address)
