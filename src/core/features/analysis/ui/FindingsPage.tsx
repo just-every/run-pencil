@@ -3,6 +3,7 @@ import { Fragment, useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { ArrowLeft, ArrowRight, RotateCcw, TriangleAlert } from 'lucide-react'
 import { analysisApi, costLabel, providerParts, stateLabels, transportLabel, when, type RunDetail, type ThemeResponses, type ThemeView } from './analysisApi'
+import { LoadProblem, loadFailure, type LoadFailure } from '../../../app/ui/LoadProblem'
 
 type Shown = Extract<ThemeView, { withheld: false }>
 
@@ -42,8 +43,8 @@ function ThemeBody({ runId, theme, open, focus, onOpen }: { runId: string; theme
 
 export function FindingsPage({ runId }: { runId: string }) {
   const [run, setRun] = useState<RunDetail>(), [error, setError] = useState<string>(), [busy, setBusy] = useState(false)
-  const [open, setOpen] = useState<{ theme: string; focus?: string }>()
-  useEffect(() => { analysisApi.get(runId).then(setRun).catch(reason => setError(reason instanceof Error ? reason.message : 'This analysis could not load.')) }, [runId])
+  const [open, setOpen] = useState<{ theme: string; focus?: string }>(), [missing, setMissing] = useState<LoadFailure>()
+  useEffect(() => { analysisApi.get(runId).then(setRun).catch(reason => { const failure = loadFailure(reason, 'This analysis could not load.'); if (failure.notFound) setMissing(failure); else setError(failure.message) }) }, [runId])
   useEffect(() => {
     if (!run || !['queued', 'running'].includes(run.state)) return
     const timer = setTimeout(() => analysisApi.get(runId).then(setRun).catch(() => {}), 5000)
@@ -51,7 +52,7 @@ export function FindingsPage({ runId }: { runId: string }) {
   }, [run, runId])
   const retry = () => { setBusy(true); setError(undefined); analysisApi.retry(runId).then(setRun).catch(reason => setError(reason instanceof Error ? reason.message : 'The retry failed.')).finally(() => setBusy(false)) }
   const decide = async (id:string,decision:'accepted'|'dismissed') => { setBusy(true); setError(undefined); try {setRun(await analysisApi.decide(runId,id,decision))} catch(error) {setError(error instanceof Error ? error.message : 'Decision could not save.')} finally {setBusy(false)} }
-  if (!run) return <section>{error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : <p className="status-note" role="status">Loading analysis…</p>}</section>
+  if (!run) return <section>{missing ? <LoadProblem message={missing.message} notFound /> : error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : <p className="status-note" role="status">Loading analysis…</p>}</section>
   const shown = run.themes.filter((theme): theme is Shown => !theme.withheld)
   const primary = shown.find(theme => theme.primary), others = run.themes.filter(theme => theme !== primary)
   const title = run.state === 'completed' ? `What ${run.evidenceCount} responses say` : run.state === 'insufficient_evidence' ? 'Not enough evidence for a finding' : run.state === 'failed' ? 'This analysis failed' : 'Analysis in progress'

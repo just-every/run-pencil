@@ -426,6 +426,14 @@ export class FlowRepository {
     ])
   }
 
+  /** An archived flow comes back closed when it has a published revision (the owner reopens it) and as a draft when it never had one. */
+  async restoreFlow(flowId: string, now: string, operatorId?: string) {
+    await this.binding.batch([this.lifecycleAudit(flowId, now, operatorId, 'flow.restored'),
+      this.binding.prepare(`UPDATE flow_revisions SET admission_close_reason = 'manual', updated_at = ? WHERE flow_id = ? AND state = 'published' AND admission_close_reason = 'archive'`).bind(now, flowId),
+      this.binding.prepare(`UPDATE flows SET status = CASE WHEN EXISTS (SELECT 1 FROM flow_revisions WHERE flow_id = flows.id AND state = 'published') THEN 'closed' ELSE 'draft' END, last_activity_at = ?, updated_at = ? WHERE id = ? AND status = 'archived'`).bind(now, now, flowId),
+    ])
+  }
+
   private async findDraftStep(revisionId: string, stableId: string) {
     const [step] = await this.database.select().from(flowSteps).where(and(eq(flowSteps.revisionId, revisionId), eq(flowSteps.stableId, stableId))).limit(1)
     return step

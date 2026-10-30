@@ -1,6 +1,7 @@
 import type { RunDetail, RunSummary, ThemeView } from '../repository'
 import type { Policies } from '../model'
 import { shortDateTime } from '../../../shared/ui/shortDate'
+import { ApiError } from '../../../app/api'
 
 export type { RunDetail, RunSummary, ThemeView, Policies }
 export type ProviderStatus = { state: 'on'; origin: string; model: string; transport: 'direct' | 'models' | 'dev' | 'demo'; costReported: boolean } | { state: 'off' | 'misconfigured'; setup: string }
@@ -10,8 +11,8 @@ export type ThemeResponses = { timeZone: string; flowId: string; theme: { id: st
 
 async function request<T>(path: string, body?: unknown, method = body === undefined ? 'GET' : 'POST'): Promise<T> {
   const response = await fetch(path, { method, credentials: 'same-origin', ...(body === undefined ? {} : { headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }) })
-  const data = await response.json().catch(() => ({})) as T & { message?: string }
-  if (!response.ok) throw new Error(data.message ?? 'The analysis request failed.')
+  const data = await response.json().catch(() => ({})) as T & { error?: string; message?: string }
+  if (!response.ok) throw new ApiError(data.error ?? 'REQUEST_FAILED', data.message ?? 'The analysis request failed.', response.status)
   return data
 }
 

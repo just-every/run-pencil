@@ -6,7 +6,7 @@ import { api } from '../../../app/api'
 import type { PublicSeedConfig } from '../../../shared/config'
 import { HydrationUnit } from '../../../../base/hydration/unit'
 
-export function SignInPage({ config, emailHint, invalid, notice }: { local?: boolean; config: Pick<PublicSeedConfig, 'productName'>; emailHint?: string; invalid?: string; notice?: 'access-removed' }) {
+export function SignInPage({ config, local, emailHint, invalid, notice }: { local?: boolean; config: Pick<PublicSeedConfig, 'productName'>; emailHint?: string; invalid?: string; notice?: 'access-removed' }) {
   const [email, setEmail] = useState(emailHint ?? '')
   const [hydrated, setHydrated] = useState(false)
   useEffect(() => { setHydrated(true) }, [])
@@ -38,7 +38,7 @@ export function SignInPage({ config, emailHint, invalid, notice }: { local?: boo
           <button className="quiet-button focus-ring" onClick={() => setStatus('form')} type="button"><ArrowLeft aria-hidden="true" size={17} /> Use another email</button>
         </div>
       </> : <form onSubmit={submit}>
-        <p className="muted">Enter your operator email to receive a one-time sign-in link.</p>
+        <p className="muted">{local ? 'Open the RER_OPEN link that rer prints on this computer.' : 'Enter your operator email to receive a one-time sign-in link.'}</p>
         <label className="inspector-field">Operator email<input disabled={!hydrated || status === 'sending'} autoComplete="email" className="text-input" onChange={(event) => setEmail(event.target.value)} required type="email" value={email} /></label>
         {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
         <button className="primary-button focus-ring" disabled={!hydrated || status === 'sending'} type="submit">{status === 'sending' ? 'Requesting…' : 'Send magic link'} <ArrowRight aria-hidden="true" size={17} /></button>

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
 import { api, type Operator } from '../../../app/api'
+import { LoadProblem, loadFailure, type LoadFailure } from '../../../app/ui/LoadProblem'
 import { editableStates, stateLabels, type ActionState } from '../states'
 import { ActionForm } from './ActionForm'
 import { ActionHistory } from './ActionHistory'
@@ -17,8 +18,8 @@ const moveLabels: Partial<Record<ActionState, string>> = { in_progress: 'Start w
 export function ActionPage({ actionId }: { actionId: string }) {
   const [action, setAction] = useState<ActionView>(), [operators, setOperators] = useState<Operator[]>([]), [timeZone, setTimeZone] = useState<string>()
   const [editing, setEditing] = useState(false), [note, setNote] = useState(''), [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string>(), [notice, setNotice] = useState<string>()
-  const load = () => actionsApi.get(actionId).then(setAction).catch(reason => setError(reason instanceof Error ? reason.message : 'This action could not load.'))
+  const [error, setError] = useState<string>(), [notice, setNotice] = useState<string>(), [missing, setMissing] = useState<LoadFailure>()
+  const load = () => actionsApi.get(actionId).then(setAction).catch(reason => { const failure = loadFailure(reason, 'This action could not load.'); if (failure.notFound) setMissing(failure); else setError(failure.message) })
   useEffect(() => { void load(); Promise.all([api.operators(), api.workspace()]).then(([people, workspace]) => { setOperators(people); setTimeZone(workspace.timeZone) }).catch(() => undefined) }, [actionId])
   const move = async (to: ActionState) => {
     if (!action) return
@@ -27,6 +28,7 @@ export function ActionPage({ actionId }: { actionId: string }) {
     catch (reason) { setError(reason instanceof Error ? reason.message : 'The action could not move.') }
     finally { setBusy(false) }
   }
+  if (missing) return <section><LoadProblem message={missing.message} notFound /></section>
   if (!action || !timeZone) return <section aria-labelledby="action-title"><h1 className="display" id="action-title">Action</h1>{error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : <p className="status-note" role="status">Loading action…</p>}</section>
   const moves = action.legalTransitions.filter(state => state !== 'effective' && state !== 'ineffective')
   const verdicts = action.legalTransitions.filter(state => state === 'effective' || state === 'ineffective')

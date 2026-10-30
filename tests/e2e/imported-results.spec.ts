@@ -49,7 +49,7 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'IMPORT-004', 'LEDG-001', 'BASE-PU
   await expect(metric('Responses').locator('strong')).toHaveText('1')
   await expect(metric('Starts').locator('strong')).toHaveText('0')
   await expect(metric('Completion rate')).toContainText('0 completions / 0 filtered starts')
-  await expect(metric('Average time').locator('strong')).toHaveText('0s')
+  await expect(metric('Average time').locator('strong')).toHaveText('No samples')
   await expect(metric('Average time')).toContainText('0ms total / 0 completed responses')
   await expect(answers.getByText('1 answer imported')).toBeVisible()
   await expect(answers.getByText('Hello',{exact:true})).toBeVisible()

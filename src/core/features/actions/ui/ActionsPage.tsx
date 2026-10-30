@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { actionStates, stateLabels } from '../states'
 import { actionsApi, type ActionSummary } from './actionsApi'
@@ -9,8 +9,10 @@ export function ReviewDue() {
 }
 
 export function ActionsPage() {
+  const navigate = useNavigate()
   const [actions, setActions] = useState<ActionSummary[]>(), [error, setError] = useState<string>()
-  useEffect(() => { actionsApi.list().then(result => setActions(result.actions)).catch(reason => setError(reason instanceof Error ? reason.message : 'Actions could not load.')) }, [])
+  // With no action yet the list opens the form to start one (U5).
+  useEffect(() => { actionsApi.list().then(result => { if (result.actions.length) setActions(result.actions); else void navigate({ to: '/app/actions/new', replace: true }) }).catch(reason => setError(reason instanceof Error ? reason.message : 'Actions could not load.')) }, [])
   return <section aria-labelledby="actions-title">
     <header className="dashboard-heading">
       <div><p className="eyebrow">Owned follow-through</p><h1 className="display" id="actions-title">Actions</h1></div>
@@ -18,7 +20,6 @@ export function ActionsPage() {
     </header>
     {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}
     {!actions && !error ? <p className="status-note" role="status">Loading actions…</p> : null}
-    {actions && !actions.length ? <section className="quiet-panel" style={{ padding: '1.5rem' }}><h2>No actions yet</h2><p className="muted">Open a flow's results and choose “Turn this into an action”, or start one here.</p></section> : null}
     {actions?.length ? actionStates.map(state => {
       const items = actions.filter(action => action.state === state)
       if (!items.length) return null

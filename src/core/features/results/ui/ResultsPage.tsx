@@ -15,7 +15,7 @@ import { RevisionComparison } from './RevisionComparison'
 import { ResponseLedger } from './ResponseLedger'
 import { QuarantineReview } from './QuarantineReview'
 import { api, reportingApi, type QuestionReport, type FlowResults, type LedgerFilter, type Ledger } from '../../../app/api'
-import { LoadProblem } from '../../../app/ui/LoadProblem'
+import { LoadProblem, loadFailure, type LoadFailure } from '../../../app/ui/LoadProblem'
 import { keepIfSame, useQuietRefresh } from '../../../shared/ui/useQuietRefresh'
 
 export function ResultsPage() {
@@ -31,23 +31,27 @@ export function ResultsPage() {
   const [timeZone, setTimeZone] = useState<string>()
   const [refresh, setRefresh] = useState(0)
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string>()
+  const [error, setError] = useState<LoadFailure>()
+  const [metadataLoaded, setMetadataLoaded] = useState(false)
   const [exportSlot, setExportSlot] = useState<HTMLDivElement | null>(null)
 
+  const unpublished = metadataLoaded && revisions.length === 0
   const selectionKey = JSON.stringify({...responseFilter,offset:undefined})
   useEffect(() => {
     let active = true
-    void api.workspace().then(workspace=>{if(active)setTimeZone(workspace.timeZone)}).catch(reason=>{if(active)setError(reason instanceof Error?reason.message:'Results metadata could not load.')})
+    void api.workspace().then(workspace=>{if(active)setTimeZone(workspace.timeZone)}).catch(reason=>{if(active)setError(loadFailure(reason,'Results metadata could not load.'))})
     return ()=>{active=false}
   },[flowId,refresh])
   // The revision list comes with the ledger's first page, read once here and shared with the ledger below it (same request).
+  // When the results read failed there is no ledger below it: the same read says whether the flow has no published revision yet.
   const ledgerRevision = selectedRevision === 'all' ? undefined : selectedRevision ?? results?.revision.id
+  const resultsFailed = error !== undefined
   useEffect(() => {
-    if (!results) return
+    if (!results && !resultsFailed) return
     let active = true
-    void reportingApi.ledger(flowId,{revisionId:ledgerRevision}).then(ledger=>{if(active)setRevisions(ledger.revisions)}).catch(reason=>{if(active)setError(reason instanceof Error?reason.message:'Results metadata could not load.')})
+    void reportingApi.ledger(flowId,{revisionId:ledgerRevision}).then(ledger=>{if(active){setRevisions(ledger.revisions);setMetadataLoaded(true)}}).catch(reason=>{if(active)setError(loadFailure(reason,'Results metadata could not load.'))})
     return ()=>{active=false}
-  },[flowId,refresh,ledgerRevision,results?.revision.id])
+  },[flowId,refresh,ledgerRevision,results?.revision.id,resultsFailed])
   useEffect(() => {
     let active = true
     setError(undefined); setBusy(true)
@@ -55,7 +59,7 @@ export function ResultsPage() {
     void api.results(flowId,all?undefined:selectedRevision,responseFilter,all)
       .then(async result=>({result,questions:await reportingApi.questions(flowId,all?undefined:result.revision.id,responseFilter)}))
       .then(report=>{if(active){setResults(report.result);setQuestions(report.questions)}})
-      .catch(reason=>{if(active)setError(reason instanceof Error?reason.message:'Results could not load.')})
+      .catch(reason=>{if(active)setError(loadFailure(reason,'Results could not load.'))})
       .finally(()=>{if(active)setBusy(false)})
     return ()=>{active=false}
   },[flowId,refresh,selectedRevision,selectionKey])
@@ -65,7 +69,7 @@ export function ResultsPage() {
   useEffect(() => {
     if (!results) return
     let active = true; setDevices(undefined)
-    void reportingApi.devices(flowId, filter).then(report => { if (active) setDevices(report) }).catch(reason => { if (active) setError(reason instanceof Error ? reason.message : 'Device counts could not load.') })
+    void reportingApi.devices(flowId, filter).then(report => { if (active) setDevices(report) }).catch(reason => { if (active) setError(loadFailure(reason, 'Device counts could not load.')) })
     return () => { active = false }
   }, [flowId, filterKey, refresh, results?.revision.id])
 
@@ -84,17 +88,18 @@ export function ResultsPage() {
     <section className="results" aria-labelledby="results-title" aria-busy={busy}>
       <header className="results-heading">
         <div className="results-heading__nav"><Link className="quiet-button focus-ring" to="/app"><ArrowLeft aria-hidden="true" size={16} /> All flows</Link><Link className="secondary-button focus-ring" to="/app/flows/$flowId/builder" params={{ flowId }}><PencilLine aria-hidden="true" size={15} /> Builder</Link></div>
-        <Link className="secondary-button focus-ring" to="/app/flows/$flowId/inbox" params={{ flowId }}>Submission inbox</Link>
         <h1 id="results-title" className="display">{results?.flow.title ?? 'Results'}</h1>
-        <div className="results-heading__tools">
+        {unpublished || error?.notFound ? null : <div className="results-heading__tools">
           <label className="inspector-field">Published revision<select aria-label="Published revision" className="text-input" value={selectedRevision ?? ''} onChange={(event) => setSelectedRevision(event.target.value || undefined)}><option value="">Current published revision</option><option value="all">All published revisions</option>{revisions.map((revision) => <option key={revision.id} value={revision.id}>Revision {revision.number}{revision.isCurrent ? ' · current' : ''}</option>)}</select></label>
+          <Link className="secondary-button focus-ring" to="/app/flows/$flowId/inbox" params={{ flowId }}>Submission inbox</Link>
           <div className="results-heading__exports" ref={setExportSlot} />
-        </div>
+        </div>}
         {revisions.length > 1 ? <button className="quiet-button focus-ring results-compare" type="button" aria-expanded={comparing} aria-controls="revision-comparison" onClick={() => setComparing(true)}>Compare revisions</button> : null}
       </header>
       {comparing ? <RevisionComparison key={`${flowId}:${refresh}`} flowId={flowId} onClose={() => setComparing(false)} /> : null}
-      {error ? <LoadProblem heading="h2" message={error} retryLabel="Retry results" onRetry={() => setRefresh((value) => value + 1)} /> : null}
-      {!results && !error ? <p className="status-note">Loading results…</p> : null}
+      {unpublished ? <section className="quiet-panel results-unpublished"><h2 className="display">Not published yet</h2><Link className="primary-button focus-ring" to="/app/flows/$flowId/builder" params={{ flowId }}>Open builder</Link></section> : null}
+      {error && !unpublished ? <LoadProblem heading="h2" message={error.message} notFound={error.notFound} retryLabel="Retry results" onRetry={() => setRefresh((value) => value + 1)} /> : null}
+      {!results && !error && !unpublished ? <p className="status-note">Loading results…</p> : null}
       {results && timeZone && !comparing ? <>
       {busy ? <p role="status">Updating the combined results selection…</p> : null}
       {!busy && !error ? <>

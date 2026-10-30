@@ -1,4 +1,4 @@
-import { ShieldCheck, Trash2, UserRoundPlus } from 'lucide-react'
+import { LogOut, ShieldCheck, Trash2, UserRoundPlus } from 'lucide-react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { api, ApiError, type Operator } from '../../../app/api'
@@ -62,7 +62,7 @@ export function OperatorAccess({ initialOperators, operatorId }: { initialOperat
     <div className="operator-list">
       {operators.map((operator) => <article aria-label={operator.email} className="quiet-panel operator-row" key={operator.id}>
         <div><strong className="operator-name">{operator.displayName}{operator.id === operatorId ? ' · you' : ''}{operator.isSetupOperator ? ' · set up this workspace' : ''}</strong><span className="muted operator-email">{operator.email}</span></div>
-        {operators.length > 1 && (!operator.isSetupOperator || operator.id === operatorId) ? <button className="quiet-button danger-quiet focus-ring" aria-label={`Remove ${operator.displayName}`} disabled={!!removing || sessionEnded} onClick={() => void remove(operator)} type="button"><Trash2 aria-hidden="true" size={15} /> {removing === operator.id ? 'Removing…' : 'Remove'}</button> : operators.length === 1 ? <span className="muted">Only operator</span> : null}
+        {operators.length > 1 && operator.id === operatorId ? <button className="quiet-button danger-quiet focus-ring" disabled={!!removing || sessionEnded} onClick={() => void remove(operator)} type="button"><LogOut aria-hidden="true" size={15} /> {removing === operator.id ? 'Leaving…' : 'Leave workspace'}</button> : operators.length > 1 && !operator.isSetupOperator ? <button className="quiet-button danger-quiet focus-ring" aria-label={`Remove ${operator.displayName}`} disabled={!!removing || sessionEnded} onClick={() => void remove(operator)} type="button"><Trash2 aria-hidden="true" size={15} /> {removing === operator.id ? 'Removing…' : 'Remove'}</button> : operators.length === 1 ? <span className="muted">Only operator</span> : null}
       </article>)}
     </div>
     <form className="operator-invite" onSubmit={invite}>
