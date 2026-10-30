@@ -7,9 +7,9 @@ import { contractLanes, runtimeLanes } from './verification-lanes.mjs'
 export { contractLanes } from './verification-lanes.mjs'
 
 function identity(root) {
-  const { GITHUB_RUN_ID: run, GITHUB_RUN_ATTEMPT: attempt } = process.env
-  if (!run || !attempt) throw new Error('Sharded contract evidence requires the current GitHub run and attempt.')
-  return { run, attempt, commit: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim() }
+  const { GITHUB_RUN_ID: run } = process.env
+  if (!run) throw new Error('Sharded contract evidence requires the current GitHub run.')
+  return { run, commit: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim() }
 }
 
 function containedFile(root, file) {
