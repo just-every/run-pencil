@@ -1553,7 +1553,7 @@
       "executable": false
     },
     "scripts/ci-contract-evidence.mjs": {
-      "sha256": "ab48b252f9bb86b4cb38eee94f7a5a80efc641e222cf5d3cc9a0fe6d0d37f355",
+      "sha256": "b05abaffee54f2969123528b660319934af9511eb524f0070693969f04d55124",
       "executable": false
     },
     "scripts/contract-docs.mjs": {
@@ -2633,7 +2633,7 @@
       "executable": false
     },
     "scripts/verify-contract-coverage.mjs": {
-      "sha256": "2237b91c18313f6116c464fee00a00ae9ce6b84df3a19a1c2766070403230549",
+      "sha256": "6d8c8955cdc52bcf86f339db126b219bad4d0930c23934e7b38499c58ff41627",
       "executable": false
     },
     "scripts/verify-hosted-output.mjs": {
