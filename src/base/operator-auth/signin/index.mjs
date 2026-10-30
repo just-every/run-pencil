@@ -48,16 +48,16 @@ export function createSignInHandler(auth, { setup, links, defaultReturnTo = '/ap
   return async function signIn(request) {
     const url = new URL(request.url);
     if (url.pathname !== path || !['GET', 'HEAD'].includes(request.method)) return null;
-    const branding = auth.presentation;
+    const branding = auth.publicPresentation ? await auth.publicPresentation() : auth.presentation;
     const returnTo = safeReturnTo(url.searchParams.get('returnTo'), defaultReturnTo);
     const hint = emailHint(url.searchParams.get('login_hint'));
+    const providers = auth.providers ? (await auth.providers.list()).filter(p => p.visible) : [];
     const people = await auth.oneClick?.people(request);
-    if (people?.length) return oneClickPage({ branding, method: request.method, people: people.map(person => {
+    if (people?.length) return oneClickPage({ branding, method: request.method, providers, returnTo, people: people.map(person => {
       const href = new URL(person.href, url.origin);
       href.searchParams.set('returnTo', returnTo);
       return { ...person, href: href.pathname + href.search };
     }) });
-    const providers = auth.providers ? (await auth.providers.list()).filter(p => p.visible) : [];
     const parts = [];
     const emailAvailable = auth.emailSignInAvailable;
     const notice = noticeFor(url.searchParams.get('notice'), emailAvailable)

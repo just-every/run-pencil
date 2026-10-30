@@ -280,7 +280,20 @@
             "measure": 1
           }
         }
-      ]
+      ],
+      "resource": {
+        "uriTemplate": "pencil://flows/{flowId}",
+        "state": {
+          "flow": {
+            "id": {
+              "$from": "create",
+              "pointer": "/id"
+            },
+            "title": "Aurora feedback prepared through the company door",
+            "status": "draft"
+          }
+        }
+      }
     },
     {
       "id": "read-created",

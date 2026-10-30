@@ -1,7 +1,7 @@
 # Operator auth (IF-055-CORE-v1)
 
 Portable server-only ESM: import `createOperatorAuth`, `createAuthHandler` and
-`createSignInHandler` from `modules/operator-auth/index.mjs`. TypeScript
+`createSignInHandler` from `./modules/operator-auth/index.mjs`. TypeScript
 declarations are `index.d.mts`. No framework or mail transport is bundled. Apply
 `accounts/schema/operator-auth.sql` once for a fresh auth database (and
 `identity/oidc/schema/oidc.sql` when the app offers identity providers). Preserve applied migration history in an existing
@@ -20,7 +20,7 @@ const auth = createOperatorAuth({
     SESSION_SECRET, SETUP_TOKEN,
     MAIL_FROM: env.MAIL_FROM,
     // Optional; omit for neutral workspace wording and /signin recovery.
-    branding: { productName: 'Example', accentColor: '#334155', signInPath: '/signin' },
+    branding: { productName: 'Example', accentColor: '#334155', signInPath: '/signin', mark: '/brand/mark.svg' },
     // Optional explicit address list further restricts active operators.
     // allowList: ['owner@example.com', 'staff@example.com'],
   },
@@ -171,6 +171,16 @@ Optional `config.branding` fields are independently defaulted and validated:
 | `productName` | `your workspace` | At most 80 UTF-16 code units before trimming, with at least one visible letter, number, punctuation or symbol; rejects C0/C1 controls, U+2028/U+2029 and default-ignorable code points, except contextual script joiners and emoji presentation described below |
 | `accentColor` | `#334155` | Exactly six hexadecimal digits after `#` |
 | `signInPath` | `/signin` | Same-origin absolute path, at most 2048 characters; no scheme, network-path reference, backslash or control characters, including encoded variants |
+| `mark` | Omitted | Same-origin root-relative image pathname, 2–2048 characters from ASCII letters, digits, `/`, `.`, `_`, `~` and `-`; no doubled slashes or `.`/`..` path segments, schemes, encodings, query strings, fragments, whitespace, quotes or angle brackets |
+| `theme` | Omitted | Same-origin CSS pathname ending in `.css`; `/` followed by 1–200 ASCII letters, digits, `.`, `_`, `~`, `/` or `-` before the extension; no doubled slashes or `/.` |
+
+Serve `mark` from the installation, for example `public/brand/mark.svg` at
+`/brand/mark.svg` (SVG or PNG). The shared sign-in, one-click owner entry and
+confirmation header shows it as a 32×32 image beside the product name, which
+stays as text. The local dev key exchange header uses 40×40. Both set
+`alt` to the product name and `decoding="async"`, and permit only same-origin
+images through CSP. An explicit mark takes precedence over a theme's
+`--rer-logo`; omitting `mark` preserves the existing HTML and theme behaviour.
 
 Product names preserve letters and combining marks in every script. ZWNJ
 (U+200C) is allowed after a letter (including its combining marks) when a letter
@@ -192,16 +202,17 @@ allowed; malformed encodings in the configured value are rejected. Encoded
 percent data is preserved, and nested encoded separators and controls are still
 rejected. Invalid branding throws
 `AuthError('invalid_configuration', 503)`. Branding is copied and frozen at
-construction. `auth.presentation` exposes only the three normalized branding
-fields; it never exposes configuration secrets. `previewLink` returns only
+construction. `auth.presentation` exposes the normalized branding fields,
+including `mark` and `theme` only when supplied; it never exposes configuration secrets. `previewLink` returns only
 `{kind, expiresInMinutes}` for an authorized link, otherwise null. Names are
 HTML-escaped in documents and mail. The accent chooses black or white button
 text for contrast, with a visible keyboard focus ring in light and dark schemes.
 
 The module's confirmation HTML responses contain exactly one inline stylesheet. Their
-CSP adds only its exact UTF-8 SHA-256 `style-src` hash to the existing restrictive
-policy. No scripts, external resources, style attributes, CSS URLs or imports
-are included in the document. JSON errors, redirects and other responses retain
+CSP adds its exact UTF-8 SHA-256 `style-src` hash to the existing restrictive
+policy, plus same-origin image, stylesheet and font permissions when needed by
+the declared mark, icons or theme. No scripts, remote resources, style attributes
+or CSS imports are included in the document. JSON errors, redirects and other responses retain
 the original CSP. Do not add a broad inline-style allowance to an adopting seed.
 
 An application can compose its same-origin brand font head onto this document,
@@ -407,6 +418,63 @@ Two hooks on `createOperatorAuth({hooks})` keep a seed's own sign-in work in pla
   (Pencil's audit mail), or throw an `AuthError` to refuse: the session it was
   about to get is revoked first (Cradle's forgery check).
 
+## Administrative audit hook
+
+`createOperatorAuth({hooks: {audit}})` optionally accepts
+`audit({action, actorId, subjectId, detail, now})`, returning `[sql, args][]` or a
+Promise of those pairs. The callback must be pure: return SQL for the module to
+append to the administrative mutation's own D1 batch, with no external writes. A raced
+request may generate statements and then be refused by its transaction fence.
+Authorization, actor/version fences, the mutation and audit statements retain
+their transaction guards. A refused or rolled-back mutation leaves no audit row;
+a thrown hook or failed audit SQL fails the action closed. With no hook,
+administrative behavior is unchanged. This hook covers the OA-backed
+administrative methods below; it does not cover native accounts adapters or
+other write paths.
+
+An already-unlinked provider remains a successful no-op (HTTP 200, as without
+the hook) and produces no audit row. An audited unlink advances the pin's
+generation in the same statement; the batch checks the old snapshot and that
+new generation before inserting audit rows. A suppressed or stale mutation
+returns 409 and rolls back the batch.
+
+`actorId` is the authenticated actor's opaque `oa_operators.id`. `subjectId` is
+the target operator's opaque id, including the operator owning a revoked
+session; domain and provider actions use `null`. `now` is the action's clock
+time in milliseconds since the Unix epoch. The event has only these fields:
+
+| `action` | `subjectId` | `detail` |
+| --- | --- | --- |
+| `operators.invite` | Invited operator id | New role |
+| `operators.cancel-invite` | Cancelled operator id | `inactive` |
+| `operators.deactivate` | Target operator id | `inactive` |
+| `operators.reactivate` | Target operator id | `active` |
+| `operators.role` | Target operator id | New role |
+| `sessions.revoke` | Session owner's operator id | `null` |
+| `domains.rule.set` | `null` | Normalized domain |
+| `domains.rule.lift` | `null` | Normalized domain |
+| `providers.unlink` | `null` | Provider id |
+| `providers.relink` | `null` | Provider id |
+
+`detail` is a string or `null`. Never add names, email addresses, IdP issuers or
+subjects, tokens, record data or file paths. The seed owns audit storage,
+migrations, retention and erasure; Base creates no audit table. For example,
+Cradle can return an insert into its `company_identity_audit` table after its
+seed migration adds nullable `detail` and supports nullable `operator_id` for
+domain/provider events:
+
+```js
+hooks: {
+  audit: ({action, actorId, subjectId, detail, now}) => [[
+    'INSERT INTO company_identity_audit(actor_id,operator_id,action,detail,created_at) VALUES(?,?,?,?,?)',
+    [actorId, subjectId, action, detail, now],
+  ]],
+}
+```
+
+Use the seed's actor and subject erasure rules for this table. `oa_auth_audit`
+is not a substitute for seed-owned administrative audit storage.
+
 ## Domain rules and step-up
 
 An owner can require a provider for an email domain (`POST /auth/domain-rules`
@@ -491,14 +559,21 @@ local reverse proxy makes remote requests look local (forwarded requests carry
 a loopback URL and Host, and `CF-Connecting-IP` is whatever the caller sent), so
 the gate is the key, not the network. `devGate({key, origin, local})` returns
 null unless the key is present and the origin is an explicit loopback origin in
-local mode. `admits(request)` accepts the `rer_dev_gate_<port>` cookie (an HMAC of the
+local mode. `admitsSession(request)` accepts the `rer_dev_gate_<port>` cookie (an HMAC of the
 key, so a reset key refuses old cookies) or the key in `x-rer-dev-key` (the rer
-CLI and test harnesses). `exchange(request, branding)` serves `GET /__dev/key` and trades
+CLI and test harnesses); the dev layer registers it as the dev session check.
+`admits(request)`, which guards dev sign-in, personas and the one-click sign-in
+page, accepts the same but refuses a cookie-only request marked
+`Sec-Fetch-Site: cross-site`. `exchange(request, branding)` serves `GET /__dev/key` and trades
 the key from the URL fragment, through a same-origin POST, for a host-only
-`HttpOnly; SameSite=Strict; Path=/` cookie. Given the seed's `branding`
-(`productName`, `theme`), the page between `rer dev` and the app shows the seed's own
-mark, the `--rer-logo` its theme declares, as an `<img>` with the product name as its
-alt text; a seed whose theme declares no logo shows the product name as text.
+`HttpOnly; SameSite=Lax; Path=/` cookie. Lax matches the session cookie: a
+browser sends it on the top-level GET an OAuth provider redirects back to the
+app, so a local dev session survives a connector's callback as a deployed
+session does, while cross-site POSTs and subresource requests carry neither. Given the seed's `branding`
+(`productName`, optional `mark` and `theme`), the page between `rer dev` and the
+app shows the explicit mark, or the `--rer-logo` its theme declares, as an
+`<img>` with the product name as its alt text. With neither mark declaration,
+it shows the product name as text alone.
 
 `dev/` is the dev layer: **server-only and local-only**. Import it only from a
 local-only Worker entry (a Vite-serve or local `wrangler dev` entry), never
@@ -576,7 +651,7 @@ an independently captured pre-update source snapshot containing the complete
 root. With the frozen workspace dependencies installed, run:
 
 ```sh
-OA_BASELINE_SOURCE=/path/to/snapshot node --test modules/operator-auth/tests/reinvitation-upgrade.mjs
+OA_BASELINE_SOURCE=/path/to/snapshot node --test ./modules/operator-auth/tests/reinvitation-upgrade.mjs
 ```
 
 Runtime tests use the locked Wrangler Miniflare/esbuild dependencies and run the
@@ -590,7 +665,7 @@ deployment remain separate.
 
 ## Adopting this version
 
-Copy the **complete** `modules/operator-auth/` directory from one reviewed Base
+Copy the **complete** `./modules/operator-auth/` directory from one reviewed Base
 revision into the seed's operator-auth source location. Keep its layers
 (`identity/`, `accounts/`, `dev/`), runtime files, declarations, schema,
 conformance files and tests from that same revision; `rer check` names any copied
@@ -603,7 +678,9 @@ address; anything else is ignored; never submitted for the visitor), so a link
 from the platform's Open app or a seed's own page can pass the claimed owner.
 
 Wire `config.branding` with the seed's `productName`, `accentColor` and
-`signInPath`; the defaults are `your workspace`, `#334155` and `/signin`. Keep
+`signInPath`; the defaults are `your workspace`, `#334155` and `/signin`. Pass
+the seed's served mark path as optional `mark: '/brand/mark.svg'`, and its
+served token stylesheet as optional `theme: '/rer-theme.css'`. Keep
 `MAIL_FROM` in auth config and provide a real `mailSender` that implements
 `send(message)`. The Base example builds it with `createMailSender` from
 [the mail module](../mail/README.md), using mail config fields `provider`, `mode`, `apiKey` and
@@ -680,3 +757,42 @@ route configuration, CI and release; Base checks do not establish integrated
 adoption or deployment.
 
 The application-side dependency, owner-setting and logout protocol is documented in [dependencies](../dependencies/README.md). Existing stores default to provider sign-in off, and provider admission requires the app-owned setting.
+
+## Owner-approved schedules
+
+OA accounts offer a bounded, hash-pinned scheduled policy door, separate from
+human sessions. Read [SCHEDULED-POLICY.md](SCHEDULED-POLICY.md) for the design,
+additive migration, declaration, owner approval/revocation flow and audit contract.
+The reference `/app/policies` screen and Worker scheduled handler show adoption.
+
+### Business settings and the default team adapter
+
+An edition that adopts `./modules/business-settings` passes its runtime instance as
+`createOperatorAuth({ ..., businessSettings })`. It supplies `publicBrand()`,
+`read()` provenance and `stop(actorId, guard?)`. The optional guard is the OA
+session's live SQL authority fence: include it in the stop transaction. The
+owner-only sign-in settings page shows the source Business, revision and applied
+time, with a `business:stop` step-up control. Public sign-in uses the runtime
+name and versioned same-origin logo; no Business colour is applied there. For
+Base's setup frame, pass the instance as `theme.businessSettings`.
+
+OA compositions expose the server-only `auth.businessTeam` adapter. The Business
+runtime calls `ownerEmail()` to bind trust to the current claimed owner, then
+`prepare({ members, managed, ownerEmail, roles, guard })`. Here `members` is the
+verified roster; `managed` contains only durable Business-owned rows
+`{email,operatorId,invite,state}`; `roles` maps `admin` and `member` to the app's
+non-owner OA roles; and `guard:{sql,args}` proves this document's accepted
+revision and fresh nonce. Batch the returned `statements` with settings, logo
+and managed-row writes on the same D1 binding, then call `afterCommit()` to send
+invitations. Never call it before a successful batch.
+
+The adapter preserves the configured role policy and repeats claimed-owner and
+target versions in SQL. New and reissued invitations use the existing
+administration invitation preparation, issuer authority, cancellation ledger
+and app mail sender. Removal cancels pending invitations or deactivates an
+accepted account, invalidating its sessions. Re-adding an unaccepted account
+requires its invitation; accepted accounts reactivate. Existing unowned
+operators return `conflict`, and owner operators are never changed or granted.
+Audit rows retain the claimed owner as actor and record `via: "via Business by <owner email>"`. Native account compositions
+supply their own team adapter and can use the same optional branding/settings
+integration.
