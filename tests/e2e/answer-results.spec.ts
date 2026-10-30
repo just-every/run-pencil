@@ -9,6 +9,7 @@ import { expect, test, openMailLink } from './fixtures'
 import AxeBuilder from '@axe-core/playwright'
 import { collectAnswerScenario, collectScoreTrendScenario, type ScenarioCall } from '../results-scenario'
 import type { FlowResults } from '../../src/core/app/api'
+import { openFilters, clearResponseFilters } from './filter-helpers'
 contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006', 'RSLT-008', 'RSLT-009', 'LEDG-001', 'DATA-002', 'BASE-PUBLIC-003'], 'answers first across every type, an RSLT-006 crosstab states shares and suppression, comparison replaces results and ledger confirms erasure', async ({ page }, info) => {
   test.setTimeout(300000)
   const hydrationErrors:string[]=[]
@@ -93,6 +94,7 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
   const summary = page.locator('.results-summary')
   const metric = (label:string) => summary.locator('article').filter({has:page.getByText(label,{exact:true})})
   const yesNo = scenario.questions.find(question => question.questionType === 'yes_no')!
+  await openFilters(responseFilters)
   await responseFilters.getByRole('combobox',{name:'Question, hidden field or calculation',exact:true}).selectOption(yesNo.id)
   await responseFilters.getByLabel('Answer contains / equals').selectOption('true')
   await responseFilters.getByLabel('Source',{exact:true}).selectOption('direct')
@@ -144,7 +146,7 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
     await page.locator('.device-card').screenshot({path:join(process.env.PENCIL_CAPTURE_DIR,`${info.project.name}-device-filtered.png`)})
     await responseFilters.screenshot({path:join(process.env.PENCIL_CAPTURE_DIR,`${info.project.name}-ledger-device-filtered.png`)})
   }
-  await responseFilters.getByRole('button',{name:'Clear response filters',exact:true}).click()
+  await clearResponseFilters(responseFilters)
   await expect(page.locator('.device-card').getByRole('heading',{name:'Starts by device class'})).toBeVisible()
   await expect(page.locator('.device-card')).toContainText('12 recorded starts')
   await expect(metric('Responses').locator('strong')).toHaveText('12')

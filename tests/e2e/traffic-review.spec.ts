@@ -73,7 +73,7 @@ contract(['RSLT-013','RESP-016'],'an operator reviews and releases a retained bo
   await review.screenshot({path:`test-results/${info.project.name}-traffic-quarantine.png`})
   await review.getByRole('button',{name:'Release into results',exact:true}).click()
   await expect(review.getByText('No quarantined responses for this revision.',{exact:true})).toBeVisible()
-  await page.getByRole('button',{name:'Refresh traffic',exact:true}).click()
+  await page.reload()
   const traffic=page.getByRole('region',{name:'Views to submissions'})
   await expect(traffic.getByText('1 submission / 1 start',{exact:true})).toBeVisible()
   await traffic.getByText('Traffic counting scope',{exact:true}).click()

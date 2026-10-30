@@ -1,7 +1,7 @@
 import type { BuilderDraft, Ledger } from '../../src/core/app/api'
 import { contract } from './contract'
 import { expect, test } from './fixtures'
-import { signInEmptyWorkspace } from './authoring-helpers'
+import { signInEmptyWorkspace, addConditionRule } from './authoring-helpers'
 
 contract('FIELD-001','builds hidden link fields, previews their rules, collects declared values and exports them',async({page},info)=>{
   test.setTimeout(120_000);page.setDefaultTimeout(15_000)
@@ -35,7 +35,7 @@ contract('FIELD-001','builds hidden link fields, previews their rules, collects 
   await expect(page.getByText('Saved.',{exact:true})).toBeVisible()
   const draft=await read(),plan=draft.formSettings!.hiddenFields.find(field=>field.name==='plan')!,[question,,enterprise,blank]=draft.steps
   const settings=page.getByRole('complementary',{name:'Step settings'})
-  await settings.getByRole('button',{name:'Add condition rule',exact:true}).click()
+  await addConditionRule(settings)
   const rule=settings.getByRole('group',{name:'Rule 1',exact:true})
   await rule.getByLabel('Question',{exact:true}).selectOption(`hidden:${plan.id}`)
   await rule.getByLabel('Value',{exact:true}).fill('enterprise')

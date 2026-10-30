@@ -1,0 +1,12 @@
+/* The Filter control: a button, the applied filters as chips, and the fields folded under it. */
+.filter-bar { display: grid; gap: 12px; margin: 16px 0; }
+.filter-bar__row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.filter-bar__chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.filter-bar__chip { display: inline-flex; align-items: center; gap: 2px; min-height: 36px; border: 1px solid var(--line-bright); border-radius: 999px; padding: 0 4px 0 12px; color: var(--ink); background: var(--yellow-wash); font-size: 14px; overflow-wrap: anywhere; }
+.filter-bar__chip button { display: inline-flex; align-items: center; justify-content: center; min-width: 32px; min-height: 32px; border: 0; border-radius: 999px; padding: 0; color: inherit; background: transparent; cursor: pointer; }
+.filter-bar__panel[hidden] { display: none; }
+.filter-bar__panel { min-width: 0; }
+@media (max-width: 650px) {
+  .filter-bar__chip button { min-width: 44px; min-height: 44px; }
+  .filter-bar__row > .secondary-button, .filter-bar__row > .quiet-button { min-height: 44px; }
+}

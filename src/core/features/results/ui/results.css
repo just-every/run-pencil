@@ -70,17 +70,24 @@
 .ledger > header { align-items: flex-start; flex-wrap: wrap; }
 .ledger-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 16px; margin-top: 16px; }
 .ledger-filters > *, .ledger-filters > .inspector-field { margin: 0; }
-/* Ledger: a ruled list, one response per line (when · source, its answers, View answers); the answers open beneath. */
+/* Ledger: a ruled list, one response per line (its answers, then a quiet line of time and anything unusual); View answers shows on hover and focus; the answers open beneath. */
 .ledger-list { display: grid; margin-top: 12px; border-top: 1px solid var(--line); }
-.ledger-row { display: grid; grid-template-columns: minmax(180px, auto) minmax(0, 1fr) auto; align-items: center; gap: 4px 24px; border-bottom: 1px solid var(--line); padding: 12px 4px; }
+.ledger-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 0 24px; border-bottom: 1px solid var(--line); padding: 8px 4px; }
 .ledger-row > * { margin: 0; }
-.ledger-row__when { color: var(--ink); font-size: 15px; white-space: nowrap; }
-.ledger-row__answers { min-width: 0; overflow: hidden; color: var(--muted); font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
+.ledger-row__when { color: var(--subtle); font-size: 14px; overflow-wrap: anywhere; }
+.ledger-row__answers { min-width: 0; overflow: hidden; color: var(--ink); font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
 .ledger-row__toggle { min-height: 44px; font-size: 14px; }
 .ledger-row > :nth-child(n + 4) { grid-column: 1 / -1; }
+.ledger-row:not(.ledger-row--open) > .ledger-row__answers { grid-column: 1; grid-row: 1; }
+.ledger-row:not(.ledger-row--open) > .ledger-row__toggle { grid-column: 2; grid-row: 1; }
+.ledger-row:not(.ledger-row--open) > .ledger-row__when { grid-column: 1 / -1; grid-row: 2; }
 /* An open row (a class, not :has([aria-expanded]), which changes how Chrome paints the docs' menu pill) keeps View answers right. */
-.ledger-row--open .ledger-row__toggle { grid-column: 3; }
-.ledger-row--open > :nth-child(n + 3) { grid-column: 1 / -1; }
+.ledger-row--open > .ledger-row__toggle { grid-column: 2; }
+.ledger-row--open > :nth-child(n + 3):not(.ledger-row__toggle) { grid-column: 1 / -1; }
+@media (hover: hover) {
+  .ledger-row__toggle { opacity: 0; }
+  .ledger-row:hover .ledger-row__toggle, .ledger-row:focus-within .ledger-row__toggle, .ledger-row--open .ledger-row__toggle { opacity: 1; }
+}
 .ledger-row > dl { margin: 4px 0 8px; }
 .ledger-pages { gap: 8px 16px; margin-top: 16px; }
 .ledger-id { display: block; overflow-wrap: anywhere; font-size: 12px; }
@@ -104,11 +111,7 @@
 }
 @media (max-width: 650px) {
   .ledger-filters { grid-template-columns: 1fr; }
-  .ledger-row { grid-template-columns: minmax(0, 1fr) auto; }
-  .ledger-row--open .ledger-row__toggle { grid-column: 2; }
-  .ledger-row__when { white-space: normal; }
   .ledger-row__when .payment-state { max-width: 100%; white-space: normal; }
-  .ledger-row__answers { grid-row: 2; grid-column: 1 / -1; }
   /* One row on a phone: Previous, the range, Next, never Next alone beneath. */
   .ledger-pages { flex-wrap: nowrap; justify-content: space-between; gap: 8px; font-size: 14px; }
   .ledger-pages .quiet-button { font-size: 14px; }

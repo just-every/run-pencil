@@ -69,7 +69,7 @@ test('built-in templates each progress from an empty dashboard to publication, r
   await page.goto(builderUrl)
   await page.getByRole('link', { name: 'All flows', exact: true }).click()
   const card = page.locator('.flow-card').filter({ has: page.getByRole('heading', { name: template, exact: true }) })
-  await expect(card.getByText('1 completed · 1 starts', { exact: true })).toBeVisible()
+  await expect(card.getByText('1 response', { exact: false })).toBeVisible()
   await checkAuthoringLayout(page)
   if (template === 'Customer feedback') {
     await page.getByRole('button', { name: 'New flow', exact: true }).click()

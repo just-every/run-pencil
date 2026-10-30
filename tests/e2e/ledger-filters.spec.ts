@@ -11,6 +11,7 @@ import type * as SavReaderModule from 'sav-reader'
 import { collectLedgerFilterScenario, consentStatement } from '../ledger-filter-scenario'
 import type { ScenarioCall } from '../results-scenario'
 import type { LedgerResponse } from '../../src/core/app/api'
+import { openFilters, clearResponseFilters } from './filter-helpers'
 
 // sav-reader publishes only a CommonJS entry and shares no code with Pencil's writer. read-excel-file reads XLSX in the Worker case.
 const { SavBufferReader } = createRequire(import.meta.url)('sav-reader') as typeof SavReaderModule
@@ -39,10 +40,11 @@ contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019', 'IMPORT-00
     expect(violations.filter(violation => violation.impact === 'serious' || violation.impact === 'critical')).toEqual([])
   }
   for (const source of ['direct', 'imported'] as const) {
-    await ledger.getByRole('button',{name:'Clear response filters',exact:true}).click()
+    await clearResponseFilters(ledger)
     const revisionId = source === 'direct' ? scenario.nativeRevisionId : scenario.importedRevisionId
     await page.getByLabel('Published revision').selectOption(revisionId)
     await expect(ledger.getByRole('button', { name: 'View answers', exact: true })).toHaveCount(2)
+    await openFilters(ledger)
     await ledger.getByLabel('Source', { exact: true }).selectOption(source)
     if (source === 'imported') await expect(page.getByText('0 live · 2 imported', { exact: true })).toBeVisible()
     await ledger.getByLabel('Device class',{exact:true}).selectOption(source === 'direct' ? 'desktop' : 'unknown')
@@ -110,7 +112,7 @@ contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019', 'IMPORT-00
       }
       const article = ledger.locator('.ledger-list article')
       const date = await page.evaluate(({ value, timeZone }) => new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short', timeZone }).format(new Date(value)), { value: downloaded!.completedAt, timeZone: workspace.timeZone })
-      await expect(article.locator(':scope > p').first()).toHaveText(`${date} · ${downloaded!.identityMode === 'identified' ? 'Identified' : 'Anonymous'} · ${source === 'direct' ? 'Direct link' : 'Imported'}`)
+      await expect(article.locator(':scope > p').first()).toHaveText(`${date}${downloaded!.identityMode === 'identified' ? ' · Identified' : ''}${source === 'direct' ? '' : ' · Imported'}`)
       await expect(article.getByText(`Revision ${downloaded!.revisionNumber}`, { exact: true })).toHaveCount(0)
       const answers = article.getByRole('button', { name: 'View answers', exact: true })
       await answers.click()

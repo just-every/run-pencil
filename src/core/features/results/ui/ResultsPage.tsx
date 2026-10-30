@@ -16,6 +16,7 @@ import { ResponseLedger } from './ResponseLedger'
 import { QuarantineReview } from './QuarantineReview'
 import { api, reportingApi, type QuestionReport, type FlowResults, type LedgerFilter, type Ledger } from '../../../app/api'
 import { LoadProblem, loadFailure, type LoadFailure } from '../../../app/ui/LoadProblem'
+import { keepIfSame, useQuietRefresh } from '../../../shared/ui/useQuietRefresh'
 
 export function ResultsPage() {
   const { flowId } = useParams({ from: '/app/flows/$flowId/results' })
@@ -38,9 +39,19 @@ export function ResultsPage() {
   const selectionKey = JSON.stringify({...responseFilter,offset:undefined})
   useEffect(() => {
     let active = true
-    void Promise.all([api.workspace(), reportingApi.ledger(flowId,{})]).then(([workspace,ledger])=>{if(active){setTimeZone(workspace.timeZone);setRevisions(ledger.revisions);setMetadataLoaded(true)}}).catch(reason=>{if(active)setError(loadFailure(reason,'Results metadata could not load.'))})
+    void api.workspace().then(workspace=>{if(active)setTimeZone(workspace.timeZone)}).catch(reason=>{if(active)setError(loadFailure(reason,'Results metadata could not load.'))})
     return ()=>{active=false}
   },[flowId,refresh])
+  // The revision list comes with the ledger's first page, read once here and shared with the ledger below it (same request).
+  // When the results read failed there is no ledger below it: the same read says whether the flow has no published revision yet.
+  const ledgerRevision = selectedRevision === 'all' ? undefined : selectedRevision ?? results?.revision.id
+  const resultsFailed = error !== undefined
+  useEffect(() => {
+    if (!results && !resultsFailed) return
+    let active = true
+    void reportingApi.ledger(flowId,{revisionId:ledgerRevision}).then(ledger=>{if(active){setRevisions(ledger.revisions);setMetadataLoaded(true)}}).catch(reason=>{if(active)setError(loadFailure(reason,'Results metadata could not load.'))})
+    return ()=>{active=false}
+  },[flowId,refresh,ledgerRevision,results?.revision.id,resultsFailed])
   useEffect(() => {
     let active = true
     setError(undefined); setBusy(true)
@@ -61,6 +72,17 @@ export function ResultsPage() {
     void reportingApi.devices(flowId, filter).then(report => { if (active) setDevices(report) }).catch(reason => { if (active) setError(loadFailure(reason, 'Device counts could not load.')) })
     return () => { active = false }
   }, [flowId, filterKey, refresh, results?.revision.id])
+
+  useQuietRefresh(async () => {
+    if (!results || busy || comparing) return
+    const all = selectedRevision === 'all'
+    const result = await api.results(flowId, all ? undefined : selectedRevision, responseFilter, all)
+    const [nextQuestions, nextDevices] = await Promise.all([
+      reportingApi.questions(flowId, all ? undefined : result.revision.id, responseFilter),
+      reportingApi.devices(flowId, { ...responseFilter, revisionId: all ? undefined : selectedRevision ?? result.revision.id }),
+    ])
+    setResults(current => keepIfSame(current, result, ['cutoff'])); setQuestions(current => keepIfSame(current, nextQuestions)); setDevices(current => keepIfSame(current, nextDevices))
+  })
 
   return (
     <section className="results" aria-labelledby="results-title" aria-busy={busy}>

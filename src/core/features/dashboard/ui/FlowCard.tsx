@@ -31,15 +31,20 @@ export function FlowCard({ flow, timeZone, refreshing = false, onSavingChange }:
   }
   const date = new Date(flow.lastActivityAt)
   const activity = Number.isNaN(date.valueOf()) ? 'No recorded activity' : `Last activity ${shortDateTime(date, timeZone)}`
+  const { audience } = flow
+  const meta = [
+    flow.hasUnpublishedChanges ? 'Unpublished changes' : undefined,
+    flow.completedResponses ? `${flow.completedResponses} ${flow.completedResponses === 1 ? 'response' : 'responses'}` : undefined,
+    activity,
+    audience.launchedParticipants === 0 ? undefined : audience.eligibleParticipants === 0 ? '0 / 0 eligible participants' : `${audience.completedParticipants ?? 0} / ${audience.eligibleParticipants} eligible participants completed`,
+  ].filter(Boolean)
   return <article className="panel flow-card">
-    <header><span className="badge" data-status={flow.status}>{flow.status[0].toUpperCase() + flow.status.slice(1)}</span><span className="flow-card-note">{flow.hasUnpublishedChanges ? 'Unpublished changes' : ''}</span></header>
-    <div><h2 className="display">{flow.title}</h2><p className="muted flow-card-activity">{activity}</p></div>
-    <p className="muted">Analysis: {flow.analysis ? <><Link to="/app/analysis/$runId" params={{runId:flow.analysis.id}}>{flow.analysis.state.replaceAll('_',' ')} · Revision {flow.analysis.revisionNumber}</Link>{flow.analysis.stale ? ' · Stale' : ''}{flow.analysis.redacted ? ' · Redacted' : ''}</> : 'Never run'}</p>
-    <p className="flow-card-counts"><strong>{flow.completedResponses} completed · {flow.starts} starts</strong></p>
-    <p className="muted flow-card-audience">Audience: {flow.audience.launchedParticipants === 0 ? 'Anonymous public link' : flow.audience.eligibleParticipants === 0 ? '0 / 0 eligible participants' : `${flow.audience.completedParticipants ?? 0} / ${flow.audience.eligibleParticipants} eligible participants completed`}</p>
+    <h2 className="display">{flow.status === 'draft' ? <Link className="focus-ring" to="/app/flows/$flowId/builder" params={{ flowId: flow.id }}>{flow.title}</Link> : <Link className="focus-ring" to="/app/flows/$flowId/results" params={{ flowId: flow.id }}>{flow.title}</Link>}</h2>
+    <p className="muted flow-card-meta"><span className="flow-card-status" data-status={flow.status}>{flow.status[0].toUpperCase() + flow.status.slice(1)}</span>{meta.map(part => <span key={part}> · {part}</span>)}</p>
     <nav className="flow-card-actions" aria-label={`${flow.title} actions`}>
       <Link className="secondary-button focus-ring" to="/app/flows/$flowId/builder" params={{ flowId: flow.id }}><PencilLine aria-hidden="true" size={15} /> Builder</Link>
       <Link className="secondary-button focus-ring" to="/app/flows/$flowId/results" params={{ flowId: flow.id }}><BarChart3 aria-hidden="true" size={15} /> Results</Link>
+      {flow.analysis ? <Link className="secondary-button focus-ring" to="/app/analysis/$runId" params={{ runId: flow.analysis.id }}>Analysis{flow.analysis.stale ? ' · Stale' : ''}</Link> : null}
       {!duplicating ? <button className="quiet-button focus-ring" disabled={refreshing} type="button" onClick={() => { setError(undefined); setDuplicating(true) }}>Duplicate flow</button> : null}
     </nav>
     {duplicating ? <form className="flow-card-copy" onSubmit={(event) => { event.preventDefault(); void duplicate() }}>

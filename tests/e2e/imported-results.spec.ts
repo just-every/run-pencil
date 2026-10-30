@@ -8,6 +8,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { beginHistoricalScenario } from '../import-results-scenario'
 import type { ScenarioCall } from '../results-scenario'
 import type { Ledger, FlowResults } from '../../src/core/app/api'
+import { openFilters, clearResponseFilters } from './filter-helpers'
 contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'IMPORT-004', 'LEDG-001', 'BASE-PUBLIC-003'], 'historical-only results show imported answers and actual zero native telemetry', async ({ page }, info) => {
   test.setTimeout(90000)
   await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
@@ -42,6 +43,7 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'IMPORT-004', 'LEDG-001', 'BASE-PU
   const counts = answers.getByText('How we count', { exact: true }); await counts.click()
   await expect(answers.getByText('0 distinct sessions reached · 0 expired sessions ended here · No rate drop-off (0 / 0 reached sessions)')).toBeVisible()
   const ledger = page.getByRole('region', { name: 'Response ledger' })
+  await openFilters(ledger)
   await ledger.getByLabel('Source', { exact: true }).selectOption('imported')
   await ledger.getByLabel('Device class',{exact:true}).selectOption('unknown')
   await expect(metric('Responses').locator('strong')).toHaveText('1')
@@ -60,7 +62,7 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'IMPORT-004', 'LEDG-001', 'BASE-PU
   await page.getByLabel('Published revision').selectOption(sourceRevision)
   await ledger.getByRole('button', { name: 'View answers', exact: true }).click()
   await expect(ledger.getByText('Hello', { exact: true })).toBeVisible()
-  await ledger.getByRole('button',{name:'Clear response filters',exact:true}).click()
+  await clearResponseFilters(ledger)
   await expect(metric('Completion rate')).toContainText('0 completions / 0 views')
   await expect(metric('Responses').locator('strong')).toHaveText('1')
   await expect(page.getByLabel('Email me about completed responses')).toHaveValue('off')

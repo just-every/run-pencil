@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { contract } from './contract'
 import { expect, test } from './fixtures'
-import { signInEmptyWorkspace } from './authoring-helpers'
+import { signInEmptyWorkspace, addStep } from './authoring-helpers'
 import { downloadedText, csvRows } from './export-helpers'
 
 contract('FIELD-003', 'builds and collects satisfaction, effort, emoji and thumbs scores with stated results and numeric exports', async ({ page }, info) => {
@@ -27,7 +27,7 @@ contract('FIELD-003', 'builds and collects satisfaction, effort, emoji and thumb
     await expect(page.getByRole('button', { name: 'Publish', exact: true })).toBeEnabled()
   }
   for (const [type, prompt] of questions) {
-    await rail.getByRole('button', { name: 'Add question', exact: true }).click()
+    await addStep(rail, 'Add question')
     await editor.getByLabel('Question type').selectOption(type)
     await editor.getByLabel('Prompt', { exact: true }).fill(prompt)
     await editor.getByLabel('Required response').check()
@@ -35,7 +35,7 @@ contract('FIELD-003', 'builds and collects satisfaction, effort, emoji and thumb
     await expect(page.getByLabel('Draft question canvas').getByRole('radiogroup', { name: prompt })).toBeVisible()
   }
   await page.screenshot({ path: `test-results/${info.project.name}-scores-builder.png`, fullPage: true })
-  await rail.getByRole('button', { name: 'Add completion screen', exact: true }).click()
+  await addStep(rail, 'Add completion screen')
   await editor.getByLabel('Prompt', { exact: true }).fill('Thank you for helping us improve the next workshop.')
   await save()
   await page.getByRole('button', { name: 'Publish', exact: true }).click()

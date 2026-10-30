@@ -7,6 +7,7 @@ import type { Ledger, LedgerResponse } from '../../src/core/app/api'
 import { collectDisclosureScenario } from '../disclosure-scenario'
 import type { ScenarioCall } from '../results-scenario'
 import { csvRows, downloadedBytes } from './export-helpers'
+import { openFilters, clearResponseFilters } from './filter-helpers'
 
 const { SavBufferReader } = createRequire(import.meta.url)('sav-reader') as typeof SavReaderModule
 
@@ -40,6 +41,7 @@ export async function operatorDisclosureExposure(page: Page, call: ScenarioCall,
 
   // LEDG-003 supports one structured answer plus search; Scale occurs only as this plan's published label.
   const ledger = page.getByRole('region', { name: 'Response ledger', exact: true })
+  await openFilters(ledger)
   await ledger.getByRole('combobox', { name: 'Question, hidden field or calculation', exact: true }).selectOption(scenario.renewalId)
   await ledger.getByLabel('Answer contains / equals').selectOption({ label: 'Renew' })
   await ledger.getByRole('searchbox', { name: 'Search responses', exact: true }).fill('Scale')
@@ -47,7 +49,7 @@ export async function operatorDisclosureExposure(page: Page, call: ScenarioCall,
     const url = new URL(value.url())
     return url.pathname === scenario.path + '/ledger' && url.searchParams.get('search') === 'Scale' && url.searchParams.get('answerValue') === scenario.renewId
   })
-  await ledger.getByRole('button', { name: 'Search', exact: true }).click()
+  await ledger.getByRole('searchbox', { name: 'Search responses', exact: true }).press('Enter')
   const selected = await (await selection).json() as Ledger
   expect(selected.total).toBe(3)
   expect(selected.responses.map(row => row.id).sort()).toEqual([...scenario.exposedIds].sort())
@@ -91,7 +93,7 @@ export async function operatorDisclosureExposure(page: Page, call: ScenarioCall,
     for (const row of sav) expect(row[String(entry[metadataHeader.indexOf('sav_variable')])]).toBe(entry[metadataHeader.indexOf('sav_code')])
   }
   await capture('operator-exposure-ledger')
-  await ledger.getByRole('button', { name: 'Clear search', exact: true }).click()
+  await ledger.getByRole('button', { name: 'Remove Search filter', exact: true }).click()
   await ledger.getByRole('combobox', { name: 'Question, hidden field or calculation', exact: true }).selectOption('')
   await expect(ledger.getByText('43 matching completed responses', { exact: false })).toBeVisible()
   const raw = JSON.parse((await download('JSON')).toString('utf8')) as { responses: LedgerResponse[] }

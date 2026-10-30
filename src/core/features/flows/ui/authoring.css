@@ -231,3 +231,7 @@
 .known-data-settings .toggle-row { min-height:44px; align-items:center; }
 .known-data-settings[open] { margin-bottom:12px; }
 .builder-lifecycle-confirm { flex: 1 1 100%; margin: 0; color: var(--ink); font-size: 15px; }
+
+.builder-status a { color: inherit; text-decoration: underline 1.5px var(--line-bright); text-underline-offset: 4px; }
+.builder-add .action-menu { width: 100%; }
+@media (max-width: 760px) { .builder-add .action-menu { flex: 1 1 100%; } }

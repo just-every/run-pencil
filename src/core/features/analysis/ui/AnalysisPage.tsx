@@ -6,6 +6,7 @@ import { Link } from '@tanstack/react-router'
 import { Plus } from 'lucide-react'
 import { analysisApi, stateLabels, transportLabel, when, type Policies, type ProviderStatus, type RunSummary, type UsageRow } from './analysisApi'
 import { shortDay } from '../../../shared/ui/shortDate'
+import { keepIfSame, useQuietRefresh } from '../../../shared/ui/useQuietRefresh'
 
 export function ProviderNote({ provider }: { provider: ProviderStatus }) {
   if (provider.state === 'on' && provider.transport === 'demo') return <p className="muted" style={{ margin: 0 }}>Analysis is ready to try with this workspace’s feedback. Nothing is sent to an AI provider.</p>
@@ -26,6 +27,7 @@ function PolicyForm({ policies, onSaved }: { policies: Policies; onSaved: (polic
 
 export function AnalysisPage() {
   const [data, setData] = useState<{ timeZone: string; provider: ProviderStatus; policies: Policies; runs: RunSummary[]; usage: UsageRow[] }>(), [error, setError] = useState<string>()
+  useQuietRefresh(() => analysisApi.overview().then(next => setData(current => current ? keepIfSame(current, next) : current)))
   useEffect(() => { analysisApi.overview().then(setData).catch(reason => setError(reason instanceof Error ? reason.message : 'Analysis could not load.')) }, [])
   return <section aria-labelledby="analysis-title">
     <header className="dashboard-heading">

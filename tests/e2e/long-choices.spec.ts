@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright'
 import { contract } from './contract'
 import { expect } from './fixtures'
-import { signInEmptyWorkspace } from './authoring-helpers'
+import { signInEmptyWorkspace, addStep } from './authoring-helpers'
 import { downloadedText } from './export-helpers'
 
 contract('FIELD-014', 'builds reviewed country and bulk lists and collects a keyboard-selected searchable dropdown', async ({ page }, info) => {
@@ -13,7 +13,7 @@ contract('FIELD-014', 'builds reviewed country and bulk lists and collects a key
   const flowId = /flows\/([^/]+)\//.exec(page.url())![1]
   const rail = page.getByRole('complementary', { name: 'Flow steps' })
   const editor = page.getByRole('complementary', { name: 'Step settings' })
-  await rail.getByRole('button', { name: 'Add question', exact: true }).click()
+  await addStep(rail, 'Add question')
   await editor.getByLabel('Question type').selectOption('dropdown')
   await editor.getByLabel('Prompt', { exact: true }).fill('Where is your office?')
   await editor.getByLabel('Required response').check()
@@ -32,7 +32,7 @@ contract('FIELD-014', 'builds reviewed country and bulk lists and collects a key
   await editor.getByRole('button', { name: 'Save', exact: true }).click()
   await expect(page.getByText('Saved.', { exact: true })).toBeVisible()
   await page.screenshot({ path: `test-results/${info.project.name}-long-choices-builder.png`, fullPage: true })
-  await rail.getByRole('button', { name: 'Add completion screen', exact: true }).click()
+  await addStep(rail, 'Add completion screen')
   await editor.getByLabel('Prompt', { exact: true }).fill('Your office is registered')
   await editor.getByRole('button', { name: 'Save', exact: true }).click()
   await expect(page.getByText('Saved.', { exact: true })).toBeVisible()

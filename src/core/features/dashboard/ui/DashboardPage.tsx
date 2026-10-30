@@ -1,11 +1,12 @@
 import { StudioPanel } from '../../studio/ui'
 import { TeamTemplatePicker } from './TeamTemplatePicker'
 import { flowTemplates, starterTemplateIds, type FlowTemplateId } from '../../flows'
-import { Plus, RefreshCw } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { Link, useNavigate, useRouter } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { api, type DashboardFlow, type WorkspaceSettings } from '../../../app/api'
 import { useProtectUnsavedChanges, useUnsavedChanges } from '../../../shared/ui/UnsavedChanges'
+import { keepIfSame, useQuietRefresh } from '../../../shared/ui/useQuietRefresh'
 import { AppNote } from '../../../app/ui/AppNote'
 import { NoteIllustration } from '../../../app/ui/NoteIllustration'
 import { FlowCard } from './FlowCard'
@@ -68,6 +69,14 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
     // Loader reconciliation must not undo a New flow click made while it was pending.
     if (initialData.hasFlows && !createRequested.current && !title && !slug) setShowCreate(false)
   }, [initialData])
+  useQuietRefresh(() => {
+    if (loading || saving) return
+    const version = requestVersion.current
+    return Promise.all([api.dashboard(status === 'active' ? undefined : status), api.workspace()]).then(([nextFlows, nextWorkspace]) => {
+      if (requestVersion.current !== version) return
+      setFlows(current => keepIfSame(current, nextFlows)); setWorkspace(current => keepIfSame(current, nextWorkspace))
+    })
+  })
   const updateList = (nextStatus = status) => {
     if (loading || saving) return
     if (!showCreate && dirty && !window.confirm('Discard unfinished copies and update this list?')) return
@@ -102,7 +111,6 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
       <div className="builder-actions dashboard-actions">
         <Link className="secondary-button focus-ring" to="/app/import">Import a form</Link>
         {!showCreate ? <button className="primary-button focus-ring" disabled={loading || saving} type="button" onClick={openCreate}><Plus size={16} aria-hidden="true" /> New flow</button> : null}
-        <button className="quiet-button focus-ring" disabled={loading || saving} onClick={() => updateList()} type="button"><RefreshCw aria-hidden="true" size={16} /> Refresh</button>
       </div>
     </header>
     {error ? <p className="status-note" data-tone="error" role="alert">{error}</p> : null}

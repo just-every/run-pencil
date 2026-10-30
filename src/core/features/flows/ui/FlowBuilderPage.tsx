@@ -8,6 +8,7 @@ import { ConfirmationSettings } from './ConfirmationSettings'
 import { RespondentTextSettings } from './RespondentTextSettings'
 import { MarketingOptInSettings } from './MarketingOptInSettings'
 import { Tooltip } from '../../../shared/ui/Tooltip'
+import { ActionMenu } from '../../../shared/ui/ActionMenu'
 import { usePhoneWidth } from '../../../shared/ui/usePhoneWidth'
 import { nextScreenLabel } from './nextScreenLabel'
 import { FlowLifecycle } from './FlowLifecycle'
@@ -258,10 +259,9 @@ export function FlowBuilderPage() {
         <div>
           <Link className="builder-back focus-ring" to="/app"><ArrowLeft aria-hidden="true" size={16} /> All flows</Link>
           <h1 id="builder-title" className="display">{draft.flow.title}</h1>
-          <p className="builder-status"><span className="badge" data-status={draft.flow.status}>{draft.flow.status[0].toUpperCase() + draft.flow.status.slice(1)}</span>{draft.flow.hasUnpublishedChanges ? <span> · Unpublished changes</span> : nothingToPublish ? <span id="nothing-to-publish"> · Nothing to publish</span> : null}</p>
+          <p className="builder-status"><span className="badge" data-status={draft.flow.status}>{draft.flow.status[0].toUpperCase() + draft.flow.status.slice(1)}</span>{draft.flow.hasUnpublishedChanges ? <span> · Unpublished changes</span> : nothingToPublish ? <span id="nothing-to-publish"> · Nothing to publish</span> : null}{draft.flow.status === 'open' || draft.flow.status === 'closed' ? <span> · <Link className="focus-ring" to="/app/flows/$flowId/results" params={{ flowId }}>Results</Link></span> : null}</p>
         </div>
         <div className="builder-actions">
-          {draft.flow.status === 'open' || draft.flow.status === 'closed' ? <><a className="secondary-button focus-ring" href={`/f/${draft.flow.slug}`} target="_blank" rel="noopener">View public flow</a><Link className="secondary-button focus-ring" to="/app/flows/$flowId/results" params={{ flowId }}>Results</Link></> : null}
           {draft.flow.status === 'archived' ? null : <button className="secondary-button focus-ring flow-share-toggle" disabled={saving || shareDirty} aria-expanded={sharing} aria-controls="flow-share-panel" onClick={() => setSharing(current => !current)} type="button">{sharing ? 'Edit steps' : 'Share'}</button>}
           <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={preview} type="button"><Eye aria-hidden="true" size={16} /> Preview draft</button>
           {draft.flow.status === 'archived' ? null : <button className="primary-button focus-ring" aria-describedby={nothingToPublish ? 'nothing-to-publish' : undefined} disabled={saving || dirty || !timeZone || nothingToPublish} onClick={publish} type="button"><Send aria-hidden="true" size={16} /> Publish</button>}
@@ -282,11 +282,12 @@ export function FlowBuilderPage() {
           <p className="display builder-count">{draft.steps.length} {draft.steps.length === 1 ? 'step' : 'steps'}</p>
           {!draft.steps.length ? <p className="muted builder-start-guidance">Start with a question, then add a completion screen.</p> : null}
           <div className="builder-add">
-            <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={addQuestion} type="button"><Plus aria-hidden="true" size={15} /> Add question</button>
-            <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={addCompletion} type="button"><Plus aria-hidden="true" size={15} /> Add completion screen</button>
-            {/* After the completion button: on a phone it shares the second row with Add welcome screen instead of adding a row. */}
-            <button className="secondary-button focus-ring" disabled={saving || dirty} onClick={addPayment} type="button"><CreditCard aria-hidden="true" size={15} /> Add payment step</button>
-          {!draft.steps.some((step) => step.kind === 'welcome') ? <button className="secondary-button focus-ring" disabled={saving || dirty} type="button" onClick={() => reloadAfterMutation(() => api.addDraftStep(flowId, { expectedVersion: draft.flow.draftVersion, step: { kind: 'welcome', questionType: null, prompt: 'Before you begin', helperText: 'Share a few answers to help us improve.', nextStepId: draft.steps.find((step) => step.kind === 'question')?.id ?? null } }))}><Plus aria-hidden="true" size={15} /> Add welcome screen</button> : null}
+            <ActionMenu label="Add step" icon={<Plus aria-hidden="true" size={15} />} disabled={saving || dirty} items={[
+              { label: 'Add question', onSelect: () => void addQuestion() },
+              { label: 'Add completion screen', onSelect: () => void addCompletion() },
+              { label: 'Add payment step', icon: <CreditCard aria-hidden="true" size={15} />, onSelect: () => void addPayment() },
+              ...(draft.steps.some((step) => step.kind === 'welcome') ? [] : [{ label: 'Add welcome screen', onSelect: () => void reloadAfterMutation(() => api.addDraftStep(flowId, { expectedVersion: draft.flow.draftVersion, step: { kind: 'welcome', questionType: null, prompt: 'Before you begin', helperText: 'Share a few answers to help us improve.', nextStepId: draft.steps.find((step) => step.kind === 'question')?.id ?? null } })) }]),
+            ]} />
           </div>
           <div className="step-list">
             {draft.steps.map((step, index) => (
