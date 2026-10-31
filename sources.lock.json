@@ -9233,7 +9233,7 @@
       "executable": false
     },
     "tests/runtime/collectors-trends.worker.test.ts": {
-      "sha256": "83530e3ddab53f6bd82ae84eba9d1ce636a06037c85b621f35124dce6dc7024a",
+      "sha256": "a5101048d18f72c74b359c976b5296dd70f1aa78d0b48069eaf1e9793772242c",
       "executable": false
     },
     "tests/runtime/completion-redirects.worker.test.ts": {

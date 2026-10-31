@@ -32,8 +32,8 @@ contract(['DIST-017','RSLT-007','RSLT-006','LEDG-005','RSLT-008','RSLT-009'],'na
   draft=await call<BuilderDraft>(root+'/draft');const stepId=draft.steps[0].id
   await call(root+'/draft/steps',{expectedVersion:draft.flow.draftVersion,step:{kind:'completion',questionType:null,prompt:'Thank you for helping us improve.'}})
   draft=await call<BuilderDraft>(root+'/draft');await call(root+'/publish',{expectedVersion:draft.flow.draftVersion})
-  const a=await call<Collector>(root+'/collectors',{name:'July mailing',channel:'email',responseLimit:2}),b=await call<Collector>(root+'/collectors',{name:'Product feedback',channel:'embed',responseLimit:10,closeAt:'2026-12-01T17:00'})
-  expect(b.deadlineAt).toBe('2026-12-01T22:00:00.000Z');expect(b.deadlineTimeZone).toBe('America/New_York')
+  const a=await call<Collector>(root+'/collectors',{name:'July mailing',channel:'email',responseLimit:2}),b=await call<Collector>(root+'/collectors',{name:'Product feedback',channel:'embed',responseLimit:10,closeAt:'2080-12-01T17:00'})
+  expect(b.deadlineAt).toBe('2080-12-01T22:00:00.000Z');expect(b.deadlineTimeZone).toBe('America/New_York')
   const start=async(collector:Collector)=>{const session=await call<Session>(`/api/public/flows/${slug}/sessions`,{source:collector.id===b.id?'embed':'direct',deviceClass:'desktop',collectorKey:collector.publicKey});await matureLoad(session);return session}
   const body=(session:Session,value:number)=>({...session,idempotencyKey:'collector-'+session.sessionId,answers:[{stepId,value}]})
   const dateResponse=async(id:string,time:string)=>{await env.DB.prepare('UPDATE responses SET started_at=?,completed_at=?,released_at=?,created_at=?,updated_at=? WHERE id=?').bind(new Date(Date.parse(time)-6000).toISOString(),time,time,time,time,id).run()}
