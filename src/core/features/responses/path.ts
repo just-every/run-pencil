@@ -52,7 +52,7 @@ export function validatePathAnswers(steps: StoredStep[], choices: StoredChoice[]
       if (value === undefined) {
         if (current.required) {
           const reason = respondentString(settings?.text, 'requiredMessage')
-          throw new ValidationError(reason, [{ stepId: current.stableId, reason }])
+          throw new ValidationError(`“${current.prompt}”: ${reason}`, [{ stepId: current.stableId, reason }])
         }
       } else {
         validateQuestionValue(current, choicesByStep.get(current.id) ?? [], value)

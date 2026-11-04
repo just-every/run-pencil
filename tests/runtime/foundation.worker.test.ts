@@ -50,7 +50,7 @@ contract('FLOW-006', 'rejects all publication problems by stable ID without crea
   const session = await t.start(); await t.mature(session.sessionId)
   for (const value of [undefined, null, '', '   ', []]) {
     await expect(t.final(session, value === undefined ? [] : [{ stepId: published.steps[0].id, value }])).rejects.toMatchObject({
-      message: 'Please share your feedback before sending.',
+      message: '“Anything to add?”: Please share your feedback before sending.',
       details: [{ stepId: published.steps[0].id, reason: 'Please share your feedback before sending.' }],
     })
     expect((await env.DB.prepare('SELECT count(*) AS n FROM responses WHERE flow_id = ?').bind(t.flow.flowId).first<{ n: number }>())!.n).toBe(0)
@@ -64,7 +64,7 @@ contract('FLOW-006', 'rejects all publication problems by stable ID without crea
   await c.services.flows.updateFormSettings({ ...c.flow, expectedVersion: closedDraft.flow.draftVersion, settings: { ...closedDraft.formSettings!, text: { closedMessage: 'We are done for now.', requiredMessage: '' } } })
   await c.publish()
   const fallbackSession = await c.start(); await c.mature(fallbackSession.sessionId)
-  await expect(c.final(fallbackSession, [])).rejects.toMatchObject({ message: 'Please answer this question.' })
+  await expect(c.final(fallbackSession, [])).rejects.toMatchObject({ message: '“Anything to add?”: Please answer this question.' })
   expect((await env.DB.prepare('SELECT count(*) AS n FROM responses WHERE flow_id = ?').bind(c.flow.flowId).first<{ n: number }>())!.n).toBe(0)
   await c.services.flows.closeFlow(c.scope.workspaceId, c.flow.flowId, c.operatorId)
   await expect(c.services.flows.getPublicFlow(c.slug)).rejects.toMatchObject({ flow: { message: 'We are done for now.' } })
