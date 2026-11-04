@@ -20,7 +20,7 @@ async function submissionWindow(load: Promise<Response>) {
   await expect.poll(()=>Date.now()-at).toBeGreaterThanOrEqual(manifest.limits.abuse.minimumSecondsFromFormLoadToSubmit*1000)
 }
 
-contract(['LOGIC-003', 'LOGIC-006', 'PAY-001', 'PAY-005', 'PAY-003', 'PAY-004'], 'builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals', async ({ page, browser }, info) => {
+contract(['LOGIC-003', 'LOGIC-006', 'PAY-001', 'PAY-005', 'PAY-003', 'PAY-004', 'DIST-009'], 'builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals', async ({ page, browser }, info) => {
   test.setTimeout(240_000)
   page.setDefaultTimeout(15_000)
   const hydrationErrors:string[]=[]
@@ -330,6 +330,65 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001', 'PAY-005', 'PAY-003', 'PAY-004'],
         expect((await page.request.delete(`/api/app/responses/${rejected.metadata.pencil_response}`)).status()).toBe(204)
       } finally { await invalidContext.close() }
     }
+    // Fetch the genuine application receipt, then add a payer field only to its
+    // browser transport. The stored payment and embedded respondent stay real.
+    stripe.useStripeCheckoutOrigin()
+    const payerContext = await browser.newContext({ extraHTTPHeaders: {}, viewport: info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 } })
+    payerContext.on('page', observePage)
+    try {
+      const canary = `synthetic-pencil-${crypto.randomUUID()}`
+      let receipt: { responseId: string; payment: { state: string; checkoutUrl: string; checkoutSessionId: string } } | undefined
+      await payerContext.route('https://checkout.stripe.com/**', route => route.abort('aborted'))
+      await payerContext.route(`${pencil}/api/public/flows/${slug}/responses`, async route => {
+        const response = await route.fetch()
+        expect(response.status()).toBe(201)
+        receipt = await response.json()
+        expect(receipt!.payment).toMatchObject({ state: 'pending', checkoutUrl: expect.stringMatching(/^https:\/\/checkout\.stripe\.com\//) })
+        await route.fulfill({ response, json: { ...receipt, payment: { ...receipt!.payment, payerEmail: canary } } })
+      })
+      const payer = await payerContext.newPage()
+      const outside: string[] = []
+      payer.on('request', request => { if (![pencil, invalidHost.origin].includes(new URL(request.url()).origin)) outside.push(request.url()) })
+      const loaded = formLoad(payer)
+      await payer.goto(invalidHost.origin)
+      const child = payer.frameLocator('iframe')
+      await expect(child.getByRole('spinbutton', { name: quantity.prompt, exact: true })).toBeVisible()
+      const childDocument = payer.frames().find(frame => frame.url().includes('/embed/'))!
+      const childUrl = childDocument.url()
+      const iframeSource = await payer.locator('iframe').getAttribute('src')
+      await child.getByRole('spinbutton', { name: quantity.prompt, exact: true }).fill('3')
+      await child.getByRole('button', { name: 'Continue', exact: true }).click()
+      await child.getByRole('radio', { name: 'Yes', exact: true }).check()
+      await submissionWindow(loaded)
+      await child.getByRole('button', { name: 'Continue', exact: true }).click()
+      await child.getByRole('button', { name: 'Pay $48.00 with Stripe', exact: true }).click()
+      await expect(child.getByRole('alert')).toHaveText('Stripe Checkout details could not be verified. Your saved answers remain pending payment.')
+      await expect(child.getByRole('link', { name: 'Continue to Stripe Checkout', exact: true })).toHaveCount(0)
+      expect(payer.url()).toBe(`${invalidHost.origin}/`)
+      expect(childDocument.url()).toBe(childUrl)
+      expect(await payer.locator('iframe').getAttribute('src')).toBe(iframeSource)
+      const hostMessages = await payer.evaluate(() => {
+        const host = window as unknown as { messages: Array<{ type?: string }>; events: Array<{ type: string }> }
+        return { messages: host.messages, events: host.events }
+      })
+      expect(hostMessages.messages.filter(message => message.type === 'pencil:checkout')).toEqual([])
+      expect(hostMessages.events.filter(event => event.type === 'pencil:checkout')).toEqual([])
+      expect(JSON.stringify(hostMessages)).not.toContain(canary)
+      expect(await payer.content()).not.toContain(canary)
+      expect(payer.url()).not.toContain(canary)
+      expect(outside).toEqual([])
+      const pending = (await call<Ledger>(`${base}/ledger`)).responses.find(response => response.id === receipt!.responseId)
+      expect(pending).toBeDefined()
+      expect(pending!.payment).toMatchObject({ state: 'pending', amount: 4800, checkoutSessionId: receipt!.payment.checkoutSessionId })
+      expect(JSON.stringify(pending)).not.toContain(canary)
+      await child.getByRole('alert').scrollIntoViewIfNeeded()
+      await childDocument.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))))
+      await captureEmbed(payer, 'refused-payer-field')
+      expect(await payer.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      expect((await new AxeBuilder({ page: payer }).analyze()).violations.filter(violation => violation.impact === 'serious' || violation.impact === 'critical')).toEqual([])
+      expect((await payer.request.post(`${stripe.origin}/v1/checkout/sessions/${receipt!.payment.checkoutSessionId}/expire`, { headers: { Authorization: `Bearer ${stripeFixture.secretKey}` } })).status()).toBe(200)
+      expect((await page.request.delete(`/api/app/responses/${receipt!.responseId}`)).status()).toBe(204)
+    } finally { await payerContext.close() }
   } finally { stripe.useStripeCheckoutOrigin(); await invalidHost.close(); await call('/api/app/workspace', 'PUT', workspace) }
   // An allowed host can omit the script acknowledgement. Its opaque frame must
   // offer a user-activated top-level continuation instead of silently stranding payment.

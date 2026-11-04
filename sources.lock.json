@@ -869,7 +869,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "864cb7dcaddd5aac7b24ae686acc53c78a8cc6e9437ae744bfcc11100473d96f",
+      "sha256": "19580d5099eb1c041e1fbd93f2314f3328c38d6d42c22f46a3963bdd61936786",
       "executable": false
     },
     "DEMO.md": {
@@ -8541,7 +8541,7 @@
       "executable": false
     },
     "tests/e2e/calculations.spec.ts": {
-      "sha256": "34aef087b011d8f5c5f95fa335190270f5d139aaafa5306e5eed07ca6add978a",
+      "sha256": "ab7a5c19c77bba5be3779dc9d0529ac00452ee42e1dc4c8b3901c200f962ef1b",
       "executable": false
     },
     "tests/e2e/chat-settings-proof.ts": {
