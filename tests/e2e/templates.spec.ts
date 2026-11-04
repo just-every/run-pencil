@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures'
+import { startStripeReceiver, stripeFixture } from './stripe-receiver'
 import type { Request } from '@playwright/test'
 import { flowTemplates } from '../../src/core/features/flows/templates'
 import { openStateDatabase, stateDatabaseFile } from './state-database'
@@ -6,6 +7,8 @@ import { checkAuthoringLayout, signInEmptyWorkspace } from './authoring-helpers'
 
 test('built-in templates each progress from an empty dashboard to publication, response and counted result', async ({ page }, info) => {
   test.setTimeout(300_000)
+  const stripe = await startStripeReceiver(new URL(process.env.PENCIL_E2E_BASE_URL!).origin)
+  try {
   for (const template of ['Customer feedback', 'NPS', 'Contact/lead']) {
     await test.step(template, async () => {
       await page.context().clearCookies()
@@ -83,7 +86,14 @@ test('built-in templates each progress from an empty dashboard to publication, r
               await expect(preview.getByRole('alert')).toBeVisible()
               await text.fill(owner.email)
             } else await text.fill('synthetic-pencil-preview')
-          } else await preview.getByRole('radio').first().click()
+          } else if (await preview.getByRole('radio').count()) await preview.getByRole('radio').first().click()
+          else {
+            await expect(preview.getByLabel('Order summary')).toBeVisible()
+            await expect(preview.getByText('Preview never opens Stripe or charges anyone.', { exact: true })).toBeVisible()
+            await expect(page.getByRole('note').filter({ hasText: 'Requires Stripe' })).toBeVisible()
+            await expect(page.getByRole('note').getByRole('link', { name: 'Settings', exact: true })).toHaveAttribute('href', '/app/settings')
+            if (item.id === 'payment-event') await page.screenshot({ path: info.outputPath(`${info.project.name}-gallery-payment-preview.png`), fullPage: true })
+          }
           await preview.getByRole('button', { name: 'Continue preview', exact: true }).click()
         }
         await expect(preview.getByRole('status'), item.id).toHaveText('Preview complete')
@@ -180,4 +190,48 @@ test('built-in templates each progress from an empty dashboard to publication, r
   }
     })
   }
+  await test.step('payment template creates an editable priced draft and confirms its payment', async () => {
+    await page.goto('/app/')
+    await page.getByRole('button', { name: 'New flow', exact: true }).click()
+    await page.getByLabel('Search templates', { exact: true }).fill('Paid workshop registration')
+    await page.getByRole('button', { name: 'Paid workshop registration', exact: true }).click()
+    await expect(page.getByRole('note').filter({ hasText: 'Requires Stripe' })).toBeVisible()
+    await page.getByRole('button', { name: 'Create draft flow', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Paid workshop registration', exact: true })).toBeVisible()
+    const flowId = /flows\/([^/]+)\//.exec(page.url())![1]
+    const base = `/api/app/flows/${flowId}`
+    const draft = await (await page.request.get(`${base}/draft`)).json()
+    const payment = draft.steps.find((step: any) => step.kind === 'payment')
+    expect(payment.questionSettings.payment.products[0].unitAmount).toBe(2500)
+    // It is a normal draft: an owner can change its questions before publication.
+    const first = draft.steps[0]
+    expect((await page.request.put(`${base}/draft`, { data: { expectedVersion: draft.flow.draftVersion, stepId: first.id, prompt: 'Who is attending?', required: true } })).status()).toBe(200)
+    await page.reload()
+    await expect(page.getByText('Who is attending?', { exact: true }).first()).toBeVisible()
+    await page.getByRole('button', { name: 'Publish', exact: true }).click()
+    const publicUrl = await page.getByRole('region', { name: 'Share this flow' }).getByLabel('Public link', { exact: true }).inputValue()
+    expect((await page.request.put('/api/app/connections/payment', { data: { secretKey: stripeFixture.secretKey, webhookSecret: stripeFixture.webhookSecret } })).status()).toBe(200)
+    await page.goto(publicUrl)
+    await expect(page.locator('.respondent-shell[data-hydrated=true]')).toBeVisible()
+    await page.getByRole('textbox', { name: 'Who is attending?', exact: true }).fill('synthetic-pencil-attendee')
+    await page.getByRole('button', { name: 'Continue', exact: true }).click()
+    const owner = (await (await page.request.get('/auth/session')).json()).operator
+    await page.getByRole('textbox', { name: 'What is your email address?', exact: true }).fill(owner.email)
+    await page.getByRole('button', { name: 'Continue', exact: true }).click()
+    await expect(page.getByLabel('Order summary')).toContainText('$25.00')
+    expect((await (await page.request.get(`${base}/ledger`)).json()).responses).toHaveLength(0)
+    await page.screenshot({ path: info.outputPath(`${info.project.name}-gallery-payment-respondent.png`), fullPage: true })
+    await page.waitForTimeout(3200)
+    await page.getByRole('button', { name: /Pay.*Stripe/ }).click()
+    await expect(page).toHaveURL(new RegExp(`^${stripe.origin}/pay/`))
+    const checkout = [...stripe.sessions.values()][0]
+    expect(checkout.amount_total).toBe(2500)
+    expect((await (await page.request.get(`${base}/ledger`)).json()).responses[0].payment.state).toBe('pending')
+    await page.getByRole('button', { name: 'Pay $25.00', exact: true }).click()
+    await expect(page.getByRole('heading', { name: 'Thank you. Your response has been received.', exact: true })).toBeVisible()
+    expect((await (await page.request.get(`${base}/results`)).json()).completedResponses).toBe(1)
+    expect((await (await page.request.get(`${base}/ledger`)).json()).responses[0].payment).toMatchObject({ state: 'paid', amount: 2500 })
+    expect(stripe.webhooks).toHaveLength(1)
+  })
+  } finally { await stripe.close() }
 })

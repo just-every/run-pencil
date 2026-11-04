@@ -1,6 +1,6 @@
 import { StudioPanel } from '../../studio/ui'
 import { TeamTemplatePicker } from './TeamTemplatePicker'
-import { flowTemplates, starterTemplateIds, type FlowTemplateId } from '../../flows'
+import { flowTemplates, starterTemplateIds, templateConnection, type FlowTemplateId } from '../../flows'
 import { Plus } from 'lucide-react'
 import { Link, useNavigate, useRouter } from '@tanstack/react-router'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -134,6 +134,7 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
         </div>
         <TeamTemplatePicker selected={teamTemplate} disabled={creating} onSelect={item=>{setTeamTemplate(item?.id);setTemplate(undefined);if(item){setTitle(item.name);setSlug(`${suggestedSlug(item.name)}-${crypto.randomUUID().slice(0,8)}`);setSlugEdited(false)}}} />
         {template ? <p className="muted">{flowTemplates.find(item => item.id === template)?.description} You can edit every question before publishing.</p> : null}
+        {template && templateConnection(template) ? <p role="note">Requires Stripe for payments. Connect a restricted key and webhook signing secret in <Link to="/app/settings">Settings</Link> before collecting payments. Review the sample prices before publishing; creating or previewing this draft makes no charge.</p> : null}
         <div className="builder-actions dashboard-create-actions"><button className="primary-button focus-ring" disabled={creating || !title.trim() || !slug.trim()} type="submit"><Plus aria-hidden="true" size={16} /> {creating ? 'Creating…' : 'Create draft flow'}</button><button className="secondary-button focus-ring" type="button" disabled={creating} onClick={()=>setShowStudio(true)}>Generate with AI</button><button className="quiet-button focus-ring" disabled={creating} onClick={cancel} type="button">Cancel</button></div>
       </form>
       {template ? <div className="dashboard-create-preview"><TemplatePreview key={template} template={template} /><AppNote className="create-note" wideOnly>you can edit every question</AppNote></div> : null}

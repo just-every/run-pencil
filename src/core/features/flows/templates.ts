@@ -1,6 +1,7 @@
 import { ulid } from 'ulid'
 import { publicSteps, publicChoices, publicRules } from './serialization'
 import type { PublicFlow } from '../../app/api'
+import type { StoredStep } from './repository'
 import { templateCatalog as catalog, catalogPrompts } from './templates/catalog'
 
 const originalTemplates = [
@@ -8,12 +9,23 @@ const originalTemplates = [
   { id: 'nps', title: 'NPS', description: 'Ask how likely customers are to recommend you.' },
   { id: 'lead', title: 'Contact/lead', description: 'Collect a name, email and enquiry.' },
 ] as const
-export const flowTemplates = [...originalTemplates.map(item => ({ ...item, category: item.id === 'feedback' ? 'Customer feedback' : item.id === 'nps' ? 'NPS' : 'Contact and lead capture' })), ...catalog]
+const paymentTemplates = [
+  { id: 'payment-event', title: 'Paid workshop registration', category: 'Order and payment forms', description: 'Register one attendee with an editable $25 workshop ticket.', product: 'Workshop ticket', amount: 2500 },
+  { id: 'payment-deposit', title: 'Service deposit', category: 'Order and payment forms', description: 'Collect an editable $100 deposit for a service booking.', product: 'Service deposit', amount: 10000 },
+  { id: 'payment-order', title: 'Merchandise purchase', category: 'Order and payment forms', description: 'Collect an editable $20 payment for one item.', product: 'Merchandise', amount: 2000 },
+] as const
+
+/** Requirements are visible before creation; previews never need a connection. */
+export function templateConnection(template: FlowTemplateId) {
+  return paymentTemplates.some(item => item.id === template) ? 'Stripe' : undefined
+}
+
+export const flowTemplates = [...originalTemplates.map(item => ({ ...item, category: item.id === 'feedback' ? 'Customer feedback' : item.id === 'nps' ? 'NPS' : 'Contact and lead capture' })), ...catalog, ...paymentTemplates]
 /** The three starters shown before anyone searches or picks a category. */
 export const starterTemplateIds: ReadonlySet<string> = new Set(originalTemplates.map(item => item.id))
 export type FlowTemplateId = string
 
-type TemplateQuestion = { prompt: string; questionType: 'single_choice' | 'rating' | 'nps' | 'long_text' | 'short_text' | 'email' | 'csat' | 'ces'; labels?: string[]; questionSettings?: Record<string, unknown> }
+type TemplateQuestion = { kind?: 'payment'; prompt: string; questionType: null | 'single_choice' | 'rating' | 'nps' | 'long_text' | 'short_text' | 'email' | 'csat' | 'ces'; labels?: string[]; questionSettings?: Record<string, unknown> }
 const originalQuestions: Record<string, TemplateQuestion[]> = {
   feedback: [
     { prompt: 'How was your visit?', questionType: 'single_choice', labels: ['Great', 'Good', 'Could be better'] },
@@ -31,6 +43,12 @@ const originalQuestions: Record<string, TemplateQuestion[]> = {
 }
 
 function questionsFor(template: FlowTemplateId): TemplateQuestion[] {
+  const payment = paymentTemplates.find(item => item.id === template)
+  if (payment) return [
+    { prompt: 'What is your name?', questionType: 'short_text' },
+    { prompt: 'What is your email address?', questionType: 'email' },
+    { kind: 'payment', prompt: `Pay for ${payment.product.toLowerCase()}`, questionType: null, questionSettings: { payment: { products: [{ id: 'item', name: payment.product, unitAmount: payment.amount, quantity: 1 }], options: [], minimum: payment.amount, maximum: payment.amount } } },
+  ]
   if (originalQuestions[template]) return originalQuestions[template]
   const item = catalog.find(item => item.id === template)
   if (!item) throw new Error('Choose a gallery template.')
@@ -65,13 +83,13 @@ export function templatePreview(template: FlowTemplateId): Pick<PublicFlow, 'ste
 export function templateStructure(template: FlowTemplateId, revisionId: string, now: string) {
   const definitions = questionsFor(template)
   const ids = Array.from({ length: definitions.length + 1 }, () => ulid())
-  const steps = ids.map((id, position) => {
+  const steps: StoredStep[] = ids.map((id, position) => {
     const question = definitions[position]
-    return { id, revisionId, stableId: ulid(), position, kind: question ? 'question' as const : 'completion' as const, questionType: question?.questionType ?? null, prompt: question?.prompt ?? 'Thank you. Your response has been received.', helperText: null, required: (!!question && position === 0) || question?.questionType === 'email', nextStepStableId: null as string | null, questionSettingsJson: question?.questionSettings ? JSON.stringify(question.questionSettings) : null, createdAt: now, updatedAt: now }
+    return { id, revisionId, stableId: ulid(), position, kind: question ? question.kind ?? 'question' : 'completion', questionType: question?.questionType ?? null, prompt: question?.prompt ?? 'Thank you. Your response has been received.', helperText: null, required: (!!question && position === 0) || question?.questionType === 'email', nextStepStableId: null as string | null, questionSettingsJson: question?.questionSettings ? JSON.stringify(question.questionSettings) : null, createdAt: now, updatedAt: now }
   })
   steps.forEach((step, position) => { step.nextStepStableId = steps[position + 1]?.stableId ?? null })
   const choices = definitions.flatMap((question, index) => (question.labels ?? []).map((label, position) => ({ id: ulid(), stepId: ids[index], stableId: ulid(), value: label.toLowerCase().replaceAll(' ', '-'), label, position, createdAt: now, updatedAt: now })))
-  const branching = !originalQuestions[template] && (definitions[0].labels?.length || ['csat', 'ces'].includes(definitions[0].questionType))
+  const branching = !originalQuestions[template] && (definitions[0].labels?.length || ['csat', 'ces'].includes(definitions[0].questionType ?? ''))
   const rules = branching ? [{ id: ulid(), revisionId, sourceStepStableId: steps[0].stableId, destinationStepStableId: steps[2].stableId, predicateKind: choices.length ? 'equals' as const : 'greater_than' as const, expectedValueJson: JSON.stringify(choices.length ? choices[0].stableId : definitions[0].questionType === 'csat' ? 3 : 4), position: 0, createdAt: now, updatedAt: now }] : []
   if (branching) steps[1].nextStepStableId = steps.at(-1)!.stableId
   return { steps, choices, rules }

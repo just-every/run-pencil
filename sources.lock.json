@@ -869,7 +869,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "08a18936e44c32ca290cc1843a74311a38e975893ab4253d558fa135eaba7d16",
+      "sha256": "33c2a6d5bd7c7a366777db74be9ad287bdfc1ec2d50ad3563654add4ccbcb063",
       "executable": false
     },
     "DEMO.md": {
@@ -5641,7 +5641,7 @@
       "executable": false
     },
     "src/core/features/dashboard/ui/DashboardPage.tsx": {
-      "sha256": "25b200d48683d5edbd3e7246c7efe2411c4b3093d1cf6eca99fe5b7bc0b786e1",
+      "sha256": "9df781d6e8c28468932f3d63f5c08725ad2a8621dbcdc35c99b097761cb56658",
       "executable": false
     },
     "src/core/features/dashboard/ui/FlowCard.tsx": {
@@ -5657,7 +5657,7 @@
       "executable": false
     },
     "src/core/features/dashboard/ui/TemplatePreview.tsx": {
-      "sha256": "32f3ee8a1b1be67443fc2321f64743e5c50e4debcd4a93d2f749337e6bc9cea4",
+      "sha256": "f711f7965e25d401970772529d03c58f7932b58a61be030f48d07993a159af0d",
       "executable": false
     },
     "src/core/features/distribution/contact-import.ts": {
@@ -5913,7 +5913,7 @@
       "executable": false
     },
     "src/core/features/flows/index.ts": {
-      "sha256": "e9a6735df37855c0cecbb7f54c2220c5ac457815baf057bc8b84c7ff00af3f2c",
+      "sha256": "56c660e0050ac434d4af628e79f2482620d1f39849c2a5c682e0a5ff297e5f43",
       "executable": false
     },
     "src/core/features/flows/ordered-answer-domain.ts": {
@@ -5941,7 +5941,7 @@
       "executable": false
     },
     "src/core/features/flows/routes.ts": {
-      "sha256": "631983bfe962c03c89fdff67cb77066aff79e273e243192289d13fa295ed6b8d",
+      "sha256": "da1b8cd5fa343a0103f5b311f37c4da0ba07b40a28415cb146177cf69b8e026e",
       "executable": false
     },
     "src/core/features/flows/screen-authoring.ts": {
@@ -5973,7 +5973,7 @@
       "executable": false
     },
     "src/core/features/flows/templates.ts": {
-      "sha256": "75cab343764c12f9867f9b38b4fbbc2f7f4fe5d4e9c34610ed20ba8bed541ae9",
+      "sha256": "07d8fb5b04acdc14e9240eabd1532b83908794e5272273136053d6e88f5ccfe1",
       "executable": false
     },
     "src/core/features/flows/templates/catalog.ts": {
@@ -8869,7 +8869,7 @@
       "executable": false
     },
     "tests/e2e/templates.spec.ts": {
-      "sha256": "b1455f6491e881b9c3726621c086d47e208258dbac88d945aef283adda488f03",
+      "sha256": "bbb410b284c15216bb1fd46b6b6763996724a079ca58a7200c4f6144ece332cb",
       "executable": false
     },
     "tests/e2e/text-answer-plurals.spec.ts": {
@@ -9273,7 +9273,7 @@
       "executable": false
     },
     "tests/runtime/first-owner.worker.test.ts": {
-      "sha256": "ec2547fa8f1db44cf1479bd1c4aa6acab9914d6a7574f3eb4e65ccbdef7166c0",
+      "sha256": "800490f0f0942f9354c98ee3ccd4d539278ce37cbc9ab19dfc3c9cf9b0067d98",
       "executable": false
     },
     "tests/runtime/form-import.worker.test.ts": {
