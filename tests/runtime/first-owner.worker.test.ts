@@ -1,4 +1,5 @@
-import { flowTemplates } from '../../src/core/features/flows/templates'
+import { templatePreview, flowTemplates } from '../../src/core/features/flows/templates'
+import type { PublicFlow } from '../../src/core/app/api'
 import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { checkConfirmation, checkMail } from '../../src/base/operator-auth/conformance/presentation.mjs'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
@@ -9,6 +10,18 @@ import { createPencilPlatform } from '../../src/core/platform/runtime'
 import { initializePencil } from '../../src/core/app/worker'
 import { developmentInbox } from '../helpers/development-outbox'
 import type { WorkerBindings } from '../../src/core/app/environment'
+// Compare independent identities by their graph positions, including choice operands.
+function graphShape(graph: Pick<PublicFlow, 'steps' | 'choices' | 'branchRules'>) {
+  const stepPosition = (id: string | null) => id === null ? null : graph.steps.find(step => step.id === id)!.position
+  return {
+    steps: graph.steps.map(({ id, nextStepId, ...step }) => ({ ...step, next: stepPosition(nextStepId) })),
+    choices: graph.choices.map(({ id, stepId, ...choice }) => ({ ...choice, step: stepPosition(stepId) })),
+    rules: graph.branchRules.map(({ id, sourceStepId, destinationStepId, expectedValue, ...rule }) => ({
+      ...rule, source: stepPosition(sourceStepId), destination: stepPosition(destinationStepId),
+      expected: rule.predicateKind === 'equals' ? graph.choices.find(choice => choice.id === expectedValue)!.value : expectedValue,
+    })),
+  }
+}
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 contract(['BASE-ACCESS-001', 'BASE-SECRET-001', 'DASH-001', 'OPER-002'], 'local first-owner setup preserves identity and requires email proof before inviting an equal operator', async () => {
@@ -76,15 +89,23 @@ contract(['BASE-ACCESS-001', 'BASE-SECRET-001', 'DASH-001', 'OPER-002'], 'local 
   ]))
   expect((await request('/auth/confirm', { token: invite.magicLinkToken })).status).toBe(400)
   expect(new Set(flowTemplates.map(item => item.id)).size).toBeGreaterThanOrEqual(60)
-  for (const template of flowTemplates) {
+  const previewState = async () => (await env.DB.batch(['flows', 'flow_revisions', 'flow_steps', 'choice_options', 'flow_branch_rules', 'respondent_sessions', 'respondent_session_step_events', 'responses', 'response_answers', 'revision_metric_counters', 'revision_step_metric_counters', 'response_outbox', 'audit_entries', 'rer_mail_development_outbox'].map(table => env.DB.prepare(`SELECT * FROM ${table}`)))).map(result => result.results)
+  const beforePreviews = await previewState()
+  const previews = flowTemplates.map(template => templatePreview(template.id))
+  expect(await previewState()).toEqual(beforePreviews)
+  for (const [index, template] of flowTemplates.entries()) {
     const created = await request('/api/app/flows', { title: template.title, slug: `synthetic-pencil-${template.id}`, template: template.id }, cookie)
     expect(created.status).toBe(201)
     const flow = await created.json() as { id: string; slug: string }
+    const draft = await request(`/api/app/flows/${flow.id}/draft`, undefined, cookie)
+    expect(draft.status).toBe(200)
+    expect(graphShape(await draft.json() as PublicFlow), template.id).toEqual(graphShape(previews[index]))
     const published = await request(`/api/app/flows/${flow.id}/publish`, { expectedVersion: 0 }, cookie)
     expect(published.status, template.id).toBe(201)
     const publicFlow = await request(`/api/public/flows/${flow.slug}`)
     expect(publicFlow.status).toBe(200)
     const definition = await publicFlow.json() as any
+    expect(graphShape(definition), template.id).toEqual(graphShape(previews[index]))
     for (const path of definition.branchRules.length ? [0, 1] : [0]) {
       const started = await request(`/api/public/flows/${flow.slug}/sessions`, { deviceClass: 'desktop' })
       expect(started.status).toBe(201)

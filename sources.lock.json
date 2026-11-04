@@ -5637,11 +5637,11 @@
       "executable": false
     },
     "src/core/features/dashboard/ui/dashboard.css": {
-      "sha256": "e157c88489e15e54ad6a388e3656dd9b038b97c603b62d2ef3b089f139cc03c0",
+      "sha256": "260a70c05f6a2bd05323617e401af14ccdcf5764de13981703ba866715ddceff",
       "executable": false
     },
     "src/core/features/dashboard/ui/DashboardPage.tsx": {
-      "sha256": "96030de51f2d14b5515f39f0aa30f32ca557a98a679166917999f9c544256ba3",
+      "sha256": "25b200d48683d5edbd3e7246c7efe2411c4b3093d1cf6eca99fe5b7bc0b786e1",
       "executable": false
     },
     "src/core/features/dashboard/ui/FlowCard.tsx": {
@@ -5657,7 +5657,7 @@
       "executable": false
     },
     "src/core/features/dashboard/ui/TemplatePreview.tsx": {
-      "sha256": "21a18783e4695c39370770c39a9a5981777b16ac9c06f4ce2d6a08a02a910b00",
+      "sha256": "32f3ee8a1b1be67443fc2321f64743e5c50e4debcd4a93d2f749337e6bc9cea4",
       "executable": false
     },
     "src/core/features/distribution/contact-import.ts": {
@@ -5973,7 +5973,7 @@
       "executable": false
     },
     "src/core/features/flows/templates.ts": {
-      "sha256": "5007134da2a1a08eded5a36b98ea5219ed6dfd12b9fa385c84d53caf8d4530a8",
+      "sha256": "75cab343764c12f9867f9b38b4fbbc2f7f4fe5d4e9c34610ed20ba8bed541ae9",
       "executable": false
     },
     "src/core/features/flows/templates/catalog.ts": {
@@ -8869,7 +8869,7 @@
       "executable": false
     },
     "tests/e2e/templates.spec.ts": {
-      "sha256": "5517c4463e3740415a000b7a8bb03a0006a82d8032f3d59174a77710e22c5e82",
+      "sha256": "5dbb4222322d65ceb14aa062d61b55a6bf03f4ae84e03730a42a1d84ca2b1c21",
       "executable": false
     },
     "tests/e2e/text-answer-plurals.spec.ts": {
@@ -9273,7 +9273,7 @@
       "executable": false
     },
     "tests/runtime/first-owner.worker.test.ts": {
-      "sha256": "898352f87a78213c10457ba479bd206463b07758921723a1e9f56836b82ee47e",
+      "sha256": "ec2547fa8f1db44cf1479bd1c4aa6acab9914d6a7574f3eb4e65ccbdef7166c0",
       "executable": false
     },
     "tests/runtime/form-import.worker.test.ts": {

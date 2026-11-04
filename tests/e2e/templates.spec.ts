@@ -1,12 +1,15 @@
 import { expect, test } from './fixtures'
+import type { Request } from '@playwright/test'
+import { flowTemplates } from '../../src/core/features/flows/templates'
+import { openStateDatabase, stateDatabaseFile } from './state-database'
 import { checkAuthoringLayout, signInEmptyWorkspace } from './authoring-helpers'
 
 test('built-in templates each progress from an empty dashboard to publication, response and counted result', async ({ page }, info) => {
-  test.setTimeout(90_000)
+  test.setTimeout(180_000)
   for (const template of ['Customer feedback', 'NPS', 'Contact/lead']) {
     await test.step(template, async () => {
       await page.context().clearCookies()
-  test.setTimeout(90_000)
+  test.setTimeout(180_000)
   await page.context().newCDPSession(page).then(session => session.send('Emulation.setCPUThrottlingRate', { rate: 4 }))
   await signInEmptyWorkspace(page)
   for (const name of ['Customer feedback', 'NPS', 'Contact/lead']) await expect(page.getByRole('button', { name, exact: true })).toBeVisible()
@@ -21,6 +24,84 @@ test('built-in templates each progress from an empty dashboard to publication, r
   await page.getByRole('button', { name: 'Delivery experience', exact: true }).click()
   await expect(page.getByText('Positive → What to keep · Needs attention → What to improve')).toBeVisible()
   await checkAuthoringLayout(page)
+  if (template === 'Customer feedback') {
+    const preview = page.getByRole('region', { name: 'Template preview', exact: true })
+    const state = () => {
+      const db = openStateDatabase(stateDatabaseFile(process.env.PENCIL_MIGRATION_STATE!))
+      try {
+        const tables = ['flows', 'flow_revisions', 'flow_steps', 'choice_options', 'flow_branch_rules', 'respondent_sessions', 'respondent_session_step_events', 'responses', 'response_answers', 'revision_metric_counters', 'revision_step_metric_counters', 'response_outbox', 'audit_entries', 'rer_mail_development_outbox']
+        return tables.map(table => db.prepare(`SELECT * FROM ${table} ORDER BY rowid`).all())
+      } finally { db.close() }
+    }
+    const before = state()
+    const owner = (await (await page.request.get('/auth/session')).json()).operator
+    const effects: string[] = []
+    const observe = (request: Request) => {
+      const url = new URL(request.url())
+      if (url.origin !== new URL(page.url()).origin || url.pathname.startsWith('/api/public/') || !['GET', 'HEAD'].includes(request.method())) effects.push(`${request.method()} ${url.pathname}`)
+    }
+    page.on('request', observe)
+    try {
+      await preview.getByRole('button', { name: 'Continue preview', exact: true }).click()
+      await expect(preview.getByRole('alert')).toBeVisible()
+      await expect(preview.getByRole('radio', { name: 'Positive', exact: true })).toBeVisible()
+      await preview.getByRole('radio', { name: 'Positive', exact: true }).click()
+      await preview.getByRole('button', { name: 'Continue preview', exact: true }).click()
+      await expect(preview.getByRole('textbox', { name: 'What should we keep doing?', exact: true })).toBeVisible()
+      await preview.getByRole('textbox').fill('synthetic-pencil-positive')
+      await page.screenshot({ path: info.outputPath(`${info.project.name}-gallery-preview-positive.png`), fullPage: true })
+      await preview.getByRole('button', { name: 'Continue preview', exact: true }).click()
+      await expect(preview.getByRole('status')).toHaveText('Preview complete')
+      await preview.getByRole('button', { name: 'Back in preview', exact: true }).click()
+      await preview.getByRole('button', { name: 'Back in preview', exact: true }).click()
+      await preview.getByRole('radio', { name: 'Needs attention', exact: true }).click()
+      await preview.getByRole('button', { name: 'Continue preview', exact: true }).click()
+      await expect(preview.getByRole('textbox', { name: 'What should we improve?', exact: true })).toHaveValue('')
+      await preview.getByRole('textbox').fill('synthetic-pencil-improve')
+      await page.screenshot({ path: info.outputPath(`${info.project.name}-gallery-preview-improve.png`), fullPage: true })
+      await preview.getByRole('button', { name: 'Continue preview', exact: true }).click()
+      await expect(preview.getByRole('status')).toHaveText('Preview complete')
+      await preview.getByRole('button', { name: 'Back in preview', exact: true }).click()
+      await preview.getByRole('button', { name: 'Back in preview', exact: true }).click()
+      await preview.getByRole('radio', { name: 'Positive', exact: true }).click()
+      await preview.getByRole('button', { name: 'Continue preview', exact: true }).click()
+      await expect(preview.getByRole('textbox', { name: 'What should we keep doing?', exact: true })).toHaveValue('')
+      await preview.getByRole('button', { name: 'Restart preview', exact: true }).click()
+      await expect(preview.getByRole('radio', { name: 'Positive', exact: true })).toHaveAttribute('aria-checked', 'false')
+      for (const item of flowTemplates) {
+        await page.getByLabel('Search templates', { exact: true }).fill(item.title)
+        await page.getByLabel('Template category', { exact: true }).selectOption(item.category)
+        await page.getByRole('button', { name: item.title, exact: true }).click()
+        await expect(preview.getByRole('button', { name: 'Back in preview', exact: true })).toBeDisabled()
+        // Traverse the controls the respondent actually receives, through completion.
+        for (let screen = 0; screen < 5 && !await preview.getByRole('status').count(); screen++) {
+          const text = preview.getByRole('textbox')
+          if (await text.count()) {
+            if (await text.getAttribute('type') === 'email') {
+              await text.fill('synthetic-pencil-invalid')
+              await preview.getByRole('button', { name: 'Continue preview', exact: true }).click()
+              await expect(preview.getByRole('alert')).toBeVisible()
+              await text.fill(owner.email)
+            } else await text.fill('synthetic-pencil-preview')
+          } else await preview.getByRole('radio').first().click()
+          await preview.getByRole('button', { name: 'Continue preview', exact: true }).click()
+        }
+        await expect(preview.getByRole('status'), item.id).toHaveText('Preview complete')
+        await checkAuthoringLayout(page)
+      }
+      // Enter in a preview answer belongs to the preview, never the create form.
+      await page.getByLabel('Search templates', { exact: true }).fill('Contact/lead')
+      await page.getByLabel('Template category', { exact: true }).selectOption('Contact and lead capture')
+      await page.getByRole('button', { name: 'Contact/lead', exact: true }).click()
+      await preview.getByRole('textbox').fill('synthetic-pencil-keyboard')
+      await preview.getByRole('textbox').press('Enter')
+      await expect(preview.getByRole('textbox', { name: 'What is your email address?', exact: true })).toBeVisible()
+      await expect(page.getByRole('heading', { name: 'Your flows', exact: true })).toBeVisible()
+      expect(state()).toEqual(before)
+      expect(effects).toEqual([])
+      expect(await (await page.request.get('/api/app/flows')).json()).toEqual([])
+    } finally { page.off('request', observe) }
+  }
   await page.getByLabel('Search templates', { exact: true }).fill('')
   await page.getByLabel('Template category', { exact: true }).selectOption('All categories')
   await page.getByRole('button', { name: template, exact: true }).click()
