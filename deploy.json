@@ -49,7 +49,6 @@
     "PENCIL_LOCAL_DEVELOPMENT": "false",
     "SEED_SAMPLE_DATA": "false",
     "MAIL_PROVIDER": "resend",
-    "MAIL_FROM": "",
     "MAIL_RELAY_URL": ""
   }
 }

@@ -39,13 +39,28 @@ The shared `/mcp` door supports native form design and lifecycle work for a link
 
 ## Run it on your computer
 
-Pencil runs on macOS, Linux or Windows with WSL2. One line starts it. It needs **Node.js 22 or later, including npm, and Git**; check `node --version` and `npm --version`. The command matches the [Run page](https://run-pencil.com/run); rer installs Pencil's pinned runtime and pnpm for its own commands, so you do not need global pnpm:
+Pencil runs on macOS, Linux or Windows with WSL2. Git is required; rer brings Node and pnpm. This one-liner matches the [Run page](https://run-pencil.com/run):
 
 ```sh
-npx -y @runeditrun/rer dev just-every/run-pencil
+curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-pencil
 ```
 
-To start it again later, run `cd run-pencil && rer dev`. To set Pencil up without starting it, use `npx -y @runeditrun/rer setup just-every/run-pencil`. Without Node, `curl -fsSL https://runeditrun.com/install.sh | sh -s -- dev just-every/run-pencil` brings its own.
+Or install rer first, then start Pencil:
+
+```sh
+curl -fsSL https://runeditrun.com/install.sh | sh
+"$HOME/.local/bin/rer" dev just-every/run-pencil
+```
+
+To start it again later, open a terminal in the folder containing `run-pencil` and run:
+
+```sh
+cd run-pencil && "$HOME/.local/bin/rer" dev
+```
+
+The installer does not edit your shell profiles. Use `"$HOME/.local/bin/rer"` for the other `rer` commands below if `$HOME/.local/bin` is not on your PATH; adding that directory to PATH for future terminals is optional.
+
+If you already have Node.js 22 or later with npm on PATH, you can instead use `npx -y @runeditrun/rer dev just-every/run-pencil`. To set Pencil up without starting it, use `"$HOME/.local/bin/rer" setup just-every/run-pencil`.
 
 The global rer installation is the launcher. Inside this checkout, rer uses the exact `@runeditrun/rer` version in `package.json` and its lockfile; `rer --version` can show both versions. A different global launcher version does not change Pencil's pin. Keep that pin when following these instructions.
 
@@ -59,7 +74,7 @@ Keep `.dev.vars` private. Use `--port PORT` for an explicit loopback port. Stop 
 
 To upgrade a local install to newer source, stop dev, export, pull, then run `rer install`, `rer setup` and `rer dev`; [Upgrading a local install](docs/guide/install.md#upgrading-a-local-install) has the steps. `rer dev` also applies pending migrations before it serves, and refuses to start with "run rer setup" if it cannot.
 
-The source checks below need Node.js 22 or later with npm on your shell PATH, including when you started with the no-Node installer. Check `node --version` and `npm --version` before continuing. To retry an interrupted first launch with the installer-provided command, run `cd run-pencil && rer dev`.
+The source checks below need Node.js 22 or later with npm on your shell PATH, including when you started with the no-Node installer. Check `node --version` and `npm --version` before continuing. To retry an interrupted first launch with the installer-provided command, run `cd run-pencil && "$HOME/.local/bin/rer" dev`.
 
 ```sh
 npx --no-install playwright install chromium --only-shell
@@ -84,7 +99,10 @@ rer setup --owner-email owner@example.com --owner-name Owner
 
 Import validates integrity and restores atomically into an empty destination without replaying mail. Archives retain the complete product graph, import custody, delivery history and operator identities; sessions, sign-in links, other credentials, captured mail and private settings are excluded, so everyone signs in again after a restore. These rer commands support local state; the separate maintained deployed D1 command is documented in [Backup and restore](docs/guide/backup.md).
 
+Stop dev with Ctrl-C in its terminal before checking deployment. If it is running in the background, stop it with `rer dev --stop` first:
+
 ```sh
+rer dev --stop
 rer deploy --dry-run --environment pencil-check
 rer describe
 rer check --profile first-party
