@@ -1,10 +1,11 @@
 import { expect, test } from './fixtures'
+import { contract } from './contract'
 import type { Request } from '@playwright/test'
 import { flowTemplates } from '../../src/core/features/flows/templates'
 import { openStateDatabase, stateDatabaseFile } from './state-database'
 import { checkAuthoringLayout, signInEmptyWorkspace } from './authoring-helpers'
 
-test('built-in templates each progress from an empty dashboard to publication, response and counted result', async ({ page }, info) => {
+contract('TMPL-001', 'built-in templates each progress from an empty dashboard to publication, response and counted result', async ({ page }, info) => {
   test.setTimeout(300_000)
   for (const template of ['Customer feedback', 'NPS', 'Contact/lead']) {
     await test.step(template, async () => {

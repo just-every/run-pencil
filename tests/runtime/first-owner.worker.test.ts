@@ -24,7 +24,7 @@ function graphShape(graph: Pick<PublicFlow, 'steps' | 'choices' | 'branchRules'>
 }
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
-contract(['BASE-ACCESS-001', 'BASE-SECRET-001', 'DASH-001', 'OPER-002'], 'local first-owner setup preserves identity and requires email proof before inviting an equal operator', async () => {
+contract(['BASE-ACCESS-001', 'BASE-SECRET-001', 'DASH-001', 'OPER-002', 'TMPL-001'], 'local first-owner setup preserves identity and requires email proof before inviting an equal operator', async () => {
   const origin = 'http://localhost'
   const bindings = { ...env, SEED_SAMPLE_DATA: 'false', SEED_ADMIN_EMAIL: 'configured-owner@example.test', SETUP_TOKEN: 'synthetic-local-setup-token-with-32-characters' } as WorkerBindings
   const services = await initializePencil(createPencilPlatform(origin, bindings))

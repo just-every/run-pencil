@@ -8869,7 +8869,7 @@
       "executable": false
     },
     "tests/e2e/templates.spec.ts": {
-      "sha256": "944701327bc5adf2d8b5cc86f1f19f68543504e7c0d14164298946e14cdbf1c4",
+      "sha256": "7c0adf02b7b47d9177fd5171ba1b801c51f913f0cf5889b3c26e26efdedcd95b",
       "executable": false
     },
     "tests/e2e/text-answer-plurals.spec.ts": {
@@ -9273,7 +9273,7 @@
       "executable": false
     },
     "tests/runtime/first-owner.worker.test.ts": {
-      "sha256": "5049b003fdadb347aadb4b0d0ae2c3ecae34a7c38e48b33fff7c9654e33941e5",
+      "sha256": "1cd9f4a800ba3f173dc97702c081ed0e85f7d42471d6a4f3f12c6481c4cce744",
       "executable": false
     },
     "tests/runtime/form-import.worker.test.ts": {
