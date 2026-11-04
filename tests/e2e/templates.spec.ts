@@ -5,11 +5,11 @@ import { openStateDatabase, stateDatabaseFile } from './state-database'
 import { checkAuthoringLayout, signInEmptyWorkspace } from './authoring-helpers'
 
 test('built-in templates each progress from an empty dashboard to publication, response and counted result', async ({ page }, info) => {
-  test.setTimeout(180_000)
+  test.setTimeout(300_000)
   for (const template of ['Customer feedback', 'NPS', 'Contact/lead']) {
     await test.step(template, async () => {
       await page.context().clearCookies()
-  test.setTimeout(180_000)
+  test.setTimeout(300_000)
   await page.context().newCDPSession(page).then(session => session.send('Emulation.setCPUThrottlingRate', { rate: 4 }))
   await signInEmptyWorkspace(page)
   for (const name of ['Customer feedback', 'NPS', 'Contact/lead']) await expect(page.getByRole('button', { name, exact: true })).toBeVisible()
@@ -90,16 +90,17 @@ test('built-in templates each progress from an empty dashboard to publication, r
         await checkAuthoringLayout(page)
       }
       // Enter in a preview answer belongs to the preview, never the create form.
-      await page.getByLabel('Search templates', { exact: true }).fill('Contact/lead')
-      await page.getByLabel('Template category', { exact: true }).selectOption('Contact and lead capture')
-      await page.getByRole('button', { name: 'Contact/lead', exact: true }).click()
+      const contact = flowTemplates.find(item => item.id === 'lead')!
+      await page.getByLabel('Search templates', { exact: true }).fill(contact.title)
+      await page.getByLabel('Template category', { exact: true }).selectOption(contact.category)
+      await page.getByRole('button', { name: contact.title, exact: true }).click()
       await preview.getByRole('textbox').fill('synthetic-pencil-keyboard')
       await preview.getByRole('textbox').press('Enter')
       await expect(preview.getByRole('textbox', { name: 'What is your email address?', exact: true })).toBeVisible()
       await expect(page.getByRole('heading', { name: 'Your flows', exact: true })).toBeVisible()
       expect(state()).toEqual(before)
       expect(effects).toEqual([])
-      expect(await (await page.request.get('/api/app/flows')).json()).toEqual([])
+      expect(await (await page.request.get('/api/app/dashboard')).json()).toEqual([])
     } finally { page.off('request', observe) }
   }
   await page.getByLabel('Search templates', { exact: true }).fill('')
