@@ -869,7 +869,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "c3e3c66494d4b7526b93a5eefd1ed1eddd7ea463669ae2a76b1638b8220685cb",
+      "sha256": "8afe62f5c0810fdf38c0f553d0e5197d2a1e260478c54f40bd436f894b7fe746",
       "executable": false
     },
     "DEMO.md": {
@@ -8849,7 +8849,7 @@
       "executable": false
     },
     "tests/e2e/studio-journey.ts": {
-      "sha256": "11f60c06b64323ff5dc8dd2c7e0d17c15d3029b21f7321c479c8ee4ce4f10c7f",
+      "sha256": "237b282c2054e9360edf0d45c71df204b5f90ffee7cd7b664a5c826519282ac4",
       "executable": false
     },
     "tests/e2e/submission-inbox-journey.ts": {
