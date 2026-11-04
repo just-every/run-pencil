@@ -5,6 +5,7 @@ import { visibilityCondition } from '../../shared/screenLayout'
 import { evaluateCondition } from '../../shared/conditions'
 import { answerIssue, isUnanswered } from '../../shared/answers'
 import { publicSteps, questionSettings, resolveNextStep, type StoredBranchRule, type StoredChoice, type StoredStep } from '../flows'
+import { respondentString } from '../../shared/respondentText'
 import { ValidationError } from '../../shared/errors'
 
 export type AnswerInput = { stepId: string; value: unknown }
@@ -49,7 +50,10 @@ export function validatePathAnswers(steps: StoredStep[], choices: StoredChoice[]
     if (current.kind === 'question' && visible) {
       const value = normalizeOptional(submitted.get(current.stableId))
       if (value === undefined) {
-        if (current.required) throw new ValidationError(`A response is required for “${current.prompt}”.`)
+        if (current.required) {
+          const reason = respondentString(settings?.text, 'requiredMessage')
+          throw new ValidationError(reason, [{ stepId: current.stableId, reason }])
+        }
       } else {
         validateQuestionValue(current, choicesByStep.get(current.id) ?? [], value)
         accepted.push({ stepId: current.stableId, value })

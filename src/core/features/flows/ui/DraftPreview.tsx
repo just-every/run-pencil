@@ -65,7 +65,7 @@ export function DraftPreview({ draft, onClose, onReload, reloadDisabled = false 
     setError(undefined)
     if (!step) return
     if (step.kind === 'question') {
-      const issues=Object.fromEntries(screen.steps.flatMap(question=>{const issue=answerIssue(question,draft.choices.filter(choice=>choice.stepId===question.id).map(choice=>choice.id),answers[question.id]);return issue?[[question.id,issue]]:[]}))
+      const issues=Object.fromEntries(screen.steps.flatMap(question=>{const issue=answerIssue(question,draft.choices.filter(choice=>choice.stepId===question.id).map(choice=>choice.id),answers[question.id],draft.formSettings?.text);return issue?[[question.id,issue]]:[]}))
       setFieldErrors(issues)
       if(Object.keys(issues).length)return
     }

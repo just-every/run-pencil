@@ -48,8 +48,9 @@ contract(["RESP-009"], "closed flows refuse late submissions, retain their named
     for (const reason of ['manual', 'target'] as const) {
     const slug = `closed-${reason}-${info.project.name}-${Date.now()}`
     // LANG-002: this form's published Submit label and closed or response-limit message replace Pencil's wording.
+    const requiredMessage = 'Please share your feedback before sending.', draftRequiredMessage = 'Draft feedback wording.'
     const label = `Send my ${reason} feedback`, message = reason === 'target' ? 'All places for this survey are taken.' : 'We have paused this survey.'
-    const f = await form(page.request, slug, reason === 'target' ? 1 : undefined, { submitLabel: label, ...(reason === 'target' ? { limitMessage: message } : { closedMessage: message }) })
+    const f = await form(page.request, slug, reason === 'target' ? 1 : undefined, { submitLabel: label, requiredMessage, ...(reason === 'target' ? { limitMessage: message } : { closedMessage: message }) })
     if (reason === 'manual') {
       // LANG-002 and GOV-007: the builder's respondent text and marketing opt-in settings save to the draft; the live form keeps its published wording.
       await page.goto(`/app/flows/${f.id}/builder`)
@@ -57,6 +58,7 @@ contract(["RESP-009"], "closed flows refuse late submissions, retain their named
       await page.locator('.step-button').last().click()
       await page.getByText('Respondent text', { exact: true }).click()
       await page.getByLabel('Start button label').fill('Go')
+      await page.getByLabel('Required-answer message').fill(draftRequiredMessage)
       await page.getByRole('button', { name: 'Save respondent text' }).click()
       await expect(page.getByText('Respondent text saved to the draft. Publish to apply it.')).toBeVisible()
       await page.getByText('Email marketing opt-in', { exact: true }).click()
@@ -66,6 +68,12 @@ contract(["RESP-009"], "closed flows refuse late submissions, retain their named
       await page.getByText('Respondent text', { exact: true }).click()
       await page.getByText('Email marketing opt-in', { exact: true }).click()
       await expect(page.getByLabel('Start button label')).toHaveValue('Go')
+      await expect(page.getByLabel('Required-answer message')).toHaveValue(draftRequiredMessage)
+      await page.getByRole('button', { name: 'Preview draft', exact: true }).click()
+      const preview = page.getByRole('region', { name: 'Draft preview', exact: true })
+      await preview.getByRole('button', { name: 'Continue preview', exact: true }).click()
+      await expect(preview.getByRole('alert')).toHaveText(draftRequiredMessage)
+      await preview.getByRole('button', { name: 'Close preview', exact: true }).click()
       await expect(page.getByLabel('This form is an email-marketing opt-in')).toBeChecked()
       for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
         await page.setViewportSize(viewport)
@@ -79,8 +87,18 @@ contract(["RESP-009"], "closed flows refuse late submissions, retain their named
     await page.goto(`/f/${slug}`)
     await expect(page.locator('[data-hydrated=true]')).toBeVisible()
     const started = page.waitForResponse((response) => response.url().endsWith(`/flows/${slug}/sessions`) && response.request().method() === 'POST')
-    await page.getByRole('textbox').fill('Unsaved synthetic answer')
+    await page.getByRole('button', { name: label, exact: true }).click()
     expect((await started).status()).toBe(201)
+    await expect(page.getByRole('alert')).toHaveText(requiredMessage)
+    await expect(page.getByRole('textbox')).toHaveAttribute('aria-invalid', 'true')
+    expect((await (await page.request.get(`${f.path}/ledger`)).json()).total).toBe(0)
+    for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+      await page.setViewportSize(viewport)
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+      await page.screenshot({ path: info.outputPath(`required-answer-${reason}-${viewport.width}.png`), fullPage: true })
+    }
+    await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
+    await page.getByRole('textbox').fill('Unsaved synthetic answer')
     // Both sessions genuinely exceed the minimum fill time; no D1 backdating.
     if (reason === 'target') {
       await page.waitForTimeout(3100)
