@@ -119,8 +119,8 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
       {(['active', 'draft', 'open', 'closed', 'archived'] as const).map((item) => <button aria-pressed={status === item} className="quiet-button focus-ring" data-selected={status === item} key={item} disabled={loading || saving} onClick={() => { if (status !== item) updateList(item) }} type="button">{item === 'active' ? 'All flows' : item[0].toUpperCase() + item.slice(1)}</button>)}
     </nav>
     {flows.length && !showCreate ? <p className="muted dashboard-zone">Times in {workspace.timeZone}</p> : null}
-    {showCreate && !showStudio ? <form className="panel dashboard-create-panel" onSubmit={(event) => { event.preventDefault(); void createFlow() }}>
-      <div className="dashboard-create">
+    {showCreate && !showStudio ? <div className="panel dashboard-create-panel">
+      <form className="dashboard-create" onSubmit={(event) => { event.preventDefault(); void createFlow() }}>
         {!hasFlows ? <><p className="eyebrow">Ask → Signal → Act</p><h2 className="display">Create your first flow</h2><p className="muted">Ask a clear question, use the answers to make a decision, then act.</p></> : <h2 className="display">New flow</h2>}
         <label className="inspector-field">Flow name<input autoFocus disabled={creating} required className="text-input" onChange={(event) => { const name = event.target.value; setTitle(name); if (!slugEdited) setSlug(suggestedSlug(name)) }} placeholder="Post-visit feedback" value={title} /></label>
         <label className="inspector-field">Public link<input disabled={creating} required maxLength={120} className="text-input" onChange={(event) => { setSlugEdited(true); setSlug(event.target.value) }} placeholder="post-visit-feedback" value={slug} /></label>
@@ -135,9 +135,9 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
         <TeamTemplatePicker selected={teamTemplate} disabled={creating} onSelect={item=>{setTeamTemplate(item?.id);setTemplate(undefined);if(item){setTitle(item.name);setSlug(`${suggestedSlug(item.name)}-${crypto.randomUUID().slice(0,8)}`);setSlugEdited(false)}}} />
         {template ? <p className="muted">{flowTemplates.find(item => item.id === template)?.description} You can edit every question before publishing.</p> : null}
         <div className="builder-actions dashboard-create-actions"><button className="primary-button focus-ring" disabled={creating || !title.trim() || !slug.trim()} type="submit"><Plus aria-hidden="true" size={16} /> {creating ? 'Creating…' : 'Create draft flow'}</button><button className="secondary-button focus-ring" type="button" disabled={creating} onClick={()=>setShowStudio(true)}>Generate with AI</button><button className="quiet-button focus-ring" disabled={creating} onClick={cancel} type="button">Cancel</button></div>
-      </div>
-      {template ? <div className="dashboard-create-preview"><TemplatePreview template={template} /><AppNote className="create-note" wideOnly>you can edit every question</AppNote></div> : null}
-    </form> : null}
+      </form>
+      {template ? <div className="dashboard-create-preview"><TemplatePreview key={template} template={template} /><AppNote className="create-note" wideOnly>you can edit every question</AppNote></div> : null}
+    </div> : null}
     {showStudio ? <StudioPanel onClose={()=>{setShowStudio(false);void router.invalidate({filter:match=>match.routeId==='/app/'})}} /> : null}
     {loading ? <p className="status-note" role="status">Updating flows…</p> : null}
     {!loading && !error && !flows.length && !showCreate ? firstFlow

@@ -1,13 +1,44 @@
+import { useMemo, useState } from 'react'
 import { templatePreview, type FlowTemplateId } from '../../flows'
+import { answerIssue, isUnanswered } from '../../../shared/answers'
+import { visiblePath } from '../../../shared/flowPath'
+import { AnswerFieldset } from '../../../shared/ui/AnswerFieldset'
+import { QuestionInput } from '../../../shared/ui/QuestionInput'
 
-/** The chosen template's first question on the landing's note sheet, as respondents will meet it. */
+/** Respondent controls and traversal without draft creation or collection activity. */
 export function TemplatePreview({ template }: { readonly template: FlowTemplateId }) {
-  const { prompt, questionType, labels, branching } = templatePreview(template)
-  return <figure className="note-sheet template-preview" aria-label="First question preview">
-    {branching ? <p>Positive → What to keep · Needs attention → What to improve</p> : null}
-    <p className="display template-preview__prompt">{prompt}</p>
-    {labels.length ? <div className="template-preview__answers">{labels.map((label, index) => <span className="answer-chip" data-wash={index < 3 ? index : undefined} key={label}>{label}</span>)}</div>
-      : questionType === 'nps' ? <div className="template-preview__scale">{Array.from({ length: 11 }, (_, score) => <span key={score}>{score}</span>)}</div>
-        : <span className="template-preview__line" />}
-  </figure>
+  const graph = useMemo(() => templatePreview(template), [template])
+  const [answers, setAnswers] = useState<Record<string, unknown>>({})
+  const [index, setIndex] = useState(0)
+  const [error, setError] = useState<string>()
+  const path = visiblePath(graph, answers)
+  const step = path[Math.min(index, path.length - 1)]
+  const choices = graph.choices.filter(choice => choice.stepId === step.id)
+  const next = () => {
+    const issue = answerIssue(step, choices.map(choice => choice.id), answers[step.id])
+    setError(issue)
+    if (!issue) setIndex(current => Math.min(current + 1, path.length - 1))
+  }
+  return <section aria-label="Template preview">
+    <p className="eyebrow">Respondent preview</p>
+    <p className="muted">Try every question. Preview answers are not collected.</p>
+    {graph.branchRules.length ? <p>Positive → What to keep · Needs attention → What to improve</p> : null}
+    <form className="note-sheet template-preview" noValidate onSubmit={event => { event.preventDefault(); if (step.kind !== 'completion') next() }}>
+      <h2 className="display template-preview__prompt" id="template-preview-title">{step.prompt}</h2>
+      {step.helperText ? <p>{step.helperText}</p> : null}
+      {step.kind === 'question' ? <AnswerFieldset id={`template-${step.id}`} labelledBy="template-preview-title" disabled={false} error={error}>
+        <QuestionInput key={step.id} step={step} choices={choices} value={answers[step.id]} onChange={value => {
+          const nextAnswers = { ...answers, [step.id]: value }
+          const reachable = new Set(visiblePath(graph, nextAnswers).map(entry => entry.id))
+          setAnswers(Object.fromEntries(Object.entries(nextAnswers).filter(([id, answer]) => reachable.has(id) && !isUnanswered(answer))))
+          setError(undefined)
+        }} />
+      </AnswerFieldset> : <strong role="status">Preview complete</strong>}
+      <div className="builder-actions draft-preview-actions">
+        <button className="quiet-button focus-ring" type="button" disabled={index === 0} onClick={() => { setIndex(current => current - 1); setError(undefined) }}>Back in preview</button>
+        {step.kind !== 'completion' ? <button className="primary-button focus-ring" type="submit">Continue preview</button> : null}
+        <button className="quiet-button focus-ring" type="button" onClick={() => { setAnswers({}); setIndex(0); setError(undefined) }}>Restart preview</button>
+      </div>
+    </form>
+  </section>
 }
