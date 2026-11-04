@@ -72,7 +72,12 @@ export async function studioJourney(page:Page,info:TestInfo,provider:Awaited<Ret
   }
   let editedPrompt=draft.steps[0].prompt
   await marked()
+  expect(await rail.getByText('Generated',{exact:true}).first().evaluate(element=>parseFloat(getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(13)
+  const moveDown=page.getByRole('button',{name:'Move down',exact:true})
+  await moveDown.focus()
+  await expect(page.getByRole('tooltip',{name:'Move down',exact:true})).toBeVisible()
   await capture(`studio-${mode}-builder`)
+  await moveDown.blur()
   editedPrompt=mode==='study'?'How was onboarding?':'Which improvement matters most?'
   await page.getByLabel('Prompt',{exact:true}).fill(editedPrompt)
   await page.getByRole('button',{name:'Save',exact:true}).click()
