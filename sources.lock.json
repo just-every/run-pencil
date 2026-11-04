@@ -869,7 +869,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "864cb7dcaddd5aac7b24ae686acc53c78a8cc6e9437ae744bfcc11100473d96f",
+      "sha256": "e1c1f7b43528d74f42b09a5ec0a242bbc7d71f52b6a54f1b0544c34a53a922c9",
       "executable": false
     },
     "DEMO.md": {
@@ -9297,7 +9297,7 @@
       "executable": false
     },
     "tests/runtime/google-sheets.worker.test.ts": {
-      "sha256": "b44872a2304d3c9c338d6b2509af56126d1dcf76c0a6f4d389d0cb4e77a71d7b",
+      "sha256": "a67450e84317a00e9e8d32e47a2e70eaeb911734b64349289fe7604d47a7e2d9",
       "executable": false
     },
     "tests/runtime/graph-reachability.worker.test.ts": {
