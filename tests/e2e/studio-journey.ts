@@ -96,7 +96,7 @@ export async function studioJourney(page:Page,info:TestInfo,provider:Awaited<Ret
    const current=await (await page.request.get(`/api/app/flows/${draft.flowId}/draft`)).json()
    const manual=current.steps.find((step:any)=>step.prompt==='What else should we improve?')
    await rail.getByRole('button').filter({has:page.getByText(draft.steps[1].prompt,{exact:true})}).click()
-   await page.getByLabel('Default next screen',{exact:true}).selectOption(manual.id)
+   await page.getByRole('combobox',{name:/^Default next screen/}).selectOption(manual.id)
    await page.getByRole('button',{name:'Save',exact:true}).click()
    await expect(page.getByText('Saved.',{exact:true})).toBeVisible()
    await page.reload()
