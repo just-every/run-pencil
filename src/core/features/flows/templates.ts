@@ -1,4 +1,6 @@
 import { ulid } from 'ulid'
+import { publicSteps, publicChoices, publicRules } from './serialization'
+import type { PublicFlow } from '../../app/api'
 import { templateCatalog as catalog, catalogPrompts } from './templates/catalog'
 
 const originalTemplates = [
@@ -54,10 +56,10 @@ function questionsFor(template: FlowTemplateId): TemplateQuestion[] {
   ]
 }
 
-/** The first question a template asks, for the New flow panel's preview. */
-export function templatePreview(template: FlowTemplateId) {
-  const { prompt, questionType, labels = [] } = questionsFor(template)[0]
-  return { prompt, questionType, labels, branching: !originalQuestions[template] && (labels.length > 0 || ['csat', 'ces'].includes(questionType)) }
+/** Build the same respondent graph as creation, entirely in memory. */
+export function templatePreview(template: FlowTemplateId): Pick<PublicFlow, 'steps' | 'choices' | 'branchRules'> {
+  const { steps, choices, rules } = templateStructure(template, '', '')
+  return { steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) }
 }
 
 export function templateStructure(template: FlowTemplateId, revisionId: string, now: string) {
