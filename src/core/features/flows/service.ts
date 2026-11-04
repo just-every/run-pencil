@@ -215,7 +215,8 @@ export class FlowService {
   }
 
   private builderDraft({ flow, revision, steps, choices, rules }: Awaited<ReturnType<FlowService['requireDraftSnapshot']>>) {
-    return { formSettings: formSettings(revision.formSettingsJson), branchSelection: evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'], flow, revision: this.publicRevision(revision), steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) }
+    const generatedStepIds = new Set<string>(revision.policySnapshotJson ? JSON.parse(revision.policySnapshotJson).studio?.generatedStepIds ?? [] : [])
+    return { formSettings: formSettings(revision.formSettingsJson), branchSelection: evaluateFlowPolicies(this.policyConfiguration)['flow.branch-selection.v1'], flow, revision: this.publicRevision(revision), steps: publicSteps(steps).map(step => ({ ...step, generated: generatedStepIds.has(step.id) })), choices: publicChoices(steps, choices), branchRules: publicRules(rules) }
   }
 
   private async hasUnpublishedChanges(workspaceId: string, flowId: string) {

@@ -144,7 +144,7 @@
   .step-button { gap: 2px; padding: 8px; }
   .step-index { width: 24px; height: 24px; font-size: 12px; }
   .step-prompt { font-size: 13px; line-height: 1.25; }
-  .step-type { font-size: 12px; }
+  .step-type { font-size: 13px; }
   .builder-add { margin-top: 8px; }
   .builder-add .secondary-button { min-height: 36px; }
   /* Level on a phone: a turned sheet clips its own controls by a fraction, and the builder must keep every control fully reachable. */
