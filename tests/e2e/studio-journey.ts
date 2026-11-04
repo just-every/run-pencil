@@ -63,12 +63,17 @@ export async function studioJourney(page:Page,info:TestInfo,provider:Awaited<Ret
   await expect(page.getByLabel('Prompt',{exact:true})).toBeVisible()
   const rail=page.getByRole('complementary',{name:'Flow steps',exact:true})
   const generatedCount=mode==='form'?3:4
+  const completion=draft.steps.at(-1)!
+  let completionPrompt=completion.prompt
   const marked=async()=>{
    await expect(rail.getByText('Generated',{exact:true})).toHaveCount(generatedCount)
    for(const step of draft.steps){
-    const prompt=step.id===draft.steps[0].id?editedPrompt:step.prompt
+    const prompt=step.id===draft.steps[0].id?editedPrompt:step.id===completion.id?completionPrompt:step.prompt
     await expect(rail.getByRole('button').filter({has:page.getByText(prompt,{exact:true})}).getByText('Generated',{exact:true})).toBeVisible()
    }
+   const current=await (await page.request.get(`/api/app/flows/${draft.flowId}/draft`)).json()
+   expect(current.steps.filter((step:any)=>step.generated).map((step:any)=>step.id)).toEqual(draft.steps.map((step:any)=>step.id))
+   expect(current.revision).not.toHaveProperty('policySnapshotJson')
   }
   let editedPrompt=draft.steps[0].prompt
   await marked()
@@ -103,6 +108,15 @@ export async function studioJourney(page:Page,info:TestInfo,provider:Awaited<Ret
    await marked()
    await expect(rail.getByRole('button').filter({hasText:'What else should we improve?'}).getByText('Generated',{exact:true})).toHaveCount(0)
   }
+  await rail.getByRole('button').filter({has:page.getByText(completionPrompt,{exact:true})}).click()
+  completionPrompt='Thanks for helping us improve.'
+  await page.getByLabel('Prompt',{exact:true}).fill(completionPrompt)
+  await page.getByRole('button',{name:'Save',exact:true}).click()
+  await expect(page.getByText('Saved.',{exact:true})).toBeVisible()
+  await page.reload()
+  await rail.getByRole('button').filter({has:page.getByText(completionPrompt,{exact:true})}).click()
+  await expect(page.getByLabel('Prompt',{exact:true})).toHaveValue(completionPrompt)
+  await marked()
   expect((await page.request.get(`/api/public/flows/${draft.slug}`)).status()).toBe(404)
   const anonymous=await page.context().browser()!.newContext()
   try{
@@ -114,9 +128,8 @@ export async function studioJourney(page:Page,info:TestInfo,provider:Awaited<Ret
   await expect(page.getByText('Published. New visitors see this version.',{exact:true})).toBeVisible()
   await page.getByRole('button',{name:'Edit steps',exact:true}).click()
   await marked()
-  const completion=draft.steps.at(-1)!
-  await rail.getByRole('button').filter({has:page.getByText(completion.prompt,{exact:true})}).click()
-  await expect(page.getByLabel('Prompt',{exact:true})).toHaveValue(completion.prompt)
+  await rail.getByRole('button').filter({has:page.getByText(completionPrompt,{exact:true})}).click()
+  await expect(page.getByLabel('Prompt',{exact:true})).toHaveValue(completionPrompt)
   await capture(`studio-${mode}-builder-published`)
   await page.reload()
   await marked()

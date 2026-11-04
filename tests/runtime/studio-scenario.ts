@@ -109,11 +109,14 @@ export async function exerciseStudio(f:Fixture,other:Fixture,off:Fixture){
  const added=await call(`${draftPath}/steps`,{expectedVersion:draft.flow.draftVersion,step:{kind:'question',questionType:'short_text',prompt:'What else should we improve?',required:false,nextStepId:draft.steps.at(-1).id}})
  const withManual=await call(draftPath)
  await call(draftPath,{stepId:draft.steps[1].id,prompt:'What should we improve next?',required:false,nextStepId:added.step.id,expectedVersion:withManual.flow.draftVersion},'PUT')
+ const beforeCompletion=await call(draftPath)
+ await call(draftPath,{stepId:draft.steps[2].id,prompt:'Thanks for helping us improve.',required:false,expectedVersion:beforeCompletion.flow.draftVersion},'PUT')
  const edited=await call(`/api/app/flows/${first.flowId}/draft`)
  const marks=(value:any)=>{
   expect(value.steps.map((step:any)=>step.id)).toEqual([draft.steps[0].id,draft.steps[1].id,added.step.id,draft.steps[2].id])
   expect(value.steps.map((step:any)=>step.generated)).toEqual([true,true,false,true])
   expect(value.steps[1].prompt).toBe('What should we improve next?')
+  expect(value.steps[3]).toMatchObject({kind:'completion',prompt:'Thanks for helping us improve.',generated:true})
  }
  marks(edited)
  expect((await other.call(draftPath)).status).toBe(404)
@@ -129,6 +132,7 @@ export async function exerciseStudio(f:Fixture,other:Fixture,off:Fixture){
  expect((await other.call(draftPath)).status).toBe(404)
  const publicFlow=await call(`/api/public/flows/${first.slug}`)
  expect(publicFlow.steps.some((step:any)=>step.prompt==='What should we improve next?')).toBe(true)
+ expect(publicFlow.steps.find((step:any)=>step.kind==='completion')).toMatchObject({id:draft.steps[2].id,prompt:'Thanks for helping us improve.'})
  expect(publicFlow.steps.every((step:any)=>!Object.hasOwn(step,'generated'))).toBe(true)
  expect(publicFlow.revision).not.toHaveProperty('policySnapshotJson')
  expect(publicFlow).not.toHaveProperty('studio')

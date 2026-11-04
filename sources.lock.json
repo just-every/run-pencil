@@ -869,7 +869,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "8afe62f5c0810fdf38c0f553d0e5197d2a1e260478c54f40bd436f894b7fe746",
+      "sha256": "e1501a501bb2f233a4733ef046dbc1e6961e7f188891235fa0d699890e18f120",
       "executable": false
     },
     "DEMO.md": {
@@ -8849,7 +8849,7 @@
       "executable": false
     },
     "tests/e2e/studio-journey.ts": {
-      "sha256": "237b282c2054e9360edf0d45c71df204b5f90ffee7cd7b664a5c826519282ac4",
+      "sha256": "7d405b9aea3c072fdd831d10edad667059c5a13aa8d71dc4a076b5e0f2cc39d5",
       "executable": false
     },
     "tests/e2e/submission-inbox-journey.ts": {
@@ -9493,7 +9493,7 @@
       "executable": false
     },
     "tests/runtime/studio-scenario.ts": {
-      "sha256": "be0338dfc5cca4714116730d723c0ee504ebf194432b2b076cbb1c4e1c838c7a",
+      "sha256": "0bf7baf51f21ecb3284f14d846d47a9e465f1514393e63221229029133dd5409",
       "executable": false
     },
     "tests/runtime/submissions.worker.test.ts": {
