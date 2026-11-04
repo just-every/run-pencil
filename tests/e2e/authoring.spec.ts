@@ -14,7 +14,7 @@ test('labels, one Save, real controls, reorder, branching, Share and a current d
   await expect(page.getByLabel('Flow name')).toHaveValue(title)
   await expect(page.getByLabel('Public link', { exact: true })).toHaveValue(link)
   await page.getByLabel('Public link', { exact: true }).fill(link + '-custom')
-  await page.getByRole('button', { name: 'Post-visit feedback', exact: true }).click()
+  await page.getByRole('button', { name: 'Customer feedback', exact: true }).click()
   await expect(page.getByLabel('Flow name')).toHaveValue(title)
   await expect(page.getByLabel('Public link', { exact: true })).toHaveValue(link + '-custom')
   await page.getByRole('button', { name: 'Blank flow', exact: true }).click()

@@ -6945,7 +6945,7 @@
       "executable": false
     },
     "src/core/features/reporting/export.ts": {
-      "sha256": "c4843ea4f2f464471e03fc5a5a150ca929dd7b2881246776f8ce163ba84ae4b6",
+      "sha256": "ccab1200cd9b069e201893d40d04911957d980feaba970009d0aff19e08c7967",
       "executable": false
     },
     "src/core/features/reporting/exportInventory.ts": {
@@ -8533,7 +8533,7 @@
       "executable": false
     },
     "tests/e2e/authoring.spec.ts": {
-      "sha256": "94ec0ea08f9a90f7b833c6de3d7c65a04cc80d04ce2eba14c9c58c4dbbf32840",
+      "sha256": "ee607c7344cdf19aa21834df6abb8647a84e1c9e68e7271347d052076f26465c",
       "executable": false
     },
     "tests/e2e/brand-helpers.ts": {

@@ -92,7 +92,7 @@ export async function exportPart(db: D1Database, secret: string, identity: Expor
   const nextToken = complete ? undefined : await sealCursor(next,secret)
   async function* body(): AsyncGenerator<Uint8Array> {
     if (encoded) { yield* encoded; return }
-    if (cursor.written === 0) yield encoder.encode(cursor.format === 'csv' ? header.map(csvCell).join(',') : JSON.stringify({ cutoff: cursor.cutoff, filter: { ...cursor.filter, deviceClass: undefined }, excludedQuarantined: cursor.excludedQuarantined, includedQuarantined: cursor.includedQuarantined, includeAutomatedExclusions: cursor.includeAutomatedExclusions }).slice(0,-1)+',"responses":[')
+    if (cursor.written === 0) yield encoder.encode(cursor.format === 'csv' ? csvHeader + [...questions.map(question => question.label), ...columns].map(column => ',' + csvCell(column)).join('') : JSON.stringify({ cutoff: cursor.cutoff, filter: { ...cursor.filter, deviceClass: undefined }, excludedQuarantined: cursor.excludedQuarantined, includedQuarantined: cursor.includedQuarantined, includeAutomatedExclusions: cursor.includeAutomatedExclusions }).slice(0,-1)+',"responses":[')
     for (const [position, row] of page.responses.entries()) yield encoder.encode(cursor.format === 'csv' ? csvRecord(row,cursor,columns,questions) : (cursor.written+position > 0 ? ',' : '')+JSON.stringify(row))
   }
   async function* closing(): AsyncGenerator<Uint8Array> {
