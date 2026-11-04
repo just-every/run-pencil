@@ -7,11 +7,12 @@ import { materializeConfirmations } from '../../src/core/features/notifications/
 declare const __PENCIL_CORE_MIGRATIONS__:D1Migration[]
 beforeAll(()=>applyD1Migrations(env.DB,__PENCIL_CORE_MIGRATIONS__))
 const receiver=(env as unknown as {TASK_RECEIVER_ORIGIN:string}).TASK_RECEIVER_ORIGIN
-contract(['INTEG-001','INTEG-015'],'Google OAuth seals owner tokens and Sheets backfills, appends stable columns, replays failed rows without duplicates and clears an erased response',async()=>{
+contract(['INTEG-001','INTEG-015','INTEG-016'],'Google OAuth seals owner tokens and Sheets backfills, appends stable columns, replays failed rows without duplicates and clears an erased response',async()=>{
  await fetch(receiver+'/__control/reset',{method:'POST',body:'{}'})
  const f=await actionsHttp({},'sheets-'+crypto.randomUUID().slice(0,8)),base=`/api/app/flows/${f.flowId}`,book='synthetic-pencil-1'
  const accepted=async(response:Response,status=200)=>{expect(response.status,'Google proof HTTP status').toBe(status);return response.status===204?undefined:response.json() as Promise<any>}
  const config={clientId:'synthetic-pencil-2',clientSecret:'synthetic-pencil-google-secret',authOrigin:receiver,tokenOrigin:receiver,apiOrigin:receiver}
+ const captured=async()=>(await (await fetch(receiver+'/__control/state')).json()) as {requests:Array<{path:string;body:string}>;sheets:Record<string,string[][]>}
  await env.DB.prepare("UPDATE oa_operators SET role='admin' WHERE id=?").bind(f.lead.operatorId).run()
  await env.DB.prepare('UPDATE oa_sessions SET operator_version=(SELECT version FROM oa_operators WHERE id=operator_id) WHERE operator_id=?').bind(f.lead.operatorId).run()
  expect((await f.call('/api/app/connections/google/start',config)).status).toBe(403)
@@ -26,6 +27,58 @@ contract(['INTEG-001','INTEG-015'],'Google OAuth seals owner tokens and Sheets b
  expect((await f.call(callback.pathname+callback.search)).status).toBe(403)
  const status=await accepted(await f.call('/api/app/connections/google'));expect(status).toMatchObject({connected:true})
  const audit=await accepted(await f.call('/api/app/audit?kind=connection.saved'));expect(audit.rows.some((row:any)=>row.details.connection==='google')).toBe(true)
+ // Exercise local connection custody before attaching a form; provider grant revocation is a separate live proof.
+ const connection='/api/app/connections/google',worksheets=connection+'/worksheets?spreadsheetId='+book
+ const storedConnection=()=>env.DB.prepare("SELECT * FROM integration_connections WHERE kind='google'").first()
+ const probeConnection=async()=>{
+  const before=(await captured()).requests.length
+  expect(await accepted(await f.call(worksheets))).toEqual({worksheets:[{title:'Synthetic responses',id:1}]})
+  const requests=(await captured()).requests.slice(before)
+  expect(requests).toHaveLength(1);expect(requests[0].path).toContain('/v4/spreadsheets/'+book+'?')
+ }
+ await probeConnection()
+ const custody=await storedConnection();expect(custody).not.toBeNull()
+ await env.DB.prepare("UPDATE oa_operators SET role='admin' WHERE id=?").bind(f.owner.operatorId).run()
+ await env.DB.prepare('UPDATE oa_sessions SET operator_version=(SELECT version FROM oa_operators WHERE id=operator_id) WHERE operator_id=?').bind(f.owner.operatorId).run()
+ const beforeRefusal=(await captured()).requests
+ expect((await f.as(f.owner.token)(connection,undefined,{method:'DELETE'})).status).toBe(403)
+ expect(await storedConnection()).toEqual(custody)
+ expect(await accepted(await f.call(connection))).toMatchObject({connected:true,configured:true})
+ expect((await captured()).requests).toEqual(beforeRefusal)
+ await probeConnection()
+ const beforeRemoval=(await captured()).requests
+ expect(await accepted(await f.call(connection,undefined,{method:'DELETE'}))).toMatchObject({connected:false,configured:false})
+ expect(await accepted(await f.call(connection))).toMatchObject({connected:false,configured:false})
+ expect(await storedConnection()).toBeNull()
+ const disconnected=await f.call(worksheets)
+ expect(disconnected.status).toBe(400)
+ expect(await disconnected.json()).toMatchObject({error:'VALIDATION_ERROR',message:'Connect Google in Settings first.'})
+ expect((await f.call(callback.pathname+callback.search)).status).toBe(403)
+ expect(await storedConnection()).toBeNull()
+ expect((await captured()).requests).toEqual(beforeRemoval)
+ const reconnect=await accepted(await f.call(connection+'/start',config)),reconnectAuthorization=new URL(reconnect.authorizationUrl)
+ expect(reconnectAuthorization.searchParams.get('state')).not.toBe(authorization.searchParams.get('state'))
+ expect(reconnectAuthorization.searchParams.get('code_challenge_method')).toBe('S256')
+ expect(reconnectAuthorization.searchParams.get('code_challenge')).toMatch(/^[\w-]{43}$/)
+ expect(reconnectAuthorization.searchParams.get('code_challenge')).not.toBe(authorization.searchParams.get('code_challenge'))
+ const reconnectGrant=await fetch(reconnectAuthorization.href,{redirect:'manual'});expect(reconnectGrant.status).toBe(302)
+ const reconnectCallback=new URL(reconnectGrant.headers.get('location')!)
+ const beforeReconnect=(await captured()).requests.length
+ expect((await f.call(reconnectCallback.pathname+reconnectCallback.search)).status).toBe(303)
+ const exchange=(await captured()).requests.slice(beforeReconnect)
+ expect(exchange).toHaveLength(1);expect(exchange[0].path).toBe('/token')
+ const tokenRequest=new URLSearchParams(exchange[0].body)
+ expect(tokenRequest.get('grant_type')).toBe('authorization_code')
+ const verifier=tokenRequest.get('code_verifier')!
+ const challenge=btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(verifier))))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')
+ expect(challenge).toBe(reconnectAuthorization.searchParams.get('code_challenge'))
+ expect(await accepted(await f.call(connection))).toMatchObject({connected:true,configured:true})
+ const reconnectedCustody=await storedConnection();expect(reconnectedCustody).not.toBeNull()
+ const beforeReplay=(await captured()).requests
+ for(const consumed of [callback,reconnectCallback])expect((await f.call(consumed.pathname+consumed.search)).status).toBe(403)
+ expect(await storedConnection()).toEqual(reconnectedCustody)
+ expect((await captured()).requests).toEqual(beforeReplay)
+ await probeConnection()
  expect((await f.call(base+'/google-sheet',{spreadsheetId:book,tab:'Synthetic responses'},{method:'PUT'})).status).toBe(400)
  const readDraft=async()=>accepted(await f.call(base+'/draft'))
  let current=await readDraft()
@@ -111,7 +164,6 @@ contract(['INTEG-001','INTEG-015'],'Google OAuth seals owner tokens and Sheets b
  expect(backup.payload.tables.find((table:any)=>table.name==='google_oauth_states').rows).toEqual([])
  // The receiver is the provider edge, so each limit is exercised by the public sync or picker door.
  const control=async(options:unknown)=>{expect((await fetch(receiver+'/__control/google-mode',{method:'POST',body:JSON.stringify(options)})).status).toBe(200)}
- const captured=async()=>(await (await fetch(receiver+'/__control/state')).json()) as {requests:Array<{path:string;body:string}>;sheets:Record<string,string[][]>}
  for(const [count,status] of [[100,200],[101,400]]){
   await control({tabs:count});const result=await f.call('/api/app/connections/google/worksheets?spreadsheetId='+book);expect(result.status).toBe(status)
   if(status===200)expect((await result.json() as any).worksheets).toHaveLength(count)
