@@ -67,6 +67,7 @@ export type DashboardFlow = {
 }
 
 export type BuilderDraft = PublicFlow & {
+  steps: Array<FlowStep & { generated: boolean }>
   flow: PublicFlow['flow'] & { status: DashboardFlow['status']; draftVersion: number }
 }
 

@@ -869,7 +869,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "e9fe20d6dcfca22e28638399ac3294be30d5053617170d35d2b0cb48d6691097",
+      "sha256": "2c3e298c07345060f8be3a1a76ca22e778d22f93bb75315d0da9c42b152c7b46",
       "executable": false
     },
     "DEMO.md": {
@@ -4921,7 +4921,7 @@
       "executable": false
     },
     "src/core/app/api.ts": {
-      "sha256": "ce60121b4864fd6d4c7ee91e03f173d922fb2d3cdc604be25bf6225ac8dc85dd",
+      "sha256": "385c36e764ad28559370a637e6258cf2c10d601f683996e0d07724a47fa5a156",
       "executable": false
     },
     "src/core/app/capability-paths.ts": {
@@ -5961,7 +5961,7 @@
       "executable": false
     },
     "src/core/features/flows/service.ts": {
-      "sha256": "65fb7259e048b89f2f9a377b7c7ddc74dbd073a3689ef94d64d74554467b6118",
+      "sha256": "1de742a7a4f9bffa11491e22ecae7dc83a4cb437b6e82d345ea54568af2c2896",
       "executable": false
     },
     "src/core/features/flows/structure.ts": {
@@ -5981,7 +5981,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/authoring.css": {
-      "sha256": "1c37d8d1e3d285ffccd16bcbf8c90d0f04fef9ea2ce498ff7526927b39a5f691",
+      "sha256": "66665776a718c7b998f15a2069f1390ae6af092b3db8434033fdc1e54bc2f90f",
       "executable": false
     },
     "src/core/features/flows/ui/BranchEditor.tsx": {
@@ -6029,7 +6029,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/FlowBuilderPage.tsx": {
-      "sha256": "9747d6614bfbb7c3451ad106cdb3a7eb757bdb1813e83ebcf4aac7573798057b",
+      "sha256": "afe4012aa810150b200a455e16ebf62f42b407a60a484c677c0818e5a009b33e",
       "executable": false
     },
     "src/core/features/flows/ui/FlowLifecycle.tsx": {
@@ -8849,7 +8849,7 @@
       "executable": false
     },
     "tests/e2e/studio-journey.ts": {
-      "sha256": "f8daf22c31c11f79583ac21afe04f244aa8383e6067141d8edb765d75204e6c8",
+      "sha256": "54f72c91940f8797b1391fd352cc5a1b2c51efe52a7ab11e119a6876c1984140",
       "executable": false
     },
     "tests/e2e/submission-inbox-journey.ts": {
@@ -9493,7 +9493,7 @@
       "executable": false
     },
     "tests/runtime/studio-scenario.ts": {
-      "sha256": "8662252ecbc97d4030e933c4488e7f12ff537b2ebb0376c9c82995a08196b59b",
+      "sha256": "c27669d5ec2b0a81da966e3321bca7c0054aa5931fc394f4d8cd7a3a1529766c",
       "executable": false
     },
     "tests/runtime/submissions.worker.test.ts": {

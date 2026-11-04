@@ -293,7 +293,7 @@ export function FlowBuilderPage() {
             {draft.steps.map((step, index) => (
               <button className="step-button focus-ring" data-selected={step.id === selected?.id} key={step.id} disabled={saving || (dirty && step.id !== selectedId)} onClick={() => setSelectedId(step.id)} type="button">
                 <span className="step-index">{index + 1}</span>
-                <span><strong className="step-prompt">{step.prompt}</strong><small className="step-type">{stepLabel(step)}</small></span>
+                <span><strong className="step-prompt">{step.prompt}</strong><small className="step-type">{stepLabel(step)}{step.generated ? <> · <span>Generated</span></> : null}</small></span>
               </button>
             ))}
           </div>
