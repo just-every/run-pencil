@@ -161,7 +161,7 @@ contract(["RESP-009"], "closed flows refuse late submissions, retain their named
     await page.goto(`/f/${slug}`)
     await expect(page.locator('[data-hydrated=true]')).toBeVisible()
     await page.getByRole('button', { name: 'Submit response', exact: true }).click()
-    await expect(page.getByRole('alert')).toHaveText('Please answer this question.')
+    await expect(page.getByRole('alert')).toHaveText('“Your feedback”: Please answer this question.')
     expect((await (await page.request.get(`${f.path}/ledger`)).json()).total).toBe(0)
     expect((await page.request.post(`${f.path}/close`, { headers: mutationHeaders })).status()).toBe(204)
     const workspace = await (await page.request.get('/api/app/workspace')).json() as WorkspaceSettings
