@@ -885,7 +885,7 @@
       "executable": false
     },
     "deploy.json": {
-      "sha256": "157a4d2533762e05ae10556fc7db4ffda65dfd410277e1358f98936a7e5ee73d",
+      "sha256": "2c647c26e7d90bd81ea300f64b5e8e52ce940f8a40224b8fccb735179204baa0",
       "executable": false
     },
     "deploy/wrangler.template.toml": {
@@ -1513,7 +1513,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "23d281d35c3808701f0517ff651b5679bfaff7ff9a5e3a12d2521d983a6f21ab",
+      "sha256": "9568bff44d296ec32d939925bc203268ba2a4db50a54dfa37b79f8de385ce13c",
       "executable": false
     },
     "RELEASE.json": {
