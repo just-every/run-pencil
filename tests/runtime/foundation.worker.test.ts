@@ -26,6 +26,8 @@ contract('FLOW-006', 'rejects all publication problems by stable ID without crea
   // LANG-002: respondent text overrides are part of the published revision; a whitespace-only button label is refused at publish with its field named.
   const t = await foundationFixture('foundation-respondent-text')
   await t.add({ kind: 'question', questionType: 'short_text', prompt: 'Anything to add?', required: true })
+  await t.add({ kind: 'question', questionType: 'full_name', prompt: 'Your name', required: true })
+  await t.add({ kind: 'question', questionType: 'matrix', prompt: 'Your experience', required: true, questionSettings: { matrixMode: 'single', matrixRows: [{ id: 'support', label: 'Support' }, { id: 'speed', label: 'Speed' }] }, choices: [{ value: 'good', label: 'Good' }, { value: 'poor', label: 'Poor' }] })
   await t.add({ kind: 'completion', questionType: null, prompt: 'Done' })
   const saveText = async (text: Record<string, string>) => { const draft = await t.draft(); await t.services.flows.updateFormSettings({ ...t.flow, expectedVersion: draft.flow.draftVersion, settings: { ...draft.formSettings!, text } }) }
   await saveText({ submitLabel: '   ' })
@@ -48,14 +50,30 @@ contract('FLOW-006', 'rejects all publication problems by stable ID without crea
   expect(respondentString(published.formSettings?.text, 'nextLabel')).toBe('Continue')
   expect(respondentString(undefined, 'startLabel')).toBe('Begin')
   const session = await t.start(); await t.mature(session.sessionId)
-  for (const value of [undefined, null, '', '   ', []]) {
-    await expect(t.final(session, value === undefined ? [] : [{ stepId: published.steps[0].id, value }])).rejects.toMatchObject({
-      message: '“Anything to add?”: Please share your feedback before sending.',
-      details: [{ stepId: published.steps[0].id, reason: 'Please share your feedback before sending.' }],
-    })
-    expect((await env.DB.prepare('SELECT count(*) AS n FROM responses WHERE flow_id = ?').bind(t.flow.flowId).first<{ n: number }>())!.n).toBe(0)
+  const [feedback, name, matrix] = published.steps
+  const scale = published.choices.filter(choice => choice.stepId === matrix.id)
+  const answers = [
+    { stepId: feedback.id, value: 'Fine' },
+    { stepId: name.id, value: { given: 'Synthetic', family: 'Respondent' } },
+    { stepId: matrix.id, value: { support: scale[0].id, speed: scale[1].id } },
+  ]
+  const responseCount = async () => (await env.DB.prepare('SELECT count(*) AS n FROM responses WHERE flow_id = ?').bind(t.flow.flowId).first<{ n: number }>())!.n
+  for (const [index, values] of [[undefined, null, '', '   ', []], [undefined, { given: '', family: '' }], [undefined, {}]].entries()) {
+    const question = published.steps[index]
+    for (const value of values) {
+      await expect(t.final(session, [...answers.slice(0, index), ...(value === undefined ? [] : [{ stepId: question.id, value }])])).rejects.toMatchObject({
+        message: `“${question.prompt}”: Please share your feedback before sending.`,
+        details: [{ stepId: question.id, reason: 'Please share your feedback before sending.' }],
+      })
+      expect(await responseCount()).toBe(0)
+    }
   }
-  await t.final(session, [{ stepId: published.steps[0].id, value: 'Fine' }])
+  // A partially entered composite answer keeps its specific validation message.
+  await expect(t.final(session, [answers[0], { stepId: name.id, value: { given: 'Synthetic', family: '' } }])).rejects.toMatchObject({ details: [{ stepId: name.id, reason: 'Enter a family name.' }] })
+  await expect(t.final(session, [...answers.slice(0, 2), { stepId: matrix.id, value: { support: scale[0].id } }])).rejects.toMatchObject({ details: [{ stepId: matrix.id, reason: 'Choose an answer for “Speed”.' }] })
+  expect(await responseCount()).toBe(0)
+  await t.final(session, answers)
+  expect(await responseCount()).toBe(1)
   await expect(t.services.flows.getPublicFlow(t.slug)).rejects.toMatchObject({ flow: { message: 'All places are taken.' } })
   const c = await foundationFixture('foundation-respondent-text-closed')
   await c.add({ kind: 'question', questionType: 'short_text', prompt: 'Anything to add?', required: true })
