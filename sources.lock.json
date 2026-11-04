@@ -869,7 +869,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "3ac9eaf92c9c397ae9b29654a5baf45d926817d38c8ca53032dabae88192538c",
+      "sha256": "c3e3c66494d4b7526b93a5eefd1ed1eddd7ea463669ae2a76b1638b8220685cb",
       "executable": false
     },
     "DEMO.md": {
@@ -4921,7 +4921,7 @@
       "executable": false
     },
     "src/core/app/api.ts": {
-      "sha256": "385c36e764ad28559370a637e6258cf2c10d601f683996e0d07724a47fa5a156",
+      "sha256": "5b6e3e87a43dfd6073987839855fbcb92f0dd013002d3c14450e95619a8d3f6d",
       "executable": false
     },
     "src/core/app/capability-paths.ts": {
@@ -8453,7 +8453,7 @@
       "executable": false
     },
     "src/test/ui-fixtures.tsx": {
-      "sha256": "1960e3c33c6fb10d9ba50df6e9e8f6ab2f0b17b9f3ee64de5da9c1f51d30ecf1",
+      "sha256": "c303bb3d5d3a8f405b0a15cedbf3964ed735f26d8eab6c0a57c30568e76f80c0",
       "executable": false
     },
     "src/vite-env.d.ts": {
@@ -9493,7 +9493,7 @@
       "executable": false
     },
     "tests/runtime/studio-scenario.ts": {
-      "sha256": "c27669d5ec2b0a81da966e3321bca7c0054aa5931fc394f4d8cd7a3a1529766c",
+      "sha256": "be0338dfc5cca4714116730d723c0ee504ebf194432b2b076cbb1c4e1c838c7a",
       "executable": false
     },
     "tests/runtime/submissions.worker.test.ts": {

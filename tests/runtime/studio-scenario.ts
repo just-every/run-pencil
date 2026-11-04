@@ -119,7 +119,7 @@ export async function exerciseStudio(f:Fixture,other:Fixture,off:Fixture){
  expect((await other.call(draftPath)).status).toBe(404)
  expect((await other.call(`/api/app/flows/${first.flowId}/publish`,{expectedVersion:edited.flow.draftVersion})).status).toBe(404)
  const anonymous=createWorkerApp(undefined,f.platform)
- expect((await anonymous.request(`http://localhost/api/app/flows/${first.flowId}/publish`,{method:'POST',headers:{Origin:'http://localhost','Content-Type':'application/json'},body:JSON.stringify({expectedVersion:edited.flow.draftVersion})})).status).toBe(401)
+ expect((await anonymous.request(`http://localhost/api/app/flows/${first.flowId}/publish`,{method:'POST',headers:{Host:'localhost',Origin:'http://localhost','Content-Type':'application/json'},body:JSON.stringify({expectedVersion:edited.flow.draftVersion})})).status).toBe(401)
  expect((await f.call(`/api/public/flows/${first.slug}`)).status).toBe(404)
  expect(await call(draftPath)).toEqual(edited)
  await call(`/api/app/flows/${first.flowId}/publish`,{expectedVersion:edited.flow.draftVersion})
