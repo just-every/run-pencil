@@ -26,7 +26,7 @@ export function OperatorShellPage({ config, editorEnabled }: { config: PublicSee
       window.dispatchEvent(new Event('pencil:auth-changed'))
       return
     }
-    await navigate({ to: '/signin', ignoreBlocker: true })
+    await navigate({ to: '/signin', ignoreBlocker: true, reloadDocument: true })
   }
   const pathname = useRouterState({ select: (state) => state.location.pathname })
   const flowsCurrent = pathname === '/app' || pathname === '/app/' || pathname.startsWith('/app/flows/')

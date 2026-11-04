@@ -2,7 +2,7 @@ import { contract } from './contract'
 import { expect, test } from './fixtures'
 import { signInEmptyWorkspace } from './authoring-helpers'
 import { answerCanary, skippedIdentity } from '../fixtures/form-import/google-fixture'
-import { captureGoogle, completeGoogle, continueGoogle, googleFixture, googleReview, openGoogleFlowCard, openGoogleImport, startGoogle } from './google-import-helpers'
+import { captureGoogle, completeGoogle, googleFixture, googleReview, openGoogleFlowCard, openGoogleImport, startGoogle } from './google-import-helpers'
 
 contract(["IMPORT-001","IMPORT-002","IMPORT-003","IMPORT-004","BASE-PUBLIC-003"], "Google CSV-only and definition imports preserve reviewed locale, omissions and historical answers without identity", async ({ page }, info) => {
   await test.step("Google CSV-only locale review, native results, replay and undo at desktop and mobile", async () => {
@@ -21,7 +21,8 @@ contract(["IMPORT-001","IMPORT-002","IMPORT-003","IMPORT-004","BASE-PUBLIC-003"]
     let review = await googleReview(page)
     expect(review.google?.firstTimestamp?.utc).toBe('2026-04-02T18:20:06.000Z')
     expect(review.columns.find(column => column.column === 2)?.target).toBe('skip')
-    await expect(page.getByText(/2026-04-02T18:20:06/).first()).toBeVisible()
+    await expect(page.locator('time').first()).toHaveAttribute('datetime', review.google!.firstTimestamp!.utc)
+    await expect(page.locator('time').first()).not.toContainText('T18:20:06')
     expect(await page.locator('body').innerText()).not.toContain(skippedIdentity)
     await captureGoogle(page, info, 'csv-reviewed')
     await page.getByRole('button', { name: 'Cancel', exact: true }).click()
@@ -32,8 +33,9 @@ contract(["IMPORT-001","IMPORT-002","IMPORT-003","IMPORT-004","BASE-PUBLIC-003"]
     await page.getByLabel('Imported form title').fill('Google historical CSV')
     review = await googleReview(page)
     await completeGoogle(page);
+    await expect(page.getByRole('heading', { name: review.title, exact: true })).toBeVisible();
     await captureGoogle(page, info, 'csv-prepared');
-    await continueGoogle(page)
+
     await page.getByRole('link', { name: 'Open the imported draft' }).click()
     await expect(page.getByRole('heading', { name: 'Google historical CSV', exact: true })).toBeVisible()
     await captureGoogle(page, info, 'csv-builder')
@@ -56,7 +58,7 @@ contract(["IMPORT-001","IMPORT-002","IMPORT-003","IMPORT-004","BASE-PUBLIC-003"]
     expect((await googleReview(page)).alreadyImported).toBe(true)
     page.once('dialog', dialog => dialog.accept())
     await page.getByRole('button', { name: 'Undo import', exact: true }).click()
-    await expect(page.getByRole('heading', { name: /^undone/ })).toBeVisible()
+    await expect(page.getByRole('status').filter({ hasText: /^undone/ })).toBeVisible()
     await captureGoogle(page, info, 'csv-undone')
   });
   await test.step("Google definition omissions and duplicate column selections import historical answers without identity", async () => {
@@ -75,7 +77,8 @@ contract(["IMPORT-001","IMPORT-002","IMPORT-003","IMPORT-004","BASE-PUBLIC-003"]
     expect(await page.locator('body').innerText()).not.toContain(skippedIdentity)
     await captureGoogle(page, info, 'definition-reviewed')
     await completeGoogle(page);
-    await continueGoogle(page)
+    await expect(page.getByRole('heading', { name: review.title, exact: true })).toBeVisible();
+
     await page.getByRole('link', { name: 'Open the imported draft' }).click()
     await openGoogleFlowCard(page, review.flowId, 'Results')
     await page.getByRole('button', { name: 'View answers', exact: true }).last().click()
@@ -114,7 +117,7 @@ contract(['IMPORT-001', 'IMPORT-002', 'IMPORT-003', 'IMPORT-004', 'BASE-PUBLIC-0
   expect(reviewed.columns.find(column => column.column === 5)?.target).toBe('skip')
   expect(reviewed.report.some(item => item.state === 'unsupported')).toBe(true)
   await captureGoogle(page, info, 'branch-reviewed'); await completeGoogle(page)
-  await captureGoogle(page, info, 'branch-prepared'); await continueGoogle(page)
+  await captureGoogle(page, info, 'branch-prepared');
   await page.getByRole('link', { name: 'Open the imported draft' }).click()
   await captureGoogle(page, info, 'branch-builder')
   await page.getByRole('button', { name: 'Preview draft', exact: true }).click()
@@ -137,6 +140,6 @@ contract(['IMPORT-001', 'IMPORT-002', 'IMPORT-003', 'IMPORT-004', 'BASE-PUBLIC-0
   await openGoogleImport(page)
   page.once('dialog', dialog => dialog.accept())
   await page.getByRole('button', { name: 'Undo import', exact: true }).click()
-  await expect(page.getByRole('heading', { name: /^undone/ })).toBeVisible()
+  await expect(page.getByRole('status').filter({ hasText: /^undone/ })).toBeVisible()
   await captureGoogle(page, info, 'branch-undone')
 })

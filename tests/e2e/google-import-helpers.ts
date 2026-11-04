@@ -24,12 +24,7 @@ export async function googleReview(page: Page): Promise<ImportReview> {
 export async function completeGoogle(page: Page) {
   await page.getByRole('checkbox', { name: /I have reviewed every/ }).check()
   await page.getByRole('button', { name: 'Import reviewed form', exact: true }).click()
-  await expect(page.getByRole('heading', { name: /Ready to verify/ })).toBeVisible()
-}
-export async function continueGoogle(page: Page) {
-  await page.getByRole('button', { name: 'Continue import', exact: true }).focus()
-  await page.keyboard.press('Enter')
-  await expect(page.getByRole('heading', { name: /^completed/ })).toBeVisible({ timeout: 60_000 })
+  await expect(page.getByRole('status').filter({ hasText: /^completed/ })).toBeVisible({ timeout: 60_000 })
 }
 export async function startGoogle(page: Page, definition?: string, csv?: string) {
   await page.getByRole('link', { name: 'Import a form', exact: true }).click()

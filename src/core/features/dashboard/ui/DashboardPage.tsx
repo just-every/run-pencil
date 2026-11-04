@@ -26,6 +26,7 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
   const [error, setError] = useState<string>()
   const [status, setStatus] = useState<DashboardFlow['status'] | 'active'>('active')
   const [title, setTitle] = useState('')
+  const [titleEdited, setTitleEdited] = useState(false)
   const [slug, setSlug] = useState('')
   const [slugEdited, setSlugEdited] = useState(false)
   const [showStudio,setShowStudio]=useState(false)
@@ -91,14 +92,19 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
       const flow = teamTemplate ? await api.createFromTeamTemplate(teamTemplate,{title,slug}) : await api.createFlow(input)
       if (!mounted.current) return
       createRequested.current = false
-      setTitle(''); setSlug(''); setSlugEdited(false); setTemplate(undefined); setTeamTemplate(undefined); setShowCreate(false); markSaved()
+      setTitle(''); setTitleEdited(false); setSlug(''); setSlugEdited(false); setTemplate(undefined); setTeamTemplate(undefined); setShowCreate(false); markSaved()
       await router.invalidate({ filter: match => match.routeId === '/app/' })
       if (!mounted.current) return
       await navigate({ to: '/app/flows/$flowId/builder', params: { flowId: flow.id } })
     } catch (reason) { if (mounted.current) setError(reason instanceof Error ? reason.message : 'The draft flow could not be created.') }
     finally { if (mounted.current) setCreating(false) }
   }
-  const cancel = () => { createRequested.current = false; setShowCreate(false); setTitle(''); setSlug(''); setSlugEdited(false); setTemplate(undefined); setTeamTemplate(undefined); setError(undefined) }
+  const cancel = () => { createRequested.current = false; setShowCreate(false); setTitle(''); setTitleEdited(false); setSlug(''); setSlugEdited(false); setTemplate(undefined); setTeamTemplate(undefined); setError(undefined) }
+  const suggestTemplateName = (name: string) => {
+    if (titleEdited) return
+    setTitle(name)
+    if (!slugEdited) setSlug(`${suggestedSlug(name)}-${crypto.randomUUID().slice(0, 8)}`)
+  }
 
   const openCreate = () => { if (dirty && !window.confirm('Discard the unfinished copy and create a new flow?')) return; createRequested.current = true; setError(undefined); setShowCreate(true) }
   const firstFlow = !hasFlows && status === 'active'
@@ -122,17 +128,17 @@ export function DashboardPage({ initialData }: { initialData: { flows: Dashboard
     {showCreate && !showStudio ? <form className="panel dashboard-create-panel" onSubmit={(event) => { event.preventDefault(); void createFlow() }}>
       <div className="dashboard-create">
         {!hasFlows ? <><p className="eyebrow">Ask → Signal → Act</p><h2 className="display">Create your first flow</h2><p className="muted">Ask a clear question, use the answers to make a decision, then act.</p></> : <h2 className="display">New flow</h2>}
-        <label className="inspector-field">Flow name<input autoFocus disabled={creating} required className="text-input" onChange={(event) => { const name = event.target.value; setTitle(name); if (!slugEdited) setSlug(suggestedSlug(name)) }} placeholder="Post-visit feedback" value={title} /></label>
+        <label className="inspector-field">Flow name<input autoFocus disabled={creating} required className="text-input" onChange={(event) => { const name = event.target.value; setTitleEdited(true); setTitle(name); if (!slugEdited) setSlug(suggestedSlug(name)) }} placeholder="Post-visit feedback" value={title} /></label>
         <label className="inspector-field">Public link<input disabled={creating} required maxLength={120} className="text-input" onChange={(event) => { setSlugEdited(true); setSlug(event.target.value) }} placeholder="post-visit-feedback" value={slug} /></label>
         <div className="template-find">
           <label className="inspector-field">Search templates<input className="text-input" type="search" value={templateSearch} onChange={event => setTemplateSearch(event.target.value)} /></label>
           <label className="inspector-field">Template category<select aria-label="Template category" className="text-input" value={templateCategory} onChange={event => setTemplateCategory(event.target.value)}><option>All categories</option>{[...new Set(flowTemplates.map(item => item.category))].map(category => <option key={category}>{category}</option>)}</select></label>
         </div>
         <div aria-label="Flow templates" className="template-gallery">
-          {shownTemplates.map(item => <button className="secondary-button focus-ring" aria-pressed={template === item.id} disabled={creating} type="button" key={item.id} onClick={() => { setTeamTemplate(undefined); setTemplate(item.id); setTitle(item.title); setSlug(`${suggestedSlug(item.title)}-${crypto.randomUUID().slice(0, 8)}`); setSlugEdited(false) }}>{item.title}</button>)}
-          <button className="secondary-button focus-ring" aria-pressed={!template && !teamTemplate} disabled={creating} type="button" onClick={() => { setTemplate(undefined); setTeamTemplate(undefined); setTitle(''); setSlug(''); setSlugEdited(false) }}>Blank flow</button>
+          {shownTemplates.map(item => <button className="secondary-button focus-ring" aria-pressed={template === item.id} disabled={creating} type="button" key={item.id} onClick={() => { setTeamTemplate(undefined); setTemplate(item.id); suggestTemplateName(item.title) }}>{item.title}</button>)}
+          <button className="secondary-button focus-ring" aria-pressed={!template && !teamTemplate} disabled={creating} type="button" onClick={() => { setTemplate(undefined); setTeamTemplate(undefined) }}>Blank flow</button>
         </div>
-        <TeamTemplatePicker selected={teamTemplate} disabled={creating} onSelect={item=>{setTeamTemplate(item?.id);setTemplate(undefined);if(item){setTitle(item.name);setSlug(`${suggestedSlug(item.name)}-${crypto.randomUUID().slice(0,8)}`);setSlugEdited(false)}}} />
+        <TeamTemplatePicker selected={teamTemplate} disabled={creating} onSelect={item=>{setTeamTemplate(item?.id);setTemplate(undefined);if(item)suggestTemplateName(item.name)}} />
         {template ? <p className="muted">{flowTemplates.find(item => item.id === template)?.description} You can edit every question before publishing.</p> : null}
         <div className="builder-actions dashboard-create-actions"><button className="primary-button focus-ring" disabled={creating || !title.trim() || !slug.trim()} type="submit"><Plus aria-hidden="true" size={16} /> {creating ? 'Creating…' : 'Create draft flow'}</button><button className="secondary-button focus-ring" type="button" disabled={creating} onClick={()=>setShowStudio(true)}>Generate with AI</button><button className="quiet-button focus-ring" disabled={creating} onClick={cancel} type="button">Cancel</button></div>
       </div>

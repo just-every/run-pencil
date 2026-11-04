@@ -7,6 +7,7 @@ import { mappingVersion, type ImportInput, type ImportReview } from './model'
 import { prepareImport } from './prepare'
 import { createCanonicalHasher } from '../../../base/import-kit/src/provenance/canonical-hash'
 import { cancelPrivatePreparation, publishedCancellation, requireCancellationAuthority } from './cancellation'
+import { stableId } from './fields'
 export type ImportActor = { id: string; operatorId: string; workspaceId: string }
 // HTTP callers supply the session already authenticated by native getSession, including
 // local-key-gated dev sessions. This predicate rechecks live database authority on each batch.
@@ -105,6 +106,11 @@ export class FormImports {
     if (stream === 2) return readD1ImportPreparation(id, context)
     return stream ? readD1ImportStream(id,context) : readD1ImportJob(id,context)
   }
+  private async describe<T extends { id: string }>(job: T, namespace: string) {
+    const flowId = stableId(this.actor.workspaceId, namespace.startsWith('documented-form:') ? namespace.slice('documented-form:'.length) : namespace)
+    const flow = await this.database.prepare('SELECT title FROM flows WHERE id=? AND workspace_id=?').bind(flowId, this.actor.workspaceId).first<{ title: string }>()
+    return { ...job, ...(flow ? { title: flow.title, flowId } : {}) }
+  }
   async resume(id: string) {
     const { context, stream } = await this.context(id)
     if (stream === 2) { const scope = d1RequestContext(this.creationContext(context)); await publishD1ImportPreparation(id, scope); return resumeD1ImportStream(id, scope) }
@@ -123,7 +129,7 @@ export class FormImports {
   async list() {
     const context = importContext(this.database,this.actor,'history'), authority=context.authorization.predicate('read',this.actor.workspaceId)
     if (!await this.database.prepare(`SELECT 1 WHERE ${authority.sql}`).bind(...authority.params!).first()) throw new ValidationError('Current operator session required.')
-    const jobs=(await this.database.prepare(`SELECT id FROM ik_d1_streams WHERE destination=? AND principal_id=? UNION ALL SELECT id FROM ik_jobs j WHERE destination=? AND principal_id=? AND NOT EXISTS(SELECT 1 FROM ik_d1_stream_pages p WHERE p.job_id=j.id) UNION ALL SELECT id FROM ik_d1_staging WHERE destination=? AND principal_id=?`).bind(this.actor.workspaceId,this.actor.operatorId,this.actor.workspaceId,this.actor.operatorId,this.actor.workspaceId,this.actor.operatorId).all<{id:string}>()).results
-    return Promise.all(jobs.map(job=>this.status(job.id)))
+    const jobs=(await this.database.prepare(`SELECT id,namespace FROM ik_d1_streams WHERE destination=? AND principal_id=? UNION ALL SELECT id,namespace FROM ik_jobs j WHERE destination=? AND principal_id=? AND NOT EXISTS(SELECT 1 FROM ik_d1_stream_pages p WHERE p.job_id=j.id) UNION ALL SELECT id,namespace FROM ik_d1_staging WHERE destination=? AND principal_id=?`).bind(this.actor.workspaceId,this.actor.operatorId,this.actor.workspaceId,this.actor.operatorId,this.actor.workspaceId,this.actor.operatorId).all<{id:string;namespace:string}>()).results
+    return Promise.all(jobs.map(async job=>this.describe(await this.status(job.id), job.namespace)))
   }
 }

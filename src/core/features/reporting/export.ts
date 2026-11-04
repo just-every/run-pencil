@@ -7,6 +7,7 @@ import { ReportingRepository, type LedgerFilter, type LedgerResponse } from './r
 import { responseScope, type ResponseSelection } from './scope'
 import { contactColumnInventory, contactColumns, contactRecord } from './contactExport'
 import { exportInventory, questionMetadata } from './exportInventory'
+import { questionColumns, questionRecord, type QuestionColumn } from './questionExport'
 import { savVariables, savWidths } from './savDictionary'
 import { savCases, savHeader, savLayout, type SavPending } from './savWriter'
 import { xlsxContinue, xlsxFinish, xlsxRow, xlsxStart, type XlsxState } from './xlsxExport'
@@ -43,11 +44,11 @@ export async function startExport(db: D1Database, secret: string, identity: Expo
 }
 export const csvHeader = 'response_id,revision_id,revision_number,source,started_at,completed_at,released_at,participant_json,answers_json,cutoff,excluded_quarantined,omitted_questions_json,collector_id,collector_name,collector_channel,response_state,exclusion_reason,hidden_fields_json,identity_mode,discarded_parameters,calculations_json,verified_email,verified_subject,presented_order_json,payment_subtotal,payment_discount,payment_tax,payment_total,payment_refunded'
 /** The CSV's values in column order; XLSX sheet one holds the same values. */
-export function exportValues(row: LedgerResponse, cursor: Pick<ExportCursor,'cutoff'|'excludedQuarantined'|'contactInventory'>, columns = contactColumns(cursor.contactInventory)): Array<string | number | null | undefined> {
-  return [row.id,row.revisionId,row.revisionNumber,row.source,row.startedAt,row.completedAt,row.releasedAt,row.participant ? JSON.stringify(row.participant) : '',JSON.stringify(row.answers),cursor.cutoff,cursor.excludedQuarantined,JSON.stringify(row.omittedQuestions),row.collector.id,row.collector.name,row.collector.channel,row.state,row.quarantineReason,JSON.stringify(row.hiddenFields),row.identityMode,row.discardedParameters,JSON.stringify(row.calculations),row.verifiedEmail,row.verifiedSubject,JSON.stringify(row.presentedOrder),row.payment?.providerAmount,row.payment?.discount,row.payment?.tax,row.payment?.total,row.payment?.refundedAmount,...contactRecord(row, columns)]
+export function exportValues(row: LedgerResponse, cursor: Pick<ExportCursor,'cutoff'|'excludedQuarantined'|'contactInventory'>, columns = contactColumns(cursor.contactInventory), questions: QuestionColumn[] = []): Array<string | number | null | undefined> {
+  return [row.id,row.revisionId,row.revisionNumber,row.source,row.startedAt,row.completedAt,row.releasedAt,row.participant ? JSON.stringify(row.participant) : '',JSON.stringify(row.answers),cursor.cutoff,cursor.excludedQuarantined,JSON.stringify(row.omittedQuestions),row.collector.id,row.collector.name,row.collector.channel,row.state,row.quarantineReason,JSON.stringify(row.hiddenFields),row.identityMode,row.discardedParameters,JSON.stringify(row.calculations),row.verifiedEmail,row.verifiedSubject,JSON.stringify(row.presentedOrder),row.payment?.providerAmount,row.payment?.discount,row.payment?.tax,row.payment?.total,row.payment?.refundedAmount,...questionRecord(row, questions),...contactRecord(row, columns)]
 }
-export function csvRecord(row: LedgerResponse, cursor: Pick<ExportCursor,'cutoff'|'excludedQuarantined'|'contactInventory'>, columns = contactColumns(cursor.contactInventory)) {
-  return '\r\n'+exportValues(row,cursor,columns).map(csvCell).join(',')
+export function csvRecord(row: LedgerResponse, cursor: Pick<ExportCursor,'cutoff'|'excludedQuarantined'|'contactInventory'>, columns = contactColumns(cursor.contactInventory), questions: QuestionColumn[] = []) {
+  return '\r\n'+exportValues(row,cursor,columns,questions).map(csvCell).join(',')
 }
 export async function exportPart(db: D1Database, secret: string, identity: ExportIdentity, token: string, signal: AbortSignal) {
   const cursor = await openCursor<ExportCursor>(token,secret)
@@ -64,19 +65,21 @@ export async function exportPart(db: D1Database, secret: string, identity: Expor
   if (next.written > cursor.total || (!last && next.written !== cursor.total)) throw new ValidationError('The complete export could not be read. Start again.')
   const complete = next.written === cursor.total
   const columns = cursor.format === 'csv' || cursor.format === 'xlsx' ? contactColumns(cursor.contactInventory) : []
+  const inventory = cursor.format === 'csv' || cursor.format === 'xlsx' ? await exportInventory(db, identity.workspaceId, identity.flowId, cursor.filter, cursor.cutoff, selection(cursor)) : undefined
+  const questions = inventory ? questionColumns(inventory, [...csvHeader.split(','), ...columns]) : []
+  const header = [...csvHeader.split(','), ...questions.map(question => question.label), ...columns]
   const encoder = new TextEncoder()
   // Binary formats encode the bounded page before the next cursor is sealed: XLSX carries its
   // running CRC forward, and a value that does not fit is refused before any byte of this part.
   let encoded: Uint8Array[] | undefined, tail: (() => AsyncIterable<Uint8Array>) | undefined
   if (cursor.format === 'xlsx') {
-    const header = [...csvHeader.split(','), ...columns]
     const start = cursor.written === 0 ? xlsxStart(header) : undefined
-    const rows = page.responses.map((row, index) => encoder.encode(xlsxRow(exportValues(row, cursor, columns), cursor.written + index + 2)))
+    const rows = page.responses.map((row, index) => encoder.encode(xlsxRow(exportValues(row, cursor, columns, questions), cursor.written + index + 2)))
     let state = cursor.xlsx!
     for (const bytes of [...(start ? [start.data] : []), ...rows]) state = xlsxContinue(state, bytes)
     next.xlsx = state
     encoded = [...(start ? [...start.prefix, start.data] : []), ...rows]
-    tail = async function* () { yield* xlsxFinish(state, questionMetadata(await exportInventory(db, identity.workspaceId, identity.flowId, cursor.filter, cursor.cutoff, selection(cursor)))) }
+    tail = async function* () { yield* xlsxFinish(state, questionMetadata(inventory!)) }
   } else if (cursor.format === 'sav') {
     const inventory = await exportInventory(db, identity.workspaceId, identity.flowId, cursor.filter, cursor.cutoff, selection(cursor))
     const variables = savVariables(inventory), widths = JSON.parse(Buffer.from(inflateRawSync(Buffer.from(cursor.savWidths!, 'base64'))).toString('utf8')) as number[]
@@ -89,8 +92,8 @@ export async function exportPart(db: D1Database, secret: string, identity: Expor
   const nextToken = complete ? undefined : await sealCursor(next,secret)
   async function* body(): AsyncGenerator<Uint8Array> {
     if (encoded) { yield* encoded; return }
-    if (cursor.written === 0) yield encoder.encode(cursor.format === 'csv' ? csvHeader + columns.map(column => ',' + csvCell(column)).join('') : JSON.stringify({ cutoff: cursor.cutoff, filter: { ...cursor.filter, deviceClass: undefined }, excludedQuarantined: cursor.excludedQuarantined, includedQuarantined: cursor.includedQuarantined, includeAutomatedExclusions: cursor.includeAutomatedExclusions }).slice(0,-1)+',"responses":[')
-    for (const [position, row] of page.responses.entries()) yield encoder.encode(cursor.format === 'csv' ? csvRecord(row,cursor,columns) : (cursor.written+position > 0 ? ',' : '')+JSON.stringify(row))
+    if (cursor.written === 0) yield encoder.encode(cursor.format === 'csv' ? header.map(csvCell).join(',') : JSON.stringify({ cutoff: cursor.cutoff, filter: { ...cursor.filter, deviceClass: undefined }, excludedQuarantined: cursor.excludedQuarantined, includedQuarantined: cursor.includedQuarantined, includeAutomatedExclusions: cursor.includeAutomatedExclusions }).slice(0,-1)+',"responses":[')
+    for (const [position, row] of page.responses.entries()) yield encoder.encode(cursor.format === 'csv' ? csvRecord(row,cursor,columns,questions) : (cursor.written+position > 0 ? ',' : '')+JSON.stringify(row))
   }
   async function* closing(): AsyncGenerator<Uint8Array> {
     // This is the commit point: a changed evidence set aborts the download,

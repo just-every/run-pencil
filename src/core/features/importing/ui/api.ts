@@ -1,6 +1,6 @@
 import type { ImportInput, ImportReview } from '../model'
 import { readReviewStream, reviewMediaType } from '../review-stream'
-export type Job = { id: string; state: string; checkpoint: number; total: number; error: string | null; erasedRecords?: number }
+export type Job = { id: string; state: string; checkpoint: number; total: number; error: string | null; erasedRecords?: number; title?: string; flowId?: string }
 async function request<T>(path: string, body?: unknown): Promise<T> {
   const response = await fetch(`/api/app/imports${path}`, body === undefined ? {} : { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
   const result = await response.json() as T & { message?: string }

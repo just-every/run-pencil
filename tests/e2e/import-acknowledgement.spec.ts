@@ -6,7 +6,7 @@ import { signInEmptyWorkspace } from './authoring-helpers'
 import { importNativeInventory } from './import-native-inventory'
 import type { LedgerResponse } from '../../src/core/app/api'
 
-contract(['IMPORT-002', 'IMPORT-003', 'IMPORT-004', 'BASE-PUBLIC-003'], 'native acknowledgement waits across history reload with zero resume requests until keyboard continuation completes the exact import', async ({ page }, info) => {
+contract(['IMPORT-002', 'IMPORT-003', 'IMPORT-004', 'BASE-PUBLIC-003'], 'reviewed import starts immediately and can pause across history reload before keyboard continuation completes the exact import', async ({ page }, info) => {
   test.setTimeout(180_000)
   await page.setViewportSize(info.project.name === 'desktop' ? { width: 1440, height: 900 } : { width: 390, height: 844 })
   await signInEmptyWorkspace(page)
@@ -36,6 +36,8 @@ contract(['IMPORT-002', 'IMPORT-003', 'IMPORT-004', 'BASE-PUBLIC-003'], 'native 
   expect(importNativeInventory()).toEqual(baseline)
   await page.getByRole('checkbox').focus()
   await page.keyboard.press('Space')
+  let release: (() => void) | undefined
+  await page.route('**/api/app/imports/*/resume', async route => { await new Promise<void>(resolve => { release = resolve }); await route.abort('failed') }, { times: 1 })
   const committed = page.waitForResponse(response => response.url().endsWith('/api/app/imports/commit') && response.request().method() === 'POST')
   await page.getByRole('button', { name: 'Import reviewed form', exact: true }).focus()
   await page.keyboard.press('Enter')
@@ -44,11 +46,17 @@ contract(['IMPORT-002', 'IMPORT-003', 'IMPORT-004', 'BASE-PUBLIC-003'], 'native 
   const prepared = await commitResponse.json()
   expect(prepared).toMatchObject({ state: 'preparing', checkpoint: 0, total: 202, error: null, expectedFingerprint: review.fingerprint })
   expect(prepared).not.toHaveProperty('fingerprint')
+  await expect.poll(() => Boolean(release)).toBe(true)
+  await page.getByRole('button', { name: 'Pause after this batch' }).click()
+  // Abort only the network edge to leave the durable, acknowledged preparation for reload.
+  release!()
+  await expect(page.getByRole('button', { name: 'Continue import', exact: true })).toBeEnabled()
+  await page.reload()
   const ready = async () => {
-    await expect(page.getByRole('heading', { name: 'Ready to verify · 0 / 202', exact: true })).toBeVisible()
+    await expect(page.getByRole('status').filter({ hasText: 'Ready to verify · 0 / 202' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'Continue import', exact: true })).toBeEnabled()
     await expect(page.getByRole('button', { name: 'Pause after this batch' })).toHaveCount(0)
-    expect(resumes).toEqual([])
+    expect(resumes).toHaveLength(1)
     const history = await page.request.get('/api/app/imports')
     expect(history.status()).toBe(200)
     expect(await history.json()).toEqual([prepared])
@@ -66,7 +74,7 @@ contract(['IMPORT-002', 'IMPORT-003', 'IMPORT-004', 'BASE-PUBLIC-003'], 'native 
   await ready()
   await page.getByRole('button', { name: 'Continue import', exact: true }).focus()
   await page.keyboard.press('Enter')
-  await expect(page.getByRole('heading', { name: 'completed · 202 / 202', exact: true })).toBeVisible({ timeout: 90_000 })
+  await expect(page.getByRole('status').filter({ hasText: 'completed · 202 / 202' })).toBeVisible({ timeout: 90_000 })
   expect(resumes.length).toBeGreaterThan(1)
   expect(resumes.every(path => path === `/api/app/imports/${prepared.id}/resume`)).toBe(true)
   const completed = await (await page.request.get(`/api/app/imports/${prepared.id}`)).json()
@@ -101,16 +109,16 @@ contract(['IMPORT-002', 'IMPORT-003', 'IMPORT-004', 'BASE-PUBLIC-003'], 'native 
   }
   await check('acknowledged-completed')
   await page.reload()
-  await expect(page.getByRole('heading', { name: 'completed · 202 / 202', exact: true })).toBeVisible()
+  await expect(page.getByRole('status').filter({ hasText: 'completed · 202 / 202' })).toBeVisible()
   expect(importNativeInventory()).toEqual(native)
   page.once('dialog', dialog => dialog.accept())
   await page.getByRole('button', { name: 'Undo import', exact: true }).focus()
   await page.keyboard.press('Enter')
-  await expect(page.getByRole('heading', { name: /undone/ })).toBeVisible({ timeout: 90_000 })
+  await expect(page.getByRole('status').filter({ hasText: /undone/ })).toBeVisible({ timeout: 90_000 })
   const undone = importNativeInventory()
   for (const table of ['flows', 'flow_revisions', 'flow_steps', 'choice_options', 'flow_branch_rules', 'responses', 'response_answers', 'form_import_targets', 'form_import_revisions']) expect(undone.counts[table]).toBe(baseline.counts[table])
   await page.reload()
-  await expect(page.getByRole('heading', { name: /undone/ })).toBeVisible()
+  await expect(page.getByRole('status').filter({ hasText: /undone/ })).toBeVisible()
   expect((await (await page.request.get(`/api/app/imports/${prepared.id}`)).json()).state).toBe('undone')
   await check('acknowledged-undone')
 })

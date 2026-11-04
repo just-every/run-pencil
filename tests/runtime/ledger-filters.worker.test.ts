@@ -127,7 +127,10 @@ contract(['LEDG-006', 'LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019'
       const row = sav.rows[index], column = (name: string) => unmarked(record[header.indexOf(name)])
       for (const name of ['revision_id', 'source', 'completed_at', 'response_state', 'exclusion_reason', 'collector_name']) expect(row[name] ?? '').toBe(column(name))
       expect(row.revision_number).toBe(Number(column('revision_number')))
-      for (const answer of JSON.parse(column('answers_json')) as Array<{ stepId: string; questionType: string; value: unknown }>) {
+      for (const answer of JSON.parse(column('answers_json')) as Array<{ stepId: string; label: string; displayValue: string; questionType: string; value: unknown }>) {
+        const readable = header.indexOf(answer.label)
+        expect(readable).toBeGreaterThanOrEqual(0)
+        expect(record[readable]).toBe(String(typeof answer.value === 'number' ? answer.value : answer.displayValue))
         const meta = metadata.filter(item => item.revision_id === column('revision_id') && item.step_id === answer.stepId), variable = String(meta[0].sav_variable)
         const code = (value: unknown) => meta.find(item => item.choice_value === value)!.sav_code
         if (answer.questionType === 'dropdown') {

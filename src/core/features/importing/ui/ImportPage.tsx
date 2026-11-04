@@ -19,7 +19,7 @@ export function ImportPage() {
   const [loadedTitle, setLoadedTitle] = useState('')
   const [pendingCustody, setPendingCustody] = useState<string>()
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [jobs, setJobs] = useState<Job[]>([])
-  const progress = useImportProgress(job => { setJobs(current => current.some(j => j.id === job.id) ? current.map(j => j.id === job.id ? job : j) : [...current, job]); setReview(current => current?.jobId === job.id ? { ...current, jobState: job.state, alreadyImported: job.state === 'completed' } : current) })
+  const progress = useImportProgress(job => { setJobs(current => current.some(j => j.id === job.id) ? current.map(j => j.id === job.id ? { ...j, ...job } : j) : [...current, job]); setReview(current => current?.jobId === job.id ? { ...current, jobState: job.state, alreadyImported: job.state === 'completed' } : current) })
   const refresh = async () => { const next = await importsApi.list(); setJobs(current => keepIfSame(current, next)); setReview(current => current?.jobId ? { ...current, alreadyImported: next.some(job => job.id === current.jobId && job.state === 'completed'), jobState: next.find(job => job.id === current.jobId)?.state } : current) }
   useEffect(() => { void refresh().catch(e => setError(e.message)) }, [])
   useQuietRefresh(() => { if (!busy && !progress.active) return refresh() })
@@ -68,8 +68,7 @@ export function ImportPage() {
     const job = await importsApi.commit({ definition, csv, source, ...(source === 'google-forms' ? { google } : {}), columns, plannedAt: review.plannedAt }, review.fingerprint)
     setPendingCustody(undefined)
     setReview({ ...review, jobId: job.id, jobState: job.state, alreadyImported: job.state === 'completed' })
-    if (preparation(job)) { progress.pause(); progress.show(job) }
-    else await progress.follow(job)
+    await progress.follow({ ...job, title: review.title })
   })
   return <section className="import-page" aria-labelledby="import-heading">
     <Link className="quiet-button focus-ring" to="/app">← Your flows</Link>
@@ -95,7 +94,7 @@ export function ImportPage() {
     </> : null}
     <section className="import-history" aria-labelledby="import-history"><h2 id="import-history" className="display">Import history</h2>
       {progress.active ? <button className="secondary-button focus-ring" type="button" onClick={progress.pause}>Pause after this batch</button> : null}
-      {jobs.map(job => <article className="quiet-panel" style={{ padding: '1rem', marginTop: '.75rem', overflowWrap: 'anywhere' }} key={job.id}><h3>{progressLabel(job)} · {job.checkpoint} / {job.total}</h3><small>{job.id}</small>{preparation(job) ? <p>No form or responses have been created. {job.state === 'preparing' ? 'Continue to verify the stored preparation and begin importing.' : 'Retry the reviewed files to prepare again, or cancel to remove the private data.'}</p> : null}{job.erasedRecords ? <p>{job.erasedRecords} response {job.erasedRecords === 1 ? 'record was' : 'records were'} already erased. Import and undo cannot restore those answers.</p> : null}{job.error ? <p role="alert">{job.error}</p> : null}<div className="builder-actions">
+      {jobs.map(job => <article className="quiet-panel" style={{ padding: '1rem', marginTop: '.75rem', overflowWrap: 'anywhere' }} key={job.id}>{job.title ? <h3>{job.title}</h3> : null}<p role="status">{progressLabel(job)} · {job.checkpoint} / {job.total}</p><details><summary className="focus-ring">Import details</summary><p>{job.id}</p></details>{job.flowId ? <p><Link to="/app/flows/$flowId/builder" params={{ flowId: job.flowId }}>Open draft</Link></p> : null}{preparation(job) ? <p>No form or responses have been created. {job.state === 'preparing' ? 'Continue to verify the stored preparation and begin importing.' : 'Retry the reviewed files to prepare again, or cancel to remove the private data.'}</p> : null}{job.erasedRecords ? <p>{job.erasedRecords} response {job.erasedRecords === 1 ? 'record was' : 'records were'} already erased. Import and undo cannot restore those answers.</p> : null}{job.error ? <p role="alert">{job.error}</p> : null}<div className="builder-actions">
         {!['completed', 'undone', 'rolled_back', 'cancelled', 'preparation-interrupted'].includes(job.state) ? <button className="secondary-button focus-ring" disabled={busy} onClick={() => void run(async () => { await progress.follow(job) })}>Continue {job.state === 'undoing' || job.state === 'rolling_back' ? 'undo' : 'import'}</button> : null}
         {preparation(job) ? <button className="quiet-button focus-ring" disabled={busy} onClick={() => void run(async () => { const result = await importsApi.undo(job.id); if (result.state === 'cancelled') progress.show(result); else showPublication(result, job.id) })}>Cancel preparation</button> : !['undone', 'rolled_back', 'undoing', 'rolling_back', 'cancelled'].includes(job.state) ? <button className="quiet-button focus-ring" disabled={busy} onClick={() => { if (window.confirm('Undo this import? Unedited imported rows will be removed. Later edits are preserved and stop reversal.')) void run(async () => { await progress.follow(await importsApi.undo(job.id)) }) }}>Undo import</button> : null}
       </div></article>)}
