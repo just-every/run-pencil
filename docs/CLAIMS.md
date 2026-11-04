@@ -27,7 +27,7 @@ Acceptance journeys and remaining obligations are recorded in CONTRACT.md and AC
 | DASH-002 | Flow list | published | done | `tests/runtime/feedback-attention.worker.test.ts`; `tests/runtime/foundation.worker.test.ts`; `tests/runtime/journey.worker.test.ts` |
 | TMPL-001 | Template gallery | target | partial | `tests/runtime/first-owner.worker.test.ts`; `tests/e2e/templates.spec.ts` |
 | TMPL-002 | Team templates | target | done | `src/core/features/flows/team-templates.ts`; `tests/runtime/team-templates.worker.test.ts`; `tests/e2e/team-templates.spec.ts` |
-| AI-001 | Generate a form from a prompt or a document | target | partial | `tests/runtime/feedback-rewrites.worker.test.ts`; `tests/e2e/analysis.spec.ts`; `tests/runtime/studio-scenario.ts`; `tests/e2e/studio-journey.ts` |
+| AI-001 | Generate a form from a prompt or a document | target | partial | `tests/runtime/feedback-rewrites.worker.test.ts`; `tests/e2e/analysis.spec.ts`; `tests/runtime/studio-scenario.ts`; `tests/e2e/studio-journey.ts`; `tests/runtime/feedback-rewrites.worker.test.ts`; `tests/runtime/studio-scenario.ts`; `tests/e2e/analysis.spec.ts`; `tests/e2e/studio-journey.ts` |
 | FLOW-001 | Lifecycle | published | done | `tests/runtime/foundation.worker.test.ts` |
 | FLOW-002 | Ordered steps | published | done | `tests/e2e/journey.spec.ts` |
 | FLOW-003 | Question types | published | done | `tests/e2e/new-question-types.spec.ts`; `tests/runtime/new-question-types.worker.test.ts` |
