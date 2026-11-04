@@ -66,7 +66,7 @@ export type DashboardFlow = {
   audience: { launchedParticipants: number; eligibleParticipants: number; completedParticipants?: number }
 }
 
-export type BuilderDraft = PublicFlow & {
+export type BuilderDraft = Omit<PublicFlow, 'steps'> & {
   steps: Array<FlowStep & { generated: boolean }>
   flow: PublicFlow['flow'] & { status: DashboardFlow['status']; draftVersion: number }
 }

@@ -15,8 +15,8 @@ export const flow: DashboardFlow = { analysis: null, id: 'flow', title: 'Visit r
 export const draft: BuilderDraft = {
   flow: { ...flow }, revision: { id: 'revision', number: 1, publishedAt: null, deadlineAt: null, targetCompletedResponses: null },
   steps: [
-    { id: 'question', position: 0, kind: 'question', questionType: 'long_text', prompt: 'How can we improve?', helperText: null, required: true, nextStepId: 'completion', questionSettings: null },
-    { id: 'completion', position: 1, kind: 'completion', questionType: null, prompt: 'Thank you', helperText: null, required: false, nextStepId: null, questionSettings: null },
+    { id: 'question', position: 0, generated: false, kind: 'question', questionType: 'long_text', prompt: 'How can we improve?', helperText: null, required: true, nextStepId: 'completion', questionSettings: null },
+    { id: 'completion', position: 1, generated: false, kind: 'completion', questionType: null, prompt: 'Thank you', helperText: null, required: false, nextStepId: null, questionSettings: null },
   ], choices: [], branchRules: [],
 }
 export const results: FlowResults = { flow, allRevisions:false,cutoff:'2026-10-02T00:00:00.000Z',rateNumerator:1,rateDenominator:2,rateBasis:'views',views:2,durationSamples:1,totalCompletionMilliseconds:3000, revision: { ...draft.revision, publishedAt: '2026-10-02T00:00:00.000Z' }, starts: 2, completedResponses: 1, liveCompletedResponses: 1, importedResponses: 0, completionRate: .5, averageCompletionMilliseconds: 3000, deviceStarts: { mobile: 1, tablet: 0, desktop: 1 } }
