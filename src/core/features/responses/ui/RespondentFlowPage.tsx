@@ -226,7 +226,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
     if (isCompletion) return
     if (!pendingFinal && current.kind === 'question') {
       const issues = Object.fromEntries((screen?.steps ?? [current]).filter(step=>step.kind==='question').flatMap(step=>{
-        const issue=answerIssue({...step,prompt:interpolateAnswerRecall(step.prompt,flow,answers,step.id)},choicesForStep(flow.choices,step.id).map(choice=>choice.id),answers[step.id])
+        const issue=answerIssue({...step,prompt:interpolateAnswerRecall(step.prompt,flow,answers,step.id)},choicesForStep(flow.choices,step.id).map(choice=>choice.id),answers[step.id],flow.formSettings?.text)
         return issue?[[step.id,issue]]:[]
       }))
       setFieldErrors(issues)

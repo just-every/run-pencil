@@ -1,3 +1,4 @@
+import { respondentString, type RespondentText } from './respondentText'
 import { matrixAnswerIssue } from './matrix'
 import { otherChoiceIssue } from './otherChoices'
 import type { QuestionType } from './questionKinds'
@@ -19,8 +20,8 @@ export function isUnanswered(value: unknown) {
   }
   return value === undefined || value === null || (typeof value === 'string' && !value.trim()) || (Array.isArray(value) && value.length === 0)
 }
-export function answerIssue(step: AnswerQuestion, choiceIds: string[], value: unknown): string | undefined {
-  if (isUnanswered(value)) return step.required ? `An answer is required for “${step.prompt}”.` : undefined
+export function answerIssue(step: AnswerQuestion, choiceIds: string[], value: unknown, text?: RespondentText): string | undefined {
+  if (isUnanswered(value)) return step.required ? respondentString(text, 'requiredMessage') : undefined
   const settings = step.questionSettings ?? {}
   if (!typeSettingsValid(step.questionType, settings)) return 'This question has invalid settings.'
   if ((contactQuestionTypes as readonly string[]).includes(step.questionType ?? '')) return contactAnswerIssue(step.questionType!, value)

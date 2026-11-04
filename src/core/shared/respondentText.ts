@@ -8,6 +8,7 @@ export const respondentTextDefaults = {
   closedMessage: 'Thank you for your interest. This form is no longer accepting responses.',
   limitMessage: 'Thank you for your interest. This form has reached its response limit and is no longer accepting responses.',
   progressText: '{remaining} remaining',
+  requiredMessage: 'Please answer this question.',
 } as const
 export type RespondentTextKey = keyof typeof respondentTextDefaults
 export type RespondentText = Partial<Record<RespondentTextKey, string>>

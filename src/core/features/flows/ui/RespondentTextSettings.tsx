@@ -7,6 +7,7 @@ const fields: Array<{ key: RespondentTextKey; label: string; message: boolean }>
   { key: 'nextLabel', label: 'Next button label', message: false },
   { key: 'submitLabel', label: 'Submit button label', message: false },
   { key: 'progressText', label: 'Progress text (use {remaining} for the count)', message: false },
+  { key: 'requiredMessage', label: 'Required-answer message', message: true },
   { key: 'closedMessage', label: 'Closed-form message', message: true },
   { key: 'limitMessage', label: 'Response-limit message', message: true },
 ]
