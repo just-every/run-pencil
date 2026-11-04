@@ -86,9 +86,7 @@ contract(["RESP-009"], "closed flows refuse late submissions, retain their named
     const contender = reason === 'target' ? await (await page.request.post(`/api/public/flows/${slug}/sessions`, { headers: mutationHeaders, data: { deviceClass: 'desktop', source: 'direct' } })).json() : undefined
     await page.goto(`/f/${slug}`)
     await expect(page.locator('[data-hydrated=true]')).toBeVisible()
-    const started = page.waitForResponse((response) => response.url().endsWith(`/flows/${slug}/sessions`) && response.request().method() === 'POST')
     await page.getByRole('button', { name: label, exact: true }).click()
-    expect((await started).status()).toBe(201)
     await expect(page.getByRole('alert')).toHaveText(requiredMessage)
     await expect(page.getByRole('textbox')).toHaveAttribute('aria-invalid', 'true')
     expect((await (await page.request.get(`${f.path}/ledger`)).json()).total).toBe(0)
@@ -98,7 +96,14 @@ contract(["RESP-009"], "closed flows refuse late submissions, retain their named
       await page.screenshot({ path: info.outputPath(`required-answer-${reason}-${viewport.width}.png`), fullPage: true })
     }
     await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
+    const started = page.waitForResponse((response) => response.url().endsWith(`/flows/${slug}/sessions`) && response.request().method() === 'POST')
     await page.getByRole('textbox').fill('Unsaved synthetic answer')
+    const sessionResponse = await started
+    expect(sessionResponse.status()).toBe(201)
+    const nativeRefusal = await page.request.post(`/api/public/flows/${slug}/responses`, { headers: mutationHeaders, data: { ...await sessionResponse.json(), idempotencyKey: `required-${slug}`, answers: [] } })
+    expect(nativeRefusal.status()).toBe(400)
+    expect(await nativeRefusal.json()).toMatchObject({ message: `“Your feedback”: ${requiredMessage}`, details: [{ stepId: f.published.steps[0].id, reason: requiredMessage }] })
+    expect((await (await page.request.get(`${f.path}/ledger`)).json()).total).toBe(0)
     // Both sessions genuinely exceed the minimum fill time; no D1 backdating.
     if (reason === 'target') {
       await page.waitForTimeout(3100)
@@ -152,7 +157,12 @@ contract(["RESP-009"], "closed flows refuse late submissions, retain their named
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 4 })
     await login(page.request)
     const slug = `closed-document-${info.project.name}-${Date.now()}`
-    const f = await form(page.request, slug)
+    const f = await form(page.request, slug, undefined, { requiredMessage: '' })
+    await page.goto(`/f/${slug}`)
+    await expect(page.locator('[data-hydrated=true]')).toBeVisible()
+    await page.getByRole('button', { name: 'Submit response', exact: true }).click()
+    await expect(page.getByRole('alert')).toHaveText('Please answer this question.')
+    expect((await (await page.request.get(`${f.path}/ledger`)).json()).total).toBe(0)
     expect((await page.request.post(`${f.path}/close`, { headers: mutationHeaders })).status()).toBe(204)
     const workspace = await (await page.request.get('/api/app/workspace')).json() as WorkspaceSettings
     const settings = { timeZone: workspace.timeZone, sendingWindowStart: workspace.sendingWindowStart, sendingWindowEnd: workspace.sendingWindowEnd, embedAllowedOrigins: [origin] }
