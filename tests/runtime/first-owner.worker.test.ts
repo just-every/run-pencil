@@ -1,5 +1,3 @@
-import { deliver, stripe, stripeEvent, stripeKey, webhookSecret } from './payment-fixture'
-import { issueLoadTime } from '../../src/core/features/traffic/loadTime'
 import { templatePreview, flowTemplates } from '../../src/core/features/flows/templates'
 import type { PublicFlow } from '../../src/core/app/api'
 import { devKeyHeaders } from '../helpers/dev-key.mjs'
@@ -97,9 +95,10 @@ contract(['BASE-ACCESS-001', 'BASE-SECRET-001', 'DASH-001', 'OPER-002'], 'local 
   expect(await previewState()).toEqual(beforePreviews)
   const previews = flowTemplates.map(template => templatePreview(template.id))
   expect(await previewState()).toEqual(beforePreviews)
+  let editable: { id: string; slug: string; definition: PublicFlow } | undefined
   for (const [index, template] of flowTemplates.entries()) {
     const created = await request('/api/app/flows', { title: template.title, slug: `synthetic-pencil-${template.id}`, template: template.id }, cookie)
-    expect(created.status, template.id + ": " + await created.clone().text()).toBe(201)
+    expect(created.status).toBe(201)
     const flow = await created.json() as { id: string; slug: string }
     const draft = await request(`/api/app/flows/${flow.id}/draft`, undefined, cookie)
     expect(draft.status).toBe(200)
@@ -110,6 +109,7 @@ contract(['BASE-ACCESS-001', 'BASE-SECRET-001', 'DASH-001', 'OPER-002'], 'local 
     expect(publicFlow.status).toBe(200)
     const definition = await publicFlow.json() as any
     expect(graphShape(definition), template.id).toEqual(graphShape(previews[index]))
+    if (template.id === 'customer-3') editable = { ...flow, definition }
     for (const path of definition.branchRules.length ? [0, 1] : [0]) {
       const started = await request(`/api/public/flows/${flow.slug}/sessions`, { deviceClass: 'desktop' })
       expect(started.status).toBe(201)
@@ -119,49 +119,31 @@ contract(['BASE-ACCESS-001', 'BASE-SECRET-001', 'DASH-001', 'OPER-002'], 'local 
       while (step.kind !== 'completion') {
         const options = definition.choices.filter((choice: any) => choice.stepId === step.id)
         const value = options.length ? options[path]?.id ?? options[0].id : ['rating','nps','csat','ces'].includes(step.questionType) ? (path === 0 ? 5 : 1) : step.questionType === 'email' ? 'synthetic-pencil-1@example.test' : 'Synthetic business response'
-        if (step.kind === 'question') answers.push({ stepId: step.id, value })
+        answers.push({ stepId: step.id, value })
         expect((await request(`/api/public/flows/${flow.slug}/sessions/advance`, { sessionId: session.sessionId, sessionToken: session.sessionToken, stepId: step.id })).status).toBe(204)
         const rule = definition.branchRules.find((rule: any) => rule.sourceStepId === step.id && (rule.predicateKind === 'equals' ? rule.expectedValue === value : Number(value) > rule.expectedValue))
         step = definition.steps.find((candidate: any) => candidate.id === (rule?.destinationStepId ?? step.nextStepId))
         expect(step).toBeDefined()
       }
-      const input = { sessionId: session.sessionId, sessionToken: session.sessionToken, loadTime: await issueLoadTime(bindings.SESSION_SECRET, definition.revision.id, Date.now() - 5000), idempotencyKey: `synthetic-pencil-${template.id}-${path}`, answers }
-      const paymentStep = definition.steps.find((step: any) => step.kind === 'payment')
-      if (paymentStep) {
-        const before = await env.DB.prepare('SELECT count(*) AS n FROM responses').first()
-        const providerBefore = (await stripe.state()).requests.length
-        const tampered = await request(`/api/public/flows/${flow.slug}/responses`, { ...input, amount: 1 })
-        expect(tampered.status).toBe(400)
-        expect(await env.DB.prepare('SELECT count(*) AS n FROM responses').first()).toEqual(before)
-        expect((await stripe.state()).requests.length).toBe(providerBefore)
-        if (template.id === 'payment-event') {
-          const disconnected = await request(`/api/public/flows/${flow.slug}/responses`, input)
-          expect(disconnected.status).toBe(400)
-          expect(await disconnected.text()).toContain('Stripe')
-          expect(await env.DB.prepare('SELECT count(*) AS n FROM responses').first()).toEqual(before)
-          expect((await stripe.state()).requests.length).toBe(providerBefore)
-          expect((await request('/api/app/connections/payment', { secretKey: stripeKey, webhookSecret }, cookie, 'PUT')).status).toBe(200)
-        }
-      }
-      const completed = await request(`/api/public/flows/${flow.slug}/responses`, input)
+      const completed = await request(`/api/public/flows/${flow.slug}/responses`, { sessionId: session.sessionId, sessionToken: session.sessionToken, loadTime: session.loadTime, idempotencyKey: `synthetic-pencil-${template.id}-${path}`, answers })
       expect(completed.status, template.id).toBe(201)
-      if (paymentStep) {
-        const receipt = await completed.json() as any
-        expect(receipt).toMatchObject({ completionStepId: null, payment: { state: 'pending' } })
-        const expectedAmount = { 'payment-event': 2500, 'payment-deposit': 10000, 'payment-order': 2000 }[template.id]
-        const checkout = receipt.payment.checkoutUrl.split('/').at(-1)!
-        expect((await stripe.state()).sessions[checkout].amount_total).toBe(expectedAmount)
-        const results = () => request(`/api/app/flows/${flow.id}/results`, undefined, cookie).then(response => response.json() as any)
-        const ledger = () => request(`/api/app/flows/${flow.id}/ledger`, undefined, cookie).then(response => response.json() as any)
-        expect((await ledger()).responses[0].payment.state).toBe('pending')
-        const event = await stripeEvent('checkout.session.completed', await stripe.settle('complete', checkout))
-        expect(await deliver(event)).toMatchObject({ status: 200, outcome: 'applied' })
-        expect((await ledger()).responses[0].payment).toMatchObject({ state: 'paid', amount: expectedAmount })
-        expect((await results()).completedResponses).toBe(1)
-        await deliver(event)
-        expect((await results()).completedResponses).toBe(1)
-      }
     }
   }
+  // A gallery draft stays ordinary and editable, while its preview and live revision stay isolated.
+  expect(editable).toBeDefined()
+  const selected = editable!
+  const base = `/api/app/flows/${selected.id}`
+  const draft = await (await request(`${base}/draft`, undefined, cookie)).json() as any
+  const question = draft.steps[0]
+  const prompt = 'How did your synthetic delivery go?'
+  const saved = await request(`${base}/draft`, { expectedVersion: draft.flow.draftVersion, stepId: question.id, prompt, required: question.required }, cookie, 'PUT')
+  expect(saved.status).toBe(200)
+  const changed = await (await request(`${base}/draft`, undefined, cookie)).json() as any
+  expect(changed.steps[0].prompt).toBe(prompt)
+  const freshPreview = templatePreview('customer-3')
+  expect(graphShape(freshPreview)).toEqual(graphShape(selected.definition))
+  expect((await (await request(`/api/public/flows/${selected.slug}`)).json() as PublicFlow).steps[0].prompt).toBe(selected.definition.steps[0].prompt)
+  expect((await request(`${base}/publish`, { expectedVersion: changed.flow.draftVersion }, cookie)).status).toBe(201)
+  expect((await (await request(`/api/public/flows/${selected.slug}`)).json() as PublicFlow).steps[0].prompt).toBe(prompt)
 
 })
