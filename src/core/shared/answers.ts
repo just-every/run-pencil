@@ -21,7 +21,11 @@ export function isUnanswered(value: unknown) {
   return value === undefined || value === null || (typeof value === 'string' && !value.trim()) || (Array.isArray(value) && value.length === 0)
 }
 export function answerIssue(step: AnswerQuestion, choiceIds: string[], value: unknown, text?: RespondentText): string | undefined {
-  if (isUnanswered(value)) return step.required ? respondentString(text, 'requiredMessage') : undefined
+  if (isUnanswered(value)) {
+    if (!step.required) return undefined
+    const message = respondentString(text, 'requiredMessage')
+    return text?.requiredMessage?.trim() ? message : `“${step.prompt}”: ${message}`
+  }
   const settings = step.questionSettings ?? {}
   if (!typeSettingsValid(step.questionType, settings)) return 'This question has invalid settings.'
   if ((contactQuestionTypes as readonly string[]).includes(step.questionType ?? '')) return contactAnswerIssue(step.questionType!, value)
