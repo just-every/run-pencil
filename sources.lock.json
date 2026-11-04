@@ -869,7 +869,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "f1904ff7963a0a877a8a3c446ac98556c8571a17daf6f650b6c27239cb8248e8",
+      "sha256": "8608d11633b10184f00cbf7da2c082279eb78b301ebe62a2ce6f5accbf0bcb41",
       "executable": false
     },
     "DEMO.md": {
@@ -8553,7 +8553,7 @@
       "executable": false
     },
     "tests/e2e/closed-flow.spec.ts": {
-      "sha256": "8c4fe1dc1525cc1f80431f7c28dc7cf328ce878f3afd6e567e2988b67f305797",
+      "sha256": "b2ce7083b2126a2191e8d8afaaccce156e4f1efbaaff8a9e71d59d5cb89601fa",
       "executable": false
     },
     "tests/e2e/coding.spec.ts": {
@@ -9285,7 +9285,7 @@
       "executable": false
     },
     "tests/runtime/foundation.worker.test.ts": {
-      "sha256": "27a819a1472cc430d78af4fd0efb88e7e454a3b81d4d8f80ab29753d504343db",
+      "sha256": "aa9e86c94d573f7fbaaef4c2dd602422f63f4965efe86236f635c4dd83073a4a",
       "executable": false
     },
     "tests/runtime/google-form-import.worker.test.ts": {

@@ -57,6 +57,19 @@ contract(["RESP-009"], "closed flows refuse late submissions, retain their named
       await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
       await page.locator('.step-button').last().click()
       await page.getByText('Respondent text', { exact: true }).click()
+      const maximumMessage = 'Please answer before sending. '.repeat(11).slice(0, 300)
+      await page.getByLabel('Required-answer message').fill(maximumMessage)
+      await page.getByRole('button', { name: 'Save respondent text' }).click()
+      await expect(page.getByText('Respondent text saved to the draft. Publish to apply it.')).toBeVisible()
+      const boundaryDraft = await (await page.request.get(`${f.path}/draft`)).json() as BuilderDraft
+      expect(boundaryDraft.formSettings?.text?.requiredMessage).toBe(maximumMessage)
+      for (const invalidMessage of [maximumMessage + 'x', '<b>Answer now</b>', 'Answer\u0007now']) {
+        const refused = await page.request.put(`${f.path}/draft/settings`, { headers: mutationHeaders, data: { expectedVersion: boundaryDraft.flow.draftVersion, settings: { ...boundaryDraft.formSettings, text: { ...boundaryDraft.formSettings?.text, requiredMessage: invalidMessage } } } })
+        expect(refused.status()).toBe(400)
+        expect((await refused.json()).message).toContain(invalidMessage.length > 300 ? '300' : 'plain text')
+        expect(await (await page.request.get(`${f.path}/draft`)).json()).toEqual(boundaryDraft)
+      }
+      expect((await (await page.request.get(`/api/public/flows/${slug}`)).json()).formSettings.text.requiredMessage).toBe(requiredMessage)
       await page.getByLabel('Start button label').fill('Go')
       await page.getByLabel('Required-answer message').fill(draftRequiredMessage)
       await page.getByRole('button', { name: 'Save respondent text' }).click()
