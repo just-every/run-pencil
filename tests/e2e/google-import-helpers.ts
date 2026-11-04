@@ -44,7 +44,7 @@ export async function openGoogleFlowCard(page: Page, flowId: string, action: 'Bu
   await expect(card).toHaveCount(1)
   const title = await card.getByRole('heading', { level: 2 }).innerText()
   await card.getByRole('link', { name: action, exact: true }).click()
-  await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible()
+  await expect(page.getByRole('heading', { name: title, exact: true, level: 1 })).toBeVisible()
 }
 export async function openGoogleImport(page: Page) {
   await openAllFlows(page)

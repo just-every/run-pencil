@@ -37,7 +37,7 @@ contract(["IMPORT-001","IMPORT-002","IMPORT-003","IMPORT-004","BASE-PUBLIC-003"]
     await captureGoogle(page, info, 'csv-prepared');
 
     await page.getByRole('link', { name: 'Open the imported draft' }).click()
-    await expect(page.getByRole('heading', { name: 'Google historical CSV', exact: true })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'Google historical CSV', exact: true, level: 1 })).toBeVisible()
     await captureGoogle(page, info, 'csv-builder')
     await openGoogleFlowCard(page, review.flowId, 'Results')
     await expect(page.getByText('0 live · 1 imported', { exact: true })).toBeVisible()
