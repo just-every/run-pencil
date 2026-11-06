@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "56163fc29342b1f93e83ea6555478b3247bc861de54ae31f8d5a42f6a3163a3b",
+      "sha256": "9dfbf7187065841eed7cd44b31014168ca934b5a8c37473140cc6058c437bb1b",
       "executable": false
     },
     "agent-surface.json": {
@@ -869,7 +869,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "7d12d9b91d84ce9669ee4c4ed28db3d40542d48fb1b787edc23a06cd5b0d5bfe",
+      "sha256": "e3adaf32fc8cb87dc252839560515ca70d08ccaa797df0cec71347f27e9a3f78",
       "executable": false
     },
     "DEMO.md": {
@@ -897,7 +897,7 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "c7e911937c799fe2a5eba5c314820dc09529ca8d57ddcf7b4ec8a2eb32fa6236",
+      "sha256": "26d5f11451685a9b491f7c9ad038b977d7b19ce9cb798bf46424f7e4e89b115e",
       "executable": false
     },
     "docs/contract-changes-20261002.json": {
@@ -9297,7 +9297,7 @@
       "executable": false
     },
     "tests/runtime/google-sheets.worker.test.ts": {
-      "sha256": "b44872a2304d3c9c338d6b2509af56126d1dcf76c0a6f4d389d0cb4e77a71d7b",
+      "sha256": "a67450e84317a00e9e8d32e47a2e70eaeb911734b64349289fe7604d47a7e2d9",
       "executable": false
     },
     "tests/runtime/graph-reachability.worker.test.ts": {
