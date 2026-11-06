@@ -73,7 +73,7 @@ Acceptance journeys and remaining obligations are recorded in CONTRACT.md and AC
 | LOGIC-006 | Conditions across the form | target | partial | `src/core/shared/conditions.ts`; `src/core/features/flows/condition-paths.ts`; `src/core/features/flows/ui/ConditionEditor.tsx`; `tests/runtime/conditions.worker.test.ts`; `tests/e2e/conditions.spec.ts`; `scripts/deployment-data-custody-replay.check.mjs` |
 | LANG-001 | Multi-language forms | target | missing |  |
 | AI-002 | Reviewed AI translation | target | missing |  |
-| LANG-002 | Editable closed and system text | target | partial | `src/core/shared/respondentText.ts`; `src/core/shared/closedFlow.ts`; `src/core/features/flows/ui/RespondentTextSettings.tsx`; `tests/runtime/foundation.worker.test.ts`; `tests/e2e/closed-flow.spec.ts` |
+| LANG-002 | Editable closed and system text | target | partial | `src/core/shared/respondentText.ts`; `src/core/shared/closedFlow.ts`; `src/core/features/flows/ui/RespondentTextSettings.tsx`; `tests/runtime/foundation.worker.test.ts`; `tests/e2e/closed-flow.spec.ts`; `tests/runtime/foundation.worker.test.ts` |
 | A11Y-001 | WCAG 2.2 AA respondent experience | published | done | `src/core/shared/ui/AnswerFieldset.tsx`; `src/core/shared/ui/useRespondentFocus.ts`; `tests/e2e/respondent-accessibility.spec.ts` |
 | A11Y-002 | Accessibility checker before publish | target | partial | `src/core/features/brand/brand.ts`; `tests/runtime/brand.worker.test.ts` |
 | AUD-001 | Contacts | published | done | `tests/e2e/distribution-foundation.spec.ts`; `tests/runtime/audience.worker.test.ts`; `tests/runtime/upgrades.worker.test.ts` |
