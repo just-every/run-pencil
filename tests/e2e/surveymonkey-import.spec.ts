@@ -3,6 +3,7 @@ import { contract } from './contract'
 import { expect } from './fixtures'
 import { signInEmptyWorkspace } from './authoring-helpers'
 import { surveyMonkeyDetails,surveyMonkeyResponses } from '../fixtures/form-import/surveymonkey'
+import { readReviewStream } from '../../src/core/features/importing/review-stream'
 contract('IMPORT-005','SurveyMonkey file-pair upload reviews every supported field and names the omitted elements',async({page},info)=>{
  const cdp=await page.context().newCDPSession(page)
  await cdp.send('Emulation.setCPUThrottlingRate',{rate:4})
@@ -16,7 +17,7 @@ contract('IMPORT-005','SurveyMonkey file-pair upload reviews every supported fie
  await check('surveymonkey-upload')
  const reviewed=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/app/imports/review'&&response.request().method()==='POST')
  await page.getByRole('button',{name:'Review import',exact:true}).click()
- const review=await (await reviewed).json()
+ const review=await readReviewStream(new Response(await (await reviewed).body()).body!)
  await expect(page.getByRole('heading',{name:'Review the mapping',exact:true})).toBeVisible()
  await expect(page.getByText(/4 questions · 3 valid response rows/)).toBeVisible()
  const report=page.getByRole('list',{name:'Field and logic mapping report'})
@@ -35,6 +36,8 @@ contract('IMPORT-005','SurveyMonkey file-pair upload reviews every supported fie
  expect(await (await page.request.get('/api/app/imports')).json()).toEqual([])
  await page.getByRole('checkbox',{name:/I have reviewed every changed or unsupported/}).check()
  await page.getByRole('button',{name:'Import reviewed form',exact:true}).click()
+ await expect(page.getByRole('heading',{name:/Ready to verify/})).toBeVisible()
+ await page.getByRole('button',{name:'Continue import',exact:true}).click()
  await expect(page.getByRole('link',{name:'Open the imported draft',exact:true})).toBeVisible({timeout:60_000})
  const ledger=await (await page.request.get(`/api/app/flows/${review.flowId}/ledger`)).json()
  const [clarity,speed,support]=matrix.settings.matrixRows.map((row:any)=>row.id), [good,needsWork,unused]=matrix.choices.map((choice:any)=>choice.id)

@@ -1,5 +1,6 @@
 /* Import a form: the page heading, the file form as one card, then the history under its own serif heading. */
 .import-page { max-width: 56rem; min-width: 0; }
+.import-page .badge { font-size: 13px; }
 .import-page > h1 { margin: 14px 0 16px; font-size: clamp(40px, 5vw, 64px); line-height: 1.02; }
 .import-page > p { max-width: 64ch; line-height: 1.55; }
 .import-form { display: grid; gap: 18px; margin-top: 24px; padding: 28px; }

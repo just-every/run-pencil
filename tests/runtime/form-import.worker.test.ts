@@ -124,6 +124,11 @@ contract(['IMPORT-001', 'IMPORT-002', 'IMPORT-003', 'IMPORT-004', 'LEDG-002', 'I
   const valid=await call(`/api/public/flows/${slug}/responses`,{...session,idempotencyKey:'synthetic-pencil-sm-valid',answers:[{stepId:text.id,value:'555-0100'},{stepId:matrix.id,value:nativeMatrix}]})
   expect(valid.disposition).toBe('released')
   expect(JSON.parse((await env.DB.prepare('SELECT value_json FROM response_answers WHERE response_id=? AND step_id=?').bind(valid.responseId,matrix.id).first<{value_json:string}>())!.value_json)).toEqual(nativeMatrix)
+  const optional=await call(`/api/public/flows/${slug}/sessions`,{source:'direct',deviceClass:'desktop'})
+  await matureLoad(optional)
+  const omitted=await call(`/api/public/flows/${slug}/responses`,{...optional,idempotencyKey:'synthetic-pencil-sm-optional',answers:[{stepId:text.id,value:'555-0100'}]})
+  expect(omitted.disposition).toBe('released')
+  expect(await env.DB.prepare('SELECT count(*) n FROM response_answers WHERE response_id=? AND step_id=?').bind(omitted.responseId,matrix.id).first()).toEqual({n:0})
   expect((await call(`/api/app/flows/${review.flowId}/ledger`)).responses.filter((row:any)=>row.source==='imported').map((row:any)=>row.answers.find((answer:any)=>answer.stepId===matrix.id)?.value).filter(Boolean)).toEqual(expect.arrayContaining(historical))
   // Undo is checked on a second, unedited import; publication is deliberately a later native edit.
   const undoSource={...source,definition:JSON.stringify({...surveyMonkeyDetails,title:'Synthetic undo intake'})}
