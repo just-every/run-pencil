@@ -83,7 +83,7 @@ export function surveyMonkeySource(input: ImportInput, survey: Record<string, an
             if(required.type!=='at_least')step.settings.maxSelections=amount
           }
         }
-      } else if(family==='matrix' && subtype==='single' && !answers.other) {
+      } else if(family==='matrix' && subtype==='single' && (!answers.other || Array.isArray(answers.other) && !answers.other.length)) {
         if(!rows.length||!choices.length||[rows,choices].some(items=>items.some(item=>typeof object(item).id!=='string'||!item.id||typeof object(item).text!=='string')||new Set(items.map(item=>item.id)).size!==items.length))invalid('Matrix rows and shared choices need distinct source IDs and text.')
         step.questionType='matrix'
         step.settings={matrixMode:'single',matrixRows:rows.map(row=>({id:stableId(scope,question.id+':row:'+row.id),label:plain(row.text)}))}

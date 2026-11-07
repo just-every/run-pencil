@@ -6305,7 +6305,7 @@
       "executable": false
     },
     "src/core/features/importing/surveymonkey-source.ts": {
-      "sha256": "bca4fabc3bdbf12f8509fec6a8305463d9ef60ca8144094ecc1ce824fda97f77",
+      "sha256": "fb3d13b7041868f85243ee08f6440dc51a045046c254ea70e4a6d9e967789f88",
       "executable": false
     },
     "src/core/features/importing/typeform-definition.ts": {
@@ -8957,7 +8957,7 @@
       "executable": false
     },
     "tests/fixtures/form-import/surveymonkey.ts": {
-      "sha256": "228673f42c03d68261eac1723d5ff0689cf713a2ff8fe9b93ed9303f8c2e08d6",
+      "sha256": "0ad1bac7d8df909e728fbb118b0cf2ff7cbc19a216f769585c234d59ec337c53",
       "executable": false
     },
     "tests/fixtures/form-import/typeform-documented.csv": {
