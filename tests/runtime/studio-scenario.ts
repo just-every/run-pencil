@@ -2,6 +2,7 @@ import { env } from 'cloudflare:test'
 import { expect } from 'vitest'
 import { ai,answer,analysisHttp } from './analysis-fixture'
 import { studioForm } from '../fixtures/studio'
+import { createWorkerApp } from '../../src/core/app/worker'
 const scripted=(output:unknown)=>{const result=answer(output);result.body.id='synthetic-pencil-1';return result}
 type Fixture=Awaited<ReturnType<typeof analysisHttp>>
 export async function exerciseStudio(f:Fixture,other:Fixture,off:Fixture){
@@ -87,6 +88,8 @@ export async function exerciseStudio(f:Fixture,other:Fixture,off:Fixture){
    expect((await f.call(`/api/app/studio/${generated.flowId}`,{expectedVersion:generated.version,study},'PUT')).status).toBe(409)
    const draft=await call(`/api/app/flows/${generated.flowId}/draft`)
    expect(draft.flow.draftVersion).toBe(saved.version)
+   expect(JSON.stringify(draft)).not.toContain(study.analysisPlan)
+   expect(draft.revision).not.toHaveProperty('policySnapshotJson')
    await call(`/api/app/flows/${generated.flowId}/draft`,{stepId:draft.steps[0].id,expectedVersion:draft.flow.draftVersion,prompt:'How was onboarding?',required:true},'PUT')
    const changed=await call(`/api/app/flows/${generated.flowId}/draft`)
    await call(`/api/app/flows/${generated.flowId}/publish`,{expectedVersion:changed.flow.draftVersion})
@@ -96,9 +99,37 @@ export async function exerciseStudio(f:Fixture,other:Fixture,off:Fixture){
   }
  }
  // A provider advisory did not alter form wording; explicit native edits and publication remain available.
- const draft=await call(`/api/app/flows/${first.flowId}/draft`)
- await call(`/api/app/flows/${first.flowId}/draft`,{stepId:draft.steps[1].id,prompt:'What should we improve next?',required:false,expectedVersion:draft.flow.draftVersion},'PUT')
+ const draftPath=`/api/app/flows/${first.flowId}/draft`
+ const draft=await call(draftPath)
+ expect(draft.steps.map((step:any)=>step.generated)).toEqual([true,true,true])
+ expect(draft.steps.at(-1).kind).toBe('completion')
+ expect(draft.revision).not.toHaveProperty('policySnapshotJson')
+ expect(draft).not.toHaveProperty('studio')
+ expect(draft).not.toHaveProperty('generatedStepIds')
+ const added=await call(`${draftPath}/steps`,{expectedVersion:draft.flow.draftVersion,step:{kind:'question',questionType:'short_text',prompt:'What else should we improve?',required:false,nextStepId:draft.steps.at(-1).id}})
+ const withManual=await call(draftPath)
+ await call(draftPath,{stepId:draft.steps[1].id,prompt:'What should we improve next?',required:false,nextStepId:added.step.id,expectedVersion:withManual.flow.draftVersion},'PUT')
  const edited=await call(`/api/app/flows/${first.flowId}/draft`)
+ const marks=(value:any)=>{
+  expect(value.steps.map((step:any)=>step.id)).toEqual([draft.steps[0].id,draft.steps[1].id,added.step.id,draft.steps[2].id])
+  expect(value.steps.map((step:any)=>step.generated)).toEqual([true,true,false,true])
+  expect(value.steps[1].prompt).toBe('What should we improve next?')
+ }
+ marks(edited)
+ expect((await other.call(draftPath)).status).toBe(404)
+ expect((await other.call(`/api/app/flows/${first.flowId}/publish`,{expectedVersion:edited.flow.draftVersion})).status).toBe(404)
+ const anonymous=createWorkerApp(undefined,f.platform)
+ expect((await anonymous.request(`http://localhost/api/app/flows/${first.flowId}/publish`,{method:'POST',headers:{Host:'localhost',Origin:'http://localhost','Content-Type':'application/json'},body:JSON.stringify({expectedVersion:edited.flow.draftVersion})})).status).toBe(401)
+ expect((await f.call(`/api/public/flows/${first.slug}`)).status).toBe(404)
+ expect(await call(draftPath)).toEqual(edited)
  await call(`/api/app/flows/${first.flowId}/publish`,{expectedVersion:edited.flow.draftVersion})
- expect((await call(`/api/public/flows/${first.slug}`)).steps.some((step:any)=>step.prompt==='What should we improve next?')).toBe(true)
+ const nextDraft=await call(draftPath)
+ expect(nextDraft.revision.id).not.toBe(edited.revision.id)
+ marks(nextDraft)
+ expect((await other.call(draftPath)).status).toBe(404)
+ const publicFlow=await call(`/api/public/flows/${first.slug}`)
+ expect(publicFlow.steps.some((step:any)=>step.prompt==='What should we improve next?')).toBe(true)
+ expect(publicFlow.steps.every((step:any)=>!Object.hasOwn(step,'generated'))).toBe(true)
+ expect(publicFlow.revision).not.toHaveProperty('policySnapshotJson')
+ expect(publicFlow).not.toHaveProperty('studio')
 }

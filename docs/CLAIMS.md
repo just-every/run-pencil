@@ -27,7 +27,7 @@ Acceptance journeys and remaining obligations are recorded in CONTRACT.md and AC
 | DASH-002 | Flow list | published | done | `tests/runtime/feedback-attention.worker.test.ts`; `tests/runtime/foundation.worker.test.ts`; `tests/runtime/journey.worker.test.ts` |
 | TMPL-001 | Template gallery | target | partial | `tests/runtime/first-owner.worker.test.ts`; `tests/e2e/templates.spec.ts` |
 | TMPL-002 | Team templates | target | done | `src/core/features/flows/team-templates.ts`; `tests/runtime/team-templates.worker.test.ts`; `tests/e2e/team-templates.spec.ts` |
-| AI-001 | Generate a form from a prompt or a document | target | partial | `tests/runtime/feedback-rewrites.worker.test.ts`; `tests/e2e/analysis.spec.ts`; `tests/runtime/studio-scenario.ts`; `tests/e2e/studio-journey.ts` |
+| AI-001 | Generate a form from a prompt or a document | target | partial | `tests/runtime/feedback-rewrites.worker.test.ts`; `tests/e2e/analysis.spec.ts`; `tests/runtime/studio-scenario.ts`; `tests/e2e/studio-journey.ts`; `tests/runtime/feedback-rewrites.worker.test.ts`; `tests/runtime/studio-scenario.ts`; `tests/e2e/analysis.spec.ts`; `tests/e2e/studio-journey.ts` |
 | FLOW-001 | Lifecycle | published | done | `tests/runtime/foundation.worker.test.ts` |
 | FLOW-002 | Ordered steps | published | done | `tests/e2e/journey.spec.ts` |
 | FLOW-003 | Question types | published | done | `tests/e2e/new-question-types.spec.ts`; `tests/runtime/new-question-types.worker.test.ts` |
@@ -73,7 +73,7 @@ Acceptance journeys and remaining obligations are recorded in CONTRACT.md and AC
 | LOGIC-006 | Conditions across the form | target | partial | `src/core/shared/conditions.ts`; `src/core/features/flows/condition-paths.ts`; `src/core/features/flows/ui/ConditionEditor.tsx`; `tests/runtime/conditions.worker.test.ts`; `tests/e2e/conditions.spec.ts`; `scripts/deployment-data-custody-replay.check.mjs` |
 | LANG-001 | Multi-language forms | target | missing |  |
 | AI-002 | Reviewed AI translation | target | missing |  |
-| LANG-002 | Editable closed and system text | target | partial | `src/core/shared/respondentText.ts`; `src/core/shared/closedFlow.ts`; `src/core/features/flows/ui/RespondentTextSettings.tsx`; `tests/runtime/foundation.worker.test.ts`; `tests/e2e/closed-flow.spec.ts` |
+| LANG-002 | Editable closed and system text | target | partial | `src/core/shared/respondentText.ts`; `src/core/shared/closedFlow.ts`; `src/core/features/flows/ui/RespondentTextSettings.tsx`; `tests/runtime/foundation.worker.test.ts`; `tests/e2e/closed-flow.spec.ts`; `tests/runtime/foundation.worker.test.ts` |
 | A11Y-001 | WCAG 2.2 AA respondent experience | published | done | `src/core/shared/ui/AnswerFieldset.tsx`; `src/core/shared/ui/useRespondentFocus.ts`; `tests/e2e/respondent-accessibility.spec.ts` |
 | A11Y-002 | Accessibility checker before publish | target | partial | `src/core/features/brand/brand.ts`; `tests/runtime/brand.worker.test.ts` |
 | AUD-001 | Contacts | published | done | `tests/e2e/distribution-foundation.spec.ts`; `tests/runtime/audience.worker.test.ts`; `tests/runtime/upgrades.worker.test.ts` |
@@ -231,7 +231,7 @@ Acceptance journeys and remaining obligations are recorded in CONTRACT.md and AC
 | INTEG-013 | Task destinations | target | partial | `src/core/features/actions/todoist.ts`; `src/core/features/actions/webhook.ts`; `tests/runtime/actions-task.worker.test.ts` |
 | INTEG-014 | Help-desk and commerce event sources | target | missing |  |
 | INTEG-015 | Integration delivery ledger | target | partial | `src/core/features/webhooks/ledger.ts`; `src/core/features/webhooks/deliveries.ts`; `tests/runtime/response-webhooks.worker.test.ts`; `tests/runtime/actions-task.worker.test.ts`; `tests/e2e/response-webhooks.spec.ts`; `src/core/features/actions/deliveries.ts`; `tests/runtime/google-sheets.worker.test.ts` |
-| INTEG-016 | Connection custody | target | partial | `src/core/platform/config/connections.ts`; `tests/e2e/actions.spec.ts`; `tests/e2e/analysis.spec.ts` |
+| INTEG-016 | Connection custody | target | partial | `src/core/platform/config/connections.ts`; `tests/e2e/actions.spec.ts`; `tests/e2e/analysis.spec.ts`; `tests/runtime/google-sheets.worker.test.ts` |
 | INTEG-017 | Ad conversion events | target | partial | `src/core/features/embedding/script.ts`; `tests/e2e/script-embed.spec.ts` |
 | MOB-001 | Operator app on a phone | target | partial | `tests/e2e/accessibility-foundation.spec.ts` |
 | MOB-002 | Offline field collection | target | missing |  |

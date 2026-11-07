@@ -825,7 +825,7 @@
       "executable": false
     },
     "ACCEPTANCE.md": {
-      "sha256": "1f1b01fb5873649ed9d2b6b16acde2ef3d7f6070332ac3e83b32034a40af96ad",
+      "sha256": "9ff7580af2018cdfea37ecf961e6d718f9ecd68c6a331b05eba5e6440f264f8d",
       "executable": false
     },
     "agent-surface.json": {
@@ -869,7 +869,7 @@
       "executable": false
     },
     "CONTRACT.md": {
-      "sha256": "f1904ff7963a0a877a8a3c446ac98556c8571a17daf6f650b6c27239cb8248e8",
+      "sha256": "dbd7b800b4377018e0e69b5c450112de0a76caa2214e8882505b907f651f19e7",
       "executable": false
     },
     "DEMO.md": {
@@ -885,7 +885,7 @@
       "executable": false
     },
     "deploy.json": {
-      "sha256": "157a4d2533762e05ae10556fc7db4ffda65dfd410277e1358f98936a7e5ee73d",
+      "sha256": "2c647c26e7d90bd81ea300f64b5e8e52ce940f8a40224b8fccb735179204baa0",
       "executable": false
     },
     "deploy/wrangler.template.toml": {
@@ -897,7 +897,7 @@
       "executable": false
     },
     "docs/CLAIMS.md": {
-      "sha256": "2ad10ca68f11cc7ebe65ac9fe21b8fc2f06da392271f1ea790d097fd57970623",
+      "sha256": "9980408330f1817f4d403f3f249907aac76f1eb4d33cdd48b24ff96a0411c5bc",
       "executable": false
     },
     "docs/contract-changes-20261002.json": {
@@ -1513,7 +1513,7 @@
       "executable": false
     },
     "README.md": {
-      "sha256": "23d281d35c3808701f0517ff651b5679bfaff7ff9a5e3a12d2521d983a6f21ab",
+      "sha256": "9568bff44d296ec32d939925bc203268ba2a4db50a54dfa37b79f8de385ce13c",
       "executable": false
     },
     "RELEASE.json": {
@@ -4921,7 +4921,7 @@
       "executable": false
     },
     "src/core/app/api.ts": {
-      "sha256": "ce60121b4864fd6d4c7ee91e03f173d922fb2d3cdc604be25bf6225ac8dc85dd",
+      "sha256": "5b6e3e87a43dfd6073987839855fbcb92f0dd013002d3c14450e95619a8d3f6d",
       "executable": false
     },
     "src/core/app/capability-paths.ts": {
@@ -5961,7 +5961,7 @@
       "executable": false
     },
     "src/core/features/flows/service.ts": {
-      "sha256": "65fb7259e048b89f2f9a377b7c7ddc74dbd073a3689ef94d64d74554467b6118",
+      "sha256": "1de742a7a4f9bffa11491e22ecae7dc83a4cb437b6e82d345ea54568af2c2896",
       "executable": false
     },
     "src/core/features/flows/structure.ts": {
@@ -5981,7 +5981,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/authoring.css": {
-      "sha256": "1c37d8d1e3d285ffccd16bcbf8c90d0f04fef9ea2ce498ff7526927b39a5f691",
+      "sha256": "66665776a718c7b998f15a2069f1390ae6af092b3db8434033fdc1e54bc2f90f",
       "executable": false
     },
     "src/core/features/flows/ui/BranchEditor.tsx": {
@@ -6029,7 +6029,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/FlowBuilderPage.tsx": {
-      "sha256": "9747d6614bfbb7c3451ad106cdb3a7eb757bdb1813e83ebcf4aac7573798057b",
+      "sha256": "afe4012aa810150b200a455e16ebf62f42b407a60a484c677c0818e5a009b33e",
       "executable": false
     },
     "src/core/features/flows/ui/FlowLifecycle.tsx": {
@@ -8453,7 +8453,7 @@
       "executable": false
     },
     "src/test/ui-fixtures.tsx": {
-      "sha256": "1960e3c33c6fb10d9ba50df6e9e8f6ab2f0b17b9f3ee64de5da9c1f51d30ecf1",
+      "sha256": "c303bb3d5d3a8f405b0a15cedbf3964ed735f26d8eab6c0a57c30568e76f80c0",
       "executable": false
     },
     "src/vite-env.d.ts": {
@@ -8541,7 +8541,7 @@
       "executable": false
     },
     "tests/e2e/calculations.spec.ts": {
-      "sha256": "34aef087b011d8f5c5f95fa335190270f5d139aaafa5306e5eed07ca6add978a",
+      "sha256": "db76a3b87a72af48e849b70350bb92de3f3f37142657659f51b3d66fce7ce10e",
       "executable": false
     },
     "tests/e2e/chat-settings-proof.ts": {
@@ -8553,7 +8553,7 @@
       "executable": false
     },
     "tests/e2e/closed-flow.spec.ts": {
-      "sha256": "8c4fe1dc1525cc1f80431f7c28dc7cf328ce878f3afd6e567e2988b67f305797",
+      "sha256": "17e0271aca4249e711d7ff5e92285a9e8885a3c0a65ab74794a96108029f7127",
       "executable": false
     },
     "tests/e2e/coding.spec.ts": {
@@ -8849,7 +8849,7 @@
       "executable": false
     },
     "tests/e2e/studio-journey.ts": {
-      "sha256": "f8daf22c31c11f79583ac21afe04f244aa8383e6067141d8edb765d75204e6c8",
+      "sha256": "237b282c2054e9360edf0d45c71df204b5f90ffee7cd7b664a5c826519282ac4",
       "executable": false
     },
     "tests/e2e/submission-inbox-journey.ts": {
@@ -9285,7 +9285,7 @@
       "executable": false
     },
     "tests/runtime/foundation.worker.test.ts": {
-      "sha256": "27a819a1472cc430d78af4fd0efb88e7e454a3b81d4d8f80ab29753d504343db",
+      "sha256": "aa9e86c94d573f7fbaaef4c2dd602422f63f4965efe86236f635c4dd83073a4a",
       "executable": false
     },
     "tests/runtime/google-form-import.worker.test.ts": {
@@ -9297,7 +9297,7 @@
       "executable": false
     },
     "tests/runtime/google-sheets.worker.test.ts": {
-      "sha256": "b44872a2304d3c9c338d6b2509af56126d1dcf76c0a6f4d389d0cb4e77a71d7b",
+      "sha256": "a67450e84317a00e9e8d32e47a2e70eaeb911734b64349289fe7604d47a7e2d9",
       "executable": false
     },
     "tests/runtime/graph-reachability.worker.test.ts": {
@@ -9493,7 +9493,7 @@
       "executable": false
     },
     "tests/runtime/studio-scenario.ts": {
-      "sha256": "8662252ecbc97d4030e933c4488e7f12ff537b2ebb0376c9c82995a08196b59b",
+      "sha256": "be0338dfc5cca4714116730d723c0ee504ebf194432b2b076cbb1c4e1c838c7a",
       "executable": false
     },
     "tests/runtime/submissions.worker.test.ts": {

@@ -3,6 +3,7 @@ import type { Page,TestInfo } from '@playwright/test'
 import { expect } from './fixtures'
 import { answer,type startAiReceiver } from './ai-receiver'
 import { studioForm } from '../fixtures/studio'
+import { appHeaders } from './api-headers'
 export async function studioJourney(page:Page,info:TestInfo,provider:Awaited<ReturnType<typeof startAiReceiver>>,priorTitle:string){
  await page.context().newCDPSession(page).then(session=>session.send('Emulation.setCPUThrottlingRate',{rate:4}))
  const capture=async(name:string)=>{await page.screenshot({path:info.outputPath(`${info.project.name}-${name}.png`),fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect((await new AxeBuilder({page}).analyze()).violations).toEqual([])}
@@ -60,11 +61,66 @@ export async function studioJourney(page:Page,info:TestInfo,provider:Awaited<Ret
   await capture(`studio-${mode}-review`)
   await review.getByRole('link',{name:'Edit and publish draft',exact:true}).click()
   await expect(page.getByLabel('Prompt',{exact:true})).toBeVisible()
-  await page.getByLabel('Prompt',{exact:true}).fill(mode==='study'?'How was onboarding?':'Which improvement matters most?')
+  const rail=page.getByRole('complementary',{name:'Flow steps',exact:true})
+  const generatedCount=mode==='form'?3:4
+  const marked=async()=>{
+   await expect(rail.getByText('Generated',{exact:true})).toHaveCount(generatedCount)
+   for(const step of draft.steps){
+    const prompt=step.id===draft.steps[0].id?editedPrompt:step.prompt
+    await expect(rail.getByRole('button').filter({has:page.getByText(prompt,{exact:true})}).getByText('Generated',{exact:true})).toBeVisible()
+   }
+  }
+  let editedPrompt=draft.steps[0].prompt
+  await marked()
+  expect(await rail.getByText('Generated',{exact:true}).first().evaluate(element=>parseFloat(getComputedStyle(element).fontSize))).toBeGreaterThanOrEqual(13)
+  const moveDown=page.getByRole('button',{name:'Move down',exact:true})
+  await moveDown.focus()
+  await expect(page.getByRole('tooltip',{name:'Move down',exact:true})).toBeVisible()
+  await capture(`studio-${mode}-builder`)
+  await moveDown.blur()
+  editedPrompt=mode==='study'?'How was onboarding?':'Which improvement matters most?'
+  await page.getByLabel('Prompt',{exact:true}).fill(editedPrompt)
   await page.getByRole('button',{name:'Save',exact:true}).click()
   await expect(page.getByText('Saved.',{exact:true})).toBeVisible()
+  await page.reload()
+  await expect(page.getByLabel('Prompt',{exact:true})).toHaveValue(editedPrompt)
+  await marked()
+  if(mode==='form'){
+   await page.getByRole('button',{name:'Add step',exact:true}).click()
+   await page.getByRole('menuitem',{name:'Add question',exact:true}).click()
+   await expect(page.getByLabel('Prompt',{exact:true})).toHaveValue('What would you like us to know?')
+   await page.getByLabel('Prompt',{exact:true}).fill('What else should we improve?')
+   await page.getByRole('button',{name:'Save',exact:true}).click()
+   await expect(page.getByText('Saved.',{exact:true})).toBeVisible()
+   await expect(rail.getByRole('button').filter({hasText:'What else should we improve?'}).getByText('Generated',{exact:true})).toHaveCount(0)
+   const current=await (await page.request.get(`/api/app/flows/${draft.flowId}/draft`)).json()
+   const manual=current.steps.find((step:any)=>step.prompt==='What else should we improve?')
+   await rail.getByRole('button').filter({has:page.getByText(draft.steps[1].prompt,{exact:true})}).click()
+   await page.getByRole('combobox',{name:/^Default next screen/}).selectOption(manual.id)
+   await page.getByRole('button',{name:'Save',exact:true}).click()
+   await expect(page.getByText('Saved.',{exact:true})).toBeVisible()
+   await page.reload()
+   await marked()
+   await expect(rail.getByRole('button').filter({hasText:'What else should we improve?'}).getByText('Generated',{exact:true})).toHaveCount(0)
+  }
+  expect((await page.request.get(`/api/public/flows/${draft.slug}`)).status()).toBe(404)
+  const anonymous=await page.context().browser()!.newContext()
+  try{
+   const current=await (await page.request.get(`/api/app/flows/${draft.flowId}/draft`)).json()
+   expect((await anonymous.request.post(new URL(`/api/app/flows/${draft.flowId}/publish`,page.url()).href,{headers:appHeaders,data:{expectedVersion:current.flow.draftVersion}})).status()).toBe(401)
+   expect((await (await page.request.get(`/api/app/flows/${draft.flowId}/draft`)).json()).flow.status).toBe('draft')
+  }finally{await anonymous.close()}
   await page.getByRole('button',{name:'Publish',exact:true}).click()
   await expect(page.getByText('Published. New visitors see this version.',{exact:true})).toBeVisible()
+  await page.getByRole('button',{name:'Edit steps',exact:true}).click()
+  await marked()
+  const completion=draft.steps.at(-1)!
+  await rail.getByRole('button').filter({has:page.getByText(completion.prompt,{exact:true})}).click()
+  await expect(page.getByLabel('Prompt',{exact:true})).toHaveValue(completion.prompt)
+  await capture(`studio-${mode}-builder-published`)
+  await page.reload()
+  await marked()
+  if(mode==='form')await expect(rail.getByRole('button').filter({hasText:'What else should we improve?'}).getByText('Generated',{exact:true})).toHaveCount(0)
   if(mode==='study')expect((await (await page.request.get(`/api/app/studio/${draft.flowId}`)).json()).study.audience).toBe('Selected trial users')
  }
 }
