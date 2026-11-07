@@ -1,0 +1,103 @@
+{
+  "schema": 1,
+  "tag": "sd-pencil-c-f20",
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f20",
+  "head": "a406ea88260a073b5a37dbfabc090fa26278d321",
+  "base": "b6a05948c040da9debdeb9d6ca10c13eacc304ee",
+  "productPush": "succeeded",
+  "ci": {
+    "id": 42409757285,
+    "event": "push",
+    "status": "in_progress",
+    "conclusion": null,
+    "head": "a406ea88260a073b5a37dbfabc090fa26278d321"
+  },
+  "checks": [
+    {
+      "name": "candidate-webhook",
+      "head": "a406ea88260a073b5a37dbfabc090fa26278d321",
+      "command": [
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "--config",
+        "vitest.worker.config.ts",
+        "tests/runtime/response-webhooks.worker.test.ts"
+      ],
+      "startedAt": "2026-11-07T20:10:50.850982+00:00",
+      "durationSeconds": 41.405,
+      "exit": 0,
+      "log": "candidate-webhook.log",
+      "logSha256": "66fbf88bb6d434c9abeb776694cd4b57722b86aa1da45603402095e614620ae3"
+    },
+    {
+      "name": "candidate-typecheck",
+      "head": "a406ea88260a073b5a37dbfabc090fa26278d321",
+      "command": [
+        "pnpm",
+        "exec",
+        "tsc",
+        "-b"
+      ],
+      "startedAt": "2026-11-07T20:10:52.231301+00:00",
+      "durationSeconds": 23.75,
+      "exit": 0,
+      "log": "candidate-typecheck.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "candidate-first-party",
+      "head": "a406ea88260a073b5a37dbfabc090fa26278d321",
+      "command": [
+        "pnpm",
+        "exec",
+        "rer",
+        "check",
+        "--profile",
+        "first-party"
+      ],
+      "startedAt": "2026-11-07T20:11:16.083144+00:00",
+      "durationSeconds": 1.369,
+      "exit": 0,
+      "log": "candidate-first-party.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "mechanical": {
+    "viewsWrite": 0,
+    "viewsCheck": 0,
+    "generatedViewsRestored": true,
+    "sourceLock": 0,
+    "sourceCheck": 0,
+    "migrationLedger": "not applicable: no migrations changed"
+  },
+  "countsBefore": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49,
+    "total": 252
+  },
+  "countsAfter": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49,
+    "total": 252
+  },
+  "registrationsInTouchedFile": {
+    "before": 1,
+    "after": 1
+  },
+  "productionChanged": false,
+  "contractChanged": false,
+  "mainEqualsCandidate": false,
+  "publicationScan": {
+    "commit": "a406ea88260a073b5a37dbfabc090fa26278d321",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "status": "not run in cloud; maintained Mac lander required"
+  },
+  "claim": "PARTIAL"
+}

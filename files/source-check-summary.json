@@ -1,0 +1,12 @@
+{
+  "lock": {
+    "ok": true,
+    "edition": "just-every/pencil"
+  },
+  "baseCopies": {
+    "ok": true,
+    "drift": [],
+    "unrecordedCopies": [],
+    "adapted": []
+  }
+}

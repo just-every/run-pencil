@@ -1,0 +1,15 @@
+{
+  "name": "candidate-typecheck",
+  "head": "a406ea88260a073b5a37dbfabc090fa26278d321",
+  "command": [
+    "pnpm",
+    "exec",
+    "tsc",
+    "-b"
+  ],
+  "startedAt": "2026-11-07T20:10:52.231301+00:00",
+  "durationSeconds": 23.75,
+  "exit": 0,
+  "log": "candidate-typecheck.log",
+  "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

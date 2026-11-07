@@ -1,0 +1,124 @@
+{
+  "files": [
+    {
+      "blob": "470dd96605289653dc1c025e6db29054f45c2f75",
+      "bytes": 2696,
+      "path": "RECEIPT.json",
+      "sha256": "3810afb1a27307ea8f3473db3e39379180efcf1b5c6dc92066b221863ef795d4"
+    },
+    {
+      "blob": "8489647cba79b219e0ba5a6615d3cf997cf8cba3",
+      "bytes": 11252,
+      "path": "REPORT.md",
+      "sha256": "b091235400baf2057953960e610b63d042d072b795866d50dfc7dc28181022dc"
+    },
+    {
+      "blob": "85e35363294a99bfd194fc4a4eb37e6e618f622b",
+      "bytes": 234,
+      "path": "candidate-ci.json",
+      "sha256": "76026d23b871e9dc6b5ab133635b21924d97c2ea39c23b32dff2e0de68bcbb2f"
+    },
+    {
+      "blob": "035a023f149ee02c62a4c57ab7b71f89710ea135",
+      "bytes": 408,
+      "path": "candidate-first-party-receipt.json",
+      "sha256": "7c3d032ae45e895f1835abe6c963f07d86df931bcfb6cdced96853f8ec80c2b3"
+    },
+    {
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "path": "candidate-first-party.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "blob": "d22f4896c07fdfb1c8a3db05e2f992462d90d57e",
+      "bytes": 365,
+      "path": "candidate-typecheck-receipt.json",
+      "sha256": "f2ef0d84ee04d14c191f112cbd345f5182ad49c5b4e0f2e26b65dca2c2e5c8c5"
+    },
+    {
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "path": "candidate-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "blob": "c69cf849a562b9c757d44979d5902c601a748af2",
+      "bytes": 467,
+      "path": "candidate-webhook-receipt.json",
+      "sha256": "1f28e3eee50c7b676fd6c2377325b38ec51c0eacaea67ffc68f5638d962c7254"
+    },
+    {
+      "blob": "560aa93794a6a9f142be021b224951767776022c",
+      "bytes": 3997,
+      "path": "candidate-webhook.log",
+      "sha256": "66fbf88bb6d434c9abeb776694cd4b57722b86aa1da45603402095e614620ae3"
+    },
+    {
+      "blob": "35fd42f75f3b47c3347d6d3b75b4ee33653c2037",
+      "bytes": 302,
+      "path": "lock-check-summary.json",
+      "sha256": "a91f205489c5da405955e0e8a00e7975c9eca11386f3a43ecae268ec2270dfa5"
+    },
+    {
+      "blob": "2d110069ef8e09b165cf6edf1c36738affb9250a",
+      "bytes": 400701,
+      "path": "lock-check.json",
+      "sha256": "898991fcc65ab75557ae6d3b4b18831181730e9634e2da2bcdce042b0b1edeff"
+    },
+    {
+      "blob": "d94e38fda7b47b520bd34404126ba8ae2f28d855",
+      "bytes": 1405,
+      "path": "main-ci.json",
+      "sha256": "170f5a1ea8cf1a45020d7df0453cf41a344bdf4bd928a4770ff001cc7ec4f19b"
+    },
+    {
+      "blob": "727a0f6c91264dcada8abd9525a15ce4186cffe3",
+      "bytes": 902,
+      "path": "product-push.log",
+      "sha256": "1c69eb04c5ad6fecf5ec7b6f142f34918fad3fe3903ab84061944adbaebd0bf7"
+    },
+    {
+      "blob": "d8ce47dd309cacf7da73fa1452f851baa01ea08d",
+      "bytes": 131,
+      "path": "remote-refs.txt",
+      "sha256": "0888ce3eb477edf79c87e4d5876de739010cb34037f2bc34bce25e60b77c01c3"
+    },
+    {
+      "blob": "dd7a3e76174aaad85fe510e2247f6610721915a8",
+      "bytes": 542,
+      "path": "source-changes.json",
+      "sha256": "9f2e6fcee36f83001a8a45e437694642c55213b0a535af566cd6e6f86d52b628"
+    },
+    {
+      "blob": "b8b5d148ed1175493c7f269f8542b0f57f87051f",
+      "bytes": 173,
+      "path": "source-check-summary.json",
+      "sha256": "46729d929c5493d0cbf5addc8de710e181674ed3c322701c48be3777e5b10d5a"
+    },
+    {
+      "blob": "ee5372bb9490973653c47faed7b878967af2e01b",
+      "bytes": 455021,
+      "path": "source-check.log",
+      "sha256": "2dde23c56a7a1fb1e12d7ac39127d5e5b7f3cfb2a0659928423df5a52ffe1f11"
+    },
+    {
+      "blob": "fae032b33739003a46567d98af8584f2f416720c",
+      "bytes": 142,
+      "path": "views.log",
+      "sha256": "7d43daf6ffcb8723894802ef3eb901d2af2a1a7992ec936bd8b59033425efe2b"
+    },
+    {
+      "blob": "ba67ad4d3a173180d7d65dc490d21de9a6fb8c41",
+      "bytes": 3997,
+      "path": "webhook-test.log",
+      "sha256": "4206afa01972326fc769c91abe0490feaf6bf937e175141819bc2fb3b2fd0d31"
+    }
+  ],
+  "product_branch": "cloud/sd-pencil-c-f20",
+  "product_head": "a406ea88260a073b5a37dbfabc090fa26278d321",
+  "ref": "refs/heads/evidence/sd-pencil-c-f20",
+  "repository": "just-every/run-pencil",
+  "schema": 1,
+  "tag": "sd-pencil-c-f20"
+}

@@ -1,0 +1,18 @@
+{
+  "name": "candidate-webhook",
+  "head": "a406ea88260a073b5a37dbfabc090fa26278d321",
+  "command": [
+    "pnpm",
+    "exec",
+    "vitest",
+    "run",
+    "--config",
+    "vitest.worker.config.ts",
+    "tests/runtime/response-webhooks.worker.test.ts"
+  ],
+  "startedAt": "2026-11-07T20:10:50.850982+00:00",
+  "durationSeconds": 41.405,
+  "exit": 0,
+  "log": "candidate-webhook.log",
+  "logSha256": "66fbf88bb6d434c9abeb776694cd4b57722b86aa1da45603402095e614620ae3"
+}

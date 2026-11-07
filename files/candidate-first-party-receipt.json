@@ -1,0 +1,17 @@
+{
+  "name": "candidate-first-party",
+  "head": "a406ea88260a073b5a37dbfabc090fa26278d321",
+  "command": [
+    "pnpm",
+    "exec",
+    "rer",
+    "check",
+    "--profile",
+    "first-party"
+  ],
+  "startedAt": "2026-11-07T20:11:16.083144+00:00",
+  "durationSeconds": 1.369,
+  "exit": 0,
+  "log": "candidate-first-party.log",
+  "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}
