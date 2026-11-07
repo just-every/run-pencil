@@ -7149,7 +7149,7 @@
       "executable": false
     },
     "src/core/features/responses/service.ts": {
-      "sha256": "9acbcdd316dd8353b16eb2d9cfd1ff7d16276f57e8dbe1e74682d3903ae5d059",
+      "sha256": "1b3cd85aa7390035d959c761153b89e4200378dea8087f70f9c3371910657a45",
       "executable": false
     },
     "src/core/features/responses/ui/CompletionDisclosure.tsx": {
@@ -8005,7 +8005,7 @@
       "executable": false
     },
     "src/core/shared/hiddenFields.ts": {
-      "sha256": "4410a7ecff15f762392f8a42ff795c2186c349d4aa075470bbfa629dc282e0b6",
+      "sha256": "50eb7979b61fb8cff43c21947fa53f7302b652e626a3ba64e3cca767fd557600",
       "executable": false
     },
     "src/core/shared/ianaTimeZone.ts": {
@@ -8066,6 +8066,10 @@
     },
     "src/core/shared/responseEdits.ts": {
       "sha256": "b60771fadef209c71090e42b34a38e80518872ac62bb3782ce1f74ea27fad654",
+      "executable": false
+    },
+    "src/core/shared/responseQuality.ts": {
+      "sha256": "e6d6b9e73b096d2a284aa8536d111cb039fe62a7435248970ebe4f738af7b318",
       "executable": false
     },
     "src/core/shared/scoreQuestions.ts": {
@@ -9373,7 +9377,7 @@
       "executable": false
     },
     "tests/runtime/new-question-types.worker.test.ts": {
-      "sha256": "a21c52b8ec2b4d3269d75db4d4005a54a5e8316cba783f99da7879351de7de84",
+      "sha256": "a637a5eb826299a435cc05ad41e2a1b06e2b63ec3c131c5e413b639bb9826264",
       "executable": false
     },
     "tests/runtime/notification-restore.worker.test.ts": {
@@ -9458,6 +9462,10 @@
     },
     "tests/runtime/response-paid-edit-proof.ts": {
       "sha256": "bae54b9dfacf7a3279067f991c6bfa2ce017bbab2fed10be115cdb5203b45a1c",
+      "executable": false
+    },
+    "tests/runtime/response-quality-scenario.ts": {
+      "sha256": "140625c32ae5809819860a1a66a6a1c0922d6e6f0af4568cd8ea7c0088ac9418",
       "executable": false
     },
     "tests/runtime/response-webhooks.worker.test.ts": {

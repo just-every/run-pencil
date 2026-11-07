@@ -1,3 +1,4 @@
+import { hasStraightLinedMatrix } from '../../shared/responseQuality'
 import { consentRecords } from '../../shared/marketingConsent'
 import { closedFlowFor } from '../../shared/closedFlow'
 import { issuePrefillProof, readPrefillProof } from './prefillProof'
@@ -259,7 +260,7 @@ export class ResponseService {
     const responseId = ulid()
     const payment = paymentStepId ? await this.payments.attempt(responseId, 1, steps, choices, { paymentStepId, completionStepId, accepted: acceptedAnswers }, hiddenContext.calculations ?? {}) : undefined
     const elapsed = Math.max(0, Date.now() - loadedAt)
-    const quarantineReason = input.honeypot?.trim() ? 'honeypot' : elapsed < minimumFillMilliseconds ? 'minimum-fill-time' : null
+    const quarantineReason = input.honeypot?.trim() ? 'honeypot' : elapsed < minimumFillMilliseconds ? 'minimum-fill-time' : settings.responseQuality?.straightLining && hasStraightLinedMatrix(publicSteps(steps), publicChoices(steps, choices), acceptedAnswers) ? 'matrix-straight-lining' : null
     const state = quarantineReason ? 'quarantined' as const : 'released' as const
     const created = await this.repository.createCompletedResponse({
       response: {
