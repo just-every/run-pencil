@@ -1,0 +1,24 @@
+{
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f22",
+  "head": "6290af437d870e3aba69055e7e2578ae748967eb",
+  "remote_head": "6290af437d870e3aba69055e7e2578ae748967eb",
+  "push_attempt": 1,
+  "push_exit": 0,
+  "main_base": "b6a05948c040da9debdeb9d6ca10c13eacc304ee",
+  "working_tree_clean": true,
+  "candidate_messages_inspected": true,
+  "all_candidate_authors_and_committers": "Run Edit Run fleet",
+  "coauthor_trailers": [],
+  "generated_views_committed": false,
+  "contract_diff": false,
+  "publication_scan": {
+    "status": "NOT RUN in cloud; maintained lander required",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "run_site": {
+    "status": "pending landing"
+  }
+}

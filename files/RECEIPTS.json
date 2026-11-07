@@ -1,0 +1,116 @@
+{
+  "head": "6290af437d870e3aba69055e7e2578ae748967eb",
+  "branch": "cloud/sd-pencil-c-f22",
+  "source_unchanged_since_local_tests": true,
+  "file_sha256": {
+    "src/core/features/reporting/trendQueries.ts": "06986811d5ce465d838d4a7e0d25ef24729a85dc516aa152b24f11786e535380",
+    "src/core/features/reporting/trends.ts": "dd75a293ecba1914f0a9e4fa9441ec7f4581f61f6f04bfb5b193f91f9142011b",
+    "src/core/features/results/ui/TrendsPanel.tsx": "cc776c0c7e024246a22388e081e79727a205c233d28f521d4879c8a16aa8c09d",
+    "tests/runtime/collectors-trends.worker.test.ts": "08b5a9fa7c784cd348f052b707d1b99059e74c67f9cebeb85cbb5cae4aa54c1c",
+    "tests/runtime/ranked-trend-proof.ts": "b2cbcca2ecf7b2c5c656ea292e4ed8fe20e02ecf4a7050fd13d10df9364e5294",
+    "tests/e2e/answer-results.spec.ts": "bcc977b193a4fef44fed6d616db59263e57b156dbbcd605aff61c16e12aa2314",
+    "tests/results-scenario.ts": "f9cad4a5a2a550b6caf9be471ef04d7925ab1d5e054e0b27c3e83241e4e71129"
+  },
+  "mechanical": [
+    {
+      "command": "node scripts/contract-docs.mjs write RSLT-007",
+      "exit": 0,
+      "elapsed_seconds": 0.08,
+      "stdout": "Contract documents write: RSLT-007; 142 done, 61 partial, 49 missing.\n",
+      "stderr": ""
+    },
+    {
+      "command": "node scripts/contract-docs.mjs check RSLT-007",
+      "exit": 0,
+      "elapsed_seconds": 0.09,
+      "stdout": "Contract documents check: RSLT-007; 142 done, 61 partial, 49 missing.\n",
+      "stderr": ""
+    },
+    {
+      "command": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0,
+      "elapsed_seconds": 0.01,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "elapsed_seconds": 0.32,
+      "stdout": "Complete source lock check output saved in lock-check.json",
+      "stderr": ""
+    },
+    {
+      "command": "pnpm source:check",
+      "exit": 0,
+      "elapsed_seconds": 0.81,
+      "stdout": "Complete source lock check output saved in lock-check.json",
+      "stderr": ""
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "elapsed_seconds": 15.42,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "elapsed_seconds": 0.82,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "git diff --exit-code",
+      "exit": 0,
+      "elapsed_seconds": 0.01,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": "git diff --exit-code origin/main...HEAD -- CONTRACT.md",
+      "exit": 0,
+      "elapsed_seconds": 0.0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "runtime": {
+    "command": "pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/collectors-trends.worker.test.ts",
+    "exit": 0,
+    "files_passed": 1,
+    "registrations_passed": 1,
+    "log": "runtime.log"
+  },
+  "browser": {
+    "command": "pnpm exec playwright test --config /tmp/pencil-cloud-playwright.config.ts tests/e2e/answer-results.spec.ts --workers=1 --reporter=line",
+    "exit": 0,
+    "passed": 2,
+    "widths": [
+      1440,
+      390
+    ],
+    "chromium": "/usr/bin/chromium",
+    "launch_args": [
+      "--no-sandbox",
+      "--use-mock-keychain",
+      "--password-store=basic"
+    ],
+    "log": "browser.log",
+    "temporary_config_changes": "System Chromium executable and no-sandbox; absolute test directory and web server working directory; omitted unused run-site server. No test or assertion changed."
+  },
+  "registrations_delta": 0,
+  "clause_counts": {
+    "before": {
+      "done": 142,
+      "partial": 61,
+      "missing": 49
+    },
+    "after": {
+      "done": 142,
+      "partial": 61,
+      "missing": 49
+    }
+  }
+}
