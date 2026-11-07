@@ -1,0 +1,19 @@
+{
+  "name": "build",
+  "command": [
+    "timeout",
+    "1200",
+    "npx",
+    "-y",
+    "@runeditrun/rer",
+    "build",
+    "--non-interactive"
+  ],
+  "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+  "dirty": false,
+  "exit": 0,
+  "started_utc": "2026-11-07T23:35:48.355726+00:00",
+  "duration_seconds": 32.835,
+  "output_file": "build.txt",
+  "output_sha256": "3ac54df5cd741fddb4426581deaecdf2e13cfe3f3b4d1fccce299979ccb91365"
+}

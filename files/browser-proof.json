@@ -1,0 +1,87 @@
+{
+  "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+  "screens": [
+    {
+      "file": "screens/desktop-email-suffix-builder.png",
+      "css_viewport_width": 1440,
+      "device_scale_factor": 1,
+      "image_width": 1440,
+      "image_height": 2383,
+      "sha256": "830131656d28b3822f17c5fcedc896088b4697ab09ee50fa346736172fa813ce"
+    },
+    {
+      "file": "screens/desktop-email-suffix-preview-0.png",
+      "css_viewport_width": 1440,
+      "device_scale_factor": 1,
+      "image_width": 1440,
+      "image_height": 3165,
+      "sha256": "c8f601e3c9fe38d93add0a1105b313d2930682bb4baa3b2e76fce0fb841fe20c"
+    },
+    {
+      "file": "screens/desktop-email-suffix-preview-1.png",
+      "css_viewport_width": 1440,
+      "device_scale_factor": 1,
+      "image_width": 1440,
+      "image_height": 3165,
+      "sha256": "f642a5f7933101d947aa26542e6cd4dc86f81e4c8336f1207612c3db99ea53d9"
+    },
+    {
+      "file": "screens/desktop-email-suffix-completed-0.png",
+      "css_viewport_width": 1440,
+      "device_scale_factor": 1,
+      "image_width": 1440,
+      "image_height": 900,
+      "sha256": "1cb905b67292e10f62f350dfa5774eecd4a4fb698a1b2c41b28121a98d74dc6d"
+    },
+    {
+      "file": "screens/desktop-email-suffix-completed-1.png",
+      "css_viewport_width": 1440,
+      "device_scale_factor": 1,
+      "image_width": 1440,
+      "image_height": 900,
+      "sha256": "4d4497bc0f5128ebf124ca1ade1dd20a47ccff5b1f8ffee7a9611c4a58e7168c"
+    },
+    {
+      "file": "screens/mobile-email-suffix-builder.png",
+      "css_viewport_width": 390,
+      "device_scale_factor": 2.75,
+      "image_width": 1073,
+      "image_height": 8410,
+      "sha256": "a0c8114b154a69d5b18d0daace4a22bb9ed61631af55a36c83c93add06d23e8b"
+    },
+    {
+      "file": "screens/mobile-email-suffix-preview-0.png",
+      "css_viewport_width": 390,
+      "device_scale_factor": 2.75,
+      "image_width": 1073,
+      "image_height": 10832,
+      "sha256": "484c5f900a31f32f6e651a174d088fe2caf1f897d397541e5f6807c2a799c3f8"
+    },
+    {
+      "file": "screens/mobile-email-suffix-preview-1.png",
+      "css_viewport_width": 390,
+      "device_scale_factor": 2.75,
+      "image_width": 1073,
+      "image_height": 10832,
+      "sha256": "16f9bea9919ac26eaa660875b8c3b5a487b9a777a3de7937df413fc3ad61c345"
+    },
+    {
+      "file": "screens/mobile-email-suffix-completed-0.png",
+      "css_viewport_width": 390,
+      "device_scale_factor": 2.75,
+      "image_width": 1073,
+      "image_height": 2321,
+      "sha256": "b72fead442d77d11390766c4a63e6efbac7cf27ba7b64e9906a9675284d4f82f"
+    },
+    {
+      "file": "screens/mobile-email-suffix-completed-1.png",
+      "css_viewport_width": 390,
+      "device_scale_factor": 2.75,
+      "image_width": 1073,
+      "image_height": 2321,
+      "sha256": "b26c6f6d8ca74bfea87fee5c30dc8d3541aa0683e6c9cf2b4dd493cf9184044c"
+    }
+  ],
+  "runtime": "headless Chromium at /usr/bin/chromium with --no-sandbox",
+  "assertions": "Existing single browser registration exercised both existing configured viewports."
+}

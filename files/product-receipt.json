@@ -1,0 +1,74 @@
+{
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f25",
+  "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+  "origin_main": "3c10ae66e7efbc27a936dfd4e3dcc563eee19e6c",
+  "full_history": true,
+  "clean": true,
+  "changed_paths": [
+    "sources.lock.json",
+    "src/core/features/flows/condition-feasibility.ts",
+    "src/core/features/flows/email-suffix-domain.ts",
+    "src/core/features/flows/graph.ts",
+    "src/core/features/flows/ui/ConditionEditor.tsx",
+    "src/core/shared/conditionValidation.ts",
+    "src/core/shared/conditions.ts",
+    "tests/e2e/conditions.spec.ts",
+    "tests/e2e/email-suffix-scenario.ts",
+    "tests/runtime/conditions.worker.test.ts",
+    "tests/runtime/email-suffix-proof.ts"
+  ],
+  "candidate_commits": [
+    {
+      "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+      "author_name": "Run Edit Run fleet",
+      "author_email": "fleet@runeditrun.com",
+      "committer_name": "Run Edit Run fleet",
+      "committer_email": "fleet@runeditrun.com",
+      "trailers": ""
+    },
+    {
+      "head": "2edc4690579af4bf2c8b71c849b7e348941cb8c3",
+      "author_name": "Run Edit Run fleet",
+      "author_email": "fleet@runeditrun.com",
+      "committer_name": "Run Edit Run fleet",
+      "committer_email": "fleet@runeditrun.com",
+      "trailers": ""
+    }
+  ],
+  "counts_before": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49,
+    "total": 252
+  },
+  "counts_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49,
+    "total": 252
+  },
+  "clause_changes": {
+    "LOGIC-006": {
+      "before": "PARTIAL",
+      "after": "PARTIAL",
+      "proven_slice": "acceptance item 2: email question ends with"
+    }
+  },
+  "publication_scan": {
+    "performed_in_cloud": false,
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "owner": "maintained Mac lander",
+    "local_blob_hygiene": {
+      "published_save": "2edc4690579af4bf2c8b71c849b7e348941cb8c3",
+      "path": "tests/runtime/email-suffix-proof.ts",
+      "rules": [
+        "hygiene.email"
+      ],
+      "candidate_blob_rules": []
+    }
+  },
+  "terminal_status": "BLOCKED"
+}

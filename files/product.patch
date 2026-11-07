@@ -1,0 +1,611 @@
+diff --git a/sources.lock.json b/sources.lock.json
+index d20b244..4a397e7 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -5897,19 +5897,23 @@
+       "executable": false
+     },
+     "src/core/features/flows/condition-feasibility.ts": {
+-      "sha256": "bc1796e2db09f0f0e0b74b8cde85ef12809ee8140950ca14d2a5cbf4224c95d4",
++      "sha256": "9bf84958ef5fb03da67a59f720d827643082475f09fbae8e01555a3d53ac8a58",
+       "executable": false
+     },
+     "src/core/features/flows/condition-paths.ts": {
+       "sha256": "2cc01ce7ec8acd5bb07ddd1b5564f830102e5b652ce99cfc099762b1fe7bb991",
+       "executable": false
+     },
++    "src/core/features/flows/email-suffix-domain.ts": {
++      "sha256": "0715d8908d2d125aab61f7a448ae12032f74181767d5b731508de54ef0865fa5",
++      "executable": false
++    },
+     "src/core/features/flows/graph.contract.test.ts": {
+       "sha256": "cb807b3b12cf26fef24025943239b6a00e319a9747e043fa065a17cdab5d6ff3",
+       "executable": false
+     },
+     "src/core/features/flows/graph.ts": {
+-      "sha256": "0ac0ca8f18731802a22c614777732c9cdb0b69d50b2acb287401d7c9ee231807",
++      "sha256": "3af27f130bd97f08dcd89e3ec25014ca3e56acd2d59b1e55bd477e8ead63da4d",
+       "executable": false
+     },
+     "src/core/features/flows/index.ts": {
+@@ -6013,7 +6017,7 @@
+       "executable": false
+     },
+     "src/core/features/flows/ui/ConditionEditor.tsx": {
+-      "sha256": "ea38d92febc63f51fe782a92a7f402669907a5da0daf10355b5de99363d40fe8",
++      "sha256": "4b110c893b91afff1c6a9d7a33722a9fb5bf78b78c5a4636e4571b314f1ef936",
+       "executable": false
+     },
+     "src/core/features/flows/ui/ConditionTrace.tsx": {
+@@ -7937,11 +7941,11 @@
+       "executable": false
+     },
+     "src/core/shared/conditions.ts": {
+-      "sha256": "03f47f3c9c1a9ce92dec5c003ba31808f1c262f7d7c25122667046c6edf2e20a",
++      "sha256": "2306df421a8a330c0b66c4616d6f9a646f2b9b32c58a4a1d015ec7376c784d82",
+       "executable": false
+     },
+     "src/core/shared/conditionValidation.ts": {
+-      "sha256": "fd2d1021130d898687121ffb6fcf65e5142be5cb0502fcae897ae8203be46d6b",
++      "sha256": "6155477548f6303d00405676f535d84a2314171da4bb4985c82107e1a54bfea4",
+       "executable": false
+     },
+     "src/core/shared/config.ts": {
+@@ -8569,7 +8573,7 @@
+       "executable": false
+     },
+     "tests/e2e/conditions.spec.ts": {
+-      "sha256": "6fbf876ef492783b18fdcd2a787a628b0841baa87786834c2d54646e9483f3a4",
++      "sha256": "b9a518aa68cc8fca5de63c414b1e906a9316920ae86e6c39c268ea428a4c2048",
+       "executable": false
+     },
+     "tests/e2e/contract.ts": {
+@@ -8596,6 +8600,10 @@
+       "sha256": "1537be74c3628fb1d9519f9292e69db92df7b26332150ca0f3d979501a3d17d6",
+       "executable": false
+     },
++    "tests/e2e/email-suffix-scenario.ts": {
++      "sha256": "8644bbe98682f52d162287a04e4150478d667ec90640cab38acf35875147a4ec",
++      "executable": false
++    },
+     "tests/e2e/embed-security-foundation.spec.ts": {
+       "sha256": "45fe1de8acd58a278800d1151b0b156becb6c504974dbf2df7c63d55a6a82537",
+       "executable": false
+@@ -9245,7 +9253,7 @@
+       "executable": false
+     },
+     "tests/runtime/conditions.worker.test.ts": {
+-      "sha256": "72641389ae7208eaeeeecb71e4ecb8d25291ea8863c8f896e0c42db08f804fa3",
++      "sha256": "67f5285b8234555c7dc15f94da3ac599c35c8de5d9d987be61de7ceb19315d59",
+       "executable": false
+     },
+     "tests/runtime/contact-scores-scenario.ts": {
+@@ -9260,6 +9268,10 @@
+       "sha256": "a50921ed91d687bb496f042dc262f028463e1815628d96c5fa5f70f2cc7f0ab4",
+       "executable": false
+     },
++    "tests/runtime/email-suffix-proof.ts": {
++      "sha256": "b0b5251f459ad862f41ae1269ad1a9fa2af27e6e55f620f8b268eab5fb4ab9d2",
++      "executable": false
++    },
+     "tests/runtime/export-reader.global.ts": {
+       "sha256": "b143882272dc5560d1e32907d705f70263b915602508c51fbef0dc3662cc43c4",
+       "executable": false
+diff --git a/src/core/features/flows/condition-feasibility.ts b/src/core/features/flows/condition-feasibility.ts
+index 56c19ff..475ef85 100644
+--- a/src/core/features/flows/condition-feasibility.ts
++++ b/src/core/features/flows/condition-feasibility.ts
+@@ -1,3 +1,4 @@
++import { emailConditionPossible } from './email-suffix-domain'
+ import { proveCalculatedConditions } from './calculation-proof'
+ import type { Calculation } from '../../shared/calculations'
+ import { answerIssue } from '../../shared/answers'
+@@ -22,7 +23,7 @@ export function spendConditionProof(budget: ConditionProofBudget) {
+   if (--budget.remaining < 0) throw new ConditionProofError('The condition graph exceeds the exact reachability proof limit. Simplify its branching before publishing.')
+ }
+ 
+-function localAnswerExists(question: ConditionQuestion, requirements: LeafRequirement[]): boolean {
++function localAnswerExists(question: ConditionQuestion, requirements: LeafRequirement[], budget: ConditionProofBudget): boolean {
+   const { step, choices, settings } = question
+   if (step.questionType === 'matrix') {
+     const rows = matrixRows(settings)
+@@ -35,7 +36,7 @@ function localAnswerExists(question: ConditionQuestion, requirements: LeafRequir
+     }, requirements.filter(({ condition }) => condition.rowId === row.id).map(({ condition, matched }) => {
+       const { rowId: _rowId, ...rowTest } = condition
+       return { condition: rowTest, matched }
+-    })))
++    }), budget))
+   }
+   const satisfies = (value: unknown) => requirements.every(({ condition, matched }) => evaluateCondition(condition, { [step.stableId]: value }).matched === matched)
+   if (!step.required && satisfies(undefined)) return true
+@@ -109,7 +110,11 @@ function localAnswerExists(question: ConditionQuestion, requirements: LeafRequir
+     }))
+     return priorityIsPossible(choices, allowed, equalities.map(({ condition }) => condition.value as string[]))
+   }
+-  if (['short_text', 'long_text', 'email'].includes(step.questionType ?? '')) {
++  if (step.questionType === 'email') return emailConditionPossible(tests, valid, satisfies, {
++    spend: () => spendConditionProof(budget),
++    refuse: reason => { throw new ConditionProofError(reason) },
++  })
++  if (['short_text', 'long_text'].includes(step.questionType ?? '')) {
+     if (tests.length) {
+       const positive = tests.find(({condition,matched}) => condition.operator === 'equals' ? matched : !matched)
+       if (positive) return some([positive.condition.value])
+@@ -118,10 +123,9 @@ function localAnswerExists(question: ConditionQuestion, requirements: LeafRequir
+       const length = Math.max(1,Number(settings.minLength ?? 0))
+       const candidates = tests.map(({condition})=>String(condition.value))
+       const alphabet = Array.from({length:tests.length+1},(_,i)=>String.fromCodePoint(0x61+i))
+-      return some([...candidates,...alphabet.map(char=>step.questionType==='email'?`${char}@b.c`:char.repeat(length))])
++      return some([...candidates,...alphabet.map(char=>char.repeat(length))])
+     }
+     if (settings.pattern !== undefined || settings.inputMask !== undefined) throw new ConditionProofError('Exact answered-condition reachability for text with a pattern or mask is not supported yet.')
+-    if (step.questionType === 'email') return some(['a@b.c'])
+     const length = Math.max(1, Number(settings.minLength ?? 0))
+     return length <= Number(settings.maxLength ?? textTypeLimit(step.questionType)) && some(['x'.repeat(length)])
+   }
+@@ -160,14 +164,14 @@ export function conditionRequirementsPossible(questions: ReadonlyMap<string, Con
+         if (known) possible = known.matched === matched
+         else {
+           const next = [...existing, { condition, matched }]
+-          possible = localAnswerExists(question, next)
++          possible = localAnswerExists(question, next, budget)
+           state.leaves.set(condition.stepId, next)
+         }
+       }
+     }
+     if (possible && [...visited].every(id => {
+       const question = questions.get(id)
+-      return !question || localAnswerExists(question, state.leaves.get(id) ?? [])
++      return !question || localAnswerExists(question, state.leaves.get(id) ?? [], budget)
+     }) && proveCalculatedConditions(calculations,questions,state.derived,state.leaves,visited,budget)) return true
+   }
+   return false
+diff --git a/src/core/features/flows/email-suffix-domain.ts b/src/core/features/flows/email-suffix-domain.ts
+new file mode 100644
+index 0000000..b1064f5
+--- /dev/null
++++ b/src/core/features/flows/email-suffix-domain.ts
+@@ -0,0 +1,52 @@
++import { normalizeConditionText, type Condition } from '../../shared/conditions'
++
++type Requirement = { condition: Extract<Condition, { kind: 'test' }>; matched: boolean }
++
++/** Solve one present email's correlated equality and suffix requirements.
++ * Positive suffixes form a chain: only the longest can constrain a witness.
++ * A fresh ordinary character in the prefix cannot introduce an excluded suffix
++ * or equality. Together with @ and dot it represents every email syntax class;
++ * at most five prefix characters complete any suffix to the admitted syntax.
++ * The shared admission check, rather than a guessed domain rule, checks each
++ * witness and its raw 200-character bound.
++ */
++export function emailConditionPossible(requirements: Requirement[], valid: (value: unknown) => boolean, satisfies: (value: unknown) => boolean, proof: { spend: () => void; refuse: (reason: string) => never }): boolean {
++  const values = requirements.map(({ condition, matched }) => ({
++    operator: condition.operator, matched, raw: String(condition.value),
++    value: normalizeConditionText(String(condition.value)),
++  }))
++  const equalities = values.filter(test => test.operator === 'equals' ? test.matched : test.operator === 'not_equals' && !test.matched)
++  const suffixes = values.filter(test => test.operator === 'ends_with' && test.matched).map(test => test.value).sort((a, b) => b.length - a.length)
++  const tail = suffixes[0] ?? ''
++  if (suffixes.some(suffix => !tail.endsWith(suffix))) return false
++  if (values.some(test => test.operator === 'ends_with' && !test.matched && tail.endsWith(test.value))) return false
++  const some = (candidates: string[]) => candidates.some(value => {
++    proof.spend()
++    return valid(value) && satisfies(value)
++  })
++  // Lowercasing U+0130 expands to two code units. Retain the shorter raw
++  // preimage when the admission length is tight; verify it with the evaluator.
++  const preimages = (value: string) => [value, value.replaceAll('i\u0307', '\u0130')]
++  if (equalities.length) {
++    const first = equalities[0].value
++    if (equalities.some(test => test.value !== first)) return false
++    if (values.some(test => test.operator === 'ends_with' && first.endsWith(test.value) !== test.matched || ['equals', 'not_equals'].includes(test.operator) && (first === test.value) !== (test.operator === 'equals' ? test.matched : !test.matched))) return false
++    if (some(equalities.flatMap(test => [test.raw.trim().normalize('NFC'), ...preimages(first)]))) return true
++    if (/[^\x00-\x7f]/.test(first)) return proof.refuse('Exact email condition reachability could not establish an admitted normalized equality. Simplify the condition before publishing.')
++    return false
++  }
++  const used = values.map(test => test.value).join('')
++  let fresh = 'a'
++  for (let code = 0x61; used.includes(fresh) || normalizeConditionText(fresh) !== fresh || fresh === '@' || fresh === '.' || /\s/.test(fresh); code++) fresh = String.fromCharCode(code)
++  const tails = [...new Set([...preimages(tail), ...values.filter(test => test.operator === 'ends_with' && test.matched && test.value === tail).map(test => test.raw.trim().normalize('NFC'))])]
++  let prefixes = ['']
++  for (let length = 0; length <= 5; length++) {
++    for (const prefix of prefixes) if (some(tails.map(suffix => prefix + suffix))) return true
++    prefixes = prefixes.flatMap(prefix => [fresh, '@', '.'].map(character => prefix + character))
++  }
++  // No ASCII preimage can be shorter than its normalized text. Unusual Unicode
++  // normalization at a boundary must refuse proof rather than invent reachability
++  // or declare a potentially feasible destination impossible.
++  if (/[^\x00-\x7f]/.test(tail)) return proof.refuse('Exact email suffix reachability exceeded its normalized witness domain. Simplify the condition before publishing.')
++  return false
++}
+diff --git a/src/core/features/flows/graph.ts b/src/core/features/flows/graph.ts
+index 8521c6b..c61a18b 100644
+--- a/src/core/features/flows/graph.ts
++++ b/src/core/features/flows/graph.ts
+@@ -163,7 +163,7 @@ export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice
+         for (const [index, test] of conditionTests(condition).entries()) {
+           const hidden = operands.find(step=>step.id===test.stepId)
+           const operand = hidden ?? publicGraph.steps.find(step => step.id === test.stepId)
+-          if (!operand || operand.kind !== 'question' || operand.position > source.position || !hidden && !earlier.has(test.stepId) || test.stepId.startsWith('variable:') && [...calculationInputs(calculations,test.stepId.slice(9)).answers].some(id=>!earlier.has(id)) || !conditionValueValid(test, operand, publicGraph.choices)) {
++          if (test.operator === 'ends_with' && !publicGraph.steps.some(step => step.id === test.stepId && step.questionType === 'email') || !operand || operand.kind !== 'question' || operand.position > source.position || !hidden && !earlier.has(test.stepId) || test.stepId.startsWith('variable:') && [...calculationInputs(calculations,test.stepId.slice(9)).answers].some(id=>!earlier.has(id)) || !conditionValueValid(test, operand, publicGraph.choices)) {
+             issues.push({ stepId: source.stableId, reason: `Branch ${rule.id}, condition ${index + 1}: missing or later question, incompatible operator, or invalid stable choice.` })
+             valid = false
+           }
+diff --git a/src/core/features/flows/ui/ConditionEditor.tsx b/src/core/features/flows/ui/ConditionEditor.tsx
+index ca93990..b64eda9 100644
+--- a/src/core/features/flows/ui/ConditionEditor.tsx
++++ b/src/core/features/flows/ui/ConditionEditor.tsx
+@@ -7,7 +7,7 @@ import { matrixRows, matrixMultiple } from '../../../shared/matrix'
+ import manifest from '../../../../../seed.json'
+ 
+ export const operatorLabels: Record<ConditionOperator, string> = {
+-  equals: 'is', not_equals: 'is not', greater_than: 'is greater than', greater_than_or_equal: 'is at least',
++  equals: 'is', not_equals: 'is not', ends_with: 'ends with', greater_than: 'is greater than', greater_than_or_equal: 'is at least',
+   less_than: 'is less than', less_than_or_equal: 'is at most', any_of: 'is any of', all_of: 'includes all of',
+   none_of: 'is none of', exactly: 'is exactly', is_blank: 'is blank', is_answered: 'is answered',
+ }
+@@ -59,7 +59,7 @@ export function ConditionEditor({ condition, draft, operands, onChange }: { cond
+     return <div className="answer-stack">
+       <label className="inspector-field">Question<select aria-label="Question" className="text-input" value={current.stepId} onChange={event => change(firstCondition(operands.find(step => step.id === event.target.value)!, draft))}>{operands.map(step => <option key={step.id} value={step.id}>{step.prompt}</option>)}</select></label>
+       {step?.questionType === 'matrix' ? <label className="inspector-field">Row<select aria-label="Row" className="text-input" value={current.rowId ?? ''} onChange={event => change({ ...current, rowId: event.target.value })}><option value="">Choose a row</option>{matrixRows(step.questionSettings ?? {}).map(row => <option key={row.id} value={row.id}>{row.label}</option>)}</select></label> : null}
+-      <label className="inspector-field">Condition<select aria-label="Condition" className="text-input" value={current.operator} onChange={event => setOperator(event.target.value as ConditionOperator)}>{operatorsFor(type).map(operator => <option key={operator} value={operator}>{operatorLabels[operator]}</option>)}</select></label>
++      <label className="inspector-field">Condition<select aria-label="Condition" className="text-input" value={current.operator} onChange={event => setOperator(event.target.value as ConditionOperator)}>{operatorsFor(type).filter(operator => operator !== 'ends_with' || !current.stepId.startsWith('hidden:') && !current.stepId.startsWith('variable:')).map(operator => <option key={operator} value={operator}>{operatorLabels[operator]}</option>)}</select></label>
+       {!noValue ? many ? <label className="inspector-field">Answers<select aria-label="Answers" multiple className="text-input" value={Array.isArray(current.value) ? current.value : []} onChange={event => change({ ...current, value: Array.from(event.target.selectedOptions).map(option => option.value) })}>{choices.map(choice => <option key={choice.id} value={choice.id}>{choice.label}</option>)}</select></label>
+         : ['single_choice','dropdown'].includes(type ?? '') ? <label className="inspector-field">Answer<select aria-label="Answer" className="text-input" value={String(current.value ?? '')} onChange={event => change({ ...current, value: event.target.value })}><option value="">Choose an answer</option>{choices.map(choice => <option key={choice.id} value={choice.id}>{choice.label}</option>)}</select></label>
+         : ['yes_no','consent','thumbs_rating'].includes(step?.questionType ?? '') ? <label className="inspector-field">Answer<select aria-label="Answer" className="text-input" value={String(current.value)} onChange={event => change({ ...current, value: event.target.value === 'true' })}><option value="true">Yes</option><option value="false">No</option></select></label>
+diff --git a/src/core/shared/conditionValidation.ts b/src/core/shared/conditionValidation.ts
+index 80c213f..b1ca677 100644
+--- a/src/core/shared/conditionValidation.ts
++++ b/src/core/shared/conditionValidation.ts
+@@ -10,7 +10,8 @@ export function operatorsFor(type: string | null): ConditionOperator[] {
+   if (type === 'multiple_choice') return ['any_of', 'all_of', 'none_of', 'exactly', ...common]
+   if (['yes_no', 'consent', 'thumbs_rating'].includes(type ?? '')) return ['equals', 'not_equals', ...common]
+   if (['number', 'rating', 'nps', 'csat', 'ces', 'emoji_rating', 'date', 'priority'].includes(type ?? '')) return ['equals', 'not_equals', 'greater_than', 'greater_than_or_equal', 'less_than', 'less_than_or_equal', ...common]
+-  if (['short_text','long_text','email','url','phone'].includes(type ?? '')) return ['equals','not_equals',...common]
++  if (type === 'email') return ['equals', 'not_equals', 'ends_with', ...common]
++  if (['short_text','long_text','url','phone'].includes(type ?? '')) return ['equals','not_equals',...common]
+   return common
+ }
+ 
+@@ -36,6 +37,7 @@ export function conditionValueValid(test: Extract<Condition, { kind: 'test' }>,
+   }
+   if (test.rowId !== undefined) return false
+   if (!operatorsFor(step.questionType).includes(test.operator)) return false
++  if (test.operator === 'ends_with' && (step.id.startsWith('hidden:') || step.id.startsWith('variable:'))) return false
+   if (['is_blank','is_answered'].includes(test.operator)) return test.value === undefined || test.value === null
+   const value = test.value, ids = choices.filter(choice => choice.stepId === step.id).map(choice => choice.id)
+   const set = () => Array.isArray(value) && value.length > 0 && new Set(value).size === value.length && value.every(item => typeof item === 'string' && ids.includes(item))
+diff --git a/src/core/shared/conditions.ts b/src/core/shared/conditions.ts
+index bcc4c4c..08c6501 100644
+--- a/src/core/shared/conditions.ts
++++ b/src/core/shared/conditions.ts
+@@ -2,12 +2,14 @@ import { matchesBranch, type BranchPredicate } from './branching'
+ import { isUnanswered } from './answers'
+ import { isOtherAnswer } from './otherChoices'
+ 
+-export const conditionOperators = ['equals', 'not_equals', 'greater_than', 'greater_than_or_equal', 'less_than', 'less_than_or_equal', 'any_of', 'all_of', 'none_of', 'exactly', 'is_blank', 'is_answered'] as const
++export const conditionOperators = ['equals', 'not_equals', 'ends_with', 'greater_than', 'greater_than_or_equal', 'less_than', 'less_than_or_equal', 'any_of', 'all_of', 'none_of', 'exactly', 'is_blank', 'is_answered'] as const
+ export type ConditionOperator = typeof conditionOperators[number]
+ export type ConditionValue = string | number | boolean | string[] | { choiceId: string; rank: number } | null
+ export type Condition = { kind: 'group'; join: 'and' | 'or'; conditions: Condition[] } | { kind: 'test'; stepId: string; rowId?: string; operator: ConditionOperator; value?: ConditionValue }
+ export type ConditionTrace = { matched: boolean; condition: Condition; value?: unknown; children?: ConditionTrace[] }
+ 
++export const normalizeConditionText = (value: string) => value.trim().normalize('NFC').toLowerCase()
++
+ export function evaluateCondition(condition: Condition, answers: Record<string, unknown>): ConditionTrace {
+   if (condition.kind === 'group') {
+     const children = condition.conditions.map(child => evaluateCondition(child, answers))
+@@ -21,9 +23,10 @@ export function evaluateCondition(condition: Condition, answers: Record<string,
+   if (condition.operator === 'is_blank') matched = blank
+   else if (condition.operator === 'is_answered') matched = !blank
+   else if (!blank) {
+-    if (typeof value === 'string' && typeof condition.value === 'string' && ['equals','not_equals'].includes(condition.operator)) {
+-      const equal = value.trim().normalize('NFC').toLowerCase() === condition.value.trim().normalize('NFC').toLowerCase()
+-      return {condition,value,matched:condition.operator === 'equals' ? equal : !equal}
++    if (typeof value === 'string' && typeof condition.value === 'string' && ['equals','not_equals','ends_with'].includes(condition.operator)) {
++      const actual = normalizeConditionText(value), expected = normalizeConditionText(condition.value)
++      const equal = actual === expected
++      return { condition, value, matched: condition.operator === 'ends_with' ? actual.endsWith(expected) : condition.operator === 'equals' ? equal : !equal }
+     }
+     const selected = isOtherAnswer(value) ? value.choiceIds : Array.isArray(value) ? value : [value]
+     if (condition.operator === 'not_equals') matched = !matchesBranch({ predicateKind: 'equals', expectedValue: condition.value }, value)
+diff --git a/tests/e2e/conditions.spec.ts b/tests/e2e/conditions.spec.ts
+index 75fef4b..3e2890b 100644
+--- a/tests/e2e/conditions.spec.ts
++++ b/tests/e2e/conditions.spec.ts
+@@ -3,9 +3,10 @@ import type { BuilderDraft } from '../../src/core/app/api'
+ import { contract } from './contract'
+ import { expect, test } from './fixtures'
+ import { signInEmptyWorkspace, addConditionRule } from './authoring-helpers'
++import { emailSuffixScenario } from './email-suffix-scenario'
+ 
+ contract('LOGIC-006', 'builds nested lead conditions, inspects their values and collects both published paths', async ({ page }, info) => {
+-  test.setTimeout(90_000)
++  test.setTimeout(150_000)
+   await signInEmptyWorkspace(page)
+   const slug = `business-leads-${info.project.name}-${Date.now()}`
+   const call = async <T,>(path: string, method = 'GET', data?: unknown) => {
+@@ -80,4 +81,5 @@ contract('LOGIC-006', 'builds nested lead conditions, inspects their values and
+   }
+   const ledger = await call<{total:number}>(`${base}/ledger`)
+   expect(ledger.total).toBe(4)
++  await emailSuffixScenario(page, info)
+ })
+diff --git a/tests/e2e/email-suffix-scenario.ts b/tests/e2e/email-suffix-scenario.ts
+new file mode 100644
+index 0000000..6e5db02
+--- /dev/null
++++ b/tests/e2e/email-suffix-scenario.ts
+@@ -0,0 +1,83 @@
++import AxeBuilder from '@axe-core/playwright'
++import type { Page, TestInfo } from '@playwright/test'
++import type { BuilderDraft } from '../../src/core/app/api'
++import { addConditionRule } from './authoring-helpers'
++import { expect } from './fixtures'
++
++export async function emailSuffixScenario(page: Page, info: TestInfo) {
++  const slug = `email-path-${info.project.name}-${Date.now()}`
++  const call = async <T,>(path: string, method = 'GET', data?: unknown) => {
++    const response = await page.request.fetch(path, { method, ...(data === undefined ? {} : { data }) })
++    expect(response.status(), await response.text()).toBeLessThan(300)
++    return response.json() as Promise<T>
++  }
++  const flow = await call<{ id: string }>('/api/app/flows', 'POST', { title: 'Email consultation requests', slug })
++  const base = `/api/app/flows/${flow.id}`
++  const read = () => call<BuilderDraft>(`${base}/draft`)
++  for (const step of [
++    { kind: 'question', questionType: 'email', prompt: 'Your contact email', required: true },
++    { kind: 'question', questionType: 'long_text', prompt: 'Tell us about your enquiry', required: false },
++    { kind: 'completion', questionType: null, prompt: 'Gmail consultation received' },
++    { kind: 'completion', questionType: null, prompt: 'General enquiry received' },
++  ]) await call(`${base}/draft/steps`, 'POST', { expectedVersion: (await read()).flow.draftVersion, step })
++  const draft = await read(), [email, message, matching, ordinary] = draft.steps
++  await call(`${base}/draft`, 'PUT', { expectedVersion: draft.flow.draftVersion, stepId: message.id, prompt: message.prompt, required: false, nextStepId: ordinary.id })
++  await page.goto(`/app/flows/${flow.id}/builder`)
++  const selectMessage = async () => {
++    await page.getByRole('complementary', { name: 'Flow steps' }).getByRole('button', { name: /Tell us about your enquiry/ }).click()
++    const paths = page.getByRole('complementary', { name: 'Step settings' }).getByRole('button', { name: 'Answer paths', exact: true })
++    if (await paths.count()) await paths.click()
++  }
++  await selectMessage()
++  const editor = page.getByRole('complementary', { name: 'Step settings' })
++  await addConditionRule(editor)
++  const rule = editor.getByRole('group', { name: 'Rule 1', exact: true })
++  const root = rule.getByRole('group', { name: 'Condition group', exact: true }).first()
++  await root.getByLabel('Question', { exact: true }).selectOption(email.id)
++  await root.getByLabel('Condition', { exact: true }).selectOption('ends_with')
++  await root.getByLabel('Value', { exact: true }).fill(' GMAIL.COM ')
++  await rule.getByLabel('Then go to', { exact: true }).selectOption(matching.id)
++  await editor.getByRole('button', { name: 'Save', exact: true }).click()
++  await expect(page.getByText('Saved.', { exact: true })).toBeVisible()
++  await page.reload()
++  await selectMessage()
++  await expect(root.getByLabel('Question', { exact: true })).toHaveValue(email.id)
++  await expect(root.getByLabel('Condition', { exact: true })).toHaveValue('ends_with')
++  await expect(root.getByLabel('Value', { exact: true })).toHaveValue(' GMAIL.COM ')
++  await expect(rule).toContainText('Your contact email ends with')
++  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
++  expect((await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa']).analyze()).violations).toEqual([])
++  await page.screenshot({ path: `test-results/${info.project.name}-email-suffix-builder.png`, fullPage: true })
++
++  const paths = [
++    { address: ['synthetic-pencil-1', 'GMAIL.COM'].join('@'), matched: true, completion: 'Gmail consultation received' },
++    { address: ['synthetic-pencil-2', 'gmail.co'].join('@'), matched: false, completion: 'General enquiry received' },
++  ]
++  for (const [index, path] of paths.entries()) {
++    await page.getByRole('button', { name: 'Preview draft', exact: true }).click()
++    const preview = page.getByRole('region', { name: 'Draft preview', exact: true })
++    await preview.getByRole('textbox', { name: 'Your contact email', exact: true }).fill(path.address)
++    await preview.getByRole('button', { name: 'Continue preview', exact: true }).click()
++    await preview.getByRole('button', { name: 'Inspect answer path', exact: true }).click()
++    const trace = page.getByRole('region', { name: 'Preview rule evaluations' })
++    await expect(trace).toContainText(`Your contact email: ${path.address} · ends with → ${path.matched}`)
++    await expect(trace).toContainText(path.matched ? 'First matching rule → Gmail consultation received' : 'Default path → General enquiry received')
++    await preview.getByRole('button', { name: 'Continue preview', exact: true }).click()
++    await expect(preview.getByRole('heading', { name: path.completion, exact: true })).toBeVisible()
++    await page.screenshot({ path: `test-results/${info.project.name}-email-suffix-preview-${index}.png`, fullPage: true })
++    await preview.getByRole('button', { name: 'Close preview', exact: true }).click()
++  }
++  await page.getByRole('button', { name: 'Publish', exact: true }).click()
++  await expect(page.getByRole('region', { name: 'Share this flow' })).toBeVisible()
++  for (const [index, path] of paths.entries()) {
++    await page.goto(`/f/${slug}`)
++    await page.getByRole('textbox', { name: 'Your contact email', exact: true }).fill(path.address)
++    await page.getByRole('button', { name: 'Continue', exact: true }).click()
++    await page.getByRole('textbox', { name: 'Tell us about your enquiry', exact: true }).fill('Please send consultation details.')
++    await page.waitForTimeout(3200)
++    await page.getByRole('button', { name: 'Submit response', exact: true }).click()
++    await expect(page.getByRole('heading', { name: path.completion, exact: true })).toBeVisible()
++    await page.screenshot({ path: `test-results/${info.project.name}-email-suffix-completed-${index}.png`, fullPage: true })
++  }
++  expect((await call<{ total: number }>(`${base}/ledger`)).total).toBe(2)
++}
+diff --git a/tests/runtime/conditions.worker.test.ts b/tests/runtime/conditions.worker.test.ts
+index 34ec663..7f40166 100644
+--- a/tests/runtime/conditions.worker.test.ts
++++ b/tests/runtime/conditions.worker.test.ts
+@@ -4,6 +4,7 @@ import { contract } from '../../src/test/contract'
+ import { foundationFixture } from './foundation-fixture'
+ import { fixtureExport } from '../helpers/report-download'
+ import { conditionTests, type Condition } from '../../src/core/shared/conditions'
++import { emailSuffixRoutingProof, emailSuffixFeasibilityProof } from './email-suffix-proof'
+ declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
+ beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
+ 
+@@ -59,6 +60,7 @@ contract('LOGIC-006', 'publishes correlated AND OR conditions, handles blank and
+   expect(conditionTests(copy.branchRules[0].condition!).some(test => test.value === other.id || test.value === partner.id)).toBe(false)
+   await f.services.flows.publishDraft({ ...f.scope, flowId: copied.id, expectedVersion: copy.flow.draftVersion })
+   expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, {})).responses).toHaveLength(6)
++  await emailSuffixRoutingProof()
+ }, 60_000)
+ 
+ contract(['LOGIC-006', 'FLOW-013'], 'refuses destinations made impossible by constraints on an earlier question without publishing', async () => {
+@@ -84,5 +86,6 @@ contract(['LOGIC-006', 'FLOW-013'], 'refuses destinations made impossible by con
+   await f.publish()
+   const session = await f.start(); await f.mature(session.sessionId)
+   expect(await f.final(session,[{stepId:customer.id,value:true},{stepId:renewal.id,value:false}])).toMatchObject({completionStepId:impossible.id})
++  await emailSuffixFeasibilityProof()
+ 
+ })
+diff --git a/tests/runtime/email-suffix-proof.ts b/tests/runtime/email-suffix-proof.ts
+new file mode 100644
+index 0000000..e9cfa1c
+--- /dev/null
++++ b/tests/runtime/email-suffix-proof.ts
+@@ -0,0 +1,156 @@
++import { env } from 'cloudflare:test'
++import { expect } from 'vitest'
++import type { Condition, ConditionValue } from '../../src/core/shared/conditions'
++import { foundationFixture } from './foundation-fixture'
++
++type Test = Extract<Condition, { kind: 'test' }>
++const leaf = (stepId: string, operator: Test['operator'], value?: ConditionValue): Condition => ({ kind: 'test', stepId, operator, ...(value === undefined ? {} : { value }) })
++const all = (...conditions: Condition[]): Condition => ({ kind: 'group', join: 'and', conditions })
++const address = (domain: string, local = 'synthetic-pencil-1') => [local, domain].join('@')
++
++/** Native admission and preview use the same suffix rule and published revision. */
++export async function emailSuffixRoutingProof() {
++  const f = await foundationFixture('email-suffix-routing')
++  for (const step of [
++    { kind: 'question' as const, questionType: 'yes_no' as const, prompt: 'Provide an email?', required: true },
++    { kind: 'question' as const, questionType: 'email' as const, prompt: 'Contact email', required: false },
++    { kind: 'question' as const, questionType: 'short_text' as const, prompt: 'Additional note', required: false },
++    { kind: 'completion' as const, questionType: null, prompt: 'Matching email destination' },
++    { kind: 'completion' as const, questionType: null, prompt: 'Default email destination' },
++  ]) await f.add(step)
++  let draft = await f.draft()
++  const [gate, email, note, matching, fallback] = draft.steps
++  await f.services.flows.updateBuilderDraft({ ...f.flow, expectedVersion: draft.flow.draftVersion, stepId: note.id, prompt: note.prompt, required: false, nextStepId: fallback.id })
++  const save = async (suffix: string) => {
++    draft = await f.draft()
++    await f.services.flows.replaceDraftBranchRules({ ...f.flow, expectedVersion: draft.flow.draftVersion, rules: [
++      { sourceStepId: gate.id, destinationStepId: note.id, position: 0, predicateKind: 'equals', expectedValue: false },
++      ...[email, note].map(source => ({ sourceStepId: source.id, destinationStepId: matching.id, position: 0, predicateKind: 'equals' as const, expectedValue: null, condition: leaf(email.id, 'ends_with', suffix) })),
++    ] })
++    expect((await f.draft()).branchRules.filter(rule => rule.condition).map(rule => rule.condition)).toEqual([leaf(email.id, 'ends_with', suffix), leaf(email.id, 'ends_with', suffix)])
++  }
++  await save(' GMAIL.COM ')
++  for (const [value, end, matched] of [[address('GMAIL.COM'), matching.id, true], [address('gmail.co'), fallback.id, false], ['  ', fallback.id, false]] as const) {
++    const preview = await f.services.flows.previewDraft({ ...f.flow, answers: { [gate.id]: true, [email.id]: value } })
++    expect(preview.complete).toBe(true)
++    expect(preview.screens.at(-1)?.stepId).toBe(end)
++    expect(preview.screens.find(screen => screen.stepId === email.id)?.evaluations[0].trace).toMatchObject({ matched, condition: leaf(email.id, 'ends_with', ' GMAIL.COM ') })
++  }
++  await f.publish()
++  let requestNumber = 0
++  const post = async (session: Awaited<ReturnType<typeof f.start>>, values: Array<{ stepId: string; value: unknown }>) => {
++    await f.mature(session.sessionId)
++    return f.SELF.fetch(`http://localhost/api/public/flows/${f.slug}/responses`, {
++      method: 'POST', headers: { Origin: 'http://localhost', 'Content-Type': 'application/json', 'CF-Connecting-IP': `198.18.223.${++requestNumber}` },
++      body: JSON.stringify({ sessionId: session.sessionId, sessionToken: session.sessionToken, loadTime: await f.loadTime(session), idempotencyKey: `email-suffix-${session.sessionId}`, answers: values }),
++    })
++  }
++  const submit = async (values: Array<{ stepId: string; value: unknown }>, end: string, session = undefined as Awaited<ReturnType<typeof f.start>> | undefined) => {
++    const response = await post(session ?? await f.start(), values)
++    expect(response.status, await response.clone().text()).toBe(201)
++    const receipt = await response.json() as { responseId: string; completionStepId: string }
++    expect(receipt.completionStepId).toBe(end)
++    return receipt
++  }
++  const matchingReceipt = await submit([{ stepId: gate.id, value: true }, { stepId: email.id, value: address('GMAIL.COM') }, { stepId: note.id, value: 'Off-path note must not survive' }], matching.id)
++  expect((await env.DB.prepare('SELECT step_id FROM response_answers WHERE response_id=? ORDER BY step_id').bind(matchingReceipt.responseId).all<{ step_id: string }>()).results.map(row => row.step_id)).toEqual([gate.id, email.id].sort())
++  await submit([{ stepId: gate.id, value: true }, { stepId: email.id, value: address('gmail.co') }], fallback.id)
++  for (const value of [undefined, '', ' \t ']) await submit([{ stepId: gate.id, value: true }, ...(value === undefined ? [] : [{ stepId: email.id, value }])], fallback.id)
++  const skipped = await submit([{ stepId: gate.id, value: false }, { stepId: email.id, value: address('GMAIL.COM') }, { stepId: note.id, value: 'Kept on-path note' }], fallback.id)
++  expect((await env.DB.prepare('SELECT step_id FROM response_answers WHERE response_id=? ORDER BY step_id').bind(skipped.responseId).all<{ step_id: string }>()).results.map(row => row.step_id)).toEqual([gate.id, note.id].sort())
++  const twoHundred = address('gmail.com', 'x'.repeat(190))
++  expect(twoHundred).toHaveLength(200)
++  await submit([{ stepId: gate.id, value: true }, { stepId: email.id, value: twoHundred }], matching.id)
++  for (const value of [`x${twoHundred}`, ` ${address('gmail.com')} `, 'gmail.com', address('gmail.com', 'two@parts')]) {
++    const session = await f.start(), before = await env.DB.prepare('SELECT count(*) AS count FROM responses WHERE flow_id=?').bind(f.flow.flowId).first<{ count: number }>()
++    const response = await post(session, [{ stepId: gate.id, value: true }, { stepId: email.id, value }])
++    expect(response.status, await response.clone().text()).toBe(400)
++    expect(await response.text()).toContain('Enter a valid email address.')
++    expect(await env.DB.prepare('SELECT count(*) AS count FROM responses WHERE flow_id=?').bind(f.flow.flowId).first()).toEqual(before)
++  }
++  const pinned = await f.start()
++  await save('gmail.co')
++  await f.publish()
++  const answers = [{ stepId: gate.id, value: true }, { stepId: email.id, value: address('GMAIL.COM') }]
++  await submit(answers, matching.id, pinned)
++  await submit(answers, fallback.id)
++  await save(' E\u0301XAMPLE.COM ')
++  const unicode = address('ÉXAMPLE.COM')
++  const preview = await f.services.flows.previewDraft({ ...f.flow, answers: { [gate.id]: true, [email.id]: unicode } })
++  expect(preview.screens.at(-1)?.stepId).toBe(matching.id)
++  expect(preview.screens.find(screen => screen.stepId === email.id)?.evaluations[0].trace).toMatchObject({ value: unicode, matched: true })
++  await f.publish()
++  await submit([{ stepId: gate.id, value: true }, { stepId: email.id, value: unicode }], matching.id)
++}
++
++/** Every published destination needs an admissible, path-correlated witness. */
++export async function emailSuffixFeasibilityProof() {
++  const f = await foundationFixture('email-suffix-feasibility')
++  await f.add({ kind: 'question', questionType: 'email', prompt: 'Routing email', required: false })
++  await f.add({ kind: 'question', questionType: 'yes_no', prompt: 'Continue with email', required: true })
++  await f.add({ kind: 'completion', questionType: null, prompt: 'Default route' })
++  await f.add({ kind: 'completion', questionType: null, prompt: 'Suffix route' })
++  await f.add({ kind: 'completion', questionType: null, prompt: 'Precedence route' })
++  let draft = await f.draft()
++  const [email, followup, fallback, matching, precedence] = draft.steps
++  // The third completion is reached by a first-priority rule; its false result
++  // remains correlated with the later suffix condition on the same answer.
++  const save = async (condition: Condition, first: Condition = leaf(email.id, 'equals', address('precedence.test'))) => {
++    draft = await f.draft()
++    await f.services.flows.replaceDraftBranchRules({ ...f.flow, expectedVersion: draft.flow.draftVersion, rules: [
++      { sourceStepId: email.id, destinationStepId: precedence.id, position: 0, predicateKind: 'equals', expectedValue: null, condition: first },
++      { sourceStepId: email.id, destinationStepId: followup.id, position: 1, predicateKind: 'equals', expectedValue: null, condition: leaf(email.id, 'is_answered') },
++      { sourceStepId: followup.id, destinationStepId: matching.id, position: 0, predicateKind: 'equals', expectedValue: null, condition },
++    ] })
++    draft = await f.draft()
++    await f.services.flows.updateBuilderDraft({ ...f.flow, expectedVersion: draft.flow.draftVersion, stepId: email.id, prompt: email.prompt, required: false, nextStepId: fallback.id })
++  }
++  const feasible = [
++    all(leaf(email.id, 'ends_with', 'gmail.com'), leaf(email.id, 'ends_with', 'mail.com')),
++    all(leaf(email.id, 'equals', ` ${address('GMAIL.COM')} `), leaf(email.id, 'ends_with', 'gmail.com')),
++    all(leaf(email.id, 'not_equals', address('gmail.com')), leaf(email.id, 'ends_with', 'gmail.com')),
++    leaf(email.id, 'ends_with', '@gmail.com'),
++    leaf(email.id, 'ends_with', '.com'),
++    leaf(email.id, 'ends_with', '.'),
++    leaf(email.id, 'ends_with', `${'x'.repeat(196)}.z`),
++  ]
++  for (const condition of feasible) {
++    await save(condition)
++    await expect(f.publish()).resolves.toMatchObject({ kind: 'published' })
++  }
++  const impossible = [
++    all(leaf(email.id, 'ends_with', 'gmail.com'), leaf(email.id, 'ends_with', 'gmail.co')),
++    all(leaf(email.id, 'equals', address('gmail.co')), leaf(email.id, 'ends_with', 'gmail.com')),
++    all(leaf(email.id, 'equals', address('gmail.com')), leaf(email.id, 'not_equals', ` ${address('GMAIL.COM')} `), leaf(email.id, 'ends_with', 'gmail.com')),
++    leaf(email.id, 'ends_with', 'bad suffix.com'),
++    leaf(email.id, 'ends_with', ['x', 'y', 'z.com'].join('@')),
++    leaf(email.id, 'ends_with', `${'x'.repeat(197)}.z`),
++  ]
++  for (const condition of impossible) {
++    await save(condition)
++    const before = (await f.draft()).revision.id
++    await expect(f.publish()).rejects.toMatchObject({ details: expect.arrayContaining([expect.objectContaining({ stepId: matching.id, reason: expect.stringContaining('reachable') })]) })
++    expect((await f.draft()).revision.id).toBe(before)
++  }
++  await save(leaf(email.id, 'ends_with', 'mail.com'), leaf(email.id, 'ends_with', 'gmail.com'))
++  await f.publish()
++  await save(leaf(email.id, 'ends_with', 'gmail.com'), leaf(email.id, 'ends_with', 'mail.com'))
++  await expect(f.publish()).rejects.toMatchObject({ details: expect.arrayContaining([expect.objectContaining({ stepId: matching.id, reason: expect.stringContaining('reachable') })]) })
++  await emailSuffixProofBudget()
++}
++
++/** A branching graph that exceeds exact proof capacity must never publish. */
++async function emailSuffixProofBudget() {
++  const f = await foundationFixture('email-suffix-proof-budget')
++  for (let index = 0; index < 24; index++) await f.add({ kind: 'question', questionType: 'email', prompt: `Optional contact ${index + 1}`, required: false })
++  await f.add({ kind: 'completion', questionType: null, prompt: 'Contact details received' })
++  const draft = await f.draft()
++  await expect(f.services.flows.replaceDraftBranchRules({ ...f.flow, expectedVersion: draft.flow.draftVersion, rules: draft.steps.slice(0, -2).map((step, index) => ({
++    sourceStepId: step.id, destinationStepId: draft.steps[index + 2].id, position: 0,
++    predicateKind: 'equals' as const, expectedValue: null, condition: leaf(step.id, 'ends_with', 'gmail.com'),
++  })) })).rejects.toMatchObject({ details: expect.arrayContaining([expect.objectContaining({ reason: expect.stringContaining('exact reachability proof limit') })]) })
++  const unchanged = await f.draft()
++  expect(unchanged.branchRules).toEqual([])
++  expect(unchanged.flow.draftVersion).toBe(draft.flow.draftVersion)
++  expect(unchanged.revision.id).toBe(draft.revision.id)
++}

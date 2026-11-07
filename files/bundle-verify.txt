@@ -1,0 +1,7 @@
+/home/agent/rer-consolidation/work/push-rescue/sd-pencil-c-f25-product-8ca2948.bundle is okay
+The bundle contains these 3 refs:
+8ca2948d787b989dd6057406881fde2e5a982539 HEAD
+8ca2948d787b989dd6057406881fde2e5a982539 refs/heads/cloud/sd-pencil-c-f25
+3c10ae66e7efbc27a936dfd4e3dcc563eee19e6c refs/remotes/origin/main
+The bundle records a complete history.
+The bundle uses this hash algorithm: sha1

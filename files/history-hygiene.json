@@ -1,0 +1,12 @@
+{
+  "check": "maintained publication text hygiene on exact committed blobs",
+  "published_save": "2edc4690579af4bf2c8b71c849b7e348941cb8c3",
+  "path": "tests/runtime/email-suffix-proof.ts",
+  "published_save_rules": [
+    "hygiene.email"
+  ],
+  "candidate": "8ca2948d787b989dd6057406881fde2e5a982539",
+  "candidate_rules": [],
+  "complete_publication_scan": false,
+  "secret_values_logged": false
+}

@@ -1,0 +1,22 @@
+{
+  "name": "browser",
+  "command": [
+    "timeout",
+    "1200",
+    "pnpm",
+    "exec",
+    "playwright",
+    "test",
+    "--config",
+    "/tmp/pencil-cloud-playwright.config.ts",
+    "tests/e2e/conditions.spec.ts",
+    "--workers=1"
+  ],
+  "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+  "dirty": false,
+  "exit": 0,
+  "started_utc": "2026-11-07T23:32:58.008591+00:00",
+  "duration_seconds": 123.865,
+  "output_file": "browser.txt",
+  "output_sha256": "e2b260f8f6e547a3df926b9b0d210a7077b38f3b92af0391c33c27f3bfdca7b1"
+}

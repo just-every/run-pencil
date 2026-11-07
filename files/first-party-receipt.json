@@ -1,0 +1,18 @@
+{
+  "name": "first-party",
+  "command": [
+    "pnpm",
+    "exec",
+    "rer",
+    "check",
+    "--profile",
+    "first-party"
+  ],
+  "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+  "dirty": false,
+  "exit": 0,
+  "started_utc": "2026-11-07T23:32:13.829462+00:00",
+  "duration_seconds": 1.346,
+  "output_file": "first-party.txt",
+  "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

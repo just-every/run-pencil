@@ -1,0 +1,16 @@
+{
+  "name": "views-check",
+  "command": [
+    "node",
+    "scripts/contract-docs.mjs",
+    "check",
+    "LOGIC-006"
+  ],
+  "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+  "dirty": true,
+  "exit": 0,
+  "started_utc": "2026-11-07T23:31:22.288443+00:00",
+  "duration_seconds": 0.115,
+  "output_file": "views-check.txt",
+  "output_sha256": "d2617280240ba5ed590d29d8ba12b43544d2a9933480763dbb8cadb463088056"
+}

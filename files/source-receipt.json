@@ -1,0 +1,14 @@
+{
+  "name": "source",
+  "command": [
+    "pnpm",
+    "source:check"
+  ],
+  "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+  "dirty": false,
+  "exit": 0,
+  "started_utc": "2026-11-07T23:37:39.685458+00:00",
+  "duration_seconds": 0.93,
+  "output_file": "source.txt",
+  "output_sha256": "0f8ae367090b1121dea7b56d0254fb1565bc87cdb8ca49f0d39a595f7936ced6"
+}

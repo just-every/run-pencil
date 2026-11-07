@@ -1,0 +1,19 @@
+{
+  "name": "native",
+  "command": [
+    "pnpm",
+    "exec",
+    "vitest",
+    "run",
+    "--config",
+    "vitest.worker.config.ts",
+    "tests/runtime/conditions.worker.test.ts"
+  ],
+  "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+  "dirty": false,
+  "exit": 0,
+  "started_utc": "2026-11-07T23:31:22.460765+00:00",
+  "duration_seconds": 28.108,
+  "output_file": "native.txt",
+  "output_sha256": "7165b30b84c1bfd7da8408e50410235c4ebb4f0cc1920564c9d89445f8aea741"
+}

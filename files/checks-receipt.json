@@ -1,0 +1,165 @@
+{
+  "repository": "just-every/run-pencil",
+  "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+  "checks": [
+    {
+      "name": "native",
+      "command": [
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "--config",
+        "vitest.worker.config.ts",
+        "tests/runtime/conditions.worker.test.ts"
+      ],
+      "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+      "dirty": false,
+      "exit": 0,
+      "started_utc": "2026-11-07T23:31:22.460765+00:00",
+      "duration_seconds": 28.108,
+      "output_file": "native.txt",
+      "output_sha256": "7165b30b84c1bfd7da8408e50410235c4ebb4f0cc1920564c9d89445f8aea741"
+    },
+    {
+      "name": "browser",
+      "command": [
+        "timeout",
+        "1200",
+        "pnpm",
+        "exec",
+        "playwright",
+        "test",
+        "--config",
+        "/tmp/pencil-cloud-playwright.config.ts",
+        "tests/e2e/conditions.spec.ts",
+        "--workers=1"
+      ],
+      "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+      "dirty": false,
+      "exit": 0,
+      "started_utc": "2026-11-07T23:32:58.008591+00:00",
+      "duration_seconds": 123.865,
+      "output_file": "browser.txt",
+      "output_sha256": "e2b260f8f6e547a3df926b9b0d210a7077b38f3b92af0391c33c27f3bfdca7b1"
+    },
+    {
+      "name": "typecheck",
+      "command": [
+        "pnpm",
+        "typecheck"
+      ],
+      "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+      "dirty": false,
+      "exit": 0,
+      "started_utc": "2026-11-07T23:31:50.615594+00:00",
+      "duration_seconds": 23.151,
+      "output_file": "typecheck.txt",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "first-party",
+      "command": [
+        "pnpm",
+        "exec",
+        "rer",
+        "check",
+        "--profile",
+        "first-party"
+      ],
+      "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+      "dirty": false,
+      "exit": 0,
+      "started_utc": "2026-11-07T23:32:13.829462+00:00",
+      "duration_seconds": 1.346,
+      "output_file": "first-party.txt",
+      "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "boundaries",
+      "command": [
+        "pnpm",
+        "verify:boundaries"
+      ],
+      "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+      "dirty": false,
+      "exit": 0,
+      "started_utc": "2026-11-07T23:32:15.224009+00:00",
+      "duration_seconds": 2.731,
+      "output_file": "boundaries.txt",
+      "output_sha256": "73216f18ff7891d5ddfef3ea0f484da9df134347dbc30fa00656b0e294e6a2d9"
+    },
+    {
+      "name": "source",
+      "command": [
+        "pnpm",
+        "source:check"
+      ],
+      "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+      "dirty": false,
+      "exit": 0,
+      "started_utc": "2026-11-07T23:37:39.685458+00:00",
+      "duration_seconds": 0.93,
+      "output_file": "source.txt",
+      "output_sha256": "0f8ae367090b1121dea7b56d0254fb1565bc87cdb8ca49f0d39a595f7936ced6"
+    },
+    {
+      "name": "build",
+      "command": [
+        "timeout",
+        "1200",
+        "npx",
+        "-y",
+        "@runeditrun/rer",
+        "build",
+        "--non-interactive"
+      ],
+      "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+      "dirty": false,
+      "exit": 0,
+      "started_utc": "2026-11-07T23:35:48.355726+00:00",
+      "duration_seconds": 32.835,
+      "output_file": "build.txt",
+      "output_sha256": "3ac54df5cd741fddb4426581deaecdf2e13cfe3f3b4d1fccce299979ccb91365"
+    }
+  ],
+  "views_write": {
+    "name": "views-write",
+    "command": [
+      "node",
+      "scripts/contract-docs.mjs",
+      "write",
+      "LOGIC-006"
+    ],
+    "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+    "dirty": false,
+    "exit": 0,
+    "started_utc": "2026-11-07T23:31:22.121156+00:00",
+    "duration_seconds": 0.125,
+    "output_file": "views-write.txt",
+    "output_sha256": "ef8c1b1c8dd6fb2bb3f2df13c1d373239ac7717c42b76ae76fcef7ad3ce345dc"
+  },
+  "views_check": {
+    "name": "views-check",
+    "command": [
+      "node",
+      "scripts/contract-docs.mjs",
+      "check",
+      "LOGIC-006"
+    ],
+    "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+    "dirty": true,
+    "exit": 0,
+    "started_utc": "2026-11-07T23:31:22.288443+00:00",
+    "duration_seconds": 0.115,
+    "output_file": "views-check.txt",
+    "output_sha256": "d2617280240ba5ed590d29d8ba12b43544d2a9933480763dbb8cadb463088056"
+  },
+  "generated_views_restored_from_origin_main": true,
+  "migration_check": "not applicable; no migrations",
+  "native_test_registrations": 2,
+  "browser_test_registration_count": 1,
+  "browser_project_runs": 2,
+  "existing_registrations_added": 0,
+  "existing_assertions_removed": 0
+}

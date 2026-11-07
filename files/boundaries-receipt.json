@@ -1,0 +1,14 @@
+{
+  "name": "boundaries",
+  "command": [
+    "pnpm",
+    "verify:boundaries"
+  ],
+  "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+  "dirty": false,
+  "exit": 0,
+  "started_utc": "2026-11-07T23:32:15.224009+00:00",
+  "duration_seconds": 2.731,
+  "output_file": "boundaries.txt",
+  "output_sha256": "73216f18ff7891d5ddfef3ea0f484da9df134347dbc30fa00656b0e294e6a2d9"
+}

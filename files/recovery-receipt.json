@@ -1,0 +1,17 @@
+{
+  "head": "8ca2948d787b989dd6057406881fde2e5a982539",
+  "terminal_status": "BLOCKED",
+  "reason": "The first published save contains a maintained hygiene.email finding. The corrected candidate tree has none in the affected file, but full-history landing scans inspect the old save. Published history cannot be rewritten under the task instructions.",
+  "published_save": "2edc4690579af4bf2c8b71c849b7e348941cb8c3",
+  "affected_path": "tests/runtime/email-suffix-proof.ts",
+  "candidate_blob_hygiene_rules": [],
+  "recovery_bundle": "/home/agent/rer-consolidation/work/push-rescue/sd-pencil-c-f25-product-8ca2948.bundle",
+  "recovery_bundle_sha256": "00872fbcdb3e28f962e56cbee1ff78d4d0f2c0ca49687021afaaffe8777661a3",
+  "bundle_verified": true,
+  "clean_patch": "product.patch",
+  "clean_patch_sha256": "c16c85967c840e24bd517b2a7848b62a98c552919024a243794d3bd7d32c260c",
+  "clean_patch_base": "3c10ae66e7efbc27a936dfd4e3dcc563eee19e6c",
+  "clean_patch_apply_check_exit": 0,
+  "product_push": "succeeded; no HTTP rejection",
+  "required_followup": "Apply the verified final patch onto main with fresh lineage under a newly authorized fleet branch, run all landing gates, and retain this branch without rewriting it."
+}
