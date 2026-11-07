@@ -9565,7 +9565,7 @@
       "executable": false
     },
     "tests/runtime/response-webhooks.worker.test.ts": {
-      "sha256": "a12a776571b12fc7663137f85d61364c349d7b578189ccd6890650c19427064d",
+      "sha256": "093d30a33650bb8ed40c39250e39aff453e65a9a437507ee1a8f07aecb9f9c14",
       "executable": false
     },
     "tests/runtime/restricted-access.worker.test.ts": {

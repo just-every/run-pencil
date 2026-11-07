@@ -13,7 +13,7 @@ beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 afterEach(() => { vi.restoreAllMocks() })
 
 type Received = { url: string; eventId: string; eventType: string; timestamp: string; signature: string; body: string }
-type Answer = (index: number, request: Received) => Response
+type Answer = (index: number, request: Received, signal: AbortSignal | null | undefined) => Response | Promise<Response>
 const hex = (bytes: ArrayBuffer) => [...new Uint8Array(bytes)].map(byte => byte.toString(16).padStart(2, '0')).join('')
 // The receiver's side of the documented contract: HMAC-SHA256 of the exact body, keyed by the secret's UTF-8 bytes.
 async function expectedSignature(secret: string, body: string) {
@@ -36,7 +36,7 @@ contract(['INTEG-010', 'INTEG-015', 'DATA-002', 'RESP-021', 'INTEG-006'], 'signe
     const headers = new Headers(init?.headers), request: Received = { url, eventId: headers.get('pencil-event-id')!, eventType: headers.get('pencil-event-type')!, timestamp: headers.get('pencil-timestamp')!, signature: headers.get('pencil-signature')!, body: String(init?.body) }
     expect(init?.redirect).toBe('manual')
     received.push(request)
-    return (answers.get(new URL(url).pathname) ?? (() => new Response(null, { status: 204 })))(received.filter(item => item.url === url).length, request)
+    return (answers.get(new URL(url).pathname) ?? (() => new Response(null, { status: 204 })))(received.filter(item => item.url === url).length, request, init?.signal)
   })
   const accepted = async <T>(response: Response, status = 200) => { expect(response.status, await response.clone().text()).toBe(status); return response.json() as Promise<T> }
   const slug = (await env.DB.prepare('SELECT slug FROM flows WHERE id=?').bind(f.flowId).first<{ slug: string }>())!.slug
@@ -48,7 +48,7 @@ contract(['INTEG-010', 'INTEG-015', 'DATA-002', 'RESP-021', 'INTEG-006'], 'signe
     await f.services.responses.submitPublicResponse({ slug, sessionId: session.sessionId, sessionToken: session.sessionToken, loadTime: session.loadTime, idempotencyKey: `key-${session.sessionId}`, answers: [{ stepId: choice.id, value: option.id }, { stepId: step.id, value: text }], honeypot: options.honeypot ?? '', clientAddress: `${slug}-${session.sessionId}` })
     return (await env.DB.prepare('SELECT id, state FROM responses WHERE session_id=?').bind(session.sessionId).first<{ id: string; state: string }>())!
   }
-  const deliveries = async (endpointId: string) => (await accepted<{ deliveries: Array<{ id: string; eventId: string; eventType: string; responseId: string | null; status: string; attempts: number; reason: string | null; attemptLog: Array<{ event: string; httpStatus: number | null; outcomeClass: string | null }> }> }>(await f.call(`/api/app/webhooks/deliveries?endpointId=${endpointId}`))).deliveries
+  const deliveries = async (endpointId: string) => (await accepted<{ deliveries: Array<{ id: string; eventId: string; eventType: string; responseId: string | null; status: string; attempts: number; reason: string | null; availableAt: string; attemptLog: Array<{ event: string; httpStatus: number | null; outcomeClass: string | null }> }> }>(await f.call(`/api/app/webhooks/deliveries?endpointId=${endpointId}`))).deliveries
   const ledger = async (state?: string) => (await accepted<{ deliveries: Array<{ kind: string; subject: string; state: string; idempotencyKey: string; responseId: string | null; attempts: Array<{ outcome: string | null; httpStatus: number | null; reason: string | null }> }> }>(await f.call(`/api/app/integration-deliveries${state ? `?state=${state}` : ''}`))).deliveries
   const dispatcher = f.services.webhooks.dispatcher
 
@@ -191,6 +191,70 @@ contract(['INTEG-010', 'INTEG-015', 'DATA-002', 'RESP-021', 'INTEG-006'], 'signe
   expect(received.at(-1)!.signature).not.toBe(await expectedSignature(secret, received.at(-1)!.body))
   expect((await f.call(`/api/app/webhooks/${endpointId}`, undefined, { method: 'DELETE' })).status).toBe(204)
   expect((await env.DB.prepare('SELECT count(*) AS n FROM response_event_deliveries WHERE endpoint_id=?').bind(endpointId).first<{ n: number }>())!.n).toBe(0)
+  // A hanging receiver rejects only when the actual outgoing signal aborts, after ten real seconds.
+  const transport = await accepted<{ endpoint: { id: string } }>(await f.call('/api/app/webhooks', { url: `${receiverOrigin}/transport`, flowId: f.flowId }), 201)
+  let abortElapsed = 0, abortReason: unknown, outgoingSignal: AbortSignal | null | undefined
+  answers.set('/transport', (_index, _request, signal) => new Promise<Response>((_resolve, reject) => {
+    outgoingSignal = signal
+    expect(signal).toBeInstanceOf(AbortSignal)
+    expect(signal!.aborted).toBe(false)
+    const started = performance.now()
+    signal!.addEventListener('abort', () => {
+      abortElapsed = performance.now() - started
+      abortReason = signal!.reason
+      reject(signal!.reason)
+    }, { once: true })
+  }))
+  const timed = await accepted<{ delivery: { id: string; eventId: string } }>(await f.call(`/api/app/webhooks/${transport.endpoint.id}/test`, {}))
+  expect(outgoingSignal?.aborted).toBe(true)
+  expect(abortReason).toBeInstanceOf(DOMException)
+  expect((abortReason as DOMException).name).toBe('TimeoutError')
+  // Independent elapsed-time bounds catch an early abort or an extended deadline without faking its error.
+  expect(abortElapsed).toBeGreaterThanOrEqual(9_900)
+  expect(abortElapsed).toBeLessThan(15_000)
+  const [timedDelivery] = await deliveries(transport.endpoint.id)
+  expect(timedDelivery).toMatchObject({ id: timed.delivery.id, eventId: timed.delivery.eventId, status: 'pending', attempts: 1 })
+  expect(timedDelivery.attemptLog).toEqual([
+    expect.objectContaining({ event: 'started', httpStatus: null, outcomeClass: null }),
+    expect.objectContaining({ event: 'failed', httpStatus: null, outcomeClass: 'timeout' }),
+  ])
+  expect(timedDelivery.reason).toBe('The receiver did not answer in time.')
+  const timedRequest = received.at(-1)!
+  expect(timedRequest.eventId).toBe(timedDelivery.eventId)
+  expect(Date.parse(timedDelivery.availableAt) - Date.parse(JSON.parse(timedRequest.body).sentAt)).toBe(minute)
+  answers.set('/transport', () => new Response(null, { status: 204 }))
+  const beforeRetry = received.length
+  await dispatcher.run(new Date(Date.parse(timedDelivery.availableAt) - 1).toISOString())
+  expect(received).toHaveLength(beforeRetry)
+  await dispatcher.run(timedDelivery.availableAt)
+  expect(received).toHaveLength(beforeRetry + 1)
+  expect(received.at(-1)!.eventId).toBe(timedDelivery.eventId)
+  const [recovered] = await deliveries(transport.endpoint.id)
+  expect(recovered).toMatchObject({ id: timedDelivery.id, eventId: timedDelivery.eventId, status: 'confirmed', attempts: 2, reason: null })
+  expect(recovered.attemptLog).toEqual([
+    ...timedDelivery.attemptLog,
+    expect.objectContaining({ event: 'started', httpStatus: null, outcomeClass: null }),
+    expect.objectContaining({ event: 'confirmed', httpStatus: 204, outcomeClass: '2xx' }),
+  ])
+
+  // A successful receiver's private streaming body is cancelled without reading or persisting it.
+  const privateBody = 'synthetic-pencil-private-receiver-body', readBody = vi.fn(), cancelBody = vi.fn()
+  answers.set('/transport', () => new Response(new ReadableStream<Uint8Array>({
+    pull(controller) { readBody(); controller.enqueue(new TextEncoder().encode(privateBody)); controller.close() },
+    cancel() { cancelBody() },
+  }, { highWaterMark: 0 }), { status: 200 }))
+  const streamed = await accepted<{ delivery: { id: string; status: string; attempts: number; attemptLog: Array<{ event: string; httpStatus: number | null; outcomeClass: string | null }> } }>(await f.call(`/api/app/webhooks/${transport.endpoint.id}/test`, {}))
+  expect(streamed.delivery).toMatchObject({ status: 'confirmed', attempts: 1 })
+  expect(streamed.delivery.attemptLog).toEqual([
+    expect.objectContaining({ event: 'started', httpStatus: null, outcomeClass: null }),
+    expect.objectContaining({ event: 'confirmed', httpStatus: 200, outcomeClass: '2xx' }),
+  ])
+  expect(cancelBody).toHaveBeenCalledTimes(1)
+  expect(readBody).not.toHaveBeenCalled()
+  expect(JSON.stringify(await deliveries(transport.endpoint.id))).not.toContain(privateBody)
+  expect(JSON.stringify(await ledger())).not.toContain(privateBody)
+  expect((await everyStoredValue()).filter(value => value.includes(privateBody))).toEqual([])
+  expect((await f.call(`/api/app/webhooks/${transport.endpoint.id}`, undefined, { method: 'DELETE' })).status).toBe(204)
   await proveResponseEdit(f,received,expectedSignature)
   network.mockRestore()
   await provePaidResponseEdit(f)
