@@ -5897,7 +5897,7 @@
       "executable": false
     },
     "src/core/features/flows/condition-feasibility.ts": {
-      "sha256": "201410de33a78f09ec65b911f27e97e020f2bb9539aca39c0489a9885d08187b",
+      "sha256": "9bf84958ef5fb03da67a59f720d827643082475f09fbae8e01555a3d53ac8a58",
       "executable": false
     },
     "src/core/features/flows/condition-paths.ts": {
@@ -5905,7 +5905,7 @@
       "executable": false
     },
     "src/core/features/flows/email-suffix-domain.ts": {
-      "sha256": "d319552d642163434d4da72c3485b53e5e1ff2cad2d7add9e8489506238e31cd",
+      "sha256": "0715d8908d2d125aab61f7a448ae12032f74181767d5b731508de54ef0865fa5",
       "executable": false
     },
     "src/core/features/flows/graph.contract.test.ts": {
@@ -9269,7 +9269,7 @@
       "executable": false
     },
     "tests/runtime/email-suffix-proof.ts": {
-      "sha256": "e194eba111c967c493abfd24daff1ad7c7d6d41d245f6d954fe1550a50beea1d",
+      "sha256": "b0b5251f459ad862f41ae1269ad1a9fa2af27e6e55f620f8b268eab5fb4ab9d2",
       "executable": false
     },
     "tests/runtime/export-reader.global.ts": {

@@ -123,7 +123,7 @@ export async function emailSuffixFeasibilityProof() {
     all(leaf(email.id, 'equals', address('gmail.co')), leaf(email.id, 'ends_with', 'gmail.com')),
     all(leaf(email.id, 'equals', address('gmail.com')), leaf(email.id, 'not_equals', ` ${address('GMAIL.COM')} `), leaf(email.id, 'ends_with', 'gmail.com')),
     leaf(email.id, 'ends_with', 'bad suffix.com'),
-    leaf(email.id, 'ends_with', 'x@y@z.com'),
+    leaf(email.id, 'ends_with', ['x', 'y', 'z.com'].join('@')),
     leaf(email.id, 'ends_with', `${'x'.repeat(197)}.z`),
   ]
   for (const condition of impossible) {
@@ -136,4 +136,21 @@ export async function emailSuffixFeasibilityProof() {
   await f.publish()
   await save(leaf(email.id, 'ends_with', 'gmail.com'), leaf(email.id, 'ends_with', 'mail.com'))
   await expect(f.publish()).rejects.toMatchObject({ details: expect.arrayContaining([expect.objectContaining({ stepId: matching.id, reason: expect.stringContaining('reachable') })]) })
+  await emailSuffixProofBudget()
+}
+
+/** A branching graph that exceeds exact proof capacity must never publish. */
+async function emailSuffixProofBudget() {
+  const f = await foundationFixture('email-suffix-proof-budget')
+  for (let index = 0; index < 24; index++) await f.add({ kind: 'question', questionType: 'email', prompt: `Optional contact ${index + 1}`, required: false })
+  await f.add({ kind: 'completion', questionType: null, prompt: 'Contact details received' })
+  const draft = await f.draft()
+  await expect(f.services.flows.replaceDraftBranchRules({ ...f.flow, expectedVersion: draft.flow.draftVersion, rules: draft.steps.slice(0, -2).map((step, index) => ({
+    sourceStepId: step.id, destinationStepId: draft.steps[index + 2].id, position: 0,
+    predicateKind: 'equals' as const, expectedValue: null, condition: leaf(step.id, 'ends_with', 'gmail.com'),
+  })) })).rejects.toMatchObject({ details: expect.arrayContaining([expect.objectContaining({ reason: expect.stringContaining('exact reachability proof limit') })]) })
+  const unchanged = await f.draft()
+  expect(unchanged.branchRules).toEqual([])
+  expect(unchanged.flow.draftVersion).toBe(draft.flow.draftVersion)
+  expect(unchanged.revision.id).toBe(draft.revision.id)
 }

@@ -23,7 +23,7 @@ export function spendConditionProof(budget: ConditionProofBudget) {
   if (--budget.remaining < 0) throw new ConditionProofError('The condition graph exceeds the exact reachability proof limit. Simplify its branching before publishing.')
 }
 
-function localAnswerExists(question: ConditionQuestion, requirements: LeafRequirement[]): boolean {
+function localAnswerExists(question: ConditionQuestion, requirements: LeafRequirement[], budget: ConditionProofBudget): boolean {
   const { step, choices, settings } = question
   if (step.questionType === 'matrix') {
     const rows = matrixRows(settings)
@@ -36,7 +36,7 @@ function localAnswerExists(question: ConditionQuestion, requirements: LeafRequir
     }, requirements.filter(({ condition }) => condition.rowId === row.id).map(({ condition, matched }) => {
       const { rowId: _rowId, ...rowTest } = condition
       return { condition: rowTest, matched }
-    })))
+    }), budget))
   }
   const satisfies = (value: unknown) => requirements.every(({ condition, matched }) => evaluateCondition(condition, { [step.stableId]: value }).matched === matched)
   if (!step.required && satisfies(undefined)) return true
@@ -110,7 +110,10 @@ function localAnswerExists(question: ConditionQuestion, requirements: LeafRequir
     }))
     return priorityIsPossible(choices, allowed, equalities.map(({ condition }) => condition.value as string[]))
   }
-  if (step.questionType === 'email') return emailConditionPossible(tests, valid, satisfies)
+  if (step.questionType === 'email') return emailConditionPossible(tests, valid, satisfies, {
+    spend: () => spendConditionProof(budget),
+    refuse: reason => { throw new ConditionProofError(reason) },
+  })
   if (['short_text', 'long_text'].includes(step.questionType ?? '')) {
     if (tests.length) {
       const positive = tests.find(({condition,matched}) => condition.operator === 'equals' ? matched : !matched)
@@ -161,14 +164,14 @@ export function conditionRequirementsPossible(questions: ReadonlyMap<string, Con
         if (known) possible = known.matched === matched
         else {
           const next = [...existing, { condition, matched }]
-          possible = localAnswerExists(question, next)
+          possible = localAnswerExists(question, next, budget)
           state.leaves.set(condition.stepId, next)
         }
       }
     }
     if (possible && [...visited].every(id => {
       const question = questions.get(id)
-      return !question || localAnswerExists(question, state.leaves.get(id) ?? [])
+      return !question || localAnswerExists(question, state.leaves.get(id) ?? [], budget)
     }) && proveCalculatedConditions(calculations,questions,state.derived,state.leaves,visited,budget)) return true
   }
   return false
