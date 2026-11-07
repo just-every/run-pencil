@@ -31,6 +31,9 @@ export function suggestColumns(headers: string[], form: ImportForm, forbiddenCol
   })
 }
 function answer(value: string, step: ImportStep, google?: { dateOrder?: GoogleSettings['dateOrder'] }): unknown {
+  if (step.questionType === 'matrix') {
+    try { return JSON.parse(value) } catch { throw new Error('A matrix answer needs a JSON object keyed by its reviewed row IDs.') }
+  }
   if (['short_text', 'long_text', 'email'].includes(step.questionType!)) return value
   if (google && step.questionType === 'yes_no') { if (value === step.settings.importYesLabel) return true; if (value === step.settings.importNoLabel) return false; throw new Error('Answer must match an explicitly confirmed Yes or No label.') }
   if (['yes_no', 'consent'].includes(step.questionType!)) {

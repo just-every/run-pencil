@@ -57,12 +57,46 @@ contract(['IMPORT-001', 'IMPORT-002', 'IMPORT-003', 'IMPORT-004', 'LEDG-002', 'I
   const http=await analysisHttp({AI_ENABLED:'false'},'synthetic-pencil-sm')
   const source={source:'surveymonkey',definition:JSON.stringify(surveyMonkeyDetails),csv:JSON.stringify(surveyMonkeyResponses)}
   const call=async(path:string,body?:unknown)=>{const response=await http.call(path,body);expect(response.ok,await response.clone().text()).toBe(true);return response.json() as Promise<any>}
+  const custody=async()=>({
+    flows:await env.DB.prepare('SELECT count(*) n FROM flows WHERE workspace_id=?').bind(http.workspaceId).first(),
+    responses:await env.DB.prepare('SELECT count(*) n FROM responses WHERE workspace_id=?').bind(http.workspaceId).first(),
+    preparation:await env.DB.prepare('SELECT count(*) n FROM ik_d1_staging WHERE destination=?').bind(http.workspaceId).first(),
+    jobs:await call('/api/app/imports'),
+  })
+  const before=await custody()
+  const effects=async()=>Promise.all(['respondent_sessions','response_outbox','revision_metric_counters','mail_deliveries','local_mail_outbox'].map(async table=>(await env.DB.prepare(`SELECT * FROM ${table} ORDER BY 1`).all()).results))
+  const beforeEffects=await effects()
+  // Both review and commit validate the upload before any native or import job writes.
+  for(const change of ['unknown row','unknown choice','duplicate row','duplicate selection','duplicate row definition','duplicate choice definition']) {
+    const definition=structuredClone(surveyMonkeyDetails), responses=structuredClone(surveyMonkeyResponses)
+    const matrix=definition.pages[0].questions.find(question=>question.id==='synthetic-pencil-120')!.answers!
+    const answers=responses.data[0].pages[0].questions.find(question=>question.id==='synthetic-pencil-120')!.answers
+    if(change==='unknown row')answers[0].row_id='synthetic-pencil-unknown'
+    if(change==='unknown choice')answers[0].choice_id='synthetic-pencil-unknown'
+    if(change==='duplicate row')answers.push({...answers[0],choice_id:'synthetic-pencil-123'})
+    if(change==='duplicate selection')answers.push({...answers[0]})
+    if(change==='duplicate row definition')matrix.rows!.push({...matrix.rows![0]})
+    if(change==='duplicate choice definition')matrix.choices!.push({...matrix.choices![0]})
+    const malformed={...source,definition:JSON.stringify(definition),csv:JSON.stringify(responses)}
+    for(const path of ['/api/app/imports/review','/api/app/imports/commit']) {
+      const refused=await http.call(path,path.endsWith('/commit')?{...malformed,acknowledged:true,fingerprint:'0'.repeat(64)}:malformed)
+      expect(refused.status,change).toBe(400)
+      expect(await refused.text()).toContain('Nothing was written')
+    }
+    expect(await custody(),change).toEqual(before)
+  }
   const review=await call('/api/app/imports/review',source)
-  expect(review).toMatchObject({source:'surveymonkey',responseCount:1,rowErrors:[]})
+  expect(review).toMatchObject({source:'surveymonkey',responseCount:3,rowErrors:[]})
   expect(review.report).toEqual(expect.arrayContaining([
-    expect.objectContaining({label:'Unsupported matrix',state:'unsupported'}),expect.objectContaining({label:'Later descriptive text',state:'unsupported'}),expect.objectContaining({sourceType:'collector',state:'unsupported'}),
+    expect.objectContaining({label:'Unsupported matrix menus',state:'unsupported'}),expect.objectContaining({label:'Later descriptive text',state:'unsupported'}),expect.objectContaining({sourceType:'collector',state:'unsupported'}),
   ]))
   const text=review.questions.find((step:any)=>step.prompt==='Your reference code'), choice=review.questions.find((step:any)=>step.prompt==='Which option fits?'), scale=review.questions.find((step:any)=>step.prompt==='How helpful was this?')
+  const matrix=review.questions.find((step:any)=>step.prompt==='Service experience matrix')
+  expect(matrix).toMatchObject({questionType:'matrix',required:false,settings:{matrixMode:'single',matrixRows:[{label:'Clarity'},{label:'Speed'},{label:'Support'}]},choices:[{label:'Good'},{label:'Needs work'},{label:'Not used'}]})
+  for(const label of ['Clarity','Speed','Support','Good','Needs work','Not used'])expect(review.report).toContainEqual(expect.objectContaining({label,state:'imported'}))
+  expect((await call('/api/app/imports/review',source)).questions).toEqual(review.questions)
+  const [clarity,speed,support]=matrix.settings.matrixRows.map((row:any)=>row.id), [good,needsWork,unused]=matrix.choices.map((option:any)=>option.id)
+  const historical=[{[clarity]:good,[speed]:needsWork},{[clarity]:unused,[support]:unused}]
   expect(text.settings).toMatchObject({minLength:8,maxLength:8,inputMask:'###-####',pattern:'[0-9]{3}-[0-9]{4}'})
   expect(scale.settings).toEqual({min:0,max:6,lowLabel:'Not at all',middleLabel:'Neutral',highLabel:'Completely'})
   let job=await call('/api/app/imports/commit',{...source,columns:review.columns,plannedAt:review.plannedAt,fingerprint:review.fingerprint,acknowledged:true})
@@ -71,23 +105,43 @@ contract(['IMPORT-001', 'IMPORT-002', 'IMPORT-003', 'IMPORT-004', 'LEDG-002', 'I
   expect(JSON.parse(String(answers.find(answer=>answer.step_id===choice.id)?.value_json))).toEqual({choiceIds:[choice.settings.otherChoiceId],otherText:'Blue'})
   expect(JSON.parse(String(answers.find(answer=>answer.step_id===scale.id)?.value_json))).toBe(0)
   expect(JSON.parse(String(answers[0].response_context_json)).hidden[review.settings.hiddenFields[0].id]).toBe('enterprise')
+  const ledger=await call(`/api/app/flows/${review.flowId}/ledger`)
+  expect(ledger.responses).toHaveLength(3)
+  const importedRows=[...ledger.responses].sort((a:any,b:any)=>a.completedAt.localeCompare(b.completedAt))
+  expect(importedRows.map((row:any)=>row.answers.find((answer:any)=>answer.stepId===matrix.id)?.value)).toEqual([...historical,undefined])
+  expect((await env.DB.prepare('SELECT value_json FROM response_answers a JOIN responses r ON r.id=a.response_id WHERE r.flow_id=? AND a.step_id=? ORDER BY r.completed_at').bind(review.flowId,matrix.id).all()).results.map(answer=>JSON.parse(String(answer.value_json)))).toEqual(historical)
+  expect(await env.DB.prepare('SELECT count(*) n FROM responses WHERE flow_id=? AND source=\'imported\' AND notification_eligible=0 AND state=\'released\'').bind(review.flowId).first()).toEqual({n:3})
+  expect(await effects()).toEqual(beforeEffects)
   const draft=await call(`/api/app/flows/${review.flowId}/draft`)
+  expect(draft.steps.find((step:any)=>step.id===matrix.id).questionSettings).toEqual(matrix.settings)
+  expect(draft.choices.filter((option:any)=>option.stepId===matrix.id).map((option:any)=>option.id)).toEqual(matrix.choices.map((option:any)=>option.id))
   await call(`/api/app/flows/${review.flowId}/publish`,{expectedVersion:draft.flow.draftVersion})
   const slug=draft.flow.slug
   const session=await call(`/api/public/flows/${slug}/sessions`,{source:'direct',deviceClass:'desktop'})
   expect((await http.call(`/api/public/flows/${slug}/responses`,{...session,idempotencyKey:'synthetic-pencil-sm-invalid',answers:[{stepId:text.id,value:'bad'}]})).status).toBe(400)
   await matureLoad(session)
-  const valid=await call(`/api/public/flows/${slug}/responses`,{...session,idempotencyKey:'synthetic-pencil-sm-valid',answers:[{stepId:text.id,value:'555-0100'}]})
+  const nativeMatrix={[clarity]:needsWork,[support]:good}
+  const valid=await call(`/api/public/flows/${slug}/responses`,{...session,idempotencyKey:'synthetic-pencil-sm-valid',answers:[{stepId:text.id,value:'555-0100'},{stepId:matrix.id,value:nativeMatrix}]})
   expect(valid.disposition).toBe('released')
+  expect(JSON.parse((await env.DB.prepare('SELECT value_json FROM response_answers WHERE response_id=? AND step_id=?').bind(valid.responseId,matrix.id).first<{value_json:string}>())!.value_json)).toEqual(nativeMatrix)
+  expect((await call(`/api/app/flows/${review.flowId}/ledger`)).responses.filter((row:any)=>row.source==='imported').map((row:any)=>row.answers.find((answer:any)=>answer.stepId===matrix.id)?.value).filter(Boolean)).toEqual(expect.arrayContaining(historical))
   // Undo is checked on a second, unedited import; publication is deliberately a later native edit.
   const undoSource={...source,definition:JSON.stringify({...surveyMonkeyDetails,title:'Synthetic undo intake'})}
   const undoReview=await call('/api/app/imports/review',undoSource)
   let undoJob=await call('/api/app/imports/commit',{...undoSource,columns:undoReview.columns,plannedAt:undoReview.plannedAt,fingerprint:undoReview.fingerprint,acknowledged:true})
   while(undoJob.state!=='completed')undoJob=await call(`/api/app/imports/${undoJob.id}/resume`,{})
+  const importedIds={
+    flow_revisions:(await env.DB.prepare('SELECT id FROM flow_revisions WHERE flow_id=?').bind(undoReview.flowId).all()).results,
+    flow_steps:(await env.DB.prepare('SELECT s.id FROM flow_steps s JOIN flow_revisions r ON r.id=s.revision_id WHERE r.flow_id=?').bind(undoReview.flowId).all()).results,
+    choice_options:(await env.DB.prepare('SELECT c.id FROM choice_options c JOIN flow_steps s ON s.id=c.step_id JOIN flow_revisions r ON r.id=s.revision_id WHERE r.flow_id=?').bind(undoReview.flowId).all()).results,
+    response_answers:(await env.DB.prepare('SELECT a.id FROM response_answers a JOIN responses r ON r.id=a.response_id WHERE r.flow_id=?').bind(undoReview.flowId).all()).results,
+  }
+  for(const ids of Object.values(importedIds))expect(ids.length).toBeGreaterThan(0)
   undoJob=await call(`/api/app/imports/${undoJob.id}/undo`,{})
   while(undoJob.state!=='undone')undoJob=await call(`/api/app/imports/${undoJob.id}/resume`,{})
   expect(await env.DB.prepare('SELECT count(*) n FROM flows WHERE id=?').bind(undoReview.flowId).first()).toEqual({n:0})
   expect(await env.DB.prepare('SELECT count(*) n FROM responses WHERE flow_id=?').bind(undoReview.flowId).first()).toEqual({n:0})
+  for(const [table,ids] of Object.entries(importedIds))expect(await env.DB.prepare(`SELECT count(*) n FROM ${table} WHERE id IN (${ids.map(()=>'?').join(',')})`).bind(...ids.map(row=>row.id)).first()).toEqual({n:0})
 
 }, 90_000)
 contract(['IMPORT-003', 'IMPORT-004', 'BASE-OPS-005'], 'native kit undo removes imported flow and responses, retains safe provenance, and preserves same-revision edits', async () => {

@@ -83,6 +83,16 @@ export function surveyMonkeySource(input: ImportInput, survey: Record<string, an
             if(required.type!=='at_least')step.settings.maxSelections=amount
           }
         }
+      } else if(family==='matrix' && subtype==='single' && !answers.other) {
+        if(!rows.length||!choices.length||[rows,choices].some(items=>items.some(item=>typeof object(item).id!=='string'||!item.id||typeof object(item).text!=='string')||new Set(items.map(item=>item.id)).size!==items.length))invalid('Matrix rows and shared choices need distinct source IDs and text.')
+        step.questionType='matrix'
+        step.settings={matrixMode:'single',matrixRows:rows.map(row=>({id:stableId(scope,question.id+':row:'+row.id),label:plain(row.text)}))}
+        step.choices=choices.map(choice=>({id:stableId(scope,question.id+':'+choice.id),sourceId:choice.id,label:plain(choice.text)}))
+        for(const [group,items] of [['rows',rows],['choices',choices]] as const) for(const [itemIndex,item] of items.entries()) {
+          const itemLocation=`${location}/answers/${group}/${itemIndex}`
+          report(itemLocation,plain(item.text),group==='rows'?'matrix row':'shared choice','imported',group==='rows'?'Row retained':'Shared choice retained','Source identity maps to the native single-selection matrix.')
+          for(const key of Object.keys(item)) if(/logic|skip|branch|display|visible/i.test(key)) {routingIncomplete.add(step.id);report(`${itemLocation}/${key}`,prompt,key,'unsupported','Not imported','Matrix routing needs repair before publication.')}
+        }
       } else if(family==='matrix' && subtype==='rating' && rows.length===1 && choices.length>=2 && choices.length<=11) {
         if(typeof object(rows[0]).id!=='string'||typeof object(rows[0]).text!=='string'||choices.some(choice=>typeof object(choice).id!=='string'||typeof object(choice).text!=='string')||new Set(choices.map(choice=>choice.id)).size!==choices.length)invalid('Scale rows and choices need distinct source IDs and text.')
         const weights=choices.map(choice=>choice.weight)
@@ -134,7 +144,17 @@ export function surveyMonkeySource(input: ImportInput, survey: Record<string, an
     for(const step of questions) {
       const source=originalQuestions.get(step.sourceId), sourceAnswers=(byQuestion.get(step.sourceId) ?? []).map(object)
       let value='', other=''
-      if(step.questionType==='rating') {
+      if(step.questionType==='matrix') {
+        const selected:Record<string,string>={}
+        for(const answer of sourceAnswers) {
+          const row=list(source.answers?.rows).find(row=>row.id===answer.row_id), choice=step.choices.find(choice=>choice.sourceId===answer.choice_id)
+          if(!row||!choice)invalid('A matrix answer names an unknown source row or shared choice.')
+          const id=stableId(scope,step.sourceId+':row:'+row.id)
+          if(Object.hasOwn(selected,id))invalid('A single-selection matrix answer repeats a source row.')
+          selected[id]=choice.id
+        }
+        value=sourceAnswers.length?JSON.stringify(selected):''
+      } else if(step.questionType==='rating') {
         if(sourceAnswers.length>1||sourceAnswers.some(answer=>answer.row_id!==undefined&&answer.row_id!==source.answers.rows[0].id))invalid('A single-row scale response has multiple or unknown rows.')
         const selected=list(source.answers?.choices).find(choice=>choice.id===sourceAnswers[0]?.choice_id)
         if(sourceAnswers.length&&!selected)invalid('A scale answer names an unknown choice.')
