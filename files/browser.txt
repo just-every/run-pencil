@@ -1,0 +1,121 @@
+[WebServer] (node:4713) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:4725) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:4737) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[WebServer] (node:4737) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/app/loaders.ts:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/app/loaders.ts:103:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/app/loaders.ts:124:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/features/results/ui/sharedReportLoader.ts:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin builtin:vite-reporter] 
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:103:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:124:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/features/results/ui/sharedReportLoader.ts?tss-serverfn-split:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/features/results/ui/sharedReportLoader.ts:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts:103:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts:124:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] (node:4779) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:4791) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+[WebServer] (node:4804) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:5331) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+[WebServer] (node:5339) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Scheduled Workers are not automatically triggered during local development.
+[WebServer] 
+[WebServer]   To manually trigger a scheduled event, run:
+[WebServer]     curl "http://127.0.0.1:4173/cdn-cgi/local/scheduled"
+[WebServer]   For more details, see https://developers.cloudflare.com/workers/configuration/cron-triggers/#test-cron-triggers-locally
+[WebServer] 
+[WebServer] 
+[WebServer] (node:5388) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:5396) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:5408) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:5438) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:5449) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] Heavy job admitted: Pencil build:workflow [453c95258d29]
+[WebServer] (node:5460) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] Checking pinned pnpm
+[WebServer] 10.12.4
+[WebServer] Building the run site
+[WebServer] (node:5486) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:5486) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+[WebServer] {"pages":19,"assets":3,"styles":6}
+
+Running 2 tests using 1 worker
+
+(node:5537) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] ProxyWorker: GET http://127.0.0.1:4173/api/app/flows/01M6VTGJE518ECGJF4NQTQ4D7H/collectors recovered on attempt 2 after a dropped connection to the UserWorker
+[WebServer] 
+[WebServer] 
+[WebServer] ▲ [WARNING] ProxyWorker: GET http://127.0.0.1:4173/api/app/flows/01M6VTGJE518ECGJF4NQTQ4D7H/coding/suggestions? recovered on attempt 2 after a dropped connection to the UserWorker
+[WebServer] 
+[WebServer] 
+[WebServer] ▲ [WARNING] ProxyWorker: GET http://127.0.0.1:4173/api/app/flows/01M6VTGJE518ECGJF4NQTQ4D7H/coding/counts?revisionId=01M6VTGJE5YKDWFQ1CK3Z3DR3V recovered on attempt 2 after a dropped connection to the UserWorker
+[WebServer] 
+[WebServer] 
+[WebServer] ✘ [ERROR] kj::getCaughtExceptionAsKj() = kj/async-io-unix.c++:186: disconnected: ::write(fd, buffer.begin(), buffer.size()): Broken pipe
+[WebServer] 
+[WebServer]   stack: /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2038 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2ef1 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583f90f /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583fb55 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589bd33 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fad7 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fe48 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3343740 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247f477
+[WebServer] 
+[WebServer] 
+[WebServer] ✘ [ERROR] kj::getCaughtExceptionAsKj() = kj/async-io-unix.c++:186: disconnected: ::write(fd, buffer.begin(), buffer.size()): Broken pipe
+[WebServer] 
+[WebServer]   stack: /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2038 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2ef1 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583f90f /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583fb55 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589bd33 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fad7 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fe48 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3343740 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247f477
+[WebServer] 
+[WebServer] 
+  ✓  1 [desktop] › tests/e2e/contract.ts:4:3 › [RSLT-001,RSLT-002,RSLT-003,RSLT-004,RSLT-005,RSLT-006,RSLT-007,RSLT-008,RSLT-009,LEDG-001,DATA-002,BASE-PUBLIC-003] answers first across every type, an RSLT-006 crosstab states shares and suppression, comparison replaces results and ledger confirms erasure (1.6m)
+(node:5834) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ✘ [ERROR] kj::getCaughtExceptionAsKj() = kj/async-io-unix.c++:186: disconnected: ::write(fd, buffer.begin(), buffer.size()): Broken pipe
+[WebServer] 
+[WebServer]   stack: /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2038 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2ef1 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583f90f /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583fb55 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589bd33 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fad7 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fe48 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3343740 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247f477
+[WebServer] 
+[WebServer] 
+[WebServer] ✘ [ERROR] kj::getCaughtExceptionAsKj() = kj/async-io-unix.c++:186: disconnected: ::write(fd, buffer.begin(), buffer.size()): Broken pipe
+[WebServer] 
+[WebServer]   stack: /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2038 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2ef1 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583f90f /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583fb55 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589bd33 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fad7 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fe48 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3343740 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247f477
+[WebServer] 
+[WebServer] 
+  ✓  2 [mobile] › tests/e2e/contract.ts:4:3 › [RSLT-001,RSLT-002,RSLT-003,RSLT-004,RSLT-005,RSLT-006,RSLT-007,RSLT-008,RSLT-009,LEDG-001,DATA-002,BASE-PUBLIC-003] answers first across every type, an RSLT-006 crosstab states shares and suppression, comparison replaces results and ledger confirms erasure (2.1m)
+[WebServer] 🪵  Logs were written to "/workspace/run-pencil/.isolated-config/.wrangler/logs/wrangler-2026-11-07_20-16-46_857.log"
+
+  2 passed (4.7m)

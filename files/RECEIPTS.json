@@ -1,0 +1,220 @@
+{
+  "schema": 1,
+  "tag": "sd-pencil-c-f21",
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f21",
+  "head": "8fe52b625820a953c327c67cae53ac84ac7bb452",
+  "base_main": "b6a05948c040da9debdeb9d6ca10c13eacc304ee",
+  "counts_before": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "counts_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "clause": {
+    "id": "RSLT-007",
+    "before": "PARTIAL",
+    "after": "PARTIAL",
+    "slice": "ranked first-choice answer shares"
+  },
+  "checks": [
+    {
+      "command": "pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/collectors-trends.worker.test.ts",
+      "head": "8fe52b625820a953c327c67cae53ac84ac7bb452",
+      "exit": 0,
+      "passed_registrations": 1,
+      "duration_seconds": 38.9,
+      "log": "runtime.txt"
+    },
+    {
+      "command": "pnpm typecheck",
+      "head": "8fe52b625820a953c327c67cae53ac84ac7bb452",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "head": "8fe52b625820a953c327c67cae53ac84ac7bb452",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/contract-docs.mjs write RSLT-007 && node scripts/contract-docs.mjs check RSLT-007",
+      "head": "8fe52b625820a953c327c67cae53ac84ac7bb452",
+      "exit": 0,
+      "generated_views_restored_from": "origin/main"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock; node scripts/edition-authoring/cli.mjs check; pnpm source:check",
+      "head": "8fe52b625820a953c327c67cae53ac84ac7bb452",
+      "exit": 0,
+      "lock_generated_before_commit": true,
+      "freshness_checked_after_commit": true
+    },
+    {
+      "command": "git diff origin/main...HEAD -- CONTRACT.md",
+      "head": "8fe52b625820a953c327c67cae53ac84ac7bb452",
+      "exit": 0,
+      "changed_lines": 0
+    },
+    {
+      "command": "timeout 1200 npx -y @runeditrun/rer build --non-interactive",
+      "head": "8fe52b625820a953c327c67cae53ac84ac7bb452",
+      "exit": 0,
+      "log": "build.txt"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check && git diff --exit-code",
+      "head": "8fe52b625820a953c327c67cae53ac84ac7bb452",
+      "exit": 0,
+      "after_production_build": true
+    }
+  ],
+  "browser": {
+    "head": "8fe52b625820a953c327c67cae53ac84ac7bb452",
+    "status": "passed",
+    "command": "timeout 1200 pnpm exec playwright test tests/e2e/answer-results.spec.ts --config .cloud-playwright.config.ts --workers=1",
+    "executable": "/usr/bin/chromium",
+    "launch_args": [
+      "--no-sandbox",
+      "--use-mock-keychain",
+      "--password-store=basic"
+    ],
+    "widths": [
+      1440,
+      390
+    ],
+    "new_registrations": 0,
+    "exit": 0,
+    "passed_cases": 2,
+    "duration_seconds": 282,
+    "log": "browser.txt",
+    "screenshots": [
+      "screens-final/desktop-ranked-trend.png",
+      "screens-final/desktop-ranked-trend-viewport.png",
+      "screens-final/desktop-ranked-trend-values.png",
+      "screens-final/mobile-ranked-trend.png",
+      "screens-final/mobile-ranked-trend-viewport.png",
+      "screens-final/mobile-ranked-trend-values.png"
+    ],
+    "warnings": "Local workerd emitted broken-pipe and recovered dropped-connection messages; both complete browser cases passed without retries."
+  },
+  "publication_scan": {
+    "commit": "8fe52b625820a953c327c67cae53ac84ac7bb452",
+    "status": "NOT_RUN_IN_CLOUD",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "custodian": "maintained Mac lander"
+  },
+  "candidate_verify": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "8fe52b625820a953c327c67cae53ac84ac7bb452",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42410632224",
+    "id": 42410632224,
+    "name": "Verify candidate",
+    "status": "in_progress"
+  },
+  "main_observed": {
+    "workflow_runs": [
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_sha": "b6a05948c040da9debdeb9d6ca10c13eacc304ee",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42374854513",
+        "id": 42374854513,
+        "name": "Verify candidate",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_sha": "b6a05948c040da9debdeb9d6ca10c13eacc304ee",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42270609261",
+        "id": 42270609261,
+        "name": "Verify candidate",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "event": "push",
+        "head_sha": "b6a05948c040da9debdeb9d6ca10c13eacc304ee",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42270609365",
+        "id": 42270609365,
+        "name": "Run demo",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_sha": "b6a05948c040da9debdeb9d6ca10c13eacc304ee",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42270609301",
+        "id": 42270609301,
+        "name": "Run site",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "dynamic",
+        "head_sha": "b6a05948c040da9debdeb9d6ca10c13eacc304ee",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42270607825",
+        "id": 42270607825,
+        "name": "Push on main",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_sha": "b6a05948c040da9debdeb9d6ca10c13eacc304ee",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42267474770",
+        "id": 42267474770,
+        "name": "Verify candidate",
+        "status": "completed"
+      }
+    ]
+  },
+  "run_site_candidate": {
+    "head_sha": "8fe52b625820a953c327c67cae53ac84ac7bb452",
+    "status": "pending_landing",
+    "workflow_scope": "main only"
+  },
+  "github_api_calls": 2,
+  "new_email_shaped_strings": 0,
+  "new_registration_count": 0,
+  "removed_registration_count": 0,
+  "migrations_changed": false,
+  "ledger_check": "not_applicable",
+  "mechanical": "MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock and check plus pnpm source:check exit=0; views=node scripts/contract-docs.mjs write RSLT-007 and check RSLT-007 exit=0; ledger=none exit=0",
+  "commit_identity_check": {
+    "candidate_commits": 2,
+    "all_author_names": "Run Edit Run fleet",
+    "all_committer_names": "Run Edit Run fleet",
+    "trailers": [],
+    "result": "PASS"
+  },
+  "main_merge": {
+    "command": "git fetch origin main && git merge origin/main",
+    "exit": 0,
+    "result": "Already up to date",
+    "observed_utc": "2026-11-07T20:20:18Z",
+    "origin_main": "b6a05948c040da9debdeb9d6ca10c13eacc304ee"
+  },
+  "candidate_ci_observed_utc": "2026-11-07T20:21:09Z",
+  "product_push": {
+    "exit": 0,
+    "branch": "cloud/sd-pencil-c-f21",
+    "head": "8fe52b625820a953c327c67cae53ac84ac7bb452",
+    "attempts": 1,
+    "result": "PUSH_OK"
+  },
+  "remote_product_head": "8fe52b625820a953c327c67cae53ac84ac7bb452",
+  "handoff": {
+    "state": "PUSHED",
+    "head": "8fe52b625820a953c327c67cae53ac84ac7bb452",
+    "reason": "Exact-SHA Verify still in progress at the permitted observation; cloud handoff leaves scanning, CI and landing with the maintained Mac lander. No known failing check."
+  },
+  "claim": "CLAIM RSLT-007 PARTIAL points=1 tests=tests/runtime/collectors-trends.worker.test.ts#named collectors enforce independent atomic limits and retain attribution in zoned, revision-marked score trends, exports, RSLT-006 crosstabs with stated shares, chi-square and suppression, and multi-part LEDG-005 XLSX and SAV exports; tests/e2e/answer-results.spec.ts#answers first across every type, an RSLT-006 crosstab states shares and suppression, comparison replaces results and ledger confirms erasure"
+}
