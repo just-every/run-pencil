@@ -3,9 +3,10 @@ import type { BuilderDraft } from '../../src/core/app/api'
 import { contract } from './contract'
 import { expect, test } from './fixtures'
 import { signInEmptyWorkspace, addConditionRule } from './authoring-helpers'
+import { emailSuffixScenario } from './email-suffix-scenario'
 
 contract('LOGIC-006', 'builds nested lead conditions, inspects their values and collects both published paths', async ({ page }, info) => {
-  test.setTimeout(90_000)
+  test.setTimeout(150_000)
   await signInEmptyWorkspace(page)
   const slug = `business-leads-${info.project.name}-${Date.now()}`
   const call = async <T,>(path: string, method = 'GET', data?: unknown) => {
@@ -80,4 +81,5 @@ contract('LOGIC-006', 'builds nested lead conditions, inspects their values and 
   }
   const ledger = await call<{total:number}>(`${base}/ledger`)
   expect(ledger.total).toBe(4)
+  await emailSuffixScenario(page, info)
 })

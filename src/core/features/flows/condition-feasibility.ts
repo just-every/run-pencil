@@ -1,3 +1,4 @@
+import { emailConditionPossible } from './email-suffix-domain'
 import { proveCalculatedConditions } from './calculation-proof'
 import type { Calculation } from '../../shared/calculations'
 import { answerIssue } from '../../shared/answers'
@@ -109,7 +110,8 @@ function localAnswerExists(question: ConditionQuestion, requirements: LeafRequir
     }))
     return priorityIsPossible(choices, allowed, equalities.map(({ condition }) => condition.value as string[]))
   }
-  if (['short_text', 'long_text', 'email'].includes(step.questionType ?? '')) {
+  if (step.questionType === 'email') return emailConditionPossible(tests, valid, satisfies)
+  if (['short_text', 'long_text'].includes(step.questionType ?? '')) {
     if (tests.length) {
       const positive = tests.find(({condition,matched}) => condition.operator === 'equals' ? matched : !matched)
       if (positive) return some([positive.condition.value])
@@ -118,10 +120,9 @@ function localAnswerExists(question: ConditionQuestion, requirements: LeafRequir
       const length = Math.max(1,Number(settings.minLength ?? 0))
       const candidates = tests.map(({condition})=>String(condition.value))
       const alphabet = Array.from({length:tests.length+1},(_,i)=>String.fromCodePoint(0x61+i))
-      return some([...candidates,...alphabet.map(char=>step.questionType==='email'?`${char}@b.c`:char.repeat(length))])
+      return some([...candidates,...alphabet.map(char=>char.repeat(length))])
     }
     if (settings.pattern !== undefined || settings.inputMask !== undefined) throw new ConditionProofError('Exact answered-condition reachability for text with a pattern or mask is not supported yet.')
-    if (step.questionType === 'email') return some(['a@b.c'])
     const length = Math.max(1, Number(settings.minLength ?? 0))
     return length <= Number(settings.maxLength ?? textTypeLimit(step.questionType)) && some(['x'.repeat(length)])
   }

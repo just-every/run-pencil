@@ -4,6 +4,7 @@ import { contract } from '../../src/test/contract'
 import { foundationFixture } from './foundation-fixture'
 import { fixtureExport } from '../helpers/report-download'
 import { conditionTests, type Condition } from '../../src/core/shared/conditions'
+import { emailSuffixRoutingProof, emailSuffixFeasibilityProof } from './email-suffix-proof'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 
@@ -59,6 +60,7 @@ contract('LOGIC-006', 'publishes correlated AND OR conditions, handles blank and
   expect(conditionTests(copy.branchRules[0].condition!).some(test => test.value === other.id || test.value === partner.id)).toBe(false)
   await f.services.flows.publishDraft({ ...f.scope, flowId: copied.id, expectedVersion: copy.flow.draftVersion })
   expect((await fixtureExport(env.DB, f.scope.workspaceId, f.flow.flowId, {})).responses).toHaveLength(6)
+  await emailSuffixRoutingProof()
 }, 60_000)
 
 contract(['LOGIC-006', 'FLOW-013'], 'refuses destinations made impossible by constraints on an earlier question without publishing', async () => {
@@ -84,5 +86,6 @@ contract(['LOGIC-006', 'FLOW-013'], 'refuses destinations made impossible by con
   await f.publish()
   const session = await f.start(); await f.mature(session.sessionId)
   expect(await f.final(session,[{stepId:customer.id,value:true},{stepId:renewal.id,value:false}])).toMatchObject({completionStepId:impossible.id})
+  await emailSuffixFeasibilityProof()
 
 })
