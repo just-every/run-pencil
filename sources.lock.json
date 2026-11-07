@@ -6333,7 +6333,7 @@
       "executable": false
     },
     "src/core/features/importing/ui/import.css": {
-      "sha256": "9785ef663d8f4fb9f2af1a3646df61a26ff5dda2e14ff231d426e409354c6b63",
+      "sha256": "993eb4bcdd6129f41a8132ea30556fe669cbd3f7296e9dae62a896a7e8b85202",
       "executable": false
     },
     "src/core/features/importing/ui/ImportFileHelp.tsx": {
@@ -8857,7 +8857,7 @@
       "executable": false
     },
     "tests/e2e/surveymonkey-import.spec.ts": {
-      "sha256": "eaee3445ecc833116fdb0128c8c62019f6c7c7f6f855dda3581e0e262c7e53e8",
+      "sha256": "af23c0533bcf12ee75c1bb357c250cc30271763cbdefc5cf8927427163e6820a",
       "executable": false
     },
     "tests/e2e/task-receiver.ts": {
@@ -9277,7 +9277,7 @@
       "executable": false
     },
     "tests/runtime/form-import.worker.test.ts": {
-      "sha256": "23faf6f13cc952d8ab0f3b19ab7b9aac4b355dbbea1df0459552644bcc250e94",
+      "sha256": "873a5bd437e5ab32df8eac907ace727f5a331a9f464ee41a5e6f6a203d692d96",
       "executable": false
     },
     "tests/runtime/foundation-fixture.ts": {
