@@ -93,7 +93,7 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
   await expect(choiceCard('priority').locator('.answer-scope')).toContainText('First-priority choices.')
   await expect(choiceCard('priority').locator('.answer-bucket strong')).toHaveText(['6 of 12 answers · 50%', '6 of 12 answers · 50%'])
   await trends.getByLabel('Trend question', { exact: true }).selectOption(ranking.id)
-  await expect(trends.getByLabel('Trend metric', { exact: true }).locator('option:checked')).toHaveText('Share choosing an answer first')
+  await expect(trends.getByLabel('Trend metric', { exact: true }).locator('option:checked')).toHaveText('First-choice share')
   await trends.getByLabel('Answer to chart', { exact: true }).selectOption(ranking.choices[0].id)
   await trends.getByRole('button', { name: 'Show trends', exact: true }).click()
   const firstChoice = trendValues.getByRole('cell', { name: '50% 6 first-choice answers / 12 answered responses', exact: true })

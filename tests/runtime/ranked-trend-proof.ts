@@ -33,15 +33,16 @@ export async function proveRankedTrends(call: ScenarioCall, request: Request, db
   const collect = async (month: number, order: number[] | null, collector: Collector) => {
     const session = await call<Session>(`/api/public/flows/${slug}/sessions`, { deviceClass: 'desktop', source: 'direct', collectorKey: collector.publicKey })
     await matureLoad(session)
-    const receipt = await call<{ responseId: string; disposition: string }>(`/api/public/flows/${slug}/responses`, {
+    const submission = {
       ...session, idempotencyKey: 'ranking-' + session.sessionId,
       answers: order === null ? [] : [{ stepId, value: order.map(index => ids[index]) }],
-    })
+    }
+    const receipt = await call<{ responseId: string; disposition: string }>(`/api/public/flows/${slug}/responses`, submission)
     expect(receipt.disposition).toBe('released')
     const instant = `2026-${String(month).padStart(2, '0')}-06T16:00:00.000Z`
     await db.prepare('UPDATE responses SET started_at=?,completed_at=?,released_at=?,created_at=?,updated_at=? WHERE id=?')
       .bind(instant, instant, instant, instant, instant, receipt.responseId).run()
-    return receipt.responseId
+    return { id: receipt.responseId, submission }
   }
   // Fixed independently: July 2 of 3, August 1 of 2, September 0 of 1.
   const retained = await collect(7, [0, 1, 2], mail)
@@ -103,13 +104,13 @@ export async function proveRankedTrends(call: ScenarioCall, request: Request, db
   expect(observed).toEqual(full.periods.map(point => [point.numerator, point.denominator]))
 
   for (const invalid of [ids[0], [ids[0], ids[0], ids[2]], ids.slice(0, 2), [...ids, 'synthetic-pencil-unknown'], [ids[0], ids[1], 'synthetic-pencil-unknown'], [ids[0], ids[1], 7]]) {
-    await db.prepare('UPDATE response_answers SET value_json=? WHERE response_id=? AND step_id=?').bind(JSON.stringify(invalid), retained, stepId).run()
+    await db.prepare('UPDATE response_answers SET value_json=? WHERE response_id=? AND step_id=?').bind(JSON.stringify(invalid), retained.id, stepId).run()
     // Even below the minimum, malformed retained evidence must refuse the report.
     const response = await request(query({ minimum: '10' }))
     expect(response.status).toBe(400)
     expect(await response.json()).toMatchObject({ error: 'VALIDATION_ERROR', message: expect.stringContaining('Invalid retained answer') })
   }
-  await db.prepare('UPDATE response_answers SET value_json=? WHERE response_id=? AND step_id=?').bind(JSON.stringify(ids), retained, stepId).run()
+  await db.prepare('UPDATE response_answers SET value_json=? WHERE response_id=? AND step_id=?').bind(JSON.stringify(ids), retained.id, stepId).run()
   expect((await call<TrendReport>(query())).periods[0].numerator).toBe(2)
   for (const extra of [{ shareValue: JSON.stringify('synthetic-pencil-unknown') }, { metric: 'score' }]) {
     expect((await request(query(extra))).status).toBe(400)
@@ -128,4 +129,11 @@ export async function proveRankedTrends(call: ScenarioCall, request: Request, db
   expect(absent.status).toBe(400)
   expect(await absent.json()).toMatchObject({ error: 'VALIDATION_ERROR', message: expect.stringContaining('not present in every selected question revision') })
   expect((await call<TrendReport>(query({ revisionId: first.revision.id }))).periods[0]).toMatchObject({ numerator: 2, denominator: 3 })
+
+  // Erasure changes the released trend, and the original capture cannot restore it.
+  await call(`/api/app/responses/${retained.id}`, undefined, 'DELETE')
+  expect((await call<TrendReport>(query({ revisionId: first.revision.id }))).periods[0]).toMatchObject({ numerator: 1, denominator: 2, value: 50 })
+  expect((await request(`/api/public/flows/${slug}/responses`, retained.submission)).status).toBe(400)
+  expect((await call<TrendReport>(query({ revisionId: first.revision.id }))).periods[0]).toMatchObject({ numerator: 1, denominator: 2, value: 50 })
+  expect(await db.prepare('SELECT id FROM responses WHERE id=?').bind(retained.id).first()).toBeNull()
 }

@@ -7385,7 +7385,7 @@
       "executable": false
     },
     "src/core/features/results/ui/TrendsPanel.tsx": {
-      "sha256": "57f8ae40be6aef2085faba80c583a62deb1edb69c556458e3d26f4a32631b1cb",
+      "sha256": "cc776c0c7e024246a22388e081e79727a205c233d28f521d4879c8a16aa8c09d",
       "executable": false
     },
     "src/core/features/resuming/answers.ts": {
@@ -8513,7 +8513,7 @@
       "executable": false
     },
     "tests/e2e/answer-results.spec.ts": {
-      "sha256": "44203391b5f081c7c5a41f331a98f60c3b01a6008378902202ab79cbfb6e4f99",
+      "sha256": "bcc977b193a4fef44fed6d616db59263e57b156dbbcd605aff61c16e12aa2314",
       "executable": false
     },
     "tests/e2e/api-headers.ts": {
@@ -9441,7 +9441,7 @@
       "executable": false
     },
     "tests/runtime/ranked-trend-proof.ts": {
-      "sha256": "bf7405e3d813f186c644ecfe4ab369ecbef63072893d8af014dd934d17c18e6e",
+      "sha256": "732bac6b88d4e3c8bbd89cdf35f99441f90398b3cb43c9c9a4303abc660e1ae9",
       "executable": false
     },
     "tests/runtime/reporting-bounded.worker.test.ts": {
