@@ -1,0 +1,106 @@
+{
+  "schema": 1,
+  "tag": "sd-pencil-c-f24",
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f24",
+  "head": "3c10ae66e7efbc27a936dfd4e3dcc563eee19e6c",
+  "base": "8fe52b625820a953c327c67cae53ac84ac7bb452",
+  "product_push": "success",
+  "main_changed": false,
+  "pr": null,
+  "changed_files": [
+    "sources.lock.json",
+    "src/core/features/responses/service.ts",
+    "src/core/shared/hiddenFields.ts",
+    "src/core/shared/responseQuality.ts",
+    "tests/runtime/new-question-types.worker.test.ts",
+    "tests/runtime/response-quality-scenario.ts"
+  ],
+  "counts_before": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "counts_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "clause": {
+    "id": "RESP-022",
+    "before": "PARTIAL",
+    "after": "PARTIAL",
+    "scoped_native_work": "complete",
+    "complete_acceptance_points": []
+  },
+  "checks": [
+    {
+      "command": "pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/new-question-types.worker.test.ts tests/runtime/journey.worker.test.ts -t 'publishes, previews, submits, duplicates and losslessly exports each new type|quarantines fast submissions' --reporter=json --outputFile=<packet>/worker-results.json",
+      "exit": 0,
+      "node": "22.20.0",
+      "head": "3c10ae66e7efbc27a936dfd4e3dcc563eee19e6c",
+      "passed": 2,
+      "failed": 0,
+      "filtered_out": 11,
+      "actual_report": "worker-results.json"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "node": "22.20.0"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "pnpm verify:boundaries",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/contract-docs.mjs write RESP-022",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/contract-docs.mjs check RESP-022",
+      "exit": 0
+    },
+    {
+      "command": "pnpm source:check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "generated_views_committed": false,
+  "contract_status_changes": false,
+  "registration_delta": 0,
+  "migration_changes": false,
+  "publication_scan": {
+    "head": "3c10ae66e7efbc27a936dfd4e3dcc563eee19e6c",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "status": "deferred to maintained Mac lander"
+  },
+  "source_hashes": {
+    "sources.lock.json": "9630761dc4c5c42bf868beedf8cde1914a6c3bcd69406a1dc1c088e2fd901457",
+    "src/core/features/responses/service.ts": "1b3cd85aa7390035d959c761153b89e4200378dea8087f70f9c3371910657a45",
+    "src/core/shared/hiddenFields.ts": "50eb7979b61fb8cff43c21947fa53f7302b652e626a3ba64e3cca767fd557600",
+    "src/core/shared/responseQuality.ts": "e6d6b9e73b096d2a284aa8536d111cb039fe62a7435248970ebe4f738af7b318",
+    "tests/runtime/new-question-types.worker.test.ts": "a637a5eb826299a435cc05ad41e2a1b06e2b63ec3c131c5e413b639bb9826264",
+    "tests/runtime/response-quality-scenario.ts": "140625c32ae5809819860a1a66a6a1c0922d6e6f0af4568cd8ea7c0088ac9418"
+  },
+  "ci": {
+    "id": 42416149194,
+    "event": "push",
+    "head": "3c10ae66e7efbc27a936dfd4e3dcc563eee19e6c",
+    "status": "in_progress",
+    "conclusion": null,
+    "observed_at": "2026-11-07T21:30:44Z",
+    "url": "https://github.com/just-every/run-pencil/actions/runs/42416149194",
+    "github_api_calls": 2
+  }
+}

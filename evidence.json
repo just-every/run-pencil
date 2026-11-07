@@ -1,0 +1,88 @@
+{
+  "files": [
+    {
+      "blob": "721960c079d92b2490b592b47abc06e923834b8e",
+      "bytes": 3423,
+      "path": "CHECKS.json",
+      "sha256": "c3ef7a8384ba74281016b53d7a353a79e2ad920f179162fd25b0948c6248baad"
+    },
+    {
+      "blob": "569aba66852afad14ccfe905d249c5a4c57d5640",
+      "bytes": 1806,
+      "path": "PLAN.md",
+      "sha256": "843a782cd4b9eb1c79cdc89d7c946c08abc6a893341c1d15711fbe03cdeef466"
+    },
+    {
+      "blob": "3065ec2eabeb1511226a6d500e7a3f4f89a70d3b",
+      "bytes": 190,
+      "path": "PRODUCT.txt",
+      "sha256": "8f1763ee32e9ebe19355e02fc880e2e54594949d8db01fe779383f8a98fcd5fb"
+    },
+    {
+      "blob": "7bbe122d50a7a9982172bf1095ed4f096f88c3b8",
+      "bytes": 13239,
+      "path": "REPORT.md",
+      "sha256": "ca56e0a3a70f21e0bec7d5feb574bc27e4f2ea7305bbb46d175738eaac35752b"
+    },
+    {
+      "blob": "95d6b49188a3a3f160f3866afcf8203fea9b1d55",
+      "bytes": 538,
+      "path": "SOURCE-CHANGES.json",
+      "sha256": "7aa325beef63ba279ae45f39d10e7c383da8fb7a1cbdd4c0b270110d8ba7fdd4"
+    },
+    {
+      "blob": "d37e58cfbec62198eda05c09879c9377f7480ce4",
+      "bytes": 50,
+      "path": "boundaries.log",
+      "sha256": "c61abf7edb2fdc804fdce25ce6e813c3dc23c7425bfbf3df1be6877dc62732c5"
+    },
+    {
+      "blob": "e5ec9386c43c457b9c1ce8a0f2065ed81c2cbb69",
+      "bytes": 234,
+      "path": "ci-runs.jsonl",
+      "sha256": "5d10c2ece2872a0ca49707205127b28a54aaefa7c47e7d220525dea1d360eca4"
+    },
+    {
+      "blob": "2b49f73debff6e80c6bb5c3a0a5ac1f037efa379",
+      "bytes": 1168,
+      "path": "main-ci.jsonl",
+      "sha256": "d32438fc8164b5d599565205e42351bba8284ced35b0426268372c5a01d1fc8a"
+    },
+    {
+      "blob": "106d3405e7dba50b44b9b89c335f2b59e5ff2de2",
+      "bytes": 126,
+      "path": "product-identity.txt",
+      "sha256": "02be9ef971aeef18029e94177c324b6ed5d2eedb4184aa8455472001d67aed77"
+    },
+    {
+      "blob": "41704abdc624f10032f6e897962af9601e29dc8f",
+      "bytes": 70,
+      "path": "views-check.log",
+      "sha256": "4407d8246f9b0b4a809d2fa4d9e50ff044e4424f1488dcd4022c601963f1fe70"
+    },
+    {
+      "blob": "edf3422c3c87103563aba4dc96a49e1c9cec8e90",
+      "bytes": 70,
+      "path": "views-write.log",
+      "sha256": "49b49a41cf95dc0a77fce3d2c6d9d183789112bab84826d182cf5d60228dcd6d"
+    },
+    {
+      "blob": "dc83deadedb2ce4e0cd1e232d254e57bb6202090",
+      "bytes": 6068,
+      "path": "worker-results.json",
+      "sha256": "67a02317847e2a29b3fa4a519f3bb01721904b7c6f42635e96e791ba33ce3f44"
+    },
+    {
+      "blob": "d3b0c97df02c893a3d0a390870c4c917dd91f90c",
+      "bytes": 2935,
+      "path": "worker-run.log",
+      "sha256": "ec855c1b3ad3e79c9d064bf7fc6d3c843c0ab3b4331ce78c2b6f650c26646269"
+    }
+  ],
+  "product_branch": "cloud/sd-pencil-c-f24",
+  "product_head": "3c10ae66e7efbc27a936dfd4e3dcc563eee19e6c",
+  "ref": "refs/heads/evidence/sd-pencil-c-f24",
+  "repository": "just-every/run-pencil",
+  "schema": 1,
+  "tag": "sd-pencil-c-f24"
+}

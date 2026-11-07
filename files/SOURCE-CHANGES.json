@@ -1,0 +1,19 @@
+{
+  "files": [
+    {
+      "path": "tests/runtime/response-quality-scenario.ts",
+      "change": "modified",
+      "before": {
+        "sha256": "19cf8ead73dd91a9cc06572bf0b911d821692663d5fc19ed856180f080ea7032",
+        "executable": false
+      },
+      "after": {
+        "sha256": "140625c32ae5809819860a1a66a6a1c0922d6e6f0af4568cd8ea7c0088ac9418",
+        "executable": false
+      }
+    }
+  ],
+  "metadata": [],
+  "meaning": "Origins are comparison baselines; changing an origin does not assert adoption or local byte equality."
+}
+
