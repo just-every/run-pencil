@@ -22,6 +22,10 @@ function answerValid(type: string): string {
   if (type === 'consent') return `${kind}='object' AND json_type(a.value_json,'$.accepted') IN ('true','false') AND json_extract(a.value_json,'$.statement')=json_extract(${settings},'$.statement') AND (s.required=0 OR json_extract(a.value_json,'$.accepted')=1)`
   if (type === 'single_choice' || type === 'dropdown') return choiceValidity(false)
   if (type === 'multiple_choice') return choiceValidity(true)
+  if (type === 'priority') return `${kind}='array'
+    AND json_array_length(a.value_json)=(SELECT COUNT(*) FROM choice_options c WHERE c.step_id=s.id)
+    AND json_array_length(a.value_json)=(SELECT COUNT(DISTINCT value) FROM json_each(a.value_json))
+    AND NOT EXISTS(SELECT 1 FROM json_each(a.value_json) j WHERE j.type!='text' OR NOT EXISTS(SELECT 1 FROM choice_options c WHERE c.step_id=s.id AND c.stable_id=j.value))`
   if (type === 'short_text' || type === 'long_text' || type === 'email') return `${kind}='text' AND ${sqlTextWithin(value,type === 'long_text' ? 5000 : 200)}${type === 'email' ? ` AND ${sqlEmail(value)}` : ''}`
   if (type === 'url') return `CASE s.question_type ${contactValidity('a.value_json')} ELSE 0 END`
   if (type === 'date') return `${kind}='text' AND length(${value})=10 AND ${value} GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]' AND substr(${value},1,4)!='0000' AND date(${value},'+0 days')=${value} AND ${value}>=COALESCE(json_extract(${settings},'$.earliest'),'0001-01-01') AND ${value}<=COALESCE(json_extract(${settings},'$.latest'),'9999-12-31')`
@@ -31,7 +35,7 @@ function answerValid(type: string): string {
 export function trendAggregation(db: D1Database, input: { workspaceId: string; flowId: string; filter: LedgerFilter; cutoff: string; stableStepId: string; type: string; metric: 'score' | 'share'; shareValue?: string | number | boolean; periods: TrendPeriod[] }) {
   const scope = responseScope(input.workspaceId,input.flowId,input.filter,input.cutoff)
   const binding = input.shareValue === undefined ? null : input.shareValue
-  const match = ['single_choice','dropdown','multiple_choice'].includes(input.type) ? `EXISTS (SELECT 1 FROM json_each(${choiceIdsSql('a.value_json')}) j WHERE j.type='text' AND j.value=json_extract(?,'$'))`
+  const match = input.type === 'priority' ? `json_extract(a.value_json,'$[0]')=json_extract(?,'$')` : ['single_choice','dropdown','multiple_choice'].includes(input.type) ? `EXISTS (SELECT 1 FROM json_each(${choiceIdsSql('a.value_json')}) j WHERE j.type='text' AND j.value=json_extract(?,'$'))`
     : input.type === 'consent' ? `json_extract(a.value_json,'$.accepted')=json_extract(?,'$')` : input.type === 'email' ? `lower(${value})=lower(json_extract(?,'$'))` : `${value}=json_extract(?,'$')`
   const numeric = ['ces','rating','number','emoji_rating'].includes(input.type)
   const numerator = input.metric === 'share' ? 'SUM(matched)' : input.type === 'nps' ? 'SUM(answer>=9)-SUM(answer<=6)' : input.type === 'csat' ? 'SUM(answer>=4)' : input.type === 'thumbs_rating' ? 'SUM(answer=1)' : 'NULL'
@@ -51,4 +55,4 @@ export function trendAggregation(db: D1Database, input: { workspaceId: string; f
 }
 
 export const scoreTrendTypes = ['nps','csat','ces','rating','number','emoji_rating','thumbs_rating'] as const
-export const shareTrendTypes = [...scoreTrendTypes,'single_choice','dropdown','multiple_choice','yes_no','consent','short_text','long_text','email','url','date'] as const
+export const shareTrendTypes = [...scoreTrendTypes,'single_choice','dropdown','multiple_choice','priority','yes_no','consent','short_text','long_text','email','url','date'] as const

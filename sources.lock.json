@@ -7085,11 +7085,11 @@
       "executable": false
     },
     "src/core/features/reporting/trendQueries.ts": {
-      "sha256": "a399226241aa22583635abcd125ebc724ffd4ab0f634b6252363ad749044cf72",
+      "sha256": "06986811d5ce465d838d4a7e0d25ef24729a85dc516aa152b24f11786e535380",
       "executable": false
     },
     "src/core/features/reporting/trends.ts": {
-      "sha256": "ac00e57de6a2f6bedb876ff49d2dffde8cf9874d11d4930a9c06945286a1e71a",
+      "sha256": "dd75a293ecba1914f0a9e4fa9441ec7f4581f61f6f04bfb5b193f91f9142011b",
       "executable": false
     },
     "src/core/features/reporting/xlsxExport.ts": {
@@ -7385,7 +7385,7 @@
       "executable": false
     },
     "src/core/features/results/ui/TrendsPanel.tsx": {
-      "sha256": "8e3885fb9e1fe36a3cede514cc854498c30ad0f3538ad6f63444fea347ced6d5",
+      "sha256": "57f8ae40be6aef2085faba80c583a62deb1edb69c556458e3d26f4a32631b1cb",
       "executable": false
     },
     "src/core/features/resuming/answers.ts": {
@@ -8513,7 +8513,7 @@
       "executable": false
     },
     "tests/e2e/answer-results.spec.ts": {
-      "sha256": "16ab219919d1a2d74cb07b457badca54c15b2571bfba6d8453b25797c843807a",
+      "sha256": "44203391b5f081c7c5a41f331a98f60c3b01a6008378902202ab79cbfb6e4f99",
       "executable": false
     },
     "tests/e2e/api-headers.ts": {
@@ -9233,7 +9233,7 @@
       "executable": false
     },
     "tests/runtime/collectors-trends.worker.test.ts": {
-      "sha256": "a5101048d18f72c74b359c976b5296dd70f1aa78d0b48069eaf1e9793772242c",
+      "sha256": "08b5a9fa7c784cd348f052b707d1b99059e74c67f9cebeb85cbb5cae4aa54c1c",
       "executable": false
     },
     "tests/runtime/completion-redirects.worker.test.ts": {
@@ -9438,6 +9438,10 @@
     },
     "tests/runtime/randomized-order.worker.test.ts": {
       "sha256": "5751b6fc300b17a1772f11f0949ed243d6ecb803f5d2eb8c633d2fb62d50c02e",
+      "executable": false
+    },
+    "tests/runtime/ranked-trend-proof.ts": {
+      "sha256": "bf7405e3d813f186c644ecfe4ab369ecbef63072893d8af014dd934d17c18e6e",
       "executable": false
     },
     "tests/runtime/reporting-bounded.worker.test.ts": {

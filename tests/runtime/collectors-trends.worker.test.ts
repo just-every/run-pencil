@@ -1,3 +1,4 @@
+import { proveRankedTrends } from './ranked-trend-proof'
 import { matureLoad } from './load-time-fixture'
 import { applyD1Migrations, env, SELF, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
@@ -186,5 +187,6 @@ contract(['DIST-017','RSLT-007','RSLT-006','LEDG-005','RSLT-008','RSLT-009'],'na
   }
   const raw = JSON.parse(new TextDecoder().decode(await exposureExport('json', { revisionId: exposure.revisionId }))) as { responses: LedgerResponse[] }
   expect(raw.responses.map(row => row.id).sort()).toEqual([...exposure.receipts].sort())
+  await proveRankedTrends(call, request, env.DB)
   await proveSavedReports(call, request, env.DB)
 },120000)

@@ -1,5 +1,6 @@
 import { savedReportsJourney } from './saved-reports-journey'
 import { operatorDisclosureExposure } from './disclosure-exposure'
+import { csvRows } from './export-helpers'
 import { appHeaders } from './api-headers'
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
@@ -10,7 +11,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { collectAnswerScenario, collectScoreTrendScenario, type ScenarioCall } from '../results-scenario'
 import type { FlowResults } from '../../src/core/app/api'
 import { openFilters, clearResponseFilters } from './filter-helpers'
-contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006', 'RSLT-008', 'RSLT-009', 'LEDG-001', 'DATA-002', 'BASE-PUBLIC-003'], 'answers first across every type, an RSLT-006 crosstab states shares and suppression, comparison replaces results and ledger confirms erasure', async ({ page }, info) => {
+contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006', 'RSLT-007', 'RSLT-008', 'RSLT-009', 'LEDG-001', 'DATA-002', 'BASE-PUBLIC-003'], 'answers first across every type, an RSLT-006 crosstab states shares and suppression, comparison replaces results and ledger confirms erasure', async ({ page }, info) => {
   test.setTimeout(300000)
   const hydrationErrors:string[]=[]
   page.on('pageerror',error=>{if(/hydrat/i.test(error.message))hydrationErrors.push(error.message)})
@@ -88,6 +89,37 @@ contract(['RSLT-001', 'RSLT-002', 'RSLT-003', 'RSLT-004', 'RSLT-005', 'RSLT-006'
   await expect(trendValues.getByRole('cell',{name:'50% 6 matching answers / 12 answered responses',exact:true})).toBeVisible()
   await capture('trend-numerator')
   if(process.env.PENCIL_CAPTURE_DIR) await trends.screenshot({path:join(process.env.PENCIL_CAPTURE_DIR,`${info.project.name}-trend-table.png`)})
+  const ranking = scenario.questions.find(question => question.questionType === 'priority')!
+  await expect(choiceCard('priority').locator('.answer-scope')).toContainText('First-priority choices.')
+  await expect(choiceCard('priority').locator('.answer-bucket strong')).toHaveText(['6 of 12 answers · 50%', '6 of 12 answers · 50%'])
+  await trends.getByLabel('Trend question', { exact: true }).selectOption(ranking.id)
+  await expect(trends.getByLabel('Trend metric', { exact: true }).locator('option:checked')).toHaveText('Share choosing an answer first')
+  await trends.getByLabel('Answer to chart', { exact: true }).selectOption(ranking.choices[0].id)
+  await trends.getByRole('button', { name: 'Show trends', exact: true }).click()
+  const firstChoice = trendValues.getByRole('cell', { name: '50% 6 first-choice answers / 12 answered responses', exact: true })
+  await expect(firstChoice).toBeVisible()
+  await expect(trends).toContainText('Ranked answer shares count only the first choice in each complete ranking.')
+  const downloaded = page.waitForEvent('download')
+  await trends.getByRole('button', { name: 'Export trend CSV', exact: true }).click()
+  const download = await downloaded
+  const stream = await download.createReadStream()
+  let csv = ''
+  for await (const chunk of stream!) csv += chunk.toString()
+  const csvPeriods = csvRows(csv)
+  const csvHeader = csvPeriods[0]
+  const csvPoint = csvPeriods.slice(1).find(row => row[csvHeader.indexOf('denominator')] === '12')!
+  expect(csvPoint[csvHeader.indexOf('question_type')]).toBe('priority')
+  expect(csvPoint[csvHeader.indexOf('answer_share_value')]).toBe(ranking.choices[0].id)
+  expect(csvPoint[csvHeader.indexOf('numerator')]).toBe('6')
+  expect(csvPoint[csvHeader.indexOf('value')]).toBe('50')
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  if (process.env.PENCIL_CAPTURE_DIR) {
+    await trends.scrollIntoViewIfNeeded()
+    await page.screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-ranked-trend-viewport.png`) })
+    await trends.screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-ranked-trend.png`) })
+    await firstChoice.scrollIntoViewIfNeeded()
+    await trendValues.screenshot({ path: join(process.env.PENCIL_CAPTURE_DIR, `${info.project.name}-ranked-trend-values.png`) })
+  }
   await capture('summary')
 
   const responseFilters = page.getByRole('region',{name:'Response ledger'})

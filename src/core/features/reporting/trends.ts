@@ -17,7 +17,7 @@ function validateShare(type: string, value: unknown, revisions: TrendRevision[])
   } else if (['yes_no','consent','thumbs_rating'].includes(type)) {
     if (typeof value !== 'boolean') throw new ValidationError('Choose a true or false answer for this trend.')
   } else if (typeof value !== 'string' || value.length > 5000) throw new ValidationError('Choose a bounded text answer or stable choice ID for this trend.')
-  if (['single_choice','dropdown','multiple_choice'].includes(type) && revisions.some(revision => revision.questionType && revision.shareLabel === null)) throw new ValidationError('The selected stable choice ID is not present in every selected question revision. Choose a revision containing that choice.')
+  if (['single_choice','dropdown','multiple_choice','priority'].includes(type) && revisions.some(revision => revision.questionType && revision.shareLabel === null)) throw new ValidationError('The selected stable choice ID is not present in every selected question revision. Choose a revision containing that choice.')
 }
 
 /** One bounded SQL aggregate, with revision metadata; individual answers never leave D1. */
