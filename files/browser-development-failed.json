@@ -1,0 +1,330 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/home/agent/rer-consolidation/work/sd-pencil-c-f23/product/node_modules/@playwright/test/cli.js",
+      "test",
+      "surveymonkey-import.spec.ts",
+      "--config",
+      "/tmp/pencil-playwright.config.ts",
+      "--timeout",
+      "120000",
+      "--reporter=json"
+    ],
+    "configFile": "/tmp/pencil-playwright.config.ts",
+    "rootDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/product/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/product/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      },
+      {
+        "outputDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/product/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "desktop",
+        "testDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/product/tests/e2e",
+        "snapshotDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/product/tests/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 120000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4173",
+          "launchOptions": {
+            "headless": true,
+            "args": [
+              "--no-sandbox",
+              "--use-mock-keychain",
+              "--password-store=basic"
+            ],
+            "executablePath": "/usr/bin/chromium"
+          },
+          "trace": "retain-on-failure",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "desktop"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "mobile",
+        "testDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/product/tests/e2e",
+        "snapshotDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/product/tests/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 120000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4173",
+          "launchOptions": {
+            "headless": true,
+            "args": [
+              "--no-sandbox",
+              "--use-mock-keychain",
+              "--password-store=basic"
+            ],
+            "executablePath": "/usr/bin/chromium"
+          },
+          "trace": "retain-on-failure",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "screen": {
+            "width": 393,
+            "height": 851
+          },
+          "deviceScaleFactor": 2.75,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "mobile"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "surveymonkey-import.spec.ts",
+      "file": "surveymonkey-import.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "[IMPORT-005] SurveyMonkey file-pair upload reviews every supported field and names the omitted elements",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 8286,
+                  "error": {
+                    "message": "SyntaxError: Unexpected non-whitespace character after JSON at position 13417 (line 2 column 1)",
+                    "stack": "SyntaxError: Unexpected non-whitespace character after JSON at position 13417 (line 2 column 1)\n    at /home/agent/rer-consolidation/work/sd-pencil-c-f23/product/tests/e2e/surveymonkey-import.spec.ts:19:15",
+                    "location": {
+                      "file": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/product/tests/e2e/surveymonkey-import.spec.ts",
+                      "column": 15,
+                      "line": 19
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39msurveymonkey-import.spec.ts:19\n\n  17 |  const reviewed=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/app/imports/review'&&response.request().method()==='POST')\n  18 |  await page.getByRole('button',{name:'Review import',exact:true}).click()\n> 19 |  const review=await (await reviewed).json()\n     |               ^\n  20 |  await expect(page.getByRole('heading',{name:'Review the mapping',exact:true})).toBeVisible()\n  21 |  await expect(page.getByText(/4 questions · 3 valid response rows/)).toBeVisible()\n  22 |  const report=page.getByRole('list',{name:'Field and logic mapping report'})"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/product/tests/e2e/surveymonkey-import.spec.ts",
+                        "column": 15,
+                        "line": 19
+                      },
+                      "message": "SyntaxError: Unexpected non-whitespace character after JSON at position 13417 (line 2 column 1)\n\n   at surveymonkey-import.spec.ts:19\n\n  17 |  const reviewed=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/app/imports/review'&&response.request().method()==='POST')\n  18 |  await page.getByRole('button',{name:'Review import',exact:true}).click()\n> 19 |  const review=await (await reviewed).json()\n     |               ^\n  20 |  await expect(page.getByRole('heading',{name:'Review the mapping',exact:true})).toBeVisible()\n  21 |  await expect(page.getByText(/4 questions · 3 valid response rows/)).toBeVisible()\n  22 |  const report=page.getByRole('list',{name:'Field and logic mapping report'})\n    at /home/agent/rer-consolidation/work/sd-pencil-c-f23/product/tests/e2e/surveymonkey-import.spec.ts:19:15"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T21:30:58.493Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/browser-results/surveymonkey-import--IMPOR-bb6cf--names-the-omitted-elements-desktop/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/browser-results/surveymonkey-import--IMPOR-bb6cf--names-the-omitted-elements-desktop/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/product/tests/e2e/surveymonkey-import.spec.ts",
+                    "column": 15,
+                    "line": 19
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "c750e21a7cb9bfd82bbd-d0b9e42a4e09ae4ef651",
+          "file": "contract.ts",
+          "line": 4,
+          "column": 3
+        },
+        {
+          "title": "[IMPORT-005] SurveyMonkey file-pair upload reviews every supported field and names the omitted elements",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 6891,
+                  "error": {
+                    "message": "SyntaxError: Unexpected non-whitespace character after JSON at position 13417 (line 2 column 1)",
+                    "stack": "SyntaxError: Unexpected non-whitespace character after JSON at position 13417 (line 2 column 1)\n    at /home/agent/rer-consolidation/work/sd-pencil-c-f23/product/tests/e2e/surveymonkey-import.spec.ts:19:15",
+                    "location": {
+                      "file": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/product/tests/e2e/surveymonkey-import.spec.ts",
+                      "column": 15,
+                      "line": 19
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39msurveymonkey-import.spec.ts:19\n\n  17 |  const reviewed=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/app/imports/review'&&response.request().method()==='POST')\n  18 |  await page.getByRole('button',{name:'Review import',exact:true}).click()\n> 19 |  const review=await (await reviewed).json()\n     |               ^\n  20 |  await expect(page.getByRole('heading',{name:'Review the mapping',exact:true})).toBeVisible()\n  21 |  await expect(page.getByText(/4 questions · 3 valid response rows/)).toBeVisible()\n  22 |  const report=page.getByRole('list',{name:'Field and logic mapping report'})"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/product/tests/e2e/surveymonkey-import.spec.ts",
+                        "column": 15,
+                        "line": 19
+                      },
+                      "message": "SyntaxError: Unexpected non-whitespace character after JSON at position 13417 (line 2 column 1)\n\n   at surveymonkey-import.spec.ts:19\n\n  17 |  const reviewed=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/app/imports/review'&&response.request().method()==='POST')\n  18 |  await page.getByRole('button',{name:'Review import',exact:true}).click()\n> 19 |  const review=await (await reviewed).json()\n     |               ^\n  20 |  await expect(page.getByRole('heading',{name:'Review the mapping',exact:true})).toBeVisible()\n  21 |  await expect(page.getByText(/4 questions · 3 valid response rows/)).toBeVisible()\n  22 |  const report=page.getByRole('list',{name:'Field and logic mapping report'})\n    at /home/agent/rer-consolidation/work/sd-pencil-c-f23/product/tests/e2e/surveymonkey-import.spec.ts:19:15"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-07T21:31:08.257Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/browser-results/surveymonkey-import--IMPOR-bb6cf--names-the-omitted-elements-mobile/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/browser-results/surveymonkey-import--IMPOR-bb6cf--names-the-omitted-elements-mobile/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/product/tests/e2e/surveymonkey-import.spec.ts",
+                    "column": 15,
+                    "line": 19
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "c750e21a7cb9bfd82bbd-8a5cdf7f2c8b56718200",
+          "file": "contract.ts",
+          "line": 4,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-07T21:30:07.157Z",
+    "duration": 68643.80799999999,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

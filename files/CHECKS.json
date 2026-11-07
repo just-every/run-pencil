@@ -1,0 +1,40 @@
+{
+  "typecheck": {
+    "command": "pnpm typecheck",
+    "exit": 0
+  },
+  "first_party": {
+    "command": "pnpm exec rer check --profile first-party",
+    "exit": 0
+  },
+  "source_lock_generation": {
+    "command": "node scripts/edition-authoring/cli.mjs lock",
+    "exit": 0
+  },
+  "source_lock_check": {
+    "command": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0
+  },
+  "source_and_base_check": {
+    "command": "pnpm source:check",
+    "exit": 0
+  },
+  "views_write": {
+    "command": "node scripts/contract-docs.mjs write IMPORT-005",
+    "exit": 0
+  },
+  "views_check": {
+    "command": "node scripts/contract-docs.mjs check IMPORT-005",
+    "exit": 0
+  },
+  "generated_views_restored": true,
+  "migration_ledger": {
+    "command": null,
+    "exit": 0,
+    "reason": "No migration changed"
+  },
+  "diff_check": {
+    "command": "git diff --check",
+    "exit": 0
+  }
+}
