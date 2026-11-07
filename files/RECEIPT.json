@@ -3,12 +3,13 @@
   "tag": "sd-pencil-c-f23",
   "repository": "just-every/run-pencil",
   "branch": "cloud/sd-pencil-c-f23",
-  "head": "d8f516d3610b80b65d1aeff1f944d149e01f8805",
-  "tree": "9b8172cf405c339de1fb4eacee163c7661ec6eff",
+  "head": "9b4c683b4d72b24b3efc3d3bbaecb4a33853574b",
+  "tree": "85306c6a676e30585c02464a97e580e5d0b77283",
   "main_at_final_fetch": "8fe52b625820a953c327c67cae53ac84ac7bb452",
   "commits": [
     "d3f55b7d39623501a30130f8d1c6fbf39e7e9ece",
-    "d8f516d3610b80b65d1aeff1f944d149e01f8805"
+    "d8f516d3610b80b65d1aeff1f944d149e01f8805",
+    "9b4c683b4d72b24b3efc3d3bbaecb4a33853574b"
   ],
   "full_history": true,
   "clean_tree": true,
@@ -21,7 +22,7 @@
     "passed": 2,
     "failed": 0,
     "receipt": "native-runtime.json",
-    "head": "d8f516d3610b80b65d1aeff1f944d149e01f8805"
+    "head": "9b4c683b4d72b24b3efc3d3bbaecb4a33853574b"
   },
   "browser": {
     "command": "timeout 1200 pnpm exec playwright test surveymonkey-import.spec.ts --config /tmp/pencil-playwright.config.ts --reporter=json",
@@ -29,7 +30,7 @@
     "passed": 2,
     "failed": 0,
     "receipt": "browser-runtime.json",
-    "head": "d8f516d3610b80b65d1aeff1f944d149e01f8805",
+    "head": "9b4c683b4d72b24b3efc3d3bbaecb4a33853574b",
     "viewports": [
       1440,
       390
@@ -106,28 +107,29 @@
   "new_policy_default": null,
   "files": {
     "docs/guide/moving-in.md": "e0160581ebf74b118422faf6379176905f356e81b51a1e6d9ca2c3ef75a4d4c0",
-    "sources.lock.json": "3c2751340bf218bb5c565a7592c2f8ed77c2e5a2652b4910ca135147ab8ca0e7",
+    "sources.lock.json": "4e8ca5c8dd73e2fe5adc0fd85c577848a10929fa38adc2e453786f309add017a",
     "src/core/features/importing/model.ts": "326e1b15e07cc6170be3fe2595d6fad4f963815f1c28a2e3e9a4868e1b8be871",
     "src/core/features/importing/response-mapping.ts": "493b89c5f3beb2b841ff305f6c3bc167cd4455eae7a73def63eb5f9cd20f33a6",
-    "src/core/features/importing/surveymonkey-source.ts": "bca4fabc3bdbf12f8509fec6a8305463d9ef60ca8144094ecc1ce824fda97f77",
+    "src/core/features/importing/surveymonkey-source.ts": "fb3d13b7041868f85243ee08f6440dc51a045046c254ea70e4a6d9e967789f88",
     "src/core/features/importing/ui/ImportPage.tsx": "c2ec4e82b06f0eb287c601c87afbc33f899d6de7487ec53b837a67924722907e",
     "src/core/features/importing/ui/import.css": "993eb4bcdd6129f41a8132ea30556fe669cbd3f7296e9dae62a896a7e8b85202",
     "tests/e2e/surveymonkey-import.spec.ts": "af23c0533bcf12ee75c1bb357c250cc30271763cbdefc5cf8927427163e6820a",
-    "tests/fixtures/form-import/surveymonkey.ts": "228673f42c03d68261eac1723d5ff0689cf713a2ff8fe9b93ed9303f8c2e08d6",
+    "tests/fixtures/form-import/surveymonkey.ts": "0ad1bac7d8df909e728fbb118b0cf2ff7cbc19a216f769585c234d59ec337c53",
     "tests/runtime/form-import.worker.test.ts": "873a5bd437e5ab32df8eac907ace727f5a331a9f464ee41a5e6f6a203d692d96"
   },
   "ci": {
-    "id": 42416539974,
-    "event": "push",
-    "head": "d8f516d3610b80b65d1aeff1f944d149e01f8805",
-    "status": "in_progress",
     "conclusion": null,
-    "last_observed_utc": "2026-11-07T21:40:28Z",
-    "head_sha": "d8f516d3610b80b65d1aeff1f944d149e01f8805",
-    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42416539974"
+    "event": "push",
+    "head_sha": "9b4c683b4d72b24b3efc3d3bbaecb4a33853574b",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42417848909",
+    "id": 42417848909,
+    "name": "Verify candidate",
+    "status": "in_progress",
+    "last_observed_utc": "2026-11-07T21:51:56Z",
+    "observed_at": "2026-11-07T22:02:01.926854+00:00"
   },
   "publication_scan": {
-    "commit": "d8f516d3610b80b65d1aeff1f944d149e01f8805",
+    "commit": "9b4c683b4d72b24b3efc3d3bbaecb4a33853574b",
     "status": "NOT RUN IN CLOUD",
     "complete": null,
     "historyScanned": null,
@@ -141,9 +143,13 @@
   },
   "bundle": {
     "path": "/home/agent/rer-consolidation/work/sd-pencil-c-f23/product.bundle",
-    "sha256": "a7c2a2db9a8e6c656f815f8b4dde8bf74cef63665db80e04a36eb3de192d5e69",
+    "sha256": "3cf4e56e7a9fd91eb41395b7a5cf08893b1b63613b2284db003d9b22cb73df0e",
     "verified": true
   },
-  "created_at": "2026-11-07T21:39:48.921995+00:00",
-  "github_api_calls": 3
+  "created_at": "2026-11-07T21:56:16.885415+00:00",
+  "github_api_calls": 7,
+  "refinement": "Explicit empty Other-options arrays retain a supported plain matrix.",
+  "handoff": "PUSHED; exact-SHA Verify still in progress, no failure conclusion observed",
+  "remaining_api_budget": 3,
+  "remaining_api_budget_purpose": "Reserved for failure job discovery and mandatory failed-job log reads; no further idle polling."
 }

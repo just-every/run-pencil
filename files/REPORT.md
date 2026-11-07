@@ -1,15 +1,15 @@
 # sd-pencil-c-f23 results
 
 Repository: just-every/run-pencil. Product branch: cloud/sd-pencil-c-f23.
-Candidate: d8f516d3610b80b65d1aeff1f944d149e01f8805.
+Candidate: 9b4c683b4d72b24b3efc3d3bbaecb4a33853574b.
 Starting main: 8fe52b625820a953c327c67cae53ac84ac7bb452.
-Save: d3f55b7d39623501a30130f8d1c6fbf39e7e9ece, followed by the final candidate. Both commits were pushed normally with fleet identity and active commit hooks. No default branch or pull request was changed. This repository starts branch Verify on a push, so no pull request or dispatch was needed.
+Save: d3f55b7d39623501a30130f8d1c6fbf39e7e9ece, then the initial candidate d8f516d3610b80b65d1aeff1f944d149e01f8805, then this corrected candidate. All three commits were pushed normally with fleet identity and active commit hooks. No default branch or pull request was changed. This repository starts branch Verify on a push, so no pull request or dispatch was needed.
 
 IMPORT-005 remains PARTIAL. The requested single-selection matrix portion is implemented and proven; no DONE claim is made. Counts remain 142 DONE, 61 PARTIAL and 49 MISSING, total 252. FIELD-002 remains unchanged. No acceptance point, Status, Gap, Evidence cell or generated view is changed. The maintained lander owns publication scanning, main integration and Run site qualification.
 
 ## Scope and result
 
-Uploaded SurveyMonkey API v3 details with a single-selection matrix now become the existing native matrix question, with ordered rows and shared choices. Stable native row IDs derive from source row IDs, and native shared choices derive from source choice IDs. Historical answers join on those source IDs rather than answer order or labels. The original one-row rating mapping remains separate.
+Uploaded SurveyMonkey API v3 details with a single-selection matrix now become the existing native matrix question, with ordered rows and shared choices. Stable native row IDs derive from source row IDs, and native shared choices derive from source choice IDs. Historical answers join on those source IDs rather than answer order or labels. The original one-row rating mapping remains separate. An absent Other option and an explicitly empty Other-options array both mean a plain matrix; nonempty Other variants remain omitted. The fixture now supplies the explicit empty array, preventing an ordinary source export from being silently skipped.
 
 The fixture intentionally submits Speed before Clarity, choosing Needs work and Good respectively. A second completion chooses Not used for Clarity and Support while omitting Speed; repeated shared choices across different rows remain valid. A third completion omits the whole optional matrix. Review and committed ledger preserve all of these distinctions. Imported completions keep their source times and remain released historical data with notifications disabled. Respondent sessions, outbox, live metric counters, invitation deliveries and local mail records remain byte-equivalent to their pre-import product rows.
 
@@ -63,7 +63,7 @@ These rows are recorded for honesty; they do not convert this deliberately parti
 | --- | --- | --- |
 | 1 | FAIL for whole-clause DONE; scoped matrix MET locally | Acceptance sentence 1 still contains held routing and statement outcomes. R1–R7 identify all changed outcomes and public doors. |
 | 2 | PASS locally | Seeded unequal row answers have independently fixed expected choices. Both supported imports and unsafe reference refusals execute; refused inputs leave custody unchanged, native lines 60–114. |
-| 3 | PENDING exact-SHA Verify at report creation | Run 42416539974, push event, exact candidate. Final observed conclusion is in CI.json and RECEIPT.json. Existing workflow globs include both extended files; no workflow was edited. |
+| 3 | PENDING exact-SHA Verify at report creation | Run 42417848909, push event, exact candidate. Final observed conclusion is in CI.json and RECEIPT.json. Existing workflow globs include both extended files; no workflow was edited. |
 | 4 | PASS on final local proof completion | Runtime and browser receipts are rerun on the exact candidate; code and test hashes are bound in RECEIPT.json. |
 | 5 | INSPECTED | IMPORT-005 already explicitly names FIELD-010, FIELD-013 and FIELD-016 duties. The matrix maps to the existing FIELD-002 model; no new inherited-duty claim or contract rewrite is made. |
 | 6 | PASS mechanical; judgments intentionally unchanged | Generator write and check for IMPORT-005 pass, counts unchanged. ACCEPTANCE.md and docs/CLAIMS.md were restored whole from main and are not committed. The lander owns subsequent judgment text. |
@@ -100,14 +100,33 @@ Proposed plan-row update: IMPORT-005 stays PARTIAL. Add the uploaded single-sele
 
 ## Publication custody
 
-Publication scan for candidate d8f516d3610b80b65d1aeff1f944d149e01f8805: NOT RUN in cloud; complete=unestablished, historyScanned=unestablished, findings=unestablished. This is deliberately not a clean-scan receipt. The clone has full commit history. The maintained lander must perform the complete exact-tree scan and guarded landing before counting anything.
+Publication scan for candidate 9b4c683b4d72b24b3efc3d3bbaecb4a33853574b: NOT RUN in cloud; complete=unestablished, historyScanned=unestablished, findings=unestablished. This is deliberately not a clean-scan receipt. The clone has full commit history. The maintained lander must perform the complete exact-tree scan and guarded landing before counting anything.
 
 Evidence publication is report-only on refs/heads/evidence/sd-pencil-c-f23 and is distinct from product readiness. PLAN.md, this report, actual native and browser receipts, final check receipts and the inspected screenshots are selected explicitly. No secret files, environment dumps, private gate material, traces or symlinks are selected.
 
-## Final local proof and CI observation
 
-On the exact candidate, both native tests pass and both browser viewport cases pass, with no failures or skips. Browser run duration was 84.55 seconds including server setup. Its individual cases remain within the unchanged default test timeout. The source lock and retained Base check pass again after browser builds; the working tree is clean. The remote product branch was read back at the exact candidate SHA.
+## Candidate refinement
 
-Verify push run 42416539974 remains in progress as observed at 2026-11-07T21:40:28Z. No other SHA is credited. Three GitHub API calls have been used: starting-main discovery, candidate discovery, and one candidate status observation after the required five-minute interval. There has been no workflow dispatch, rerun or PR.
+During the final source-format review, the builder found that an explicitly empty Other-options array was being treated like an unsupported Other variant. The final source fix accepts the empty array as no Other option; the existing fixture now exercises it through both native and browser journeys. No registration was added. This was a local source review refinement, not a repair of a reproduced red Verify. The earlier candidate report and receipts are retained under previous names and are not credited as final-SHA proof.
 
-The verified recovery bundle is kept outside the product checkout at /home/agent/rer-consolidation/work/sd-pencil-c-f23/product.bundle; SHA-256 a7c2a2db9a8e6c656f815f8b4dde8bf74cef63665db80e04a36eb3de192d5e69. It is preservation data, not a publication or landing receipt.
+CLAIM IMPORT-005 PARTIAL points=2 tests=tests/runtime/form-import.worker.test.ts#two fresh databases produce equivalent reports, source structures, typed answers and 27 inert completions; tests/e2e/surveymonkey-import.spec.ts#SurveyMonkey file-pair upload reviews every supported field and names the omitted elements
+
+## Final proof binding
+
+Candidate 9b4c683b4d72b24b3efc3d3bbaecb4a33853574b has two passing native tests and two passing browser viewport cases, with zero failures or skips. The browser receipt began at 2026-11-07T21:51:57.410Z and completed in 84.17 seconds including setup. Native and browser runs both started after this commit. The tests, fixture and production mappings are byte-bound to this head in RECEIPT.json. The existing 27-completion workload, text, scale, Other, privacy and undo assertions remain.
+
+The source lock and retained Base check also pass at this head. Main was fetched and merged before the final commit and did not drift. Remote readback confirms the exact product ref; no main update was attempted.
+
+Verified preservation bundle: /home/agent/rer-consolidation/work/sd-pencil-c-f23/product.bundle; SHA-256 3cf4e56e7a9fd91eb41395b7a5cf08893b1b63613b2284db003d9b22cb73df0e. This bundle is outside the product clone and is not selected for evidence publication.
+
+## Terminal custody and CI
+
+Product ref cloud/sd-pencil-c-f23 is pushed at 9b4c683b4d72b24b3efc3d3bbaecb4a33853574b. Exact-SHA Verify push run 42417848909 remained in progress at 2026-11-07T22:02:01.926854+00:00. No green conclusion is claimed from this or another SHA. Seven GitHub API calls were used across starting-main discovery, the superseded candidate and this candidate. Three calls remain reserved for failure diagnostics under the ten-call budget, so this handoff uses PUSHED rather than asserting CI success. No red conclusion or real product blocker was observed. There was no dispatch, rerun or pull request.
+
+The maintained lander still owns exact-SHA Verify completion, the full-history publication scan and main integration, followed by Run site on the landed SHA. Neither the report-only evidence ref nor this preserved bundle signals acceptance or landing.
+
+Before-and-after counts are identical: 142 DONE, 61 PARTIAL, 49 MISSING. IMPORT-005 is PARTIAL to PARTIAL, with its uploaded single-selection matrix portion closed. No FIELD-002 or other clause judgment changes. The complete plan, outcome rubric, inherited duties, eleven riders, pre-ready checks and runtime probes are above and in PLAN.md.
+
+The final regular-file evidence packet retains the actual final receipts and inspected screenshots. Earlier development and superseded-candidate receipts are explicitly named as earlier material. EVIDENCE-RETURN.json verifies only the initial report transfer, not the final product or a landing.
+
+PUSHED branch=cloud/sd-pencil-c-f23 head=9b4c683b4d72b24b3efc3d3bbaecb4a33853574b
