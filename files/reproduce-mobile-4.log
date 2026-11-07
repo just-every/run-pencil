@@ -1,0 +1,10 @@
+file:///workspace/run-pencil/scripts/ci-contract-evidence.mjs:11
+  if (!run) throw new Error('Sharded contract evidence requires the current GitHub run.')
+                  ^
+
+Error: Sharded contract evidence requires the current GitHub run.
+    at identity (file:///workspace/run-pencil/scripts/ci-contract-evidence.mjs:11:19)
+    at writeCiContractEvidence (file:///workspace/run-pencil/scripts/ci-contract-evidence.mjs:49:72)
+    at async file:///workspace/run-pencil/scripts/run-contract-lane.mjs:43:1
+
+Node.js v22.20.0

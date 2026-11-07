@@ -1,5 +1,7 @@
 # sd-pencil-c-f22 results
 
+Final custody: BLOCKED by exact-SHA Verify 42412444939, mobile-4 notification timeout, unreproduced from source. No READY claim. The product branch is pushed and retained.
+
 Product: just-every/run-pencil. Branch: cloud/sd-pencil-c-f22. Full candidate: 6290af437d870e3aba69055e7e2578ae748967eb. Main base at preparation: b6a05948c040da9debdeb9d6ca10c13eacc304ee. No PR is required: branch pushes start Verify candidate.
 
 ## Outcome and scope
@@ -43,7 +45,7 @@ Native registration N is tests/runtime/collectors-trends.worker.test.ts, “name
 | --- | --- | --- |
 | 1: acceptance outcomes reached | FAIL for full clause; PASS for selected ranked point | N and B cover every selected outcome listed above. Recurring occurrences, program series and structured-contact shares remain missing. No DONE claim. |
 | 2: real seeded results and unsafe path | PASS | Literal expected pairs in helper lines 69, 79, 83, 85, 103, 114 and 116; refusal and correction lines 106–119; erased replay lines 138–145. No expected first-choice result is calculated from the fixture input. |
-| 3: recorded exact-SHA Verify | PENDING_CI | Push run 42412444939 is the candidate run; neither predecessor green nor local results substitute for its conclusion. The existing Verify globs include N and B. |
+| 3: recorded exact-SHA Verify | FAIL (unrelated mobile notification timeout) | Push run 42412444939 completed with failure in mobile-4, NOTIFY-002 and NOTIFY-004 and NOTIFY-005. The grouped job was 128523637854. Exact logs were read once; source-side reproduction did not reproduce that failure; see REPRODUCTION.json and MAIN-LANE.json. Neither predecessor green nor local results substitute for the exact conclusion. The existing Verify globs include N and B. |
 | 4: relevant exact bytes | PASS | RECEIPTS.json binds all relevant source and test hashes to candidate 6290af437d870e3aba69055e7e2578ae748967eb. No byte of relevant code or test changed between successful local tests and this commit. |
 | 5: inherited duty is named | INSPECTED | RSLT-007 expressly names WS-001 zone, denominator, minimum and revision boundaries. Runtime and browser proofs exercise those duties. No new inherited duty is asserted or contract text added. |
 | 6: generated views, counts and status provenance | PASS mechanically; Status remains unchanged | Generator write and check pass; generated files restored from main. Counts unchanged. CONTRACT.md and every Status cell retain main's judgments. Source lock fresh. |
@@ -67,14 +69,26 @@ PROBE RSLT-007 1: native collection followed by authenticated monthly first-choi
 
 MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock then check and pnpm source:check exit=0; views=node scripts/contract-docs.mjs write RSLT-007 then check RSLT-007 exit=0, followed by whole-file restoration from origin/main; ledger=none exit=0 (no migration changed).
 
-No product blocker. The full clause's remaining unbuilt features are gaps, not claimed completed. Product push succeeded on its first attempt. Evidence publication is independent from READY, acceptance and landing.
+The exact-SHA CI blocker is the unreproduced notification timeout. The full clause's remaining unbuilt features are gaps, not claimed completed. Product push succeeded on its first attempt. Evidence publication is independent from READY, acceptance and landing.
 
 ## CI custody
 
-Exact candidate push Verify 42412444939: in_progress at the latest permitted poll, conclusion unestablished. Event push, head 6290af437d870e3aba69055e7e2578ae748967eb. CI discovery and polling use REST with one watcher and at least 300 seconds between requests for this run. The predecessor run is recorded only as prior context. No CI dispatch or rerun was requested. No Run site on this cloud branch is claimed.
+Exact candidate push Verify 42412444939: completed with failure. Grouped shard 7 has a mobile-4 notification-controls timeout on both attempts. All other grouped shards, checks and builds succeeded. The aggregate verify job failed because of that lane. Event push, head 6290af437d870e3aba69055e7e2578ae748967eb. CI discovery and polling use REST with one watcher and at least 300 seconds between requests for this run. The predecessor run is recorded only as prior context. No CI dispatch or rerun was requested. No Run site on this cloud branch is claimed.
 
 ## Terminal claim
 
 CLAIM RSLT-007 PARTIAL points=1 tests=tests/runtime/collectors-trends.worker.test.ts#named collectors enforce independent atomic limits and retain attribution in zoned, revision-marked score trends, exports, RSLT-006 crosstabs with stated shares, chi-square and suppression, and multi-part LEDG-005 XLSX and SAV exports; tests/e2e/answer-results.spec.ts#answers first across every type, an RSLT-006 crosstab states shares and suppression, comparison replaces results and ledger confirms erasure
 
 GAP RSLT-007: DIST-016 recurring occurrences, PROG-003 program series and structured-contact answer shares remain unbuilt; existing holds and release prerequisites are unchanged.
+
+CI failure excerpt is retained as CI-FAILURE.txt. The failed log was read once with `gh run view 42412444939 --repo just-every/run-pencil --job 128523637854 --log-failed` (exit 0). `gh run download 42412444939 --repo just-every/run-pencil --pattern ci-builds --pattern contract-7 --dir /tmp/pencil-f22-ci-artifacts` failed (exit 1, HTTP 403 Forbidden from the Azure artifact destination); artifact-transfer.log contains the sanitized transport error without signed query parameters. No blocked artifact download is retried. Same-source reproduction uses Node 22.20.0, the unchanged mobile-4 lane, CI=1 and system Chromium. Exact CI build reuse is unestablished because its transfer was denied. No product source or assertion is edited to guess a fix.
+
+The exact-source mobile-4 attempt did not reproduce the CI assertion. Playwright `.last-run.json` says status passed and failedTests empty. Its outer CI receipt wrapper exited 1 afterward with “Sharded contract evidence requires the current GitHub run.” No product repair is attempted. REPRODUCTION.json records the real command exit and the separate browser outcome. This was a fresh source build with Node 22.20.0 and system Chromium, not a successful reproduction of the denied CI artifact. Main-source comparison passed all 11 tests, exit 0; MAIN-LANE.json is the generated receipt bound to b6a05948c040da9debdeb9d6ca10c13eacc304ee.
+
+No CI repair round is attempted because the failing notification assertion was not reproduced. The candidate remains branch-only and BLOCKED for fv to diagnose the exact Ubuntu failure or restore access to the exact CI build artifact. Both the source-side candidate browser shard and main comparison passed; no matching CI assertion reproduced. This is separate from the named feature gaps. No Verify dispatch or rerun is requested without an established flake class. Main-source comparison passed (11 tests, zero failures, zero skipped), using the same VM, Node 22.20.0 and system Chromium. Final evidence publication includes this comparison and the actual failure receipts. Eight GitHub CLI invocations have been made; no further GitHub API calls are planned in this run.
+
+## Final recovery and handoff
+
+The source-side candidate shard browser outcome is passed with no failed tests; its CI-only receipt wrapper then exited 1 for missing GitHub run metadata. The main comparison used the same VM and browser with a clearly local receipt run ID, passed 11 tests, and exited 0. This is not a matching reproduction of the CI timeout, and the denied artifact prevents claiming exact CI-environment reproduction. The brief explicitly says to stop BLOCKED when the assertion cannot be reproduced rather than guess a fix. No repair, force push, workflow edit, assertion change, CI rerun or extra dispatch occurred. No VERIFY_REPRODUCED claim is made.
+
+Dependency: fv must diagnose the Ubuntu-only notification timeout or provide accessible exact-run artifacts and a reproducible failure. The product remains at 6290af437d870e3aba69055e7e2578ae748967eb on cloud/sd-pencil-c-f22. Product push succeeded and was verified independently against the remote head. A verified optional recovery bundle is retained outside the clone; BUNDLE.json records its absolute path and SHA-256. It is recovery data and proves neither readiness nor landing.

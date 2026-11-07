@@ -1,0 +1,11 @@
+Run 42412444939, job 128523637854, exact SHA 6290af437d870e3aba69055e7e2578ae748967eb
+Command: gh run view 42412444939 --repo just-every/run-pencil --job 128523637854 --log-failed
+Exit: 0
+
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-07T20:50:44.7859992Z Browser failure: [NOTIFY-002,NOTIFY-004,NOTIFY-005,BASE-PUBLIC-003] notification preference and failed delivery controls are accessible on desktop and mobile with authenticated results at contract.ts:4:3 (mobile, attempt 1, timedOut)
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-07T20:50:44.7862835Z Browser failure: [NOTIFY-002,NOTIFY-004,NOTIFY-005,BASE-PUBLIC-003] notification preference and failed delivery controls are accessible on desktop and mobile with authenticated results at contract.ts:4:3 (mobile, attempt 2, timedOut)
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-07T20:50:44.7950406Z mobile-4: 10 passed, 1 failed; exit 1.
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-07T20:53:59.3891655Z desktop-6: 6 passed, 0 failed; exit 0.
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-07T20:56:30.2368287Z mobile-3: 11 passed, 0 failed; exit 0.
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-07T20:57:09.8948868Z archive-restore: 1 passed, 0 failed, 0 pending; exit 0.
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-07T20:57:09.8993060Z ##[error]Process completed with exit code 1.

@@ -1,0 +1,31 @@
+{
+  "head": "6290af437d870e3aba69055e7e2578ae748967eb",
+  "job": "128523637854",
+  "ci_run": "42412444939",
+  "command": "CI=1 node scripts/run-contract-lane.mjs mobile-4 /tmp/pencil-f22-reproduce/contract-evidence",
+  "node": "22.20.0",
+  "browser_executable": "/usr/bin/chromium",
+  "exit": 1,
+  "matching_ci_assertion_reproduced": false,
+  "browser_last_run": {
+    "status": "passed",
+    "failedTests": []
+  },
+  "wrapper_failure": "Sharded contract evidence requires the current GitHub run.",
+  "artifact_reuse": "not established: exact CI artifact download returned HTTP 403; fresh source build used",
+  "product_edits_after_failure": false,
+  "main_comparison": {
+    "head": "b6a05948c040da9debdeb9d6ca10c13eacc304ee",
+    "command": "CI=1 GITHUB_RUN_ID=local-sd-pencil-c-f22-main node scripts/run-contract-lane.mjs mobile-4 /tmp/pencil-f22-main-reproduce/contract-evidence",
+    "exit": 0,
+    "stats": {
+      "startTime": "2026-11-07T21:05:51.773Z",
+      "duration": 225405.954,
+      "expected": 11,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "receipt": "MAIN-LANE.json"
+  }
+}

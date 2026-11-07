@@ -1,0 +1,33 @@
+{
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f22",
+  "head": "6290af437d870e3aba69055e7e2578ae748967eb",
+  "state": "BLOCKED",
+  "dependency": "fv diagnosis of unreproduced Ubuntu mobile notification timeout; exact build artifact transfer denied with HTTP 403",
+  "verify": {
+    "id": 42412444939,
+    "event": "push",
+    "queried_at_epoch": 1794085144.7724051,
+    "calls_used": 5,
+    "conclusion": "failure",
+    "head_sha": "6290af437d870e3aba69055e7e2578ae748967eb",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42412444939",
+    "status": "completed"
+  },
+  "failed_job": 128523637854,
+  "source_candidate_browser": "passed",
+  "source_candidate_wrapper_exit": 1,
+  "source_main_lane_exit": 0,
+  "source_main_passed": 11,
+  "repairs": 0,
+  "ci_reruns": 0,
+  "github_cli_invocations": 8,
+  "clause_status": "RSLT-007 PARTIAL to PARTIAL",
+  "counts_before_and_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "product_pushed": true,
+  "ready": false
+}

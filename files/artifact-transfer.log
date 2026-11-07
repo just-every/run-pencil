@@ -1,0 +1,3 @@
+command: gh run download 42412444939 --repo just-every/run-pencil --pattern ci-builds --pattern contract-7 --dir /tmp/pencil-f22-ci-artifacts
+exit=1
+error downloading ci-builds: Get "https://productionresultssa15.blob.core.windows.net/actions-results/32f3084e-ed0d-89d9-a0bd-b51b9e12514f/workflow-job-run-2fbdd141-2f68-55ad-a176-6c1836dbb005/artifacts/0f8bd3451d81a341636e975c8d4b00e820f474191cac1c98967bbe7d78de7463.zip?[REDACTED]": Forbidden
