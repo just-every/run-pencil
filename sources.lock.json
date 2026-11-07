@@ -9441,7 +9441,7 @@
       "executable": false
     },
     "tests/runtime/ranked-trend-proof.ts": {
-      "sha256": "732bac6b88d4e3c8bbd89cdf35f99441f90398b3cb43c9c9a4303abc660e1ae9",
+      "sha256": "b2cbcca2ecf7b2c5c656ea292e4ed8fe20e02ecf4a7050fd13d10df9364e5294",
       "executable": false
     },
     "tests/runtime/reporting-bounded.worker.test.ts": {

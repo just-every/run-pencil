@@ -103,12 +103,17 @@ export async function proveRankedTrends(call: ScenarioCall, request: Request, db
   expect(observed).toEqual([[2, 3], [1, 2], [0, 1]])
   expect(observed).toEqual(full.periods.map(point => [point.numerator, point.denominator]))
 
-  for (const invalid of [ids[0], [ids[0], ids[0], ids[2]], ids.slice(0, 2), [...ids, 'synthetic-pencil-unknown'], [ids[0], ids[1], 'synthetic-pencil-unknown'], [ids[0], ids[1], 7]]) {
+  for (const invalid of [null, [], ids[0], { choiceIds: ids }, [ids[0], ids[0], ids[2]], ids.slice(0, 2), [...ids, 'synthetic-pencil-unknown'], [ids[0], ids[1], 'synthetic-pencil-unknown'], [ids[0], ids[1], 7]]) {
     await db.prepare('UPDATE response_answers SET value_json=? WHERE response_id=? AND step_id=?').bind(JSON.stringify(invalid), retained.id, stepId).run()
     // Even below the minimum, malformed retained evidence must refuse the report.
     const response = await request(query({ minimum: '10' }))
     expect(response.status).toBe(400)
     expect(await response.json()).toMatchObject({ error: 'VALIDATION_ERROR', message: expect.stringContaining('Invalid retained answer') })
+    // Malformed evidence outside the chosen cohort must not prevent its valid report.
+    const otherCollector = await call<TrendReport>(query({ collectorId: web.id }))
+    expect(otherCollector.periods.map(point => [point.numerator, point.denominator])).toEqual([[1, 1], [0, 1], [0, 1]])
+    const otherRevision = await call<TrendReport>(query({ revisionId: second.revision.id }))
+    expect(otherRevision.periods.map(point => [point.numerator, point.denominator])).toEqual([[null, 0], [1, 2], [0, 1]])
   }
   await db.prepare('UPDATE response_answers SET value_json=? WHERE response_id=? AND step_id=?').bind(JSON.stringify(ids), retained.id, stepId).run()
   expect((await call<TrendReport>(query())).periods[0].numerator).toBe(2)
