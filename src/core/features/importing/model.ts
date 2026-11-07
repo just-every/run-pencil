@@ -1,7 +1,7 @@
 import type { FormSettings } from '../../shared/hiddenFields'
 
 export const mappingVersion = 'documented-form-v1'
-export type QuestionType = 'short_text' | 'long_text' | 'email' | 'single_choice' | 'multiple_choice' | 'dropdown' | 'yes_no' | 'rating' | 'nps' | 'number' | 'date' | 'consent' | 'priority'
+export type QuestionType = 'short_text' | 'long_text' | 'email' | 'single_choice' | 'multiple_choice' | 'dropdown' | 'yes_no' | 'rating' | 'nps' | 'number' | 'date' | 'consent' | 'priority' | 'matrix'
 export type ImportStep = { id: string; sourceId: string; groupSourceId?: string; sourceType: string; kind: 'question' | 'welcome' | 'completion'; questionType: QuestionType | null; prompt: string; helperText: string | null; required: boolean; settings: Record<string, unknown>; choices: { id: string; sourceId: string; label: string }[]; next: string | null }
 export type ImportRule = { source: string; destination: string; predicate: string; expected: unknown; position: number }
 export type ReportItem = { location: string; label: string; sourceType: string; state: 'imported' | 'changed' | 'unsupported'; change: string; reason: string }

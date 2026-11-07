@@ -1069,7 +1069,7 @@
       "executable": false
     },
     "docs/guide/moving-in.md": {
-      "sha256": "e99b30b0f02d2de7038dc3bd2bfe767e894a43676a6b79404ebd866d13cdd783",
+      "sha256": "e0160581ebf74b118422faf6379176905f356e81b51a1e6d9ca2c3ef75a4d4c0",
       "executable": false
     },
     "docs/guide/overview.md": {
@@ -6225,7 +6225,7 @@
       "executable": false
     },
     "src/core/features/importing/model.ts": {
-      "sha256": "49e90edf95025e578d24545b3191843be8b017d47b550906092c7368e8847eee",
+      "sha256": "326e1b15e07cc6170be3fe2595d6fad4f963815f1c28a2e3e9a4868e1b8be871",
       "executable": false
     },
     "src/core/features/importing/native-chunks.ts": {
@@ -6257,7 +6257,7 @@
       "executable": false
     },
     "src/core/features/importing/response-mapping.ts": {
-      "sha256": "058f4f044dfb9e2ffda43ae9d11c6b828a1ce2fcb31db26e24b1a5da8fb7ab26",
+      "sha256": "493b89c5f3beb2b841ff305f6c3bc167cd4455eae7a73def63eb5f9cd20f33a6",
       "executable": false
     },
     "src/core/features/importing/response-store.ts": {
@@ -6305,7 +6305,7 @@
       "executable": false
     },
     "src/core/features/importing/surveymonkey-source.ts": {
-      "sha256": "a6168fb308dd84a6bd5c8a51fc61345d2c5e18d59a30d89e4aad4db01054d386",
+      "sha256": "bca4fabc3bdbf12f8509fec6a8305463d9ef60ca8144094ecc1ce824fda97f77",
       "executable": false
     },
     "src/core/features/importing/typeform-definition.ts": {
@@ -6341,7 +6341,7 @@
       "executable": false
     },
     "src/core/features/importing/ui/ImportPage.tsx": {
-      "sha256": "b55bba437ff4b9b28e157ce5efbf3278a486f2038e18919e10bfe2c930def61f",
+      "sha256": "c2ec4e82b06f0eb287c601c87afbc33f899d6de7487ec53b837a67924722907e",
       "executable": false
     },
     "src/core/features/importing/ui/ImportStructure.tsx": {
@@ -8861,7 +8861,7 @@
       "executable": false
     },
     "tests/e2e/surveymonkey-import.spec.ts": {
-      "sha256": "2a2ed36303828b51ecd09a5a8886a6ce8503bab7a9aa9f8747dd3a015a0faaca",
+      "sha256": "eaee3445ecc833116fdb0128c8c62019f6c7c7f6f855dda3581e0e262c7e53e8",
       "executable": false
     },
     "tests/e2e/task-receiver.ts": {
@@ -8957,7 +8957,7 @@
       "executable": false
     },
     "tests/fixtures/form-import/surveymonkey.ts": {
-      "sha256": "0d19bb2ea9726b7b86b5760c46997b860bd46b8fe6387290fb25f1bdd786a86c",
+      "sha256": "228673f42c03d68261eac1723d5ff0689cf713a2ff8fe9b93ed9303f8c2e08d6",
       "executable": false
     },
     "tests/fixtures/form-import/typeform-documented.csv": {
@@ -9281,7 +9281,7 @@
       "executable": false
     },
     "tests/runtime/form-import.worker.test.ts": {
-      "sha256": "81e12fcfac12bac362168b8349b6e9d01b0627af03a657c89b876d085bf82b4e",
+      "sha256": "23faf6f13cc952d8ab0f3b19ab7b9aac4b355dbbea1df0459552644bcc250e94",
       "executable": false
     },
     "tests/runtime/foundation-fixture.ts": {
