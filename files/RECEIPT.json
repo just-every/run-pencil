@@ -1,0 +1,127 @@
+{
+  "schema": 1,
+  "tag": "sd-pencil-c-f34",
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f34",
+  "head": "1adfcd44f292a2e74aa5a595e043a614fc7bb436",
+  "base": "4f7b106744a08557c756e1d7dffe21226ced44d2",
+  "product_push": "success",
+  "product_commit_count": 2,
+  "pr": null,
+  "clause": {
+    "id": "AGENT-005",
+    "before": "PARTIAL",
+    "after": "PARTIAL",
+    "scoped_acceptance_points_proven": [
+      1
+    ]
+  },
+  "counts_before": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49,
+    "total": 252
+  },
+  "counts_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49,
+    "total": 252
+  },
+  "checks": [
+    {
+      "command": "pnpm test:worker tests/runtime/actions-task.worker.test.ts tests/runtime/actions-measurement.worker.test.ts",
+      "exit": 0,
+      "test_files": 2,
+      "tests": 4,
+      "receipt": "worker-tests.log"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "receipt": "typecheck.log"
+    },
+    {
+      "command": "pnpm verify:boundaries",
+      "exit": 0,
+      "receipt": "boundaries.log"
+    },
+    {
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0,
+      "receipt": "first-party.log"
+    },
+    {
+      "command": "node scripts/contract-docs.mjs write AGENT-005 && node scripts/contract-docs.mjs check AGENT-005",
+      "exit": 0,
+      "receipt": "views.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock && pnpm source:check",
+      "exit": 0,
+      "receipt": "source-check.log"
+    },
+    {
+      "command": "git diff --cached -- CONTRACT.md; git diff origin/main...HEAD -- CONTRACT.md",
+      "exit": 0,
+      "status_rows_changed": false
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "fleet candidate identity and trailer audit",
+      "exit": 0,
+      "candidate_commits": 2,
+      "side_parents_included": true,
+      "receipt": "identity.log"
+    }
+  ],
+  "tested_code_matches_candidate": {
+    "method": "No product or test bytes changed after passing test run; subsequent edits were generated source-lock bytes only. Candidate file hashes retained below.",
+    "sha256": {
+      "src/core/features/actions/health.ts": "5446ae5add03741179f057b203aae2afaeef03d15589581a6c42a37ded0767fc",
+      "src/core/features/actions/routes.ts": "89e6d6b31946dc6e311765a411702ad4a2fee0de8cddc6591e688306cb821931",
+      "tests/runtime/action-health-scenario.ts": "0db9dd3ed291cf539c8e9297d93319b180adc0c232a8d0be2b3877e8beedf4ca",
+      "tests/runtime/actions-task.worker.test.ts": "3dfe80c272b6f3a3156d0a025082d08843972996955f9b8e5d6e3187c2621127",
+      "tests/runtime/actions-measurement.worker.test.ts": "2a71e04b93a83d00ebe624e318274fb645efbdc052d3fe2689a5f75c1dd18854"
+    }
+  },
+  "registrations_added": 0,
+  "registrations_removed": 0,
+  "assertions_removed_or_weakened": 0,
+  "migration_ledger": "not applicable: no migration",
+  "browser": "not applicable: no UI changes",
+  "publication_scan": {
+    "commit": "1adfcd44f292a2e74aa5a595e043a614fc7bb436",
+    "complete": false,
+    "historyScanned": null,
+    "findings": null,
+    "status": "not run in cloud; guarded Mac lander required"
+  },
+  "landing": "pending guarded Mac lander; product remains branch-only",
+  "ci": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "1adfcd44f292a2e74aa5a595e043a614fc7bb436",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42480160659",
+      "id": 42480160659,
+      "name": "Verify candidate",
+      "status": "pending"
+    }
+  ],
+  "github_api_calls": 3,
+  "local_failure_during_build": {
+    "cause": "The first mail-unavailability fixture used a sender rejected by deployment startup validation.",
+    "resolution": "Exercise a syntactically valid sender that is ineligible for reminder notifications through the real HTTPS health route.",
+    "resolved": true
+  },
+  "product_commits": [
+    "3dbeb8a1cdb021abba88bd00100e20c5e0695cc5",
+    "1adfcd44f292a2e74aa5a595e043a614fc7bb436"
+  ],
+  "reminder_history": "All retained failed and unknown occurrences, including older failures beyond the recent-detail page.",
+  "working_tree_clean": true
+}
