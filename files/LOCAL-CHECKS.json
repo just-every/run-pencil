@@ -1,0 +1,118 @@
+{
+  "schema": 1,
+  "tag": "sd-pencil-c-f40",
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f40",
+  "head": "b767275bce35994f857dc21f05d5f2fc0f25176b",
+  "base_main": "9183d1bddd25a6191fe527186b28d2b458249a03",
+  "recorded_at": "2026-11-08T16:44:18.131058+00:00",
+  "checks": [
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0,
+      "log": "first-party.log"
+    },
+    {
+      "command": "node scripts/contract-docs.mjs write DIST-021 && node scripts/contract-docs.mjs check DIST-021",
+      "exit": 0,
+      "log": "views.log",
+      "generated_views_restored_from_main": true
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock && pnpm source:check",
+      "exit": 0,
+      "output_sha256": "c2ba29d88c13081015d70afc61b09e1f4d45a6a6aa70078407b4ac4568eecf88"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "output_sha256": "601cbb76d6fb93ba0440600f9125db54cd5b1312fe28ffb5a157237f0dbf481d"
+    },
+    {
+      "command": "PENCIL_E2E_BASE_URL=http://127.0.0.1:4173 PENCIL_E2E_SITE_URL=http://127.0.0.1:4174 cloud_run timeout 1200 pnpm exec playwright test tests/e2e/hidden-fields.spec.ts --config .cloud-playwright.config.ts --project desktop --workers=1 --output=test-results/final-desktop --reporter=line",
+      "exit": 0,
+      "passed": 1,
+      "duration_seconds": 43.3,
+      "log": "desktop.log",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      }
+    },
+    {
+      "command": "PENCIL_E2E_BASE_URL=http://127.0.0.1:4173 PENCIL_E2E_SITE_URL=http://127.0.0.1:4174 cloud_run timeout 1200 pnpm exec playwright test tests/e2e/hidden-fields.spec.ts --config .cloud-playwright.config.ts --project mobile --workers=1 --output=test-results/final-mobile --reporter=line",
+      "exit": 0,
+      "passed": 1,
+      "duration_seconds": 43.4,
+      "log": "mobile.log",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      }
+    },
+    {
+      "command": "cloud_run timeout 1200 npx -y @runeditrun/rer build",
+      "exit": 0,
+      "log": "build.log"
+    }
+  ],
+  "browser": {
+    "executable": "/usr/bin/chromium",
+    "headless": true,
+    "args": [
+      "--no-sandbox",
+      "--use-mock-keychain",
+      "--password-store=basic"
+    ],
+    "real_home": true,
+    "test_only_config": true
+  },
+  "registrations": {
+    "before": 1,
+    "after": 1,
+    "added": 0,
+    "removed": 0
+  },
+  "contract_counts": {
+    "before": {
+      "done": 142,
+      "partial": 61,
+      "missing": 49
+    },
+    "after": {
+      "done": 142,
+      "partial": 61,
+      "missing": 49
+    }
+  },
+  "contract_source_changed": false,
+  "production_changed": false,
+  "migration_ledger": {
+    "command": null,
+    "reason": "no migration change",
+    "exit": 0
+  },
+  "publication_scan": {
+    "commit": "b767275bce35994f857dc21f05d5f2fc0f25176b",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "status": "not run in cloud; guarded lander owns scan",
+    "full_local_git_history": true
+  },
+  "main_equals_candidate": false,
+  "run_site_candidate": null,
+  "main_ci_receipt": "main-ci.json",
+  "candidate_ci_receipt": "candidate-ci.json",
+  "candidate_ci": {
+    "id": 42501350339,
+    "event": "push",
+    "status": "in_progress",
+    "head_sha": "b767275bce35994f857dc21f05d5f2fc0f25176b"
+  }
+}

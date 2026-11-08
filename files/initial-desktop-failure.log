@@ -1,0 +1,40 @@
+
+Running 1 test using 1 worker
+
+(node:2611) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/1] [desktop] › tests/e2e/contract.ts:4:3 › [FIELD-001,RESP-023,DIST-021] builds hidden link fields, previews their rules, collects declared values and exports them
+  1) [desktop] › tests/e2e/contract.ts:4:3 › [FIELD-001,RESP-023,DIST-021] builds hidden link fields, previews their rules, collects declared values and exports them 
+
+    Error: expect(received).toContain(expected) // indexOf
+
+    Expected substring: "text/csv"
+    Received string:    "application/octet-stream"
+
+       at plain-iframe-hidden-fields.ts:80
+
+      78 |     const exported = await page.request.get(`${base}/responses/export?token=${encodeURIComponent(start.token)}`)
+      79 |     expect(exported.status()).toBe(200)
+    > 80 |     expect(exported.headers()['content-type']).toContain('text/csv')
+         |                                                ^
+      81 |     const csv = await exported.text()
+      82 |     const parsed = parseCsv(csv)
+      83 |     expect(parsed.errors).toEqual([])
+        at provePlainIframeHiddenFields (/home/agent/rer-consolidation/work/sd-pencil-c-f40/run-pencil/tests/e2e/plain-iframe-hidden-fields.ts:80:48)
+        at /home/agent/rer-consolidation/work/sd-pencil-c-f40/run-pencil/tests/e2e/hidden-fields.spec.ts:101:3
+
+    Error Context: test-results/hidden-fields--FIELD-001-R-b5178-red-values-and-exports-them-desktop/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/hidden-fields--FIELD-001-R-b5178-red-values-and-exports-them-desktop/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/hidden-fields--FIELD-001-R-b5178-red-values-and-exports-them-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  1 failed
+    [desktop] › tests/e2e/contract.ts:4:3 › [FIELD-001,RESP-023,DIST-021] builds hidden link fields, previews their rules, collects declared values and exports them 

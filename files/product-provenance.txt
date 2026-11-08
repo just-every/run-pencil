@@ -1,0 +1,31 @@
+git rev-parse HEAD
+b767275bce35994f857dc21f05d5f2fc0f25176b
+
+git rev-parse origin/main
+9183d1bddd25a6191fe527186b28d2b458249a03
+
+git rev-parse --is-shallow-repository
+false
+
+git status --porcelain=v1
+
+git log origin/main..HEAD --format=%H%n%an <%ae>%n%cn <%ce>%n%B
+b767275bce35994f857dc21f05d5f2fc0f25176b
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+Verify persisted iframe context and complete CSV contents
+
+5247b4d6b918fd31725ce9ebcfda781ca920f401
+Run Edit Run fleet <fleet@runeditrun.com>
+Run Edit Run fleet <fleet@runeditrun.com>
+Prove plain iframe campaign query admission [skip ci]
+
+
+git diff --stat origin/main...HEAD
+ docs/guide/publish-and-share.md         |  12 ++++
+ sources.lock.json                       |   8 ++-
+ tests/e2e/hidden-fields.spec.ts         |   6 +-
+ tests/e2e/plain-iframe-hidden-fields.ts | 118 ++++++++++++++++++++++++++++++++
+ 4 files changed, 140 insertions(+), 4 deletions(-)
+
+git diff origin/main...HEAD -- CONTRACT.md

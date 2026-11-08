@@ -1,0 +1,136 @@
+{
+  "files": [
+    {
+      "blob": "aac123eff4d0ccd24c6e46a6529bda16f63daa85",
+      "bytes": 3486,
+      "path": "LOCAL-CHECKS.json",
+      "sha256": "00e9c70c9a760e4c4a2060a0f954cebc324abc67c20977dfa33f71163a59edfc"
+    },
+    {
+      "blob": "d98bbdba2b96c3df9b6ba6f7de9cb4aad7d0bc5e",
+      "bytes": 131,
+      "path": "PRODUCT-CUSTODY.txt",
+      "sha256": "ce5987739026eaa900b7bdedff103839ef4cbd1aa2944b9a2e33aa609886c36d"
+    },
+    {
+      "blob": "9d17ddf2fb7d08dcdf0e53f809fc9944b7e49808",
+      "bytes": 12043,
+      "path": "REPORT.md",
+      "sha256": "94475316fb64c42d6a77f58123268ef2f89ba5548de4dfc6d941bfb93cf54b5b"
+    },
+    {
+      "blob": "b2b7b1de45e793efbe4fda41c02dedcbd6ed6f06",
+      "bytes": 344,
+      "path": "browser-config.txt",
+      "sha256": "5c3183eeaa5a67bc5c95f60678ed9b52e197f9abbefc386606ff9f4d88210d03"
+    },
+    {
+      "blob": "f346fafb00dfe33fa0b561fa4fcfdabc070d26f2",
+      "bytes": 40789,
+      "path": "build.log",
+      "sha256": "fe9da7960d8aeda77ea2a59eb8b02a2fc2e71a87df726c15ea4e61c2185f7777"
+    },
+    {
+      "blob": "ae08478600d9843ad0c4ba4dedab63a727d8f34d",
+      "bytes": 176,
+      "path": "candidate-ci-final.json",
+      "sha256": "bfac33ef0e4871c433666273ac331287884781bbe054d354a68d79ecc3597cbb"
+    },
+    {
+      "blob": "edd69e229cdbb26fe4b2873082d507609db7fb99",
+      "bytes": 236,
+      "path": "candidate-ci.json",
+      "sha256": "37c6840ee3d03a7661111f2defe876bf10337c177057b4b5dff4d40ede32bc0b"
+    },
+    {
+      "blob": "b8a9e3533ef15845722442de75eb6f744a9f83e8",
+      "bytes": 220689,
+      "path": "desktop-plain-iframe-campaign-answer.png",
+      "sha256": "309696ed887644443d15527beed5425d9c1ac75db2d6f39b5aef86139ab90cbe"
+    },
+    {
+      "blob": "6d2415a542a40cc148973876f7b5a86f00c0fa29",
+      "bytes": 128230,
+      "path": "desktop-plain-iframe-campaign-completed.png",
+      "sha256": "dd433bc4050bb3870c61c98b10d5d1e184975878c4779285b2a520952d22fe83"
+    },
+    {
+      "blob": "0f1cd723d0bf588c79469b2087aaf23bc07a1734",
+      "bytes": 387,
+      "path": "desktop.log",
+      "sha256": "f593052f4a64015280ae341098a6257c342b7f4bd464800b96c68d99cc78a43f"
+    },
+    {
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "path": "first-party.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "blob": "8d9b4162fe35844e60d4163ab3c9ed2c28284db3",
+      "bytes": 2501,
+      "path": "initial-desktop-failure.log",
+      "sha256": "19591163f6098a3d43438f2a8c6a9c96de6be414b88efb7ad59b09bc101c41e4"
+    },
+    {
+      "blob": "10f4d8d6d9d2b51925929d74e67785950a24ff11",
+      "bytes": 404653,
+      "path": "lock-check.json",
+      "sha256": "601cbb76d6fb93ba0440600f9125db54cd5b1312fe28ffb5a157237f0dbf481d"
+    },
+    {
+      "blob": "aed4348ebe67781eb483676fcba4a40e6e6ff70e",
+      "bytes": 1170,
+      "path": "main-ci.json",
+      "sha256": "67efe3670f9ea5f0f7d8a4445819d57536c12afbca75174cf02117aecfc22610"
+    },
+    {
+      "blob": "623dae4c40f354e8b12e8eb3aba522f0f789b4ec",
+      "bytes": 376773,
+      "path": "mobile-plain-iframe-campaign-answer.png",
+      "sha256": "77d14eecddf950fc7f6ab8801f8b8b00e7afe254aec5b3f124af5c0603f89ed8"
+    },
+    {
+      "blob": "db4c0be56fb9776c97f3d1e3787177b5defe9025",
+      "bytes": 229488,
+      "path": "mobile-plain-iframe-campaign-completed.png",
+      "sha256": "1939d04d6cf320e1f5ce689366f871ffa9754cc6312b85d97dd0adc7c07e4cb6"
+    },
+    {
+      "blob": "b97edfb706a005ceb340f9c827476fb1373cb9ac",
+      "bytes": 386,
+      "path": "mobile.log",
+      "sha256": "2b238777e7465d6fc36c3544f76ccfd9298f97b1e4076dc07c508566e05ac9fd"
+    },
+    {
+      "blob": "fa709a8369b7b61f9b3a8bc7f66ec1aceff5ae15",
+      "bytes": 994,
+      "path": "product-provenance.txt",
+      "sha256": "f646540f0015121d330d08f16eb90c173cf9ad23af121f87e0c78d702d332357"
+    },
+    {
+      "blob": "652c3395d9cd0a8734d4656f058a66faa42ed729",
+      "bytes": 458973,
+      "path": "source-check.log",
+      "sha256": "c2ba29d88c13081015d70afc61b09e1f4d45a6a6aa70078407b4ac4568eecf88"
+    },
+    {
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "path": "typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "blob": "b3cc90bae9cb616d479a4b52cb6eed1f472542ce",
+      "bytes": 140,
+      "path": "views.log",
+      "sha256": "8cffe29bc6dbeb3fc049908bc04ce308eb77c37b657e5d531da6fa97b828f27e"
+    }
+  ],
+  "product_branch": "cloud/sd-pencil-c-f40",
+  "product_head": "b767275bce35994f857dc21f05d5f2fc0f25176b",
+  "ref": "refs/heads/evidence/sd-pencil-c-f40",
+  "repository": "just-every/run-pencil",
+  "schema": 1,
+  "tag": "sd-pencil-c-f40"
+}
