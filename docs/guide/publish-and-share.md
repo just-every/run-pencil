@@ -72,6 +72,18 @@ Copy the code from **Share this flow** rather than typing it, so the address is 
 
 The **script embed** adds the form and resizes it to fit its content. The **iframe** keeps a fixed height that you can change. Both show the same form with the same checks. Responses from either are labelled **Embed** in your results.
 
+### Campaign values in a plain iframe
+
+To attach a non-identifying campaign value, open **Publication options** in the builder, then **Hidden fields and identity**. Declare `utm_campaign` as a text field with the campaign purpose, keep the form anonymous, save, and publish. Your website's page template can then put the value directly in the plain iframe's `src`:
+
+```html
+<iframe src="https://your-pencil-address/embed/your-flow-link?utm_campaign=spring" title="Feedback form" width="100%" height="700" sandbox="allow-scripts allow-forms" referrerpolicy="origin" style="border:0"></iframe>
+```
+
+The completed response retains `utm_campaign=spring` in its hidden fields and response CSV. Pencil checks values against the published revision's declarations; undeclared parameters are discarded and counted. Declare and publish each campaign field before using it, and URL-encode values when your page template builds the query.
+
+Query values are visible in the iframe URL to the host page and browser, and can appear in server access logs. Discarding an undeclared value does not remove that URL exposure. Use only non-identifying campaign values here; never put credentials, secrets or personal identifiers in this query. This recipe supplies the plain iframe URL directly; it does not configure script forwarding.
+
 The embedded form runs in an isolated frame. The page around it cannot read answers, response IDs, invitation links or contact details. With the script embed, the page gets only three signals. Each is an event fired on the iframe element that bubbles up the page:
 
 - `pencil:loaded` when the form is ready.

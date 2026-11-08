@@ -1081,7 +1081,7 @@
       "executable": false
     },
     "docs/guide/publish-and-share.md": {
-      "sha256": "8c9bd9f2dcb26648d233d933587dd3250535243b77e7a530c0a0db4173844876",
+      "sha256": "41e2b6b275577e3a8b30634bc4e47fba1943165ea1931587d2026591bb460389",
       "executable": false
     },
     "docs/guide/results.md": {
@@ -8669,7 +8669,7 @@
       "executable": false
     },
     "tests/e2e/hidden-fields.spec.ts": {
-      "sha256": "9be747564ab1197b8ef8e0ad1a1091575e9e9af3098480bd2976ffcd524696dd",
+      "sha256": "5a0d9766c601a71ad9829db57d89ca0e1431af0b79e3442bf9dc3fe3d52003ff",
       "executable": false
     },
     "tests/e2e/identity-link-journey.ts": {

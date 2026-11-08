@@ -1,11 +1,12 @@
 import { proveRevisionIdentityLink } from './identity-link-journey'
+import { provePlainIframeHiddenFields } from './plain-iframe-hidden-fields'
 import type { BuilderDraft, Ledger } from '../../src/core/app/api'
 import { contract } from './contract'
 import { expect, test } from './fixtures'
 import { signInEmptyWorkspace, addConditionRule } from './authoring-helpers'
 
-contract(['FIELD-001','RESP-023'],'builds hidden link fields, previews their rules, collects declared values and exports them',async({page},info)=>{
-  test.setTimeout(120_000);page.setDefaultTimeout(15_000)
+contract(['FIELD-001','RESP-023','DIST-021'],'builds hidden link fields, previews their rules, collects declared values and exports them',async({page},info)=>{
+  test.setTimeout(150_000);page.setDefaultTimeout(15_000)
   await signInEmptyWorkspace(page)
   const slug=`campaign-consultation-${info.project.name}-${Date.now()}`
   const call=async<T,>(path:string,method='GET',data?:unknown)=>{
@@ -97,4 +98,5 @@ contract(['FIELD-001','RESP-023'],'builds hidden link fields, previews their rul
   const identity=await call<Ledger>(`${base}/ledger`)
   expect(identity.responses[0].hiddenFields.some(field=>field.name==='email')).toBe(false)
   await proveRevisionIdentityLink(page,info,flow.id,slug)
+  await provePlainIframeHiddenFields(page,info)
 })
