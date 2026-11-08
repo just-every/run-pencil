@@ -1,0 +1,14 @@
+{
+  "observed_at": "2026-11-08T02:13:32.972113+00:00",
+  "workflow_runs": [
+    {
+      "id": 42437240931,
+      "name": "Verify candidate",
+      "event": "push",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "7498d74daba8f6f40564ed94e2b0a553f718397e",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42437240931"
+    }
+  ]
+}

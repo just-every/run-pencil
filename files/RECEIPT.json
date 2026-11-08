@@ -1,0 +1,175 @@
+{
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f27",
+  "head": "7498d74daba8f6f40564ed94e2b0a553f718397e",
+  "baseline": "9877fe36b4c31f61cc6a4a13b1096634c822198f",
+  "checks": [
+    {
+      "command": "pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/feedback-rewrites.worker.test.ts",
+      "exit": 0,
+      "result": "1 passed",
+      "log": "runtime.log"
+    },
+    {
+      "command": "pnpm exec playwright test --config /tmp/pencil-browser-proof.config.ts tests/e2e/analysis.spec.ts --workers=1 --output ../proof-final",
+      "exit": 0,
+      "result": "2 passed; 1440 and 390",
+      "log": "browser-final.log",
+      "timeout_seconds": 1200
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "pnpm verify:boundaries",
+      "exit": 0,
+      "log": "boundaries.log"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "log": "first-party.log"
+    },
+    {
+      "command": "node scripts/contract-docs.mjs write AGENT-001 && node scripts/contract-docs.mjs check AGENT-001",
+      "exit": 0,
+      "log": "views.log",
+      "generated_files": "restored from origin/main; not committed"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "log": "lock.log"
+    },
+    {
+      "command": "pnpm source:check",
+      "exit": 0,
+      "log": "source-check.log"
+    }
+  ],
+  "screens": [
+    {
+      "file": "screens/desktop-studio-form-request.png",
+      "viewport": 1440,
+      "sha256": "5b2e65f28d4b82e84e24774e7a974656dc9be12960738ad4d590eb25b532f5d1"
+    },
+    {
+      "file": "screens/desktop-studio-form-review.png",
+      "viewport": 1440,
+      "sha256": "60a386e260e7c796f86bae54451a8c8d4760b296d6e735f0b281d6cafcde3be4"
+    },
+    {
+      "file": "screens/desktop-studio-form-builder.png",
+      "viewport": 1440,
+      "sha256": "02ca5792cd89077820be18c629a5a957bd76b09b674ffdd83d9a952e20460a12"
+    },
+    {
+      "file": "screens/desktop-studio-form-builder-published.png",
+      "viewport": 1440,
+      "sha256": "1e39653a20ed2396ac5f2ecc1dd9cb343c3eacfb7d00aabedd90dbd8bfbf9654"
+    },
+    {
+      "file": "screens/desktop-studio-study-request.png",
+      "viewport": 1440,
+      "sha256": "a4666327ce06b0e7b2993c8e5e9a10796abf9623fc2ccfe6b09a5f35232cb5f6"
+    },
+    {
+      "file": "screens/desktop-studio-study-review.png",
+      "viewport": 1440,
+      "sha256": "e5b9d751695b2bc911053b0203203891a6fc2391031abafc6e24dcbbcfb88f9e"
+    },
+    {
+      "file": "screens/desktop-studio-study-builder.png",
+      "viewport": 1440,
+      "sha256": "e9d4042537dd810f43e093819e377ba291b4eb3e60144327ce7cb73fad49f3ee"
+    },
+    {
+      "file": "screens/desktop-studio-study-builder-published.png",
+      "viewport": 1440,
+      "sha256": "290b2e9dd6fcba698f6ba86071fc88a39a06c95ed2a897315385cb4f785d26a6"
+    },
+    {
+      "file": "screens/mobile-studio-form-request.png",
+      "viewport": 390,
+      "sha256": "b268ad438e7634f816b8922d61761bda3a5813d8c04c583aa81a4d4ee9fd409e"
+    },
+    {
+      "file": "screens/mobile-studio-form-review.png",
+      "viewport": 390,
+      "sha256": "15acaf876e9226d2cedea4d37717363b6c21f0d6a3fd6b6137fc378e80fdf540"
+    },
+    {
+      "file": "screens/mobile-studio-form-builder.png",
+      "viewport": 390,
+      "sha256": "98882f9dd522430e73c31781140722143b401bec052e93c580e4b169b56a88df"
+    },
+    {
+      "file": "screens/mobile-studio-form-builder-published.png",
+      "viewport": 390,
+      "sha256": "b5c3f16440c6fc7d6578ec9a68f47e31e10c143a61e4228166440254d4cafd38"
+    },
+    {
+      "file": "screens/mobile-studio-study-request.png",
+      "viewport": 390,
+      "sha256": "61faf65c53fd325a0c4223cf3fa8b513c1d44c69300d94ef313751a7f12eb3f1"
+    },
+    {
+      "file": "screens/mobile-studio-study-review.png",
+      "viewport": 390,
+      "sha256": "e9ea458800530546bec77527bb8137921f6145348119b42605c41e677305bbea"
+    },
+    {
+      "file": "screens/mobile-studio-study-builder.png",
+      "viewport": 390,
+      "sha256": "b9fdc698089506b9d36ada6c5be423f5613f1e31034b2b60d9acce482bba7b7d"
+    },
+    {
+      "file": "screens/mobile-studio-study-builder-published.png",
+      "viewport": 390,
+      "sha256": "9f8a35c073fb9de7760937d012e6bf4b6169d0c28b9ab8de5815350f768759ad"
+    }
+  ],
+  "ci": [
+    {
+      "id": 42437240931,
+      "name": "Verify candidate",
+      "event": "push",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "7498d74daba8f6f40564ed94e2b0a553f718397e",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42437240931"
+    }
+  ],
+  "publication_scan": {
+    "commit": "7498d74daba8f6f40564ed94e2b0a553f718397e",
+    "complete": false,
+    "historyScanned": null,
+    "findings": null,
+    "reason": "maintained Mac lander owns the cloud publication gate"
+  },
+  "claim": {
+    "clause": "AGENT-001",
+    "status": "PARTIAL",
+    "selected_point": "completed",
+    "counts_before": {
+      "done": 142,
+      "partial": 61,
+      "missing": 49
+    },
+    "counts_after": {
+      "done": 142,
+      "partial": 61,
+      "missing": 49
+    },
+    "registration_delta": 0
+  },
+  "product_push": {
+    "exit": 0,
+    "log": "final-push.log",
+    "readback": "remote-refs.txt"
+  },
+  "migrations": "none",
+  "pr": null
+}
