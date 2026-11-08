@@ -112,7 +112,18 @@
   "candidate_ci": {
     "id": 42501350339,
     "event": "push",
-    "status": "in_progress",
-    "head_sha": "b767275bce35994f857dc21f05d5f2fc0f25176b"
-  }
+    "status": "completed",
+    "head_sha": "b767275bce35994f857dc21f05d5f2fc0f25176b",
+    "conclusion": "success",
+    "last_observed_at": "2026-11-08T16:59:10Z",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42501350339"
+  },
+  "github_calls_used": 5,
+  "remote_product_head": "b767275bce35994f857dc21f05d5f2fc0f25176b",
+  "evidence_initial_round_trip": {
+    "head": "412e9ace704cd6a2fd8fa6fa09b1e5576265ffde",
+    "files": 21,
+    "result": "restored; manifest and all file hashes verified"
+  },
+  "terminal_product_custody": "READY branch=cloud/sd-pencil-c-f40 head=b767275bce35994f857dc21f05d5f2fc0f25176b"
 }

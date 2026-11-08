@@ -28,7 +28,7 @@ Inherited duties: FIELD-001 revision declaration and typed discard are exercised
 DONE-RIDERS assessment (a PARTIAL claim only):
 1. FAIL for whole-clause DONE: points 1-4 and 6 remain unproved; only scoped point 5 is closed.
 2. PASS scoped native data proof: a real admitted response and non-empty actual CSV are checked against fixed expected values; exact persisted hidden context excludes the undeclared key. No storage or export fake.
-3. PENDING recorded exact-head Verify; the extended registration is already loaded by the existing browser test globs at both widths, without an environment gate.
+3. PASS: push Verify 42501350339 completed success on exact b767275bce35994f857dc21f05d5f2fc0f25176b. The extended registration is loaded by the existing browser test globs at both widths, without an environment gate.
 4. Final touched runs bind to the final candidate; no application bytes changed after the initial build.
 5. INSPECTED: the clause names FIELD-001, RESP-023 and DIST-002 isolation duties. No acceptance or inheritance rewrite.
 6. PASS mechanical generation; write and check DIST-021 succeed. Generated views are restored from main and excluded from commits, with source judgments unchanged.
@@ -54,3 +54,13 @@ Main's exact observed 9183d1bddd25a6191fe527186b28d2b458249a03 had successful pu
 Publication scan receipt: commit=b767275bce35994f857dc21f05d5f2fc0f25176b complete=UNESTABLISHED historyScanned=UNESTABLISHED findings=UNESTABLISHED. Cloud does not run the Mac publication scanner. The local Git clone has full history (is-shallow-repository=false). The guarded lander must scan this exact candidate and establish COMPLETE with zero findings before landing. Main does not equal the candidate. No landing or release is claimed.
 
 Final production build through cloud_run npx -y @runeditrun/rer build: exit 0. Working tree remained clean after the build. All locally started browsers and the browser server are stopped.
+
+CI update at 2026-11-08T16:54:04Z: exact-head Verify 42501350339 remains in_progress with null conclusion after the ten-minute poll. Four GitHub API calls have been used; no job log, dispatch or rerun was requested. The initial evidence snapshot 412e9ace704cd6a2fd8fa6fa09b1e5576265ffde was fetched back through the provided entrypoint, which verified the manifest, all 21 files and their hashes, and exact product head. The final evidence publication will include the latest CI observation.
+
+
+Final CI receipt at 2026-11-08T16:59:10Z: push Verify 42501350339 is completed/success on b767275bce35994f857dc21f05d5f2fc0f25176b, https://github.com/just-every/run-pencil/actions/runs/42501350339. Five GitHub calls total, one watcher, every candidate poll at least 300 seconds apart. No dispatch, retry, rerun or workflow edit. No known failing run remains. Rider 3 passes for recorded native browser proof; rider 1 still prevents whole-clause DONE because the deliberately held remainder is unproved. Rider 11 remains pending the independent guarded lander. No provider or publication-scan receipt is invented from the green workflow.
+
+CLAIM DIST-021 PARTIAL points=5 tests=tests/e2e/hidden-fields.spec.ts#builds hidden link fields, previews their rules, collects declared values and exports them
+GAP DIST-021: INTEG-017 receivers, DIST-013 popup and FIELD-001 completion remain required. Script forwarding and revision-declared-name projection, fixed and hidden calls, GA values and precedence, initialization timing and type checks, limits, every embed mode and WordPress shortcode, anonymous identifying-field rejection and click-ID custody, integration deliveries and activation rewrites remain unproved. Existing payment and host-event restrictions remain unchanged.
+
+Terminal product result: READY branch=cloud/sd-pencil-c-f40 head=b767275bce35994f857dc21f05d5f2fc0f25176b. No product blocker. This is permission for the maintained fleet's independent gates, not an acceptance, landing or release claim. The final evidence ref remains separate and names this same product head. The scratch product clone is deleted after evidence publication and custody verification; the actual packet stays at /home/agent/rer-consolidation/work/sd-pencil-c-f40/packet/.
