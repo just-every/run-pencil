@@ -4,6 +4,7 @@ import { contract } from '../../src/test/contract'
 import { foundationFixture } from './foundation-fixture'
 import { RespondentConfirmationDispatcher } from '../../src/core/features/notifications/confirmation-dispatcher'
 import { baseMailSender } from '../../src/core/platform/mail/base.server'
+import { confirmationWithholdingScenario } from './confirmation-withholding-scenario'
 
 declare const __PENCIL_CORE_MIGRATIONS__:D1Migration[]
 beforeAll(()=>applyD1Migrations(env.DB,__PENCIL_CORE_MIGRATIONS__))
@@ -129,4 +130,5 @@ contract(['RESP-020','LOGIC-001','FIELD-015','DIST-006','DATA-002'],'released co
   expect(await env.DB.prepare('SELECT id FROM confirmation_deliveries WHERE response_id=?').bind(completed.row!.id).first()).toBeNull()
   expect((await env.DB.prepare("SELECT id FROM confirmation_attempts WHERE delivery_id=?").bind('confirmation:'+completed.row!.id).all()).results).toHaveLength(0)
  }finally{network.mockRestore()}
+ await confirmationWithholdingScenario()
 })
