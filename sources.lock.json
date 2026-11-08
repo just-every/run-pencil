@@ -9285,7 +9285,7 @@
       "executable": false
     },
     "tests/runtime/chat-integrations-proof.ts": {
-      "sha256": "ab1f1d848a6f9a93ce0fce78deba395fb4f7e278e679656563094c37358329f3",
+      "sha256": "d487d460062a6002ccd7792242b2b6a82442a70d89d57314b5c7754597117570",
       "executable": false
     },
     "tests/runtime/coding.worker.test.ts": {
@@ -9577,7 +9577,7 @@
       "executable": false
     },
     "tests/runtime/task-receiver.global.ts": {
-      "sha256": "3b2b0fa6b6a2183a5e16e63452169498ee47c2a43fad5d143aa4656d1a8f3f42",
+      "sha256": "5a2b3908dd6721d89fa4a4070edb149faf2ae6cc81c6d4561393aee562670e98",
       "executable": false
     },
     "tests/runtime/team-templates.worker.test.ts": {
