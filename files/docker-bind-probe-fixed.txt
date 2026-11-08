@@ -1,0 +1,5 @@
+total 16
+drwxr-xr-x    2 1000     1000          4096 Nov  8 12:11 .
+drwxr-xr-x   20 root     root          4096 Nov  8 12:49 ..
+-rw-r--r--    1 1000     1000          2316 Nov  8 12:11 README.md
+-rw-r--r--    1 1000     1000          1697 Nov  8 12:11 pencil.php

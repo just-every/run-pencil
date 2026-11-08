@@ -94,3 +94,37 @@ CI observation 1: push Verify candidate run 42479761808 remains in_progress on e
 Exact-head Node 22.20.0 follow-up: timed existing registration PASS, exit=0, runId=local-node22-sd-pencil-c-f33-20261108T122611Z, elapsed=50.237 seconds including import and setup. The actual test body remains within the unchanged 30-second test timeout. Typecheck PASS exit=0; first-party check PASS exit=0. Earlier Node 24 exact-head run also passed. No product bytes changed between these runs.
 
 CI observation 2: Verify 42479761808 remains in_progress on the exact candidate, after another full 300-second polling interval. The non-secret packet is being preserved separately while that run continues. Product push is complete; this evidence transfer carries no READY or landing signal.
+
+## Completed Verify diagnosis
+
+Verify run 42479761808 completed with failure on exact candidate 18ef418c11ba90618205512f485918fe5aae68bb. Both native Worker shards passed: job 128729308018 (worker-1, desktop-7, archive-delivery) and job 128729307977 (worker-2, mobile-6, hosted). All other shard jobs passed except job 128729307811 (desktop-4, mobile-7, desktop-5, admission); its mobile-7 lane failed the pre-existing WordPress embed assertion at tests/e2e/wordpress-embed.ts:89:29 in both Playwright attempts. Aggregate job 128732060800 consequently failed.
+
+Failed assertion source: await expect(visitor.getByRole('status')).toHaveCount(3). CI log reports the authored journey “copied async script mounts an opaque allowed-host iframe, resizes, emits only permitted events and rejects malicious messages” and the source coordinates, but intentionally omits assertion values. The job log was read once successfully using gh run view 42479761808 --repo just-every/run-pencil --job 128729307811 --log-failed.
+
+The additional detailed artifact read failed: gh run download 42479761808 --repo just-every/run-pencil --name contract-5 --dir /tmp/sd-pencil-c-f33-failed-artifact -> 403 Forbidden at the artifact blob host. Signed query data has been removed from the retained diagnostic. No blocked blob download was retried. REST and archive budget used: 9 of 10 calls.
+
+Reproduction uses exact failed head, Node 22.20.0, CI=1, mobile-7 and node scripts/run-contract-lane.mjs mobile-7 <local evidence directory>, with fresh local builds because the CI artifact download was forbidden. Cloud browser adaptation uses /usr/bin/chromium with --no-sandbox through an external process preloader. No tracked source or test is changed. Main comparison uses 4f7b106744a08557c756e1d7dffe21226ced44d2 on this same runner.
+
+The initial candidate replay did not reproduce the CI assertion. It failed earlier because cloud checkout mode 0700 for directories and 0600 for public fixture files prevented the WordPress container user from reading the bind mounts; the direct container probe reported “ls: can't open /proof: Permission denied”. Only the tracked public WordPress plugin and theme mounts were made readable (directories 0755, files 0644), with no Git-tracked content or executable-mode change. The follow-up probe lists pencil.php successfully. Initial replay receipt writing also required the original GITHUB_RUN_ID, now supplied for local reproduction only; such local output is never claimed as a GitHub Actions result.
+
+## Final result and handoff
+
+Final product head: 18ef418c11ba90618205512f485918fe5aae68bb on cloud/sd-pencil-c-f33. Product push succeeded at the first real commit. No additional product commit, merge, rebase or source edit followed the push. Working tree is clean.
+
+The corrected same-shard local replay passed 10 of 10 tests on the exact candidate (exit=0, 270.446 seconds). The same mobile-7 lane on starting main 4f7b106744a08557c756e1d7dffe21226ced44d2 passed 10 of 10 (exit=0) on this same runner, Node 22.20.0, system Chromium and --no-sandbox. Both real WordPress journeys reached and passed the invalid-shortcode assertion. The initial cloud file-permission failure is not treated as a reproduction of the CI failure.
+
+VERIFY_NOT_REPRODUCED: original CI assertion tests/e2e/wordpress-embed.ts:89:29, expect(visitor.getByRole('status')).toHaveCount(3), failed in both CI attempts but passes in the candidate and main replays. Exact CI artifact equivalence is not established because the artifact blob download is Forbidden; fresh or locally saved exact-head build profiles were used and that limitation is recorded. No speculative code repair, weakened assertion, workflow edit, new registration, extra dispatch or failed-job rerun was made. Nine of the ten allowed GitHub calls were used.
+
+DONE-RIDERS final clarification: rows 1 and 9 remain PARTIAL because the full clause has retained feature and provider gaps. Row 3 has exact-head success for both native Worker shards, but aggregate Verify is red on the unrelated WordPress journey. Row 4 has exact-head local timing receipts on Node 24 and pinned Node 22. Rows 2, 5, 6, 7, 8 and 10 retain the scoped results above; row 11 remains lander-pending. No DONE count or launch is claimed.
+
+CLAIM INTEG-006 PARTIAL points=1,2 tests=tests/runtime/response-webhooks.worker.test.ts#signed response events verify, retry on one event ID, replay, disable with an alert and list undelivered responses without ever blocking collection
+
+GAP INTEG-006: Nook delivery and receiving connection, Teams message-action implementation, genuine Teams post, genuine signed Slack inbound through the owner-configured public Interactivity Request URL and console signing-secret qualification, and exact-head provider qualification remain omitted. NOTIFY-005 policy custody and INTEG-015 replay interface custody remain unchanged. Counts stay 142 DONE, 61 PARTIAL, 49 MISSING.
+
+BLOCKED branch=cloud/sd-pencil-c-f33 head=18ef418c11ba90618205512f485918fe5aae68bb reason=unreproduced exact-SHA Verify mobile WordPress assertion; fv diagnosis required. The scoped deadline proof is complete and pushed. The brief explicitly requires BLOCKED when a failing CI command does not reproduce; no READY is claimed.
+
+Lane plan row: INTEG-006 remains PARTIAL to PARTIAL. The ten-second Slack and Teams deadline proof is complete in this candidate, with no count change; all original feature, provider and interface holds remain. No other target or plan row was changed.
+
+POST lanes/fv/INBOX.md: sd-pencil-c-f33 head=18ef418c11ba90618205512f485918fe5aae68bb Verify 42479761808 job 128729307811 mobile-7 failed tests/e2e/wordpress-embed.ts:89:29 in both attempts; corrected exact-head and main replays each pass 10 of 10. CI artifact read is 403 Forbidden. No repair or rerun; diagnose unreproduced CI failure.
+
+POST lanes/sd/INBOX.md: sd-pencil-c-f33 INTEG-006 PARTIAL to PARTIAL; ten-second Slack and Teams deadline proof complete, counts 142 DONE, 61 PARTIAL, 49 MISSING unchanged. Product head 18ef418c11ba90618205512f485918fe5aae68bb on cloud/sd-pencil-c-f33; Verify 42479761808 red in unrelated mobile-7 job 128729307811, both native Worker jobs 128729308018 and 128729307977 green; candidate and main browser replays pass, BLOCKED pending fv diagnosis.

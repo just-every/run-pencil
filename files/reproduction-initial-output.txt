@@ -1,0 +1,12 @@
+Browser failure: [DIST-013,DIST-002,DIST-009,BASE-PUBLIC-001,BASE-PUBLIC-002] copied async script mounts an opaque allowed-host iframe, resizes, emits only permitted events and rejects malicious messages at contract.ts:4:3 (mobile, attempt 1, failed)
+Browser failure: [DIST-013,DIST-002,DIST-009,BASE-PUBLIC-001,BASE-PUBLIC-002] copied async script mounts an opaque allowed-host iframe, resizes, emits only permitted events and rejects malicious messages at contract.ts:4:3 (mobile, attempt 2, failed)
+file:///workspace/run-pencil-sd-pencil-c-f33/scripts/ci-contract-evidence.mjs:11
+  if (!run) throw new Error('Sharded contract evidence requires the current GitHub run.')
+                  ^
+
+Error: Sharded contract evidence requires the current GitHub run.
+    at identity (file:///workspace/run-pencil-sd-pencil-c-f33/scripts/ci-contract-evidence.mjs:11:19)
+    at writeCiContractEvidence (file:///workspace/run-pencil-sd-pencil-c-f33/scripts/ci-contract-evidence.mjs:49:72)
+    at async file:///workspace/run-pencil-sd-pencil-c-f33/scripts/run-contract-lane.mjs:43:1
+
+Node.js v22.20.0

@@ -1,0 +1,63 @@
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	﻿2026-11-08T12:22:16.6877821Z ##[group]Run set -uo pipefail
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6878373Z [36;1mset -uo pipefail[0m
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6878789Z [36;1mstatus=0[0m
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6879416Z [36;1mfor lane in $LANES; do[0m
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6879858Z [36;1m  case "$lane" in[0m
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6880264Z [36;1m    hosted)[0m
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6881086Z [36;1m      (node scripts/ci-builds.mjs restore production && node scripts/verify-hosted-output.mjs) || status=1 ;;[0m
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6882011Z [36;1m    admission)[0m
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6883680Z [36;1m      (node scripts/ci-builds.mjs restore production && node scripts/sync-integration.mjs --check && node --test scripts/delivery-artifact.check.mjs && pnpm exec playwright test --config playwright.admission.config.ts --workers=1) || status=1 ;;[0m
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6885483Z [36;1m    unit)[0m
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6886503Z [36;1m      (node scripts/ci-builds.mjs restore production && node scripts/run-contract-lane.mjs "$lane" "$RUNNER_TEMP/contract-evidence") || status=1 ;;[0m
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6887659Z [36;1m    worker-1)[0m
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6888543Z [36;1m      (pnpm verify:migrations && node scripts/run-contract-lane.mjs "$lane" "$RUNNER_TEMP/contract-evidence") || status=1 ;;[0m
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6889760Z [36;1m    *)[0m
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6890454Z [36;1m      node scripts/run-contract-lane.mjs "$lane" "$RUNNER_TEMP/contract-evidence" || status=1 ;;[0m
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6891273Z [36;1m  esac[0m
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6891675Z [36;1mdone[0m
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6892029Z [36;1mexit "$status"[0m
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6918220Z shell: /usr/bin/bash -e {0}
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6918648Z env:
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6919221Z   PENCIL_CI_BUILDS: .rer/ci-builds
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6919774Z   LANES: desktop-4 mobile-7 desktop-5 admission
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:22:16.6920291Z ##[endgroup]
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:26:13.0344124Z desktop-4: 11 passed, 0 failed; exit 0.
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:29:55.2220975Z Browser failure: [DIST-013,DIST-002,DIST-009,BASE-PUBLIC-001,BASE-PUBLIC-002] copied async script mounts an opaque allowed-host iframe, resizes, emits only permitted events and rejects malicious messages at /home/runner/work/run-pencil/run-pencil/tests/e2e/wordpress-embed.ts:89:29, /home/runner/work/run-pencil/run-pencil/tests/e2e/script-embed.spec.ts:197:5 (mobile, attempt 1, failed)
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:29:55.2227086Z Browser failure: [DIST-013,DIST-002,DIST-009,BASE-PUBLIC-001,BASE-PUBLIC-002] copied async script mounts an opaque allowed-host iframe, resizes, emits only permitted events and rejects malicious messages at /home/runner/work/run-pencil/run-pencil/tests/e2e/wordpress-embed.ts:89:29, /home/runner/work/run-pencil/run-pencil/tests/e2e/script-embed.spec.ts:197:5 (mobile, attempt 2, failed)
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:29:55.2293750Z mobile-7: 9 passed, 1 failed; exit 1.
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:31:55.9913493Z desktop-5: 14 passed, 0 failed; exit 0.
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:31:56.2679920Z Integration deployment spec and setup binding match the Base build readers.
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:31:56.3139785Z TAP version 13
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:31:56.7916490Z # Subtest: the real built Pencil package preserves every Worker and asset payload and carries its setup and migrations
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:31:56.7926766Z ok 1 - the real built Pencil package preserves every Worker and asset payload and carries its setup and migrations
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:31:56.7927902Z   ---
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:31:56.7929728Z   duration_ms: 443.219881
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:31:56.7930235Z   type: 'test'
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:31:56.7930637Z   ...
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:31:56.8030253Z 1..1
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:31:56.8031949Z # tests 1
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:31:56.8032615Z # suites 0
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:31:56.8033317Z # pass 1
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:31:56.8035056Z # fail 0
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:31:56.8035751Z # cancelled 0
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:31:56.8036441Z # skipped 0
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:31:56.8037757Z # todo 0
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:31:56.8038430Z # duration_ms 500.80492
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:32:25.8029510Z [WebServer] ▲ [WARNING] Scheduled Workers are not automatically triggered during local development.
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:32:25.8030582Z [WebServer] 
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:32:25.8031253Z [WebServer]   To manually trigger a scheduled event, run:
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:32:25.8032823Z [WebServer]     curl "http://127.0.0.1:4173/cdn-cgi/local/scheduled"
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:32:25.8034444Z [WebServer]   For more details, see https://developers.cloudflare.com/workers/configuration/cron-triggers/#test-cron-triggers-locally
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:32:25.8035596Z [WebServer] 
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:32:25.8035984Z [WebServer] 
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:32:26.7032894Z (node:10468) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:32:26.7034628Z (Use `node --trace-warnings ...` to show where the warning was created)
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:32:26.7117782Z 
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:32:26.7118342Z Running 2 tests using 1 worker
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:32:27.3441400Z (node:10974) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:32:27.3442178Z (Use `node --trace-warnings ...` to show where the warning was created)
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:32:33.9144829Z (node:11066) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:32:33.9146139Z (Use `node --trace-warnings ...` to show where the warning was created)
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:32:39.8522742Z ··
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:32:39.8526567Z   2 passed (42.0s)
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-08T12:32:39.8800076Z ##[error]Process completed with exit code 1.

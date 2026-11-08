@@ -1,0 +1,9 @@
+{
+  "head": "18ef418c11ba90618205512f485918fe5aae68bb",
+  "command": "CI=1 cloud_run node scripts/run-contract-lane.mjs mobile-7 /tmp/sd-pencil-c-f33-reproduce-candidate",
+  "exit": 1,
+  "matchesCIFailure": false,
+  "failure": "WordPress fixture cannot read the clone-mounted public plugin; initial directory mode 0700 and file mode 0600. Shard receipt also lacked GITHUB_RUN_ID.",
+  "bindProbe": "ls: can't open '/proof': Permission denied\ntotal 0\n",
+  "correction": "Only public plugin and theme mounts receive directory mode 0755 and file mode 0644; no tracked content or Git executable mode changes."
+}

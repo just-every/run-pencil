@@ -1,0 +1,4 @@
+Command: gh run download 42479761808 --repo just-every/run-pencil --name contract-5 --dir /tmp/sd-pencil-c-f33-failed-artifact
+Exit: 1
+Observed HTTP response: 403 Forbidden
+error downloading contract-5: Get "https://productionresultssa3.blob.core.windows.net/actions-results/464cc7b6-04b6-8028-828d-58e75c0fc787/workflow-job-run-1e39191a-60ce-5117-b32c-01ad67e83f6c/artifacts/5304acd32186a248ac63fa59e758a7085ab7ef5f21d5173b8d510eb8dc7cdf1e.zip?<query-redacted>": Forbidden

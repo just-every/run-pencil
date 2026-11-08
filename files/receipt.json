@@ -94,7 +94,7 @@
       "status": "in_progress"
     }
   ],
-  "githubAPICalls": 4,
+  "githubAPICalls": 9,
   "pr": null,
   "publicationScan": {
     "status": "lander-pending",
@@ -106,10 +106,10 @@
   "runSite": "lander-pending",
   "ready": false,
   "candidateCIObservation": {
-    "conclusion": null,
+    "conclusion": "failure",
     "head_sha": "18ef418c11ba90618205512f485918fe5aae68bb",
     "html_url": "https://github.com/just-every/run-pencil/actions/runs/42479761808",
-    "status": "in_progress"
+    "status": "completed"
   },
   "candidateCIRunId": 42479761808,
   "localTimingCICompatibleNode": {
@@ -136,5 +136,52 @@
         "elapsedSeconds": 1.266
       }
     ]
-  }
+  },
+  "candidateCIOutcome": "failure",
+  "failedJobId": 128729307811,
+  "failedLane": "mobile-7",
+  "failedTestLocation": "tests/e2e/wordpress-embed.ts:89:29",
+  "artifactDownload": "403 Forbidden; no retry",
+  "nativeRuntimeCIJobs": [
+    {
+      "id": 128729308018,
+      "lane": "worker-1",
+      "conclusion": "success"
+    },
+    {
+      "id": 128729307977,
+      "lane": "worker-2",
+      "conclusion": "success"
+    }
+  ],
+  "terminalStatus": "BLOCKED",
+  "verificationReproduced": false,
+  "repairCommits": 0,
+  "blockingDependency": "fv must diagnose the unreproduced mobile WordPress assertion in exact-SHA Verify run 42479761808 job 128729307811; detailed CI artifact download returned 403 Forbidden.",
+  "reproductionCandidate": {
+    "head": "18ef418c11ba90618205512f485918fe5aae68bb",
+    "command": "node scripts/run-contract-lane.mjs mobile-7 /tmp/sd-pencil-c-f33-reproduce-candidate-valid",
+    "exit": 0,
+    "node": "v22.20.0",
+    "ci": true,
+    "githubRunIdForReproduction": 42479761808,
+    "browser": "/usr/bin/chromium --no-sandbox",
+    "builds": "documented local build profiles saved from the initial exact-head replay; CI artifact download was forbidden",
+    "elapsedSeconds": 270.446,
+    "output": "mobile-7: 10 passed, 0 failed; exit 0.\n"
+  },
+  "reproductionMain": {
+    "head": "4f7b106744a08557c756e1d7dffe21226ced44d2",
+    "command": "CI=1 GITHUB_RUN_ID=42479761808 node scripts/run-contract-lane.mjs mobile-7 /tmp/sd-pencil-c-f33-reproduce-main",
+    "node": "v22.20.0",
+    "browser": "/usr/bin/chromium --no-sandbox",
+    "exit": 0,
+    "output": "mobile-7: 10 passed, 0 failed; exit 0.\n",
+    "testCount": 10,
+    "passed": 10,
+    "failed": 0
+  },
+  "remainingGitHubAPIBudget": 1,
+  "productPush": "confirmed",
+  "finalProductHead": "18ef418c11ba90618205512f485918fe5aae68bb"
 }

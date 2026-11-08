@@ -1,0 +1,12 @@
+{
+  "head": "18ef418c11ba90618205512f485918fe5aae68bb",
+  "command": "node scripts/run-contract-lane.mjs mobile-7 /tmp/sd-pencil-c-f33-reproduce-candidate-valid",
+  "exit": 0,
+  "node": "v22.20.0",
+  "ci": true,
+  "githubRunIdForReproduction": 42479761808,
+  "browser": "/usr/bin/chromium --no-sandbox",
+  "builds": "documented local build profiles saved from the initial exact-head replay; CI artifact download was forbidden",
+  "elapsedSeconds": 270.446,
+  "output": "mobile-7: 10 passed, 0 failed; exit 0.\n"
+}

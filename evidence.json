@@ -1,10 +1,16 @@
 {
   "files": [
     {
-      "blob": "82c1f142d2ae22cfe2ec4ef4f9f959b37a0ff64a",
-      "bytes": 12035,
+      "blob": "65d59a3995d0d03c4f7d0159fdbcc79eec30bd1d",
+      "bytes": 18343,
       "path": "REPORT.md",
-      "sha256": "1cc5a20e23c20afc79877fb99bedd4d00a5408008e033c299a737a0c54f08cd0"
+      "sha256": "c3d273cfb48003a033fff584cc32e1e8c90995c5c339ad65bf84f6893b01e181"
+    },
+    {
+      "blob": "2a592c0a8fcbd3216b3dd7ddcfdae98e523e78fb",
+      "bytes": 474,
+      "path": "artifact-transport-error.txt",
+      "sha256": "5a1bcf33e964434a9808e7d569694c15e5c305f38eaae5792ffd60e37eead512"
     },
     {
       "blob": "5405e7349fd92c7fc7fd3dbad2893537b057dca0",
@@ -31,6 +37,12 @@
       "sha256": "2b12fa5135d7c0c2d0149736ee9c25fa7443bb7fd7b4c864c7a8f96d2bd7b18a"
     },
     {
+      "blob": "71f7605ee6915f5bf5f1996999ac39974463982a",
+      "bytes": 179,
+      "path": "candidate-ci-poll-3.json",
+      "sha256": "70aba434984de2dc4782f6b2aaeb2989c23d7c066971077d77376c431dbb98c5"
+    },
+    {
       "blob": "55bfeff023c4ae17dc59e12f86f446b1960e6b53",
       "bytes": 85,
       "path": "candidate-identities.txt",
@@ -49,10 +61,28 @@
       "sha256": "848ad6ae144642083ac90acbe972a04de02c9547aa9d37b6ee9c8a3373155d92"
     },
     {
+      "blob": "d2d671982009045ed2689eb8a76c849a8b808421",
+      "bytes": 11676,
+      "path": "ci-failed-job-128729307811.log",
+      "sha256": "a37d73640f1c6047b18723891f7ad45ba9f380582ac60c4e46c78983e40b54ed"
+    },
+    {
+      "blob": "80c9af9ab485d32412b5eab042ccd533d38f3608",
+      "bytes": 1755,
+      "path": "ci-jobs.json",
+      "sha256": "fe09fc0fed756c92f34d106efa85f6836c6fbec8d2d0205891fd74243d644212"
+    },
+    {
       "blob": "109bda45cf5130e78f6f3700d0836d3af170bcd5",
       "bytes": 244,
       "path": "diff-hygiene.json",
       "sha256": "aad4b285e1ab0a9c40bab2f098202f910d73b0ae58f527102e7e1c9f40fcbc8c"
+    },
+    {
+      "blob": "f807320c4b92264101693a2d487a646425f07019",
+      "bytes": 263,
+      "path": "docker-bind-probe-fixed.txt",
+      "sha256": "8592e9d06f0293de8d4ccedee7d1c243a00d907c4f2e8a91a186e45b824bf831"
     },
     {
       "blob": "ce001550f705d0fa1a7c750bab5bb208761664aa",
@@ -73,10 +103,40 @@
       "sha256": "fb9f97a2967decbaf2400969e1eb243f8abeac0ae07b8ca3ffe1bcb8ff9865c5"
     },
     {
-      "blob": "8385d9c57e61bebae16cb6e5c7ad4b57d70e74ed",
-      "bytes": 3881,
+      "blob": "a499c12ee26ca24846501a4cf9e48cafe4facd94",
+      "bytes": 162,
+      "path": "product-push-receipt.json",
+      "sha256": "72ea6700852af5257662857fd7b9c38d453d35b1f7615541240a7b7e8ed3f94b"
+    },
+    {
+      "blob": "d9a5d9414930969acc8a0250f5f802043897773a",
+      "bytes": 5702,
       "path": "receipt.json",
-      "sha256": "30ec9d35f93369775107e162155ca9e019bb97d2d6ecd76b6e3f25d77ce51773"
+      "sha256": "9614710c62d0f1b669c2a4742134e5df27444d63ea320f0226a3cc3014a97650"
+    },
+    {
+      "blob": "0b25797430a34e8037d8880d6159481092bcc6c5",
+      "bytes": 514,
+      "path": "reproduction-candidate.json",
+      "sha256": "4e2609275c3ed0a0fb24694f62b52edffc532f888c32e69e456b867a5e6920e5"
+    },
+    {
+      "blob": "42149b4ddc365f50ac42b51b907e5c9f9d58314f",
+      "bytes": 609,
+      "path": "reproduction-initial-environment.json",
+      "sha256": "26afadc789a4d5b38b4fbe693eafbd2f29fcea60ec97586a40e6e57a7d57255a"
+    },
+    {
+      "blob": "6934b0f2fb610cbf9505dbe51340cc1f0705eb5b",
+      "bytes": 1090,
+      "path": "reproduction-initial-output.txt",
+      "sha256": "61c475d1b8ee58a02d33f8f3304949edf9960402974ccecc1893471228563401"
+    },
+    {
+      "blob": "96d25adef3fa208ec3b0fdc2abda2470b7412e23",
+      "bytes": 372,
+      "path": "reproduction-main.json",
+      "sha256": "a55192c812c38540f29b10d8afab6a46a79f6ad3f7a48281e9b10e14c16e7dec"
     },
     {
       "blob": "624c331665876571cff50200cc81eaa7a3961a48",

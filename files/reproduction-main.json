@@ -1,0 +1,11 @@
+{
+  "head": "4f7b106744a08557c756e1d7dffe21226ced44d2",
+  "command": "CI=1 GITHUB_RUN_ID=42479761808 node scripts/run-contract-lane.mjs mobile-7 /tmp/sd-pencil-c-f33-reproduce-main",
+  "node": "v22.20.0",
+  "browser": "/usr/bin/chromium --no-sandbox",
+  "exit": 0,
+  "output": "mobile-7: 10 passed, 0 failed; exit 0.\n",
+  "testCount": 10,
+  "passed": 10,
+  "failed": 0
+}
