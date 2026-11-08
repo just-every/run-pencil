@@ -8776,6 +8776,10 @@
       "sha256": "c780e748bae1149203256282afce8bc05db02968a09969d4f8c2e23e4330dd91",
       "executable": false
     },
+    "tests/e2e/plain-iframe-hidden-fields.ts": {
+      "sha256": "6b9cfd5dc24e4432383de0a20ab4bd695181912d00332d6391484a8083294b5b",
+      "executable": false
+    },
     "tests/e2e/preview-backup-journey.ts": {
       "sha256": "3cd4c4f7dd751b346fba79f342fdb9fe4b9b4af1233f65c7dd4fd424f434494f",
       "executable": false

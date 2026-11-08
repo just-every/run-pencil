@@ -1,8 +1,10 @@
 import type { BrowserContext, Page, TestInfo } from '@playwright/test'
+import { DatabaseSync } from 'node:sqlite'
 import type { BuilderDraft, Ledger } from '../../src/core/app/api'
 import { parseCsv } from '../../src/core/features/importing/csv'
 import { nativeHost } from './brand-helpers'
 import { expect } from './fixtures'
+import { stateDatabaseFile } from './state-database'
 
 /** A separate anonymous form proves query admission without a script or host handshake. */
 export async function provePlainIframeHiddenFields(page: Page, info: TestInfo) {
@@ -29,8 +31,8 @@ export async function provePlainIframeHiddenFields(page: Page, info: TestInfo) {
   await call(`${base}/publish`, 'POST', { expectedVersion: (await read()).flow.draftVersion })
   const origin = process.env.PENCIL_E2E_BASE_URL!
   const src = `${origin}/embed/${slug}?utm_campaign=spring&secret=x`
-  const host = await nativeHost(`<iframe src="${src.replaceAll('&', '&amp;')}" title="Campaign feedback" width="100%" height="700" sandbox="allow-scripts allow-forms" referrerpolicy="origin" style="border:0"></iframe>`)
   const workspace = await call<Record<string, unknown>>('/api/app/workspace')
+  const host = await nativeHost(`<iframe src="${src.replaceAll('&', '&amp;')}" title="Campaign feedback" width="100%" height="700" sandbox="allow-scripts allow-forms" referrerpolicy="origin" style="border:0"></iframe>`)
   let context: BrowserContext | undefined
   try {
     await call('/api/app/workspace', 'PUT', { ...workspace, embedAllowedOrigins: [host.origin] })
@@ -73,11 +75,21 @@ export async function provePlainIframeHiddenFields(page: Page, info: TestInfo) {
     expect(stored.answers.map(answer => answer.value)).toEqual([privateAnswer])
     expect(stored.participant).toBeUndefined()
     expect(JSON.stringify(stored)).not.toContain('secret')
+    // Read actual persisted context too: ledger projection could hide an
+    // accidentally retained undeclared key even when its CSV looks correct.
+    const database = new DatabaseSync(stateDatabaseFile(process.env.PENCIL_MIGRATION_STATE!), { readOnly: true })
+    try {
+      const row = database.prepare('SELECT response_context_json FROM responses WHERE id = ?').get(receipt.responseId) as { response_context_json: string }
+      const context = JSON.parse(row.response_context_json)
+      expect(context.hidden).toEqual({ [campaign.id]: 'spring' })
+      expect(context).toMatchObject({ identityMode: 'anonymous', discarded: 1 })
+      expect(row.response_context_json).not.toContain('secret')
+    } finally { database.close() }
 
     const start = await call<{ token: string }>(`${base}/responses/export/start?format=csv`)
     const exported = await page.request.get(`${base}/responses/export?token=${encodeURIComponent(start.token)}`)
     expect(exported.status()).toBe(200)
-    expect(exported.headers()['content-type']).toContain('text/csv')
+    expect(exported.headers()['x-export-written']).toBe('1')
     const csv = await exported.text()
     const parsed = parseCsv(csv)
     expect(parsed.errors).toEqual([])
@@ -88,6 +100,7 @@ export async function provePlainIframeHiddenFields(page: Page, info: TestInfo) {
     expect(record.identity_mode).toBe('anonymous')
     expect(record.discarded_parameters).toBe('1')
     expect(JSON.parse(record.hidden_fields_json)).toEqual(expectedHidden)
+    expect((JSON.parse(record.answers_json) as Array<{ value: string }>).map(answer => answer.value)).toEqual([privateAnswer])
     expect(csv).not.toContain('secret')
 
     // The operator wrote the query into src, so the host already knows it.
