@@ -2669,7 +2669,7 @@
       "executable": false
     },
     "src/agent-door/flow-tools.ts": {
-      "sha256": "3fef8589b0ec681df0bc5347c40f096dee3dd6e1946d55c1474f84a2114dd894",
+      "sha256": "06ff5e98b377a46b99baaabb7cfa0274182f213a38f2952881581d37b98cbea9",
       "executable": false
     },
     "src/agent-door/index.ts": {
@@ -8508,8 +8508,12 @@
       "sha256": "05c6dc27a3b045f13e77b0f8f3675610ce571b2e507d44b30ca194c3c954a12d",
       "executable": false
     },
+    "tests/agent-door/business-refusals.mjs": {
+      "sha256": "a2e5c5fa18b56c2920848e7967b846f39ca99231ede321e2f6bcacafc199e351",
+      "executable": false
+    },
     "tests/agent-door/native-journey.mjs": {
-      "sha256": "07d49daafdc7102958b1f4d805908bad7434e98624651db85389f6c1afcd538a",
+      "sha256": "b9f698457dd5659d05e3b4a077ead46daa5b22a99e4b5cb1e2840bf7f898452a",
       "executable": false
     },
     "tests/agent-door/phase-fixtures.mjs": {
