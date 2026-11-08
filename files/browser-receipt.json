@@ -1,0 +1,87 @@
+{
+  "head": "ce28546376e4103537a12d660d3ecfc4c6c88e4c",
+  "exit": 0,
+  "command": ". /tmp/rer-cloud-toolchain.sh; PENCIL_E2E_SITE_URL=http://localhost:4174 cloud_run timeout 1200 pnpm exec playwright test tests/e2e/script-embed.spec.ts --config .rer/wordpress-playwright.config.ts --workers=1 --reporter=list",
+  "results": [
+    {
+      "project": "desktop",
+      "width": 1440,
+      "result": "passed",
+      "seconds": 41.7
+    },
+    {
+      "project": "mobile",
+      "width": 390,
+      "result": "passed",
+      "seconds": 45.4
+    }
+  ],
+  "total": "2 passed (2.0m)",
+  "runtime": {
+    "node": "v24.19.0",
+    "chromium": "Chromium 154.0.8037.57 built on Debian GNU/Linux 13 (trixie)",
+    "executable": "/usr/bin/chromium",
+    "args": [
+      "--no-sandbox",
+      "--use-mock-keychain",
+      "--password-store=basic"
+    ]
+  },
+  "stdout_sha256": "0d0195263d6d1798c857fef6c0a972aee1ffdc558a31fbf8874c5292176b85dd",
+  "screenshots": [
+    {
+      "file": "screenshots/desktop-wordpress-shortcode-public.png",
+      "viewport_css_width": 1440,
+      "image_pixels": [
+        1440,
+        1044
+      ],
+      "sha256": "36b27052bf71a01f138018589cd2370049b7a52789870e06dce558a97fb3c744"
+    },
+    {
+      "file": "screenshots/desktop-wordpress-shortcode-completed.png",
+      "viewport_css_width": 1440,
+      "image_pixels": [
+        1440,
+        900
+      ],
+      "sha256": "0101025216bbf8511c97ea7d7ab45cb362bc32c5d38557c4d709257e908be733"
+    },
+    {
+      "file": "screenshots/desktop-wordpress-disallowed-host.png",
+      "viewport_css_width": 1440,
+      "image_pixels": [
+        1440,
+        900
+      ],
+      "sha256": "be7a8ff0b01a44158d0b85b997c958aed2fc248d674d9780144b3fdcea9e59b4"
+    },
+    {
+      "file": "screenshots/mobile-wordpress-shortcode-public.png",
+      "viewport_css_width": 390,
+      "image_pixels": [
+        1073,
+        2673
+      ],
+      "sha256": "f397ff41b36900701d8a6006e5924862f1e45f717d2e03b803167eb004a92d19"
+    },
+    {
+      "file": "screenshots/mobile-wordpress-shortcode-completed.png",
+      "viewport_css_width": 390,
+      "image_pixels": [
+        1073,
+        2321
+      ],
+      "sha256": "6512f0720484f0acb5b59db79e60e3772bd2fcaf1c8fc5aaef95ec32bdba4982"
+    },
+    {
+      "file": "screenshots/mobile-wordpress-disallowed-host.png",
+      "viewport_css_width": 390,
+      "image_pixels": [
+        1073,
+        2321
+      ],
+      "sha256": "77fdf24316c5a7fd5a2768cf5ed2e71b9d15590f324933f4325a3afadfe9e2ec"
+    }
+  ]
+}

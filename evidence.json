@@ -1,0 +1,124 @@
+{
+  "files": [
+    {
+      "blob": "8c978a9273ceac191a19498456ccff356a3f1e7c",
+      "bytes": 2528,
+      "path": "PLAN.md",
+      "sha256": "fd8ec5f8e532cae32c325b1b0f2ae7af50895f7b4d1cbd40799a0009b7af292a"
+    },
+    {
+      "blob": "756cbc6416606bcb22fb8e059ca50936af9ef83f",
+      "bytes": 13731,
+      "path": "REPORT.md",
+      "sha256": "fbb01f88656bf1c6a19de62cbb0f3168956e12d1e07792d673cb91711d8c66a2"
+    },
+    {
+      "blob": "428e91cf4f3535a9f6f3e0677e8607d49858341a",
+      "bytes": 427,
+      "path": "browser-config.ts",
+      "sha256": "c0e0071228ed119e0032cde5fa2c62bab5de6793806df8899da0c4343d32e7ba"
+    },
+    {
+      "blob": "159427cc7b7618393eeb70282a1e9c690a7a9387",
+      "bytes": 2498,
+      "path": "browser-receipt.json",
+      "sha256": "e52063792d21a04a28b433edbb6442368a4ee57faf8d2eae1650ebdcf76a75c3"
+    },
+    {
+      "blob": "e6ffbebc7d38db6acc4b346b944899271f6f5b92",
+      "bytes": 7691,
+      "path": "browser.stdout.txt",
+      "sha256": "0d0195263d6d1798c857fef6c0a972aee1ffdc558a31fbf8874c5292176b85dd"
+    },
+    {
+      "blob": "a6cd78f055225822e5e68cad471f30faa6c410eb",
+      "bytes": 176,
+      "path": "candidate-ci.json",
+      "sha256": "76afb689b153bd76d565b18daddf663f1062f34566f1258fa2f48cf5aa4c3225"
+    },
+    {
+      "blob": "9ca0804107d9765cfe230bd137901ae0dbac55a2",
+      "bytes": 716,
+      "path": "candidate-push.txt",
+      "sha256": "4bfdbf97ee9b7e5c5fc06b104506b11cbffd4fc8302c77e3b00186b2d6ad2a22"
+    },
+    {
+      "blob": "5100ee061c5c3382d031449ec4d7be60e8fbaf70",
+      "bytes": 3372,
+      "path": "checks.json",
+      "sha256": "1cc46b07195a3fdde4b7807e89cac7760ee1b0e87c847a7c69a46240a48944b4"
+    },
+    {
+      "blob": "a0d03517d4e66be7ef5daad9fa78f5e7e664446e",
+      "bytes": 236,
+      "path": "ci-discovery.json",
+      "sha256": "daf721b9fd9a340b4e92c030f9c6430a5fe5e7ee574a047cc0dd5f0cf6781500"
+    },
+    {
+      "blob": "14acaa256aaf4c6dcd2dcc98180474c0eccd625a",
+      "bytes": 1411,
+      "path": "main-ci.json",
+      "sha256": "aee4ffb619ff500f210cf9b97bbb2c7fd872f2395fdcb1e50f67ba69d1f119c3"
+    },
+    {
+      "blob": "46b73479ed2533b3a8a5383140c18dee400b8506",
+      "bytes": 661,
+      "path": "provenance.json",
+      "sha256": "c64fbb455b48f0d38abc5441b5de6de79cf6da0b8a71ce62ebe66f21b3e67eca"
+    },
+    {
+      "blob": "15e4a82dde4dbb4ac7231c5867b35953a679791b",
+      "bytes": 902,
+      "path": "save-push.txt",
+      "sha256": "c35c4ddc3fac1a1c0ad351546b0ba1626f6b9148ab1bce77e32893eb7e4a2ceb"
+    },
+    {
+      "blob": "ac44acc7add432da737d8babc0bc3ce6ec2df298",
+      "bytes": 11652,
+      "path": "screenshots/desktop-wordpress-disallowed-host.png",
+      "sha256": "be7a8ff0b01a44158d0b85b997c958aed2fc248d674d9780144b3fdcea9e59b4"
+    },
+    {
+      "blob": "c7da0cb4912578fb1b923a10cf9aa051dfc5204e",
+      "bytes": 166445,
+      "path": "screenshots/desktop-wordpress-shortcode-completed.png",
+      "sha256": "0101025216bbf8511c97ea7d7ab45cb362bc32c5d38557c4d709257e908be733"
+    },
+    {
+      "blob": "01c31152662794b688416bd18bb5188341959986",
+      "bytes": 262799,
+      "path": "screenshots/desktop-wordpress-shortcode-public.png",
+      "sha256": "36b27052bf71a01f138018589cd2370049b7a52789870e06dce558a97fb3c744"
+    },
+    {
+      "blob": "5f989702f32f36bc96d50f1bfa4c06d36788a5e4",
+      "bytes": 26240,
+      "path": "screenshots/mobile-wordpress-disallowed-host.png",
+      "sha256": "77fdf24316c5a7fd5a2768cf5ed2e71b9d15590f324933f4325a3afadfe9e2ec"
+    },
+    {
+      "blob": "7a4f88989ac2d2ef90cbc4be89fdc78fa4a74df1",
+      "bytes": 304916,
+      "path": "screenshots/mobile-wordpress-shortcode-completed.png",
+      "sha256": "6512f0720484f0acb5b59db79e60e3772bd2fcaf1c8fc5aaef95ec32bdba4982"
+    },
+    {
+      "blob": "5ca5fbdea7ea346f3eb14d8e6be7e2f550fab496",
+      "bytes": 355321,
+      "path": "screenshots/mobile-wordpress-shortcode-public.png",
+      "sha256": "f397ff41b36900701d8a6006e5924862f1e45f717d2e03b803167eb004a92d19"
+    },
+    {
+      "blob": "8909027517e2b31e4c3fc6f00042180914bff53d",
+      "bytes": 208,
+      "path": "teardown.json",
+      "sha256": "4973a49fcdbbb045c322f73a69f508242b9317841baf3eb0350f0daebe0b0726"
+    }
+  ],
+  "product_branch": "cloud/sd-pencil-c-f28",
+  "product_head": "ce28546376e4103537a12d660d3ecfc4c6c88e4c",
+  "ref": "refs/heads/evidence/sd-pencil-c-f28",
+  "repository": "just-every/run-pencil",
+  "schema": 1,
+  "tag": "sd-pencil-c-f28"
+}

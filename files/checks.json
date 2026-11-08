@@ -1,0 +1,83 @@
+{
+  "head": "ce28546376e4103537a12d660d3ecfc4c6c88e4c",
+  "checks": [
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "seconds": 17.42,
+      "output_bytes": 67,
+      "output_sha256": "0be1c32f376f15c72452fd602286b701e3a1fc7ff2cc7add4b5b721266c84cbc",
+      "output": "rer toolchain: node v24.19.0 pnpm 10.12.4 (pins 22.20.0 / 10.12.4)\n"
+    },
+    {
+      "command": "pnpm exec tsc --noEmit --skipLibCheck --target ES2023 --module ESNext --moduleResolution Bundler --lib ES2023,DOM --types node tests/helpers/wordpress.ts tests/e2e/wordpress-embed.ts",
+      "exit": 0,
+      "seconds": 2.34,
+      "output_bytes": 67,
+      "output_sha256": "0be1c32f376f15c72452fd602286b701e3a1fc7ff2cc7add4b5b721266c84cbc",
+      "output": "rer toolchain: node v24.19.0 pnpm 10.12.4 (pins 22.20.0 / 10.12.4)\n"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "seconds": 2.13,
+      "output_bytes": 67,
+      "output_sha256": "0be1c32f376f15c72452fd602286b701e3a1fc7ff2cc7add4b5b721266c84cbc",
+      "output": "rer toolchain: node v24.19.0 pnpm 10.12.4 (pins 22.20.0 / 10.12.4)\n"
+    },
+    {
+      "command": "node scripts/contract-docs.mjs write DIST-013",
+      "exit": 0,
+      "seconds": 0.8,
+      "output_bytes": 137,
+      "output_sha256": "5357ee015d96723ba630a9a65f898a13a7243804aa4729d62f760eee016460cd",
+      "output": "Contract documents write: DIST-013; 142 done, 61 partial, 49 missing.\nrer toolchain: node v24.19.0 pnpm 10.12.4 (pins 22.20.0 / 10.12.4)\n"
+    },
+    {
+      "command": "node scripts/contract-docs.mjs check DIST-013",
+      "exit": 0,
+      "seconds": 0.82,
+      "output_bytes": 137,
+      "output_sha256": "be28570fc04c598859da2ca0f6e8429ddba2a14989432ec599d1146b37de9207",
+      "output": "Contract documents check: DIST-013; 142 done, 61 partial, 49 missing.\nrer toolchain: node v24.19.0 pnpm 10.12.4 (pins 22.20.0 / 10.12.4)\n"
+    },
+    {
+      "command": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0,
+      "seconds": 0.79,
+      "output_bytes": 67,
+      "output_sha256": "0be1c32f376f15c72452fd602286b701e3a1fc7ff2cc7add4b5b721266c84cbc",
+      "output": "rer toolchain: node v24.19.0 pnpm 10.12.4 (pins 22.20.0 / 10.12.4)\n"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "seconds": 1.07,
+      "output_bytes": 402866,
+      "output_sha256": "37280ffdbac6b4f192a349caa709ed7210c2244a073d72d19db7b7674d9b9890"
+    },
+    {
+      "command": "pnpm source:check",
+      "exit": 0,
+      "seconds": 1.52,
+      "output_bytes": 457200,
+      "output_sha256": "f5c427f32ce80fcbcd7b5c570d39ac064538632cd82a7764b785a9b5322e4a38"
+    },
+    {
+      "command": "git diff --exit-code -- sources.lock.json CONTRACT.md ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0,
+      "seconds": 0.74,
+      "output_bytes": 67,
+      "output_sha256": "0be1c32f376f15c72452fd602286b701e3a1fc7ff2cc7add4b5b721266c84cbc",
+      "output": "rer toolchain: node v24.19.0 pnpm 10.12.4 (pins 22.20.0 / 10.12.4)\n"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0,
+      "seconds": 0.76,
+      "output_bytes": 67,
+      "output_sha256": "0be1c32f376f15c72452fd602286b701e3a1fc7ff2cc7add4b5b721266c84cbc",
+      "output": "rer toolchain: node v24.19.0 pnpm 10.12.4 (pins 22.20.0 / 10.12.4)\n"
+    }
+  ]
+}

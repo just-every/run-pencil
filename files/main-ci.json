@@ -1,0 +1,47 @@
+[
+  {
+    "conclusion": "skipped",
+    "event": "push",
+    "head_sha": "9877fe36b4c31f61cc6a4a13b1096634c822198f",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42434423560",
+    "id": 42434423560,
+    "name": "Run demo",
+    "status": "completed"
+  },
+  {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "9877fe36b4c31f61cc6a4a13b1096634c822198f",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42434423607",
+    "id": 42434423607,
+    "name": "Verify candidate",
+    "status": "completed"
+  },
+  {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "9877fe36b4c31f61cc6a4a13b1096634c822198f",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42434423551",
+    "id": 42434423551,
+    "name": "Run site",
+    "status": "completed"
+  },
+  {
+    "conclusion": "success",
+    "event": "dynamic",
+    "head_sha": "9877fe36b4c31f61cc6a4a13b1096634c822198f",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42434423309",
+    "id": 42434423309,
+    "name": "Push on main",
+    "status": "completed"
+  },
+  {
+    "conclusion": "success",
+    "event": "push",
+    "head_sha": "9877fe36b4c31f61cc6a4a13b1096634c822198f",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42428434428",
+    "id": 42428434428,
+    "name": "Verify candidate",
+    "status": "completed"
+  }
+]

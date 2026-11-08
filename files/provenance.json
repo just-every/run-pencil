@@ -1,0 +1,16 @@
+{
+  "head": "ce28546376e4103537a12d660d3ecfc4c6c88e4c",
+  "branch": "cloud/sd-pencil-c-f28",
+  "integrated_main": "9877fe36b4c31f61cc6a4a13b1096634c822198f",
+  "shallow": false,
+  "clean": true,
+  "commits": "ce28546376e4103537a12d660d3ecfc4c6c88e4c\nRun Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\n3fdec94f23f237dda211c7bcdee9dbf6677085f7\nRun Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\n\n",
+  "scan": {
+    "status": "delegated to Mac lander",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "github_api_calls": 3,
+  "main_equals_candidate": false
+}
