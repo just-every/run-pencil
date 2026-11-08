@@ -1,0 +1,21 @@
+{
+  "repository": "just-every/run-pencil",
+  "head": "f007a2ad9fc235aaac7b4365227fb048d68f86f1",
+  "run_id": 42522517963,
+  "name": "Verify candidate",
+  "event": "push",
+  "status": "in_progress",
+  "conclusion": null,
+  "html_url": "https://github.com/just-every/run-pencil/actions/runs/42522517963",
+  "observed_at": "2026-11-08T21:05:24.992736+00:00",
+  "api_calls_used": 4,
+  "api_budget": 10,
+  "poll_interval_seconds": 300,
+  "main_verify_run_id": 42514526088,
+  "main_run_site_run_id": 42514526312,
+  "main_head": "45f78e1a7c94ac6d7b1e93b937253f2cb5199322",
+  "candidate_run_site": "not run: main-only after guarded landing",
+  "head_sha": "f007a2ad9fc235aaac7b4365227fb048d68f86f1",
+  "watcher": "stopped after two permitted status reads; cloud handoff with pending Verify",
+  "product_custody": "PUSHED"
+}

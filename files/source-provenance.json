@@ -1,0 +1,13 @@
+{
+  "head": "f007a2ad9fc235aaac7b4365227fb048d68f86f1",
+  "base": "45f78e1a7c94ac6d7b1e93b937253f2cb5199322",
+  "files": {
+    "tests/runtime/analysis-fixture.ts": "b10b32dbd7303617e23dfbe27930e58a698b515db3f3f64c5646575025b7a222",
+    "tests/runtime/analysis-output.worker.test.ts": "83af09ed31dc9d301c87251b870e06860c8a35c37f8a70ce15d60db8696e189a",
+    "tests/runtime/analysis-within-response-proof.ts": "e8d2b9374cd42923af5ac46c615d2cf56670779670e09947a32127d306b05101",
+    "sources.lock.json": "d3a3229532174c7a173be827a4dfd5ae16860942638f714c02c2564dc1237d0f"
+  },
+  "production_changes": false,
+  "new_registrations": 0,
+  "contract_changes": false
+}

@@ -1,0 +1,14 @@
+{
+  "head": "f007a2ad9fc235aaac7b4365227fb048d68f86f1",
+  "all_prior_worker_bytes_preserved_except_added_import_and_call": true,
+  "original_fixture_bytes_preserved": true,
+  "unchanged_production_references": [
+    "src/core/features/analysis/model.ts",
+    "src/core/features/analysis/evidence.ts",
+    "src/core/features/analysis/validate.ts"
+  ],
+  "worker_registrations_before": 2,
+  "worker_registrations_after": 2,
+  "new_registrations": 0,
+  "existing_assertions_removed": 0
+}
