@@ -1125,7 +1125,7 @@
       "executable": false
     },
     "integrations/wordpress/README.md": {
-      "sha256": "82329d78268c562014ea8679aa78b4200f1a80935b74c7545307f46f920b0980",
+      "sha256": "714d1661d394a78a15d5d01180952e8188af8f202f7b191c61924364fb19f60a",
       "executable": false
     },
     "LICENSE": {
@@ -9105,7 +9105,7 @@
       "executable": false
     },
     "tests/helpers/wordpress.ts": {
-      "sha256": "d644a877b4da7dd77a87cc4e3375a02f820b942568b2071ca2be5f9e3f60d0bf",
+      "sha256": "45d9186010832acfc3e5900527911e4d963e231d9224221f78a70d55d2ae777c",
       "executable": false
     },
     "tests/import-results-scenario.ts": {
