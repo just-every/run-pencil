@@ -34,8 +34,14 @@ contract('FIELD-010', 'Other write-ins and exclusive None survive native collect
   await f.publish()
   const session = await f.start(); await f.mature(session.sessionId)
   const submit = async (answers: Array<{stepId:string;value:unknown}>) => f.SELF.fetch(`http://localhost/api/public/flows/${f.slug}/responses`,{method:'POST',headers:{Origin:'http://localhost','Content-Type':'application/json','CF-Connecting-IP':'198.18.244.87'},body:JSON.stringify({...session,loadTime:await f.loadTime(session),idempotencyKey:`key-${session.sessionId}`,answers})})
-  for (const value of [{choiceIds:[ids(multi.id)[0],ids(multi.id)[2]],otherText:' '},[ids(multi.id)[0],ids(multi.id)[3]],{choiceIds:[ids(multi.id)[0],ids(multi.id)[2]],otherText:'x'.repeat(201)}]) {
+  for (const value of [{choiceIds:[ids(multi.id)[0],ids(multi.id)[2]],otherText:''},{choiceIds:[ids(multi.id)[0],ids(multi.id)[2]],otherText:' '},[ids(multi.id)[0],ids(multi.id)[3]],{choiceIds:[ids(multi.id)[0],ids(multi.id)[2]],otherText:'x'.repeat(201)}]) {
     const response=await submit([{stepId:multi.id,value}]); expect(response.status).toBe(400)
+    if (!Array.isArray(value) && !value.otherText.trim()) {
+      const refusal = await response.json<{ error: string; details: Array<{ stepId: string; reason: string }> }>()
+      expect(refusal.error).toBe('VALIDATION_ERROR')
+      expect(refusal.details).toEqual([{ stepId: multi.id, reason: expect.stringMatching(/\S/) }])
+      expect(refusal.details[0].reason).toMatch(/other/i)
+    }
     expect(await env.DB.prepare('SELECT COUNT(*) AS n FROM responses WHERE flow_id=?').bind(f.flow.flowId).first()).toEqual({n:0})
   }
   const other={choiceIds:[ids(multi.id)[0],ids(multi.id)[2]],otherText:'Accessible appointments'}
