@@ -1,0 +1,18 @@
+(node:5659) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+file:///home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@runeditrun+rer@0.2.94/node_modules/@runeditrun/rer/cli/hydration/browser.mjs:15
+ catch (error) { throw new RerError('hydration_browser_missing', `The hydration check could not start Chromium from the seed's ${name}: ${String(error.message).split('\n').find(line => line.trim()) ?? error}. Run rer verify, which downloads the browser it pins first.`, 1); }
+                       ^
+
+RerError: The hydration check could not start Chromium from the seed's playwright-core: browserType.launch: Executable doesn't exist at /home/agent/.cache/ms-playwright/chromium_headless_shell-1234/chrome-headless-shell-linux64/chrome-headless-shell. Run rer verify, which downloads the browser it pins first.
+    at launchChromium (file:///home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@runeditrun+rer@0.2.94/node_modules/@runeditrun/rer/cli/hydration/browser.mjs:15:24)
+    at async checkHydration (file:///home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@runeditrun+rer@0.2.94/node_modules/@runeditrun/rer/cli/hydration/check.mjs:35:13)
+    at async file:///home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/scripts/verify-hosted-output.mjs:12:1 {
+  code: 'hydration_browser_missing',
+  exitCode: 1
+}
+
+Node.js v22.20.0

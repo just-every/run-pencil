@@ -1,0 +1,983 @@
+{
+  "numTotalTestSuites": 33,
+  "numPassedTestSuites": 33,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 66,
+  "numPassedTests": 66,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1794151014584,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[BASE-INPUT-001,BASE-ACCESS-004] every private mutation route rejects sessionless, cross-origin and malformed requests before product writes",
+          "status": "passed",
+          "title": "[BASE-INPUT-001,BASE-ACCESS-004] every private mutation route rejects sessionless, cross-origin and malformed requests before product writes",
+          "duration": 729,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[OPER-001,BASE-ACCESS-004] a second equal operator edits another operators flow while foreign workspace IDs never become ownership authority",
+          "status": "passed",
+          "title": "[OPER-001,BASE-ACCESS-004] a second equal operator edits another operators flow while foreign workspace IDs never become ownership authority",
+          "duration": 292,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[WS-001,WS-002,BASE-PUBLIC-002] workspace settings persist through authenticated routes and reject invalid clocks and embed hosts without writes",
+          "status": "passed",
+          "title": "[WS-001,WS-002,BASE-PUBLIC-002] workspace settings persist through authenticated routes and reject invalid clocks and embed hosts without writes",
+          "duration": 162,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151272172,
+      "endTime": 1794151273356,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/access-foundation.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[ACT-002] the server enforces the lifecycle: every legal move is recorded, every illegal move answers 409 and changes nothing",
+          "status": "passed",
+          "title": "[ACT-002] the server enforces the lifecycle: every legal move is recorded, every illegal move answers 409 and changes nothing",
+          "duration": 2155,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151329436,
+      "endTime": 1794151331591,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/actions-lifecycle.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders",
+          "status": "passed",
+          "title": "[ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders",
+          "duration": 1250,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151201229,
+      "endTime": 1794151202479,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/actions-measurement.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[ANLY-001,ANLY-002,ANLY-007,ANLY-013,ANLY-015] a requested run fixes the released responses it read and its policies and completes without a cron tick, later evidence or policy only marks or changes new runs, and too little evidence completes as insufficient-evidence with its reason and sends nothing",
+          "status": "passed",
+          "title": "[ANLY-001,ANLY-002,ANLY-007,ANLY-013,ANLY-015] a requested run fixes the released responses it read and its policies and completes without a cron tick, later evidence or policy only marks or changes new runs, and too little evidence completes as insufficient-evidence with its reason and sends nothing",
+          "duration": 510,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151367969,
+      "endTime": 1794151368479,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/analysis-run.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[ANLY-002,ANLY-010,RESP-005,WS-001] only the selected answers and stable response IDs leave, to the configured origin with the key as a bearer value, and every call records its usage and cost",
+          "status": "passed",
+          "title": "[ANLY-002,ANLY-010,RESP-005,WS-001] only the selected answers and stable response IDs leave, to the configured origin with the key as a bearer value, and every call records its usage and cost",
+          "duration": 850,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[ANLY-014] instructions planted in answers change nothing: a tool call or webhook-shaped answer fails, and no task, job, policy or setting changes",
+          "status": "passed",
+          "title": "[ANLY-014] instructions planted in answers change nothing: a tool call or webhook-shaped answer fails, and no task, job, policy or setting changes",
+          "duration": 195,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[ANLY-008,ANLY-016] an unconfigured or failing provider fails the request with its error and a retry action while collection keeps working; a transient transport failure is retried at most three times within ten minutes with the same request and a schema failure is never retried",
+          "status": "passed",
+          "title": "[ANLY-008,ANLY-016] an unconfigured or failing provider fails the request with its error and a retry action while collection keeps working; a transient transport failure is retried at most three times within ten minutes with the same request and a schema failure is never retried",
+          "duration": 1041,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[DATA-002,DATA-001] erasing a response removes it from every analysis, quote and evidence list, and a restored run never calls the provider by itself",
+          "status": "passed",
+          "title": "[DATA-002,DATA-001] erasing a response removes it from every analysis, quote and evidence list, and a restored run never calls the provider by itself",
+          "duration": 3109,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151114988,
+      "endTime": 1794151120183,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/analysis-safety.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "operator authentication in a Workers D1 runtime"
+          ],
+          "fullName": "operator authentication in a Workers D1 runtime [BASE-ACCESS-001] accepts exactly one concurrent redemption of a local magic link",
+          "status": "passed",
+          "title": "[BASE-ACCESS-001] accepts exactly one concurrent redemption of a local magic link",
+          "duration": 83,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "operator authentication in a Workers D1 runtime"
+          ],
+          "fullName": "operator authentication in a Workers D1 runtime [OPER-002] leaves one operator when two peers concurrently try to remove one another",
+          "status": "passed",
+          "title": "[OPER-002] leaves one operator when two peers concurrently try to remove one another",
+          "duration": 115,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[OPER-002,BASE-OPS-005] preserves setup and last-operator credentials on refusal, then records another active actor on permitted removal",
+          "status": "passed",
+          "title": "[OPER-002,BASE-OPS-005] preserves setup and last-operator credentials on refusal, then records another active actor on permitted removal",
+          "duration": 18,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151234528,
+      "endTime": 1794151234745,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/auth.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[BRAND-001,HOME-001,BASE-ACCESS-004,BASE-INPUT-001] production D1 branding persists, refuses unauthorized and invalid writes, and selects only a published owned flow",
+          "status": "passed",
+          "title": "[BRAND-001,HOME-001,BASE-ACCESS-004,BASE-INPUT-001] production D1 branding persists, refuses unauthorized and invalid writes, and selects only a published owned flow",
+          "duration": 181,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[DIST-020] settings API preserves preview overrides and publication freezes defaults and images across later edits",
+          "status": "passed",
+          "title": "[DIST-020] settings API preserves preview overrides and publication freezes defaults and images across later edits",
+          "duration": 501,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[DIST-020] settings API rejects recalled preview text and invalid, oversized or unlabelled image uploads without mutating the draft, and publication rejects indexing on restricted and identified forms while preserving their existing admission rules",
+          "status": "passed",
+          "title": "[DIST-020] settings API rejects recalled preview text and invalid, oversized or unlabelled image uploads without mutating the draft, and publication rejects indexing on restricted and identified forms while preserving their existing admission rules",
+          "duration": 518,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[DIST-020] upgrading existing publications freezes their logo preview without changing admission policy",
+          "status": "passed",
+          "title": "[DIST-020] upgrading existing publications freezes their logo preview without changing admission policy",
+          "duration": 111,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[BASE-DATA-001,DATA-001,DIST-020] owner backup carries immutable R2 share images, checks their bytes and refuses missing attachment custody",
+          "status": "passed",
+          "title": "[BASE-DATA-001,DATA-001,DIST-020] owner backup carries immutable R2 share images, checks their bytes and refuses missing attachment custody",
+          "duration": 608,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151128614,
+      "endTime": 1794151130534,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/brand.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[DIST-017,RSLT-007,RSLT-006,LEDG-005,RSLT-008,RSLT-009] named collectors enforce independent atomic limits and retain attribution in zoned, revision-marked score trends, exports, RSLT-006 crosstabs with stated shares, chi-square and suppression, and multi-part LEDG-005 XLSX and SAV exports",
+          "status": "passed",
+          "title": "[DIST-017,RSLT-007,RSLT-006,LEDG-005,RSLT-008,RSLT-009] named collectors enforce independent atomic limits and retain attribution in zoned, revision-marked score trends, exports, RSLT-006 crosstabs with stated shares, chi-square and suppression, and multi-part LEDG-005 XLSX and SAV exports",
+          "duration": 8460,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151058848,
+      "endTime": 1794151067308,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/collectors-trends.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[LOGIC-005] chooses screen or approved redirect from accepted answer, hidden, calculation and score conditions; replay and copies preserve revision custody",
+          "status": "passed",
+          "title": "[LOGIC-005] chooses screen or approved redirect from accepted answer, hidden, calculation and score conditions; replay and copies preserve revision custody",
+          "duration": 511,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[LOGIC-005] refuses unapproved, insecure, credential-bearing and invalid operand redirects at publish without changing the live revision",
+          "status": "passed",
+          "title": "[LOGIC-005] refuses unapproved, insecure, credential-bearing and invalid operand redirects at publish without changing the live revision",
+          "duration": 362,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151309168,
+      "endTime": 1794151310041,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/completion-redirects.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[LOGIC-006] publishes correlated AND OR conditions, handles blank and negative operands and preserves immutable routing and copies",
+          "status": "passed",
+          "title": "[LOGIC-006] publishes correlated AND OR conditions, handles blank and negative operands and preserves immutable routing and copies",
+          "duration": 957,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[LOGIC-006,FLOW-013] refuses destinations made impossible by constraints on an earlier question without publishing",
+          "status": "passed",
+          "title": "[LOGIC-006,FLOW-013] refuses destinations made impossible by constraints on an earlier question without publishing",
+          "duration": 1322,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151247109,
+      "endTime": 1794151249388,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/conditions.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[BASE-DATA-004,BASE-DATA-005,BASE-SECRET-001] Worker collection and maintenance require no author or marketplace; only declared magic-link data reaches the configured mail endpoint",
+          "status": "passed",
+          "title": "[BASE-DATA-004,BASE-DATA-005,BASE-SECRET-001] Worker collection and maintenance require no author or marketplace; only declared magic-link data reaches the configured mail endpoint",
+          "duration": 188,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151385335,
+      "endTime": 1794151385523,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/egress-foundation.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[NOTIFY-001,DASH-002] terminal attention is scoped and duplicate-safe across manual retries, autoruns, insufficient evidence and interruption; cards retain the latest actual revision and state",
+          "status": "passed",
+          "title": "[NOTIFY-001,DASH-002] terminal attention is scoped and duplicate-safe across manual retries, autoruns, insufficient evidence and interruption; cards retain the latest actual revision and state",
+          "duration": 573,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151340988,
+      "endTime": 1794151341561,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/feedback-attention.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[ANLY-009,ANLY-008,ANLY-010,BASE-INPUT-001,AI-001,AGENT-001] rewrite requests preserve the source and draft until explicit guarded acceptance, with real provider calls, failure and usage attribution",
+          "status": "passed",
+          "title": "[ANLY-009,ANLY-008,ANLY-010,BASE-INPUT-001,AI-001,AGENT-001] rewrite requests preserve the source and draft until explicit guarded acceptance, with real provider calls, failure and usage attribution",
+          "duration": 2690,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151295649,
+      "endTime": 1794151298339,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/feedback-rewrites.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[IMPORT-001,IMPORT-002,IMPORT-003,IMPORT-004,LEDG-002,IMPORT-005,FIELD-013,FIELD-016,FIELD-010] two fresh databases produce equivalent reports, source structures, typed answers and 27 inert completions",
+          "status": "passed",
+          "title": "[IMPORT-001,IMPORT-002,IMPORT-003,IMPORT-004,LEDG-002,IMPORT-005,FIELD-013,FIELD-016,FIELD-010] two fresh databases produce equivalent reports, source structures, typed answers and 27 inert completions",
+          "duration": 3095,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[IMPORT-003,IMPORT-004,BASE-OPS-005] native kit undo removes imported flow and responses, retains safe provenance, and preserves same-revision edits",
+          "status": "passed",
+          "title": "[IMPORT-003,IMPORT-004,BASE-OPS-005] native kit undo removes imported flow and responses, retains safe provenance, and preserves same-revision edits",
+          "duration": 1853,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151101220,
+      "endTime": 1794151106168,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/form-import.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[IMPORT-001,IMPORT-002,IMPORT-003,IMPORT-004] Google public commit pins anonymous history, omits every identity copy, replays both files and undoes without mail",
+          "status": "passed",
+          "title": "[IMPORT-001,IMPORT-002,IMPORT-003,IMPORT-004] Google public commit pins anonymous history, omits every identity copy, replays both files and undoes without mail",
+          "duration": 1516,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[IMPORT-002,IMPORT-004] CSV-only public route preserves whole labels, prepares privately and resumes custody; revoked sessions cannot continue",
+          "status": "passed",
+          "title": "[IMPORT-002,IMPORT-004] CSV-only public route preserves whole labels, prepares privately and resumes custody; revoked sessions cannot continue",
+          "duration": 1815,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151165222,
+      "endTime": 1794151168553,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/google-form-import.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[INTEG-001,INTEG-015,INTEG-016] Google OAuth seals owner tokens and Sheets backfills, appends stable columns, replays failed rows without duplicates and clears an erased response",
+          "status": "passed",
+          "title": "[INTEG-001,INTEG-015,INTEG-016] Google OAuth seals owner tokens and Sheets backfills, appends stable columns, replays failed rows without duplicates and clears an erased response",
+          "duration": 2463,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151048170,
+      "endTime": 1794151050633,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/google-sheets.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[FLOW-006,FLOW-013,FLOW-016] publication rejects impossible screens without writing a revision, remains editable, and validates the policy actually published",
+          "status": "passed",
+          "title": "[FLOW-006,FLOW-013,FLOW-016] publication rejects impossible screens without writing a revision, remains editable, and validates the policy actually published",
+          "duration": 221,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151376176,
+      "endTime": 1794151376397,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/graph-reachability.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[FIELD-012] imports Typeform group and inline_group as one screen with independently validated stable questions and durable copies",
+          "status": "passed",
+          "title": "[FIELD-012] imports Typeform group and inline_group as one screen with independently validated stable questions and durable copies",
+          "duration": 647,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151402043,
+      "endTime": 1794151402690,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/groups.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[FIELD-001] collects only declared typed link values, routes present and blank values, and retains filtered exports and copy custody",
+          "status": "passed",
+          "title": "[FIELD-001] collects only declared typed link values, routes present and blank values, and retains filtered exports and copy custody",
+          "duration": 759,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[FIELD-001,RESP-023] requires identified publication for identity fields and rejects merge tags, invalid values and anonymous click IDs",
+          "status": "passed",
+          "title": "[FIELD-001,RESP-023] requires identified publication for identity fields and rejects merge tags, invalid values and anonymous click IDs",
+          "duration": 816,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151153411,
+      "endTime": 1794151154987,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/hidden-fields.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[DATA-001,BASE-DATA-001,BASE-ACCESS-001,BASE-OPS-003] real D1 restores an empty install with unchanged delivery facts, no mail, working sign-in and an unreclaimable bootstrap",
+          "status": "passed",
+          "title": "[DATA-001,BASE-DATA-001,BASE-ACCESS-001,BASE-OPS-003] real D1 restores an empty install with unchanged delivery facts, no mail, working sign-in and an unreclaimable bootstrap",
+          "duration": 2738,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151217837,
+      "endTime": 1794151220575,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/install-restore.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[RESP-009] rechecks manual closure and deadline inside final admission; losers receive a named closed outcome with no saved response",
+          "status": "passed",
+          "title": "[RESP-009] rechecks manual closure and deadline inside final admission; losers receive a named closed outcome with no saved response",
+          "duration": 432,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[BASE-DATA-002,RESP-013,RESP-019] scheduled retention folds abandoned sessions once, preserves active auth and every current persistent entity, and logs counts only",
+          "status": "passed",
+          "title": "[BASE-DATA-002,RESP-013,RESP-019] scheduled retention folds abandoned sessions once, preserves active auth and every current persistent entity, and logs counts only",
+          "duration": 328,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[FLOW-008,FLOW-009,FLOW-017,FLOW-020,RESP-004,RESP-010,LEDG-004] builds, previews, publishes and reports a branching form without preview effects; pins live revisions and exact answers",
+          "status": "passed",
+          "title": "[FLOW-008,FLOW-009,FLOW-017,FLOW-020,RESP-004,RESP-010,LEDG-004] builds, previews, publishes and reports a branching form without preview effects; pins live revisions and exact answers",
+          "duration": 363,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[RESP-017,RESP-018,LEDG-002] quarantines fast submissions, excludes them from reporting, releases exactly once after closure, and erases rejected answers",
+          "status": "passed",
+          "title": "[RESP-017,RESP-018,LEDG-002] quarantines fast submissions, excludes them from reporting, releases exactly once after closure, and erases rejected answers",
+          "duration": 256,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[RESP-009,FLOW-018] admits only one released completion at a target of one, while retaining its replay after automatic closure",
+          "status": "passed",
+          "title": "[RESP-009,FLOW-018] admits only one released completion at a target of one, while retaining its replay after automatic closure",
+          "duration": 188,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[DATA-002,BASE-DATA-003] erases released data exactly once, recomputes reports, removes receipts/effects and keeps closed admission closed",
+          "status": "passed",
+          "title": "[DATA-002,BASE-DATA-003] erases released data exactly once, recomputes reports, removes receipts/effects and keeps closed admission closed",
+          "duration": 232,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[RESP-012] retains the committed completion across changed-answer retries, pinned revisions and removal of the session",
+          "status": "passed",
+          "title": "[RESP-012] retains the committed completion across changed-answer retries, pinned revisions and removal of the session",
+          "duration": 392,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[FLOW-007] previews the current draft and incomplete branches with test answers while preserving every product record and effect",
+          "status": "passed",
+          "title": "[FLOW-007] previews the current draft and incomplete branches with test answers while preserving every product record and effect",
+          "duration": 383,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[RESP-014] rolls a failed final transaction back completely and commits one original-key retry without partial answers or effects",
+          "status": "passed",
+          "title": "[RESP-014] rolls a failed final transaction back completely and commits one original-key retry without partial answers or effects",
+          "duration": 183,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[FLOW-021,RSLT-005] compares only matching stable questions and each published revision owns its labels, denominators and erased/quarantined evidence",
+          "status": "passed",
+          "title": "[FLOW-021,RSLT-005] compares only matching stable questions and each published revision owns its labels, denominators and erased/quarantined evidence",
+          "duration": 435,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[RESP-015] names unavailable sessions without partial effects, distinguishes invalid steps, and admits an explicit fresh response with the original key",
+          "status": "passed",
+          "title": "[RESP-015] names unavailable sessions without partial effects, distinguishes invalid steps, and admits an explicit fresh response with the original key",
+          "duration": 172,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[RSLT-001,RSLT-003,RSLT-004,DASH-002] retains factual zero, quarantine, release and erasure summaries and matching dashboard counts",
+          "status": "passed",
+          "title": "[RSLT-001,RSLT-003,RSLT-004,DASH-002] retains factual zero, quarantine, release and erasure summaries and matching dashboard counts",
+          "duration": 903,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151036010,
+      "endTime": 1794151040278,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/journey.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[LEDG-006,LEDG-001,LEDG-003,LEDG-004,LEDG-005,FLOW-019,IMPORT-003,RSLT-001,RSLT-003] typed filters return exact native and imported IDs with retained consent and revision/source scopes in snapshot CSV, JSON and LEDG-005 XLSX and SAV exports read back by independent readers",
+          "status": "passed",
+          "title": "[LEDG-006,LEDG-001,LEDG-003,LEDG-004,LEDG-005,FLOW-019,IMPORT-003,RSLT-001,RSLT-003] typed filters return exact native and imported IDs with retained consent and revision/source scopes in snapshot CSV, JSON and LEDG-005 XLSX and SAV exports read back by independent readers",
+          "duration": 2533,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[LEDG-006] response search composes with revision and source filters, exports the same released IDs and excludes erasure",
+          "status": "passed",
+          "title": "[LEDG-006] response search composes with revision and source filters, exports the same released IDs and excludes erasure",
+          "duration": 458,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[LEDG-006] an accented and a non-ASCII phrase match case-insensitively while wildcards stay literal",
+          "status": "passed",
+          "title": "[LEDG-006] an accented and a non-ASCII phrase match case-insensitively while wildcards stay literal",
+          "duration": 445,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151075766,
+      "endTime": 1794151079202,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/ledger-filters.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[LEDG-006] answers collected before the stored-search migration become searchable without changing the retained answers",
+          "status": "passed",
+          "title": "[LEDG-006] answers collected before the stored-search migration become searchable without changing the retained answers",
+          "duration": 940,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151393021,
+      "endTime": 1794151393961,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/ledger-search-upgrade.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[DATA-002,BASE-DATA-003] public contact erasure counts every removed local copy across invitations, reminders, notifications and legacy captures",
+          "status": "passed",
+          "title": "[DATA-002,BASE-DATA-003] public contact erasure counts every removed local copy across invitations, reminders, notifications and legacy captures",
+          "duration": 352,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151351054,
+      "endTime": 1794151351406,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/local-mail-erasure.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[NOTIFY-002,NOTIFY-004,NOTIFY-005] publisher defaults Immediately only if unset, others Off; committed private mail has a durable attempt and replay cannot double send",
+          "status": "passed",
+          "title": "[NOTIFY-002,NOTIFY-004,NOTIFY-005] publisher defaults Immediately only if unset, others Off; committed private mail has a durable attempt and replay cannot double send",
+          "duration": 1308,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[NOTIFY-002,NOTIFY-004,DIST-006] transient retries keep their key through five retries; permanent and unknown failures remain visible only to their operator",
+          "status": "passed",
+          "title": "[NOTIFY-002,NOTIFY-004,DIST-006] transient retries keep their key through five retries; permanent and unknown failures remain visible only to their operator",
+          "duration": 136,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[NOTIFY-002,NOTIFY-004,DATA-002] the maintained Base local outbox captures only a durably claimed notification and response erasure removes its retained message",
+          "status": "passed",
+          "title": "[NOTIFY-002,NOTIFY-004,DATA-002] the maintained Base local outbox captures only a durably claimed notification and response erasure removes its retained message",
+          "duration": 72,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151178626,
+      "endTime": 1794151180142,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/notifications.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[FLOW-016,RESP-024] publication freezes branch and review policies while prior sessions and receipts retain their original settings",
+          "status": "passed",
+          "title": "[FLOW-016,RESP-024] publication freezes branch and review policies while prior sessions and receipts retain their original settings",
+          "duration": 212,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151359850,
+      "endTime": 1794151360062,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/policy-snapshot.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[BASE-ACCESS-001,SHELL-001] a warmed private route denies native session revocation",
+          "status": "passed",
+          "title": "[BASE-ACCESS-001,SHELL-001] a warmed private route denies native session revocation",
+          "duration": 67,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[BASE-ACCESS-001,SHELL-001] a valid native session without its durable product mapping or operator fails closed",
+          "status": "passed",
+          "title": "[BASE-ACCESS-001,SHELL-001] a valid native session without its durable product mapping or operator fails closed",
+          "duration": 55,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151319668,
+      "endTime": 1794151319790,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/private-auth-freshness.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[RSLT-002] counts the validated final path once and keeps skipped, expired, quarantined, erased and later-revision cohorts distinct",
+          "status": "passed",
+          "title": "[RSLT-002] counts the validated final path once and keeps skipped, expired, quarantined, erased and later-revision cohorts distinct",
+          "duration": 483,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151284995,
+      "endTime": 1794151285478,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/question-counts.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[RSLT-001,BASE-ACCESS-002,BASE-INPUT-001] text cursors search all Unicode literal evidence and retain timestamp ties without accepting foreign scopes",
+          "status": "passed",
+          "title": "[RSLT-001,BASE-ACCESS-002,BASE-INPUT-001] text cursors search all Unicode literal evidence and retain timestamp ties without accepting foreign scopes",
+          "duration": 939,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[LEDG-002,BASE-DATA-003,BASE-OPS-004] same-count edits abort continuations and changes after headers abort streams without an error record",
+          "status": "passed",
+          "title": "[LEDG-002,BASE-DATA-003,BASE-OPS-004] same-count edits abort continuations and changes after headers abort streams without an error record",
+          "duration": 94,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151260170,
+      "endTime": 1794151261204,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/reporting-bounded.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[RESP-020,LOGIC-001,FIELD-015,DIST-006,DATA-002] released confirmations use only the marked mailbox or participant, escape permitted recall and dates, retry once and erase their retained copy",
+          "status": "passed",
+          "title": "[RESP-020,LOGIC-001,FIELD-015,DIST-006,DATA-002] released confirmations use only the marked mailbox or participant, escape permitted recall and dates, retry once and erase their retained copy",
+          "duration": 863,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151138780,
+      "endTime": 1794151139643,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/respondent-confirmations.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[DIST-019] restricted collection gates graph and session doors, verifies identity, serializes email uniqueness and binds app signatures to their revision",
+          "status": "passed",
+          "title": "[DIST-019] restricted collection gates graph and session doors, verifies identity, serializes email uniqueness and binds app signatures to their revision",
+          "duration": 935,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151190136,
+      "endTime": 1794151191071,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/restricted-access.worker.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "[RSLT-013] anonymous view and durable start buckets report native conversion cohorts without retaining visitor metadata",
+          "status": "passed",
+          "title": "[RSLT-013] anonymous view and durable start buckets report native conversion cohorts without retaining visitor metadata",
+          "duration": 537,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "[RSLT-013,RESP-016] signed form-load timing and retained bot exclusions leave anonymous view and start counters unchanged on review",
+          "status": "passed",
+          "title": "[RSLT-013,RESP-016] signed form-load timing and retained bot exclusions leave anonymous view and start counters unchanged on review",
+          "duration": 3756,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1794151087661,
+      "endTime": 1794151091954,
+      "status": "passed",
+      "message": "",
+      "name": "/home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/tests/runtime/traffic.worker.test.ts"
+    }
+  ]
+}

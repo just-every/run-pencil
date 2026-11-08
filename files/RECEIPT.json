@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "tag": "sd-pencil-c-f34-pc1",
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f34-pc1",
+  "head": "d85088cdbdc290e1f739df7cdfa7ed0632bc0296",
+  "new_product_commits": 0,
+  "product_worktree_clean": true,
+  "verify": {
+    "conclusion": "success",
+    "event": "push",
+    "head_branch": "cloud/sd-pencil-c-f34-pc1",
+    "head_sha": "d85088cdbdc290e1f739df7cdfa7ed0632bc0296",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42491109266",
+    "id": 42491109266,
+    "name": "Verify candidate",
+    "run_attempt": 1,
+    "status": "completed"
+  },
+  "older_failed_verify": 42481493921,
+  "checks": {
+    "typecheck-initial": {
+      "exit": 0,
+      "receipt": "typecheck-initial.exit"
+    },
+    "first-party": {
+      "exit": 0,
+      "receipt": "first-party.exit"
+    },
+    "source-initial": {
+      "exit": 0,
+      "receipt": "source-initial.exit"
+    },
+    "production-build": {
+      "exit": 0,
+      "receipt": "production-build.exit"
+    },
+    "reproduce-worker-2": {
+      "exit": 0,
+      "receipt": "reproduce-worker-2.exit"
+    },
+    "reproduce-node22-worker-2": {
+      "exit": 0,
+      "receipt": "reproduce-node22-worker-2.exit"
+    },
+    "reproduce-detail": {
+      "exit": 0,
+      "receipt": "reproduce-detail.exit"
+    },
+    "reproduce-node22-mobile-6": {
+      "exit": 0,
+      "receipt": "reproduce-node22-mobile-6.exit"
+    },
+    "touched-runtime": {
+      "exit": 0,
+      "receipt": "touched-runtime.exit"
+    },
+    "hosted-system-chromium": {
+      "exit": 0,
+      "receipt": "hosted-system-chromium.exit"
+    },
+    "unchanged-source": {
+      "exit": 0,
+      "receipt": "unchanged-source.exit"
+    }
+  },
+  "views": {
+    "write": 0,
+    "check": 0,
+    "restored": true
+  },
+  "lock": {
+    "regenerate": 0,
+    "check": 0,
+    "unchanged": true
+  },
+  "counts_before": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "counts_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "clause": "AGENT-005",
+  "status_before": "partial",
+  "status_after": "partial",
+  "product_push_in_this_continuation": false,
+  "publication_scan": "Mac lander required",
+  "main_equality": false,
+  "run_site": "not established",
+  "github_calls": 6,
+  "blockers": []
+}

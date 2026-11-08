@@ -1,0 +1,36 @@
+{
+  "run": 42481493921,
+  "head": "d85088cdbdc290e1f739df7cdfa7ed0632bc0296",
+  "calls_used": 6,
+  "failed_job_logs": [
+    {
+      "command": "gh run view 42481493921 --repo just-every/run-pencil --job 128734533698 --log-failed",
+      "exit": 0,
+      "stdout_bytes": 0,
+      "stderr_bytes": 0
+    },
+    {
+      "command": "gh run view 42481493921 --repo just-every/run-pencil --job 128737164190 --log-failed",
+      "exit": 0,
+      "stdout_bytes": 0,
+      "stderr_bytes": 0
+    }
+  ],
+  "artifact_attempt": {
+    "command": "gh api repos/just-every/run-pencil/actions/artifacts/13617434619/zip",
+    "exit": 1,
+    "http_status": 403,
+    "error": "GET redirected artifact archive: Forbidden",
+    "retry": false
+  },
+  "note": "No assertion text was returned by the failed-job log commands; no blob download retries.",
+  "exact_sha_discovery": {
+    "command": "gh api repos/just-every/run-pencil/actions/runs?head_sha=d85088cdbdc290e1f739df7cdfa7ed0632bc0296&per_page=100",
+    "run": 42491109266,
+    "status": "completed",
+    "conclusion": "success",
+    "head": "d85088cdbdc290e1f739df7cdfa7ed0632bc0296",
+    "event": "push",
+    "branch": "cloud/sd-pencil-c-f34-pc1"
+  }
+}

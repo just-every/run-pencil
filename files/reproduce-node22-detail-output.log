@@ -1,0 +1,421 @@
+
+ RUN  v4.1.11 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil
+
+ ✓ tests/runtime/journey.worker.test.ts > [RESP-009] rechecks manual closure and deadline inside final admission; losers receive a named closed outcome with no saved response 432ms
+ ✓ tests/runtime/journey.worker.test.ts > [BASE-DATA-002,RESP-013,RESP-019] scheduled retention folds abandoned sessions once, preserves active auth and every current persistent entity, and logs counts only 328ms
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+ ✓ tests/runtime/journey.worker.test.ts > [FLOW-008,FLOW-009,FLOW-017,FLOW-020,RESP-004,RESP-010,LEDG-004] builds, previews, publishes and reports a branching form without preview effects; pins live revisions and exact answers 363ms
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+ ✓ tests/runtime/journey.worker.test.ts > [RESP-017,RESP-018,LEDG-002] quarantines fast submissions, excludes them from reporting, releases exactly once after closure, and erases rejected answers 256ms
+ ✓ tests/runtime/journey.worker.test.ts > [RESP-009,FLOW-018] admits only one released completion at a target of one, while retaining its replay after automatic closure 188ms
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+ ✓ tests/runtime/journey.worker.test.ts > [DATA-002,BASE-DATA-003] erases released data exactly once, recomputes reports, removes receipts/effects and keeps closed admission closed 232ms
+ ✓ tests/runtime/journey.worker.test.ts > [RESP-012] retains the committed completion across changed-answer retries, pinned revisions and removal of the session 392ms
+ ✓ tests/runtime/journey.worker.test.ts > [FLOW-007] previews the current draft and incomplete branches with test answers while preserving every product record and effect 383ms
+ ✓ tests/runtime/journey.worker.test.ts > [RESP-014] rolls a failed final transaction back completely and commits one original-key retry without partial answers or effects 183ms
+ ✓ tests/runtime/journey.worker.test.ts > [FLOW-021,RSLT-005] compares only matching stable questions and each published revision owns its labels, denominators and erased/quarantined evidence 435ms
+ ✓ tests/runtime/journey.worker.test.ts > [RESP-015] names unavailable sessions without partial effects, distinguishes invalid steps, and admits an explicit fresh response with the original key 172ms
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+ ✓ tests/runtime/journey.worker.test.ts > [RSLT-001,RSLT-003,RSLT-004,DASH-002] retains factual zero, quarantine, release and erasure summaries and matching dashboard counts 903ms
+exception = kj/async-io.c++:72: disconnected: stream disconnected prematurely
+stack: /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a3cc66 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57dfc57 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57e0967 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57e3993 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57be310 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57c4f80 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57dc7b0 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2238860 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@329c8f0 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2ed06c0
+uncaught exception; source = Uncaught (in promise); stack = Error: Network connection lost.
+uncaught exception; exception = workerd/jsg/_virtual_includes/iterator/workerd/jsg/value.h:1494: disconnected: jsg.Error: Network connection lost.
+stack: /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@322cfe0 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@322dc4f /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5aa0368 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2f8956f
+ ✓ tests/runtime/google-sheets.worker.test.ts > [INTEG-001,INTEG-015,INTEG-016] Google OAuth seals owner tokens and Sheets backfills, appends stable columns, replays failed rows without duplicates and clears an erased response 2463ms
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+ ✓ tests/runtime/collectors-trends.worker.test.ts > [DIST-017,RSLT-007,RSLT-006,LEDG-005,RSLT-008,RSLT-009] named collectors enforce independent atomic limits and retain attribution in zoned, revision-marked score trends, exports, RSLT-006 crosstabs with stated shares, chi-square and suppression, and multi-part LEDG-005 XLSX and SAV exports 8460ms
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+ ✓ tests/runtime/ledger-filters.worker.test.ts > [LEDG-006,LEDG-001,LEDG-003,LEDG-004,LEDG-005,FLOW-019,IMPORT-003,RSLT-001,RSLT-003] typed filters return exact native and imported IDs with retained consent and revision/source scopes in snapshot CSV, JSON and LEDG-005 XLSX and SAV exports read back by independent readers 2533ms
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+ ✓ tests/runtime/ledger-filters.worker.test.ts > [LEDG-006] response search composes with revision and source filters, exports the same released IDs and excludes erasure 458ms
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+ ✓ tests/runtime/ledger-filters.worker.test.ts > [LEDG-006] an accented and a non-ASCII phrase match case-insensitively while wildcards stay literal 445ms
+ ✓ tests/runtime/traffic.worker.test.ts > [RSLT-013] anonymous view and durable start buckets report native conversion cohorts without retaining visitor metadata 537ms
+ ✓ tests/runtime/traffic.worker.test.ts > [RSLT-013,RESP-016] signed form-load timing and retained bot exclusions leave anonymous view and start counters unchanged on review 3756ms
+ ✓ tests/runtime/form-import.worker.test.ts > [IMPORT-001,IMPORT-002,IMPORT-003,IMPORT-004,LEDG-002,IMPORT-005,FIELD-013,FIELD-016,FIELD-010] two fresh databases produce equivalent reports, source structures, typed answers and 27 inert completions 3095ms
+ ✓ tests/runtime/form-import.worker.test.ts > [IMPORT-003,IMPORT-004,BASE-OPS-005] native kit undo removes imported flow and responses, retains safe provenance, and preserves same-revision edits 1853ms
+ ✓ tests/runtime/analysis-safety.worker.test.ts > [ANLY-002,ANLY-010,RESP-005,WS-001] only the selected answers and stable response IDs leave, to the configured origin with the key as a bearer value, and every call records its usage and cost 850ms
+ ✓ tests/runtime/analysis-safety.worker.test.ts > [ANLY-014] instructions planted in answers change nothing: a tool call or webhook-shaped answer fails, and no task, job, policy or setting changes 195ms
+stdout | tests/runtime/analysis-safety.worker.test.ts > [ANLY-008,ANLY-016] an unconfigured or failing provider fails the request with its error and a retry action while collection keeps working; a transient transport failure is retried at most three times within ten minutes with the same request and a schema failure is never retried
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 66,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/analysis-safety.worker.test.ts > [ANLY-008,ANLY-016] an unconfigured or failing provider fails the request with its error and a retry action while collection keeps working; a transient transport failure is retried at most three times within ten minutes with the same request and a schema failure is never retried
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/analysis-safety.worker.test.ts > [ANLY-008,ANLY-016] an unconfigured or failing provider fails the request with its error and a retry action while collection keeps working; a transient transport failure is retried at most three times within ten minutes with the same request and a schema failure is never retried
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/analysis-safety.worker.test.ts > [ANLY-008,ANLY-016] an unconfigured or failing provider fails the request with its error and a retry action while collection keeps working; a transient transport failure is retried at most three times within ten minutes with the same request and a schema failure is never retried
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/analysis-safety.worker.test.ts > [ANLY-008,ANLY-016] an unconfigured or failing provider fails the request with its error and a retry action while collection keeps working; a transient transport failure is retried at most three times within ten minutes with the same request and a schema failure is never retried
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/analysis-safety.worker.test.ts > [ANLY-008,ANLY-016] an unconfigured or failing provider fails the request with its error and a retry action while collection keeps working; a transient transport failure is retried at most three times within ten minutes with the same request and a schema failure is never retried
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/analysis-safety.worker.test.ts > [ANLY-008,ANLY-016] an unconfigured or failing provider fails the request with its error and a retry action while collection keeps working; a transient transport failure is retried at most three times within ten minutes with the same request and a schema failure is never retried
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 10,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/analysis-safety.worker.test.ts > [ANLY-008,ANLY-016] an unconfigured or failing provider fails the request with its error and a retry action while collection keeps working; a transient transport failure is retried at most three times within ten minutes with the same request and a schema failure is never retried
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/analysis-safety.worker.test.ts > [ANLY-008,ANLY-016] an unconfigured or failing provider fails the request with its error and a retry action while collection keeps working; a transient transport failure is retried at most three times within ten minutes with the same request and a schema failure is never retried
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/analysis-safety.worker.test.ts > [ANLY-008,ANLY-016] an unconfigured or failing provider fails the request with its error and a retry action while collection keeps working; a transient transport failure is retried at most three times within ten minutes with the same request and a schema failure is never retried
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 10,
+  moreWorkMayRemain: false
+}
+
+ ✓ tests/runtime/analysis-safety.worker.test.ts > [ANLY-008,ANLY-016] an unconfigured or failing provider fails the request with its error and a retry action while collection keeps working; a transient transport failure is retried at most three times within ten minutes with the same request and a schema failure is never retried 1041ms
+stdout | tests/runtime/analysis-safety.worker.test.ts > [DATA-002,DATA-001] erasing a response removes it from every analysis, quote and evidence list, and a restored run never calls the provider by itself
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 20,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/analysis-safety.worker.test.ts > [DATA-002,DATA-001] erasing a response removes it from every analysis, quote and evidence list, and a restored run never calls the provider by itself
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 10,
+  moreWorkMayRemain: false
+}
+
+ ✓ tests/runtime/analysis-safety.worker.test.ts > [DATA-002,DATA-001] erasing a response removes it from every analysis, quote and evidence list, and a restored run never calls the provider by itself 3109ms
+ ✓ tests/runtime/brand.worker.test.ts > [BRAND-001,HOME-001,BASE-ACCESS-004,BASE-INPUT-001] production D1 branding persists, refuses unauthorized and invalid writes, and selects only a published owned flow 181ms
+ ✓ tests/runtime/brand.worker.test.ts > [DIST-020] settings API preserves preview overrides and publication freezes defaults and images across later edits 501ms
+ ✓ tests/runtime/brand.worker.test.ts > [DIST-020] settings API rejects recalled preview text and invalid, oversized or unlabelled image uploads without mutating the draft, and publication rejects indexing on restricted and identified forms while preserving their existing admission rules 518ms
+ ✓ tests/runtime/brand.worker.test.ts > [DIST-020] upgrading existing publications freezes their logo preview without changing admission policy 111ms
+ ✓ tests/runtime/brand.worker.test.ts > [BASE-DATA-001,DATA-001,DIST-020] owner backup carries immutable R2 share images, checks their bytes and refuses missing attachment custody 608ms
+ ✓ tests/runtime/respondent-confirmations.worker.test.ts > [RESP-020,LOGIC-001,FIELD-015,DIST-006,DATA-002] released confirmations use only the marked mailbox or participant, escape permitted recall and dates, retry once and erase their retained copy 863ms
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+ ✓ tests/runtime/hidden-fields.worker.test.ts > [FIELD-001] collects only declared typed link values, routes present and blank values, and retains filtered exports and copy custody 759ms
+ ✓ tests/runtime/hidden-fields.worker.test.ts > [FIELD-001,RESP-023] requires identified publication for identity fields and rejects merge tags, invalid values and anonymous click IDs 816ms
+ ✓ tests/runtime/google-form-import.worker.test.ts > [IMPORT-001,IMPORT-002,IMPORT-003,IMPORT-004] Google public commit pins anonymous history, omits every identity copy, replays both files and undoes without mail 1516ms
+ ✓ tests/runtime/google-form-import.worker.test.ts > [IMPORT-002,IMPORT-004] CSV-only public route preserves whole labels, prepares privately and resumes custody; revoked sessions cannot continue 1815ms
+ ✓ tests/runtime/notifications.worker.test.ts > [NOTIFY-002,NOTIFY-004,NOTIFY-005] publisher defaults Immediately only if unset, others Off; committed private mail has a durable attempt and replay cannot double send 1308ms
+ ✓ tests/runtime/notifications.worker.test.ts > [NOTIFY-002,NOTIFY-004,DIST-006] transient retries keep their key through five retries; permanent and unknown failures remain visible only to their operator 136ms
+ ✓ tests/runtime/notifications.worker.test.ts > [NOTIFY-002,NOTIFY-004,DATA-002] the maintained Base local outbox captures only a durably claimed notification and response erasure removes its retained message 72ms
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+ ✓ tests/runtime/restricted-access.worker.test.ts > [DIST-019] restricted collection gates graph and session doors, verifies identity, serializes email uniqueness and binds app signatures to their revision 935ms
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 2,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+ ✓ tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders 1250ms
+stdout | tests/runtime/install-restore.worker.test.ts > [DATA-001,BASE-DATA-001,BASE-ACCESS-001,BASE-OPS-003] real D1 restores an empty install with unchanged delivery facts, no mail, working sign-in and an unreclaimable bootstrap
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+ ✓ tests/runtime/install-restore.worker.test.ts > [DATA-001,BASE-DATA-001,BASE-ACCESS-001,BASE-OPS-003] real D1 restores an empty install with unchanged delivery facts, no mail, working sign-in and an unreclaimable bootstrap 2738ms
+ ✓ tests/runtime/auth.worker.test.ts > operator authentication in a Workers D1 runtime > [BASE-ACCESS-001] accepts exactly one concurrent redemption of a local magic link 83ms
+ ✓ tests/runtime/auth.worker.test.ts > operator authentication in a Workers D1 runtime > [OPER-002] leaves one operator when two peers concurrently try to remove one another 115ms
+ ✓ tests/runtime/auth.worker.test.ts > [OPER-002,BASE-OPS-005] preserves setup and last-operator credentials on refusal, then records another active actor on permitted removal 18ms
+ ✓ tests/runtime/conditions.worker.test.ts > [LOGIC-006] publishes correlated AND OR conditions, handles blank and negative operands and preserves immutable routing and copies 957ms
+ ✓ tests/runtime/conditions.worker.test.ts > [LOGIC-006,FLOW-013] refuses destinations made impossible by constraints on an earlier question without publishing 1322ms
+ ✓ tests/runtime/reporting-bounded.worker.test.ts > [RSLT-001,BASE-ACCESS-002,BASE-INPUT-001] text cursors search all Unicode literal evidence and retain timestamp ties without accepting foreign scopes 939ms
+ ✓ tests/runtime/reporting-bounded.worker.test.ts > [LEDG-002,BASE-DATA-003,BASE-OPS-004] same-count edits abort continuations and changes after headers abort streams without an error record 94ms
+ ✓ tests/runtime/access-foundation.worker.test.ts > [BASE-INPUT-001,BASE-ACCESS-004] every private mutation route rejects sessionless, cross-origin and malformed requests before product writes 729ms
+ ✓ tests/runtime/access-foundation.worker.test.ts > [OPER-001,BASE-ACCESS-004] a second equal operator edits another operators flow while foreign workspace IDs never become ownership authority 292ms
+ ✓ tests/runtime/access-foundation.worker.test.ts > [WS-001,WS-002,BASE-PUBLIC-002] workspace settings persist through authenticated routes and reject invalid clocks and embed hosts without writes 162ms
+ ✓ tests/runtime/question-counts.worker.test.ts > [RSLT-002] counts the validated final path once and keeps skipped, expired, quarantined, erased and later-revision cohorts distinct 483ms
+ ✓ tests/runtime/feedback-rewrites.worker.test.ts > [ANLY-009,ANLY-008,ANLY-010,BASE-INPUT-001,AI-001,AGENT-001] rewrite requests preserve the source and draft until explicit guarded acceptance, with real provider calls, failure and usage attribution 2690ms
+ ✓ tests/runtime/completion-redirects.worker.test.ts > [LOGIC-005] chooses screen or approved redirect from accepted answer, hidden, calculation and score conditions; replay and copies preserve revision custody 511ms
+ ✓ tests/runtime/completion-redirects.worker.test.ts > [LOGIC-005] refuses unapproved, insecure, credential-bearing and invalid operand redirects at publish without changing the live revision 362ms
+ ✓ tests/runtime/private-auth-freshness.worker.test.ts > [BASE-ACCESS-001,SHELL-001] a warmed private route denies native session revocation 67ms
+ ✓ tests/runtime/private-auth-freshness.worker.test.ts > [BASE-ACCESS-001,SHELL-001] a valid native session without its durable product mapping or operator fails closed 55ms
+ ✓ tests/runtime/actions-lifecycle.worker.test.ts > [ACT-002] the server enforces the lifecycle: every legal move is recorded, every illegal move answers 409 and changes nothing 2155ms
+stdout | tests/runtime/feedback-attention.worker.test.ts > [NOTIFY-001,DASH-002] terminal attention is scoped and duplicate-safe across manual retries, autoruns, insufficient evidence and interruption; cards retain the latest actual revision and state
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/feedback-attention.worker.test.ts > [NOTIFY-001,DASH-002] terminal attention is scoped and duplicate-safe across manual retries, autoruns, insufficient evidence and interruption; cards retain the latest actual revision and state
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+ ✓ tests/runtime/feedback-attention.worker.test.ts > [NOTIFY-001,DASH-002] terminal attention is scoped and duplicate-safe across manual retries, autoruns, insufficient evidence and interruption; cards retain the latest actual revision and state 573ms
+ ✓ tests/runtime/local-mail-erasure.worker.test.ts > [DATA-002,BASE-DATA-003] public contact erasure counts every removed local copy across invitations, reminders, notifications and legacy captures 352ms
+ ✓ tests/runtime/policy-snapshot.worker.test.ts > [FLOW-016,RESP-024] publication freezes branch and review policies while prior sessions and receipts retain their original settings 212ms
+ ✓ tests/runtime/analysis-run.worker.test.ts > [ANLY-001,ANLY-002,ANLY-007,ANLY-013,ANLY-015] a requested run fixes the released responses it read and its policies and completes without a cron tick, later evidence or policy only marks or changes new runs, and too little evidence completes as insufficient-evidence with its reason and sends nothing 510ms
+ ✓ tests/runtime/graph-reachability.worker.test.ts > [FLOW-006,FLOW-013,FLOW-016] publication rejects impossible screens without writing a revision, remains editable, and validates the policy actually published 221ms
+ ✓ tests/runtime/egress-foundation.worker.test.ts > [BASE-DATA-004,BASE-DATA-005,BASE-SECRET-001] Worker collection and maintenance require no author or marketplace; only declared magic-link data reaches the configured mail endpoint 188ms
+ ✓ tests/runtime/ledger-search-upgrade.worker.test.ts > [LEDG-006] answers collected before the stored-search migration become searchable without changing the retained answers 940ms
+ ✓ tests/runtime/groups.worker.test.ts > [FIELD-012] imports Typeform group and inline_group as one screen with independently validated stable questions and durable copies 647ms
+
+ Test Files  32 passed (32)
+      Tests  66 passed (66)
+   Start at  15:16:54
+   Duration  388.12s (transform 13.90s, setup 0ms, import 275.45s, tests 92.13s, environment 2ms)
+
+JSON report written to /tmp/pencil-contract-coverage-r6htuz/results.json
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+(node:2452) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+

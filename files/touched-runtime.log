@@ -1,0 +1,178 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+(node:5854) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+
+ RUN  v4.1.11 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil
+
+exception = kj/async-io.c++:72: disconnected: stream disconnected prematurely
+stack: /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a3cc66 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57dfc57 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57e0967 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57e3993 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57be310 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57c4f80 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57dc7b0 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2238860 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@329c8f0 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2ed06c0
+uncaught exception; source = Uncaught (in promise); stack = Error: Network connection lost.
+uncaught exception; exception = workerd/jsg/_virtual_includes/iterator/workerd/jsg/value.h:1494: disconnected: jsg.Error: Network connection lost.
+stack: /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@322cfe0 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@322dc4f /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5aa0368 /home/agent/rer-consolidation/work/sd-pencil-c-f34-pc1/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2f8956f
+ ✓ tests/runtime/actions-task.worker.test.ts > [ACT-003,ACT-004,ACT-007,AGENT-005] a 500 fails visibly and a dropped connection is unknown; both keep the local action and a retry on the same key creates one task 689ms
+ ✓ tests/runtime/actions-task.worker.test.ts > [ACT-006] only the confirmed action fields and report link leave: no answer or respondent-visible text, and a changed action must be confirmed again 127ms
+ ✓ tests/runtime/actions-task.worker.test.ts > [ACT-004,ACT-007] with no adapter configured the external task is unavailable and the action works; redirects are not followed and a plain http URL is refused outside the dev and test runtimes 174ms
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 2,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+stdout | tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 0,
+  moreWorkMayRemain: false
+}
+
+ ✓ tests/runtime/actions-measurement.worker.test.ts > [ACT-005,ACT-009,WS-002,NOTIFY-004,AGENT-005] ACT-009 emails the owner before, on and weekly after review exactly once within hours; only the operator verdict stops queued and future reminders 1075ms
+
+ Test Files  2 passed (2)
+      Tests  4 passed (4)
+   Start at  15:25:17
+   Duration  25.55s (transform 7.56s, setup 0ms, import 20.43s, tests 3.52s, environment 0ms)
+
