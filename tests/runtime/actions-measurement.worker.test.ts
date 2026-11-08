@@ -5,6 +5,7 @@ import worker from '../../src/core/app/worker'
 import type { ActionReminders } from '../../src/core/features/actions/reminders'
 import type { WorkerBindings } from '../../src/core/app/environment'
 import { actionsHttp } from './actions-fixture'
+import { readHealth, reminderFailureHealth } from './action-health-scenario'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 afterEach(() => { vi.useRealTimers() })
@@ -25,7 +26,7 @@ contract(['ACT-005','ACT-009','WS-002','NOTIFY-004'], 'ACT-009 emails the owner 
   await env.DB.prepare('UPDATE oa_sessions SET expires_at=? WHERE id IN (?,?)').bind(Date.parse('2026-12-25T00:00:00Z'),f.lead.sessionId,f.owner.sessionId).run()
   const action = await f.create()
   const reminderMail: any[] = []
-  const failureMode = new Map<string,'rate_limited'|'unknown'>()
+  const failureMode = new Map<string,'rate_limited'|'unknown'|'rejected'>()
   const send = vi.spyOn(globalThis,'fetch').mockImplementation(async (_url, options) => {
     const payload = JSON.parse(String(options?.body))
     if (JSON.stringify(payload).includes('/app/actions/')) {
@@ -33,6 +34,7 @@ contract(['ACT-005','ACT-009','WS-002','NOTIFY-004'], 'ACT-009 emails the owner 
       const mode = failureMode.get(payload.subject.split(': ').slice(1).join(': '))
       if (mode === 'unknown') throw new Error('Synthetic ambiguous network edge')
       if (mode === 'rate_limited') return new Response(null,{status:429})
+      if (mode === 'rejected') return new Response(null,{status:400})
     }
     return new Response(null, {status:202})
   })
@@ -88,6 +90,8 @@ contract(['ACT-005','ACT-009','WS-002','NOTIFY-004'], 'ACT-009 emails the owner 
     const departed = await (await f.call(`/api/app/actions/${departedAction.id}`)).json() as Detail
     expect(missingEmail.reminders).toMatchObject({state:'no_email',explanation:expect.stringContaining('no email address')})
     expect(departed.reminders).toMatchObject({state:'no_owner',explanation:expect.stringContaining('no current owner')})
+    expect((await readHealth(f, noEmailAction.id)).reminders).toMatchObject({actionId:noEmailAction.id,state:'no_email',repairPlan:[expect.stringContaining('explicitly update')]})
+    expect((await readHealth(f, departedAction.id)).reminders).toMatchObject({actionId:departedAction.id,state:'no_owner'})
     const retryAction = await f.create({title:'Queued retry stops at verdict',reviewDate:'2026-12-25'})
     const unknownAction = await f.create({title:'Unknown mail never retries',reviewDate:'2026-12-25'})
     failureMode.set('Queued retry stops at verdict','rate_limited')
@@ -103,5 +107,13 @@ contract(['ACT-005','ACT-009','WS-002','NOTIFY-004'], 'ACT-009 emails the owner 
     expect(reminderMail).toHaveLength(5)
     expect((await reminderDetail(unknownAction.id)).reminders.deliveries[0]).toMatchObject({status:'unknown',attempts:1})
     expect((await env.DB.prepare("SELECT id FROM invitation_participants WHERE workspace_id=? AND delivery_status='bounced'").bind(f.workspaceId).all()).results).toEqual([])
+    const failedAction = await f.create({title:'Retained reminder rejection',reviewDate:'2026-12-25'})
+    failureMode.set('Retained reminder rejection','rejected')
+    await scheduled('2026-12-21T23:09:00.000Z')
+    await reminderFailureHealth(f, unknownAction.id, failedAction.id)
+    const afterRead = reminderMail.length
+    await scheduled('2026-12-21T23:10:00.000Z')
+    expect(reminderMail).toHaveLength(afterRead)
+    expect((await reminderDetail(unknownAction.id)).reminders.deliveries[0]).toMatchObject({status:'unknown',attempts:1})
   } finally { send.mockRestore() }
 })
