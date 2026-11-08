@@ -13,8 +13,15 @@ mkdir -p "$install_dir"
 scratch=$(mktemp -d)
 trap 'rm -rf -- "$scratch"' EXIT
 archive="gitleaks_${version}_${platform}.tar.gz"
-curl --fail --silent --show-error --location --retry 5 --retry-all-errors --retry-delay 5 --proto '=https' --proto-redir '=https' \
-  "https://github.com/gitleaks/gitleaks/releases/download/v${version}/${archive}" -o "$scratch/$archive"
+# Bound retries to ten minutes; cap each attempt so a stalled transfer also ends.
+http_status=$(curl --fail --silent --show-error --location \
+  --retry 120 --retry-all-errors --retry-delay 5 --retry-max-time 600 --max-time 60 \
+  --proto '=https' --proto-redir '=https' --write-out '%{http_code}' \
+  "https://github.com/gitleaks/gitleaks/releases/download/v${version}/${archive}" -o "$scratch/$archive") || {
+  status=$?
+  printf 'Download failed for %s (last HTTP status: %s; curl exit: %s)\n' "$archive" "$http_status" "$status" >&2
+  exit "$status"
+}
 if command -v sha256sum >/dev/null; then actual=$(sha256sum "$scratch/$archive");
 else actual=$(shasum -a 256 "$scratch/$archive"); fi
 [[ ${actual%% *} == "$checksum" ]] || { printf 'Gitleaks: checksum mismatch\n' >&2; exit 1; }
