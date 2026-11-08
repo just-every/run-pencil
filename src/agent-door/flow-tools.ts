@@ -50,7 +50,7 @@ async function native<T>(call: () => Promise<T>): Promise<T> {
     if (result && typeof result === 'object' && 'kind' in result && result.kind === 'conflict') throw new ToolRefusal('conflict', 'The native draft changed.', { latestVersion: (result as { latestVersion?: number }).latestVersion })
     return result
   } catch (error) {
-    if (error instanceof PencilError) throw new ToolRefusal(error.code === 'NOT_FOUND' ? 'not_found' : error.code === 'FORBIDDEN' ? 'forbidden' : error.code === 'CONFLICT' ? 'conflict' : 'invalid_arguments', error.message)
+    if (error instanceof PencilError) throw new ToolRefusal(error.code, error.message)
     throw error
   }
 }
@@ -83,7 +83,7 @@ export function flowTools(services: PencilServices, resolve: ResolveFlowOperator
       if ('flowId' in (spec.inputSchema.properties ?? {}) && typeof args.flowId === 'string') {
         const current = await draft(services, resolve, ctx.person.id, args.flowId)
         if (!completed && 'stepId' in (spec.inputSchema.properties ?? {}) && !current.steps.some(step => step.id === args.stepId)) {
-          throw new ToolRefusal('not_found', 'The requested draft step does not exist.')
+          throw new ToolRefusal('NOT_FOUND', 'The requested draft step does not exist.')
         }
       }
       return spec.classification ? spec.classification(args, ctx) : standard()
@@ -176,7 +176,7 @@ export function flowResources(services: PencilServices, resolve: ResolveFlowOper
       const match = /^pencil:\/\/flows\/([0-9A-HJKMNP-TV-Z]{26})$/.exec(address)
       if (!match) return null
       try { return { json: await draft(services, resolve, ctx.person.id, match[1]), untrusted: true } }
-      catch (error) { if (error instanceof ToolRefusal && error.code === 'not_found') return null; throw error }
+      catch (error) { if (error instanceof ToolRefusal && error.code === 'NOT_FOUND') return null; throw error }
     },
   }]
 }
