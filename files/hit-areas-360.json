@@ -1,0 +1,62 @@
+[
+  {
+    "control": "Select submission label",
+    "width": 44,
+    "height": 44
+  },
+  {
+    "control": "Assign",
+    "width": 324,
+    "height": 44
+  },
+  {
+    "control": "Add tag",
+    "width": 324,
+    "height": 44.390625
+  },
+  {
+    "control": "Apply assignment and tag",
+    "width": 124.84375,
+    "height": 44
+  },
+  {
+    "control": "Open submission",
+    "width": 54,
+    "height": 48
+  },
+  {
+    "control": "Private note",
+    "width": 272,
+    "height": 80
+  },
+  {
+    "control": "Add note",
+    "width": 87.265625,
+    "height": 44
+  },
+  {
+    "control": "Select submission label for status",
+    "width": 44,
+    "height": 44
+  },
+  {
+    "control": "Set status",
+    "width": 324,
+    "height": 44
+  },
+  {
+    "control": "Apply Done status",
+    "width": 124.84375,
+    "height": 44
+  },
+  {
+    "control": "Filter",
+    "width": 97.03125,
+    "height": 44
+  },
+  {
+    "control": "Workflow status filter",
+    "width": 324,
+    "height": 44
+  }
+]

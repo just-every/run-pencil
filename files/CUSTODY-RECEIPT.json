@@ -1,0 +1,107 @@
+{
+  "head": "955e9eae109eed2a4fdf2fdd49419f94dd181bd4",
+  "branch": "cloud/sd-pencil-c-f39",
+  "repository": "just-every/run-pencil",
+  "base_main": "9183d1bddd25a6191fe527186b28d2b458249a03",
+  "product_push": {
+    "status": "success",
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-pencil-c-f39",
+    "attempts": 1
+  },
+  "remote_product_head": "955e9eae109eed2a4fdf2fdd49419f94dd181bd4",
+  "remote_main_head": "9183d1bddd25a6191fe527186b28d2b458249a03",
+  "product_checkout_clean": true,
+  "shallow": false,
+  "contract_status_gap_evidence_diff": "none",
+  "contract_acceptance_diff": "none",
+  "generated_views_committed": false,
+  "views": {
+    "write": {
+      "command": "node scripts/contract-docs.mjs write MOB-001",
+      "exit": 0,
+      "output": "Contract documents write: MOB-001; 142 done, 61 partial, 49 missing."
+    },
+    "check": {
+      "command": "node scripts/contract-docs.mjs check MOB-001",
+      "exit": 0,
+      "output": "Contract documents check: MOB-001; 142 done, 61 partial, 49 missing."
+    },
+    "restored": [
+      "ACCEPTANCE.md",
+      "docs/CLAIMS.md"
+    ]
+  },
+  "lock": {
+    "regenerate": "node scripts/edition-authoring/cli.mjs lock",
+    "exit": 0,
+    "check": "pnpm source:check",
+    "check_exit": 0
+  },
+  "migration_ledger": {
+    "command": null,
+    "exit": 0,
+    "reason": "No migration change"
+  },
+  "publication_scan": {
+    "head": "955e9eae109eed2a4fdf2fdd49419f94dd181bd4",
+    "complete": false,
+    "historyScanned": false,
+    "findings": null,
+    "reason": "Not run in cloud; full-history publication scan belongs to the Mac lander"
+  },
+  "main_equals_candidate": false,
+  "candidate_run_site": null,
+  "candidate_verify": {
+    "id": 42501312553,
+    "event": "push",
+    "status": "in_progress",
+    "conclusion": null,
+    "head_sha": "955e9eae109eed2a4fdf2fdd49419f94dd181bd4",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42501312553"
+  },
+  "counts_before": {
+    "DONE": 142,
+    "PARTIAL": 61,
+    "MISSING": 49,
+    "total": 252
+  },
+  "counts_after": {
+    "DONE": 142,
+    "PARTIAL": 61,
+    "MISSING": 49,
+    "total": 252
+  },
+  "registration_delta": 0,
+  "repository_recorded_registrations": 277,
+  "development_corrections": [
+    {
+      "failure": "New audit assertion compared actor with assignee; expected owner id but received signed-in operator id",
+      "resolution": "Read current native auth session and require that exact actor and note author; assignment retains independently chosen operator"
+    },
+    {
+      "failure": "Extra measurement of unused Back to form results link returned height 40, expected at least 44",
+      "resolution": "Removed the newly introduced measurement of the unexercised navigation link; scoped leg stays in inbox and reads the matching ledger through its public endpoint. Existing desktop and mobile navigation assertions are preserved. Existing 40-pixel link is an out-of-scope follow-up and whole MOB-001 remains partial."
+    }
+  ],
+  "browser_proof": {
+    "head": "955e9eae109eed2a4fdf2fdd49419f94dd181bd4",
+    "states": [
+      "1440 filtered details",
+      "390 filtered details",
+      "360 initial",
+      "360 bulk",
+      "360 private note",
+      "360 filtered Done",
+      "360 reloaded"
+    ],
+    "browser": "Chromium headless",
+    "physical_device_claim": false
+  },
+  "identity_check": {
+    "all_candidate_authors": "Run Edit Run fleet",
+    "all_candidate_committers": "Run Edit Run fleet",
+    "trailers": "absent",
+    "new_email_shaped_fixture_values": 0
+  },
+  "github_api_calls": 3
+}

@@ -1,0 +1,47 @@
+{
+  "head": "955e9eae109eed2a4fdf2fdd49419f94dd181bd4",
+  "command": "cloud_run perl -e 'alarm 1200; exec @ARGV' -- pnpm exec playwright test tests/e2e/response-search.spec.ts --config /tmp/pencil-playwright.config.ts --workers=1 --reporter=json",
+  "exit": 0,
+  "chromium": "/usr/bin/chromium",
+  "args": [
+    "--use-mock-keychain",
+    "--password-store=basic",
+    "--no-sandbox"
+  ],
+  "stats": {
+    "startTime": "2026-11-08T16:42:16.870Z",
+    "duration": 55266.529,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "tests": [
+    {
+      "file": "contract.ts",
+      "title": "[LEDG-006,WORK-001,MOB-001] operators search responses, see matching answers and download the same filtered records",
+      "project": "desktop",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 7890,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "file": "contract.ts",
+      "title": "[LEDG-006,WORK-001,MOB-001] operators search responses, see matching answers and download the same filtered records",
+      "project": "mobile",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed",
+          "duration": 11376,
+          "errors": []
+        }
+      ]
+    }
+  ]
+}
