@@ -88,7 +88,7 @@
       "status": "in_progress"
     }
   ],
-  "github_api_calls_including_prior_receipt": 7,
+  "github_api_calls_including_prior_receipt": 8,
   "registrations_added": 0,
   "registrations_removed": 0,
   "assertions_removed_or_weakened": 0,
@@ -143,5 +143,15 @@
   },
   "migration_ledger": "not applicable: no migration",
   "browser": "not applicable: no UI changes",
-  "working_tree_clean": true
+  "working_tree_clean": true,
+  "evidence_return_verification": {
+    "status": "restored",
+    "head": "0fb5adfc835a24b765d3a15c1a0fb7417d614f2a",
+    "files": 39,
+    "product_head": "d85088cdbdc290e1f739df7cdfa7ed0632bc0296",
+    "receipt": "EVIDENCE-RETURN.json",
+    "note": "This is the first complete merged packet transfer. A later evidence publication can include the final CI status without changing product provenance."
+  },
+  "terminal_custody": "PUSHED; exact-SHA Verify remains in progress; no CI-success, READY, acceptance or landing claim.",
+  "final_ci_observed_at": "2026-11-08T12:53:09.912322+00:00"
 }
