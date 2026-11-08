@@ -1,0 +1,164 @@
+{
+  "branch": "cloud/sd-pencil-c-f31",
+  "candidate_verify": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "7309cb0a755368d620fa82d05d2ce93eb5755f76",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42467009042",
+    "id": 42467009042,
+    "name": "Verify candidate",
+    "status": "in_progress"
+  },
+  "changed_file_sha256": {
+    "sources.lock.json": "86b64192ce268aa8a1942c4ae8baef98907e447e18e8e43c1f93210ad1a93bac",
+    "src/core/app/api.ts": "61cb44bd2954d7766fc0b6fc7ce1921a23459b3220012b36b825073aa7e1bdb3",
+    "src/core/app/loaders.ts": "4198d5c507a9b76fd8bc3d40f7f5f45cd7aa3f20ddadf60bbd06e472d331c062",
+    "src/core/features/flows/identity-link.ts": "20d92fdacfdc88d586d7e5fdbf96a7c6fa22823c6afd79a00b6b0038e667a1c7",
+    "src/core/features/flows/index.ts": "c973fd0ac81e05e6e32cec498bfa7ece12088fb327f431679722002adcfcae79",
+    "src/core/features/flows/routes.ts": "8f06cec80f3453839ba66fe5a00c75c6bfa2a9847966b6f68465a74a64b2f3a0",
+    "src/core/features/flows/service.ts": "d73af3c817f37f524c45801facbfdbe6f45c12c866976be3dfbf6bf11fabfb03",
+    "src/core/features/flows/ui/FlowSharePanel.tsx": "683db3d14d6165176ab75e100c9f1ee35cb891f0a1bbacd027b9540d957d2594",
+    "src/core/features/flows/ui/IdentityLinkFields.tsx": "6a31b54791fe9e49ab064143b1a987098c0c6da36ecbe9c99d9f19509d35d4a7",
+    "src/core/features/flows/ui/identity-link.css": "a5041afda9d6a0dc1744e8b70242ee3b391a6a1eeca00c1275f34ae1eb0dc314",
+    "src/core/features/responses/routes.ts": "57baeae591698bd0f067459670f975671ffe74a09c41778781557a24001a15a1",
+    "src/core/features/responses/service.ts": "8dd322a6dd3b5a3705faae042eb5b914ab0a97551e1f68eb8967f91c71199a6d",
+    "src/core/features/responses/ui/RespondentFlowPage.tsx": "a341e3d6b7da1d09bf759acd6d458dbd94ed083551649bd3f12a04d1569501fa",
+    "src/core/features/resuming/routes.ts": "a23e27dbacebe0800d310ee206b294ee23b75a44e27c48ea92d7a1b539e5c557",
+    "src/core/features/resuming/service.ts": "e52290286d7ac7ffb58443ba529af9133ca4609ee281147df19701fa1a0cc81b",
+    "src/core/shared/hiddenFields.ts": "9781b70667c579cb2d8fb9f54f78413d4face97a162ad3da6e9cc4d2f4940a01",
+    "src/routes/f.$slug.tsx": "b2ea0fdbbcba640584acb69d1409c2c9383891615389ebab09389ea3377238bc",
+    "tests/e2e/hidden-fields.spec.ts": "9be747564ab1197b8ef8e0ad1a1091575e9e9af3098480bd2976ffcd524696dd",
+    "tests/e2e/identity-link-journey.ts": "8c06514b74d6341974dbf98955d82f5dba779ac6274c823fd6abaa067e9bb805",
+    "tests/runtime/hidden-fields.worker.test.ts": "a55e8f97f02bb9c2fdb3f8ca13b6626dd8178ef8acbf46ee71c45f0521a5d7aa",
+    "tests/runtime/identity-link-scenario.ts": "0684940b43c04bb8216cbcc5ce5c35fe8e33daaf66fd4f0d813369cc7b211075"
+  },
+  "checks": [
+    {
+      "command": "pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/hidden-fields.worker.test.ts",
+      "exit": 0,
+      "log": "worker.log",
+      "passed": 2
+    },
+    {
+      "command": "pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/resuming.worker.test.ts",
+      "exit": 0,
+      "log": "resuming.log",
+      "passed": 2
+    },
+    {
+      "command": "pnpm exec playwright test tests/e2e/hidden-fields.spec.ts --config .pencil-cloud-playwright.config.ts --workers=1",
+      "exit": 0,
+      "log": "browser.log",
+      "passed": 2,
+      "runtime": "Chromium at /usr/bin/chromium with --no-sandbox; original app server; local config only selects that browser and omits the unused site server",
+      "viewports": [
+        1440,
+        390
+      ]
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "pnpm verify:boundaries",
+      "exit": 0,
+      "log": "boundaries.log"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/contract-docs.mjs write RESP-023",
+      "exit": 0,
+      "log": "views-write.log"
+    },
+    {
+      "command": "node scripts/contract-docs.mjs check RESP-023",
+      "exit": 0,
+      "log": "views-check.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "pnpm source:check",
+      "exit": 0
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit": 0
+    },
+    {
+      "command": "git diff origin/main...HEAD -- CONTRACT.md",
+      "exit": 0,
+      "output": "empty"
+    },
+    {
+      "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-pencil-c-f31",
+      "exit": 0,
+      "remote_head": "7309cb0a755368d620fa82d05d2ce93eb5755f76"
+    }
+  ],
+  "clause_changes": {
+    "RESP-023": {
+      "after": "PARTIAL",
+      "before": "PARTIAL",
+      "proven_point": 2
+    }
+  },
+  "counts_after": {
+    "done": 142,
+    "missing": 49,
+    "partial": 61
+  },
+  "counts_before": {
+    "done": 142,
+    "missing": 49,
+    "partial": 61
+  },
+  "github_api_calls": 4,
+  "head": "7309cb0a755368d620fa82d05d2ce93eb5755f76",
+  "main": {
+    "conclusions": "success",
+    "equals_candidate": false,
+    "head": "ae7c9cb712d87ff46a6fba8de12b3de152e2962d",
+    "run_site": 42463538370,
+    "verify_run_ids": [
+      42463538473,
+      42453541689
+    ]
+  },
+  "native_proof_equivalence": {
+    "base": "e3972bca9ca32f5148449b22df73a04e375de66a",
+    "changes": [
+      "sources.lock.json",
+      "src/core/features/flows/ui/IdentityLinkFields.tsx",
+      "src/core/features/flows/ui/identity-link.css",
+      "tests/e2e/identity-link-journey.ts"
+    ],
+    "native_service_or_native_test_changed": false
+  },
+  "product_pr": null,
+  "proof_binding": "Native services and native tests are byte-identical to the passing native proof at e3972bca9ca32f5148449b22df73a04e375de66a. The final browser run, typecheck, build, feature boundaries, first-party check and mechanical checks cover the terminal source tree. Only source lock generation followed those checks.",
+  "publication_scan": {
+    "commit": "7309cb0a755368d620fa82d05d2ce93eb5755f76",
+    "complete": false,
+    "findings": null,
+    "historyScanned": null,
+    "status": "NOT RUN in cloud; delegated to guarded Mac lander"
+  },
+  "recorded_at": "2026-11-08T09:24:29.889285+00:00",
+  "repository": "just-every/run-pencil",
+  "schema": 1,
+  "tag": "sd-pencil-c-f31",
+  "test_registrations_delta": 0,
+  "tree": "55c03d20dc1654c11b6903cc2e73b37b43fc8d8e"
+}
