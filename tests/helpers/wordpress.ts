@@ -16,7 +16,11 @@ export async function wordpressHost(installation: string) {
     return result.stdout.trim()
   }
   const wp = (...args: string[]) => compose('run', '--rm', '-T', 'cli', 'wp', ...args)
-  const close = () => compose('down', '--volumes', '--remove-orphans', '--timeout', '10').then(() => undefined)
+  const close = async () => {
+    await compose('down', '--volumes', '--remove-orphans', '--timeout', '10')
+    const remaining = await compose('ps', '--all', '--quiet')
+    if (remaining) throw new Error('WordPress fixture left containers running after teardown.')
+  }
   try {
     await compose('up', '-d', '--wait', 'wordpress')
     const address = await compose('port', 'wordpress', '80')
@@ -26,7 +30,9 @@ export async function wordpressHost(installation: string) {
     const deadline = Date.now() + 60_000
     while (true) {
       try {
-        if ((await fetch(origin, { redirect: 'manual' })).status < 500) break
+        const response = await fetch(origin, { redirect: 'manual', signal: AbortSignal.timeout(2_000) })
+        await response.body?.cancel()
+        if (response.status < 500) break
       } catch { /* wait for this fixture's server */ }
       if (Date.now() > deadline) throw new Error('WordPress did not start within one minute.')
       await new Promise(resolve => setTimeout(resolve, 250))
