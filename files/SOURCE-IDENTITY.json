@@ -1,0 +1,10 @@
+{
+  "head": "a18c1f452c366273c79ef70eb81a2daa3808cff3",
+  "sha256": {
+    "CONTRACT.md": "dbd7b800b4377018e0e69b5c450112de0a76caa2214e8882505b907f651f19e7",
+    "integrations/wordpress/pencil.php": "60e48d882f612965ae93e551d82842abe8deb7b2ca302be821480a284e225cb4",
+    "tests/helpers/wordpress.ts": "45d9186010832acfc3e5900527911e4d963e231d9224221f78a70d55d2ae777c",
+    "tests/e2e/wordpress-embed.ts": "15fe66828ecc4cf6ecd40041dd4adf61c9e88fcb8de0c8355b092194c1bc6c53",
+    "tests/e2e/script-embed.spec.ts": "a93a6feafc8396cf0905eaaeab5788263b1199944e456068600f5aa7ee4e5210"
+  }
+}

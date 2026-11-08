@@ -1,0 +1,15 @@
+{
+  "name": "FIRST-PARTY",
+  "head": "a18c1f452c366273c79ef70eb81a2daa3808cff3",
+  "command": [
+    "pnpm",
+    "exec",
+    "rer",
+    "check",
+    "--profile",
+    "first-party"
+  ],
+  "started": "2026-11-08T03:37:40.771828+00:00",
+  "ended": "2026-11-08T03:37:41.656091+00:00",
+  "exit": 0
+}

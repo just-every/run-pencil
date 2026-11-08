@@ -1,0 +1,27 @@
+{
+  "containers": {
+    "command": [
+      "docker",
+      "ps",
+      "-aq",
+      "--filter",
+      "label=com.docker.compose.project"
+    ],
+    "exit": 0,
+    "output": ""
+  },
+  "volumes": {
+    "command": [
+      "docker",
+      "volume",
+      "ls",
+      "-q",
+      "--filter",
+      "label=com.docker.compose.project"
+    ],
+    "exit": 0,
+    "output": ""
+  },
+  "head": "a18c1f452c366273c79ef70eb81a2daa3808cff3",
+  "observed": "2026-11-08T03:39:18.258934+00:00"
+}

@@ -1,0 +1,21 @@
+{
+  "head": "a18c1f452c366273c79ef70eb81a2daa3808cff3",
+  "branch": "cloud/sd-pencil-c-f30",
+  "main": "9877fe36b4c31f61cc6a4a13b1096634c822198f",
+  "changed_files": [
+    "integrations/wordpress/README.md",
+    "integrations/wordpress/pencil.php",
+    "sources.lock.json",
+    "tests/e2e/script-embed.spec.ts",
+    "tests/e2e/wordpress-embed.ts",
+    "tests/fixtures/wordpress/compose.yml",
+    "tests/fixtures/wordpress/theme/index.php",
+    "tests/fixtures/wordpress/theme/style.css",
+    "tests/helpers/wordpress.ts"
+  ],
+  "contract_diff": "",
+  "generated_views_diff": "",
+  "registrations_added": 0,
+  "registrations_removed": 0,
+  "workflow_diff": ""
+}

@@ -1,0 +1,11 @@
+{
+  "name": "SOURCE-CHECK",
+  "head": "a18c1f452c366273c79ef70eb81a2daa3808cff3",
+  "command": [
+    "pnpm",
+    "source:check"
+  ],
+  "started": "2026-11-08T03:37:41.685628+00:00",
+  "ended": "2026-11-08T03:37:42.449059+00:00",
+  "exit": 0
+}
