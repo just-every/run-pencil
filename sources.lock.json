@@ -5193,7 +5193,7 @@
       "executable": false
     },
     "src/core/features/analysis/index.ts": {
-      "sha256": "3963ff051664efa8d9b6d34f053fd46653e12ed8355b466cd162fb44273f0884",
+      "sha256": "2c4afe9e868b591dd0b982e2eb72f1e79da98131b916c73a9246fe1f8b9c4aee",
       "executable": false
     },
     "src/core/features/analysis/model.ts": {
@@ -7593,7 +7593,7 @@
       "executable": false
     },
     "src/core/features/studio/finding-context.ts": {
-      "sha256": "65c64219cddea8a1959e34a87983939887b31a663209e788af146d1d908ebbcc",
+      "sha256": "8a4fb2aba770f92ac7c535d5d8cc0b9bf8c03c4744ef8a13279b05ef4c3ac947",
       "executable": false
     },
     "src/core/features/studio/index.ts": {
@@ -9521,7 +9521,7 @@
       "executable": false
     },
     "tests/runtime/studio-scenario.ts": {
-      "sha256": "d5d0551bcefd6688a4f5244d43855d04ca5af972b656cb645c6eab3e8c6a128e",
+      "sha256": "1751f3359cd41dc591dbc488550107eba50caeb151eddef9f948bc1a03513c4c",
       "executable": false
     },
     "tests/runtime/submissions.worker.test.ts": {

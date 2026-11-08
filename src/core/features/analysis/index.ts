@@ -1,7 +1,7 @@
 export { AnalysisService, providerStatus } from './service'
 export { registerAnalysisRoutes } from './routes'
 export { analysisErasureStatements } from './erasure'
-export { disclosureThreshold } from './repository'
+export { AnalysisRepository, disclosureThreshold } from './repository'
 export type { RunDetail, RunSummary, ThemeView } from './repository'
 export { callProvider, type CallUsage } from './provider-call'
 export type { ProviderStatus } from './ui/analysisApi'

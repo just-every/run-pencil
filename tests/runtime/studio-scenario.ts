@@ -210,4 +210,7 @@ async function exerciseFindingContext(f:Fixture,other:Fixture) {
  await refusal(f,input)
  expect((await (await f.call('/api/app/studio')).json() as any).findings).toEqual([])
  expect((await other.call('/api/app/studio',input)).status).toBe(404)
+ const revoked=await analysisHttp()
+ expect((await revoked.call('/auth/signout',{})).status).toBe(204)
+ await refusal(revoked,input,401)
 }

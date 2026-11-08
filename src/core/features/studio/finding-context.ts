@@ -1,5 +1,5 @@
 import { NotFoundError } from '../../shared/errors'
-import { AnalysisRepository, type RunDetail } from '../analysis/repository'
+import { AnalysisRepository, type RunDetail } from '../analysis'
 import type { StudioInput } from './model'
 
 export type FindingContextOption = { runId:string; findingId:string; flowTitle:string; title:string; summary:string }
