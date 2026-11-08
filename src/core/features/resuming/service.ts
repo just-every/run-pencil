@@ -1,6 +1,6 @@
-import { identitySessionToken, type IdentityInput } from '../flows/identity-link'
+import { identitySessionToken, type IdentityInput } from '../flows'
 import { presentFlow } from '../../shared/presentationOrder'
-import { formSettings, normalizeHidden, hiddenAnswers } from '../../shared/hiddenFields'
+import { formSettings, hiddenAnswers } from '../../shared/hiddenFields'
 import type { MailSender } from '../../../base/operator-auth/index.mjs'
 import manifest from '../../../../seed.json'
 import type { FlowRepository } from '../flows'

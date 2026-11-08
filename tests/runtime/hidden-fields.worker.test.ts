@@ -1,3 +1,4 @@
+import { proveRevisionIdentityLinks } from './identity-link-scenario'
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
@@ -31,7 +32,9 @@ async function fixture() {
   ]},{method:'PUT'})).status).toBe(200)
   const publish=()=>read().then(d=>f.call(`${base}/publish`,{expectedVersion:d.flow.draftVersion}))
   const submit=async(hidden:Record<string,unknown>,idempotencyKey=crypto.randomUUID())=>{
-    const start=await (await f.call(`/api/public/flows/${slug}/sessions`,{deviceClass:'desktop',source:'direct'})).json() as {sessionId:string;sessionToken:string;revisionId:string}
+    const admitted=await f.call(`/api/public/flows/${slug}/sessions`,{deviceClass:'desktop',source:'direct'})
+    expect(admitted.status,await admitted.clone().text()).toBe(201)
+    const start=await admitted.json() as {sessionId:string;sessionToken:string;revisionId:string}
     const input={...start,loadTime:await issueLoadTime(env.SESSION_SECRET,start.revisionId,Date.now()-5000),idempotencyKey,answers:[{stepId:question.id,value:75}],hidden}
     const response=await f.call(`/api/public/flows/${slug}/responses`,input)
     expect(response.status,await response.clone().text()).toBe(201)
@@ -96,7 +99,7 @@ contract('FIELD-001','collects only declared typed link values, routes present a
   expect(((await (await f.call(`${f.base}/ledger`)).json()) as Ledger).responses.find(row=>row.id===receipt.responseId)?.identityMode).toBe('identified')
 },60_000)
 
-contract('FIELD-001','requires identified publication for identity fields and rejects merge tags, invalid values and anonymous click IDs',async()=>{
+contract(['FIELD-001','RESP-023'],'requires identified publication for identity fields and rejects merge tags, invalid values and anonymous click IDs',async()=>{
   const f=await fixture(),settings:FormSettings={...f.settings,hiddenFields:[...f.settings.hiddenFields,{id:'email',name:'email',type:'email',category:'identifying'},{id:'number',name:'order_total',type:'number',category:'plain'},{id:'click',name:'gclid',type:'text',category:'click_id'}]}
   expect((await f.save(settings)).status).toBe(200)
   const refused=await f.publish();expect(refused.status).toBe(400);expect(await refused.text()).toContain('email')
@@ -107,6 +110,7 @@ contract('FIELD-001','requires identified publication for identity fields and re
   const invalid=await f.submit({email:'*|EMAIL|*',order_total:'NaN',plan:'basic'})
   const bad=await env.DB.prepare('SELECT response_context_json AS context FROM responses WHERE id=?').bind(invalid.receipt.responseId).first<{context:string}>()
   expect(JSON.parse(bad!.context)).toEqual({hidden:{plan:'basic'},discarded:2,identityMode:'identified'})
+  await proveRevisionIdentityLinks(f)
   const anonymous={...settings,identityMode:'anonymous' as const,hiddenFields:settings.hiddenFields.filter(field=>field.id!=='email')}
   expect((await f.save(anonymous)).status).toBe(200);expect((await f.publish()).status).toBe(201)
   const click=await f.submit({gclid:'do-not-store',email:'jo@example.com'})

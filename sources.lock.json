@@ -4945,7 +4945,7 @@
       "executable": false
     },
     "src/core/app/loaders.ts": {
-      "sha256": "1dd36d52b0ea88418aec6657fe70abd2b144ae38ebf8be1fadb96224639a00ff",
+      "sha256": "4198d5c507a9b76fd8bc3d40f7f5f45cd7aa3f20ddadf60bbd06e472d331c062",
       "executable": false
     },
     "src/core/app/maintenance.ts": {
@@ -5924,8 +5924,12 @@
       "sha256": "3af27f130bd97f08dcd89e3ec25014ca3e56acd2d59b1e55bd477e8ead63da4d",
       "executable": false
     },
+    "src/core/features/flows/identity-link.ts": {
+      "sha256": "20d92fdacfdc88d586d7e5fdbf96a7c6fa22823c6afd79a00b6b0038e667a1c7",
+      "executable": false
+    },
     "src/core/features/flows/index.ts": {
-      "sha256": "e9a6735df37855c0cecbb7f54c2220c5ac457815baf057bc8b84c7ff00af3f2c",
+      "sha256": "c973fd0ac81e05e6e32cec498bfa7ece12088fb327f431679722002adcfcae79",
       "executable": false
     },
     "src/core/features/flows/ordered-answer-domain.ts": {
@@ -6062,6 +6066,10 @@
     },
     "src/core/features/flows/ui/HiddenFieldsSettings.tsx": {
       "sha256": "e47676da05fe4d069e16bdeb5049df4786388b9f523a12ca3edee26841f57493",
+      "executable": false
+    },
+    "src/core/features/flows/ui/IdentityLinkFields.tsx": {
+      "sha256": "98382941ee280b95384bf5fe495fb3c41a97aeb50d15311ef96c37a67c21b845",
       "executable": false
     },
     "src/core/features/flows/ui/index.ts": {
@@ -7161,7 +7169,7 @@
       "executable": false
     },
     "src/core/features/responses/service.ts": {
-      "sha256": "edf62c9590a5f636010f971d868924dcbe5aabf7888c43c490992b3792eb3f89",
+      "sha256": "8dd322a6dd3b5a3705faae042eb5b914ab0a97551e1f68eb8967f91c71199a6d",
       "executable": false
     },
     "src/core/features/responses/ui/CompletionDisclosure.tsx": {
@@ -7197,7 +7205,7 @@
       "executable": false
     },
     "src/core/features/responses/ui/RespondentFlowPage.tsx": {
-      "sha256": "8c8faf76fd434ee85847f62bdccdd64e463bb9f4088f84ddf6e1f9233a066a2c",
+      "sha256": "a341e3d6b7da1d09bf759acd6d458dbd94ed083551649bd3f12a04d1569501fa",
       "executable": false
     },
     "src/core/features/responses/ui/RespondentPrivacyNote.tsx": {
@@ -7429,7 +7437,7 @@
       "executable": false
     },
     "src/core/features/resuming/service.ts": {
-      "sha256": "7579749bbebbbf09e41de6647cf801011096eec8783b56bff099c996c15869fe",
+      "sha256": "e52290286d7ac7ffb58443ba529af9133ca4609ee281147df19701fa1a0cc81b",
       "executable": false
     },
     "src/core/features/retention/erase.ts": {
@@ -8649,7 +8657,11 @@
       "executable": false
     },
     "tests/e2e/hidden-fields.spec.ts": {
-      "sha256": "0d8e58adbce064d100907b9124e26d39b25474384c6db6848282d3c40a844c9e",
+      "sha256": "9be747564ab1197b8ef8e0ad1a1091575e9e9af3098480bd2976ffcd524696dd",
+      "executable": false
+    },
+    "tests/e2e/identity-link-journey.ts": {
+      "sha256": "50ae49ff749766b5c6aab68fe89157db9bf4bbee258f5d8be5039dadcf1a976e",
       "executable": false
     },
     "tests/e2e/import-acknowledgement.spec.ts": {
@@ -9357,7 +9369,11 @@
       "executable": false
     },
     "tests/runtime/hidden-fields.worker.test.ts": {
-      "sha256": "d84c9a04c287017e0ceb09fd93cba287b771494a77de278daac5bed2e5d0375d",
+      "sha256": "a55e8f97f02bb9c2fdb3f8ca13b6626dd8178ef8acbf46ee71c45f0521a5d7aa",
+      "executable": false
+    },
+    "tests/runtime/identity-link-scenario.ts": {
+      "sha256": "0684940b43c04bb8216cbcc5ce5c35fe8e33daaf66fd4f0d813369cc7b211075",
       "executable": false
     },
     "tests/runtime/import-custody-commit-boundary.ts": {

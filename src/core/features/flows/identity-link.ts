@@ -1,4 +1,4 @@
-import { formSettings, hiddenValue, normalizeHidden, type FormSettings, type ResponseContext } from '../../shared/hiddenFields'
+import { hiddenValue, normalizeHidden, type FormSettings, type ResponseContext } from '../../shared/hiddenFields'
 import { PencilError, ValidationError } from '../../shared/errors'
 
 type Scope = { workspaceId: string; flowId: string; revisionId: string }

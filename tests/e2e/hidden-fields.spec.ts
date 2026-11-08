@@ -1,9 +1,10 @@
+import { proveRevisionIdentityLink } from './identity-link-journey'
 import type { BuilderDraft, Ledger } from '../../src/core/app/api'
 import { contract } from './contract'
 import { expect, test } from './fixtures'
 import { signInEmptyWorkspace, addConditionRule } from './authoring-helpers'
 
-contract('FIELD-001','builds hidden link fields, previews their rules, collects declared values and exports them',async({page},info)=>{
+contract(['FIELD-001','RESP-023'],'builds hidden link fields, previews their rules, collects declared values and exports them',async({page},info)=>{
   test.setTimeout(120_000);page.setDefaultTimeout(15_000)
   await signInEmptyWorkspace(page)
   const slug=`campaign-consultation-${info.project.name}-${Date.now()}`
@@ -95,4 +96,5 @@ contract('FIELD-001','builds hidden link fields, previews their rules, collects 
   await expect(page.getByRole('heading',{name:'Enterprise consultation',exact:true})).toBeVisible()
   const identity=await call<Ledger>(`${base}/ledger`)
   expect(identity.responses[0].hiddenFields.some(field=>field.name==='email')).toBe(false)
+  await proveRevisionIdentityLink(page,info,flow.id,slug)
 })
