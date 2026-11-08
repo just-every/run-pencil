@@ -80,6 +80,7 @@ export async function proveResponseExportAudit(page: Page, info: TestInfo, input
     expect(csv).not.toContain(privateValue)
     expect(JSON.stringify(audit)).not.toContain(privateValue)
   }
+  await file.saveAs(info.outputPath('audit-response-export.csv'))
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.screenshot({ path: info.outputPath(`audit-response-export-${info.project.name}.png`), fullPage: true })
   await page.goto(resultsUrl)

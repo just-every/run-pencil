@@ -8553,7 +8553,7 @@
       "executable": false
     },
     "tests/e2e/audit-export-proof.ts": {
-      "sha256": "1a52ded4bc84e2872acb91c58a08d4c74d6d774be9248d0fa530f4b6fe186859",
+      "sha256": "a655fc49966f22c83eb74ac99cdcc38173cd52cb2b013eff19a6792f9fc55bf4",
       "executable": false
     },
     "tests/e2e/auth-identity.ts": {
