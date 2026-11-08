@@ -74,3 +74,18 @@ export async function analysisHttp(bindings: Partial<WorkerBindings> = aiBinding
   const detail = async (id: string) => (await call(`/api/app/analysis/${id}`)).json() as Promise<any>
   return { workspaceId, operatorId, flowId: created.id, revisionId, slug, questions, services, platform, call, respond, request, detail }
 }
+
+/** Independent native answers: high scores disagree with explicit written recommendations. */
+export async function withinResponseFixture() {
+  const f = await analysisHttp(aiBindings, undefined, true)
+  const answers = [
+    { score: 9, text: 'I would not recommend this shop because the prices are too high.' },
+    { score: 10, text: 'I would not recommend this shop because the service is slow.' },
+    { score: 9, text: 'I would not recommend this shop because the coffee is cold.' },
+    { score: 10, text: 'I would not recommend this shop because the queue is long.' },
+    { score: 9, text: 'I would not recommend this shop because the tables are dirty.' },
+  ]
+  const responses = []
+  for (const entry of answers) responses.push({ id: await f.respond(entry.text, { score: entry.score }), ...entry })
+  return { f, responses }
+}

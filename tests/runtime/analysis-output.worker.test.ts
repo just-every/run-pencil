@@ -2,6 +2,7 @@ import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { beforeAll, beforeEach, expect } from 'vitest'
 import { contract } from '../../src/test/contract'
 import { ai, aiBindings, analysisHttp, answer, recommend, theme } from './analysis-fixture'
+import { proveWithinResponseEvidence } from './analysis-within-response-proof'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 beforeEach(() => ai.reset())
@@ -89,6 +90,7 @@ contract(['ANLY-003', 'ANLY-004', 'ANLY-005', 'ANLY-011', 'ANLY-012', 'AGENT-002
   // Valid and invalid answers share one output-admission matrix; all original cases and fixtures remain.
   await ai.reset()
   await invalidOutputCases()
+  await proveWithinResponseEvidence()
 
 })
 
