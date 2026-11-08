@@ -9477,7 +9477,7 @@
       "executable": false
     },
     "tests/runtime/chat-integrations-proof.ts": {
-      "sha256": "d487d460062a6002ccd7792242b2b6a82442a70d89d57314b5c7754597117570",
+      "sha256": "8ca99ce130547fd0075561e59ceb75938e6596e4478e5798fbf315cd07a53616",
       "executable": false
     },
     "tests/runtime/coding.worker.test.ts": {
