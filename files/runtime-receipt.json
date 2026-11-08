@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f35",
+  "head": "7fb61a50f3b24138017334e01f9d2def176a6959",
+  "runtime": "Node 22.20.0",
+  "command": "pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/response-webhooks.worker.test.ts --reporter=verbose --reporter=json --outputFile.json=<packet>/worker-exact-head.json",
+  "exit": 0,
+  "recordedAt": "2026-11-08T13:25:45.257522+00:00",
+  "tests": 1,
+  "passed": 1,
+  "failed": 0,
+  "testName": "[INTEG-010,INTEG-015,DATA-002,RESP-021,INTEG-006] signed response events verify, retry on one event ID, replay, disable with an alert and list undelivered responses without ever blocking collection",
+  "durationMilliseconds": 25313,
+  "vitestJsonSha256": "c339e266b97020b5f9eb81610c170ff47a48cc4e74924a4be9269163603b8b97",
+  "timingAssertion": "Both outgoing signals and receiver close witnesses were >=9500ms and <12000ms, with no receiver headers; no manufactured timeout exception.",
+  "productPush": {
+    "exit": 0,
+    "attempts": 1,
+    "ref": "refs/heads/cloud/sd-pencil-c-f35"
+  },
+  "verifyRun": 42484734998,
+  "verifyStatusAtDiscovery": "queued",
+  "contractViews": {
+    "writeThenCheckExit": 0,
+    "generatedFilesRestoredFromMain": true,
+    "checkAfterRestoreExit": 1,
+    "expectedFailure": "ACCEPTANCE.md differs from CONTRACT.md; run the matching write command"
+  },
+  "sourceLockCheckExit": 0,
+  "offlineBaseIntegrityExit": 0
+}

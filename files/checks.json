@@ -1,0 +1,51 @@
+{
+  "head": "7fb61a50f3b24138017334e01f9d2def176a6959",
+  "base": "4f7b106744a08557c756e1d7dffe21226ced44d2",
+  "checks": [
+    {
+      "command": "pnpm typecheck",
+      "runtime": "Node 22.20.0",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/contract-docs.mjs write INTEG-006",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/contract-docs.mjs check INTEG-006",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs verify-base --offline",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/contract-docs.mjs check INTEG-006 after restoring origin/main generated views",
+      "exit": 1,
+      "expected": true,
+      "reason": "ACCEPTANCE.md differs from CONTRACT.md; main views deliberately retained for the lander"
+    }
+  ],
+  "migrationLedger": "not applicable; no migration changed",
+  "generatedViewsRestored": true,
+  "contractDiffEmpty": true,
+  "productDiff": [
+    "sources.lock.json",
+    "tests/runtime/chat-integrations-proof.ts",
+    "tests/runtime/task-receiver.global.ts"
+  ],
+  "testRegistrationsAdded": 0,
+  "testRegistrationsRemoved": 0
+}
