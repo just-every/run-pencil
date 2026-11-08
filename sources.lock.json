@@ -8829,7 +8829,7 @@
       "executable": false
     },
     "tests/e2e/response-search.spec.ts": {
-      "sha256": "20b2e784405f73f116056fbc62036e103fabc47f0c1b571057fa5ac3418fbb03",
+      "sha256": "3a6c2fe5e7ac4a25c859408dba0934ef9c7a6615aeb8e9497ef36db7d848b489",
       "executable": false
     },
     "tests/e2e/response-webhooks.spec.ts": {
@@ -8901,7 +8901,11 @@
       "executable": false
     },
     "tests/e2e/submission-inbox-journey.ts": {
-      "sha256": "10a0566f28aab8ed8ad5f02e72d259e9cf37dddf73693f029b6e9c5aedb177a1",
+      "sha256": "ecc7f82adb7049565df0f6dc150fcc06c619f157de9228d66a3ef7b8426346c2",
+      "executable": false
+    },
+    "tests/e2e/submission-inbox-mobile.ts": {
+      "sha256": "53e19ddac8627a553e9cbab7b01f00fb9a8c966dfdccbd0d0f0c505d80b34d11",
       "executable": false
     },
     "tests/e2e/surveymonkey-import.spec.ts": {

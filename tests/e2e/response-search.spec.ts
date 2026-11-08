@@ -8,7 +8,7 @@ import { downloadedText } from './export-helpers'
 import { collectResponseSearchScenario } from '../response-search-scenario'
 import type { ScenarioCall } from '../results-scenario'
 import { triageSubmission } from './submission-inbox-journey'
-import { openFilters, clearResponseFilters } from './filter-helpers'
+import { reviewMobileSubmissionInbox } from './submission-inbox-mobile'
 
 contract(['LEDG-006', 'WORK-001'], 'operators search responses, see matching answers and download the same filtered records', async ({ page }, info) => {
   test.setTimeout(120_000)
@@ -76,4 +76,5 @@ contract(['LEDG-006', 'WORK-001'], 'operators search responses, see matching ans
     await page.screenshot({ scale: 'css', path: join(process.env.PENCIL_CAPTURE_DIR, `response-search-unicode-${info.project.name}.png`) })
   }
   await triageSubmission(page, info, call, scenario.flowId, scenario.slow)
+  if (info.project.name === 'mobile') await reviewMobileSubmissionInbox(page, info, call)
 })

@@ -5,7 +5,7 @@ import type { Ledger } from '../../src/core/app/api'
 import type { SubmissionOptions } from '../../src/core/features/submissions/model'
 import type { ScenarioCall } from '../results-scenario'
 import { expect } from './fixtures'
-import { openFilters, clearResponseFilters } from './filter-helpers'
+import { openFilters } from './filter-helpers'
 
 /** Continue the response search journey through the team's real triage screens. */
 export async function triageSubmission(page: Page, info: TestInfo, call: ScenarioCall, flowId: string, responseId: string) {
@@ -44,16 +44,7 @@ export async function triageSubmission(page: Page, info: TestInfo, call: Scenari
   await row.getByRole('button', { name: /^Open / }).click()
   await expect(detail.locator('.history .note')).toContainText(note)
   await expect(detail.locator('.workflow-badge')).toHaveText('Done')
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-  const smallText = await inbox.locator('p, th, td, label, button, select, input, textarea, .tag, .workflow-badge, time, .privacy').evaluateAll(elements => elements.filter(element => {
-    const style = getComputedStyle(element)
-    return element.getClientRects().length && style.visibility !== 'hidden' && parseFloat(style.fontSize) < 13
-  }).map(element => element.tagName))
-  expect(smallText).toEqual([])
-  const screenshot = info.outputPath('submission-inbox.png')
-  await mkdir(dirname(screenshot), { recursive: true })
-  await page.screenshot({ path: screenshot, fullPage: true, scale: 'css' })
-  await info.attach('Submission inbox', { path: screenshot, contentType: 'image/png' })
+  await captureSubmissionInbox(page, info, 'submission-inbox')
   await page.reload()
   await expect(inbox.locator('tbody tr')).toHaveCount(4)
   await row.getByRole('button', { name: /^Open / }).click()
@@ -83,4 +74,19 @@ export async function triageSubmission(page: Page, info: TestInfo, call: Scenari
     expect(audit.rows).toContainEqual(expect.objectContaining({ kind, actor: expect.objectContaining({ id: expect.any(String) }), form: expect.objectContaining({ id: flowId }) }))
   }
   expect(JSON.stringify(audit)).not.toContain(note)
+}
+
+/** Keep the same layout and typography checks with each inbox state captured. */
+export async function captureSubmissionInbox(page: Page, info: TestInfo, name: string) {
+  const inbox = page.getByRole('region', { name: 'Submission inbox', exact: true })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  const smallText = await inbox.locator('p, th, td, label, button, select, input, textarea, .tag, .workflow-badge, time, .privacy').evaluateAll(elements => elements.filter(element => {
+    const style = getComputedStyle(element)
+    return element.getClientRects().length && style.visibility !== 'hidden' && parseFloat(style.fontSize) < 13
+  }).map(element => element.tagName))
+  expect(smallText).toEqual([])
+  const screenshot = info.outputPath(`${name}.png`)
+  await mkdir(dirname(screenshot), { recursive: true })
+  await page.screenshot({ path: screenshot, fullPage: true, scale: 'css' })
+  await info.attach(name, { path: screenshot, contentType: 'image/png' })
 }
