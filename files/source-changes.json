@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "path": "tests/e2e/builder-concurrency-proof.ts",
+      "change": "added",
+      "before": null,
+      "after": {
+        "sha256": "2909e29c4f68640f7a657850e60e2acc022be9f330b67c4bf662492667ca7354",
+        "executable": false
+      }
+    },
+    {
+      "path": "tests/e2e/review-corrections.spec.ts",
+      "change": "modified",
+      "before": {
+        "sha256": "512c76622559e133cb11068840586757d8e249234398769b5155610028dd7236",
+        "executable": false
+      },
+      "after": {
+        "sha256": "e554d5731061fa13732723c299dc05369a4be7cdfe10b1ca61b37d3004072e26",
+        "executable": false
+      }
+    }
+  ],
+  "metadata": [],
+  "meaning": "Origins are comparison baselines; changing an origin does not assert adoption or local byte equality."
+}
+

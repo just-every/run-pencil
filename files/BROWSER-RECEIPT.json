@@ -1,0 +1,28 @@
+{
+  "head": "45f78e1a7c94ac6d7b1e93b937253f2cb5199322",
+  "branch": "cloud/sd-pencil-c-f44",
+  "timestamp": "2026-11-08T18:52:04.744888+00:00",
+  "command": "cloud_run timeout 1200 pnpm exec playwright test --config playwright.fleet.config.ts --workers 1",
+  "exit": 0,
+  "browser": "/usr/bin/chromium",
+  "args": [
+    "--no-sandbox",
+    "--use-mock-keychain",
+    "--password-store=basic"
+  ],
+  "viewports": [
+    {
+      "width": 1440,
+      "height": 900
+    },
+    {
+      "width": 390,
+      "height": 844
+    }
+  ],
+  "test": "tests/e2e/review-corrections.spec.ts#plain corrections, compact editing and publication remain visible and accessible",
+  "sourceHashes": {
+    "tests/e2e/builder-concurrency-proof.ts": "2909e29c4f68640f7a657850e60e2acc022be9f330b67c4bf662492667ca7354",
+    "tests/e2e/review-corrections.spec.ts": "e554d5731061fa13732723c299dc05369a4be7cdfe10b1ca61b37d3004072e26"
+  }
+}

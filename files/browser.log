@@ -1,0 +1,82 @@
+[WebServer] (node:4994) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:5006) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:5018) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[WebServer] (node:5018) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/app/loaders.ts:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/app/loaders.ts:105:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/app/loaders.ts:126:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/features/results/ui/sharedReportLoader.ts:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin builtin:vite-reporter] 
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[WebServer] [PLUGIN_TIMINGS] JavaScript callbacks ran for 3.0s of this 3.2s build (92%).
+[WebServer] The slowest callbacks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+[WebServer]   - plugin tanstack-start-core::server-fn:client transform (37%, 1.2s, 17 calls)
+[WebServer] Additional callback time came from the callbacks below and from callbacks under 1s.
+[WebServer] 4 callbacks are listed without a time. Their calls overlapped, so the time inside one call includes work from other calls. To find their cost, profile the build with `node --cpu-prof`:
+[WebServer]   - plugin tanstack-start-core:import-protection resolveId (7524 calls)
+[WebServer]   - plugin vite:asset load (15 calls)
+[WebServer]   - plugin @tailwindcss/vite:generate:build transform (28 calls)
+[WebServer]   … and 1 more
+[WebServer] See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.
+[WebServer] 
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/features/results/ui/sharedReportLoader.ts?tss-serverfn-split:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:105:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:126:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts:105:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts:126:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/features/results/ui/sharedReportLoader.ts:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] (node:5060) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:5072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+[WebServer] (node:5085) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:5591) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+[WebServer] (node:5599) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Scheduled Workers are not automatically triggered during local development.
+[WebServer] 
+[WebServer]   To manually trigger a scheduled event, run:
+[WebServer]     curl "http://127.0.0.1:4173/cdn-cgi/local/scheduled"
+[WebServer]   For more details, see https://developers.cloudflare.com/workers/configuration/cron-triggers/#test-cron-triggers-locally
+[WebServer] 
+[WebServer] 
+
+Running 2 tests using 1 worker
+
+(node:5637) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › tests/e2e/contract.ts:4:3 › [FLOW-004,FLOW-005,FLOW-014,RESP-003,DIST-001,HOME-001,WS-003,BASE-PUBLIC-003,ROLE-004] plain corrections, compact editing and publication remain visible and accessible (28.3s)
+(node:6037) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [mobile] › tests/e2e/contract.ts:4:3 › [FLOW-004,FLOW-005,FLOW-014,RESP-003,DIST-001,HOME-001,WS-003,BASE-PUBLIC-003,ROLE-004] plain corrections, compact editing and publication remain visible and accessible (43.7s)
+
+  2 passed (1.9m)

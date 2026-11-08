@@ -1,0 +1,49 @@
+{
+  "head": "45f78e1a7c94ac6d7b1e93b937253f2cb5199322",
+  "baseMain": "c7d5a9847d6dcd8787ba5a346efa45bda5ddeae3",
+  "files": [
+    "sources.lock.json",
+    "tests/e2e/builder-concurrency-proof.ts",
+    "tests/e2e/review-corrections.spec.ts"
+  ],
+  "typecheck": {
+    "command": "pnpm typecheck",
+    "exit": 0
+  },
+  "firstParty": {
+    "command": "pnpm exec rer check --profile first-party",
+    "exit": 0
+  },
+  "views": {
+    "write": "node scripts/contract-docs.mjs write ROLE-004",
+    "writeExit": 0,
+    "check": "node scripts/contract-docs.mjs check ROLE-004",
+    "checkExit": 0,
+    "restoredFromMain": [
+      "ACCEPTANCE.md",
+      "docs/CLAIMS.md"
+    ]
+  },
+  "lock": {
+    "write": "node scripts/edition-authoring/cli.mjs lock",
+    "writeExit": 0,
+    "check": "node scripts/edition-authoring/cli.mjs check",
+    "checkExit": 0,
+    "sourceCheck": "pnpm source:check",
+    "sourceCheckExit": 0
+  },
+  "contractDiffEmpty": true,
+  "generatedViewsCommitted": false,
+  "productionChanged": false,
+  "registrationsAdded": 0,
+  "registrationsRemoved": 0,
+  "existingAssertionsRemovedOrWeakened": false,
+  "emailLiteralsInChangedTests": 0,
+  "providerCredentialShapesInChangedTests": 0,
+  "migrationsChanged": false,
+  "publicationScan": {
+    "run": false,
+    "reason": "Cloud handoff; guarded Mac lander owns the full-history publication scan."
+  },
+  "timestamp": "2026-11-08T18:50:40.007804+00:00"
+}

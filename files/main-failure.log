@@ -1,0 +1,32 @@
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	﻿2026-11-08T18:05:26.1659942Z ##[group]Run set -uo pipefail
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1660308Z [36;1mset -uo pipefail[0m
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1660551Z [36;1mstatus=0[0m
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1660770Z [36;1mfor lane in $LANES; do[0m
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1661021Z [36;1m  case "$lane" in[0m
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1661252Z [36;1m    hosted)[0m
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1661731Z [36;1m      (node scripts/ci-builds.mjs restore production && node scripts/verify-hosted-output.mjs) || status=1 ;;[0m
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1662466Z [36;1m    admission)[0m
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1663448Z [36;1m      (node scripts/ci-builds.mjs restore production && node scripts/sync-integration.mjs --check && node --test scripts/delivery-artifact.check.mjs && pnpm exec playwright test --config playwright.admission.config.ts --workers=1) || status=1 ;;[0m
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1664471Z [36;1m    unit)[0m
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1665058Z [36;1m      (node scripts/ci-builds.mjs restore production && node scripts/run-contract-lane.mjs "$lane" "$RUNNER_TEMP/contract-evidence") || status=1 ;;[0m
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1666518Z [36;1m    worker-1)[0m
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1667069Z [36;1m      (pnpm verify:migrations && node scripts/run-contract-lane.mjs "$lane" "$RUNNER_TEMP/contract-evidence") || status=1 ;;[0m
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1667625Z [36;1m    *)[0m
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1668027Z [36;1m      node scripts/run-contract-lane.mjs "$lane" "$RUNNER_TEMP/contract-evidence" || status=1 ;;[0m
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1668496Z [36;1m  esac[0m
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1668687Z [36;1mdone[0m
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1668896Z [36;1mexit "$status"[0m
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1688975Z shell: /usr/bin/bash -e {0}
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1689227Z env:
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1689451Z   PENCIL_CI_BUILDS: .rer/ci-builds
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1689770Z   LANES: mobile-4 desktop-6 mobile-3 archive-restore
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:05:26.1690075Z ##[endgroup]
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:10:20.6659148Z Browser failure: [NOTIFY-002,NOTIFY-004,NOTIFY-005,BASE-PUBLIC-003] notification preference and failed delivery controls are accessible on desktop and mobile with authenticated results at contract.ts:4:3 (mobile, attempt 1, timedOut)
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:10:20.6662003Z Browser failure: [NOTIFY-002,NOTIFY-004,NOTIFY-005,BASE-PUBLIC-003] notification preference and failed delivery controls are accessible on desktop and mobile with authenticated results at contract.ts:4:3 (mobile, attempt 2, timedOut)
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:10:20.6738460Z mobile-4: 10 passed, 1 failed; exit 1.
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:13:22.3674067Z desktop-6: 6 passed, 0 failed; exit 0.
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:16:10.7142827Z mobile-3: 11 passed, 0 failed; exit 0.
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:16:10.7541139Z Archive group restore: started.
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:16:50.4869833Z Archive group restore: passed in 39.734 s.
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:16:50.4914391Z archive-restore: 1 passed, 0 failed, 0 pending; exit 0.
+shards (7, mobile-4 desktop-6 mobile-3 archive-restore)	Run every original lane and retain every result	2026-11-08T18:16:50.4965060Z ##[error]Process completed with exit code 1.

@@ -1,0 +1,74 @@
+[
+  {
+    "name": "template-selected",
+    "viewportHeights": 2.0023696682464456,
+    "horizontalOverflow": false,
+    "seriousOrCritical": 0
+  },
+  {
+    "name": "multiple-choice-selected",
+    "viewportHeights": 2.840047393364929,
+    "horizontalOverflow": false,
+    "seriousOrCritical": 0
+  },
+  {
+    "name": "priority-unselected",
+    "viewportHeights": 2.595971563981043,
+    "horizontalOverflow": false,
+    "seriousOrCritical": 0
+  },
+  {
+    "name": "branch",
+    "viewportHeights": 2.9526066350710902,
+    "horizontalOverflow": false,
+    "seriousOrCritical": 0
+  },
+  {
+    "name": "duplicate-label",
+    "viewportHeights": 3.174170616113744,
+    "horizontalOverflow": false,
+    "seriousOrCritical": 0
+  },
+  {
+    "name": "published",
+    "viewportHeights": 2.956161137440758,
+    "horizontalOverflow": false,
+    "seriousOrCritical": 0
+  },
+  {
+    "name": "public",
+    "viewportHeights": 1,
+    "horizontalOverflow": false,
+    "seriousOrCritical": 0
+  },
+  {
+    "name": "results",
+    "viewportHeights": 12.559241706161137,
+    "horizontalOverflow": false,
+    "seriousOrCritical": 0
+  },
+  {
+    "name": "nps",
+    "viewportHeights": 2.3578199052132702,
+    "horizontalOverflow": false,
+    "seriousOrCritical": 0
+  },
+  {
+    "name": "rating",
+    "viewportHeights": 2.6078199052132702,
+    "horizontalOverflow": false,
+    "seriousOrCritical": 0
+  },
+  {
+    "name": "rating-stars",
+    "viewportHeights": 2.595971563981043,
+    "horizontalOverflow": false,
+    "seriousOrCritical": 0
+  },
+  {
+    "name": "rating-preview",
+    "viewportHeights": 3.154028436018957,
+    "horizontalOverflow": false,
+    "seriousOrCritical": 0
+  }
+]
