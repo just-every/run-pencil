@@ -1,0 +1,100 @@
+{
+  "files": [
+    {
+      "blob": "352a452fdf5261431e1edbe9cb576f38f5d6d1a7",
+      "bytes": 1439,
+      "path": "PLAN.txt",
+      "sha256": "0d5742309c6c14523fa3c54d83bea5636c56f0707b6d2b48f1153b2e1a5ebe54"
+    },
+    {
+      "blob": "b63a2e7ff1d09dd597ab6cd48043ae148e6b4853",
+      "bytes": 9869,
+      "path": "REPORT.md",
+      "sha256": "805102af760353d0076f9f960fe8e460bbf02e8f6a0db8d3addadc0d84ac81a4"
+    },
+    {
+      "blob": "e4f42e9ea5fa6cbfaadf53adabac6ad7df087ec5",
+      "bytes": 88642,
+      "path": "agent-conformance.log",
+      "sha256": "429eba7ad8fa72e3717f906c789e867e5a027ea748b9603227b47fdba6030c3b"
+    },
+    {
+      "blob": "976842da7c86b9cf3f48d079c063c8a0dd772bc1",
+      "bytes": 97455,
+      "path": "agent-first-attempt.log",
+      "sha256": "9438c7cd8d3c14aff6a2908d933cc293e6a5cd3c97f749f66e709567e9b483ff"
+    },
+    {
+      "blob": "e0746d82caf17348cdc04c253bcde3312f0717a8",
+      "bytes": 136,
+      "path": "agent-node24-stall.log",
+      "sha256": "6205e22497347c74bf6517d7c67792b17cc2051d7b12f33098353c4b1b9bed4a"
+    },
+    {
+      "blob": "1d4819127ce91e918cd1103ed6888d0f8aedc938",
+      "bytes": 145,
+      "path": "agent-runner.mjs",
+      "sha256": "e9ffb5d4f4216ef577cef15b4b71738bd9d4275c133c89f8d1cf0863a9edb5a6"
+    },
+    {
+      "blob": "faca4ee9cf90f4e04a10ba96173411f09a65e143",
+      "bytes": 236,
+      "path": "candidate-ci.json",
+      "sha256": "584b09cf5043a3a199147a7294b738a44fd88006d98bc8e305168c1d258f96ad"
+    },
+    {
+      "blob": "855c4453eaad5d624cbbad80a62a5a3bf2aa44c4",
+      "bytes": 7516,
+      "path": "checks.json",
+      "sha256": "90571b9c922cadf0cdc175d9e8a77993a32551b6b17c2a41d283384d4b63bd61"
+    },
+    {
+      "blob": "79b76ba8b6efbce773df570ba5fc45ca4c5af817",
+      "bytes": 444,
+      "path": "github-calls.txt",
+      "sha256": "ccac1dd13be5cd6e019ebcb9410b7d92b6c4eca129504d38844e41e23b654545"
+    },
+    {
+      "blob": "55bfeff023c4ae17dc59e12f86f446b1960e6b53",
+      "bytes": 85,
+      "path": "identity.txt",
+      "sha256": "148bad84b5b174568017df50d58e073566703d43c6c9fe7fa6f1af04420adf55"
+    },
+    {
+      "blob": "168a0a3ae6b45810cc13873ecce83a90bc9a4e92",
+      "bytes": 1644,
+      "path": "main-ci.json",
+      "sha256": "11f10f3baac04e17cf024f8e8706f8f3d5636276a845f1a9500aba0790d710a0"
+    },
+    {
+      "blob": "859647da7aad83df2f4b0984cfe5a4c14412d5fa",
+      "bytes": 903,
+      "path": "product-push.log",
+      "sha256": "bc59356f6cf9d414ce8c73826e93097128cff681116cef7b477a3a82ec300a00"
+    },
+    {
+      "blob": "547ad33ddf7070be46e80e4d24748cb5ccd782cf",
+      "bytes": 7508,
+      "path": "resource-probe.mjs",
+      "sha256": "79ed3eb8bff1d2d297cc5f9811c0feb8e8b38cb24e92b9683836499c09f029a7"
+    },
+    {
+      "blob": "74cbd8724005011d838bdbe148b786513a093ea9",
+      "bytes": 382,
+      "path": "resources.log",
+      "sha256": "8100e496a4917d6531746876e39a137f072ce7a8cda2b50572adacc42e89db0c"
+    },
+    {
+      "blob": "1f14beacd87199f5902160931abe63ef59ef4e62",
+      "bytes": 536,
+      "path": "views.log",
+      "sha256": "37192b0799cce89f866ed99a4285a437bfc3db40a919f5882910d93b359ded92"
+    }
+  ],
+  "product_branch": "cloud/sd-pencil-c-f50",
+  "product_head": "4b681954ca9199771a792441ef15615c258884e8",
+  "ref": "refs/heads/evidence/sd-pencil-c-f50",
+  "repository": "just-every/run-pencil",
+  "schema": 1,
+  "tag": "sd-pencil-c-f50"
+}

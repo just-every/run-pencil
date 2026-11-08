@@ -1,0 +1,189 @@
+{
+  "tag": "sd-pencil-c-f50",
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f50",
+  "scope": "BASE-AGENT-002 acceptance 4, absent-step deletion and invalid draft reopening only",
+  "results": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "runner": "cloud_run",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "npx -y @runeditrun/rer build",
+      "runner": "cloud_run",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "runner": "cloud_run",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/contract-docs.mjs write BASE-AGENT-001 BASE-AGENT-002 BASE-AGENT-003 BASE-AGENT-004 BASE-AGENT-005 BASE-AGENT-006 BASE-AGENT-007 BASE-AGENT-008 BASE-AGENT-009 BASE-AGENT-010 BASE-AGENT-011 BASE-AGENT-012 BASE-AGENT-013",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/contract-docs.mjs check BASE-AGENT-001 BASE-AGENT-002 BASE-AGENT-003 BASE-AGENT-004 BASE-AGENT-005 BASE-AGENT-006 BASE-AGENT-007 BASE-AGENT-008 BASE-AGENT-009 BASE-AGENT-010 BASE-AGENT-011 BASE-AGENT-012 BASE-AGENT-013",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "pnpm source:check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "ok": true
+    },
+    {
+      "command": "node .rer/pencil-resource-proof.mjs",
+      "runner": "cloud_run timeout 1200",
+      "exit": 0,
+      "description": "Existing native resource proof plus disposable missing-record concealment probe; no registration added"
+    },
+    {
+      "command": "node .rer/pencil-agent-check.mjs",
+      "runner": "cloud_run timeout 1200",
+      "runtime": "22.20.0",
+      "exit": 0,
+      "result": "2312 of 2312 production agent conformance points passed"
+    }
+  ],
+  "generated_views": "Restored from origin/main; neither generated view is staged",
+  "migrations": "No migration changed; ledger check not applicable",
+  "counts_before": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "counts_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "registrations_added": 0,
+  "registrations_removed": 0,
+  "assertion_change": "Explicitly requested replacement of lowercase missing-step expectation with paired fixed native codes and stronger no-effect checks; all other assertions retained",
+  "ui_changed": false,
+  "new_policy_default": false,
+  "scan": "Cloud-side publication scan not run; guarded Mac lander owns the COMPLETE full-history scan and exact-main gates",
+  "local_runtime_note": {
+    "initial_command": "node --input-type=module -e import checkAgentDoor",
+    "observed": "Node 24.19.0 and pinned Node 22.20.0 both stalled in Miniflare SynchronousFetcher Atomics.wait before the journey ran; only the esbuild worker remained visible",
+    "cause": "The inherited --input-type=module flag is incompatible with the CommonJS source of the Miniflare eval worker. Launch the same check from an ordinary .mjs file instead.",
+    "initial_runs_exit": 247,
+    "disposition": "Stopped only recorded own processes; reran unchanged product and test through standalone .mjs runner on pinned Node 22.20.0; no product repair"
+  },
+  "local_assertion_iteration": {
+    "command": "node .rer/pencil-agent-check.mjs",
+    "runtime": "22.20.0",
+    "exit": 1,
+    "result": "2297 of 2298 conformance points passed",
+    "failure": "A business refusal wrote a native effect audit event.",
+    "diagnosis": "The new helper compared the audit response envelope, whose fresh cutoff and sealed snapshot cursor vary. The AuditReader page implementation confirms these are query metadata, not effect records.",
+    "change": "Compare actual audit rows; require nextCursor to be null so the fixture event list is complete. All event fields and no-effect checks remain asserted."
+  },
+  "head": "4b681954ca9199771a792441ef15615c258884e8",
+  "base_main": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+  "rebase": "git fetch origin main and git rebase origin/main completed without changes; no published history rewritten",
+  "head_clean": true,
+  "file_sha256": {
+    "src/agent-door/flow-tools.ts": "06ff5e98b377a46b99baaabb7cfa0274182f213a38f2952881581d37b98cbea9",
+    "tests/agent-door/native-journey.mjs": "b9f698457dd5659d05e3b4a077ead46daa5b22a99e4b5cb1e2840bf7f898452a",
+    "tests/agent-door/business-refusals.mjs": "a2e5c5fa18b56c2920848e7967b846f39ca99231ede321e2f6bcacafc199e351",
+    "sources.lock.json": "466d3a07916fbcf2d6caf4b6ab91e255cfd2b4f98ee1682f8fbd01608e5da697",
+    "agent-surface.json": "0d58731c91c55e59919ae82afa9078b28a06e6b1e9aae40c741e616159d32975",
+    "CONTRACT.md": "dbd7b800b4377018e0e69b5c450112de0a76caa2214e8882505b907f651f19e7"
+  },
+  "candidate_ci": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "4b681954ca9199771a792441ef15615c258884e8",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42534496693",
+      "id": 42534496693,
+      "name": "Verify candidate",
+      "status": "in_progress"
+    }
+  ],
+  "main_ci": [
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42529157765",
+      "id": 42529157765,
+      "name": "Verify candidate",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42526939148",
+      "id": 42526939148,
+      "name": "Verify candidate",
+      "status": "completed"
+    },
+    {
+      "conclusion": "skipped",
+      "event": "push",
+      "head_sha": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42526036271",
+      "id": 42526036271,
+      "name": "Run demo",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42526036289",
+      "id": 42526036289,
+      "name": "Verify candidate",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42526036281",
+      "id": 42526036281,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "dynamic",
+      "head_sha": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42526036001",
+      "id": 42526036001,
+      "name": "Push on main",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42524647744",
+      "id": 42524647744,
+      "name": "Verify candidate",
+      "status": "completed"
+    }
+  ],
+  "product_push": {
+    "exit": 0,
+    "attempt": 1,
+    "branch": "cloud/sd-pencil-c-f50",
+    "head": "4b681954ca9199771a792441ef15615c258884e8"
+  }
+}

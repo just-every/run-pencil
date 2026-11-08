@@ -1,0 +1,2 @@
+2026-11-08T23:05:30.783708+00:00 gh api repos/just-every/run-pencil/actions/runs?head_sha=ae8ee162c63e3b970d7ee61eec82614bcf9e2c06&per_page=100 --jq [.workflow_runs[] | {id,name,event,status,conclusion,head_sha,html_url}]
+2026-11-08T23:18:43.184626+00:00 gh api repos/just-every/run-pencil/actions/runs?head_sha=4b681954ca9199771a792441ef15615c258884e8&per_page=100 --jq [.workflow_runs[] | {id,name,event,status,conclusion,head_sha,html_url}]
