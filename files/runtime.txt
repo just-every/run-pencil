@@ -1,0 +1,18 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+
+ RUN  v4.1.11 /home/agent/rer-consolidation/work/sd-pencil-c-f45/run-pencil
+
+ ✓ tests/runtime/other-choices.worker.test.ts > [FIELD-010] Other write-ins and exclusive None survive native collection, branches, reports, search, exports and reviewed imports 866ms
+ ✓ tests/runtime/other-choices.worker.test.ts > CSV exports write respondent Other and contact answers as text, never as spreadsheet formulas 156ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  20:53:15
+   Duration  18.14s (transform 7.22s, setup 0ms, import 15.08s, tests 1.84s, environment 0ms)
+
+JSON report written to /home/agent/rer-consolidation/work/sd-pencil-c-f45/packet/runtime.json

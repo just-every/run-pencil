@@ -1,0 +1,101 @@
+{
+  "tag": "sd-pencil-c-f45",
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f45",
+  "head": "08df4df8045a95d103b370a20c3102dac76e5a28",
+  "base": "45f78e1a7c94ac6d7b1e93b937253f2cb5199322",
+  "node": "v24.19.0",
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/other-choices.worker.test.ts",
+      "exit": 0,
+      "test_files": 1,
+      "tests": 2
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/contract-docs.mjs write FIELD-010",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/contract-docs.mjs check FIELD-010",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "pnpm source:check",
+      "exit": 0
+    }
+  ],
+  "registration_delta": 0,
+  "counts_before": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49,
+    "total": 252
+  },
+  "counts_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49,
+    "total": 252
+  },
+  "production_change": false,
+  "contract_change": false,
+  "generated_views_committed": false,
+  "migration_change": false,
+  "browser_proof": "not required: native route test only, no screen changed",
+  "publication_scan": {
+    "status": "not run in cloud; maintained lander owns scan",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "probes": [
+    {
+      "clause": "FIELD-010",
+      "point": 3,
+      "door": "POST /api/public/flows/:slug/responses",
+      "input": "Other selected with empty text",
+      "observed": "HTTP 400; VALIDATION_ERROR; one detail with stable question ID and nonempty Other reason; responses count 0"
+    },
+    {
+      "clause": "FIELD-010",
+      "point": 3,
+      "door": "POST /api/public/flows/:slug/responses",
+      "input": "Other selected with one whitespace character",
+      "observed": "HTTP 400; VALIDATION_ERROR; one detail with stable question ID and nonempty Other reason; responses count 0"
+    }
+  ],
+  "exact_candidate_runtime": {
+    "head": "08df4df8045a95d103b370a20c3102dac76e5a28",
+    "command": "pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/other-choices.worker.test.ts --reporter=verbose --reporter=json --outputFile=../packet/runtime.json",
+    "exit": 0,
+    "passed": 2
+  },
+  "ci": {
+    "run_id": 42522354355,
+    "event": "push",
+    "conclusion": null,
+    "head_sha": "08df4df8045a95d103b370a20c3102dac76e5a28",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42522354355",
+    "status": "in_progress",
+    "api_calls_used": 5,
+    "api_budget": 10
+  },
+  "custody": "PUSHED; exact-SHA Verify remains in progress"
+}

@@ -1,0 +1,21 @@
+{
+  "head": "08df4df8045a95d103b370a20c3102dac76e5a28",
+  "files": [
+    {
+      "path": "tests/runtime/other-choices.worker.test.ts",
+      "sha256": "3c150715d9f0190e17e3ccefcdfb680a2ac16c10353578b03e2b897935d2fae8"
+    },
+    {
+      "path": "src/core/shared/otherChoices.ts",
+      "sha256": "6c7149425246295816abba5c00ba8b65ddc9245f0d01b109a131bbbe81937d7c"
+    },
+    {
+      "path": "src/core/features/responses/path.ts",
+      "sha256": "edcf979edf1e7d932bae7ee868a42978828afa798d97a85c0fe0dbf9b05c860f"
+    },
+    {
+      "path": "src/core/features/responses/routes.ts",
+      "sha256": "57baeae591698bd0f067459670f975671ffe74a09c41778781557a24001a15a1"
+    }
+  ]
+}
