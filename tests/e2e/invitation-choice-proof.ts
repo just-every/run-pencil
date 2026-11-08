@@ -48,7 +48,7 @@ export async function proveInvitationChoice(owner: Page, info: TestInfo) {
   const contexts: BrowserContext[] = []
   try {
     const fresh = async () => {
-      const context = await owner.context().browser()!.newContext({ baseURL: origin, viewport: owner.viewportSize(), extraHTTPHeaders: { 'CF-Connecting-IP': '198.19.51.14' } })
+      const context = await owner.context().browser()!.newContext({ baseURL: origin, viewport: owner.viewportSize(), isMobile: false, deviceScaleFactor: 1, extraHTTPHeaders: { 'CF-Connecting-IP': '198.19.51.14' } })
       contexts.push(context)
       const page = await context.newPage()
       const writes: string[] = []
@@ -74,6 +74,8 @@ export async function proveInvitationChoice(owner: Page, info: TestInfo) {
     const { page, writes } = await fresh()
     await page.goto('about:blank')
     await page.setContent(mail.html)
+    // Mail lacks a viewport tag, so use a fixed CSS viewport instead of mobile UA scaling.
+    expect(await page.evaluate(() => innerWidth)).toBe(owner.viewportSize()!.width)
     await audienceScreen(page, info, 'choice-email')
     await Promise.all([page.waitForNavigation(), page.getByRole('link', { name: 'Which workshop?: Drawing workshop', exact: true }).click()])
     await expect(page.getByRole('heading', { name: 'What would you like to learn?', exact: true })).toBeVisible()
