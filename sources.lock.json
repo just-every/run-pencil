@@ -8556,6 +8556,10 @@
       "sha256": "d7246cebf2e0f167fd51e1d756707ebc4a6b7ee7bb988cd38c086679c5f853ba",
       "executable": false
     },
+    "tests/e2e/audit-export-proof.ts": {
+      "sha256": "a655fc49966f22c83eb74ac99cdcc38173cd52cb2b013eff19a6792f9fc55bf4",
+      "executable": false
+    },
     "tests/e2e/auth-identity.ts": {
       "sha256": "a08ef1af9fa86b807ab02a7fca6a94769d89c21d436f74b28dfffbb85ad68a1b",
       "executable": false
@@ -8729,7 +8733,7 @@
       "executable": false
     },
     "tests/e2e/ledger-filters.spec.ts": {
-      "sha256": "fe8ff7932a4efb6c2f778d3269489fc402c50b07932bfb985d0701f2eb7f07e1",
+      "sha256": "c273ca44cebf297906f7c9d920085e1bba0812f3ce2e29e044e8cc63242ac834",
       "executable": false
     },
     "tests/e2e/link-preview-http.ts": {
@@ -9293,7 +9297,7 @@
       "executable": false
     },
     "tests/runtime/chat-integrations-proof.ts": {
-      "sha256": "ab1f1d848a6f9a93ce0fce78deba395fb4f7e278e679656563094c37358329f3",
+      "sha256": "d487d460062a6002ccd7792242b2b6a82442a70d89d57314b5c7754597117570",
       "executable": false
     },
     "tests/runtime/coding.worker.test.ts": {
@@ -9310,6 +9314,10 @@
     },
     "tests/runtime/conditions.worker.test.ts": {
       "sha256": "67f5285b8234555c7dc15f94da3ac599c35c8de5d9d987be61de7ceb19315d59",
+      "executable": false
+    },
+    "tests/runtime/confirmation-withholding-scenario.ts": {
+      "sha256": "f986a5df336451cb33329cfca2f4c97e0ba2ce5e185a3546cbff1bfb79c511a6",
       "executable": false
     },
     "tests/runtime/contact-scores-scenario.ts": {
@@ -9525,7 +9533,7 @@
       "executable": false
     },
     "tests/runtime/respondent-confirmations.worker.test.ts": {
-      "sha256": "edd2ec9c30c1acdcb2248a11c19e115d20c35f43b7e6d23f09199417d32043bd",
+      "sha256": "1817dde511af855377e768f6f1fbd8b54f4506b366da8c6fd78542ae7a77454b",
       "executable": false
     },
     "tests/runtime/response-edit-proof.ts": {
@@ -9585,7 +9593,7 @@
       "executable": false
     },
     "tests/runtime/task-receiver.global.ts": {
-      "sha256": "3b2b0fa6b6a2183a5e16e63452169498ee47c2a43fad5d143aa4656d1a8f3f42",
+      "sha256": "5a2b3908dd6721d89fa4a4070edb149faf2ae6cc81c6d4561393aee562670e98",
       "executable": false
     },
     "tests/runtime/team-templates.worker.test.ts": {
