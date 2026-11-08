@@ -1,0 +1,307 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/workspace/run-pencil/node_modules/@playwright/test/cli.js",
+      "test",
+      "tests/e2e/response-search.spec.ts",
+      "--config",
+      "/tmp/pencil-cloud.config.mts",
+      "--workers=1"
+    ],
+    "configFile": "/tmp/pencil-cloud.config.mts",
+    "rootDir": "/workspace/run-pencil/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/pencil-f42-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "/workspace/run-pencil/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/tmp/pencil-f42-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "/workspace/run-pencil/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/tmp/pencil-f42-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "desktop",
+        "testDir": "/workspace/run-pencil/tests/e2e",
+        "snapshotDir": "/workspace/run-pencil/tests/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4173",
+          "launchOptions": {
+            "headless": true,
+            "args": [
+              "--no-sandbox",
+              "--use-mock-keychain",
+              "--password-store=basic"
+            ],
+            "executablePath": "/usr/bin/chromium"
+          },
+          "trace": "retain-on-failure",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "desktop"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/tmp/pencil-f42-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "mobile",
+        "testDir": "/workspace/run-pencil/tests/e2e",
+        "snapshotDir": "/workspace/run-pencil/tests/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4173",
+          "launchOptions": {
+            "headless": true,
+            "args": [
+              "--no-sandbox",
+              "--use-mock-keychain",
+              "--password-store=basic"
+            ],
+            "executablePath": "/usr/bin/chromium"
+          },
+          "trace": "retain-on-failure",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "screen": {
+            "width": 393,
+            "height": 851
+          },
+          "deviceScaleFactor": 2.75,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "mobile"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/home/agent/rer-consolidation/work/sd-pencil-c-f42/packet/browser-receipt.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "response-search.spec.ts",
+      "file": "response-search.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "[LEDG-006,WORK-001,MOB-001] operators search responses, see matching answers and download the same filtered records",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 39965,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-08T17:36:01.199Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "submission-inbox",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-f42-browser-results/response-search--LEDG-006--b7a16-d-the-same-filtered-records-desktop/attachments/submission-inbox-2710dadf8265edad207a4a35a311150fcf27e990.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd34710f3e4f0c4e591e-4c8d64ee824907a7c99c",
+          "file": "contract.ts",
+          "line": 4,
+          "column": 3
+        },
+        {
+          "title": "[LEDG-006,WORK-001,MOB-001] operators search responses, see matching answers and download the same filtered records",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 38409,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-08T17:36:43.023Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "submission-inbox",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-f42-browser-results/response-search--LEDG-006--b7a16-d-the-same-filtered-records-mobile/attachments/submission-inbox-2d149cdc95b7d93d4dbd1848fe7a11098005b169.png"
+                    },
+                    {
+                      "name": "submission-inbox-360-initial",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-f42-browser-results/response-search--LEDG-006--b7a16-d-the-same-filtered-records-mobile/attachments/submission-inbox-360-initial-9099e8d43d2f261cbc7dedd31264b58ad2eb6817.png"
+                    },
+                    {
+                      "name": "submission-inbox-360-bulk",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-f42-browser-results/response-search--LEDG-006--b7a16-d-the-same-filtered-records-mobile/attachments/submission-inbox-360-bulk-4307eeb79af22a36d31780235e01dd0c04f6860d.png"
+                    },
+                    {
+                      "name": "submission-inbox-360-note",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-f42-browser-results/response-search--LEDG-006--b7a16-d-the-same-filtered-records-mobile/attachments/submission-inbox-360-note-b580a8bdaa2461e47df14870ea4c80757bd2c6e0.png"
+                    },
+                    {
+                      "name": "submission-inbox-360-filtered",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-f42-browser-results/response-search--LEDG-006--b7a16-d-the-same-filtered-records-mobile/attachments/submission-inbox-360-filtered-24bb6676fa88ba17bde9f4c7e41e7c524479b1b4.png"
+                    },
+                    {
+                      "name": "submission-inbox-360-reloaded",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-f42-browser-results/response-search--LEDG-006--b7a16-d-the-same-filtered-records-mobile/attachments/submission-inbox-360-reloaded-493633a342baed1482e0a39f687befe867b52e39.png"
+                    },
+                    {
+                      "name": "360 pixel hit areas",
+                      "contentType": "application/json",
+                      "body": "WwogIHsKICAgICJjb250cm9sIjogIlNlbGVjdCBzdWJtaXNzaW9uIGxhYmVsIiwKICAgICJ3aWR0aCI6IDQ0LAogICAgImhlaWdodCI6IDQ0CiAgfSwKICB7CiAgICAiY29udHJvbCI6ICJBc3NpZ24iLAogICAgIndpZHRoIjogMzI0LAogICAgImhlaWdodCI6IDQ0CiAgfSwKICB7CiAgICAiY29udHJvbCI6ICJBZGQgdGFnIiwKICAgICJ3aWR0aCI6IDMyNCwKICAgICJoZWlnaHQiOiA0NC4zOTA2MjUKICB9LAogIHsKICAgICJjb250cm9sIjogIkFwcGx5IGFzc2lnbm1lbnQgYW5kIHRhZyIsCiAgICAid2lkdGgiOiAxMjQuODQzNzUsCiAgICAiaGVpZ2h0IjogNDQKICB9LAogIHsKICAgICJjb250cm9sIjogIk9wZW4gc3VibWlzc2lvbiIsCiAgICAid2lkdGgiOiA1NCwKICAgICJoZWlnaHQiOiA0OAogIH0sCiAgewogICAgImNvbnRyb2wiOiAiUHJpdmF0ZSBub3RlIiwKICAgICJ3aWR0aCI6IDI3MiwKICAgICJoZWlnaHQiOiA4MAogIH0sCiAgewogICAgImNvbnRyb2wiOiAiQWRkIG5vdGUiLAogICAgIndpZHRoIjogODcuMjY1NjI1LAogICAgImhlaWdodCI6IDQ0CiAgfSwKICB7CiAgICAiY29udHJvbCI6ICJTZWxlY3Qgc3VibWlzc2lvbiBsYWJlbCBmb3Igc3RhdHVzIiwKICAgICJ3aWR0aCI6IDQ0LAogICAgImhlaWdodCI6IDQ0CiAgfSwKICB7CiAgICAiY29udHJvbCI6ICJTZXQgc3RhdHVzIiwKICAgICJ3aWR0aCI6IDMyNCwKICAgICJoZWlnaHQiOiA0NAogIH0sCiAgewogICAgImNvbnRyb2wiOiAiQXBwbHkgRG9uZSBzdGF0dXMiLAogICAgIndpZHRoIjogMTI0Ljg0Mzc1LAogICAgImhlaWdodCI6IDQ0CiAgfSwKICB7CiAgICAiY29udHJvbCI6ICJGaWx0ZXIiLAogICAgIndpZHRoIjogOTcuMDMxMjUsCiAgICAiaGVpZ2h0IjogNDQKICB9LAogIHsKICAgICJjb250cm9sIjogIldvcmtmbG93IHN0YXR1cyBmaWx0ZXIiLAogICAgIndpZHRoIjogMzI0LAogICAgImhlaWdodCI6IDQ0CiAgfQpd"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd34710f3e4f0c4e591e-5407861e0b64a0c705b2",
+          "file": "contract.ts",
+          "line": 4,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-08T17:33:55.607Z",
+    "duration": 206653.44700000001,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

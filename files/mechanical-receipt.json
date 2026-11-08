@@ -1,0 +1,63 @@
+{
+  "head": "c7d5a9847d6dcd8787ba5a346efa45bda5ddeae3",
+  "steps": [
+    {
+      "command": [
+        "node",
+        "scripts/contract-docs.mjs",
+        "write",
+        "MOB-001"
+      ],
+      "exit": 0,
+      "seconds": 0.39
+    },
+    {
+      "command": [
+        "node",
+        "scripts/contract-docs.mjs",
+        "check",
+        "MOB-001"
+      ],
+      "exit": 0,
+      "seconds": 0.39
+    },
+    {
+      "command": [
+        "git",
+        "checkout",
+        "origin/main",
+        "--",
+        "ACCEPTANCE.md",
+        "docs/CLAIMS.md"
+      ],
+      "exit": 0,
+      "seconds": 0.03
+    },
+    {
+      "command": [
+        "node",
+        "scripts/edition-authoring/cli.mjs",
+        "lock"
+      ],
+      "exit": 0,
+      "seconds": 0.63
+    },
+    {
+      "command": [
+        "pnpm",
+        "source:check"
+      ],
+      "exit": 0,
+      "seconds": 2.61
+    },
+    {
+      "command": [
+        "pnpm",
+        "typecheck"
+      ],
+      "exit": 0,
+      "seconds": 29.89
+    }
+  ],
+  "clean": true
+}

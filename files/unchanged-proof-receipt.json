@@ -1,0 +1,27 @@
+{
+  "local_browser_head": "955e9eae109eed2a4fdf2fdd49419f94dd181bd4",
+  "final_head": "c7d5a9847d6dcd8787ba5a346efa45bda5ddeae3",
+  "all_changed_files": [
+    "M\tdocs/guide/publish-and-share.md",
+    "M\tsources.lock.json",
+    "M\ttests/e2e/hidden-fields.spec.ts",
+    "A\ttests/e2e/plain-iframe-hidden-fields.ts"
+  ],
+  "unchanged_proof_paths": [
+    "src",
+    "scripts",
+    "playwright.config.ts",
+    "package.json",
+    "pnpm-lock.yaml",
+    "tests/e2e/response-search.spec.ts",
+    "tests/e2e/submission-inbox-journey.ts",
+    "tests/e2e/submission-inbox-mobile.ts",
+    "tests/response-search-scenario.ts",
+    "tests/results-scenario.ts",
+    "tests/e2e/fixtures.ts",
+    "tests/e2e/filter-helpers.ts",
+    "tests/helpers"
+  ],
+  "relevant_diff": "empty",
+  "reason": "Only unrelated iframe test proof, its guide and source lock changed on incoming main; no inbox, native production, harness, package or selected test byte changed."
+}

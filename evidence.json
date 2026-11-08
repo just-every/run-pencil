@@ -1,0 +1,130 @@
+{
+  "files": [
+    {
+      "blob": "970e9fb525bcf654b91f1feeaf6a7786ff79232b",
+      "bytes": 14061,
+      "path": "REPORT.md",
+      "sha256": "dece69d265e85cf3534894dbd1a5b96450330e1c781a35dd229ee3df14a72bdf"
+    },
+    {
+      "blob": "459ce0339c4dc29d0a777f0a4453eeacc9689d63",
+      "bytes": 11593,
+      "path": "browser-receipt.json",
+      "sha256": "317b8e9d6c78fd4338b31c8fec77ce06719e48e751efc238256f5fee8ebd32ea"
+    },
+    {
+      "blob": "4e9aed6553a0d1661a89d0775e1551407949084b",
+      "bytes": 274,
+      "path": "ci-branch-final.json",
+      "sha256": "6cd3d34f87b9c3ea407f81cf087ebb809a4a4ac369803d733f5039b44a7b9995"
+    },
+    {
+      "blob": "cd5a43cd53eef40a183a281bbd34afb0e9feadea",
+      "bytes": 274,
+      "path": "ci-branch.json",
+      "sha256": "c618b8eaa496d75b1a58ba614bf6fb938cd09ca27db0ecb4b1379499bdd609ab"
+    },
+    {
+      "blob": "091306ba09138f7857b37c0c76c77d80cd599995",
+      "bytes": 1340,
+      "path": "ci-final.json",
+      "sha256": "b4a2e039931c1519a4db2c0446930fb917fca2f565d5088007a8448da1149f24"
+    },
+    {
+      "blob": "320bd994ba3800f808ea5c716486f66ea50040b6",
+      "bytes": 1407,
+      "path": "ci-initial.json",
+      "sha256": "6048a0a6f66a4a5cf6b6d9a2d6c0c39a6b474026492b1d5e34a53d0f897a10c1"
+    },
+    {
+      "blob": "423510b2b00805a44c45f4c84326d96249ab698e",
+      "bytes": 970,
+      "path": "hit-areas.json",
+      "sha256": "21156682305d92e2d488d8b403234451bb1decaa360edd8ed26f5821d62d5149"
+    },
+    {
+      "blob": "81c2c5670c60c42d8b98a81d947eb80835d9f35e",
+      "bytes": 140964,
+      "path": "inbox-1440.png",
+      "sha256": "80d60265499d5b65f911e520726b534ec43970f60322487221ae79a488ea0ce8"
+    },
+    {
+      "blob": "6d6e761003c53ce71ffd7103cc2d30a5408f8be0",
+      "bytes": 72032,
+      "path": "inbox-360-bulk.png",
+      "sha256": "ff69f9fc8f1aa78a787f9f10441807aa6e11c7048c73ed88ce70f86c281eec73"
+    },
+    {
+      "blob": "d453beaa836d118681eac00ad8c3f5390508cf62",
+      "bytes": 117579,
+      "path": "inbox-360-filtered.png",
+      "sha256": "da44fe80c4701dcb7fdca3907796966774292dd6a8e43296b26418cc89a809ca"
+    },
+    {
+      "blob": "0c0455bb4702d4ba9a1a6e1a549f389ec7eeb4fd",
+      "bytes": 53168,
+      "path": "inbox-360-initial.png",
+      "sha256": "afe36a228136b56c0cca3df878d6773759226b3500cafd745edc95f1e39d933e"
+    },
+    {
+      "blob": "246cf46660a53b35e8054a7ba4cdb4479ab876e9",
+      "bytes": 107234,
+      "path": "inbox-360-note.png",
+      "sha256": "0acc56cc73a6efcfd33ec6158e2d08505f4350bccd275a3ccffecba45d1284c1"
+    },
+    {
+      "blob": "9415a98498e0d5d12e25d907ab2257780d86aafa",
+      "bytes": 105799,
+      "path": "inbox-360-reloaded.png",
+      "sha256": "545136b17f39b71f83613b9de11363c13df08d6e0160e06fd1721d934d965061"
+    },
+    {
+      "blob": "73121efce03bedf3cf871b82711c09427b4803f3",
+      "bytes": 124046,
+      "path": "inbox-390.png",
+      "sha256": "14a71edceb09bafa3b243d232d5e06840a63825a858ab4ecafb49d138cf90ecb"
+    },
+    {
+      "blob": "abb58ac16ea6c4f970c451d1c0d4c1e166782efb",
+      "bytes": 2409,
+      "path": "local-checks-receipt.json",
+      "sha256": "b6fe7a3ca650bbd7e353d9b01d09581429f243b204aea475f2d28cf486862358"
+    },
+    {
+      "blob": "c2ea379b905d530eaccce375aad4b442332d07cc",
+      "bytes": 1021,
+      "path": "mechanical-receipt.json",
+      "sha256": "65e854439a54b5e16cc5357ebc41e046c82caeceefcfdde7e06f534d52bbc2c7"
+    },
+    {
+      "blob": "4b64da0fd23b543e31e3f24619d5fec128ee0016",
+      "bytes": 715,
+      "path": "product-push-final.txt",
+      "sha256": "7c71ce9186733e88048ccf125ebf3124d528fe97f99d2e08cbd0fbe6c64549c8"
+    },
+    {
+      "blob": "34e7ee6f3d810578cc49becb2c0a7e895bac05de",
+      "bytes": 902,
+      "path": "product-push.txt",
+      "sha256": "6c696a0bcf6dbcd2689a6e921277ed5bcab72fc891cb72bd169b8d99267e2e90"
+    },
+    {
+      "blob": "d8a22ec0fe5b83e9ed117ec6aa07baa325086126",
+      "bytes": 131,
+      "path": "remote-refs.txt",
+      "sha256": "8792b3402c736df957c66f61cbd4577a3a7d13f7b9af11c3e6a407e6a0fb2415"
+    },
+    {
+      "blob": "1a91cbbe4cc3ee062e27de902f8e70f88b06db99",
+      "bytes": 946,
+      "path": "unchanged-proof-receipt.json",
+      "sha256": "dfcce881419608b69275b5765d4b98aee0d0df79b15432444956916eac71aa17"
+    }
+  ],
+  "product_branch": "cloud/sd-pencil-c-f42",
+  "product_head": "c7d5a9847d6dcd8787ba5a346efa45bda5ddeae3",
+  "ref": "refs/heads/evidence/sd-pencil-c-f42",
+  "repository": "just-every/run-pencil",
+  "schema": 1,
+  "tag": "sd-pencil-c-f42"
+}
