@@ -1,0 +1,41 @@
+services:
+  database:
+    image: mariadb:11.4
+    environment:
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: synthetic-pencil-1
+      MARIADB_ROOT_PASSWORD: synthetic-pencil-2
+    healthcheck:
+      test: [CMD, healthcheck.sh, --connect, --innodb_initialized]
+      interval: 1s
+      timeout: 5s
+      retries: 90
+  wordpress:
+    image: wordpress:6.8.3-php8.3-apache
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - '127.0.0.1::80'
+    environment: &wordpress-environment
+      WORDPRESS_DB_HOST: database
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: synthetic-pencil-1
+      PENCIL_INSTALLATION_URL: ${PENCIL_WORDPRESS_INSTALLATION_URL:?Pass the Pencil origin}
+      WORDPRESS_CONFIG_EXTRA: define('PENCIL_INSTALLATION_URL', getenv('PENCIL_INSTALLATION_URL'));
+    volumes: &wordpress-volumes
+      - wordpress:/var/www/html
+      - ../../../integrations/wordpress:/var/www/html/wp-content/plugins/pencil:ro
+      - ./theme:/var/www/html/wp-content/themes/pencil-fixture:ro
+  cli:
+    image: wordpress:cli-php8.3
+    user: '33:33'
+    depends_on:
+      database:
+        condition: service_healthy
+    environment: *wordpress-environment
+    volumes: *wordpress-volumes
+volumes:
+  wordpress:
