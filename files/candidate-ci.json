@@ -1,1 +1,6 @@
-{"conclusion":null,"head_sha":"ce28546376e4103537a12d660d3ecfc4c6c88e4c","html_url":"https://github.com/just-every/run-pencil/actions/runs/42437034335","status":"in_progress"}
+{
+  "conclusion": "failure",
+  "head_sha": "ce28546376e4103537a12d660d3ecfc4c6c88e4c",
+  "html_url": "https://github.com/just-every/run-pencil/actions/runs/42437034335",
+  "status": "completed"
+}

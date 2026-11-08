@@ -1,0 +1,7 @@
+{
+  "command": "gh run view 42437034335 --repo just-every/run-pencil --job 128598321175 --log-failed",
+  "exit": 0,
+  "full_sanitized_output_sha256": "41944d775385fac4b1df6846121cf90224d86a3d886161331b9221191b499f88",
+  "selected_file": "ci-failed-job.txt",
+  "selection": "Runtime failure excerpt only; setup shell and environment block omitted."
+}

@@ -11,6 +11,7 @@
     "historyScanned": null,
     "findings": null
   },
-  "github_api_calls": 3,
-  "main_equals_candidate": false
+  "github_api_calls": 7,
+  "main_equals_candidate": false,
+  "handoff": "BLOCKED: unreproduced archive-recovery CI failure; no repair attempted"
 }

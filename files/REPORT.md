@@ -55,7 +55,7 @@ Inherited duty mapping:
 | --- | --- | --- |
 | 1 | PARTIAL for the full clause; scoped WordPress MET locally | A1–A3 and W1–W11 above; Webflow and Squarespace installation and DIST-021 options remain unbuilt. Exact-SHA CI status below. |
 | 2 | PASS locally for changed security and data behavior | Allowed collection stores the independent canary; invalid input and revoked host refuse and preserve response IDs; repeat capture retains one record. |
-| 3 | CI status below | Same existing push Verify registration includes the helper unconditionally at both projects; no environment flag, nightly-only path or external-only proof. |
+| 3 | FAIL: full Verify red | Same existing push Verify registration includes the helper unconditionally at both projects; no environment flag, nightly-only path or external-only proof. |
 | 4 | PASS locally | Browser and mechanical receipts bind the final full SHA; screenshots are from that run. |
 | 5 | INSPECTED, unchanged | DIST-013 explicitly names isolation under DIST-009; DIST-009 names BASE-PUBLIC-002. No inheritance text was added or weakened. |
 | 6 | Mechanical PASS; judgment remains with lander | Contract generator write and check exit 0; generated views restored to main. Status and legacy Gap text intentionally remain the lander's sole write scope. |
@@ -86,14 +86,41 @@ MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock and pnpm source:chec
 Main baseline: 9877fe36b4c31f61cc6a4a13b1096634c822198f, Verify push 42434423607 success and Run site push 42434423551 success (main-ci.json). These establish initial main health only. The candidate does not equal main before landing.
 
 Candidate CI:
-{"conclusion":null,"head_sha":"ce28546376e4103537a12d660d3ecfc4c6c88e4c","html_url":"https://github.com/just-every/run-pencil/actions/runs/42437034335","status":"in_progress"}
+{
+  "conclusion": "failure",
+  "head_sha": "ce28546376e4103537a12d660d3ecfc4c6c88e4c",
+  "html_url": "https://github.com/just-every/run-pencil/actions/runs/42437034335",
+  "status": "completed"
+}
 
 
 Publication scan: commit=ce28546376e4103537a12d660d3ecfc4c6c88e4c; status=NOT_RUN_CLOUD; complete=unestablished; historyScanned=unestablished; findings=unestablished. The cloud adaptation delegates exact-tree full-history scanning to the maintained Mac lander; no clean scan or candidate main Run site result is claimed here.
 
 Initial local fixture corrections: the CLI image required an explicit `wp` command; private workspace permissions on new files were made readable by WordPress. An early browser response watcher could not observe Chromium's blocked refused-script response, so final proof observes the real browser request and confirms native 403 refusal. A browser-evaluated extra replay hit a local Worker OPTIONS transport failure; final replay uses the captured request body at the same native HTTP route with opaque Origin and validates the same response ID and unchanged storage. No production path or pre-existing assertion was changed to accommodate those fixture issues. The interrupted diagnostic fixture was explicitly torn down, as were its containers and volume.
 
-No implementation blocker remains for the scoped WordPress work. No PR or default-branch push was made. No CI dispatch or rerun is planned where a run already exists. The complete actual non-secret packet is published only on evidence/sd-pencil-c-f28. Product changes remain on the named cloud branch.
+No implementation gap remains for the scoped WordPress work. Landing is BLOCKED by the unreproduced archive-recovery CI failure described below. No PR or default-branch push was made. No CI dispatch or rerun is planned where a run already exists. The complete actual non-secret packet is published only on evidence/sd-pencil-c-f28. Product changes remain on the named cloud branch.
 
 CLAIM DIST-013 PARTIAL points=1,2,3 tests=tests/e2e/script-embed.spec.ts#copied async script mounts an opaque allowed-host iframe, resizes, emits only permitted events and rejects malicious messages
 GAP DIST-013: Webflow and Squarespace-specific installation and DIST-021 forwarding, fixed-value, hidden and GA options remain unbuilt, including every-mode and shortcode obligations; existing checkout conflicts, payment holds and release qualification are unchanged.
+
+## Final CI diagnosis and blocked handoff
+
+Exact push Verify 42437034335 completed with failure on ce28546376e4103537a12d660d3ecfc4c6c88e4c. Job 128598321175, shards (8, desktop-2 archive-recovery desktop-8 archive-stream), reported:
+
+> Archive group recovery: failed in 240.435 s.
+> archive-recovery: 0 passed, 1 failed, 0 pending; exit 1.
+> Runtime failure in tests/contract/data-release.contract.test.ts
+
+The authored test is “whole-data owner recovery round-trips a hosted installation and refuses altered migration ledgers”. Its current deadline is 240000 ms. The public failed-job log does not expose the inner assertion or child diagnostic. The observed duration is consistent with that deadline, but no unlogged inner failure is invented here.
+
+Both desktop-2 and desktop-8 passed in that job; all other shard jobs passed. Checks, source integrity, builds and the exported-tree publication check passed. The aggregate verify job 128600507285 failed its prerequisite-result check and did not evaluate the combined contract wall. Full Verify is red; neither acceptance nor landing is claimed.
+
+Before editing anything, the exact failing archive lane command was rerun at the failed SHA under Node 22.20.0 with CI mode, the same archive group and job settings. This lane bundles its application from source rather than consuming the shared production artifact. It passed in 99.991 seconds, exit 0. The same command on pinned main 9877fe36b4c31f61cc6a4a13b1096634c822198f, using the same Node runtime and dependencies on the same cloud runner, passed in 99.183 seconds, exit 0. The archive runner, tests and application source have no diff between that main and the candidate. The comparison isolates the failed archive-recovery lane, not the two already-green browser lanes or the green stream lane. Actual receipts: candidate-archive-repro.json and main-archive-repro.json.
+
+VERIFY_NOT_REPRODUCED {"head": "ce28546376e4103537a12d660d3ecfc4c6c88e4c", "job": 128598321175, "command": "node scripts/run-contract-lane.mjs archive-recovery /tmp/pencil-candidate-archive-evidence", "test": "whole-data owner recovery round-trips a hosted installation and refuses altered migration ledgers", "exit": 0, "failure": "CI: Archive group recovery failed in 240.435 s.; local affected lane passed."}
+
+The brief says: “If it does not reproduce, stop BLOCKED with that output; do not guess a fix.” No source repair, deadline increase, assertion weakening, extra commit, CI dispatch or failed-job rerun was attempted. This is not claimed as a proven infrastructure flake. FV must diagnose the runner-specific archive failure or supply a reproducible case before a repair. Seven explicit task GitHub calls were used; no direct job-log blob download was attempted.
+
+The complete final packet supersedes the earlier in-progress evidence manifest. The WordPress product head remains pushed and unchanged. Its scoped behavior is complete; its contract status stays PARTIAL and all held remainder stays named.
+
+BLOCKED branch=cloud/sd-pencil-c-f28 head=ce28546376e4103537a12d660d3ecfc4c6c88e4c reason=unreproduced archive-recovery CI failure run=42437034335 job=128598321175; FV diagnosis required

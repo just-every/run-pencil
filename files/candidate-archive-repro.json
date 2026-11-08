@@ -1,0 +1,10 @@
+{
+  "head": "ce28546376e4103537a12d660d3ecfc4c6c88e4c",
+  "job": 128598321175,
+  "lane": "archive-recovery",
+  "command": "node scripts/run-contract-lane.mjs archive-recovery /tmp/pencil-candidate-archive-evidence",
+  "node": "v22.20.0",
+  "exit": 0,
+  "at": "2026-11-08T02:24:33.699412+00:00",
+  "output": "Archive group recovery: started.\nArchive group recovery: passed in 99.991 s.\narchive-recovery: 1 passed, 0 failed, 0 pending; exit 0.\n"
+}

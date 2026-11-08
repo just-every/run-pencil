@@ -1,0 +1,10 @@
+shards (8, desktop-2 archive-recovery desktop-8 archive-stream)	Run every original lane and retain every result	2026-11-08T02:10:56.8407780Z desktop-2: 11 passed, 0 failed; exit 0.
+shards (8, desktop-2 archive-recovery desktop-8 archive-stream)	Run every original lane and retain every result	2026-11-08T02:10:56.8674717Z Archive group recovery: started.
+shards (8, desktop-2 archive-recovery desktop-8 archive-stream)	Run every original lane and retain every result	2026-11-08T02:14:57.3012914Z Archive group recovery: failed in 240.435 s.
+shards (8, desktop-2 archive-recovery desktop-8 archive-stream)	Run every original lane and retain every result	2026-11-08T02:14:57.3048189Z archive-recovery: 0 passed, 1 failed, 0 pending; exit 1.
+shards (8, desktop-2 archive-recovery desktop-8 archive-stream)	Run every original lane and retain every result	2026-11-08T02:14:57.3051558Z Runtime failure in /home/runner/work/run-pencil/run-pencil/tests/contract/data-release.contract.test.ts
+shards (8, desktop-2 archive-recovery desktop-8 archive-stream)	Run every original lane and retain every result	2026-11-08T02:16:42.8424828Z desktop-8: 10 passed, 0 failed; exit 0.
+shards (8, desktop-2 archive-recovery desktop-8 archive-stream)	Run every original lane and retain every result	2026-11-08T02:16:42.8682232Z Archive group stream: started.
+shards (8, desktop-2 archive-recovery desktop-8 archive-stream)	Run every original lane and retain every result	2026-11-08T02:16:56.5468633Z Archive group stream: passed in 13.680 s.
+shards (8, desktop-2 archive-recovery desktop-8 archive-stream)	Run every original lane and retain every result	2026-11-08T02:16:56.5502367Z archive-stream: 1 passed, 0 failed, 0 pending; exit 0.
+shards (8, desktop-2 archive-recovery desktop-8 archive-stream)	Run every original lane and retain every result	2026-11-08T02:16:56.5536000Z ##[error]Process completed with exit code 1.
