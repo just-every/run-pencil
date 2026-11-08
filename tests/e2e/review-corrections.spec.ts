@@ -1,11 +1,12 @@
 import AxeBuilder from '@axe-core/playwright'
+import { proveBuilderConcurrency } from './builder-concurrency-proof'
 import { expect, test } from './fixtures'
 import { contract } from './contract'
 import { signInEmptyWorkspace } from './authoring-helpers'
 import { mkdir, writeFile } from 'node:fs/promises'
 import type { Locator } from '@playwright/test'
 
-contract(['FLOW-004', 'FLOW-005', 'FLOW-014', 'RESP-003', 'DIST-001', 'HOME-001', 'WS-003', 'BASE-PUBLIC-003'], 'plain corrections, compact editing and publication remain visible and accessible', async ({ page }, info) => {
+contract(['FLOW-004', 'FLOW-005', 'FLOW-014', 'RESP-003', 'DIST-001', 'HOME-001', 'WS-003', 'BASE-PUBLIC-003', 'ROLE-004'], 'plain corrections, compact editing and publication remain visible and accessible', async ({ page, browser }, info) => {
   test.setTimeout(120_000)
   const output = process.env.PENCIL_CAPTURE_DIR ?? 'test-results/review-captures'
   await mkdir(output, { recursive: true })
@@ -225,4 +226,5 @@ contract(['FLOW-004', 'FLOW-005', 'FLOW-014', 'RESP-003', 'DIST-001', 'HOME-001'
     await expect(stepButtons.nth(index)).toBeFocused()
     await expect(stepButtons.nth(index)).toBeInViewport({ ratio: 1 })
   }
+  await proveBuilderConcurrency(browser, page, info, output)
 })
