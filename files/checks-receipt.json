@@ -132,5 +132,12 @@
         "status": "completed"
       }
     ]
-  }
+  },
+  "last_candidate_observation": {
+    "conclusion": null,
+    "head_sha": "d5c81d3c666e4036f92bc4f4bc43ac12344db75d",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42492708029",
+    "status": "in_progress"
+  },
+  "terminal_product_custody": "PUSHED; exact-SHA Verify remains in progress"
 }
