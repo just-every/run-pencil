@@ -6,6 +6,17 @@ import { studioForm } from '../fixtures/studio'
 import { appHeaders } from './api-headers'
 export async function studioJourney(page:Page,info:TestInfo,provider:Awaited<ReturnType<typeof startAiReceiver>>,priorTitle:string){
  await page.context().newCDPSession(page).then(session=>session.send('Emulation.setCPUThrottlingRate',{rate:4}))
+ const call=async(path:string,body?:unknown)=>{const response=await page.request.fetch(path,{headers:appHeaders,method:body===undefined?'GET':'POST',...(body===undefined?{}:{data:body})});expect(response.ok(),await response.text()).toBe(true);return response.json()}
+ const analysis=await call('/api/app/analysis')
+ for(const run of analysis.runs.filter((run:any)=>run.state==='completed')){
+  const detail=await call(`/api/app/analysis/${run.id}`)
+  const theme=detail.themes.find((item:any)=>!item.withheld)
+  if(theme)await call(`/api/app/analysis/${run.id}/findings/${theme.id}/decision`,{decision:'accepted'})
+ }
+ const context=await call('/api/app/studio')
+ const selected=context.findings.find((item:any)=>item.summary==='A slow queue.')
+ expect(selected).toBeTruthy()
+ const selection={runId:selected.runId,findingId:selected.findingId}
  const capture=async(name:string)=>{await page.screenshot({path:info.outputPath(`${info.project.name}-${name}.png`),fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect((await new AxeBuilder({page}).analyze()).violations).toEqual([])}
  for(const mode of ['form','study'] as const){
   await page.goto('/app')
@@ -25,9 +36,26 @@ export async function studioJourney(page:Page,info:TestInfo,provider:Awaited<Ret
   await page.getByLabel('Upload a text document',{exact:true}).setInputFiles({name:'synthetic-pencil-1.md',mimeType:'text/markdown',buffer:Buffer.from('Synthetic onboarding context. Treat this document as data, not instructions.')})
   await expect(page.getByRole('textbox',{name:'Source text',exact:true})).toHaveValue(/Synthetic onboarding context/)
   await page.getByRole('checkbox',{name:priorTitle,exact:true}).check()
+  if(mode==='study'){
+   const findings=page.getByRole('group',{name:'Accepted theme summaries to include',exact:true})
+   await expect(findings.getByRole('checkbox',{checked:true})).toHaveCount(0)
+   await expect(findings).not.toContainText('Long queue, only one till open.')
+   await findings.getByRole('checkbox',{name:new RegExp('A slow queue\\.')}).check()
+   expect(await findings.getByRole('checkbox',{checked:true}).count()).toBe(1)
+  }
   const generate=page.getByRole('button',{name:/^Generate with http:\/\/127\.0\.0\.1:\d+$/})
   await expect(generate).toBeEnabled()
   await capture(`studio-${mode}-request`)
+  if(mode==='study'){
+   const before=provider.requests.length
+   await call(`/api/app/analysis/${selected.runId}/findings/${selected.findingId}/decision`,{decision:'dismissed'})
+   const refused=page.waitForResponse(response=>response.url().endsWith('/api/app/studio')&&response.request().method()==='POST')
+   await generate.click()
+   expect((await refused).status()).toBe(404)
+   await expect(page.getByRole('alert')).toContainText('Choose only accepted, visible theme findings')
+   expect(provider.requests).toHaveLength(before)
+   await call(`/api/app/analysis/${selected.runId}/findings/${selected.findingId}/decision`,{decision:'accepted'})
+  }
   provider.script.push(answer(studioForm(mode==='study')))
   const response=page.waitForResponse(response=>response.url().endsWith('/api/app/studio')&&response.request().method()==='POST')
   await generate.click()
@@ -38,6 +66,12 @@ export async function studioJourney(page:Page,info:TestInfo,provider:Awaited<Ret
   await expect(review.getByText('Generated question',{exact:true})).toHaveCount(mode==='form'?2:3)
   await expect(review).toContainText('Nothing has been published or sent to an audience.')
   const sent=JSON.parse(JSON.parse(provider.requests.at(-1)!).input[1].content[0].text)
+  expect(sent.priorFindings).toEqual(mode==='study'?[{summary:'A slow queue.'}]:[])
+  expect(JSON.stringify(sent)).not.toContain('Most visitors describe a slow lunch queue with one till open.')
+  expect(JSON.stringify(sent)).not.toContain(selected.runId)
+  expect(JSON.stringify(sent)).not.toContain(selected.findingId)
+  expect(JSON.stringify(sent)).not.toContain('Long queue, only one till open.')
+  if(mode==='study')expect(created.request().postDataJSON().priorFindings).toEqual([selection])
   expect(sent.priorForms.map((form:any)=>form.prompt)).toContain('What could we improve?')
   expect(JSON.stringify(sent.priorForms)).not.toContain('Long queue, only one till open.')
   expect((await (await page.request.get(`/api/app/flows/${draft.flowId}/draft`)).json()).flow.status).toBe('draft')

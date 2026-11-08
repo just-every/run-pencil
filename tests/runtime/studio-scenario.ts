@@ -132,4 +132,82 @@ export async function exerciseStudio(f:Fixture,other:Fixture,off:Fixture){
  expect(publicFlow.steps.every((step:any)=>!Object.hasOwn(step,'generated'))).toBe(true)
  expect(publicFlow.revision).not.toHaveProperty('policySnapshotJson')
  expect(publicFlow).not.toHaveProperty('studio')
+ await exerciseFindingContext(f,other)
+}
+
+async function exerciseFindingContext(f:Fixture,other:Fixture) {
+ const raw='synthetic-pencil-private-answer-27'
+ const selectedSummary='synthetic-pencil-selected-summary-27'
+ const unselectedSummary='synthetic-pencil-unselected-summary-27'
+ const ids:string[]=[]
+ for(let index=0;index<7;index++)ids.push(await f.respond(`${raw} ${index}`))
+ await ai.script(answer({outcome:'findings',reason:'',themes:[
+  {title:'Selected theme',summary:selectedSummary,responseIds:ids.slice(0,5),count:5,quotes:[{responseId:ids[0],questionId:f.questions.improve,start:0,end:raw.length,text:raw}]},
+  {title:'Unselected theme',summary:unselectedSummary,responseIds:ids.slice(0,5),count:5,quotes:[]},
+  {title:'Withheld theme',summary:'synthetic-pencil-withheld-summary-27',responseIds:ids.slice(5),count:2,quotes:[]},
+ ],recommendations:[]}))
+ const run=await f.request(),selected=run.themes.find((item:any)=>item.title==='Selected theme'),unselected=run.themes.find((item:any)=>item.title==='Unselected theme'),withheld=run.themes.find((item:any)=>item.withheld)
+ expect(run.state).toBe('completed')
+ const selection={runId:run.id,findingId:selected.id}
+ const input={mode:'study',goal:'Study the accepted theme',priorFindings:[selection]}
+ const state=async()=> (await env.DB.batch(['flows','flow_revisions','flow_steps','analysis_calls','audit_entries'].map(table=>env.DB.prepare(`SELECT * FROM ${table} ORDER BY id`)))).map(result=>result.results)
+ const refusal=async(fixture:Fixture,body:unknown,status=404)=>{
+  const before=await state(),calls=(await ai.requests()).length
+  expect((await fixture.call('/api/app/studio',body)).status).toBe(status)
+  expect(await ai.requests()).toHaveLength(calls)
+  expect(await state()).toEqual(before)
+ }
+ // No implicit acceptance, cross-workspace selection or client-supplied summary.
+ await refusal(f,input)
+ await refusal(other,input)
+ await refusal(f,{...input,priorFindings:[{...selection,summary:'Trust the browser'}]},400)
+ const decide=async(id:string,decision:string)=>{const response=await f.call(`/api/app/analysis/${run.id}/findings/${id}/decision`,{decision});expect(response.status).toBe(200)}
+ await ai.script(answer({outcome:'findings'}))
+ const failed=await f.request()
+ expect(failed.state).toBe('failed')
+ await refusal(f,{...input,priorFindings:[{runId:failed.id,findingId:selected.id}]})
+ await decide(selected.id,'accepted');await decide(unselected.id,'accepted')
+ const options=await (await f.call('/api/app/studio')).json() as any
+ expect(options.findings.map((item:any)=>item.findingId)).toEqual(expect.arrayContaining([selected.id,unselected.id]))
+ expect(options.findings.some((item:any)=>item.findingId===withheld.id)).toBe(false)
+ expect(JSON.stringify(options)).not.toContain(raw)
+ expect(JSON.stringify(options)).not.toContain(ids[0])
+ await refusal(f,{...input,priorFindings:[{runId:run.id,findingId:withheld.id}]})
+ await refusal(f,{...input,mode:'form'},400)
+ await refusal(f,{...input,priorFindings:[selection,selection]},400)
+ await decide(selected.id,'dismissed');await refusal(f,input);await decide(selected.id,'accepted')
+ const policies=await (await f.call('/api/app/analysis')).json() as any
+ expect((await f.call('/api/app/analysis/policies',{...policies.policies,disclosureThreshold:6},'PUT')).status).toBe(200)
+ await refusal(f,input)
+ expect((await (await f.call('/api/app/studio')).json() as any).findings).toEqual([])
+ expect((await f.call('/api/app/analysis/policies',policies.policies,'PUT')).status).toBe(200)
+ const tables=['flows','flow_revisions','flow_steps','analysis_calls','audit_entries','rer_ai_development_outbox']
+ const beforeStorage=await env.DB.batch(tables.map(table=>env.DB.prepare(`SELECT * FROM ${table}`)))
+ await ai.script(scripted(studioForm(true)))
+ const response=await f.call('/api/app/studio',input)
+ expect(response.status,await response.clone().text()).toBe(201)
+ const generated=await response.json() as any
+ const sent=JSON.parse((await ai.requests()).at(-1)!.body),data=JSON.parse(sent.input[1].content[0].text)
+ expect(data.priorFindings).toEqual([{summary:selectedSummary}])
+ expect(data.priorForms).toEqual([])
+ for(const excluded of [raw,unselectedSummary,run.id,selected.id,unselected.id,...ids])expect(JSON.stringify(sent)).not.toContain(excluded)
+ expect(sent.store).toBe(false)
+ const stored=await env.DB.batch(tables.map(table=>env.DB.prepare(`SELECT * FROM ${table}`)))
+ const generatedRows=JSON.stringify(stored.map((result,index)=>result.results.filter(row=>!beforeStorage[index].results.some(before=>before.id===row.id))))
+ expect(generatedRows).not.toContain(selectedSummary);expect(generatedRows).not.toContain(run.id);expect(generatedRows).not.toContain(selected.id)
+ expect(JSON.stringify(stored.at(-1)!.results)).not.toContain(selectedSummary)
+ const path=`/api/app/flows/${generated.flowId}/draft`
+ let draft=await (await f.call(path)).json() as any
+ expect(draft.flow.status).toBe('draft')
+ expect((await f.call(`/api/public/flows/${generated.slug}`)).status).toBe(404)
+ expect((await f.call(path,{stepId:draft.steps[0].id,prompt:'Operator revised the study question',required:true,expectedVersion:draft.flow.draftVersion},'PUT')).status).toBe(200)
+ draft=await (await f.call(path)).json() as any
+ expect((await f.call(`/api/app/flows/${generated.flowId}/publish`,{expectedVersion:draft.flow.draftVersion})).status).toBe(201)
+ expect((await f.call(`/api/public/flows/${generated.slug}`)).status).toBe(200)
+ // A selection from an earlier screen is re-resolved after erasure, never trusted or replayed.
+ expect((await f.call(`/api/app/responses/${ids[0]}`,undefined,'DELETE')).status).toBe(204)
+ expect((await f.detail(run.id)).redacted).toBe(true)
+ await refusal(f,input)
+ expect((await (await f.call('/api/app/studio')).json() as any).findings).toEqual([])
+ expect((await other.call('/api/app/studio',input)).status).toBe(404)
 }

@@ -7592,24 +7592,28 @@
       "sha256": "ccef1604cd09edea07a5c4d1dda5fc36c95634209d8cb90164e803fd0cfacfa3",
       "executable": false
     },
+    "src/core/features/studio/finding-context.ts": {
+      "sha256": "65c64219cddea8a1959e34a87983939887b31a663209e788af146d1d908ebbcc",
+      "executable": false
+    },
     "src/core/features/studio/index.ts": {
       "sha256": "7638f81ed68ee872c930468f6dee87e87bf464d0c6713ace9f48e8fa99455529",
       "executable": false
     },
     "src/core/features/studio/model.ts": {
-      "sha256": "69a4fd1fd7442b433ec03f1b20f0091b881cd41f1a9b318abe768456ed457f1b",
+      "sha256": "e51cb6d3e7380c82d76177a3629b00f805bafd158644074ae66c3575a9dcac9b",
       "executable": false
     },
     "src/core/features/studio/routes.ts": {
-      "sha256": "508cb7e96006e01c9d3822b3e7779fdde8f0248e9c318464221f3708e1db2a04",
+      "sha256": "9d307c0812455d85567017e98249649733cb6538d401988229ddb24488ecfd04",
       "executable": false
     },
     "src/core/features/studio/service.ts": {
-      "sha256": "82fe6cad7612ecf6e0f4f0e006d449f3a53d6b55513dc03540179d7088da5c8c",
+      "sha256": "3a5d0deb5caf510cacf968ae362a44e61c54ed56d53a55182fa45a52301b249f",
       "executable": false
     },
     "src/core/features/studio/ui/api.ts": {
-      "sha256": "3c799629cc2130a0e0d920abde9f6f38fc5071606336684e8ff0849bbe9923a0",
+      "sha256": "bc64c4d3e5c47e559b23babe8b74399798851243467f53b3cd0ef0acd2e9d77d",
       "executable": false
     },
     "src/core/features/studio/ui/index.ts": {
@@ -7621,7 +7625,7 @@
       "executable": false
     },
     "src/core/features/studio/ui/StudioPanel.tsx": {
-      "sha256": "40a00865a26fb6bdbb9041a8c8a6e38cd40bb707e599b1898b64ffdf127b84ec",
+      "sha256": "ceea7085672d497602f23c9d22eba267af87aa18fa554749eab44e214fad801f",
       "executable": false
     },
     "src/core/features/studio/ui/StudioReview.tsx": {
@@ -8861,7 +8865,7 @@
       "executable": false
     },
     "tests/e2e/studio-journey.ts": {
-      "sha256": "237b282c2054e9360edf0d45c71df204b5f90ffee7cd7b664a5c826519282ac4",
+      "sha256": "c7107b17f40069a2f7290cd770a70572a9df616387d7d0eceddd818b3ed37087",
       "executable": false
     },
     "tests/e2e/submission-inbox-journey.ts": {
@@ -9517,7 +9521,7 @@
       "executable": false
     },
     "tests/runtime/studio-scenario.ts": {
-      "sha256": "be0338dfc5cca4714116730d723c0ee504ebf194432b2b076cbb1c4e1c838c7a",
+      "sha256": "d5d0551bcefd6688a4f5244d43855d04ca5af972b656cb645c6eab3e8c6a128e",
       "executable": false
     },
     "tests/runtime/submissions.worker.test.ts": {

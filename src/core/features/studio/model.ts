@@ -4,6 +4,7 @@ export const biasKinds = ['leading','double_barreled','loaded','unbalanced'] as 
 export const studioInput = z.object({
   mode:z.enum(['form','study']),goal:z.string().trim().min(1).max(2000),source:z.string().max(50000).default(''),sourceType:z.enum(['text','markdown','csv','html']).default('text'),
   priorForms:z.array(z.string().trim().min(1).max(200)).max(10).default([]).refine(ids=>new Set(ids).size===ids.length),population:z.number().int().min(1).max(1_000_000_000).default(1000),margin:z.number().min(.01).max(.2).default(.05),
+  priorFindings:z.array(z.object({runId:z.string().trim().min(1).max(200),findingId:z.string().trim().min(1).max(200)}).strict()).max(10).default([]).refine(items=>new Set(items.map(item=>JSON.stringify(item))).size===items.length),
 }).strict()
 export type StudioInput = z.infer<typeof studioInput>
 export const studySchema=z.object({decision:z.string().trim().min(1).max(1000),hypotheses:z.array(z.string().trim().min(1).max(1000)).min(1).max(10),audience:z.string().trim().min(1).max(1000),channel:z.string().trim().min(1).max(1000),analysisPlan:z.string().trim().min(1).max(2000)}).strict()
