@@ -1,0 +1,54 @@
+{
+  "head": "feebe981e55bb369397c6b6d57b7f0fa5e20bb3b",
+  "main_at_integration": "18ef418c11ba90618205512f485918fe5aae68bb",
+  "changed_files": [
+    "sources.lock.json",
+    "tests/e2e/audit-export-proof.ts",
+    "tests/e2e/ledger-filters.spec.ts"
+  ],
+  "contract_status_diff": "none",
+  "generated_view_diff": "none",
+  "production_diff": "none",
+  "original_ledger_workload_bytes_retained": true,
+  "test_registrations_added": 0,
+  "test_registrations_removed": 0,
+  "changed_test_email_literals": 0,
+  "counts_before": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "counts_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "views": {
+    "write_command": "node scripts/contract-docs.mjs write GOV-005",
+    "write_exit": 0,
+    "check_command": "node scripts/contract-docs.mjs check GOV-005",
+    "check_exit": 0,
+    "restored_from": "origin/main",
+    "output": "generated-views.txt"
+  },
+  "lock": {
+    "regenerate_command": "node scripts/edition-authoring/cli.mjs lock",
+    "regenerate_exit": 0,
+    "check_command": "pnpm source:check",
+    "check_exit": 0
+  },
+  "migration_ledger": {
+    "command": null,
+    "reason": "No migration change",
+    "exit": 0
+  },
+  "publication_scan": {
+    "head": "feebe981e55bb369397c6b6d57b7f0fa5e20bb3b",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "status": "NOT RUN in cloud; required from maintained Mac lander"
+  },
+  "main_equality": false,
+  "landing": "pending maintained lander"
+}

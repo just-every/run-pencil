@@ -1,0 +1,13 @@
+{
+  "head": "feebe981e55bb369397c6b6d57b7f0fa5e20bb3b",
+  "started": "2026-11-08T14:30:41.161370+00:00",
+  "command": "cloud_run perl -e 'alarm 1200; exec @ARGV' -- pnpm exec playwright test tests/e2e/ledger-filters.spec.ts --config playwright.cloud.config.ts --workers=1 --reporter=json",
+  "logical_widths": [
+    1440,
+    390
+  ],
+  "browser_executable": "/usr/bin/chromium",
+  "sandbox_argument": "--no-sandbox",
+  "exit": 0,
+  "completed": "2026-11-08T14:34:25.449891+00:00"
+}

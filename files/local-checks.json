@@ -1,0 +1,39 @@
+[
+  {
+    "head": "feebe981e55bb369397c6b6d57b7f0fa5e20bb3b",
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "started": "2026-11-08T14:30:39.455475+00:00",
+    "elapsed_seconds": 26.299,
+    "exit": 0,
+    "output": "typecheck.txt"
+  },
+  {
+    "head": "feebe981e55bb369397c6b6d57b7f0fa5e20bb3b",
+    "command": [
+      "pnpm",
+      "exec",
+      "rer",
+      "check",
+      "--profile",
+      "first-party"
+    ],
+    "started": "2026-11-08T14:31:05.755415+00:00",
+    "elapsed_seconds": 1.447,
+    "exit": 0,
+    "output": "first-party.txt"
+  },
+  {
+    "head": "feebe981e55bb369397c6b6d57b7f0fa5e20bb3b",
+    "command": [
+      "pnpm",
+      "source:check"
+    ],
+    "started": "2026-11-08T14:31:07.203093+00:00",
+    "elapsed_seconds": 1.158,
+    "exit": 0,
+    "output": "source-lock.txt"
+  }
+]

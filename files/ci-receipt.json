@@ -1,0 +1,13 @@
+{
+  "head": "feebe981e55bb369397c6b6d57b7f0fa5e20bb3b",
+  "observed": "2026-11-08T14:35:07.770272+00:00",
+  "command": [
+    "gh",
+    "api",
+    "repos/just-every/run-pencil/actions/runs?head_sha=feebe981e55bb369397c6b6d57b7f0fa5e20bb3b&per_page=100"
+  ],
+  "exit": 0,
+  "github_calls_used": 2,
+  "watchers": 1,
+  "minimum_poll_interval_seconds": 300
+}
