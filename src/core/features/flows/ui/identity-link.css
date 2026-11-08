@@ -1,0 +1,6 @@
+.flow-identity-link { display: grid; gap: 12px; min-width: 0; margin-top: 16px; }
+.flow-identity-link fieldset { display: grid; gap: 12px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.flow-identity-link legend { padding: 0; font-size: 14px; font-weight: 500; }
+.flow-identity-link label { display: grid; gap: 6px; font-size: 14px; }
+.flow-identity-link :is(.quiet-button, .secondary-button) { justify-self: start; max-width: 100%; }
+.flow-identity-link .text-input { min-width: 0; width: 100%; }

@@ -6068,8 +6068,12 @@
       "sha256": "e47676da05fe4d069e16bdeb5049df4786388b9f523a12ca3edee26841f57493",
       "executable": false
     },
+    "src/core/features/flows/ui/identity-link.css": {
+      "sha256": "a5041afda9d6a0dc1744e8b70242ee3b391a6a1eeca00c1275f34ae1eb0dc314",
+      "executable": false
+    },
     "src/core/features/flows/ui/IdentityLinkFields.tsx": {
-      "sha256": "98382941ee280b95384bf5fe495fb3c41a97aeb50d15311ef96c37a67c21b845",
+      "sha256": "6a31b54791fe9e49ab064143b1a987098c0c6da36ecbe9c99d9f19509d35d4a7",
       "executable": false
     },
     "src/core/features/flows/ui/index.ts": {
@@ -8661,7 +8665,7 @@
       "executable": false
     },
     "tests/e2e/identity-link-journey.ts": {
-      "sha256": "50ae49ff749766b5c6aab68fe89157db9bf4bbee258f5d8be5039dadcf1a976e",
+      "sha256": "8c06514b74d6341974dbf98955d82f5dba779ac6274c823fd6abaa067e9bb805",
       "executable": false
     },
     "tests/e2e/import-acknowledgement.spec.ts": {

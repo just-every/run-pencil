@@ -1,6 +1,7 @@
 import type { Page, TestInfo } from '@playwright/test'
 import { expect } from './fixtures'
-import type { BuilderDraft, Ledger } from '../../src/core/app/api'
+import { signInEmptyWorkspace } from './authoring-helpers'
+import type { BuilderDraft, Ledger, PublicFlow } from '../../src/core/app/api'
 
 export async function proveRevisionIdentityLink(page:Page,info:TestInfo,flowId:string,slug:string) {
   const base=`/api/app/flows/${flowId}`
@@ -93,4 +94,34 @@ export async function proveRevisionIdentityLink(page:Page,info:TestInfo,flowId:s
   await expect(page.getByRole('spinbutton')).toHaveCount(0)
   expect((await ledger()).total).toBe(before+2)
   await page.screenshot({path:`test-results/${info.project.name}-revision-identity-refused.png`,fullPage:true})
+  await proveIdentityWorkspaceIsolation(page,link,flowId,slug)
+}
+
+async function proveIdentityWorkspaceIsolation(page:Page,link:string,flowId:string,slug:string) {
+  const origin=new URL(link).origin
+  const foreign=await page.context().browser()!.newContext({baseURL:origin,viewport:page.viewportSize()!})
+  try {
+    const other=await foreign.newPage()
+    await signInEmptyWorkspace(other)
+    const original=await (await page.request.get(`/api/public/flows/${slug}`)).json() as PublicFlow
+    const token=new URL(link).searchParams.get('identity')!
+    const refusedIssue=await other.request.post(`/api/app/flows/${flowId}/identity-links`,{data:{revisionId:original.revision.id,values:{email:['synthetic-pencil-3','example.test'].join(String.fromCharCode(64))}}})
+    expect(refusedIssue.status()).toBe(404)
+    const alienSlug=`isolated-${crypto.randomUUID()}`
+    const created=await other.request.post('/api/app/flows',{data:{title:'Isolated link form',slug:alienSlug}})
+    expect(created.status()).toBe(201)
+    const alien=await created.json() as {id:string},base=`/api/app/flows/${alien.id}`
+    const read=async()=>await (await other.request.get(`${base}/draft`)).json() as BuilderDraft
+    for(const step of [{kind:'question',questionType:'number',prompt:'Isolated number',required:true},{kind:'completion',questionType:null,prompt:'Isolated completion'}]) {
+      expect((await other.request.post(`${base}/draft/steps`,{data:{expectedVersion:(await read()).flow.draftVersion,step}})).status()).toBe(201)
+    }
+    expect((await other.request.put(`${base}/draft/settings`,{data:{expectedVersion:(await read()).flow.draftVersion,settings:original.formSettings}})).status()).toBe(200)
+    expect((await other.request.post(`${base}/publish`,{data:{expectedVersion:(await read()).flow.draftVersion}})).status()).toBe(201)
+    const denied=await other.request.post(`/api/public/flows/${alienSlug}/sessions`,{data:{deviceClass:'desktop',source:'direct',identityLink:token}})
+    expect(denied.status()).toBe(400)
+    await other.goto(`/f/${alienSlug}?identity=${encodeURIComponent(token)}`)
+    await expect(other.getByText('This identifying link could not be verified.',{exact:false})).toBeVisible()
+    await expect(other.getByRole('spinbutton')).toHaveCount(0)
+    expect((await (await other.request.get(`${base}/ledger`)).json() as Ledger).total).toBe(0)
+  } finally {await foreign.close()}
 }
