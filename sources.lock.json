@@ -8625,7 +8625,7 @@
       "executable": false
     },
     "tests/e2e/distribution-foundation.spec.ts": {
-      "sha256": "c46fe9532ebd6de39912920fda6400e7dcdf58fbe1fa69d2e3a3fc712b480c0d",
+      "sha256": "202ab16a0492a97aca28bbc2a1e00f968bcd8f5454a0e294360f6cf94d842ecc",
       "executable": false
     },
     "tests/e2e/distribution-helpers.ts": {
@@ -8722,6 +8722,10 @@
     },
     "tests/e2e/installed-home.spec.ts": {
       "sha256": "823cacc2ab1342374ca4aadc3b2e15c9cede4c37a0546975adf41d7616f1fe49",
+      "executable": false
+    },
+    "tests/e2e/invitation-choice-proof.ts": {
+      "sha256": "02d04fb05cba862309a342d72e835b0f004a47f118e152bcba2378469df9ffa3",
       "executable": false
     },
     "tests/e2e/journey-http.spec.ts": {
@@ -9088,6 +9092,10 @@
       "sha256": "56023867596174462d42c44a5965e8204e318d0771b8889c2c051870b667c145",
       "executable": false
     },
+    "tests/helpers/invitation-scanner-proof.ts": {
+      "sha256": "e9aaeb0f274df0b40443ad803b2e6b3e8cccf9f6c1fe37180aef23d849b8d7ac",
+      "executable": false
+    },
     "tests/helpers/legacy-auth-repository.ts": {
       "sha256": "0eec1ceb338aa344c01294ec0bc160d44da6c42e2c4474118780e94b257d77ab",
       "executable": false
@@ -9153,7 +9161,7 @@
       "executable": false
     },
     "tests/invitation-links.test.ts": {
-      "sha256": "88746fbf8e18601ce5100addf35e4447d1ee9c3dbae1132169131d5c13c68b12",
+      "sha256": "93edbc8276763aa6c6dd3c1a99b52a8dc7eef77bb4b0aab646452a9d56b9aa64",
       "executable": false
     },
     "tests/ledger-filter-scenario.ts": {

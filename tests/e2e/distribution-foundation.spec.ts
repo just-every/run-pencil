@@ -4,6 +4,7 @@ import { httpExport } from '../helpers/report-download'
 import { developmentInbox } from '../helpers/development-outbox'
 import { audienceOutboxHeaders, audienceScreen, invitationMail, inviteAudienceOperator } from './distribution-helpers'
 import { operatorEmail } from './auth-identity'
+import { proveInvitationChoice } from './invitation-choice-proof'
 import { expect, test } from './fixtures'
 import { contract } from './contract'
 import { openFilters, clearResponseFilters } from './filter-helpers'
@@ -269,6 +270,7 @@ contract(["DIST-011","BASE-PUBLIC-003","RESP-020","DIST-014","LOGIC-002","AUD-00
     expect((await request.get(new URL(mail.invitation).pathname)).status()).toBe(404)
     const remaining = await call(`${path}/ledger`)
     expect(remaining.total).toBe(0)
+    await test.step('short-choice invitation hints remain uncommitted until explicit completion', () => proveInvitationChoice(page, info))
     // The saved SMS Settings, recorded consent and invitation channel use the existing loopback Twilio receiver.
     await page.getByRole('button',{name:'Sign out',exact:true}).click()
     await expect(page.locator('.operator-shell')).toHaveCount(0)
