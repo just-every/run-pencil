@@ -1,0 +1,87 @@
+[WebServer] (node:2427) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:2439) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:2462) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[WebServer] (node:2462) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/src/core/app/loaders.ts:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/src/core/app/loaders.ts:103:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/src/core/app/loaders.ts:124:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/src/core/features/results/ui/sharedReportLoader.ts:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin builtin:vite-reporter] 
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/src/core/features/results/ui/sharedReportLoader.ts?tss-serverfn-split:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:103:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:124:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/src/core/app/loaders.ts:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/src/core/app/loaders.ts:103:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/src/core/app/loaders.ts:124:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/src/core/features/results/ui/sharedReportLoader.ts:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] (node:2525) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:2537) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+[WebServer] (node:2550) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:3175) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+[WebServer] (node:3183) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Scheduled Workers are not automatically triggered during local development.
+[WebServer] 
+[WebServer]   To manually trigger a scheduled event, run:
+[WebServer]     curl "http://127.0.0.1:4173/cdn-cgi/local/scheduled"
+[WebServer]   For more details, see https://developers.cloudflare.com/workers/configuration/cron-triggers/#test-cron-triggers-locally
+[WebServer] 
+[WebServer] 
+
+Running 2 tests using 1 worker
+
+(node:3242) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › tests/e2e/contract.ts:4:3 › [LOGIC-006] builds nested lead conditions, inspects their values and collects both published paths (39.9s)
+(node:3486) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ✘ [ERROR] kj::getCaughtExceptionAsKj() = kj/async-io-unix.c++:186: disconnected: ::write(fd, buffer.begin(), buffer.size()): Broken pipe
+[WebServer] 
+[WebServer]   stack: /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2038 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2ef1 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583f90f /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583fb55 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589bd33 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fad7 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fe48 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3343740 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247f477
+[WebServer] 
+[WebServer] 
+[WebServer] ✘ [ERROR] kj::getCaughtExceptionAsKj() = kj/async-io-unix.c++:186: disconnected: ::write(fd, buffer.begin(), buffer.size()): Broken pipe
+[WebServer] 
+[WebServer]   stack: /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2038 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2ef1 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583f90f /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583fb55 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589bd33 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fad7 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fe48 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3343740 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247f477
+[WebServer] 
+[WebServer] 
+[WebServer] ✘ [ERROR] kj::getCaughtExceptionAsKj() = kj/async-io-unix.c++:186: disconnected: ::write(fd, buffer.begin(), buffer.size()): Broken pipe
+[WebServer] 
+[WebServer]   stack: /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2038 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2ef1 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583f90f /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583fb55 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589bd33 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fad7 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fe48 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3343740 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247f477
+[WebServer] 
+[WebServer] 
+  ✓  2 [mobile] › tests/e2e/contract.ts:4:3 › [LOGIC-006] builds nested lead conditions, inspects their values and collects both published paths (40.6s)
+[WebServer] 🪵  Logs were written to "/home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil/.isolated-config/.wrangler/logs/wrangler-2026-11-08_00-07-11_432.log"
+
+  2 passed (2.2m)

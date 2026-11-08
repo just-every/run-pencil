@@ -1,0 +1,15 @@
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+
+
+
+ RUN  v4.1.11 /home/agent/rer-consolidation/work/sd-pencil-c-f26/run-pencil
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  00:09:15
+   Duration  22.33s (transform 10.67s, setup 0ms, import 19.78s, tests 1.20s, environment 0ms)
+

@@ -1,0 +1,7 @@
+Exact candidate discovery:
+{"conclusion":null,"event":"push","head_sha":"9877fe36b4c31f61cc6a4a13b1096634c822198f","html_url":"https://github.com/just-every/run-pencil/actions/runs/42428434428","id":42428434428,"name":"Verify candidate","status":"queued"}
+
+Exact candidate status after at least 300 seconds:
+{"conclusion":null,"head_sha":"9877fe36b4c31f61cc6a4a13b1096634c822198f","html_url":"https://github.com/just-every/run-pencil/actions/runs/42428434428","status":"in_progress"}
+
+No rerun, dispatch or PR was needed. Four API calls total, including an initial shortened-main-SHA query that established no status. Main Verify 42425806037 and Run site 42425806066 were completed success on 49b3a00c8c789258ac93cbcde23c0103ae829b2d.

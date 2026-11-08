@@ -1,0 +1,156 @@
+{
+  "tag": "sd-pencil-c-f26",
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f26",
+  "head": "9877fe36b4c31f61cc6a4a13b1096634c822198f",
+  "origin_main": "49b3a00c8c789258ac93cbcde23c0103ae829b2d",
+  "recorded_at": "2026-11-08T00:11:30.563800+00:00",
+  "checks": [
+    {
+      "command": "pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/conditions.worker.test.ts",
+      "exit": 0,
+      "passed": 2,
+      "log": "native-conditions.txt",
+      "binding": "Executed with the final native test bytes before commit; no relevant source or test byte changed afterward."
+    },
+    {
+      "command": "cloud_run timeout 1200 pnpm exec playwright test --config /tmp/pencil-playwright.config.ts tests/e2e/conditions.spec.ts --workers=1",
+      "exit": 0,
+      "passed": 2,
+      "widths": [
+        1440,
+        390
+      ],
+      "browser": "/usr/bin/chromium --no-sandbox",
+      "log": "browser-conditions.txt",
+      "binding": "Executed against the same final production and browser test bytes; the last commit changes only the separate native helper and source lock."
+    },
+    {
+      "command": "pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/graph-reachability.worker.test.ts",
+      "exit": 0,
+      "passed": 1,
+      "log": "graph-reachability.txt",
+      "binding": "Executed at the final commit."
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "binding": "Rerun on the final candidate after the production build; both commands completed with exit 0."
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "binding": "Rerun on the final candidate after the production build; both commands completed with exit 0."
+    },
+    {
+      "command": "node scripts/contract-docs.mjs write LOGIC-006 && node scripts/contract-docs.mjs check LOGIC-006",
+      "exit": 0,
+      "log": "contract-views.txt",
+      "generated_views_restored": true
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock && node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "binding": "Run after the final source and test edit and main merge attempt; source lock included in final commit."
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build --non-interactive",
+      "exit": 0,
+      "binding": "Executed on final candidate; production source unchanged and checkout clean.",
+      "log": "production-build.txt"
+    },
+    {
+      "command": "git diff --cached -- CONTRACT.md; git diff origin/main...HEAD -- CONTRACT.md",
+      "exit": 0,
+      "result": "Both empty before both commits and candidate push"
+    },
+    {
+      "command": "pnpm source:check",
+      "exit": 0,
+      "binding": "Run on final candidate after production build; includes source lock and offline Base integrity checks."
+    },
+    {
+      "command": "git diff 6d43bc40f0ddc82a1f882fdeca22cd73bd518722..9877fe36b4c31f61cc6a4a13b1096634c822198f -- src tests/e2e",
+      "exit": 0,
+      "result": "Empty: all browser-tested production and browser test bytes are unchanged in final commit."
+    }
+  ],
+  "screens": [
+    "screens/desktop-email-suffix-builder.png",
+    "screens/desktop-email-suffix-preview-0.png",
+    "screens/desktop-email-suffix-preview-1.png",
+    "screens/desktop-email-suffix-completed-0.png",
+    "screens/desktop-email-suffix-completed-1.png",
+    "screens/mobile-email-suffix-builder.png",
+    "screens/mobile-email-suffix-preview-0.png",
+    "screens/mobile-email-suffix-preview-1.png",
+    "screens/mobile-email-suffix-completed-0.png",
+    "screens/mobile-email-suffix-completed-1.png"
+  ],
+  "ci": {
+    "id": 42428434428,
+    "event": "push",
+    "conclusion": null,
+    "head_sha": "9877fe36b4c31f61cc6a4a13b1096634c822198f",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42428434428",
+    "status": "in_progress",
+    "observed_at": "2026-11-08T00:14:58.648771+00:00"
+  },
+  "counts_before": {
+    "DONE": 142,
+    "PARTIAL": 61,
+    "MISSING": 49
+  },
+  "counts_after": {
+    "DONE": 142,
+    "PARTIAL": 61,
+    "MISSING": 49
+  },
+  "scan": {
+    "commit": "9877fe36b4c31f61cc6a4a13b1096634c822198f",
+    "complete": false,
+    "historyScanned": null,
+    "findings": null,
+    "status": "NOT RUN in cloud; maintained Mac lander owns full-history scan"
+  },
+  "migration_ledger": "not applicable; no migration change",
+  "product_pushes": [
+    {
+      "head": "6d43bc40f0ddc82a1f882fdeca22cd73bd518722",
+      "kind": "save",
+      "exit": 0
+    },
+    {
+      "head": "9877fe36b4c31f61cc6a4a13b1096634c822198f",
+      "kind": "candidate",
+      "exit": 0
+    }
+  ],
+  "artifact_hashes": {
+    "graph-reachability.txt": "961c54c6b1b9744353796f90bfa5b7e2e2f0dcb96c68e0b1e83ec9a16171e706",
+    "browser-conditions.txt": "942f228aa970427ace2741b761d4a4c6e142e0efdf6d75402e5d33ca316ea120",
+    "PLAN.md": "8f1ac6f4fd13bb119305503f7f90eed2280dbe4128cb83159082a41ab58f0941",
+    "production-build.txt": "2ed07b9e5d91c30ad3a5f5d9b4726ae6ac1d849293ae2614b52ffaac85203779",
+    "native-conditions.txt": "940c534046eef8e32e1056d6d5bb3a17e97a99160532ff462913f322f6487d96",
+    "contract-views.txt": "25b5e82a320960f86ef0c72e189062e7dba917c123b37443df6ff50ebc8dfc4b",
+    "screens/mobile-email-suffix-preview-1.png": "16f9bea9919ac26eaa660875b8c3b5a487b9a777a3de7937df413fc3ad61c345",
+    "screens/desktop-email-suffix-builder.png": "830131656d28b3822f17c5fcedc896088b4697ab09ee50fa346736172fa813ce",
+    "screens/desktop-email-suffix-preview-0.png": "c8f601e3c9fe38d93add0a1105b313d2930682bb4baa3b2e76fce0fb841fe20c",
+    "screens/desktop-email-suffix-preview-1.png": "f642a5f7933101d947aa26542e6cd4dc86f81e4c8336f1207612c3db99ea53d9",
+    "screens/mobile-email-suffix-completed-1.png": "b26c6f6d8ca74bfea87fee5c30dc8d3541aa0683e6c9cf2b4dd493cf9184044c",
+    "screens/mobile-email-suffix-builder.png": "a0c8114b154a69d5b18d0daace4a22bb9ed61631af55a36c83c93add06d23e8b",
+    "screens/mobile-email-suffix-completed-0.png": "b72fead442d77d11390766c4a63e6efbac7cf27ba7b64e9906a9675284d4f82f",
+    "screens/mobile-email-suffix-preview-0.png": "484c5f900a31f32f6e651a174d088fe2caf1f897d397541e5f6807c2a799c3f8",
+    "screens/desktop-email-suffix-completed-0.png": "1cb905b67292e10f62f350dfa5774eecd4a4fb698a1b2c41b28121a98d74dc6d",
+    "screens/desktop-email-suffix-completed-1.png": "4d4497bc0f5128ebf124ca1ade1dd20a47ccff5b1f8ffee7a9611c4a58e7168c"
+  },
+  "screens_inspected": [
+    "screens/mobile-email-suffix-builder.png",
+    "screens/desktop-email-suffix-builder.png",
+    "screens/mobile-email-suffix-preview-0.png",
+    "screens/desktop-email-suffix-completed-1.png"
+  ],
+  "github_api_calls": 4,
+  "github_api_note": "One initial main query used a shortened SHA and returned no result; it established no health result. The second used the full main SHA; the third discovered the exact candidate run; the fourth polled that run after at least 300 seconds.",
+  "terminal_custody": "Candidate pushed; local gates passed; Verify in progress. Cloud READY handoff follows the explicit no-wait cloud landing contract; this is not a CI-green or landing claim."
+}
