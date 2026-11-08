@@ -175,6 +175,59 @@ export async function proveChatIntegrations(){
   expect((await received()).at(-1)!.idempotencyKey).toBe(unknown.idempotencyKey)
   const storedAfter=(await (await fetch(receiver+'/__control/state')).json() as {chatPosts:Record<string,string>}).chatPosts
   expect(storedAfter).toEqual(storedBefore)
+  // Both real network requests stay unanswered until the production deadline aborts them.
+  await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({unanswered:true})})
+  const beforeTimeout=await accepted<Ledger>(await f.call(`/api/app/flows/${f.flowId}/ledger`))
+  await f.respond('Short','synthetic-pencil-deadline-private-answer')
+  const admitted=await accepted<Ledger>(await f.call(`/api/app/flows/${f.flowId}/ledger`))
+  expect(admitted.total).toBe(beforeTimeout.total+1)
+  const timedResponse=admitted.responses.find(row=>!beforeTimeout.responses.some(previous=>previous.id===row.id))!
+  expect(timedResponse).toMatchObject({state:'released',revisionId:f.revisionId,quarantineReason:null})
+  expect(timedResponse.answers).toEqual(expect.arrayContaining([
+    expect.objectContaining({stepId:f.choiceStepId,displayValue:'Short'}),
+    expect.objectContaining({stepId:privateField.id,value:'synthetic-pencil-deadline-private-answer'}),
+  ]))
+  const timeoutStart=(await received()).length
+  const actualFetch=globalThis.fetch.bind(globalThis),aborts:Array<{path:string;elapsed:number}>=[]
+  const transport=vi.spyOn(globalThis,'fetch').mockImplementation((input,init)=>{
+    const url=new URL(input instanceof Request?input.url:String(input))
+    if(url.origin===receiver&&['/chat.postMessage','/teams'].includes(url.pathname)){
+      const signal=init?.signal,started=performance.now()
+      expect(signal).toBeTruthy();expect(signal!.aborted).toBe(false)
+      signal!.addEventListener('abort',()=>{aborts.push({path:url.pathname,elapsed:performance.now()-started})},{once:true})
+    }
+    return actualFetch(input,init)
+  })
+  try {expect(await f.services.chat.run()).toEqual({attempted:2})} finally {transport.mockRestore()}
+  expect(aborts.map(row=>row.path).sort()).toEqual(['/chat.postMessage','/teams'])
+  for(const abort of aborts){expect(abort.elapsed).toBeGreaterThanOrEqual(9500);expect(abort.elapsed).toBeLessThan(12000)}
+  const timeoutPosts=(await received()).slice(timeoutStart)
+  expect(timeoutPosts.map(post=>post.path).sort()).toEqual(['/chat.postMessage','/teams'])
+  const deadlineState=await (await fetch(receiver+'/__control/state')).json() as {chatDeadlines:Array<{path:string;idempotencyKey:string;closedAfterMilliseconds:number|null;headersSent:boolean}>}
+  expect(deadlineState.chatDeadlines).toHaveLength(2)
+  for(const deadline of deadlineState.chatDeadlines){
+    expect(deadline.headersSent).toBe(false)
+    expect(deadline.closedAfterMilliseconds).not.toBeNull()
+    expect(deadline.closedAfterMilliseconds!).toBeGreaterThanOrEqual(9500)
+    expect(deadline.closedAfterMilliseconds!).toBeLessThan(12000)
+    expect(timeoutPosts).toContainEqual(expect.objectContaining({path:deadline.path,idempotencyKey:deadline.idempotencyKey}))
+  }
+  const timeoutLedger=async()=>accepted<{deliveries:Array<{id:string;kind:string;responseId:string|null;state:string;idempotencyKey:string;attempts:Array<{outcome:string|null;httpStatus:number|null;reason:string|null}>}>}>(await f.call('/api/app/integration-deliveries'))
+  const timedDeliveries=(await timeoutLedger()).deliveries.filter(row=>row.responseId===timedResponse.id)
+  expect(timedDeliveries.map(row=>row.kind).sort()).toEqual(['slack','teams'])
+  for(const row of timedDeliveries){
+    const originalPost=timeoutPosts.find(post=>post.path===(row.kind==='slack'?'/chat.postMessage':'/teams'))!
+    expect(row).toMatchObject({state:'unknown',idempotencyKey:originalPost.idempotencyKey,attempts:[
+      expect.objectContaining({outcome:'unknown',httpStatus:null,reason:'The chat service may have accepted this post. Automatic resend is disabled.'}),
+    ]})
+    expect(originalPost.body).not.toContain('synthetic-pencil-deadline-private-answer')
+    for(const secret of [signingSecret,botToken,webhookUrl,'synthetic-pencil-deadline-private-answer'])expect(JSON.stringify(row)).not.toContain(secret)
+  }
+  expect((await accepted<Ledger>(await f.call(`/api/app/flows/${f.flowId}/ledger`))).responses).toEqual(admitted.responses)
+  await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({})})
+  for(const instant of ['2026-10-27T10:01:00.000Z','2026-10-27T10:05:00.000Z','2026-10-27T10:30:00.000Z'])await f.services.chat.run(instant)
+  expect(await received()).toHaveLength(timeoutStart+2)
+  expect((await timeoutLedger()).deliveries.filter(row=>row.responseId===timedResponse.id)).toEqual(timedDeliveries)
   // Each stale-door refusal is checked before any network post.
   await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({down:true})})
   await f.respond('Short','synthetic-pencil-stale-post');await f.services.chat.run()
@@ -227,5 +280,5 @@ export async function proveChatIntegrations(){
   await accepted(await f.call('/api/app/connections/slack',{}, {method:'DELETE'}));await accepted(await f.call('/api/app/connections/teams',{}, {method:'DELETE'}))
   const links=await accepted<{links:Array<{armed:boolean}>}>(await f.call(`/api/app/flows/${f.flowId}/chat`));expect(links.links.every(link=>!link.armed)).toBe(true)
   await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({down:false})})
-  } finally {vi.useRealTimers()}
+  } finally {try {await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({})})} finally {vi.useRealTimers()}}
 }
