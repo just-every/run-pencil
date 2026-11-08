@@ -1,0 +1,114 @@
+{
+  "destination": "/tmp/sd-pencil-c-f39-evidence-validation/work/sd-pencil-c-f39/reports/just-every/run-pencil",
+  "files": [
+    {
+      "blob": "3fc93bfc502d36f01e8c0d07593507db18afafa6",
+      "bytes": 221,
+      "path": "ASSERTION-PRESERVATION.json",
+      "sha256": "2088cac5047c402af5c447159dcfaca98e1650b79aa783569cac0eb6b1ac07d9"
+    },
+    {
+      "blob": "c07aafd5c0083181186424f6f12d06d06a8e1eff",
+      "bytes": 1290,
+      "path": "BROWSER-RECEIPT.json",
+      "sha256": "4976acf040fecdd0800a134f700ce8dee0f776f0dfc0cc9a0a1d9df1ac59920e"
+    },
+    {
+      "blob": "676f43c5beeeafdfec25548da7d7d5c19b945a04",
+      "bytes": 550,
+      "path": "CHECKS.json",
+      "sha256": "20bb7fe3ffd1483b8a58bc35d943607d9b90034f3d9f6f7c054893f7ef26c676"
+    },
+    {
+      "blob": "de964f95695c571712a5724839691755b744b98f",
+      "bytes": 176,
+      "path": "CI-STATUS.json",
+      "sha256": "bb43f3fd09c69b5a557a4cd9938a87970c64128dcbae37a7a1ac194710f1b644"
+    },
+    {
+      "blob": "5f6dc1e0e1d4f361d1391d8db5a8e2f0c3d6b903",
+      "bytes": 3604,
+      "path": "CUSTODY-RECEIPT.json",
+      "sha256": "3760f91695ed4e024a239d87fef41557da8bb1819be553ec6e6ffbfa6cda8340"
+    },
+    {
+      "blob": "8f3f6e9a1fc6e231736541a914a16b088d99096d",
+      "bytes": 2603,
+      "path": "PLAN.md",
+      "sha256": "788b1d25d16f3299ad8dce05ac3d5807e8e9202febef97a575a19e7b65cc9c66"
+    },
+    {
+      "blob": "e01974d5891b5a889062d0a6e0f44a1125f8f8b0",
+      "bytes": 14567,
+      "path": "REPORT.md",
+      "sha256": "d76b8377e83a9a5779f26faf49914d1e3dffbce6361cba93fe2fa6056388ddb8"
+    },
+    {
+      "blob": "7f25af5071621d3f7121c08f9fd7bee0ff1b3052",
+      "bytes": 234,
+      "path": "candidate-runs.jsonl",
+      "sha256": "796b478806bbc283bb4c57b712040a6a4be4123b96d99f7a96c13b334d5c6757"
+    },
+    {
+      "blob": "eb8600c942081e00a7761028ab652647eeb3c258",
+      "bytes": 969,
+      "path": "hit-areas-360.json",
+      "sha256": "37e6c7d3ea7fecc8d4451bad276519e2f0822fbdd7a14d2fbb5c2c9fa5cd7ea6"
+    },
+    {
+      "blob": "0440c3df3b20583eaffc429f091f83d643b3f1a1",
+      "bytes": 1168,
+      "path": "main-runs.jsonl",
+      "sha256": "95a5fa666abe9e827b9a6611a652589ab5d151db18ddab41eda4ddec45af95b3"
+    },
+    {
+      "blob": "db20138cc5c74af60e75561356e610fea5227368",
+      "bytes": 139182,
+      "path": "screens/inbox-1440.png",
+      "sha256": "2e153f7a4af88fc7c721acf7cce54e6ce35d71675fba6f841d214229a4822a82"
+    },
+    {
+      "blob": "975a8e02934e0173995b3d0a1891586362400e04",
+      "bytes": 72059,
+      "path": "screens/inbox-360-bulk.png",
+      "sha256": "53f2a4c9cc037cec66dbdcb09917ae4c297aff1866bef22a3e4ec9d3d7f32b4a"
+    },
+    {
+      "blob": "7e8ff9a5dad0210870446fbacd327b9df82bfc6c",
+      "bytes": 117634,
+      "path": "screens/inbox-360-filtered.png",
+      "sha256": "850e67dffcc8693f20e37f16ee986cda2957f1ec45c246d805f4e8169ba7046a"
+    },
+    {
+      "blob": "d5b550e208654fe9ec980f94e5008bb5c341795e",
+      "bytes": 53192,
+      "path": "screens/inbox-360-initial.png",
+      "sha256": "3103e97c2b1a8ca2478353cf3628b3b072a75b5741a15f6f1693c0fd22681b24"
+    },
+    {
+      "blob": "4b7ef2eebf5eeee2685a31772cc7208c468b9c30",
+      "bytes": 107222,
+      "path": "screens/inbox-360-note.png",
+      "sha256": "49df6460afac9ad1bb01673630f85bf7a646f467971fcdb2ec85acb70b7c7e60"
+    },
+    {
+      "blob": "c84791bbc19fa7fad6373c8a9f023b0299754786",
+      "bytes": 105819,
+      "path": "screens/inbox-360-reloaded.png",
+      "sha256": "60c34caf30b84492147e0dc8053aa60315ff2fdc3a766e978d0c9206c62966b3"
+    },
+    {
+      "blob": "2494f4361eeeb0cff232253011946f85a084896c",
+      "bytes": 124119,
+      "path": "screens/inbox-390.png",
+      "sha256": "5ea9b9ab15012c324552a9d727dbbbb6d4b31924086d6ba8752f42641bf9c523"
+    }
+  ],
+  "head": "ae2d4d2ed5fc4240bc0342d1cbaa703b14d57369",
+  "manifest_sha256": "17ebbd70309ecf8d11ca3162ee0fe32673652e1fe0acf2d7f509371dd6f2acf1",
+  "product_branch": "cloud/sd-pencil-c-f39",
+  "product_head": "955e9eae109eed2a4fdf2fdd49419f94dd181bd4",
+  "ref": "refs/heads/evidence/sd-pencil-c-f39",
+  "repository": "just-every/run-pencil",
+  "status": "restored"
+}
