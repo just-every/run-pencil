@@ -1,3 +1,4 @@
+import { emailConditionPossible } from './email-suffix-domain'
 import { proveCalculatedConditions } from './calculation-proof'
 import type { Calculation } from '../../shared/calculations'
 import { answerIssue } from '../../shared/answers'
@@ -22,7 +23,7 @@ export function spendConditionProof(budget: ConditionProofBudget) {
   if (--budget.remaining < 0) throw new ConditionProofError('The condition graph exceeds the exact reachability proof limit. Simplify its branching before publishing.')
 }
 
-function localAnswerExists(question: ConditionQuestion, requirements: LeafRequirement[]): boolean {
+function localAnswerExists(question: ConditionQuestion, requirements: LeafRequirement[], budget: ConditionProofBudget): boolean {
   const { step, choices, settings } = question
   if (step.questionType === 'matrix') {
     const rows = matrixRows(settings)
@@ -35,7 +36,7 @@ function localAnswerExists(question: ConditionQuestion, requirements: LeafRequir
     }, requirements.filter(({ condition }) => condition.rowId === row.id).map(({ condition, matched }) => {
       const { rowId: _rowId, ...rowTest } = condition
       return { condition: rowTest, matched }
-    })))
+    }), budget))
   }
   const satisfies = (value: unknown) => requirements.every(({ condition, matched }) => evaluateCondition(condition, { [step.stableId]: value }).matched === matched)
   if (!step.required && satisfies(undefined)) return true
@@ -109,7 +110,11 @@ function localAnswerExists(question: ConditionQuestion, requirements: LeafRequir
     }))
     return priorityIsPossible(choices, allowed, equalities.map(({ condition }) => condition.value as string[]))
   }
-  if (['short_text', 'long_text', 'email'].includes(step.questionType ?? '')) {
+  if (step.questionType === 'email') return emailConditionPossible(tests, valid, satisfies, {
+    spend: () => spendConditionProof(budget),
+    refuse: reason => { throw new ConditionProofError(reason) },
+  })
+  if (['short_text', 'long_text'].includes(step.questionType ?? '')) {
     if (tests.length) {
       const positive = tests.find(({condition,matched}) => condition.operator === 'equals' ? matched : !matched)
       if (positive) return some([positive.condition.value])
@@ -118,10 +123,9 @@ function localAnswerExists(question: ConditionQuestion, requirements: LeafRequir
       const length = Math.max(1,Number(settings.minLength ?? 0))
       const candidates = tests.map(({condition})=>String(condition.value))
       const alphabet = Array.from({length:tests.length+1},(_,i)=>String.fromCodePoint(0x61+i))
-      return some([...candidates,...alphabet.map(char=>step.questionType==='email'?`${char}@b.c`:char.repeat(length))])
+      return some([...candidates,...alphabet.map(char=>char.repeat(length))])
     }
     if (settings.pattern !== undefined || settings.inputMask !== undefined) throw new ConditionProofError('Exact answered-condition reachability for text with a pattern or mask is not supported yet.')
-    if (step.questionType === 'email') return some(['a@b.c'])
     const length = Math.max(1, Number(settings.minLength ?? 0))
     return length <= Number(settings.maxLength ?? textTypeLimit(step.questionType)) && some(['x'.repeat(length)])
   }
@@ -160,14 +164,14 @@ export function conditionRequirementsPossible(questions: ReadonlyMap<string, Con
         if (known) possible = known.matched === matched
         else {
           const next = [...existing, { condition, matched }]
-          possible = localAnswerExists(question, next)
+          possible = localAnswerExists(question, next, budget)
           state.leaves.set(condition.stepId, next)
         }
       }
     }
     if (possible && [...visited].every(id => {
       const question = questions.get(id)
-      return !question || localAnswerExists(question, state.leaves.get(id) ?? [])
+      return !question || localAnswerExists(question, state.leaves.get(id) ?? [], budget)
     }) && proveCalculatedConditions(calculations,questions,state.derived,state.leaves,visited,budget)) return true
   }
   return false

@@ -163,7 +163,7 @@ export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice
         for (const [index, test] of conditionTests(condition).entries()) {
           const hidden = operands.find(step=>step.id===test.stepId)
           const operand = hidden ?? publicGraph.steps.find(step => step.id === test.stepId)
-          if (!operand || operand.kind !== 'question' || operand.position > source.position || !hidden && !earlier.has(test.stepId) || test.stepId.startsWith('variable:') && [...calculationInputs(calculations,test.stepId.slice(9)).answers].some(id=>!earlier.has(id)) || !conditionValueValid(test, operand, publicGraph.choices)) {
+          if (test.operator === 'ends_with' && !publicGraph.steps.some(step => step.id === test.stepId && step.questionType === 'email') || !operand || operand.kind !== 'question' || operand.position > source.position || !hidden && !earlier.has(test.stepId) || test.stepId.startsWith('variable:') && [...calculationInputs(calculations,test.stepId.slice(9)).answers].some(id=>!earlier.has(id)) || !conditionValueValid(test, operand, publicGraph.choices)) {
             issues.push({ stepId: source.stableId, reason: `Branch ${rule.id}, condition ${index + 1}: missing or later question, incompatible operator, or invalid stable choice.` })
             valid = false
           }

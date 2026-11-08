@@ -7,7 +7,7 @@ import { matrixRows, matrixMultiple } from '../../../shared/matrix'
 import manifest from '../../../../../seed.json'
 
 export const operatorLabels: Record<ConditionOperator, string> = {
-  equals: 'is', not_equals: 'is not', greater_than: 'is greater than', greater_than_or_equal: 'is at least',
+  equals: 'is', not_equals: 'is not', ends_with: 'ends with', greater_than: 'is greater than', greater_than_or_equal: 'is at least',
   less_than: 'is less than', less_than_or_equal: 'is at most', any_of: 'is any of', all_of: 'includes all of',
   none_of: 'is none of', exactly: 'is exactly', is_blank: 'is blank', is_answered: 'is answered',
 }
@@ -59,7 +59,7 @@ export function ConditionEditor({ condition, draft, operands, onChange }: { cond
     return <div className="answer-stack">
       <label className="inspector-field">Question<select aria-label="Question" className="text-input" value={current.stepId} onChange={event => change(firstCondition(operands.find(step => step.id === event.target.value)!, draft))}>{operands.map(step => <option key={step.id} value={step.id}>{step.prompt}</option>)}</select></label>
       {step?.questionType === 'matrix' ? <label className="inspector-field">Row<select aria-label="Row" className="text-input" value={current.rowId ?? ''} onChange={event => change({ ...current, rowId: event.target.value })}><option value="">Choose a row</option>{matrixRows(step.questionSettings ?? {}).map(row => <option key={row.id} value={row.id}>{row.label}</option>)}</select></label> : null}
-      <label className="inspector-field">Condition<select aria-label="Condition" className="text-input" value={current.operator} onChange={event => setOperator(event.target.value as ConditionOperator)}>{operatorsFor(type).map(operator => <option key={operator} value={operator}>{operatorLabels[operator]}</option>)}</select></label>
+      <label className="inspector-field">Condition<select aria-label="Condition" className="text-input" value={current.operator} onChange={event => setOperator(event.target.value as ConditionOperator)}>{operatorsFor(type).filter(operator => operator !== 'ends_with' || !current.stepId.startsWith('hidden:') && !current.stepId.startsWith('variable:')).map(operator => <option key={operator} value={operator}>{operatorLabels[operator]}</option>)}</select></label>
       {!noValue ? many ? <label className="inspector-field">Answers<select aria-label="Answers" multiple className="text-input" value={Array.isArray(current.value) ? current.value : []} onChange={event => change({ ...current, value: Array.from(event.target.selectedOptions).map(option => option.value) })}>{choices.map(choice => <option key={choice.id} value={choice.id}>{choice.label}</option>)}</select></label>
         : ['single_choice','dropdown'].includes(type ?? '') ? <label className="inspector-field">Answer<select aria-label="Answer" className="text-input" value={String(current.value ?? '')} onChange={event => change({ ...current, value: event.target.value })}><option value="">Choose an answer</option>{choices.map(choice => <option key={choice.id} value={choice.id}>{choice.label}</option>)}</select></label>
         : ['yes_no','consent','thumbs_rating'].includes(step?.questionType ?? '') ? <label className="inspector-field">Answer<select aria-label="Answer" className="text-input" value={String(current.value)} onChange={event => change({ ...current, value: event.target.value === 'true' })}><option value="true">Yes</option><option value="false">No</option></select></label>

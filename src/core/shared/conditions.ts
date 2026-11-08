@@ -2,11 +2,13 @@ import { matchesBranch, type BranchPredicate } from './branching'
 import { isUnanswered } from './answers'
 import { isOtherAnswer } from './otherChoices'
 
-export const conditionOperators = ['equals', 'not_equals', 'greater_than', 'greater_than_or_equal', 'less_than', 'less_than_or_equal', 'any_of', 'all_of', 'none_of', 'exactly', 'is_blank', 'is_answered'] as const
+export const conditionOperators = ['equals', 'not_equals', 'ends_with', 'greater_than', 'greater_than_or_equal', 'less_than', 'less_than_or_equal', 'any_of', 'all_of', 'none_of', 'exactly', 'is_blank', 'is_answered'] as const
 export type ConditionOperator = typeof conditionOperators[number]
 export type ConditionValue = string | number | boolean | string[] | { choiceId: string; rank: number } | null
 export type Condition = { kind: 'group'; join: 'and' | 'or'; conditions: Condition[] } | { kind: 'test'; stepId: string; rowId?: string; operator: ConditionOperator; value?: ConditionValue }
 export type ConditionTrace = { matched: boolean; condition: Condition; value?: unknown; children?: ConditionTrace[] }
+
+export const normalizeConditionText = (value: string) => value.trim().normalize('NFC').toLowerCase()
 
 export function evaluateCondition(condition: Condition, answers: Record<string, unknown>): ConditionTrace {
   if (condition.kind === 'group') {
@@ -21,9 +23,10 @@ export function evaluateCondition(condition: Condition, answers: Record<string, 
   if (condition.operator === 'is_blank') matched = blank
   else if (condition.operator === 'is_answered') matched = !blank
   else if (!blank) {
-    if (typeof value === 'string' && typeof condition.value === 'string' && ['equals','not_equals'].includes(condition.operator)) {
-      const equal = value.trim().normalize('NFC').toLowerCase() === condition.value.trim().normalize('NFC').toLowerCase()
-      return {condition,value,matched:condition.operator === 'equals' ? equal : !equal}
+    if (typeof value === 'string' && typeof condition.value === 'string' && ['equals','not_equals','ends_with'].includes(condition.operator)) {
+      const actual = normalizeConditionText(value), expected = normalizeConditionText(condition.value)
+      const equal = actual === expected
+      return { condition, value, matched: condition.operator === 'ends_with' ? actual.endsWith(expected) : condition.operator === 'equals' ? equal : !equal }
     }
     const selected = isOtherAnswer(value) ? value.choiceIds : Array.isArray(value) ? value : [value]
     if (condition.operator === 'not_equals') matched = !matchesBranch({ predicateKind: 'equals', expectedValue: condition.value }, value)

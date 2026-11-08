@@ -10,7 +10,8 @@ export function operatorsFor(type: string | null): ConditionOperator[] {
   if (type === 'multiple_choice') return ['any_of', 'all_of', 'none_of', 'exactly', ...common]
   if (['yes_no', 'consent', 'thumbs_rating'].includes(type ?? '')) return ['equals', 'not_equals', ...common]
   if (['number', 'rating', 'nps', 'csat', 'ces', 'emoji_rating', 'date', 'priority'].includes(type ?? '')) return ['equals', 'not_equals', 'greater_than', 'greater_than_or_equal', 'less_than', 'less_than_or_equal', ...common]
-  if (['short_text','long_text','email','url','phone'].includes(type ?? '')) return ['equals','not_equals',...common]
+  if (type === 'email') return ['equals', 'not_equals', 'ends_with', ...common]
+  if (['short_text','long_text','url','phone'].includes(type ?? '')) return ['equals','not_equals',...common]
   return common
 }
 
@@ -36,6 +37,7 @@ export function conditionValueValid(test: Extract<Condition, { kind: 'test' }>, 
   }
   if (test.rowId !== undefined) return false
   if (!operatorsFor(step.questionType).includes(test.operator)) return false
+  if (test.operator === 'ends_with' && (step.id.startsWith('hidden:') || step.id.startsWith('variable:'))) return false
   if (['is_blank','is_answered'].includes(test.operator)) return test.value === undefined || test.value === null
   const value = test.value, ids = choices.filter(choice => choice.stepId === step.id).map(choice => choice.id)
   const set = () => Array.isArray(value) && value.length > 0 && new Set(value).size === value.length && value.every(item => typeof item === 'string' && ids.includes(item))

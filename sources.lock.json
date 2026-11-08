@@ -5897,11 +5897,15 @@
       "executable": false
     },
     "src/core/features/flows/condition-feasibility.ts": {
-      "sha256": "bc1796e2db09f0f0e0b74b8cde85ef12809ee8140950ca14d2a5cbf4224c95d4",
+      "sha256": "9bf84958ef5fb03da67a59f720d827643082475f09fbae8e01555a3d53ac8a58",
       "executable": false
     },
     "src/core/features/flows/condition-paths.ts": {
       "sha256": "2cc01ce7ec8acd5bb07ddd1b5564f830102e5b652ce99cfc099762b1fe7bb991",
+      "executable": false
+    },
+    "src/core/features/flows/email-suffix-domain.ts": {
+      "sha256": "0715d8908d2d125aab61f7a448ae12032f74181767d5b731508de54ef0865fa5",
       "executable": false
     },
     "src/core/features/flows/graph.contract.test.ts": {
@@ -5909,7 +5913,7 @@
       "executable": false
     },
     "src/core/features/flows/graph.ts": {
-      "sha256": "0ac0ca8f18731802a22c614777732c9cdb0b69d50b2acb287401d7c9ee231807",
+      "sha256": "3af27f130bd97f08dcd89e3ec25014ca3e56acd2d59b1e55bd477e8ead63da4d",
       "executable": false
     },
     "src/core/features/flows/index.ts": {
@@ -6013,7 +6017,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/ConditionEditor.tsx": {
-      "sha256": "ea38d92febc63f51fe782a92a7f402669907a5da0daf10355b5de99363d40fe8",
+      "sha256": "4b110c893b91afff1c6a9d7a33722a9fb5bf78b78c5a4636e4571b314f1ef936",
       "executable": false
     },
     "src/core/features/flows/ui/ConditionTrace.tsx": {
@@ -7937,11 +7941,11 @@
       "executable": false
     },
     "src/core/shared/conditions.ts": {
-      "sha256": "03f47f3c9c1a9ce92dec5c003ba31808f1c262f7d7c25122667046c6edf2e20a",
+      "sha256": "2306df421a8a330c0b66c4616d6f9a646f2b9b32c58a4a1d015ec7376c784d82",
       "executable": false
     },
     "src/core/shared/conditionValidation.ts": {
-      "sha256": "fd2d1021130d898687121ffb6fcf65e5142be5cb0502fcae897ae8203be46d6b",
+      "sha256": "6155477548f6303d00405676f535d84a2314171da4bb4985c82107e1a54bfea4",
       "executable": false
     },
     "src/core/shared/config.ts": {
@@ -8569,7 +8573,7 @@
       "executable": false
     },
     "tests/e2e/conditions.spec.ts": {
-      "sha256": "6fbf876ef492783b18fdcd2a787a628b0841baa87786834c2d54646e9483f3a4",
+      "sha256": "b9a518aa68cc8fca5de63c414b1e906a9316920ae86e6c39c268ea428a4c2048",
       "executable": false
     },
     "tests/e2e/contract.ts": {
@@ -8594,6 +8598,10 @@
     },
     "tests/e2e/docs-site.spec.ts": {
       "sha256": "1537be74c3628fb1d9519f9292e69db92df7b26332150ca0f3d979501a3d17d6",
+      "executable": false
+    },
+    "tests/e2e/email-suffix-scenario.ts": {
+      "sha256": "8644bbe98682f52d162287a04e4150478d667ec90640cab38acf35875147a4ec",
       "executable": false
     },
     "tests/e2e/embed-security-foundation.spec.ts": {
@@ -9245,7 +9253,7 @@
       "executable": false
     },
     "tests/runtime/conditions.worker.test.ts": {
-      "sha256": "72641389ae7208eaeeeecb71e4ecb8d25291ea8863c8f896e0c42db08f804fa3",
+      "sha256": "67f5285b8234555c7dc15f94da3ac599c35c8de5d9d987be61de7ceb19315d59",
       "executable": false
     },
     "tests/runtime/contact-scores-scenario.ts": {
@@ -9258,6 +9266,10 @@
     },
     "tests/runtime/egress-foundation.worker.test.ts": {
       "sha256": "a50921ed91d687bb496f042dc262f028463e1815628d96c5fa5f70f2cc7f0ab4",
+      "executable": false
+    },
+    "tests/runtime/email-suffix-proof.ts": {
+      "sha256": "b0b5251f459ad862f41ae1269ad1a9fa2af27e6e55f620f8b268eab5fb4ab9d2",
       "executable": false
     },
     "tests/runtime/export-reader.global.ts": {
