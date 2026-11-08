@@ -1,0 +1,15 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+
+ RUN  v4.1.11 /home/agent/rer-consolidation/work/sd-pencil-c-f37/run-pencil
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  14:28:14
+   Duration  15.18s (transform 6.09s, setup 0ms, import 12.14s, tests 2.15s, environment 0ms)
+

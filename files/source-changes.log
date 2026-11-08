@@ -1,0 +1,28 @@
+{
+  "files": [
+    {
+      "path": "tests/runtime/confirmation-withholding-scenario.ts",
+      "change": "added",
+      "before": null,
+      "after": {
+        "sha256": "f986a5df336451cb33329cfca2f4c97e0ba2ce5e185a3546cbff1bfb79c511a6",
+        "executable": false
+      }
+    },
+    {
+      "path": "tests/runtime/respondent-confirmations.worker.test.ts",
+      "change": "modified",
+      "before": {
+        "sha256": "edd2ec9c30c1acdcb2248a11c19e115d20c35f43b7e6d23f09199417d32043bd",
+        "executable": false
+      },
+      "after": {
+        "sha256": "1817dde511af855377e768f6f1fbd8b54f4506b366da8c6fd78542ae7a77454b",
+        "executable": false
+      }
+    }
+  ],
+  "metadata": [],
+  "meaning": "Origins are comparison baselines; changing an origin does not assert adoption or local byte equality."
+}
+

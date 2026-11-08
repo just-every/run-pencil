@@ -1,0 +1,119 @@
+{
+  "schema": 1,
+  "tag": "sd-pencil-c-f37",
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f37",
+  "head": "af4e05084534df677bf5c33ec3b7f776181f9eaf",
+  "base": "18ef418c11ba90618205512f485918fe5aae68bb",
+  "recorded_at": "2026-11-08T14:29:29.879783+00:00",
+  "local_checks": [
+    {
+      "command": "pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/respondent-confirmations.worker.test.ts",
+      "exit": 0,
+      "head": "af4e05084534df677bf5c33ec3b7f776181f9eaf",
+      "tests": 1,
+      "passed": 1,
+      "log": "exact-head-test.log"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "log": "typecheck.log"
+    },
+    {
+      "command": "npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0,
+      "log": "first-party.log"
+    },
+    {
+      "command": "node scripts/contract-docs.mjs write RESP-020",
+      "exit": 0,
+      "log": "contract-write.log"
+    },
+    {
+      "command": "node scripts/contract-docs.mjs check RESP-020",
+      "exit": 0,
+      "log": "contract-check.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0,
+      "log": "lock.log"
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "log": "final-lock-check.log"
+    },
+    {
+      "command": "pnpm source:check",
+      "exit": 0,
+      "log": "source-check.log"
+    }
+  ],
+  "invariants": {
+    "all_original_assertion_bytes_preserved": true,
+    "registration_delta": 0,
+    "production_diff_empty": true,
+    "contract_diff_empty": true,
+    "generated_views_diff_empty": true,
+    "product_worktree_clean": true
+  },
+  "counts_before": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "counts_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "claim": {
+    "clause": "RESP-020",
+    "status": "PARTIAL",
+    "points": [
+      1,
+      2,
+      3
+    ],
+    "new_proof": "Second opt-in, empty whitelist, one permitted type, dependent recall withholding and unpublished draft isolation"
+  },
+  "browser_proof": "not applicable: no UI or production change",
+  "provider_proof": "synthetic outgoing network edge only; no real mail provider or consent qualification",
+  "source_files": {
+    "tests/runtime/confirmation-withholding-scenario.ts": "f986a5df336451cb33329cfca2f4c97e0ba2ce5e185a3546cbff1bfb79c511a6",
+    "tests/runtime/respondent-confirmations.worker.test.ts": "1817dde511af855377e768f6f1fbd8b54f4506b366da8c6fd78542ae7a77454b",
+    "sources.lock.json": "38b653cabc9399626a5cb774cfdb02721aa1e4338a533f80e25981f14e80d8b8"
+  },
+  "publication_scan": {
+    "commit": "af4e05084534df677bf5c33ec3b7f776181f9eaf",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "state": "not run in cloud; maintained Mac lander owns the complete full-history scan"
+  },
+  "history_is_shallow": false,
+  "ci": {
+    "run_id": 42489922999,
+    "event": "push",
+    "head": "af4e05084534df677bf5c33ec3b7f776181f9eaf",
+    "observed_status": "in_progress",
+    "observed_conclusion": null,
+    "discovery": "candidate-ci-discovery.json",
+    "observed_at": "2026-11-08T14:33:22.671277+00:00",
+    "receipt": "candidate-ci-status.json"
+  },
+  "landing": {
+    "main_equals_candidate": false,
+    "run_site_candidate": null,
+    "state": "branch only; guarded landing and candidate Run site pending"
+  },
+  "product_push": {
+    "exit": 0,
+    "log": "product-push.log",
+    "remote_verified_head": "af4e05084534df677bf5c33ec3b7f776181f9eaf",
+    "remote_receipt": "product-remote.txt"
+  },
+  "github_core_calls": 3
+}
