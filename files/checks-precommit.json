@@ -1,0 +1,20 @@
+[
+  {
+    "name": "typecheck",
+    "command": "pnpm typecheck",
+    "exit": 0,
+    "elapsedSeconds": 20.661
+  },
+  {
+    "name": "first-party",
+    "command": "pnpm exec rer check --profile first-party",
+    "exit": 0,
+    "elapsedSeconds": 1.208
+  },
+  {
+    "name": "source-check",
+    "command": "pnpm source:check",
+    "exit": 0,
+    "elapsedSeconds": 0.992
+  }
+]

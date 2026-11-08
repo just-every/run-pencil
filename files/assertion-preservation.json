@@ -1,0 +1,12 @@
+{
+  "priorAssertionLines": 78,
+  "removedOrChangedPriorAssertionLines": [],
+  "unchangedFiles": {
+    "tests/runtime/response-webhooks.worker.test.ts": true,
+    "src/core/features/chat-integrations/transport.ts": true,
+    "src/core/features/chat-integrations/service.ts": true,
+    "CONTRACT.md": true,
+    "test-budget.json": true
+  },
+  "newRegistrations": 0
+}

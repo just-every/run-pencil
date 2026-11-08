@@ -1,0 +1,19 @@
+{
+  "head": "18ef418c11ba90618205512f485918fe5aae68bb",
+  "checks": {
+    "lock": {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0,
+      "ok": true,
+      "drift": null,
+      "unrecordedCopies": null
+    },
+    "base-integrity": {
+      "command": "node scripts/edition-authoring/cli.mjs verify-base --offline",
+      "exit": 0,
+      "ok": true,
+      "drift": [],
+      "unrecordedCopies": []
+    }
+  }
+}

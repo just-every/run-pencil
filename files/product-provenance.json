@@ -1,0 +1,15 @@
+{
+  "head": "18ef418c11ba90618205512f485918fe5aae68bb",
+  "base": "4f7b106744a08557c756e1d7dffe21226ced44d2",
+  "branch": "cloud/sd-pencil-c-f33",
+  "changedFiles": [
+    "sources.lock.json",
+    "tests/runtime/chat-integrations-proof.ts",
+    "tests/runtime/task-receiver.global.ts"
+  ],
+  "workingTree": "",
+  "shallow": "false",
+  "contractDiff": "",
+  "productionDiff": "",
+  "generatedViewsDiff": ""
+}

@@ -1,0 +1,130 @@
+{
+  "files": [
+    {
+      "blob": "82c1f142d2ae22cfe2ec4ef4f9f959b37a0ff64a",
+      "bytes": 12035,
+      "path": "REPORT.md",
+      "sha256": "1cc5a20e23c20afc79877fb99bedd4d00a5408008e033c299a737a0c54f08cd0"
+    },
+    {
+      "blob": "5405e7349fd92c7fc7fd3dbad2893537b057dca0",
+      "bytes": 365,
+      "path": "assertion-preservation.json",
+      "sha256": "061a646e8b7c0acf8db6d9db686da0ddf096c8f2a283b75431e36d3b75c91caa"
+    },
+    {
+      "blob": "67af0f92731cea9ba8a9d5c20f6e05b51c14e9c8",
+      "bytes": 236,
+      "path": "candidate-ci-discovery.json",
+      "sha256": "4a9c57dd5b220c3d2da16989267ae8b143fd8d0fea19ff2351e46a546822ce28"
+    },
+    {
+      "blob": "158ca3efd55d5315328348d521fc117660ab2b91",
+      "bytes": 176,
+      "path": "candidate-ci-poll-1.json",
+      "sha256": "2b12fa5135d7c0c2d0149736ee9c25fa7443bb7fd7b4c864c7a8f96d2bd7b18a"
+    },
+    {
+      "blob": "158ca3efd55d5315328348d521fc117660ab2b91",
+      "bytes": 176,
+      "path": "candidate-ci-poll-2.json",
+      "sha256": "2b12fa5135d7c0c2d0149736ee9c25fa7443bb7fd7b4c864c7a8f96d2bd7b18a"
+    },
+    {
+      "blob": "55bfeff023c4ae17dc59e12f86f446b1960e6b53",
+      "bytes": 85,
+      "path": "candidate-identities.txt",
+      "sha256": "148bad84b5b174568017df50d58e073566703d43c6c9fe7fa6f1af04420adf55"
+    },
+    {
+      "blob": "f715406512d48f07a7bad5965c661d68103f4d48",
+      "bytes": 315,
+      "path": "checks-node22-exact-head.json",
+      "sha256": "00327c60ae8d69d656e4b899a0001f431e4c35261188d2e389da2f88e468c8de"
+    },
+    {
+      "blob": "390379c30682f8910be3c58471f072e16223a057",
+      "bytes": 369,
+      "path": "checks-precommit.json",
+      "sha256": "848ad6ae144642083ac90acbe972a04de02c9547aa9d37b6ee9c8a3373155d92"
+    },
+    {
+      "blob": "109bda45cf5130e78f6f3700d0836d3af170bcd5",
+      "bytes": 244,
+      "path": "diff-hygiene.json",
+      "sha256": "aad4b285e1ab0a9c40bab2f098202f910d73b0ae58f527102e7e1c9f40fcbc8c"
+    },
+    {
+      "blob": "ce001550f705d0fa1a7c750bab5bb208761664aa",
+      "bytes": 443,
+      "path": "integrity-exact-head.json",
+      "sha256": "abd13bc8e60058311d67a51e6e9e361d684410d6f4b4a5fea76a0d968c4745b8"
+    },
+    {
+      "blob": "6c0cb99b64df60be964472018043af74b397b196",
+      "bytes": 1407,
+      "path": "main-ci.json",
+      "sha256": "830036ab1bef73b7d5a799c331c4f839bed77c2db5c5ce179ad9575cd0075f51"
+    },
+    {
+      "blob": "2aa9c8cdf24321b9d37b0ce4f455ef9c0824bd0d",
+      "bytes": 407,
+      "path": "product-provenance.json",
+      "sha256": "fb9f97a2967decbaf2400969e1eb243f8abeac0ae07b8ca3ffe1bcb8ff9865c5"
+    },
+    {
+      "blob": "8385d9c57e61bebae16cb6e5c7ad4b57d70e74ed",
+      "bytes": 3881,
+      "path": "receipt.json",
+      "sha256": "30ec9d35f93369775107e162155ca9e019bb97d2d6ecd76b6e3f25d77ce51773"
+    },
+    {
+      "blob": "624c331665876571cff50200cc81eaa7a3961a48",
+      "bytes": 80504,
+      "path": "source-lines.txt",
+      "sha256": "bdee599d2ab68939e97562e6b90778adb06963ba452cc41184f1f6a9c3dca88f"
+    },
+    {
+      "blob": "a81df62cc37eabf64db7156f5c723b7d06c66016",
+      "bytes": 401,
+      "path": "timing-node22-receipt.json",
+      "sha256": "7be008b0028ab7e2d271905d934c413337894080a726e2439755bb0a58546e3b"
+    },
+    {
+      "blob": "f0c25cc2affd0fa18e128f164a6f6059c9e67ca1",
+      "bytes": 387,
+      "path": "timing-receipt.json",
+      "sha256": "e7fc0198d781bd9368438c2b279951de17a7df414164d6713ad6319f89d7a914"
+    },
+    {
+      "blob": "9178abf508d28b4c9eb73f836a1a5c9dccd2752b",
+      "bytes": 1196,
+      "path": "worker-exact-head.json",
+      "sha256": "be8c06a46d4ab19ca33ea450503adbb552552073ac42ae3d5cfd70bbc6b48c37"
+    },
+    {
+      "blob": "66becae4c166b39b7eb232d16231869d1749e0bf",
+      "bytes": 3515,
+      "path": "worker-exact-head.log",
+      "sha256": "98c898897d26cece85cc52e4870420eb415e5e96f99b6315ed6e6b3143e5e04d"
+    },
+    {
+      "blob": "0fa2ccc645126517af08ebf7dcedab875c831da0",
+      "bytes": 1196,
+      "path": "worker-node22-exact-head.json",
+      "sha256": "23082e9a0ccd629a3b1e7864b04fdbd3594940e9053fbbd05a04c26234399983"
+    },
+    {
+      "blob": "31fb95425b0e008389901a250cf4109311d2221e",
+      "bytes": 3690,
+      "path": "worker-node22-exact-head.log",
+      "sha256": "072fba1b4ca47f1292fd0449c707b99909344d979504c1fe4cb37fae8a49dc63"
+    }
+  ],
+  "product_branch": "cloud/sd-pencil-c-f33",
+  "product_head": "18ef418c11ba90618205512f485918fe5aae68bb",
+  "ref": "refs/heads/evidence/sd-pencil-c-f33",
+  "repository": "just-every/run-pencil",
+  "schema": 1,
+  "tag": "sd-pencil-c-f33"
+}

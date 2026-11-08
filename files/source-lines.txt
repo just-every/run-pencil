@@ -1,0 +1,739 @@
+FILE tests/runtime/chat-integrations-proof.ts
+1: import { env } from 'cloudflare:test'
+2: import { expect, vi } from 'vitest'
+3: import type { BuilderDraft, PublicFlow, Ledger } from '../../src/core/app/api'
+4: import type { ActionDetail } from '../../src/core/features/actions/model'
+5: import { issueLoadTime } from '../../src/core/features/traffic/loadTime'
+6: import { actionsHttp, everyStoredValue } from './actions-fixture'
+7: 
+8: const receiver=(env as unknown as {TASK_RECEIVER_ORIGIN:string}).TASK_RECEIVER_ORIGIN
+9: type Received={path:string;authorization:string|null;idempotencyKey:string|null;body:string}
+10: const received=async()=>((await (await fetch(receiver+'/__control/state')).json()) as {requests:Received[]}).requests.filter(row=>['/chat.postMessage','/teams'].includes(row.path))
+11: const accepted=async<T>(response:Response,status=200)=>{expect(response.status,await response.clone().text()).toBe(status);return response.status===204?undefined as T:response.json() as Promise<T>}
+12: async function signature(secret:string,timestamp:string,body:string){const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);return 'v0='+Array.from(new Uint8Array(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(`v0:${timestamp}:${body}`))),byte=>byte.toString(16).padStart(2,'0')).join('')}
+13: 
+14: /** One connected response journey across both real loopback network edges, signed action creation and their shared review schedule. */
+15: export async function proveChatIntegrations(){
+16:   vi.useFakeTimers({toFake:['Date']});vi.setSystemTime(new Date('2026-10-27T10:00:00.000Z'))
+17:   try {
+18:   await fetch(receiver+'/__control/reset',{method:'POST',body:JSON.stringify({mode:'ok'})})
+19:   const f=await actionsHttp({},'chat-'+crypto.randomUUID().slice(0,6))
+20:   await env.DB.prepare("UPDATE oa_operators SET role='owner' WHERE id=?").bind(f.lead.operatorId).run()
+21:   await env.DB.prepare('UPDATE oa_sessions SET operator_version=(SELECT version FROM oa_operators WHERE id=operator_id) WHERE operator_id=?').bind(f.lead.operatorId).run()
+22:   const member=await f.operator('Chat member'),asMember=f.as(member.token)
+23:   await env.DB.prepare("UPDATE oa_operators SET role='member' WHERE id=?").bind(member.operatorId).run()
+24:   await env.DB.prepare('UPDATE oa_sessions SET operator_version=(SELECT version FROM oa_operators WHERE id=operator_id) WHERE operator_id=?').bind(member.operatorId).run()
+25:   const signingSecret='synthetic-pencil-chat-signing-secret',botToken='synthetic-pencil-chat-bot',webhookUrl=receiver+'/teams'
+26:   expect((await asMember('/api/app/connections/slack',{botToken,signingSecret},{method:'PUT'})).status).toBe(403)
+27:   expect((await asMember('/api/app/connections/teams',{webhookUrl},{method:'PUT'})).status).toBe(403)
+28:   expect((await asMember('/api/app/connections/slack')).status).toBe(403)
+29:   expect((await f.call('/api/app/connections/slack',{botToken,signingSecret,apiOrigin:'http://example.test'},{method:'PUT'})).status).toBe(400)
+30:   await accepted(await f.call('/api/app/connections/slack',{botToken,signingSecret,apiOrigin:receiver},{method:'PUT'}))
+31:   await accepted(await f.call('/api/app/connections/teams',{webhookUrl},{method:'PUT'}))
+32:   for(const platform of ['slack','teams']){
+33:     const status=await accepted<Record<string,unknown>>(await f.call('/api/app/connections/'+platform))
+34:     expect(status).toMatchObject({saved:true})
+35:     for(const secret of [signingSecret,botToken,webhookUrl])expect(JSON.stringify(status)).not.toContain(secret)
+36:   }
+37:   const stored=(await everyStoredValue()).filter(row=>row.startsWith('integration_connections:'))
+38:   for(const secret of [signingSecret,botToken,webhookUrl])expect(stored.some(row=>row.includes(secret))).toBe(false)
+39:   const draft=await f.services.flows.getBuilderDraft(f.workspaceId,f.flowId),privateField=draft.steps.find(step=>step.questionType==='long_text')!
+40:   const base={answerStepIds:[f.choiceStepId],operatorId:f.owner.operatorId}
+41:   const template=f.input();const {ownerOperatorId:_owner,evidence:_evidence,...actionTemplate}=template
+42:   const slack={...base,platform:'slack',channel:'synthetic-pencil-channel',slackUserId:'synthetic-pencil-slack-user',action:actionTemplate}
+43:   const teams={...base,platform:'teams',teamsUserId:'synthetic-pencil-microsoft-user'}
+44:   expect((await f.call(`/api/app/flows/${f.flowId}/chat`,{...slack,answerStepIds:[privateField.id]},{method:'PUT'})).status).toBe(400)
+45:   await accepted(await f.call(`/api/app/flows/${f.flowId}/chat`,slack,{method:'PUT'}))
+46:   await accepted(await f.call(`/api/app/flows/${f.flowId}/chat`,teams,{method:'PUT'}))
+47:   await f.respond('Too long','synthetic-pencil-private-answer-must-stay-private')
+48:   const start=new Date().toISOString()
+49:   await Promise.all([f.services.chat.run(start),f.services.chat.run(start)])
+50:   const posts=await received();expect(posts).toHaveLength(2)
+51:   const slackPost=posts.find(post=>post.path==='/chat.postMessage')!,teamsPost=posts.find(post=>post.path==='/teams')!
+52:   const slackBody=JSON.parse(slackPost.body),teamsBody=JSON.parse(teamsPost.body)
+53:   expect(slackBody.channel).toBe(slack.channel)
+54:   expect(slackBody.text).toContain('How was the wait?: Too long')
+55:   expect(teamsPost.body).toContain('How was the wait?: Too long')
+56:   for(const post of posts){expect(post.body).toContain(`/app/flows/${f.flowId}/inbox`);expect(post.body).toContain('Submitted');expect(post.body).not.toContain('synthetic-pencil-private-answer');expect(post.body).not.toContain(signingSecret);expect(post.idempotencyKey).toBeTruthy()}
+57:   const postedResponse=(await accepted<Ledger>(await f.call(`/api/app/flows/${f.flowId}/ledger`))).responses[0]
+58:   const authoredMessage=`${draft.flow.title}\nSubmitted ${postedResponse.completedAt}\nHow was the wait?: Too long`
+59:   expect(slackBody.blocks[0].text.text).toBe(authoredMessage)
+60:   expect(teamsBody.attachments[0].content.body[0].text).toBe(authoredMessage)
+61:   expect(teamsBody.attachments[0].content.actions[0].url).toContain('/app/flows/')
+62:   const deliveryId=slackBody.blocks[1].elements.find((element:{action_id?:string})=>element.action_id==='pencil_create_action').value as string
+63:   const body=new URLSearchParams({payload:JSON.stringify({type:'block_actions',user:{id:slack.slackUserId},channel:{id:slack.channel},actions:[{action_id:'pencil_create_action',value:deliveryId}]})}).toString()
+64:   const timestamp=String(Math.floor(Date.now()/1000))
+65:   const interact=(signed:string|undefined,time=timestamp,raw=body)=>f.app.request('http://localhost/api/public/chat/slack/interactions',{method:'POST',headers:{'content-type':'application/x-www-form-urlencoded','x-slack-request-timestamp':time,...(signed?{'x-slack-signature':signed}:{})},body:raw})
+66:   expect((await interact(undefined)).status).toBe(403)
+67:   expect((await interact('v0='+'0'.repeat(64))).status).toBe(403)
+68:   const stale=String(Number(timestamp)-301)
+69:   expect((await interact(await signature(signingSecret,stale,body),stale)).status).toBe(403)
+70:   expect((await (await f.call('/api/app/actions')).json()).actions).toEqual([])
+71:   const future=String(Number(timestamp)+301)
+72:   expect((await interact(await signature(signingSecret,future,body),future)).status).toBe(403)
+73:   for(const changed of [{user:{id:'synthetic-pencil-c47-14'}},{channel:{id:'synthetic-pencil-c47-15'}}]) {
+74:     const forgedActor=new URLSearchParams({payload:JSON.stringify({...JSON.parse(new URLSearchParams(body).get('payload')!),...changed})}).toString()
+75:     expect((await interact(await signature(signingSecret,timestamp,forgedActor),timestamp,forgedActor)).status).toBe(403)
+76:     expect((await (await f.call('/api/app/actions')).json()).actions).toEqual([])
+77:   }
+78:   const valid=await signature(signingSecret,timestamp,body)
+79:   const boundary=String(Number(timestamp)-300)
+80:   const created=await accepted<{actionId:string}>(await interact(await signature(signingSecret,boundary,body),boundary))
+81:   const padded=body+'&padding='+'x'.repeat(32768-new TextEncoder().encode(body+'&padding=').length)
+82:   expect(new TextEncoder().encode(padded)).toHaveLength(32768)
+83:   expect(await accepted(await interact(await signature(signingSecret,timestamp,padded),timestamp,padded))).toEqual(expect.objectContaining(created))
+84:   const oversized=padded+'x'
+85:   const refusedSize=await interact(await signature(signingSecret,timestamp,oversized),timestamp,oversized)
+86:   expect(refusedSize.status).toBe(400);expect(await refusedSize.json()).toMatchObject({message:'Slack interaction is too large.'})
+87:   expect(await accepted(await interact(valid))).toEqual(expect.objectContaining(created))
+88:   const action=await accepted<ActionDetail>(await f.call('/api/app/actions/'+created.actionId))
+89:   expect(action).toMatchObject(actionTemplate)
+90:   expect(action).toMatchObject({id:created.actionId,state:'planned',verdict:null,owner:{id:f.owner.operatorId},evidence:{figures:{completedResponses:1}}})
+91:   expect((await (await f.call('/api/app/actions')).json()).actions).toHaveLength(1)
+92:   // The shared ACT-009 calendar uses the explicit fake Cron instant, including before/open/on/weekly and concurrent ticks.
+93:   await f.services.chat.run('2026-11-28T08:00:00.000Z');expect(await received()).toHaveLength(2)
+94:   const deferred=await env.DB.prepare("SELECT state,available_at AS at FROM chat_deliveries WHERE kind='before'").all()
+95:   expect(deferred.results).toEqual([expect.objectContaining({state:'pending',at:'2026-11-28T09:00:00.000Z'}),expect.objectContaining({state:'pending',at:'2026-11-28T09:00:00.000Z'})])
+96:   for(const instant of ['2026-11-28T09:00:00.000Z','2026-12-01T09:00:00.000Z','2026-12-08T09:00:00.000Z']){
+97:     await Promise.all([f.services.chat.run(instant),f.services.chat.run(instant)])
+98:     await f.services.chat.run(instant)
+99:   }
+100:   const reminders=(await received()).slice(2);expect(reminders).toHaveLength(6)
+101:   for(const path of ['/chat.postMessage','/teams']){
+102:     const sequence=reminders.filter(post=>post.path===path)
+103:     expect(sequence).toHaveLength(3)
+104:     expect(sequence.map(post=>post.body)).toEqual([expect.stringContaining('Action review in three days'),expect.stringContaining('Action review today'),expect.stringContaining('Action review overdue')])
+105:     expect(new Set(sequence.map(post=>post.idempotencyKey)).size).toBe(3)
+106:     expect(sequence.every(post=>post.body.includes('/app/actions/'+created.actionId))).toBe(true)
+107:     expect(sequence.every(post=>post.body.includes('synthetic-pencil-private-answer'))).toBe(false)
+108:     for(const post of sequence){const parsed=JSON.parse(post.body);if(path==='/chat.postMessage')expect(parsed.channel).toBe(slack.slackUserId);else expect(parsed.attachments[0].content.msteams.entities[0].mentioned.id).toBe(teams.teamsUserId)}
+109:   }
+110:   await f.services.chat.run('2026-12-15T08:00:00.000Z');expect(await received()).toHaveLength(8)
+111:   for(const state of ['in_progress','ready_for_review','effective'])await accepted(await f.call(`/api/app/actions/${created.actionId}/transitions`,{to:state}))
+112:   await f.services.chat.run('2026-12-15T09:00:00.000Z');await f.services.chat.run('2026-12-22T09:00:00.000Z')
+113:   expect(await received()).toHaveLength(8)
+114:   const cancelled=await env.DB.prepare("SELECT state FROM chat_deliveries WHERE kind='overdue' AND due_date='2026-12-15'").all()
+115:   expect(cancelled.results).toEqual([{state:'cancelled'},{state:'cancelled'}])
+116:   // App-created actions use the same calendar and explicit owner account mapping, on both platforms.
+117:   const manual=await f.create({title:'Synthetic manual mapped action'}),unmapped=await f.create({title:'Synthetic manual unmapped action',ownerOperatorId:f.lead.operatorId})
+118:   const manualStart=(await received()).length
+119:   await f.services.chat.run('2026-11-28T08:00:00.000Z')
+120:   expect(await received()).toHaveLength(manualStart)
+121:   const manualDeferred=await env.DB.prepare("SELECT d.state,d.available_at AS at FROM chat_deliveries d JOIN chat_action_targets t ON t.id=d.action_target_id WHERE t.action_id=? AND d.kind='before'").bind(manual.id).all()
+122:   expect(manualDeferred.results).toEqual([expect.objectContaining({state:'pending',at:'2026-11-28T09:00:00.000Z'}),expect.objectContaining({state:'pending',at:'2026-11-28T09:00:00.000Z'})])
+123:   for(const instant of ['2026-11-28T09:00:00.000Z','2026-12-01T09:00:00.000Z','2026-12-08T09:00:00.000Z']){
+124:     await Promise.all([f.services.chat.run(instant),f.services.chat.run(instant)])
+125:     await f.services.chat.run(instant)
+126:   }
+127:   const manualPosts=(await received()).slice(manualStart)
+128:   expect(manualPosts).toHaveLength(6)
+129:   for(const path of ['/chat.postMessage','/teams']){
+130:     const sequence=manualPosts.filter(post=>post.path===path)
+131:     expect(sequence.map(post=>post.body)).toEqual([expect.stringContaining('Action review in three days'),expect.stringContaining('Action review today'),expect.stringContaining('Action review overdue')])
+132:     expect(new Set(sequence.map(post=>post.idempotencyKey)).size).toBe(3)
+133:     for(const post of sequence){expect(post.body).toContain('/app/actions/'+manual.id);expect(post.body).not.toContain(unmapped.id);const parsed=JSON.parse(post.body);if(path==='/chat.postMessage')expect(parsed.channel).toBe(slack.slackUserId);else expect(parsed.attachments[0].content.msteams.entities[0].mentioned.id).toBe(teams.teamsUserId)}
+134:   }
+135:   expect(await env.DB.prepare('SELECT count(*) AS n FROM chat_action_targets WHERE action_id=?').bind(unmapped.id).first()).toEqual({n:0})
+136:   await f.services.chat.run('2026-12-15T08:00:00.000Z')
+137:   for(const state of ['in_progress','ready_for_review','effective'])await accepted(await f.call(`/api/app/actions/${manual.id}/transitions`,{to:state}))
+138:   await f.services.chat.run('2026-12-15T09:00:00.000Z');await f.services.chat.run('2026-12-22T09:00:00.000Z')
+139:   expect(await received()).toHaveLength(manualStart+6)
+140:   expect((await env.DB.prepare("SELECT d.state FROM chat_deliveries d JOIN chat_action_targets t ON t.id=d.action_target_id WHERE t.action_id=? AND d.due_date='2026-12-15'").bind(manual.id).all()).results).toEqual([{state:'cancelled'},{state:'cancelled'}])
+141:   // Failed posts remain visible with attempts in the same INTEG-015 ledger; reconnecting never blindly repeats them.
+142:   await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({down:true})})
+143:   await f.respond('Short','synthetic-pencil-private-second-answer')
+144:   await f.services.chat.run(new Date().toISOString())
+145:   const failed=await accepted<{deliveries:Array<{id:string;idempotencyKey:string;kind:string;state:string;attempts:unknown[]}>}>(await f.call('/api/app/integration-deliveries?state=failed'))
+146:   expect(failed.deliveries.filter(row=>['slack','teams'].includes(row.kind)&&row.attempts.length)).toEqual([expect.objectContaining({state:'failed',attempts:[expect.objectContaining({outcome:'failed',httpStatus:503})]}),expect.objectContaining({state:'failed',attempts:[expect.objectContaining({outcome:'failed',httpStatus:503})]})])
+147:   const before=(await received()).length;await f.services.chat.run(new Date().toISOString());expect(await received()).toHaveLength(before)
+148:   const failedPosts=failed.deliveries.filter(row=>['slack','teams'].includes(row.kind)&&row.attempts.length)
+149:   const replay=(id:string,call=f.call)=>call('/api/app/chat/deliveries/'+id+'/replay',{})
+150:   expect((await replay(failedPosts[0].id,asMember)).status).toBe(403)
+151:   expect((await f.call('/api/app/chat/deliveries/'+failedPosts[0].id+'/replay',{unexpected:true})).status).toBe(400)
+152:   await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({down:false})})
+153:   const replayStart=(await received()).length
+154:   for(const row of failedPosts)await accepted(await replay(row.id))
+155:   const replayedPosts=(await received()).slice(replayStart)
+156:   expect(replayedPosts).toHaveLength(2)
+157:   expect(replayedPosts.map(post=>post.idempotencyKey).sort()).toEqual(failedPosts.map(row=>row.idempotencyKey).sort())
+158:   for(const row of failedPosts){
+159:     expect((await replay(row.id)).status).toBe(409)
+160:     const ledger=await accepted<{deliveries:Array<{id:string;state:string;attempts:Array<{reason:string|null}>}>}>(await f.call('/api/app/integration-deliveries'))
+161:     expect(ledger.deliveries.find(item=>item.id===row.id)).toMatchObject({state:'confirmed',attempts:expect.arrayContaining([expect.objectContaining({reason:'Explicit owner replay requested; the same idempotency key is retained.'})])})
+162:   }
+163:   // Both real network requests stay unanswered until the production deadline aborts them.
+164:   await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({unanswered:true})})
+165:   const beforeTimeout=await accepted<Ledger>(await f.call(`/api/app/flows/${f.flowId}/ledger`))
+166:   await f.respond('Short','synthetic-pencil-deadline-private-answer')
+167:   const admitted=await accepted<Ledger>(await f.call(`/api/app/flows/${f.flowId}/ledger`))
+168:   expect(admitted.total).toBe(beforeTimeout.total+1)
+169:   const timedResponse=admitted.responses.find(row=>!beforeTimeout.responses.some(previous=>previous.id===row.id))!
+170:   expect(timedResponse).toMatchObject({state:'released',revisionId:f.revisionId,quarantineReason:null})
+171:   expect(timedResponse.answers).toEqual(expect.arrayContaining([
+172:     expect.objectContaining({stepId:f.choiceStepId,displayValue:'Short'}),
+173:     expect.objectContaining({stepId:privateField.id,value:'synthetic-pencil-deadline-private-answer'}),
+174:   ]))
+175:   const timeoutStart=(await received()).length
+176:   const actualFetch=globalThis.fetch.bind(globalThis),aborts:Array<{path:string;elapsed:number}>=[]
+177:   const transport=vi.spyOn(globalThis,'fetch').mockImplementation((input,init)=>{
+178:     const url=new URL(input instanceof Request?input.url:String(input))
+179:     if(url.origin===receiver&&['/chat.postMessage','/teams'].includes(url.pathname)){
+180:       const signal=init?.signal,started=performance.now()
+181:       expect(signal).toBeTruthy();expect(signal!.aborted).toBe(false)
+182:       signal!.addEventListener('abort',()=>{aborts.push({path:url.pathname,elapsed:performance.now()-started})},{once:true})
+183:     }
+184:     return actualFetch(input,init)
+185:   })
+186:   try {expect(await f.services.chat.run()).toEqual({attempted:2})} finally {transport.mockRestore()}
+187:   expect(aborts.map(row=>row.path).sort()).toEqual(['/chat.postMessage','/teams'])
+188:   for(const abort of aborts){expect(abort.elapsed).toBeGreaterThanOrEqual(9500);expect(abort.elapsed).toBeLessThan(12000)}
+189:   const timeoutPosts=(await received()).slice(timeoutStart)
+190:   expect(timeoutPosts.map(post=>post.path).sort()).toEqual(['/chat.postMessage','/teams'])
+191:   const deadlineState=await (await fetch(receiver+'/__control/state')).json() as {chatDeadlines:Array<{path:string;idempotencyKey:string;closedAfterMilliseconds:number|null;headersSent:boolean}>}
+192:   expect(deadlineState.chatDeadlines).toHaveLength(2)
+193:   for(const deadline of deadlineState.chatDeadlines){
+194:     expect(deadline.headersSent).toBe(false)
+195:     expect(deadline.closedAfterMilliseconds).not.toBeNull()
+196:     expect(deadline.closedAfterMilliseconds!).toBeGreaterThanOrEqual(9500)
+197:     expect(deadline.closedAfterMilliseconds!).toBeLessThan(12000)
+198:     expect(timeoutPosts).toContainEqual(expect.objectContaining({path:deadline.path,idempotencyKey:deadline.idempotencyKey}))
+199:   }
+200:   const timeoutLedger=async()=>accepted<{deliveries:Array<{id:string;kind:string;responseId:string|null;state:string;idempotencyKey:string;attempts:Array<{outcome:string|null;httpStatus:number|null;reason:string|null}>}>}>(await f.call('/api/app/integration-deliveries'))
+201:   const timedDeliveries=(await timeoutLedger()).deliveries.filter(row=>row.responseId===timedResponse.id)
+202:   expect(timedDeliveries.map(row=>row.kind).sort()).toEqual(['slack','teams'])
+203:   for(const row of timedDeliveries){
+204:     const originalPost=timeoutPosts.find(post=>post.path===(row.kind==='slack'?'/chat.postMessage':'/teams'))!
+205:     expect(row).toMatchObject({state:'unknown',idempotencyKey:originalPost.idempotencyKey,attempts:[
+206:       expect.objectContaining({outcome:'unknown',httpStatus:null,reason:'The chat service may have accepted this post. Automatic resend is disabled.'}),
+207:     ]})
+208:     expect(originalPost.body).not.toContain('synthetic-pencil-deadline-private-answer')
+209:     for(const secret of [signingSecret,botToken,webhookUrl,'synthetic-pencil-deadline-private-answer'])expect(JSON.stringify(row)).not.toContain(secret)
+210:   }
+211:   expect((await accepted<Ledger>(await f.call(`/api/app/flows/${f.flowId}/ledger`))).responses).toEqual(admitted.responses)
+212:   await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({})})
+213:   for(const instant of ['2026-10-27T10:01:00.000Z','2026-10-27T10:05:00.000Z','2026-10-27T10:30:00.000Z'])await f.services.chat.run(instant)
+214:   expect(await received()).toHaveLength(timeoutStart+2)
+215:   expect((await timeoutLedger()).deliveries.filter(row=>row.responseId===timedResponse.id)).toEqual(timedDeliveries)
+216:   // A dropped reply may already be stored by the receiver. A scheduler tick must leave it unknown.
+217:   await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({drop:true})})
+218:   await f.respond('Short','synthetic-pencil-unknown-post')
+219:   await f.services.chat.run()
+220:   const unknownLedger=await accepted<{deliveries:Array<{id:string;kind:string;state:string;idempotencyKey:string}>}>(await f.call('/api/app/integration-deliveries?state=unknown'))
+221:   const unknown=unknownLedger.deliveries.find(row=>['slack','teams'].includes(row.kind))!
+222:   expect(unknown).toBeTruthy()
+223:   const unknownCalls=(await received()).length
+224:   await f.services.chat.run();expect(await received()).toHaveLength(unknownCalls)
+225:   expect((await accepted<{deliveries:Array<{id:string;state:string}>}>(await f.call('/api/app/integration-deliveries?state=unknown'))).deliveries).toContainEqual(expect.objectContaining({id:unknown.id,state:'unknown'}))
+226:   const storedBefore=(await (await fetch(receiver+'/__control/state')).json() as {chatPosts:Record<string,string>}).chatPosts
+227:   await accepted(await replay(unknown.id))
+228:   expect((await received()).at(-1)!.idempotencyKey).toBe(unknown.idempotencyKey)
+229:   const storedAfter=(await (await fetch(receiver+'/__control/state')).json() as {chatPosts:Record<string,string>}).chatPosts
+230:   expect(storedAfter).toEqual(storedBefore)
+231:   // Each stale-door refusal is checked before any network post.
+232:   await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({down:true})})
+233:   await f.respond('Short','synthetic-pencil-stale-post');await f.services.chat.run()
+234:   const staleRows=(await accepted<{deliveries:Array<{id:string;kind:string;idempotencyKey:string}>}>(await f.call('/api/app/integration-deliveries?state=failed'))).deliveries.filter(row=>['slack','teams'].includes(row.kind)&&row.idempotencyKey.startsWith('chat:response:'))
+235:   const staleSlack=staleRows.find(row=>row.kind==='slack')!,staleTeams=staleRows.find(row=>row.kind==='teams')!
+236:   const staleCalls=(await received()).length
+237:   vi.setSystemTime(new Date('2026-10-27T10:00:01.000Z'))
+238:   const oldPost=JSON.parse(replayedPosts.find(post=>post.path==='/chat.postMessage')!.body)
+239:   const oldBody=new URLSearchParams({payload:JSON.stringify({...JSON.parse(new URLSearchParams(body).get('payload')!),actions:[{action_id:'pencil_create_action',value:oldPost.blocks[1].elements.find((item:{action_id?:string})=>item.action_id==='pencil_create_action').value}]})}).toString()
+240:   await accepted(await f.call(`/api/app/flows/${f.flowId}/chat`,{...slack,action:{...actionTemplate,title:'synthetic-pencil-c47-21'}},{method:'PUT'}))
+241:   const actionsBeforeOld=(await (await f.call('/api/app/actions')).json()).actions
+242:   const oldTimestamp=String(Math.floor(Date.now()/1000))
+243:   expect((await interact(await signature(signingSecret,oldTimestamp,oldBody),oldTimestamp,oldBody)).status).toBe(404)
+244:   expect((await (await f.call('/api/app/actions')).json()).actions).toEqual(actionsBeforeOld)
+245:   await accepted(await f.call(`/api/app/flows/${f.flowId}/chat`,{...slack,channel:'synthetic-pencil-changed-channel'},{method:'PUT'}))
+246:   expect(await accepted(await replay(staleSlack.id),409)).toMatchObject({error:'CONFLICT',message:expect.stringContaining('settings changed')})
+247:   await accepted(await f.call('/api/app/connections/teams',{webhookUrl},{method:'PUT'}))
+248:   expect(await accepted(await replay(staleTeams.id),409)).toMatchObject({error:'CONFLICT',message:expect.stringContaining('disarmed')})
+249:   // The restore policy disarms links; exercise the resulting route-level refusal too.
+250:   await env.DB.prepare("UPDATE chat_form_links SET armed=0 WHERE platform='slack' AND workspace_id=?").bind(f.workspaceId).run()
+251:   expect(await accepted(await replay(staleSlack.id),409)).toMatchObject({error:'CONFLICT',message:expect.stringContaining('disarmed')})
+252:   expect(await received()).toHaveLength(staleCalls)
+253:   // Valid fields on a separate form exercise save limits, text truncation and oversized-receipt non-resend.
+254:   await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({receiptBytes:16385})})
+255:   const boundFlow=await accepted<{id:string}>(await f.call('/api/app/flows',{title:'synthetic-pencil-c47-16',slug:'synthetic-pencil-c47-'+Date.now()}),201)
+256:   const boundPath=`/api/app/flows/${boundFlow.id}`,readBound=async()=>accepted<BuilderDraft>(await f.call(boundPath+'/draft'))
+257:   const prompts=Array.from({length:21},(_,index)=>('synthetic-pencil-c47-'+(2000+index)+' ').padEnd(900,'x'))
+258:   for(const prompt of prompts)await accepted(await f.call(boundPath+'/draft/steps',{expectedVersion:(await readBound()).flow.draftVersion,step:{kind:'question',questionType:'number',prompt,required:true}}),201)
+259:   await accepted(await f.call(boundPath+'/draft/steps',{expectedVersion:(await readBound()).flow.draftVersion,step:{kind:'completion',questionType:null,prompt:'synthetic-pencil-c47-17'}}),201)
+260:   const boundDraft=await readBound(),fieldIds=boundDraft.steps.filter(step=>step.kind==='question').map(step=>step.id)
+261:   const boundSettings={...slack,answerStepIds:fieldIds.slice(0,20)}
+262:   await accepted(await f.call(boundPath+'/chat',boundSettings,{method:'PUT'}))
+263:   expect((await f.call(boundPath+'/chat',{...boundSettings,answerStepIds:fieldIds},{method:'PUT'})).status).toBe(400)
+264:   await accepted(await f.call(boundPath+'/publish',{expectedVersion:(await readBound()).flow.draftVersion}),201)
+265:   const publicBound=await accepted<PublicFlow>(await f.call('/api/public/flows/'+boundDraft.flow.slug,undefined,{auth:false}))
+266:   const session=await accepted<{sessionId:string;sessionToken:string}>(await f.call('/api/public/flows/'+boundDraft.flow.slug+'/sessions',{deviceClass:'desktop',source:'direct'},{auth:false}),201)
+267:   const submission=await accepted<{responseId:string}>(await f.call('/api/public/flows/'+boundDraft.flow.slug+'/responses',{sessionId:session.sessionId,sessionToken:session.sessionToken,loadTime:await issueLoadTime(env.SESSION_SECRET,publicBound.revision.id,Date.now()-5000),idempotencyKey:'synthetic-pencil-c47-18',answers:fieldIds.map((stepId,index)=>({stepId,value:index}))},{auth:false}),201)
+268:   await f.services.chat.run()
+269:   const longPost=(await received()).find(post=>post.body.includes('synthetic-pencil-c47-16'))!
+270:   const longBody=JSON.parse(longPost.body)
+271:   const longResponse=(await accepted<Ledger>(await f.call(boundPath+'/ledger'))).responses[0]
+272:   const fullText=`synthetic-pencil-c47-16\nSubmitted ${longResponse.completedAt}\n`+prompts.slice(0,20).map((prompt,index)=>prompt+': '+index).join('\n')
+273:   expect(fullText.length).toBeGreaterThan(12000)
+274:   expect(longBody.blocks[0].text.text).toBe(fullText.slice(0,12000))
+275:   expect(longBody.text).toBe(fullText.slice(0,12000)+'\n'+`http://localhost/app/flows/${boundFlow.id}/inbox`)
+276:   const receiptLedger=await accepted<{deliveries:Array<{responseId:string;state:string;attempts:Array<{reason:string|null}>}>}>(await f.call('/api/app/integration-deliveries'))
+277:   expect(receiptLedger.deliveries.find(row=>row.responseId===submission.responseId)).toMatchObject({state:'unknown',attempts:expect.arrayContaining([expect.objectContaining({reason:'Chat service returned an oversized receipt.'})])})
+278:   const boundedPosts=(await received()).length
+279:   await f.services.chat.run();expect(await received()).toHaveLength(boundedPosts)
+280:   await accepted(await f.call('/api/app/connections/slack',{}, {method:'DELETE'}));await accepted(await f.call('/api/app/connections/teams',{}, {method:'DELETE'}))
+281:   const links=await accepted<{links:Array<{armed:boolean}>}>(await f.call(`/api/app/flows/${f.flowId}/chat`));expect(links.links.every(link=>!link.armed)).toBe(true)
+282:   await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({down:false})})
+283:   } finally {try {await fetch(receiver+'/__control/chat-mode',{method:'POST',body:JSON.stringify({})})} finally {vi.useRealTimers()}}
+284: }
+
+FILE tests/runtime/task-receiver.global.ts
+1: // Test harness only: a loopback task system honouring the webhook contract in docs/guide/actions.md
+2: // (create-or-get by idempotency key). Each behaviour is a deliberate network-edge fault; no live service.
+3: import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
+4: import type { AddressInfo } from 'node:net'
+5: import type { TestProject } from 'vitest/node'
+6: 
+7: type Mode = 'ok' | 'fail-once-500' | 'store-then-drop-once' | 'redirect'
+8: type Captured = { path: string; authorization: string | null; idempotencyKey: string | null; contentType: string | null; body: string }
+9: 
+10: export default async function setup(project: TestProject) {
+11:   let mode: Mode = 'ok', delayMilliseconds = 0
+12:   let smsDrop=false
+13:   let chatDown=false,chatDrop=false,chatReceiptBytes=0,chatUnanswered=false
+14:   const unansweredChatResponses=new Set<ServerResponse>()
+15:   const chatDeadlines:Array<{path:string;idempotencyKey:string;closedAfterMilliseconds:number|null;headersSent:boolean}>=[]
+16:   const closeUnansweredChat=()=>{for(const response of unansweredChatResponses)response.destroy();unansweredChatResponses.clear()}
+17:   const chatPosts=new Map<string,string>()
+18:   let googleDown=false, googleTabs=1, googleBytes=0, googleDropWrite=false
+19:   const sheetRows=new Map<string,string[][]>()
+20:   const tasks = new Map<string, string>(), faulted = new Set<string>(), requests: Captured[] = []
+21:   const read = (request: IncomingMessage) => new Promise<string>(resolve => { let body = ''; request.setEncoding('utf8'); request.on('data', chunk => { body += chunk }); request.on('end', () => resolve(body)) })
+22:   const json = (response: ServerResponse, status: number, value: unknown) => { response.writeHead(status, { 'content-type': 'application/json' }); response.end(JSON.stringify(value)) }
+23:   const server = createServer(async (request, response) => {
+24:     const body = await read(request)
+25:     if (request.url === '/__control/reset') { const options = JSON.parse(body || '{}'); mode = options.mode ?? 'ok'; delayMilliseconds = options.delayMilliseconds ?? 0; closeUnansweredChat();chatUnanswered=false;chatDeadlines.length=0;tasks.clear(); faulted.clear(); sheetRows.clear();googleDown=false;googleTabs=1;googleBytes=0;googleDropWrite=false;requests.length = 0;chatDown=false;chatDrop=false;chatReceiptBytes=0;chatPosts.clear();smsDrop=false; return json(response, 200, { reset: true }) }
+26:     if (request.url === '/__control/state') return json(response, 200, { tasks: Object.fromEntries(tasks), requests,chatDeadlines,chatPosts:Object.fromEntries(chatPosts),sheets:Object.fromEntries(sheetRows) })
+27:     if(request.url==='/__control/sms-mode'){smsDrop=JSON.parse(body).drop===true;return json(response,200,{configured:true})}
+28:     if(request.url==='/__control/chat-mode'){const options=JSON.parse(body);chatDown=options.down===true;chatDrop=options.drop===true;chatReceiptBytes=options.receiptBytes??0;chatUnanswered=options.unanswered===true;if(!chatUnanswered)closeUnansweredChat();return json(response,200,{down:chatDown})}
+29:     if(request.url==='/__control/google-mode'){const options=JSON.parse(body);googleDown=options.down??false;googleTabs=options.tabs??1;googleBytes=options.bytes??0;googleDropWrite=options.dropWrite??false;if(options.book&&options.rows)sheetRows.set(options.book,options.rows);return json(response,200,{down:googleDown})}
+30:     requests.push({ path: request.url ?? '', authorization: request.headers.authorization ?? null, idempotencyKey: (request.headers['idempotency-key'] as string | undefined) ?? null, contentType: request.headers['content-type'] ?? null, body })
+31:     const url=new URL(request.url??'/',`http://127.0.0.1:${(server.address() as AddressInfo).port}`)
+32:     if(url.pathname==='/chat.postMessage'||url.pathname==='/teams'){
+33:       if(chatDown)return json(response,503,{ok:false})
+34:       if(url.pathname==='/chat.postMessage'&&request.headers.authorization!=='Bearer synthetic-pencil-chat-bot')return json(response,401,{ok:false})
+35:       const key=String(request.headers['idempotency-key']??'');if(!key)return json(response,400,{error:'missing-key'})
+36:       chatPosts.set(key,chatPosts.get(key)??body)
+37:       if(chatUnanswered){
+38:         const started=performance.now(),deadline={path:url.pathname,idempotencyKey:key,closedAfterMilliseconds:null as number|null,headersSent:false}
+39:         chatDeadlines.push(deadline);unansweredChatResponses.add(response)
+40:         response.once('close',()=>{deadline.closedAfterMilliseconds=performance.now()-started;deadline.headersSent=response.headersSent;unansweredChatResponses.delete(response)})
+41:         return
+42:       }
+43:       if(chatDrop){chatDrop=false;return request.socket.destroy()}
+44:       return json(response,200,url.pathname==='/teams'?{accepted:true}:{ok:true,ts:'synthetic-pencil-1',...(chatReceiptBytes?{padding:' '.repeat(chatReceiptBytes)}:{})})
+45:     }
+46:     if(url.pathname==='/o/oauth2/v2/auth'){const callback=new URL(url.searchParams.get('redirect_uri')!);callback.searchParams.set('state',url.searchParams.get('state')!);callback.searchParams.set('code','synthetic-pencil-google-code');response.writeHead(302,{location:callback.href});return response.end()}
+47:     if(url.pathname==='/token')return json(response,200,{access_token:'synthetic-pencil-google-access',refresh_token:'synthetic-pencil-google-refresh',expires_in:3600,token_type:'Bearer'})
+48:     if(url.pathname.startsWith('/v4/spreadsheets/')){
+49:       if(googleDown)return json(response,503,{error:{message:'synthetic_unavailable'}})
+50:       if(request.headers.authorization!=='Bearer synthetic-pencil-google-access')return json(response,401,{error:{message:'unauthorized'}})
+51:       const match=/^\/v4\/spreadsheets\/([^/]+)(?:\/values\/(.*))?$/.exec(url.pathname)
+52:       if(!match)return json(response,404,{error:{message:'missing-sheet'}})
+53:       const book=match[1]
+54:       if(!match[2]){
+55:         const result={spreadsheetId:book,properties:{title:'Synthetic pencil workbook'},sheets:Array.from({length:googleTabs},(_,i)=>({properties:{sheetId:i+1,title:i?'Synthetic '+(i+1):'Synthetic responses'}}))}
+56:         if(googleBytes){const text=JSON.stringify({...result,padding:''}),padded=text.slice(0,-2)+' '.repeat(Math.max(0,googleBytes-Buffer.byteLength(text)))+text.slice(-2);response.writeHead(200,{'content-type':'application/json'});return response.end(padded)}
+57:         return json(response,200,result)
+58:       }
+59:       const range=decodeURIComponent(match[2]),rows=sheetRows.get(book)??[];sheetRows.set(book,rows)
+60:       if(request.method==='GET')return json(response,200,{values:rows})
+61:       const payload=JSON.parse(body||'{}'),row=/!A(\d+)/.exec(range)
+62:       if(range.endsWith(':append'))rows.push(...payload.values)
+63:       else if(range.endsWith(':clear')){if(row)rows[Number(row[1])-1]=[]}
+64:       else if(request.method==='PUT'&&row)rows[Number(row[1])-1]=payload.values[0]
+65:       else return json(response,400,{error:{message:'unsupported-write'}})
+66:       if(googleDropWrite){googleDropWrite=false;return request.socket.destroy()}
+67:       return json(response,200,{updatedRows:1})
+68:     }
+69:     if (/^\/2010-04-01\/Accounts\/[^/]+\/Messages\.json$/.test(request.url??'')){
+70:       if(!request.headers.authorization?.startsWith('Basic '))return json(response,401,{error:'unauthorized'})
+71:       const key=String(request.headers['idempotency-key']??'');if(!key)return json(response,400,{error:'missing-key'})
+72:       const sid=tasks.get(key)??`synthetic-pencil-${tasks.size+1}`;tasks.set(key,sid);if(smsDrop){smsDrop=false;return request.socket.destroy()}return json(response,201,{sid,status:'queued'})
+73:     }
+74:     if (request.url !== '/tasks') return json(response, 404, { error: 'not found' })
+75:     if (mode === 'redirect') { response.writeHead(307, { location: '/redirected-tasks' }); return response.end() }
+76:     if (delayMilliseconds) await new Promise(resolve => setTimeout(resolve, delayMilliseconds))
+77:     const key = request.headers['idempotency-key'] as string | undefined
+78:     if (!key || !request.headers.authorization?.startsWith('Bearer ')) return json(response, 401, { error: 'unauthorized' })
+79:     if (mode === 'fail-once-500' && !faulted.has(key)) { faulted.add(key); return json(response, 500, { error: 'temporary' }) }
+80:     const existing = tasks.get(key), taskId = existing ?? `task-${tasks.size + 1}`
+81:     tasks.set(key, taskId)
+82:     // The task is stored; the connection ends before any answer reaches Pencil.
+83:     if (mode === 'store-then-drop-once' && !faulted.has(key)) { faulted.add(key); return request.socket.destroy() }
+84:     return json(response, existing ? 200 : 201, { taskId })
+85:   })
+86:   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve))
+87:   project.provide('taskReceiverOrigin', `http://127.0.0.1:${(server.address() as AddressInfo).port}`)
+88:   return () => new Promise<void>(resolve => { closeUnansweredChat();server.closeAllConnections(); server.close(() => resolve()) })
+89: }
+90: 
+91: declare module 'vitest' {
+92:   export interface ProvidedContext { taskReceiverOrigin: string }
+93: }
+
+FILE tests/runtime/response-webhooks.worker.test.ts
+1: import { aiBindings } from './analysis-fixture'
+2: import { provePaidResponseEdit } from './response-paid-edit-proof'
+3: import { proveChatIntegrations } from './chat-integrations-proof'
+4: import { proveResponseEdit } from './response-edit-proof'
+5: import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
+6: import { afterEach, beforeAll, expect, vi } from 'vitest'
+7: import { contract } from '../../src/test/contract'
+8: import { actionsHttp, everyStoredValue } from './actions-fixture'
+9: import { matureLoad } from './load-time-fixture'
+10: 
+11: declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
+12: beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
+13: afterEach(() => { vi.restoreAllMocks() })
+14: 
+15: type Received = { url: string; eventId: string; eventType: string; timestamp: string; signature: string; body: string }
+16: type Answer = (index: number, request: Received) => Response
+17: const hex = (bytes: ArrayBuffer) => [...new Uint8Array(bytes)].map(byte => byte.toString(16).padStart(2, '0')).join('')
+18: // The receiver's side of the documented contract: HMAC-SHA256 of the exact body, keyed by the secret's UTF-8 bytes.
+19: async function expectedSignature(secret: string, body: string) {
+20:   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
+21:   return `sha256=${hex(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(body)))}`
+22: }
+23: const minute = 60_000
+24: const receiverOrigin = 'http://127.0.0.1:9'
+25: 
+26: contract(['INTEG-010', 'INTEG-015', 'DATA-002', 'RESP-021', 'INTEG-006'], 'signed response events verify, retry on one event ID, replay, disable with an alert and list undelivered responses without ever blocking collection', async () => {
+27:   const f = await actionsHttp(aiBindings, 'hooks')
+28:   await env.DB.prepare("UPDATE oa_operators SET role='owner' WHERE id=?").bind(f.lead.operatorId).run()
+29:   await env.DB.prepare('UPDATE oa_sessions SET operator_version=(SELECT version FROM oa_operators WHERE id=operator_id) WHERE operator_id=?').bind(f.lead.operatorId).run()
+30:   const received: Received[] = [], answers = new Map<string, Answer>()
+31:   const actualFetch=globalThis.fetch.bind(globalThis)
+32:   const network = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+33:     const url = String(input instanceof Request ? input.url : input)
+34:     if(url.startsWith((env as unknown as {EXPORT_READER_ORIGIN:string}).EXPORT_READER_ORIGIN+'/'))return actualFetch(input,init)
+35:     if (!url.startsWith(receiverOrigin)) throw new Error('Unexpected external request')
+36:     const headers = new Headers(init?.headers), request: Received = { url, eventId: headers.get('pencil-event-id')!, eventType: headers.get('pencil-event-type')!, timestamp: headers.get('pencil-timestamp')!, signature: headers.get('pencil-signature')!, body: String(init?.body) }
+37:     expect(init?.redirect).toBe('manual')
+38:     received.push(request)
+39:     return (answers.get(new URL(url).pathname) ?? (() => new Response(null, { status: 204 })))(received.filter(item => item.url === url).length, request)
+40:   })
+41:   const accepted = async <T>(response: Response, status = 200) => { expect(response.status, await response.clone().text()).toBe(status); return response.json() as Promise<T> }
+42:   const slug = (await env.DB.prepare('SELECT slug FROM flows WHERE id=?').bind(f.flowId).first<{ slug: string }>())!.slug
+43:   const submit = async (text = 'synthetic-pencil-answer', options: { honeypot?: string } = {}) => {
+44:     const session = await f.services.responses.startPublicSession({ slug, deviceClass: 'mobile', source: 'direct', clientAddress: `${slug}-${crypto.randomUUID()}` })
+45:     await matureLoad(session, 5000)
+46:     const draft = await f.services.flows.getBuilderDraft(f.workspaceId, f.flowId), step = draft.steps.find(item => item.prompt === 'Anything else?')!, choice = draft.steps.find(item => item.prompt === 'How was the wait?')!
+47:     const option = draft.choices.find(item => item.stepId === choice.id && item.label === 'Short')!
+48:     await f.services.responses.submitPublicResponse({ slug, sessionId: session.sessionId, sessionToken: session.sessionToken, loadTime: session.loadTime, idempotencyKey: `key-${session.sessionId}`, answers: [{ stepId: choice.id, value: option.id }, { stepId: step.id, value: text }], honeypot: options.honeypot ?? '', clientAddress: `${slug}-${session.sessionId}` })
+49:     return (await env.DB.prepare('SELECT id, state FROM responses WHERE session_id=?').bind(session.sessionId).first<{ id: string; state: string }>())!
+50:   }
+51:   const deliveries = async (endpointId: string) => (await accepted<{ deliveries: Array<{ id: string; eventId: string; eventType: string; responseId: string | null; status: string; attempts: number; reason: string | null; attemptLog: Array<{ event: string; httpStatus: number | null; outcomeClass: string | null }> }> }>(await f.call(`/api/app/webhooks/deliveries?endpointId=${endpointId}`))).deliveries
+52:   const ledger = async (state?: string) => (await accepted<{ deliveries: Array<{ kind: string; subject: string; state: string; idempotencyKey: string; responseId: string | null; attempts: Array<{ outcome: string | null; httpStatus: number | null; reason: string | null }> }> }>(await f.call(`/api/app/integration-deliveries${state ? `?state=${state}` : ''}`))).deliveries
+53:   const dispatcher = f.services.webhooks.dispatcher
+54: 
+55:   // The owner registers an endpoint for this form; only the owner may, the address must be safe, and the secret is shown once.
+56:   const member = await f.operator('Member operator'), asMember = f.as(member.token)
+57:   await env.DB.prepare("UPDATE oa_operators SET role='member' WHERE id=?").bind(member.operatorId).run()
+58:   await env.DB.prepare('UPDATE oa_sessions SET operator_version=(SELECT version FROM oa_operators WHERE id=operator_id) WHERE operator_id=?').bind(member.operatorId).run()
+59:   expect((await asMember('/api/app/webhooks', { url: `${receiverOrigin}/hook`, flowId: f.flowId })).status).toBe(403)
+60:   for (const url of ['http://example.test/hook', 'https://user:pass@example.test/hook', 'https://example.test/hook?token=1', 'https://10.0.0.5/hook', 'not a url']) expect((await f.call('/api/app/webhooks', { url })).status, url).toBe(400)
+61:   const created = await accepted<{ endpoint: { id: string; secretSet: boolean }; secret: string }>(await f.call('/api/app/webhooks', { url: `${receiverOrigin}/hook`, flowId: f.flowId }), 201)
+62:   const endpointId = created.endpoint.id, secret = created.secret
+63:   expect(JSON.stringify(await accepted(await f.call('/api/app/webhooks')))).not.toContain(secret)
+64:   expect(created.endpoint.secretSet).toBe(true)
+65:   expect((await env.DB.prepare('SELECT sealed_secret FROM response_webhook_endpoints WHERE id=?').bind(endpointId).first<{ sealed_secret: string }>())!.sealed_secret).not.toContain(secret)
+66:   expect((await everyStoredValue()).filter(value => value.includes(secret))).toEqual([])
+67: 
+68:   // A receiver that answers 500 twice sees two retries on the same event ID, each signed; then the event is confirmed.
+69:   answers.set('/hook', index => new Response(null, { status: index <= 2 ? 500 : 204 }))
+70:   const first = await submit('ANSWER-CANARY-6a1 private text'), start = Date.now()
+71:   expect(first.state).toBe('released')
+72:   await dispatcher.run(new Date(start).toISOString()); await dispatcher.run(new Date(start + minute).toISOString())
+73:   expect(received).toHaveLength(2)
+74:   await dispatcher.run(new Date(start + 2 * minute).toISOString())
+75:   expect(received).toHaveLength(2)
+76:   await dispatcher.run(new Date(start + 5 * minute).toISOString())
+77:   expect(received).toHaveLength(3)
+78:   expect(new Set(received.map(item => item.eventId)).size).toBe(1)
+79:   for (const item of received) {
+80:     expect(item.signature).toBe(await expectedSignature(secret, item.body))
+81:     const body = JSON.parse(item.body)
+82:     expect(body).toMatchObject({ id: item.eventId, type: 'response.created', formId: f.flowId, revisionId: f.revisionId, responseId: first.id })
+83:     expect(Number(item.timestamp)).toBe(Math.floor(Date.parse(body.sentAt) / 1000))
+84:     expect(Object.keys(body).sort()).toEqual(['apiVersion', 'attempt', 'formId', 'id', 'occurredAt', 'responseId', 'revisionId', 'sentAt', 'type'])
+85:     expect(item.body).not.toContain('ANSWER-CANARY')
+86:   }
+87:   expect((await expectedSignature('another-secret', received[0].body))).not.toBe(received[0].signature)
+88:   const [delivery] = await deliveries(endpointId)
+89:   expect(delivery).toMatchObject({ status: 'confirmed', attempts: 3, eventType: 'response.created', responseId: first.id })
+90:   expect(delivery.attemptLog.map(attempt => `${attempt.event}:${attempt.httpStatus ?? ''}`)).toEqual(['started:', 'failed:500', 'started:', 'failed:500', 'started:', 'confirmed:204'])
+91: 
+92:   // Replay re-sends the same event ID and records a new attempt.
+93:   const replayed = await accepted<{ delivery: typeof delivery }>(await f.call(`/api/app/webhooks/deliveries/${delivery.id}/replay`, {}))
+94:   expect(received).toHaveLength(4)
+95:   expect(received[3].eventId).toBe(received[0].eventId)
+96:   expect(replayed.delivery).toMatchObject({ status: 'confirmed', attempts: 4 })
+97:   expect(replayed.delivery.attemptLog.map(attempt => attempt.event)).toContain('replay')
+98:   expect((await asMember(`/api/app/webhooks/deliveries/${delivery.id}/replay`, {})).status).toBe(403)
+99: 
+100:   // Quarantined responses are announced only when released; a test event is signed too; a redirect is never followed.
+101:   const held = await submit('held', { honeypot: 'scanner' })
+102:   expect(held.state).toBe('quarantined')
+103:   await dispatcher.run(new Date(start + 10 * minute).toISOString()); expect(received).toHaveLength(4)
+104:   await f.services.responses.releaseQuarantinedResponse({ workspaceId: f.workspaceId, responseId: held.id, operatorId: f.owner.operatorId })
+105:   await dispatcher.run(new Date(Date.now() + minute).toISOString())
+106:   expect(JSON.parse(received.at(-1)!.body)).toMatchObject({ type: 'response.created', responseId: held.id })
+107:   // PART-002 and PAY-001 events: a saved partial names only the form and revision; a payment change names only its enumerated state.
+108:   const publicCall = (path: string, body: unknown) => f.app.request(`http://localhost${path}`, { method: 'POST', headers: { Host: 'localhost', Origin: 'http://localhost', 'Content-Type': 'application/json', 'CF-Connecting-IP': '192.0.2.77' }, body: JSON.stringify(body) })
+109:   const partial = await accepted<{ sessionId: string; sessionToken: string; flow: { steps: Array<{ id: string }> } }>(await publicCall(`/api/public/flows/${slug}/sessions`, { deviceClass: 'desktop', source: 'direct' }), 201)
+110:   await accepted(await publicCall(`/api/public/flows/${slug}/sessions/save`, { sessionId: partial.sessionId, sessionToken: partial.sessionToken, commandKey: crypto.randomUUID(), email: 'synthetic-pencil-partial@example.test', currentStepId: partial.flow.steps[0].id, answers: [] }), 200)
+111:   await env.DB.prepare("INSERT INTO response_payments (response_id, step_id, completion_step_id, provider, livemode, state, attempt, amount, currency, lines_json, state_changed_at, created_at, updated_at) VALUES (?, 'synthetic-pencil-step', 'synthetic-pencil-end', 'stripe', 0, 'pending', 1, 1200, 'usd', '[]', ?, ?, ?)").bind(held.id, new Date().toISOString(), new Date().toISOString(), new Date().toISOString()).run()
+112:   await env.DB.prepare("UPDATE response_payments SET state = 'paid' WHERE response_id = ?").bind(held.id).run()
+113:   await dispatcher.run(new Date(Date.now() + minute).toISOString())
+114:   const partialEvent = JSON.parse(received.find(item => item.eventType === 'response.partial_saved')!.body), paymentEvent = JSON.parse(received.find(item => item.eventType === 'payment.changed')!.body)
+115:   expect(partialEvent).toMatchObject({ type: 'response.partial_saved', formId: f.flowId, revisionId: f.revisionId, responseId: null })
+116:   expect(paymentEvent).toMatchObject({ type: 'payment.changed', responseId: held.id, payment: { state: 'paid' } })
+117:   expect(JSON.stringify(received.map(item => item.body))).not.toContain('synthetic-pencil-partial@example.test')
+118:   answers.set('/redirect', () => new Response(null, { status: 307, headers: { location: 'http://10.0.0.5/private' } }))
+119:   const redirecting = await accepted<{ endpoint: { id: string } }>(await f.call('/api/app/webhooks', { url: `${receiverOrigin}/redirect` }), 201)
+120:   const test = await accepted<{ delivery: { status: string; eventType: string; attemptLog: Array<{ outcomeClass: string | null }> } }>(await f.call(`/api/app/webhooks/${redirecting.endpoint.id}/test`, {}))
+121:   expect(test.delivery).toMatchObject({ status: 'pending', eventType: 'webhook.test' })
+122:   expect(test.delivery.attemptLog.map(attempt => attempt.outcomeClass)).toContain('3xx')
+123:   expect(received.filter(item => item.url.includes('private'))).toEqual([])
+124:   expect((await f.call(`/api/app/webhooks/${redirecting.endpoint.id}`, undefined, { method: 'DELETE' })).status).toBe(204)
+125: 
+126:   // Collection is never blocked: with the receiver down a response still commits, and five failed deliveries are listed by response ID with an alert.
+127:   answers.set('/hook', () => new Response(null, { status: 503 }))
+128:   await f.call(`/api/app/webhooks/${endpointId}/pause`, {}); await f.call(`/api/app/webhooks/${endpointId}/resume`, {})
+129:   const lost = []
+130:   for (let index = 0; index < 5; index++) lost.push(await submit(`outage-${index}`))
+131:   expect((await env.DB.prepare('SELECT count(*) AS n FROM responses WHERE id IN (?,?,?,?,?)').bind(...lost.map(row => row.id)).first<{ n: number }>())!.n).toBe(5)
+132:   const outage = Date.now() + 20 * minute
+133:   await dispatcher.run(new Date(outage).toISOString())
+134:   const failing = await deliveries(endpointId)
+135:   expect(failing.filter(item => item.status === 'pending' && item.attempts === 1).map(item => item.responseId).sort()).toEqual(lost.map(row => row.id).sort())
+136:   expect((await accepted<{ responses: Array<{ responseId: string }> }>(await f.call(`/api/app/webhooks/${endpointId}/undelivered`))).responses.map(item => item.responseId).sort()).toEqual(lost.map(row => row.id).sort())
+137:   expect((await accepted<{ alerts: Array<{ kind: string }> }>(await f.call('/api/app/webhooks/alerts'))).alerts[0].kind).toBe('failing')
+138:   // The ladder ends 24 hours after the first attempt: the events fail, and sustained failure disables the endpoint with an alert.
+139:   for (const offset of [1, 5, 15, 30, 60, 120, 240, 480, 960, 1440]) await dispatcher.run(new Date(outage + offset * minute).toISOString())
+140:   const failed = await deliveries(endpointId)
+141:   expect(failed.filter(item => lost.some(row => row.id === item.responseId)).map(item => item.status)).toEqual(Array(5).fill('failed'))
+142:   expect(failed.find(item => item.responseId === lost[0].id)!.attempts).toBe(11)
+143:   const endpoint = (await accepted<{ endpoints: Array<{ id: string; state: string; disabledReason: string; failed: number }> }>(await f.call('/api/app/webhooks'))).endpoints.find(item => item.id === endpointId)!
+144:   expect(endpoint).toMatchObject({ state: 'disabled', failed: 5 })
+145:   // INTEG-015: the one ledger lists the five failed deliveries by response ID, each with its own idempotency key and every attempt's reason.
+146:   const broken = (await ledger('failed')).filter(item => item.kind === 'webhook' && lost.some(row => row.id === item.responseId))
+147:   expect(broken).toHaveLength(5)
+148:   expect(new Set(broken.map(item => item.idempotencyKey)).size).toBe(5)
+149:   for (const item of broken) {
+150:     expect(item.subject).toBe('response.created')
+151:     expect(item.attempts.filter(attempt => attempt.outcome === 'failed')).toHaveLength(11)
+152:     expect(item.attempts.at(-1)).toMatchObject({ httpStatus: 503, reason: expect.stringContaining('503') })
+153:   }
+154:   expect(endpoint.disabledReason).toMatch(/24 hours/)
+155:   expect((await accepted<{ alerts: Array<{ kind: string; message: string }> }>(await f.call('/api/app/webhooks/alerts'))).alerts).toEqual([expect.objectContaining({ kind: 'disabled', message: expect.stringContaining('disabled') })])
+156:   const afterDisable = received.length
+157:   const unsent = await submit('after-disable')
+158:   await dispatcher.run(new Date(outage + 1500 * minute).toISOString())
+159:   expect(received).toHaveLength(afterDisable)
+160:   expect(unsent.state).toBe('released')
+161:   expect((await f.call(`/api/app/webhooks/${endpointId}/test`, {})).status).toBe(409)
+162: 
+163:   // The receiver is repaired: resuming and replaying the five failed events confirms each once, with no duplicate delivery.
+164:   answers.set('/hook', () => new Response(null, { status: 204 }))
+165:   await accepted(await f.call(`/api/app/webhooks/${endpointId}/resume`, {}))
+166:   const before = received.length
+167:   for (const item of failed.filter(entry => lost.some(row => row.id === entry.responseId))) await accepted(await f.call(`/api/app/webhooks/deliveries/${item.id}/replay`, {}))
+168:   const resent = received.slice(before).filter(item => item.eventType === 'response.created')
+169:   expect(resent.map(item => JSON.parse(item.body).responseId).sort()).toEqual(lost.map(row => row.id).sort())
+170:   expect(new Set(resent.map(item => item.eventId)).size).toBe(5)
+171:   const repaired = (await ledger('confirmed')).filter(item => lost.some(row => row.id === item.responseId))
+172:   expect(repaired.map(item => item.idempotencyKey).sort()).toEqual(broken.map(item => item.idempotencyKey).sort())
+173:   expect((await env.DB.prepare("SELECT count(*) AS n FROM response_event_deliveries WHERE event_type = 'response.created' AND response_id IN (?,?,?,?,?)").bind(...lost.map(row => row.id)).first<{ n: number }>())!.n).toBe(5)
+174:   expect((await accepted<{ responses: unknown[] }>(await f.call(`/api/app/webhooks/${endpointId}/undelivered`))).responses.map(item => JSON.stringify(item))).toEqual([JSON.stringify({ responseId: unsent.id, status: 'pending' })])
+175:   await dispatcher.run(new Date(Date.now() + minute).toISOString())
+176:   expect((await deliveries(endpointId)).filter(item => item.eventType === 'response.created' && item.status === 'confirmed')).toHaveLength(8)
+177:   expect((await accepted<{ alerts: unknown[] }>(await f.call('/api/app/webhooks/alerts'))).alerts).toEqual([])
+178: 
+179:   // Erasure removes the response's deliveries and queues one deletion notice that names only the response.
+180:   await f.services.responses.eraseReleasedResponse({ workspaceId: f.workspaceId, responseId: first.id, operatorId: f.owner.operatorId })
+181:   expect((await env.DB.prepare("SELECT count(*) AS n FROM response_event_deliveries WHERE response_id=? AND event_type='response.created'").bind(first.id).first<{ n: number }>())!.n).toBe(0)
+182:   await dispatcher.run(new Date(Date.now() + minute).toISOString())
+183:   expect(JSON.parse(received.at(-1)!.body)).toMatchObject({ type: 'response.deleted', responseId: first.id })
+184:   expect((await env.DB.prepare("SELECT response_id AS responseId, status FROM response_event_deliveries WHERE event_type='response.deleted'").first())).toEqual({ responseId: null, status: 'confirmed' })
+185: 
+186:   // The secret rotates (the old one stops verifying) and removal discards the endpoint with its ledger.
+187:   const rotated = await accepted<{ secret: string }>(await f.call(`/api/app/webhooks/${endpointId}/rotate`, {}))
+188:   expect(rotated.secret).not.toBe(secret)
+189:   await submit('after-rotation'); await dispatcher.run(new Date(Date.now() + minute).toISOString())
+190:   expect(received.at(-1)!.signature).toBe(await expectedSignature(rotated.secret, received.at(-1)!.body))
+191:   expect(received.at(-1)!.signature).not.toBe(await expectedSignature(secret, received.at(-1)!.body))
+192:   expect((await f.call(`/api/app/webhooks/${endpointId}`, undefined, { method: 'DELETE' })).status).toBe(204)
+193:   expect((await env.DB.prepare('SELECT count(*) AS n FROM response_event_deliveries WHERE endpoint_id=?').bind(endpointId).first<{ n: number }>())!.n).toBe(0)
+194:   await proveResponseEdit(f,received,expectedSignature)
+195:   network.mockRestore()
+196:   await provePaidResponseEdit(f)
+197:   await proveChatIntegrations()
+198: })
+
+FILE src/core/features/chat-integrations/transport.ts
+1: import type { IntegrationConnections } from '../../platform/config/connections'
+2: import type { ChatPlatform } from './model'
+3: export type ChatMessage={text:string;link:string;buttonDeliveryId?:string;owner?:{id:string;name:string};channel?:string}
+4: export type ChatOutcome={state:'confirmed'|'failed'|'unknown';httpStatus:number|null;reason:string|null}
+5: const plain=(text:string)=>text.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g,' ').slice(0,12000)
+6: const teamsText=(text:string)=>plain(text).replace(/[&<>]/g,character=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[character]!)
+7: export async function postChat(connections:IntegrationConnections,platform:ChatPlatform,message:ChatMessage,key:string):Promise<ChatOutcome> {
+8:   const slack=platform==='slack'?await connections.slack():undefined,teams=platform==='teams'?await connections.teams():undefined
+9:   if(!slack&&!teams)return {state:'failed',httpStatus:null,reason:'The owner must reconnect this chat service.'}
+10:   let response:Response
+11:   try {
+12:     const owner=message.owner
+13:     const payload=slack?{channel:message.channel,text:plain(message.text)+'\n'+message.link,mrkdwn:false,unfurl_links:false,unfurl_media:false,
+14:       blocks:[{type:'section',text:{type:'plain_text',text:plain(message.text)}},{type:'actions',elements:[{type:'button',text:{type:'plain_text',text:'Open in Pencil'},url:message.link},...(message.buttonDeliveryId?[{type:'button',text:{type:'plain_text',text:'Create action'},action_id:'pencil_create_action',value:message.buttonDeliveryId}]:[])]}]}:
+15:       {type:'message',attachments:[{contentType:'application/vnd.microsoft.card.adaptive',contentUrl:null,content:{$schema:'http://adaptivecards.io/schemas/adaptive-card.json',type:'AdaptiveCard',version:'1.4',body:[...(owner?[{type:'TextBlock',text:`For <at>${teamsText(owner.name)}</at>`,wrap:true}]:[]),{type:'TextBlock',text:teamsText(message.text),wrap:true}],actions:[{type:'Action.OpenUrl',title:'Open in Pencil',url:message.link}],...(owner?{msteams:{entities:[{type:'mention',text:`<at>${teamsText(owner.name)}</at>`,mentioned:{id:owner.id,name:owner.name}}]}}:{})}}]}
+16:     response=await fetch(slack?`${slack.apiOrigin.replace(/\/$/,'')}/chat.postMessage`:teams!.webhookUrl,{method:'POST',redirect:'manual',signal:AbortSignal.timeout(10000),headers:{'content-type':'application/json','idempotency-key':key,...(slack?{authorization:`Bearer ${slack.botToken}`}:{})},body:JSON.stringify(payload)})
+17:   } catch {return {state:'unknown',httpStatus:null,reason:'The chat service may have accepted this post. Automatic resend is disabled.'}}
+18:   const status=response.status
+19:   if(status<200||status>=300){await response.body?.cancel();return {state:'failed',httpStatus:status,reason:`Chat service returned HTTP ${status}.`}}
+20:   if(!slack){await response.body?.cancel();return {state:'confirmed',httpStatus:status,reason:null}}
+21:   try {
+22:     const declared=Number(response.headers.get('content-length')??0)
+23:     if(declared>16384){await response.body?.cancel();return {state:'unknown',httpStatus:status,reason:'Chat service returned an oversized receipt.'}}
+24:     const reader=response.body?.getReader();if(!reader)throw new Error()
+25:     let content='',size=0;const decoder=new TextDecoder()
+26:     while(true){const chunk=await reader.read();if(chunk.done)break;size+=chunk.value.length;if(size>16384){await reader.cancel();return {state:'unknown',httpStatus:status,reason:'Chat service returned an oversized receipt.'}}content+=decoder.decode(chunk.value,{stream:true})}
+27:     content+=decoder.decode()
+28:     const body=JSON.parse(content) as {ok?:unknown}
+29:     return body.ok===true?{state:'confirmed',httpStatus:status,reason:null}:{state:'failed',httpStatus:status,reason:'Slack did not confirm the post. Check the bot permission and destination.'}
+30:   } catch {return {state:'unknown',httpStatus:status,reason:'Chat service returned an invalid receipt; automatic resend is disabled.'}}
+31: }
+
+FILE src/core/features/chat-integrations/service.ts
+1: import type { IntegrationConnections } from '../../platform/config/connections'
+2: import { ConflictError, NotFoundError, ValidationError } from '../../shared/errors'
+3: import { formSettings } from '../../shared/hiddenFields'
+4: import { insideSendingWindow, nextSendingInstant } from '../distribution'
+5: import { createSlackAction } from './interaction'
+6: import { chatFormSchema, safeSummaryTypes, type ChatFormLink, type ChatFormSettings, type ChatPlatform } from './model'
+7: import { eligibleChatAction, eligibleChatResponse, materializeChatReminders, materializeChatResponses } from './queue'
+8: import { postChat, type ChatMessage } from './transport'
+9: 
+10: type Due={id:string;linkId:string;responseId:string|null;targetId:string|null;kind:string;dueDate:string|null;reviewDate:string|null;key:string;attempts:number;settingsJson:string;workspaceId:string;flowId:string;platform:ChatPlatform}
+11: const selection=`d.id,d.link_id AS linkId,d.response_id AS responseId,d.action_target_id AS targetId,d.kind,d.due_date AS dueDate,d.review_date AS reviewDate,d.idempotency_key AS key,d.attempts,l.settings_json AS settingsJson,l.workspace_id AS workspaceId,l.flow_id AS flowId,l.platform`
+12: const timing:Record<string,string>={before:'Action review in three days',on_date:'Action review today',overdue:'Action review overdue'}
+13: 
+14: export class ChatIntegrations {
+15:   constructor(private db:D1Database,private connections:IntegrationConnections,private configuration:{origin:string;local:boolean}){}
+16:   private async owned(workspaceId:string,flowId:string){if(!await this.db.prepare('SELECT 1 FROM flows WHERE id=? AND workspace_id=?').bind(flowId,workspaceId).first())throw new NotFoundError('This form is not in your workspace.')}
+17:   async list(workspaceId:string,flowId:string):Promise<ChatFormLink[]>{
+18:     await this.owned(workspaceId,flowId)
+19:     const rows=await this.db.prepare('SELECT id,settings_json AS settingsJson,armed FROM chat_form_links WHERE workspace_id=? AND flow_id=? ORDER BY platform').bind(workspaceId,flowId).all<{id:string;settingsJson:string;armed:number}>()
+20:     return rows.results.map(row=>({...chatFormSchema.parse(JSON.parse(row.settingsJson)),id:row.id,armed:!!row.armed}))
+21:   }
+22:   async save(workspaceId:string,flowId:string,input:ChatFormSettings){
+23:     await this.owned(workspaceId,flowId)
+24:     const settings=chatFormSchema.parse(input)
+25:     if(settings.platform==='slack'?!await this.connections.slack():!await this.connections.teams())throw new ValidationError('Ask the owner to connect this chat service in Settings first.')
+26:     const owner=await this.db.prepare(`SELECT 1 FROM operators o WHERE o.id=? AND o.workspace_id=? AND NOT EXISTS(SELECT 1 FROM operator_auth_links l JOIN oa_operators auth ON auth.id=l.auth_id WHERE l.operator_id=o.id AND auth.status='inactive')`).bind(settings.operatorId,workspaceId).first()
+27:     if(!owner)throw new ValidationError('Choose an active workspace operator as the action owner.')
+28:     const fields=await this.db.prepare(`SELECT s.stable_id AS id,s.question_type AS type FROM flow_steps s JOIN flow_revisions v ON v.id=s.revision_id WHERE v.flow_id=? AND v.state='draft' AND s.kind='question'`).bind(flowId).all<{id:string;type:string}>()
+29:     for(const id of settings.answerStepIds){const field=fields.results.find(field=>field.id===id);if(!field||!safeSummaryTypes.has(field.type))throw new ValidationError('Sensitive or free-text fields cannot be posted to chat. Select only closed choices, ratings, yes/no or numeric questions.')}
+30:     const now=new Date().toISOString(),existing=await this.db.prepare('SELECT id FROM chat_form_links WHERE flow_id=? AND platform=?').bind(flowId,settings.platform).first<{id:string}>(),id=existing?.id??crypto.randomUUID()
+31:     await this.db.batch([
+32:       this.db.prepare(`INSERT INTO chat_form_links(id,workspace_id,flow_id,platform,settings_json,armed,updated_at) VALUES(?,?,?,?,?,1,?) ON CONFLICT(flow_id,platform) DO UPDATE SET settings_json=excluded.settings_json,armed=1,updated_at=excluded.updated_at`).bind(id,workspaceId,flowId,settings.platform,JSON.stringify(settings),now),
+33:       this.db.prepare(`UPDATE chat_deliveries SET state='cancelled',reason='The form’s chat settings changed. Retained work is not replayed.',updated_at=? WHERE link_id=? AND state='pending'`).bind(now,id),
+34:     ])
+35:     return this.list(workspaceId,flowId)
+36:   }
+37:   async remove(workspaceId:string,flowId:string,platform:ChatPlatform){await this.owned(workspaceId,flowId);await this.db.prepare('DELETE FROM chat_form_links WHERE workspace_id=? AND flow_id=? AND platform=?').bind(workspaceId,flowId,platform).run()}
+38:   async disarm(platform:ChatPlatform){await this.db.batch([this.db.prepare(`UPDATE chat_form_links SET armed=0 WHERE platform=?`).bind(platform),this.db.prepare(`UPDATE chat_deliveries SET state='cancelled',reason='The chat connection was removed.',updated_at=? WHERE state='pending' AND link_id IN(SELECT id FROM chat_form_links WHERE platform=?)`).bind(new Date().toISOString(),platform)])}
+39:   interaction(input:{body:string;timestamp:string|null;signature:string|null},now?:string){return createSlackAction(this.db,this.connections,input,now)}
+40:   async replay(workspaceId:string,id:string){
+41:     const row=await this.db.prepare(`SELECT d.state,d.attempts,l.armed,l.updated_at AS settingsAt,d.started_at AS startedAt FROM chat_deliveries d JOIN chat_form_links l ON l.id=d.link_id WHERE d.id=? AND l.workspace_id=?`).bind(id,workspaceId).first<{state:string;attempts:number;armed:number;settingsAt:string;startedAt:string|null}>()
+42:     if(!row)throw new NotFoundError('This chat delivery is unavailable.')
+43:     if(!row.armed)throw new ConflictError('The chat connection is disarmed. Retained posts cannot be replayed.')
+44:     if(!row.startedAt||row.settingsAt>row.startedAt)throw new ConflictError('The form’s chat settings changed. Retained posts cannot be replayed.')
+45:     if(!['failed','unknown'].includes(row.state))throw new ConflictError('Only failed or unknown chat posts can be replayed.')
+46:     const now=new Date().toISOString(),claim=crypto.randomUUID()
+47:     await this.db.batch([
+48:       this.db.prepare(`INSERT INTO chat_attempts(id,delivery_id,ordinal,outcome,reason,created_at)
+49:         SELECT ?,d.id,d.attempts,d.state,'Explicit owner replay requested; the same idempotency key is retained.',? FROM chat_deliveries d JOIN chat_form_links l ON l.id=d.link_id
+50:         WHERE d.id=? AND l.workspace_id=? AND d.state IN('failed','unknown') AND l.armed=1 AND l.updated_at<=d.started_at`).bind(claim,now,id,workspaceId),
+51:       this.db.prepare(`UPDATE chat_deliveries SET state='pending',available_at=?,reason='Explicit owner replay requested; the same idempotency key is retained.',updated_at=?
+52:         WHERE id=? AND state IN('failed','unknown') AND EXISTS(SELECT 1 FROM chat_attempts WHERE id=? AND delivery_id=chat_deliveries.id)`).bind(now,now,id,claim),
+53:     ])
+54:     if(!await this.db.prepare('SELECT 1 FROM chat_attempts WHERE id=?').bind(claim).first())throw new ConflictError('The chat post or its connection changed. Reload before replaying.')
+55:     await this.run(now)
+56:   }
+57:   async run(now=new Date().toISOString()){
+58:     await materializeChatResponses(this.db,now)
+59:     await materializeChatReminders(this.db,now)
+60:     const interrupted=new Date(Date.parse(now)-300000).toISOString()
+61:     await this.db.batch([
+62:       this.db.prepare(`INSERT OR IGNORE INTO chat_attempts(id,delivery_id,ordinal,outcome,reason,created_at) SELECT 'interrupted:'||id||':'||attempts,id,attempts,'unknown','An interrupted post may have arrived; automatic resend is disabled.',? FROM chat_deliveries WHERE state='sending' AND started_at<?`).bind(now,interrupted),
+63:       this.db.prepare(`UPDATE chat_deliveries SET state='unknown',reason='The chat post was interrupted and may have arrived; automatic resend is disabled.',updated_at=? WHERE state='sending' AND started_at<?`).bind(now,interrupted),
+64:     ])
+65:     const due=await this.db.prepare(`SELECT ${selection} FROM chat_deliveries d JOIN chat_form_links l ON l.id=d.link_id WHERE l.armed=1 AND d.state='pending' AND d.available_at<=?
+66:       AND NOT EXISTS(SELECT 1 FROM chat_deliveries earlier WHERE earlier.action_target_id=d.action_target_id AND earlier.state IN('pending','sending') AND earlier.due_date<d.due_date)
+67:       ORDER BY COALESCE(d.due_date,''),d.available_at,d.id LIMIT 50`).bind(now).all<Due>()
+68:     let attempted=0
+69:     for(const row of due.results){
+70:       let message:ChatMessage|null
+71:       try {message=await this.message(row,now)}catch(error){await this.db.prepare("UPDATE chat_deliveries SET state='failed',reason=?,updated_at=? WHERE id=? AND state='pending'").bind(error instanceof ValidationError?error.message:'The retained chat configuration could not be read.',now,row.id).run();continue}
+72:       if(!message)continue
+73:       const claim=crypto.randomUUID()
+74:       const claimed=await this.db.batch([
+75:         this.db.prepare(`INSERT INTO chat_attempts(id,delivery_id,ordinal,outcome,created_at) SELECT ?,d.id,d.attempts+1,'started',? FROM chat_deliveries d JOIN chat_form_links l ON l.id=d.link_id WHERE d.id=? AND d.state='pending' AND l.armed=1 AND l.settings_json=?`).bind(claim,now,row.id,row.settingsJson),
+76:         this.db.prepare(`UPDATE chat_deliveries SET state='sending',attempts=attempts+1,started_at=?,updated_at=? WHERE id=? AND state='pending' AND EXISTS(SELECT 1 FROM chat_attempts WHERE id=? AND delivery_id=chat_deliveries.id AND ordinal=chat_deliveries.attempts+1) RETURNING id`).bind(now,now,row.id,claim),
+77:       ])
+78:       if(!claimed[1].results.length)continue
+79:       // Re-read after the claim, including verdict, owner and WS-002 hours. A stopped action never prepares another post.
+80:       try {message=await this.message(row,now)}catch(error){await this.db.prepare("UPDATE chat_deliveries SET state='failed',reason=?,updated_at=? WHERE id=? AND state='sending'").bind(error instanceof ValidationError?error.message:'The retained chat configuration could not be read.',now,row.id).run();continue}
+81:       if(!message){await this.db.prepare("UPDATE chat_deliveries SET state='cancelled',reason='The chat post is no longer eligible.',updated_at=? WHERE id=? AND state='sending'").bind(now,row.id).run();continue}
+82:       attempted++
+83:       let result:Awaited<ReturnType<typeof postChat>>
+84:       try {result=await postChat(this.connections,row.platform,message,row.key)}catch {result={state:'failed',httpStatus:null,reason:'The saved chat connection cannot be unlocked. Ask the owner to reconnect it.'}}
+85:       await this.db.batch([
+86:         this.db.prepare(`INSERT INTO chat_attempts(id,delivery_id,ordinal,outcome,http_status,reason,created_at) SELECT ?,id,attempts,?,?,?,? FROM chat_deliveries WHERE id=? AND state IN('sending','cancelled')`).bind(crypto.randomUUID(),result.state,result.httpStatus,result.reason,now,row.id),
+87:         this.db.prepare(`UPDATE chat_deliveries SET state=CASE WHEN state='cancelled' THEN state ELSE ? END,reason=?,updated_at=? WHERE id=? AND state IN('sending','cancelled')`).bind(result.state,result.reason,now,row.id),
+88:       ])
+89:     }
+90:     return {attempted}
+91:   }
+92:   private async message(row:Due,now:string):Promise<ChatMessage|null>{
+93:     const settings=chatFormSchema.parse(JSON.parse(row.settingsJson))
+94:     if(row.responseId){
+95:       const response=await this.db.prepare(`SELECT r.revision_id AS revisionId,v.title,r.completed_at AS completedAt,v.form_settings_json AS revisionSettingsJson FROM responses r JOIN flow_revisions v ON v.id=r.revision_id JOIN chat_form_links l ON l.flow_id=r.flow_id WHERE r.id=? AND l.id=? AND l.armed=1 AND l.settings_json=? AND ${eligibleChatResponse}`).bind(row.responseId,row.linkId,row.settingsJson).first<{revisionId:string;title:string;completedAt:string;revisionSettingsJson:string}>()
+96:       if(!response){await this.db.prepare("UPDATE chat_deliveries SET state='cancelled',reason='The response is no longer eligible.',updated_at=? WHERE id=? AND state='pending'").bind(now,row.id).run();return null}
+97:       if(row.key.startsWith('chat:alert:')) {
+98:         const ruleId=/^chat:alert:([A-Za-z0-9_-]{1,100}):/.exec(row.key)?.[1]
+99:         const rule=formSettings(response.revisionSettingsJson).answerAlerts?.find(rule=>rule.id===ruleId&&rule.chatPlatforms?.includes(row.platform))
+100:         if(!rule||row.key!==`chat:alert:${rule.id}:${row.linkId}:${row.responseId}`)throw new ValidationError('The retained answer alert route is unavailable.')
+101:         return {text:`${response.title}\nAnswer alert: ${rule.name}\nSubmitted ${response.completedAt}`,link:new URL(`/app/flows/${encodeURIComponent(row.flowId)}/results`,this.configuration.origin).href,channel:settings.channel}
+102:       }
+103:       const answers=await this.db.prepare(`SELECT s.stable_id AS id,s.question_type AS type,s.prompt,a.value_json AS valueJson FROM response_answers a JOIN flow_steps s ON s.revision_id=? AND s.stable_id=a.step_id WHERE a.response_id=?`).bind(response.revisionId,row.responseId).all<{id:string;type:string;prompt:string;valueJson:string}>()
+104:       const summary:string[]=[]
+105:       for(const id of settings.answerStepIds){const answer=answers.results.find(answer=>answer.id===id);if(!answer)continue;if(!safeSummaryTypes.has(answer.type))throw new ValidationError('A selected field is sensitive or free text. No answers were posted. Repair this form’s chat summary.')
+106:         const value:unknown=JSON.parse(answer.valueJson)
+107:         if(['single_choice','multiple_choice'].includes(answer.type)){
+108:           const selected=typeof value==='string'?[value]:Array.isArray(value)&&value.every(item=>typeof item==='string')?value:[]
+109:           const choices=await this.db.prepare('SELECT stable_id AS id,label FROM choice_options WHERE step_id=(SELECT id FROM flow_steps WHERE revision_id=? AND stable_id=?) ORDER BY position').bind(response.revisionId,id).all<{id:string;label:string}>()
+110:           if(selected.some(id=>!choices.results.some(choice=>choice.id===id)))throw new ValidationError('Only closed choice labels may be posted; Other text is refused.')
+111:           if(selected.length)summary.push(`${answer.prompt}: ${selected.map(id=>choices.results.find(choice=>choice.id===id)!.label).join(', ')}`)
+112:         }else if(typeof value==='number'&&Number.isFinite(value)||typeof value==='boolean')summary.push(`${answer.prompt}: ${String(value)}`)
+113:         else if(value!==null)throw new ValidationError('A selected field has a non-scalar value. No answers were posted.')
+114:       }
+115:       return {text:`${response.title}\nSubmitted ${response.completedAt}${summary.length?'\n'+summary.join('\n'):''}`,link:new URL(`/app/flows/${encodeURIComponent(row.flowId)}/inbox`,this.configuration.origin).href,channel:settings.channel,...(row.platform==='slack'&&settings.action?{buttonDeliveryId:row.id}:{})}
+116:     }
+117:     const action=await this.db.prepare(`SELECT a.id,a.title,a.review_date AS reviewDate,o.display_name AS ownerName,t.user_id AS userId,w.time_zone AS timeZone,w.sending_window_start AS sendingWindowStart,w.sending_window_end AS sendingWindowEnd
+118:       FROM chat_action_targets t JOIN actions a ON a.id=t.action_id JOIN operators o ON o.id=t.operator_id JOIN workspaces w ON w.id=a.workspace_id JOIN chat_form_links l ON l.id=t.link_id
+119:       WHERE t.id=? AND l.armed=1 AND l.settings_json=? AND a.review_date=? AND ${eligibleChatAction}`).bind(row.targetId,row.settingsJson,row.reviewDate).first<{id:string;title:string;reviewDate:string;ownerName:string;userId:string;timeZone:string;sendingWindowStart:string;sendingWindowEnd:string}>()
+120:     if(!action)return null
+121:     if(!insideSendingWindow(new Date(now),action)){await this.db.prepare("UPDATE chat_deliveries SET available_at=?,reason='Held until the workspace sending window opens.',updated_at=? WHERE id=? AND state='pending'").bind(nextSendingInstant(now,action),now,row.id).run();return null}
+122:     return {text:`${timing[row.kind]}: ${action.title}\nReview date: ${action.reviewDate} (${action.timeZone}).\nOwner: ${action.ownerName}\nSign in to record your verdict.`,link:new URL(`/app/actions/${encodeURIComponent(action.id)}`,this.configuration.origin).href,channel:row.platform==='slack'?action.userId:settings.channel,owner:{id:action.userId,name:action.ownerName}}
+123:   }
+124: }

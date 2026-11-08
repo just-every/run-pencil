@@ -1,0 +1,140 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-pencil",
+  "tag": "sd-pencil-c-f33",
+  "branch": "cloud/sd-pencil-c-f33",
+  "head": "18ef418c11ba90618205512f485918fe5aae68bb",
+  "clause": "INTEG-006",
+  "before": "PARTIAL",
+  "after": "PARTIAL",
+  "countsBefore": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49,
+    "total": 252
+  },
+  "countsAfter": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49,
+    "total": 252
+  },
+  "testRegistrationDelta": 0,
+  "productionChanged": false,
+  "contractStatusChanged": false,
+  "generatedViewsCommitted": false,
+  "proofLines": {
+    "deadline-start": 163,
+    "response-admission": 168,
+    "signal-observer": 177,
+    "abort-timing": 188,
+    "receiver-timing": 193,
+    "unknown-deliveries": 201,
+    "unknown-attempt": 206,
+    "response-unchanged": 211,
+    "scheduler-no-resend": 214,
+    "cleanup": 283
+  },
+  "localTiming": {
+    "head": "18ef418c11ba90618205512f485918fe5aae68bb",
+    "command": "cloud_run pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/response-webhooks.worker.test.ts --reporter=json --outputFile=worker-exact-head.json",
+    "exit": 0,
+    "startedAt": 1794140428.2233412,
+    "elapsedSeconds": 47.066,
+    "node": "v24.19.0",
+    "runId": "local-sd-pencil-c-f33-20261108T122028Z"
+  },
+  "precommitChecks": [
+    {
+      "name": "typecheck",
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "elapsedSeconds": 20.661
+    },
+    {
+      "name": "first-party",
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "elapsedSeconds": 1.208
+    },
+    {
+      "name": "source-check",
+      "command": "pnpm source:check",
+      "exit": 0,
+      "elapsedSeconds": 0.992
+    }
+  ],
+  "exactHeadIntegrity": {
+    "head": "18ef418c11ba90618205512f485918fe5aae68bb",
+    "checks": {
+      "lock": {
+        "command": "node scripts/edition-authoring/cli.mjs check",
+        "exit": 0,
+        "ok": true,
+        "drift": null,
+        "unrecordedCopies": null
+      },
+      "base-integrity": {
+        "command": "node scripts/edition-authoring/cli.mjs verify-base --offline",
+        "exit": 0,
+        "ok": true,
+        "drift": [],
+        "unrecordedCopies": []
+      }
+    }
+  },
+  "candidateCI": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "18ef418c11ba90618205512f485918fe5aae68bb",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42479761808",
+      "id": 42479761808,
+      "name": "Verify candidate",
+      "status": "in_progress"
+    }
+  ],
+  "githubAPICalls": 4,
+  "pr": null,
+  "publicationScan": {
+    "status": "lander-pending",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "mainEqual": false,
+  "runSite": "lander-pending",
+  "ready": false,
+  "candidateCIObservation": {
+    "conclusion": null,
+    "head_sha": "18ef418c11ba90618205512f485918fe5aae68bb",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42479761808",
+    "status": "in_progress"
+  },
+  "candidateCIRunId": 42479761808,
+  "localTimingCICompatibleNode": {
+    "head": "18ef418c11ba90618205512f485918fe5aae68bb",
+    "command": "cloud_run pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/response-webhooks.worker.test.ts --reporter=json --outputFile=worker-node22-exact-head.json",
+    "node": "v22.20.0",
+    "exit": 0,
+    "startedAt": 1794140771.6707706,
+    "elapsedSeconds": 50.237,
+    "runId": "local-node22-sd-pencil-c-f33-20261108T122611Z"
+  },
+  "exactHeadNode22Checks": {
+    "head": "18ef418c11ba90618205512f485918fe5aae68bb",
+    "node": "v22.20.0",
+    "checks": [
+      {
+        "command": "pnpm typecheck",
+        "exit": 0,
+        "elapsedSeconds": 23.647
+      },
+      {
+        "command": "pnpm exec rer check --profile first-party",
+        "exit": 0,
+        "elapsedSeconds": 1.266
+      }
+    ]
+  }
+}

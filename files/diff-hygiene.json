@@ -1,0 +1,12 @@
+[
+  {
+    "file": "tests/runtime/chat-integrations-proof.ts",
+    "addedEmailShapedValue": false,
+    "addedLines": 54
+  },
+  {
+    "file": "tests/runtime/task-receiver.global.ts",
+    "addedEmailShapedValue": false,
+    "addedLines": 14
+  }
+]
