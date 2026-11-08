@@ -5,9 +5,10 @@ import type { BrowserContext, Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 import { mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
+import { proveWordpressEmbed } from './wordpress-embed'
 
 contract(['DIST-013', 'DIST-002', 'DIST-009', 'BASE-PUBLIC-001', 'BASE-PUBLIC-002'], 'copied async script mounts an opaque allowed-host iframe, resizes, emits only permitted events and rejects malicious messages', async ({ page, context, browser }, info) => {
-  test.setTimeout(120_000)
+  test.setTimeout(300_000)
   await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
   await signInBrand(page)
   const origin = process.env.PENCIL_E2E_BASE_URL!
@@ -193,6 +194,7 @@ contract(['DIST-013', 'DIST-002', 'DIST-009', 'BASE-PUBLIC-001', 'BASE-PUBLIC-00
         await expect(modal.locator('iframe')).toHaveCount(0)
       } finally { await modal.close(); await modalHost.close() }
     }
+    await proveWordpressEmbed(page, browser, info, flow, draft.revision.id, workspace, host.origin)
     for (const referer of ['https://hostile.invalid/page', `${host.origin}.hostile.invalid/page`, '']) {
       const refused = await page.request.get(`/embed.js?flow=${flow.slug}`, { headers: { Referer: referer } })
       expect(refused.status()).toBe(403)
