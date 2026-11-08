@@ -1,0 +1,45 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+
+ RUN  v4.1.11 /workspace/scratch/sd-pencil-c-f34
+
+exception = kj/async-io.c++:72: disconnected: stream disconnected prematurely
+stack: /workspace/scratch/sd-pencil-c-f34/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a3cc66 /workspace/scratch/sd-pencil-c-f34/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57dfc57 /workspace/scratch/sd-pencil-c-f34/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57e0967 /workspace/scratch/sd-pencil-c-f34/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57e3993 /workspace/scratch/sd-pencil-c-f34/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57be310 /workspace/scratch/sd-pencil-c-f34/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57c4f80 /workspace/scratch/sd-pencil-c-f34/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57dc7b0 /workspace/scratch/sd-pencil-c-f34/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2238860 /workspace/scratch/sd-pencil-c-f34/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@329c8f0 /workspace/scratch/sd-pencil-c-f34/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2ed06c0
+uncaught exception; source = Uncaught (in promise); stack = Error: Network connection lost.
+uncaught exception; exception = workerd/jsg/_virtual_includes/iterator/workerd/jsg/value.h:1494: disconnected: jsg.Error: Network connection lost.
+stack: /workspace/scratch/sd-pencil-c-f34/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@322cfe0 /workspace/scratch/sd-pencil-c-f34/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@322dc4f /workspace/scratch/sd-pencil-c-f34/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5aa0368 /workspace/scratch/sd-pencil-c-f34/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2f8956f
+ ❯ tests/runtime/actions-task.worker.test.ts (3 tests | 1 failed) 2859ms
+   × [ACT-003,ACT-004,ACT-007,AGENT-005] a 500 fails visibly and a dropped connection is unknown; both keep the local action and a retry on the same key creates one task 962ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/runtime/actions-task.worker.test.ts > [ACT-003,ACT-004,ACT-007,AGENT-005] a 500 fails visibly and a dropped connection is unknown; both keep the local action and a retry on the same key creates one task
+AssertionError: expected 400 to be 204 // Object.is equality
+
+- Expected
++ Received
+
+- 204
++ 400
+
+ ❯ proveBrokenOwnerAndTaskHealth tests/runtime/action-health-scenario.ts:40:101
+     38|   const attempt = await env.DB.prepare('SELECT id FROM action_task_att…
+     39|   // This is the native operator-removal door, not a synthetic broken-…
+     40|   expect((await f.call(`/api/app/operators/${f.owner.operatorId}`, {},…
+       |                                                                                                     ^
+     41|   const foreign = await actionsHttp()
+     42|   const requests = async () => (await (await fetch(`${receiver}/__cont…
+ ❯ tests/runtime/actions-task.worker.test.ts:62:3
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 3 passed (4)
+   Start at  12:33:14
+   Duration  51.87s (transform 16.12s, setup 0ms, import 42.40s, tests 6.54s, environment 0ms)
+

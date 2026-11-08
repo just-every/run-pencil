@@ -1,14 +1,15 @@
-# sd-pencil-c-f34 plan
+# sd-pencil-c-f34 implementation plan
 
 Repository: just-every/run-pencil. Product branch: cloud/sd-pencil-c-f34.
-Target: AGENT-005, starting PARTIAL. This round implements the planner-selected native API slice only; it does not qualify the whole clause as DONE.
 
-1. Read the live clause, its Status row, existing action task delivery and reminder readers, routes, and existing runtime registrations. Map the requested native health outcomes to those registrations.
-2. Add a read-only authenticated per-action health projection after workspace ownership resolution. Reuse current task delivery and reminder records; return exact action, task key, failed or unknown attempt and all retained failed or unknown reminder occurrence IDs, bounded factual explanations and operator repair guidance. Exclude payloads, credentials, recipients and raw provider errors.
-3. Extend the existing task and measurement registrations through a focused helper. Exercise combined task transport failure and native owner removal, non-disclosing unauthorized and foreign reads, repeated no-effect reads, exact history IDs, explicit unchanged-payload retry, stale confirmation refusal, mail configuration failure, retained rejected and uncertain mail, and no uncertain reminder resend.
-4. Run only both affected Worker files, project typecheck and relevant static checks. Preserve every existing workload and assertion; add no test registration or UI.
-5. Generate and check AGENT-005 contract views, restore generated views from main, retain all main Status judgments, regenerate the source lock last and check it. Fetch main before candidate publication and retain concurrent work.
-6. Inspect every candidate identity and trailer and the changed text, push only the named product branch through the fleet guard, and discover exact-SHA Verify through REST within the ten-call budget. Keep product custody separate from report publication.
-7. Write full actual results and receipts outside the product repository, explicitly select non-secret packet files, publish them only to evidence/sd-pencil-c-f34, and hand off the full product SHA and exact CI state. The Mac lander owns publication scan, default-branch landing and Run site.
+The lease is the native per-action health read in AGENT-005. The full clause remains PARTIAL: this round cannot claim background monitoring, a consolidated interface, other integration delivery monitoring, mail and SMS bounces, completion and drop-off monitoring, quarantine or evidence-gap monitoring, reminder replay, reconnection, recipient changes, or outside-form disclosure. Existing provider and release holds remain.
 
-Held remainder: background watching and consolidated UI; other integration deliveries, mail and SMS bounces, completion and drop-off, quarantine and evidence gaps; reminder replay, reconnection, recipient changes and outside-form disclosure retain explicit operator approval. Existing provider, account, Base, ct, activation, release and INTEG-015 chat interface holds stay unchanged.
+1. Read the live contract, native action routes, task delivery and reminder readers, operator lifecycle and existing action journeys. Map the leased outcomes to existing registrations without adding a registration.
+2. Add an authenticated workspace-bound GET action health route. Resolve the action under current operator authority before reading delivery data. Reuse native task delivery state and reminder schedule state. Read all retained failed and unknown reminder occurrences, including older records beyond detail's recent-history window.
+3. Return exact action, task delivery, attempt and reminder occurrence IDs with fixed safe explanations. Distinguish an observed receiver error from ambiguous delivery; do not infer expired tokens or other unobserved causes. Give bounded human repair steps; keep every effect behind existing explicit operator doors.
+4. Extend the existing task journey to read failed and unknown task health without outbound effects, combine a failed task with real native owner removal, refuse unauthenticated, foreign and revoked reads, reuse unchanged confirmed payloads on explicit retry, and refuse stale payloads until fresh confirmation.
+5. Extend the existing reminder journey to inspect missing-owner and missing-mailbox schedules, real rejected and unknown mail occurrences, older retained failures, repeated no-effect reads and unknown reminders remaining unresent.
+6. Run touched Worker journeys, the project typecheck and first-party check. Generate and check contract views, restore generated outputs, refresh main using the permitted unpublished or published-history rule, then regenerate and check the source lock last.
+7. Inspect all candidate identities, trailers and changed text before each guarded push. Push only the named branch. Discover exact-SHA CI through REST within the ten-call budget; the guarded Mac lander owns publication scanning and landing. Publish actual non-secret report and receipts separately under the evidence branch.
+
+No UI, new test registration, acceptance rewrite, Status table edit, dependency pin change or migration is planned.

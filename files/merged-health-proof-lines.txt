@@ -1,0 +1,83 @@
+   1 import type { TaskStatus } from './deliveries'
+   2 import type { ActionReminders, ReminderDelivery } from './reminders'
+   3 
+   4 const taskReasons: Record<string, string> = {
+   5   '3xx': 'The task receiver returned a redirect; Pencil did not follow it.',
+   6   '4xx': 'The task receiver refused the request. Check the connection and its access; the status alone does not establish why.',
+   7   '5xx': 'The task receiver reported a server error.',
+   8   network: 'The connection ended without a confirmed task. The receiver may have created it.',
+   9   timeout: 'The task request timed out without confirmation. The receiver may have created it.',
+  10   'invalid-response': 'The task receiver did not return a valid confirmation. A task may already exist.',
+  11   abandoned: 'The task attempt did not finish. A task may already exist.',
+  12   refused: 'Pencil refused the configured task destination.',
+  13 }
+  14 
+  15 const reminderPlans: Partial<Record<ActionReminders['state'], string[]>> = {
+  16   no_owner: ['An operator must choose a current workspace owner before future reminders can send.'],
+  17   owner_left: ['An operator must choose a current workspace owner before future reminders can send.'],
+  18   no_email: ['An operator must review and explicitly update the owner address or choose another current owner.'],
+  19   unavailable: ['The installation owner must review and repair mail configuration before future reminders can send.'],
+  20   paused: ['Review the restored schedule and recipients. Retained reminder history must not be replayed.'],
+  21   suppressed: ['Mail is suppressed on this installation. This report does not enable sending.'],
+  22 }
+  23 
+  24 /** A projection of native records only: no provider probe, inferred root cause, payload or repair execution. */
+  25 function actionHealth(actionId: string, task: TaskStatus, reminders: ActionReminders) {
+  26   const delivery = task.delivery
+  27   const attempts = delivery?.attempts.filter(attempt => attempt.outcome === 'failed' || attempt.outcome === 'unknown'
+  28     || (attempt.outcome === null && delivery.state === 'unknown' && !delivery.inFlight)).map(attempt => ({
+  29     id: attempt.id, ordinal: attempt.ordinal, state: attempt.outcome ?? 'unknown', httpStatus: attempt.httpStatus,
+  30     explanation: taskReasons[attempt.outcomeClass ?? 'abandoned'] ?? 'The task attempt was not confirmed. Review the retained delivery record.',
+  31   })) ?? []
+  32   const repairPlan: string[] = []
+  33   if (delivery && delivery.state !== 'confirmed') {
+  34     if (delivery.inFlight) repairPlan.push('Wait for the current task attempt to finish before considering another send.')
+  35     else {
+  36       if (!task.available) repairPlan.push('The installation owner must explicitly repair the task connection.')
+  37       repairPlan.push(delivery.stale
+  38         ? 'The action no longer matches the confirmed payload. Review the current task preview and explicitly confirm it again.'
+  39         : 'Review the retained attempts and receiver state. Only an explicit operator retry may reuse the confirmed payload and original key.')
+  40     }
+  41   } else if (!task.available) repairPlan.push('The installation owner must explicitly repair the task connection; this read does not connect or send.')
+  42   return {
+  43     actionId,
+  44     scope: 'Native action task and owner email reminders only.',
+  45     operatorApprovalRequired: true,
+  46     task: {
+  47       available: task.available,
+  48       explanation: !task.available ? 'The task connection is unavailable on this installation.'
+  49         : delivery?.state === 'failed' ? 'The task delivery failed. Review its retained attempts.'
+  50           : delivery?.state === 'unknown' ? 'Task delivery is unconfirmed; a task may already exist at the receiver.'
+  51             : delivery?.state === 'confirmed' ? 'The task receiver confirmed delivery. Earlier failed or unknown attempts remain in history.'
+  52               : delivery ? 'The task is pending.' : 'No task delivery has been confirmed by an operator.',
+  53       delivery: delivery ? { actionId, idempotencyKey: delivery.idempotencyKey, state: delivery.state, stale: delivery.stale, inFlight: delivery.inFlight, attempts } : null,
+  54       repairPlan,
+  55     },
+  56     reminders: {
+  57       // A native schedule belongs to the action; occurrences have their own retained IDs.
+  58       actionId, state: reminders.state, explanation: reminders.explanation,
+  59       repairPlan: reminderPlans[reminders.state] ?? [],
+  60       history: 'All retained failed and unknown reminder occurrences.',
+  61       occurrences: reminders.deliveries.filter(item => item.status === 'failed' || item.status === 'unknown').map(item => ({
+  62         id: item.id, kind: item.kind, dueDate: item.dueDate, state: item.status, attempts: item.attempts,
+  63         explanation: item.status === 'unknown'
+  64           ? 'Reminder delivery is unknown. It may have succeeded; automatic resend is disabled.'
+  65           : 'This reminder failed. The retained record does not establish successful delivery.',
+  66         repairPlan: item.status === 'unknown'
+  67           ? ['Review the retained occurrence and provider evidence. Leave this occurrence unresent; this report provides no reminder replay.']
+  68           : ['Review mail configuration and the retained occurrence. Repairing future scheduling does not replay this reminder.'],
+  69       })),
+  70     },
+  71   }
+  72 }
+  73 
+  74 export async function readActionHealth(db: D1Database, workspaceId: string, actionId: string, task: TaskStatus, reminders: ActionReminders) {
+  75   // The normal detail reader shows recent history. A health report must also include older unresolved failures.
+  76   const failures = (await db.prepare(`SELECT d.id,d.kind,d.due_date AS dueDate,d.status,d.attempts,d.reason,d.updated_at AS updatedAt
+  77     FROM action_reminders d JOIN actions a ON a.id=d.action_id
+  78     WHERE a.id=? AND a.workspace_id=? AND d.status IN ('failed','unknown') ORDER BY d.due_date DESC,d.created_at DESC,d.id DESC`)
+  79     .bind(actionId, workspaceId).all<ReminderDelivery>()).results
+  80   return actionHealth(actionId, task, { ...reminders, deliveries: failures })
+  81 }
+  82 
+  83 export type ActionHealthReport = ReturnType<typeof actionHealth>

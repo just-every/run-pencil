@@ -1,0 +1,16 @@
+fleet Git: removed 0 credential-bearing GitHub URL rewrite sections
+PUSH attempt=1/5 command=git push --porcelain origin HEAD:refs/heads/cloud/sd-pencil-c-f34
+PUSH_CREDENTIAL sha256_16=8addacf6ac95b0bc bundle_file_age_seconds=620 token_issue_age=unknown
+fleet Git: removed 0 credential-bearing GitHub URL rewrite sections
+To https://github.com/just-every/run-pencil.git
+!	HEAD:refs/heads/cloud/sd-pencil-c-f34	[rejected] (non-fast-forward)
+Done
+error: failed to push some refs to 'https://github.com/just-every/run-pencil.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. If you want to integrate the remote changes,
+hint: use 'git pull' before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+PUSH_REJECTED attempt=1 exit=1 HTTP=unknown (not supplied by Git) command=git push --porcelain origin HEAD:refs/heads/cloud/sd-pencil-c-f34
+BUNDLE path=/home/agent/rer-consolidation/work/push-rescue/cloud_sd-pencil-c-f34-20261108T123842Z-20ca6150ca1d.bundle head=20ca6150ca1d95e719bd64bd7b5e5cb14ab755db sha256=93b0148675dad3899d29e2818be67bc0d78dd76d0df111fcba1e97ba778fe43e verified=true
+Preserve this VM/clone and retrieve the bundle before ending its retention period.
+BLOCKED command=git push --porcelain origin HEAD:refs/heads/cloud/sd-pencil-c-f34 HTTP=unknown (not supplied by Git); retain verified bundle and clone

@@ -1,0 +1,131 @@
+   1 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
+   2 import { afterEach, beforeAll, expect, vi } from 'vitest'
+   3 import { contract } from '../../src/test/contract'
+   4 import { createWorkerApp } from '../../src/core/app/worker'
+   5 import { createPencilPlatform } from '../../src/core/platform/runtime'
+   6 import type { WorkerBindings } from '../../src/core/app/environment'
+   7 import { actionsHttp, everyStoredValue } from './actions-fixture'
+   8 import { brokenActionHealth, taskFailureHealth } from './action-health-scenario'
+   9 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
+  10 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
+  11 afterEach(() => { vi.restoreAllMocks() })
+  12 
+  13 const receiver = (env as unknown as { TASK_RECEIVER_ORIGIN: string }).TASK_RECEIVER_ORIGIN
+  14 type Captured = { path: string; authorization: string | null; idempotencyKey: string | null; contentType: string | null; body: string }
+  15 type Receiver = { tasks: Record<string, string>; requests: Captured[] }
+  16 const reset = async (mode: string, delayMilliseconds = 0) => { await fetch(`${receiver}/__control/reset`, { method: 'POST', body: JSON.stringify({ mode, delayMilliseconds }) }) }
+  17 const received = async () => await (await fetch(`${receiver}/__control/state`)).json() as Receiver
+  18 type Attempt = { ordinal: number; outcome: string | null; outcomeClass: string | null; httpStatus: number | null; remoteTaskId: string | null }
+  19 type Status = { available: boolean; message?: string; payload?: Record<string, any>; payloadSha256?: string; delivery: null | { state: string; idempotencyKey: string; remoteTaskId: string | null; stale: boolean; attempts: Attempt[] } }
+  20 
+  21 async function configured(key = `TASK-KEY-CANARY-${crypto.randomUUID()}`) {
+  22   const f = await actionsHttp({ TASK_PROVIDER: 'webhook', TASK_WEBHOOK_URL: `${receiver}/tasks`, TASK_API_KEY: key } as Partial<WorkerBindings>)
+  23   const action = await f.create()
+  24   const preview = async () => await (await f.call(`/api/app/actions/${action.id}/task`)).json() as Status
+  25   const confirm = async (sha?: string) => { const response = await f.call(`/api/app/actions/${action.id}/task/confirm`, { payloadSha256: sha ?? (await preview()).payloadSha256 }); return { status: response.status, body: await response.json() as Status & { message?: string } } }
+  26   const retry = async () => { const response = await f.call(`/api/app/actions/${action.id}/task/retry`, {}); return { status: response.status, body: await response.json() as Status } }
+  27   return { f, key, action, preview, confirm, retry }
+  28 }
+  29 
+  30 contract(['ACT-003', 'ACT-004', 'ACT-007', 'AGENT-005'], 'a 500 fails visibly and a dropped connection is unknown; both keep the local action and a retry on the same key creates one task', async () => {
+  31   for (const mode of ['fail-once-500', 'store-then-drop-once'] as const) {
+  32     await reset(mode)
+  33     const t = await configured()
+  34     const first = await t.confirm()
+  35     if (mode === 'fail-once-500') {
+  36       expect(first.body.delivery).toMatchObject({ state: 'failed', remoteTaskId: null })
+  37       expect(first.body.delivery!.attempts).toEqual([expect.objectContaining({ outcome: 'failed', outcomeClass: '5xx', httpStatus: 500 })])
+  38       expect(await (await t.f.call(`/api/app/actions/${t.action.id}`)).json()).toMatchObject({ id: t.action.id, state: 'planned' })
+  39       // INTEG-015: the failed task is in the delivery ledger with its key and attempt reason, and raises an alert.
+  40       const failedLedger = await (await t.f.call('/api/app/integration-deliveries?state=failed')).json() as { deliveries: unknown[] }
+  41       expect(failedLedger.deliveries).toEqual([expect.objectContaining({ kind: 'task', state: 'failed', idempotencyKey: `pencil-action-${t.action.id}`, actionId: t.action.id, attempts: [expect.objectContaining({ outcome: 'failed', httpStatus: 500, reason: '5xx' })] })])
+  42       expect(JSON.stringify(await (await t.f.call('/api/app/webhooks/alerts')).json())).toContain('external task')
+  43     } else {
+  44       // The receiver stored the task before the connection dropped.
+  45       expect(first.body.delivery).toMatchObject({ state: 'unknown', remoteTaskId: null })
+  46       expect(first.body.delivery!.attempts).toEqual([expect.objectContaining({ outcome: 'unknown', outcomeClass: 'network' })])
+  47       expect(Object.keys((await received()).tasks)).toHaveLength(1)
+  48     }
+  49     await taskFailureHealth(t.f, t.action.id, mode === 'fail-once-500' ? 'failed' : 'unknown')
+  50     const retried = await t.retry()
+  51     expect(retried.body.delivery).toMatchObject({ state: 'confirmed', remoteTaskId: 'task-1' })
+  52     const settled = await (await t.f.call('/api/app/integration-deliveries')).json() as { deliveries: Array<{ actionId: string | null; state: string; attempts: Array<{ outcome: string | null }> }> }
+  53     expect(settled.deliveries.find(item => item.actionId === t.action.id)).toMatchObject({ state: 'confirmed' })
+  54     expect(settled.deliveries.find(item => item.actionId === t.action.id)!.attempts.map(attempt => attempt.outcome).at(-1)).toBe('confirmed')
+  55     expect(await (await t.f.call('/api/app/webhooks/alerts')).json()).toEqual({ alerts: [] })
+  56     const state = await received()
+  57     expect(Object.keys(state.tasks)).toHaveLength(1)
+  58     expect(state.tasks).toEqual({ [`pencil-action-${t.action.id}`]: 'task-1' })
+  59     expect(state.requests.map(request => request.idempotencyKey)).toEqual([`pencil-action-${t.action.id}`, `pencil-action-${t.action.id}`])
+  60     expect(state.requests[1].body).toBe(state.requests[0].body)
+  61     if (mode === 'store-then-drop-once') expect(state.requests.map(request => request.body)).toEqual([state.requests[0].body, state.requests[0].body])
+  62   }
+  63   await brokenActionHealth(receiver)
+  64   // The self-serve Todoist path confirms the same displayed command and uses
+  65   // its UUID again when the paid/network edge reports a temporary failure.
+  66   const todo = await actionsHttp({TASK_PROVIDER:'webhook',TASK_WEBHOOK_URL:'https://api.todoist.com/api/v1/sync',TASK_API_KEY:'synthetic-todoist-network-edge-only'} as Partial<WorkerBindings>)
+  67   const action = await todo.create(), path = `/api/app/actions/${action.id}/task`
+  68   const preview = await (await todo.call(path)).json() as Status
+  69   const requests: string[] = []
+  70   const edge = vi.spyOn(globalThis,'fetch').mockImplementation(async (_url,options) => {
+  71     const commands = JSON.parse(new URLSearchParams(String(options!.body)).get('commands')!)
+  72     requests.push(JSON.stringify(commands))
+  73     if(requests.length === 1) return new Response(null,{status:503})
+  74     return Response.json({sync_status:{[commands[0].uuid]:'ok'},temp_id_mapping:{[commands[0].temp_id]:'real-edge-task-123'}})
+  75   })
+  76   try {
+  77     const first = await todo.call(`${path}/confirm`,{payloadSha256:preview.payloadSha256})
+  78     expect((await first.json()).delivery.state).toBe('failed')
+  79     const retry = await todo.call(`${path}/retry`,{})
+  80     expect((await retry.json()).delivery).toMatchObject({state:'confirmed',remoteTaskId:'real-edge-task-123'})
+  81     expect(requests).toHaveLength(2)
+  82     expect(requests[0]).toBe(requests[1])
+  83     expect(JSON.parse(requests[0])).toEqual((preview as Status & {request:{commands:unknown}}).request.commands)
+  84   } finally {edge.mockRestore()}
+  85 })
+  86 
+  87 contract(['ACT-006'], 'only the confirmed action fields and report link leave: no answer or respondent-visible text, and a changed action must be confirmed again', async () => {
+  88   await reset('ok')
+  89   const t = await configured()
+  90   await t.f.respond('Too long', 'ANSWER-CANARY-9f1 my name is Private Person')
+  91   await t.f.services.flows.createDraftFlow({ workspaceId: t.f.workspaceId, slug: `visible-${t.action.id.toLowerCase()}`, title: 'VISIBLE-CANARY-7c2 respondent title' })
+  92   const shown = await t.preview()
+  93   expect(Object.keys(shown.payload!)).toEqual(['idempotencyKey', 'action'])
+  94   expect(Object.keys(shown.payload!.action).sort()).toEqual(['metric', 'owner', 'rationale', 'reportLink', 'reviewDate', 'title'])
+  95   expect(shown.payload!.action.reportLink).toBe(`http://localhost/app/actions/${t.action.id}`)
+  96   // An edit after reading the task makes that confirmation stale.
+  97   expect((await t.f.call(`/api/app/actions/${t.action.id}`, { rationale: 'Queues peak at lunch.', expectedVersion: t.action.version }, { method: 'PATCH' })).status).toBe(200)
+  98   const stale = await t.confirm(shown.payloadSha256)
+  99   expect(stale.status).toBe(409)
+ 100   expect(stale.body.message).toMatch(/changed after you read the task/)
+ 101   expect((await received()).requests).toEqual([])
+ 102   const fresh = await t.preview()
+ 103   expect((await t.confirm(fresh.payloadSha256)).body.delivery).toMatchObject({ state: 'confirmed' })
+ 104   const [request] = (await received()).requests
+ 105   expect(JSON.parse(request.body)).toEqual(fresh.payload)
+ 106   for (const canary of ['ANSWER-CANARY', 'Private Person', 'VISIBLE-CANARY', 'How was the wait', 'Too long']) expect(request.body).not.toContain(canary)
+ 107 })
+ 108 
+ 109 contract(['ACT-004', 'ACT-007'], 'with no adapter configured the external task is unavailable and the action works; redirects are not followed and a plain http URL is refused outside the dev and test runtimes', async () => {
+ 110   await reset('ok')
+ 111   const bare = await actionsHttp()
+ 112   const bareAction = await bare.create()
+ 113   expect(await (await bare.call(`/api/app/actions/${bareAction.id}/task`)).json() as Status).toMatchObject({ available: false, delivery: null })
+ 114   expect((await bare.call(`/api/app/actions/${bareAction.id}/task/confirm`, { payloadSha256: 'a'.repeat(64) })).status).toBe(409)
+ 115   expect((await bare.call(`/api/app/actions/${bareAction.id}/transitions`, { to: 'in_progress' })).status).toBe(200)
+ 116   expect((await received()).requests).toEqual([])
+ 117   await reset('redirect')
+ 118   const t = await configured()
+ 119   const redirected = await t.confirm()
+ 120   expect(redirected.body.delivery).toMatchObject({ state: 'failed' })
+ 121   expect(redirected.body.delivery!.attempts).toEqual([expect.objectContaining({ outcome: 'failed', outcomeClass: '3xx', httpStatus: 307 })])
+ 122   expect((await received()).requests.map(request => request.path)).toEqual(['/tasks'])
+ 123   await reset('ok')
+ 124   const production = { ...env, APP_ORIGIN: 'https://pencil.example.test', SEED_ADMIN_EMAIL: 'owner@example.test', MAIL_PROVIDER: 'resend', MAIL_API_KEY: 'synthetic-mail-key', MAIL_FROM: 'no-reply@example.test', PENCIL_LOCAL_DEVELOPMENT: 'false', SEED_SAMPLE_DATA: 'false', SETUP_TOKEN: 's'.repeat(32), TASK_PROVIDER: 'webhook', TASK_WEBHOOK_URL: `${receiver}/tasks`, TASK_API_KEY: t.key } as WorkerBindings
+ 125   const app = createWorkerApp(undefined, createPencilPlatform('https://pencil.example.test', production))
+ 126   const call = (path: string, body?: unknown) => app.request(`https://pencil.example.test${path}`, { method: body ? 'POST' : 'GET', headers: { Origin: 'https://pencil.example.test', Cookie: `__Host-operator_session=${t.f.lead.token}`, 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) })
+ 127   const status = await (await call(`/api/app/actions/${t.action.id}/task`)).json() as Status
+ 128   expect(status).toMatchObject({ available: false, message: 'TASK_WEBHOOK_URL must use https. Plain http is accepted only for a loopback receiver in local development and tests.' })
+ 129   expect((await call(`/api/app/actions/${t.action.id}/task/retry`, {})).status).toBe(409)
+ 130   expect((await received()).requests).toEqual([])
+ 131 })
