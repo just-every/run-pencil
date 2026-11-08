@@ -12,10 +12,11 @@ import { collectLedgerFilterScenario, consentStatement } from '../ledger-filter-
 import type { ScenarioCall } from '../results-scenario'
 import type { LedgerResponse } from '../../src/core/app/api'
 import { openFilters, clearResponseFilters } from './filter-helpers'
+import { proveResponseExportAudit } from './audit-export-proof'
 
 // sav-reader publishes only a CommonJS entry and shares no code with Pencil's writer. read-excel-file reads XLSX in the Worker case.
 const { SavBufferReader } = createRequire(import.meta.url)('sav-reader') as typeof SavReaderModule
-contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019', 'IMPORT-003', 'BASE-PUBLIC-003'], 'native and imported typed filters download exact JSON, CSV, LEDG-005 XLSX and SPSS response snapshots with readable decisions and compact rows at both widths', async ({ page }, info) => {
+contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019', 'IMPORT-003', 'BASE-PUBLIC-003', 'GOV-005'], 'native and imported typed filters download exact JSON, CSV, LEDG-005 XLSX and SPSS response snapshots with readable decisions and compact rows at both widths', async ({ page }, info) => {
   test.setTimeout(180_000)
   await page.setViewportSize(info.project.name === 'mobile' ? { width: 390, height: 844 } : { width: 1440, height: 900 })
   const email = operatorEmail()
@@ -39,6 +40,11 @@ contract(['LEDG-001', 'LEDG-003', 'LEDG-004', 'LEDG-005', 'FLOW-019', 'IMPORT-00
     const violations = (await new AxeBuilder({ page }).include('.operator-content').analyze()).violations
     expect(violations.filter(violation => violation.impact === 'serious' || violation.impact === 'critical')).toEqual([])
   }
+  await proveResponseExportAudit(page, info, {
+    flowId: scenario.flowId, formName: scenario.current.flow.title, revisionId: scenario.nativeRevisionId, actorEmail: email,
+    responseIds: [scenario.nativePositive.responseId, scenario.nativeNegative.responseId],
+    privateValues: [consentStatement],
+  })
   for (const source of ['direct', 'imported'] as const) {
     await clearResponseFilters(ledger)
     const revisionId = source === 'direct' ? scenario.nativeRevisionId : scenario.importedRevisionId

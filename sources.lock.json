@@ -8552,6 +8552,10 @@
       "sha256": "d7246cebf2e0f167fd51e1d756707ebc4a6b7ee7bb988cd38c086679c5f853ba",
       "executable": false
     },
+    "tests/e2e/audit-export-proof.ts": {
+      "sha256": "1a52ded4bc84e2872acb91c58a08d4c74d6d774be9248d0fa530f4b6fe186859",
+      "executable": false
+    },
     "tests/e2e/auth-identity.ts": {
       "sha256": "a08ef1af9fa86b807ab02a7fca6a94769d89c21d436f74b28dfffbb85ad68a1b",
       "executable": false
@@ -8725,7 +8729,7 @@
       "executable": false
     },
     "tests/e2e/ledger-filters.spec.ts": {
-      "sha256": "fe8ff7932a4efb6c2f778d3269489fc402c50b07932bfb985d0701f2eb7f07e1",
+      "sha256": "c273ca44cebf297906f7c9d920085e1bba0812f3ce2e29e044e8cc63242ac834",
       "executable": false
     },
     "tests/e2e/link-preview-http.ts": {
