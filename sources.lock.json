@@ -9304,6 +9304,10 @@
       "sha256": "67f5285b8234555c7dc15f94da3ac599c35c8de5d9d987be61de7ceb19315d59",
       "executable": false
     },
+    "tests/runtime/confirmation-withholding-scenario.ts": {
+      "sha256": "f986a5df336451cb33329cfca2f4c97e0ba2ce5e185a3546cbff1bfb79c511a6",
+      "executable": false
+    },
     "tests/runtime/contact-scores-scenario.ts": {
       "sha256": "5b61579f8a260f3d8aa4932da1374e07fea5cba30331838d6a8cefa692f7ffb4",
       "executable": false
@@ -9517,7 +9521,7 @@
       "executable": false
     },
     "tests/runtime/respondent-confirmations.worker.test.ts": {
-      "sha256": "edd2ec9c30c1acdcb2248a11c19e115d20c35f43b7e6d23f09199417d32043bd",
+      "sha256": "1817dde511af855377e768f6f1fbd8b54f4506b366da8c6fd78542ae7a77454b",
       "executable": false
     },
     "tests/runtime/response-edit-proof.ts": {
