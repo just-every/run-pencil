@@ -1120,6 +1120,14 @@
       "sha256": "6ef4aca4d5908206de417a6cb98ada4c065bc6a056eaab08874101ddc1e67bc4",
       "executable": false
     },
+    "integrations/wordpress/pencil.php": {
+      "sha256": "491fcbf00e94a4a3f54753941bd08d1d7c1d82b7ff297ce20bc89e1e0abf9e4b",
+      "executable": false
+    },
+    "integrations/wordpress/README.md": {
+      "sha256": "4b6109375f552bcfcc6f2cf6702f47017df4d1fedfba90aff7c0fbf9ed18e3f0",
+      "executable": false
+    },
     "LICENSE": {
       "sha256": "2f5076ef027045b9e0e72df8aa61ca8551e54b1877d531656d6e7985b2c32324",
       "executable": false
@@ -8833,7 +8841,7 @@
       "executable": false
     },
     "tests/e2e/script-embed.spec.ts": {
-      "sha256": "a3bed927f295de23dd90d52f4c5e10f497bda52ad1da1ac06b1ef7aacddcd858",
+      "sha256": "a93a6feafc8396cf0905eaaeab5788263b1199944e456068600f5aa7ee4e5210",
       "executable": false
     },
     "tests/e2e/session-recovery-http.spec.ts": {
@@ -8902,6 +8910,10 @@
     },
     "tests/e2e/traffic.spec.ts": {
       "sha256": "e9d14a9cc90f1b40aea32f81c78845d56a6cceed716c593f99de0a034cc44e73",
+      "executable": false
+    },
+    "tests/e2e/wordpress-embed.ts": {
+      "sha256": "bd00085c1503590e3b518d0be5c7ac5700532b8f8ed04a03a869d4d6a9a1dc04",
       "executable": false
     },
     "tests/fixtures/completion-redirects.ts": {
@@ -8986,6 +8998,18 @@
     },
     "tests/fixtures/studio.ts": {
       "sha256": "f5c979abd780622ad6c43bbbd897921c7df09151dce43d99ec822d6c7feccd94",
+      "executable": false
+    },
+    "tests/fixtures/wordpress/compose.yml": {
+      "sha256": "8f7e2aa139db2db9b1b9d26fed09265fd39c9c760415998cf084fa837a1cf34b",
+      "executable": false
+    },
+    "tests/fixtures/wordpress/theme/index.php": {
+      "sha256": "632702ad4ed3a80ad90ab87e752f2bffecd95198cba3bf2be6dadec63816bcf9",
+      "executable": false
+    },
+    "tests/fixtures/wordpress/theme/style.css": {
+      "sha256": "2b73e3abfdc92d8d852cf6e96defb3138851ecfb0967334c391f849b1b69d25f",
       "executable": false
     },
     "tests/helpers/answer-alert-capture.ts": {
@@ -9078,6 +9102,10 @@
     },
     "tests/helpers/vite-mail.config.ts": {
       "sha256": "ab2338543629748778e22baf88478ee8a731a6695be32b8570a0bd8fd540778a",
+      "executable": false
+    },
+    "tests/helpers/wordpress.ts": {
+      "sha256": "d644a877b4da7dd77a87cc4e3375a02f820b942568b2071ca2be5f9e3f60d0bf",
       "executable": false
     },
     "tests/import-results-scenario.ts": {
