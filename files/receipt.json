@@ -1,0 +1,123 @@
+{
+  "schema": 1,
+  "tag": "sd-pencil-c-f41",
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f41",
+  "head": "955e9eae109eed2a4fdf2fdd49419f94dd181bd4",
+  "recorded_utc": "2026-11-08T17:18:05.925604+00:00",
+  "new_product_commits": 0,
+  "product_diff": "",
+  "browser": {
+    "exit": 0,
+    "report": "browser-report.json",
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "viewports": [
+      1440,
+      390,
+      360
+    ],
+    "head": "955e9eae109eed2a4fdf2fdd49419f94dd181bd4"
+  },
+  "checks": [
+    {
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "output": "typecheck.txt"
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "output": "first-party.txt"
+    },
+    {
+      "command": "node scripts/contract-docs.mjs write MOB-001",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/contract-docs.mjs check MOB-001",
+      "exit": 0
+    },
+    {
+      "command": "git checkout origin/main -- ACCEPTANCE.md docs/CLAIMS.md",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "pnpm source:check",
+      "exit": 0
+    },
+    {
+      "command": "git fetch origin main && git rebase origin/main",
+      "exit": 0,
+      "result": "up to date"
+    },
+    {
+      "command": "git log origin/main..HEAD --format=\"%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)\"",
+      "exit": 0,
+      "result": "empty range; no unpublished product commits"
+    },
+    {
+      "command": "cloud-push.py origin cloud/sd-pencil-c-f41",
+      "exit": 0,
+      "output": "product-push.txt"
+    },
+    {
+      "command": "node node_modules/typescript/bin/tsc -b",
+      "exit": 0
+    },
+    {
+      "command": "node node_modules/@runeditrun/rer/bin/rer.mjs check --profile first-party",
+      "exit": 0
+    }
+  ],
+  "generator_views_committed": false,
+  "migrations_changed": false,
+  "publication_scan": {
+    "head": "955e9eae109eed2a4fdf2fdd49419f94dd181bd4",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "status": "not run in cloud; lander custody"
+  },
+  "counts_before": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "counts_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "ci": {
+    "new_branch_verify": {
+      "id": 42504071498,
+      "status": "in_progress",
+      "conclusion": null
+    },
+    "same_head_prior_branch_verify": {
+      "id": 42501312553,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "main_verify": {
+      "id": 42502979962,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "main_run_site": {
+      "id": 42502980154,
+      "status": "completed",
+      "conclusion": "success"
+    },
+    "api_calls": 2
+  },
+  "main_equality": true,
+  "working_tree_clean": true
+}

@@ -1,0 +1,308 @@
+{
+  "config": {
+    "argv": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node",
+      "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/node_modules/@playwright/test/cli.js",
+      "test",
+      "tests/e2e/response-search.spec.ts",
+      "--config",
+      ".pencil-cloud.config.ts",
+      "--project",
+      "desktop",
+      "--project",
+      "mobile",
+      "--workers=1",
+      "--reporter=list,json"
+    ],
+    "configFile": "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/.pencil-cloud.config.ts",
+    "rootDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "desktop",
+        "testDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/tests/e2e",
+        "snapshotDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/tests/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4173",
+          "launchOptions": {
+            "headless": true,
+            "args": [
+              "--no-sandbox",
+              "--use-mock-keychain",
+              "--password-store=basic"
+            ],
+            "executablePath": "/usr/bin/chromium"
+          },
+          "trace": "retain-on-failure",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "desktop"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "mobile",
+        "testDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/tests/e2e",
+        "snapshotDir": "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/tests/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4173",
+          "launchOptions": {
+            "headless": true,
+            "args": [
+              "--no-sandbox",
+              "--use-mock-keychain",
+              "--password-store=basic"
+            ],
+            "executablePath": "/usr/bin/chromium"
+          },
+          "trace": "retain-on-failure",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "screen": {
+            "width": 393,
+            "height": 851
+          },
+          "deviceScaleFactor": 2.75,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "mobile"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "response-search.spec.ts",
+      "file": "response-search.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "[LEDG-006,WORK-001,MOB-001] operators search responses, see matching answers and download the same filtered records",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 9991,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-08T17:12:47.004Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "submission-inbox",
+                      "contentType": "image/png",
+                      "path": "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/test-results/response-search--LEDG-006--b7a16-d-the-same-filtered-records-desktop/attachments/submission-inbox-d718229bc318abb232bd01e563fbdf5a2e4b3e90.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd34710f3e4f0c4e591e-4c8d64ee824907a7c99c",
+          "file": "contract.ts",
+          "line": 4,
+          "column": 3
+        },
+        {
+          "title": "[LEDG-006,WORK-001,MOB-001] operators search responses, see matching answers and download the same filtered records",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14506,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-08T17:12:58.113Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "submission-inbox",
+                      "contentType": "image/png",
+                      "path": "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/test-results/response-search--LEDG-006--b7a16-d-the-same-filtered-records-mobile/attachments/submission-inbox-56d712b142b4d3097fedda811ef963ee1c1b23ba.png"
+                    },
+                    {
+                      "name": "submission-inbox-360-initial",
+                      "contentType": "image/png",
+                      "path": "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/test-results/response-search--LEDG-006--b7a16-d-the-same-filtered-records-mobile/attachments/submission-inbox-360-initial-a78f9fdcfb028feea440c9534f5cd99df15ac247.png"
+                    },
+                    {
+                      "name": "submission-inbox-360-bulk",
+                      "contentType": "image/png",
+                      "path": "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/test-results/response-search--LEDG-006--b7a16-d-the-same-filtered-records-mobile/attachments/submission-inbox-360-bulk-08dd32359a5403ff4ef325d75f78b9009c9ec540.png"
+                    },
+                    {
+                      "name": "submission-inbox-360-note",
+                      "contentType": "image/png",
+                      "path": "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/test-results/response-search--LEDG-006--b7a16-d-the-same-filtered-records-mobile/attachments/submission-inbox-360-note-fb10ff6db314f2bc4f3a4e46d1975fe579aa0257.png"
+                    },
+                    {
+                      "name": "submission-inbox-360-filtered",
+                      "contentType": "image/png",
+                      "path": "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/test-results/response-search--LEDG-006--b7a16-d-the-same-filtered-records-mobile/attachments/submission-inbox-360-filtered-98304f3e07dbec24d1b2fff3d098af8fd08fc982.png"
+                    },
+                    {
+                      "name": "submission-inbox-360-reloaded",
+                      "contentType": "image/png",
+                      "path": "/home/agent/rer-consolidation/work/sd-pencil-c-f41/run-pencil/test-results/response-search--LEDG-006--b7a16-d-the-same-filtered-records-mobile/attachments/submission-inbox-360-reloaded-e5063094283a2acf907148f722c44274babd5343.png"
+                    },
+                    {
+                      "name": "360 pixel hit areas",
+                      "contentType": "application/json",
+                      "body": "WwogIHsKICAgICJjb250cm9sIjogIlNlbGVjdCBzdWJtaXNzaW9uIGxhYmVsIiwKICAgICJ3aWR0aCI6IDQ0LAogICAgImhlaWdodCI6IDQ0CiAgfSwKICB7CiAgICAiY29udHJvbCI6ICJBc3NpZ24iLAogICAgIndpZHRoIjogMzI0LAogICAgImhlaWdodCI6IDQ0CiAgfSwKICB7CiAgICAiY29udHJvbCI6ICJBZGQgdGFnIiwKICAgICJ3aWR0aCI6IDMyNCwKICAgICJoZWlnaHQiOiA0NC4zOTA2MjUKICB9LAogIHsKICAgICJjb250cm9sIjogIkFwcGx5IGFzc2lnbm1lbnQgYW5kIHRhZyIsCiAgICAid2lkdGgiOiAxMjQuODQzNzUsCiAgICAiaGVpZ2h0IjogNDQKICB9LAogIHsKICAgICJjb250cm9sIjogIk9wZW4gc3VibWlzc2lvbiIsCiAgICAid2lkdGgiOiA1NCwKICAgICJoZWlnaHQiOiA0OAogIH0sCiAgewogICAgImNvbnRyb2wiOiAiUHJpdmF0ZSBub3RlIiwKICAgICJ3aWR0aCI6IDI3MiwKICAgICJoZWlnaHQiOiA4MAogIH0sCiAgewogICAgImNvbnRyb2wiOiAiQWRkIG5vdGUiLAogICAgIndpZHRoIjogODcuMjY1NjI1LAogICAgImhlaWdodCI6IDQ0CiAgfSwKICB7CiAgICAiY29udHJvbCI6ICJTZWxlY3Qgc3VibWlzc2lvbiBsYWJlbCBmb3Igc3RhdHVzIiwKICAgICJ3aWR0aCI6IDQ0LAogICAgImhlaWdodCI6IDQ0CiAgfSwKICB7CiAgICAiY29udHJvbCI6ICJTZXQgc3RhdHVzIiwKICAgICJ3aWR0aCI6IDMyNCwKICAgICJoZWlnaHQiOiA0NAogIH0sCiAgewogICAgImNvbnRyb2wiOiAiQXBwbHkgRG9uZSBzdGF0dXMiLAogICAgIndpZHRoIjogMTI0Ljg0Mzc1LAogICAgImhlaWdodCI6IDQ0CiAgfSwKICB7CiAgICAiY29udHJvbCI6ICJGaWx0ZXIiLAogICAgIndpZHRoIjogOTcuMDMxMjUsCiAgICAiaGVpZ2h0IjogNDQKICB9LAogIHsKICAgICJjb250cm9sIjogIldvcmtmbG93IHN0YXR1cyBmaWx0ZXIiLAogICAgIndpZHRoIjogMzI0LAogICAgImhlaWdodCI6IDQ0CiAgfQpd"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "dd34710f3e4f0c4e591e-5407861e0b64a0c705b2",
+          "file": "contract.ts",
+          "line": 4,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-08T17:12:13.076Z",
+    "duration": 59908.95,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
