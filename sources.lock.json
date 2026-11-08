@@ -9241,11 +9241,11 @@
       "executable": false
     },
     "tests/runtime/analysis-fixture.ts": {
-      "sha256": "b73779f337ba3bbe0dae54e96139bec94e2e41575497910637f640570ea9fc00",
+      "sha256": "b10b32dbd7303617e23dfbe27930e58a698b515db3f3f64c5646575025b7a222",
       "executable": false
     },
     "tests/runtime/analysis-output.worker.test.ts": {
-      "sha256": "e6c4f380c982aa0d20447965cfb08e5854bd78f5cfb7406177744078afb3c36a",
+      "sha256": "83af09ed31dc9d301c87251b870e06860c8a35c37f8a70ce15d60db8696e189a",
       "executable": false
     },
     "tests/runtime/analysis-run.worker.test.ts": {
@@ -9258,6 +9258,10 @@
     },
     "tests/runtime/analysis-time-proof.ts": {
       "sha256": "8203681eb69a18fe11b4f491a257f2e4a2e9ac2d31ec7c8da6780e38e61b8dee",
+      "executable": false
+    },
+    "tests/runtime/analysis-within-response-proof.ts": {
+      "sha256": "e8d2b9374cd42923af5ac46c615d2cf56670779670e09947a32127d306b05101",
       "executable": false
     },
     "tests/runtime/answer-alert-chat-proof.ts": {
