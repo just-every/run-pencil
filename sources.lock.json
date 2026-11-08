@@ -5057,7 +5057,7 @@
       "executable": false
     },
     "src/core/features/actions/health.ts": {
-      "sha256": "e7c05d6c30e79289fc2078715090c5b8ba535b494956284e6c3f2bddb2e3bfd7",
+      "sha256": "5446ae5add03741179f057b203aae2afaeef03d15589581a6c42a37ded0767fc",
       "executable": false
     },
     "src/core/features/actions/index.ts": {
@@ -5077,7 +5077,7 @@
       "executable": false
     },
     "src/core/features/actions/routes.ts": {
-      "sha256": "40ac805172e6d3504194a1c89b7b4c8d6624c2ed7f1188b0c739da62dd1bacba",
+      "sha256": "98b6c80560d4c350b44a9005958eef4bcf5387a97192ee31d197d8ac377d7833",
       "executable": false
     },
     "src/core/features/actions/service.ts": {
@@ -9201,7 +9201,7 @@
       "executable": false
     },
     "tests/runtime/action-health-scenario.ts": {
-      "sha256": "ace8baeb9ca4af954878621e9f98c3f0a48a219bc6955a405f72351062ca78cd",
+      "sha256": "328f5d92a87487a4b2ce10d5388024f77e325ca8b77603ca61acfdf67b9a7a97",
       "executable": false
     },
     "tests/runtime/actions-fixture.ts": {
@@ -9213,11 +9213,11 @@
       "executable": false
     },
     "tests/runtime/actions-measurement.worker.test.ts": {
-      "sha256": "10ddfd4f204315c5657d2c6c4632617ee20ffc7f5691e72b87c7004bd514d5c1",
+      "sha256": "69f30f1ea240f672722a2e10211cc5c75c24fcc1d34e7bd3d4dba7421d66dd92",
       "executable": false
     },
     "tests/runtime/actions-task.worker.test.ts": {
-      "sha256": "6ed04902e6fdbb438c1692181a4a956d881d5dc62a806f9c429fec7fab93f21f",
+      "sha256": "d07aa795e7b1248d3afa8d9e9d0dbd2d35551376f7b1d3363b9bef5f3d4a1ba6",
       "executable": false
     },
     "tests/runtime/ai-receiver.global.ts": {

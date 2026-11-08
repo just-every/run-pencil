@@ -1,12 +1,11 @@
 import { applyD1Migrations, env, type D1Migration } from 'cloudflare:test'
 import { afterEach, beforeAll, expect, vi } from 'vitest'
 import { contract } from '../../src/test/contract'
-import worker, { createWorkerApp } from '../../src/core/app/worker'
-import { createPencilPlatform } from '../../src/core/platform/runtime'
+import worker from '../../src/core/app/worker'
 import type { ActionReminders } from '../../src/core/features/actions/reminders'
 import type { WorkerBindings } from '../../src/core/app/environment'
-import { readHealth } from './action-health-scenario'
 import { actionsHttp } from './actions-fixture'
+import { readHealth, reminderFailureHealth } from './action-health-scenario'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
 afterEach(() => { vi.useRealTimers() })
@@ -34,8 +33,8 @@ contract(['ACT-005','ACT-009','WS-002','NOTIFY-004','AGENT-005'], 'ACT-009 email
       reminderMail.push(payload)
       const mode = failureMode.get(payload.subject.split(': ').slice(1).join(': '))
       if (mode === 'unknown') throw new Error('Synthetic ambiguous network edge')
-      if (mode === 'rejected') return new Response(null,{status:400})
       if (mode === 'rate_limited') return new Response(null,{status:429})
+      if (mode === 'rejected') return new Response(null,{status:400})
     }
     return new Response(null, {status:202})
   })
@@ -91,8 +90,8 @@ contract(['ACT-005','ACT-009','WS-002','NOTIFY-004','AGENT-005'], 'ACT-009 email
     const departed = await (await f.call(`/api/app/actions/${departedAction.id}`)).json() as Detail
     expect(missingEmail.reminders).toMatchObject({state:'no_email',explanation:expect.stringContaining('no email address')})
     expect(departed.reminders).toMatchObject({state:'no_owner',explanation:expect.stringContaining('no current owner')})
-    expect((await readHealth(f, noEmailAction.id)).reminders.schedule).toMatchObject({state:'no_email',repairPlan:[expect.stringContaining('correct the owner')]})
-    expect((await readHealth(f, departedAction.id)).reminders.schedule).toMatchObject({actionId:departedAction.id,state:'no_owner'})
+    expect((await readHealth(f, noEmailAction.id)).reminders).toMatchObject({actionId:noEmailAction.id,state:'no_email',repairPlan:[expect.stringContaining('explicitly update')]})
+    expect((await readHealth(f, departedAction.id)).reminders).toMatchObject({actionId:departedAction.id,state:'no_owner'})
     const retryAction = await f.create({title:'Queued retry stops at verdict',reviewDate:'2026-12-25'})
     const unknownAction = await f.create({title:'Unknown mail never retries',reviewDate:'2026-12-25'})
     failureMode.set('Queued retry stops at verdict','rate_limited')
@@ -107,39 +106,15 @@ contract(['ACT-005','ACT-009','WS-002','NOTIFY-004','AGENT-005'], 'ACT-009 email
     await scheduled('2026-12-21T23:03:00.000Z');await scheduled('2026-12-21T23:08:00.000Z')
     expect(reminderMail).toHaveLength(5)
     expect((await reminderDetail(unknownAction.id)).reminders.deliveries[0]).toMatchObject({status:'unknown',attempts:1})
-    // A real permanent mail rejection and the retained unknown occurrence remain visible together with their native IDs.
-    const rejectedAction = await f.create({title:'Rejected reminder retained in health',reviewDate:'2026-12-25'})
-    failureMode.set('Rejected reminder retained in health','rejected')
+    expect((await env.DB.prepare("SELECT id FROM invitation_participants WHERE workspace_id=? AND delivery_status='bounced'").bind(f.workspaceId).all()).results).toEqual([])
+    const failedAction = await f.create({title:'Retained reminder rejection',reviewDate:'2026-12-25'})
+    failureMode.set('Retained reminder rejection','rejected')
     await scheduled('2026-12-21T23:09:00.000Z')
     expect(reminderMail).toHaveLength(6)
-    const rejectedOccurrence = await env.DB.prepare("SELECT id FROM action_reminders WHERE action_id=? AND status='failed'").bind(rejectedAction.id).first<{id:string}>()
-    const unknownOccurrence = await env.DB.prepare("SELECT id FROM action_reminders WHERE action_id=? AND status='unknown'").bind(unknownAction.id).first<{id:string}>()
-    expect(rejectedOccurrence).not.toBeNull()
-    expect(unknownOccurrence).not.toBeNull()
-    // Retained history can exceed detail's thirty recent occurrences; health still includes the failure.
-    await env.DB.batch(Array.from({length:31},(_,index)=>{
-      const dueDate = new Date(Date.UTC(2027,0,index+1)).toISOString().slice(0,10)
-      return env.DB.prepare("INSERT INTO action_reminders(id,action_id,operator_id,kind,due_date,review_date,status,idempotency_key,attempts,available_at,created_at,updated_at) VALUES(?,?,?,'overdue',?,'2026-12-25','sent',?,1,?,?,?)")
-        .bind(crypto.randomUUID(),rejectedAction.id,f.owner.operatorId,dueDate,crypto.randomUUID(),'2027-02-01T00:00:00Z','2027-02-01T00:00:00Z','2027-02-01T00:00:00Z')
-    }))
-    expect((await reminderDetail(rejectedAction.id)).reminders.deliveries.some(item=>item.id===rejectedOccurrence!.id)).toBe(false)
-    const beforeReads = send.mock.calls.length
-    const rejectedHealth = await readHealth(f,rejectedAction.id)
-    expect(rejectedHealth.reminders.occurrences).toEqual([expect.objectContaining({id:rejectedOccurrence!.id,status:'failed',attempts:1,repairPlan:[expect.stringContaining('cannot replay')]})])
-    const unknownHealth = await readHealth(f,unknownAction.id)
-    expect(unknownHealth.reminders.occurrences).toEqual([expect.objectContaining({id:unknownOccurrence!.id,status:'unknown',attempts:1,explanation:expect.stringContaining('may have arrived'),repairPlan:[expect.stringContaining('cannot resend')]})])
-    expect(await readHealth(f,rejectedAction.id)).toEqual(rejectedHealth)
-    expect(await readHealth(f,unknownAction.id)).toEqual(unknownHealth)
-    const unavailable = createWorkerApp(undefined,createPencilPlatform(mailBindings.APP_ORIGIN,{...env,...mailBindings,MAIL_FROM:mailBindings.SEED_ADMIN_EMAIL} as unknown as WorkerBindings))
-    const unavailableRead = await unavailable.request(`${mailBindings.APP_ORIGIN}/api/app/actions/${unknownAction.id}/health`,{headers:{Cookie:`__Host-operator_session=${f.lead.token}`}})
-    expect(unavailableRead.status).toBe(200)
-    const unavailableHealth = await unavailableRead.json() as Awaited<ReturnType<typeof readHealth>>
-    expect(unavailableHealth.reminders.schedule).toMatchObject({actionId:unknownAction.id,state:'unavailable',explanation:expect.stringContaining('mail configuration'),repairPlan:[expect.stringContaining('installation owner')]})
-    expect(unavailableHealth.reminders.occurrences).toEqual(unknownHealth.reminders.occurrences)
-    expect(send.mock.calls).toHaveLength(beforeReads)
+    await reminderFailureHealth(f, unknownAction.id, failedAction.id)
+    const afterRead = reminderMail.length
     await scheduled('2026-12-21T23:10:00.000Z')
-    expect(reminderMail).toHaveLength(6)
-    expect((await readHealth(f,unknownAction.id)).reminders.occurrences).toEqual(unknownHealth.reminders.occurrences)
-    expect((await env.DB.prepare("SELECT id FROM invitation_participants WHERE workspace_id=? AND delivery_status='bounced'").bind(f.workspaceId).all()).results).toEqual([])
+    expect(reminderMail).toHaveLength(afterRead)
+    expect((await reminderDetail(unknownAction.id)).reminders.deliveries[0]).toMatchObject({status:'unknown',attempts:1})
   } finally { send.mockRestore() }
 })

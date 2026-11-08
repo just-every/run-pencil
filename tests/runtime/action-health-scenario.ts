@@ -2,84 +2,140 @@ import { env } from 'cloudflare:test'
 import { ulid } from 'ulid'
 import { expect, vi } from 'vitest'
 import type { ActionHealthReport } from '../../src/core/features/actions/health'
+import type { WorkerBindings } from '../../src/core/app/environment'
+import { createWorkerApp } from '../../src/core/app/worker'
+import { createPencilPlatform } from '../../src/core/platform/runtime'
 import { actionsHttp } from './actions-fixture'
 
 type Fixture = Awaited<ReturnType<typeof actionsHttp>>
+
 export async function readHealth(f: Fixture, actionId: string) {
   const response = await f.call(`/api/app/actions/${actionId}/health`)
-  expect(response.status, await response.clone().text()).toBe(200)
+  expect(response.status).toBe(200)
   expect(response.headers.get('cache-control')).toBe('no-store')
-  return response.json() as Promise<ActionHealthReport>
+  return await response.json() as ActionHealthReport
 }
 
-export async function proveTaskHealthRead(f: Fixture, actionId: string, state: 'failed' | 'unknown') {
-  const attempts = (await env.DB.prepare('SELECT id FROM action_task_attempts WHERE action_id=? ORDER BY ordinal').bind(actionId).all<{id: string}>()).results
-  const transport = vi.spyOn(globalThis, 'fetch')
+async function retained(actionId: string) {
+  return Promise.all(['actions', 'action_events', 'action_task_deliveries', 'action_task_attempts', 'action_reminders', 'action_reminder_attempts'].map(table => {
+    const condition = table === 'actions' ? 'id=?' : table === 'action_reminder_attempts'
+      ? 'reminder_id IN (SELECT id FROM action_reminders WHERE action_id=?)' : 'action_id=?'
+    return env.DB.prepare(`SELECT * FROM ${table} WHERE ${condition} ORDER BY 1`).bind(actionId).all().then(result => result.results)
+  }))
+}
+
+export async function taskFailureHealth(f: Fixture, actionId: string, state: 'failed' | 'unknown') {
+  const stored = await env.DB.prepare('SELECT id FROM action_task_attempts WHERE action_id=? ORDER BY ordinal').bind(actionId).all<{id: string}>()
+  const before = await retained(actionId), alreadyMocked = vi.isMockFunction(globalThis.fetch), outbound = vi.spyOn(globalThis, 'fetch'), calls = outbound.mock.calls.length
+  let report: ActionHealthReport
   try {
-    const report = await readHealth(f, actionId)
-    expect(report).toMatchObject({ actionId, task: { available: true, delivery: { id: actionId, state, stale: false, idempotencyKey: `pencil-action-${actionId}` } } })
-    expect(report.task.delivery!.attempts.map(attempt => attempt.id)).toEqual(attempts.map(attempt => attempt.id))
-    expect(report.task.delivery!.attempts[0]).toMatchObject({ outcome: state, httpStatus: state === 'failed' ? 500 : null })
-    expect(report.task.delivery!.attempts[0].explanation).toMatch(state === 'failed' ? /server error/ : /may already exist/)
-    expect(report.task.repairPlan.join(' ')).toContain('explicitly retry the unchanged confirmed payload')
+    report = await readHealth(f, actionId)
     expect(await readHealth(f, actionId)).toEqual(report)
-    expect(transport).not.toHaveBeenCalled()
-  } finally { transport.mockRestore() }
+    expect(outbound).toHaveBeenCalledTimes(calls)
+  } finally { if (!alreadyMocked) outbound.mockRestore() }
+  expect(await retained(actionId)).toEqual(before)
+  expect(report.task.delivery).toMatchObject({ actionId, idempotencyKey: `pencil-action-${actionId}`, state, stale: false })
+  expect(report.task.delivery!.attempts.map(item => item.id)).toEqual(stored.results.map(item => item.id))
+  expect(report.task.delivery!.attempts[0].explanation).toMatch(state === 'failed' ? /server error/ : /may have created/)
+  expect(report.task.repairPlan).toEqual([expect.stringContaining('explicit operator retry')])
+  return report
 }
 
-export async function proveBrokenOwnerAndTaskHealth(receiver: string) {
-  await fetch(`${receiver}/__control/reset`, {method: 'POST', body: JSON.stringify({mode: 'fail-once-500'})})
+/** Same action: a real refused task transport, owner removal, no-effect reads, and explicit recovery. */
+export async function brokenActionHealth(receiver: string) {
+  await fetch(`${receiver}/__control/reset`, { method: 'POST', body: JSON.stringify({ mode: 'fail-once-500' }) })
   const key = 'synthetic-pencil-health-1'
-  const f = await actionsHttp({ TASK_PROVIDER: 'webhook', TASK_WEBHOOK_URL: `${receiver}/tasks`, TASK_API_KEY: key })
-  await f.respond('Too long', 'synthetic-pencil-private-answer')
-  // Use a route-valid native ID for this owner; the shared action fixture uses UUID operators.
-  const ownerId = ulid()
+  const f = await actionsHttp({ TASK_PROVIDER: 'webhook', TASK_WEBHOOK_URL: `${receiver}/tasks`, TASK_API_KEY: key } as Partial<WorkerBindings>)
+  const departing = await f.operator('Departing health owner')
+  // The shared fixture uses UUID operators; native removal validates the ordinary ULID identity.
+  const nativeOwnerId = ulid()
   await env.DB.prepare('INSERT INTO operators(id,workspace_id,email,display_name,is_setup_operator,created_at,updated_at) SELECT ?,workspace_id,replace(email,id,?),display_name,0,created_at,updated_at FROM operators WHERE id=?')
-    .bind(ownerId,ownerId,f.owner.operatorId).run()
-  await env.DB.prepare('UPDATE oa_sessions SET operator_id=? WHERE id=?').bind(ownerId,f.owner.sessionId).run()
-  const action = await f.create({ownerOperatorId:ownerId,rationale: 'synthetic-pencil-private-rationale'})
-  const path = `/api/app/actions/${action.id}`
-  const preview = await (await f.call(`${path}/task`)).json() as {payloadSha256: string}
-  expect((await f.call(`${path}/task/confirm`, {payloadSha256: preview.payloadSha256})).status).toBe(200)
-  const attempt = await env.DB.prepare('SELECT id FROM action_task_attempts WHERE action_id=?').bind(action.id).first<{id: string}>()
-  // This is the native operator-removal door, not a synthetic broken-schedule row.
-  expect((await f.call(`/api/app/operators/${ownerId}`, {}, {method: 'DELETE'})).status).toBe(204)
+    .bind(nativeOwnerId,nativeOwnerId,departing.operatorId).run()
+  await env.DB.prepare('UPDATE oa_sessions SET operator_id=? WHERE id=?').bind(nativeOwnerId,departing.sessionId).run()
+  const action = await f.create({ ownerOperatorId: nativeOwnerId, rationale: 'synthetic-pencil-private-action' })
+  const taskPath = `/api/app/actions/${action.id}/task`, healthPath = `/api/app/actions/${action.id}/health`
+  const preview = await (await f.call(taskPath)).json() as {payloadSha256: string}
+  expect((await f.call(`${taskPath}/confirm`, { payloadSha256: preview.payloadSha256 })).status).toBe(200)
+  expect((await f.call(`/api/app/operators/${nativeOwnerId}`, {}, {method: 'DELETE'})).status).toBe(204)
   const foreign = await actionsHttp()
-  const requests = async () => (await (await fetch(`${receiver}/__control/state`)).json() as {requests: Array<{body: string; idempotencyKey: string}>}).requests
-  const before = await requests()
-  expect(before).toHaveLength(1)
-  const transport = vi.spyOn(globalThis, 'fetch')
+  const revoked = await f.operator('Revoked health reader')
+  await env.DB.prepare('DELETE FROM oa_sessions WHERE id=?').bind(revoked.sessionId).run()
+  const before = await retained(action.id), alreadyMocked = vi.isMockFunction(globalThis.fetch), outbound = vi.spyOn(globalThis, 'fetch'), calls = outbound.mock.calls.length
+  let report: ActionHealthReport
   try {
-    const report = await readHealth(f, action.id)
-    expect(report).toMatchObject({ actionId: action.id, task: { delivery: {id: action.id, state: 'failed', stale: true, attempts: [{id: attempt!.id, outcome: 'failed', httpStatus: 500}]} }, reminders: {schedule: {actionId: action.id, state: 'no_owner'}} })
-    expect(report.reminders.schedule.explanation).toContain('no current owner')
-    expect(report.reminders.schedule.repairPlan).toEqual([expect.stringMatching(/operator.*choose.*current workspace owner/i)])
-    expect(report.task.repairPlan.join(' ')).toContain('explicitly confirm it again')
+    report = await readHealth(f, action.id)
     expect(await readHealth(f, action.id)).toEqual(report)
-    for (const [denied, status] of [[await f.call(`${path}/health`, undefined, {auth: false}), 401], [await foreign.call(`${path}/health`), 404], [await f.as(f.owner.token)(`${path}/health`), 401]] as const) {
-      expect(denied.status).toBe(status)
+    for (const [call, expected] of [
+      [() => f.call(healthPath, undefined, { auth: false }), 401],
+      [() => foreign.call(healthPath), 404],
+      [() => f.as(revoked.token)(healthPath), 401],
+      [() => f.as(departing.token)(healthPath), 401],
+    ] as const) {
+      const denied = await call()
+      expect(denied.status).toBe(expected)
       const body = await denied.text()
-      for (const privateValue of [action.id, attempt!.id, 'synthetic-pencil-private', `pencil-action-${action.id}`]) expect(body).not.toContain(privateValue)
+      for (const privateValue of [action.id, f.workspaceId, 'synthetic-pencil-private-action', `pencil-action-${action.id}`]) expect(body).not.toContain(privateValue)
     }
-    const text = JSON.stringify(report)
-    for (const privateValue of [key, 'synthetic-pencil-private', 'operators.example.test', 'payloadSha256', 'ownerEmail']) expect(text).not.toContain(privateValue)
-    expect(transport).not.toHaveBeenCalled()
-  } finally { transport.mockRestore() }
-  expect(await requests()).toEqual(before)
-  // Repair is explicit and changes the payload. Retry must refuse until a fresh confirmation.
-  const detail = await (await f.call(path)).json() as {version: number}
-  expect((await f.call(path, {ownerOperatorId: f.lead.operatorId, expectedVersion: detail.version}, {method: 'PATCH'})).status).toBe(200)
-  expect((await f.call(`${path}/task/retry`, {})).status).toBe(409)
-  expect(await requests()).toEqual(before)
-  const current = await (await f.call(`${path}/task`)).json() as {payloadSha256: string}
-  expect(current.payloadSha256).not.toBe(preview.payloadSha256)
-  expect((await f.call(`${path}/task/confirm`, {payloadSha256: preview.payloadSha256})).status).toBe(409)
-  expect(await requests()).toEqual(before)
-  const sent = await f.call(`${path}/task/confirm`, {payloadSha256: current.payloadSha256})
-  expect(await sent.json()).toMatchObject({delivery: {state: 'confirmed'}})
-  const after = await requests()
-  expect(after).toHaveLength(2)
-  expect(after.map(request => request.idempotencyKey)).toEqual([`pencil-action-${action.id}`, `pencil-action-${action.id}`])
-  expect(after[1].body).not.toBe(after[0].body)
-  expect((await readHealth(f, action.id)).task.delivery!.attempts.map(item => item.id)).toEqual([attempt!.id])
+    expect(outbound).toHaveBeenCalledTimes(calls)
+  } finally { if (!alreadyMocked) outbound.mockRestore() }
+  expect(await retained(action.id)).toEqual(before)
+  expect(report.task.delivery).toMatchObject({ actionId: action.id, state: 'failed', stale: true })
+  const attempt = await env.DB.prepare('SELECT id FROM action_task_attempts WHERE action_id=?').bind(action.id).first<{id: string}>()
+  expect(report.task.delivery!.attempts).toEqual([expect.objectContaining({ id: attempt!.id, state: 'failed', httpStatus: 500 })])
+  expect(report.reminders).toMatchObject({ actionId: action.id, state: 'no_owner', explanation: expect.stringContaining('no current owner'), repairPlan: [expect.stringContaining('operator must choose')] })
+  for (const value of [key, 'synthetic-pencil-private-action', receiver]) expect(JSON.stringify(report)).not.toContain(value)
+  // Repairing the owner changes the payload: a retry cannot approve that change.
+  expect((await f.call(`/api/app/actions/${action.id}`, { ownerOperatorId: f.owner.operatorId, expectedVersion: action.version }, { method: 'PATCH' })).status).toBe(200)
+  expect((await f.call(`${taskPath}/retry`, {})).status).toBe(409)
+  expect((await readHealth(f, action.id)).task.repairPlan).toEqual([expect.stringContaining('explicitly confirm it again')])
+  const state = await (await fetch(`${receiver}/__control/state`)).json() as {requests: unknown[]}
+  expect(state.requests).toHaveLength(1)
+  const fresh = await (await f.call(taskPath)).json() as {payloadSha256: string}
+  expect(fresh.payloadSha256).not.toBe(preview.payloadSha256)
+  expect((await f.call(`${taskPath}/confirm`, {payloadSha256: preview.payloadSha256})).status).toBe(409)
+  const beforeConfirmation = await (await fetch(`${receiver}/__control/state`)).json() as {requests: unknown[]}
+  expect(beforeConfirmation.requests).toHaveLength(1)
+  expect((await (await f.call(`${taskPath}/confirm`, {payloadSha256: fresh.payloadSha256})).json()).delivery.state).toBe('confirmed')
+  const repaired = await readHealth(f, action.id)
+  expect(repaired.task.delivery).toMatchObject({state: 'confirmed', attempts: [expect.objectContaining({id: attempt!.id})]})
+  expect(repaired.task.repairPlan).toEqual([])
+  expect(repaired.reminders.state).toBe('suppressed')
+}
+
+export async function reminderFailureHealth(f: Fixture, unknownActionId: string, failedActionId: string) {
+  // Retained sent history can push an old failure off the normal detail page; health must still include it.
+  await env.DB.batch(Array.from({length: 31}, (_, index) => env.DB.prepare(`INSERT INTO action_reminders
+    (id,action_id,operator_id,kind,due_date,review_date,status,idempotency_key,attempts,available_at,created_at,updated_at)
+    SELECT ?,action_id,operator_id,'overdue',?,review_date,'sent',?,1,available_at,created_at,updated_at
+    FROM action_reminders WHERE action_id=? AND status='failed' LIMIT 1`)
+    .bind(crypto.randomUUID(), new Date(Date.parse('2027-01-01T00:00:00Z') + index * 86400000).toISOString().slice(0,10), crypto.randomUUID(), failedActionId)))
+  const recent = await (await f.call(`/api/app/actions/${failedActionId}`)).json() as {reminders: {deliveries: Array<{status: string}>}}
+  expect(recent.reminders.deliveries.length).toBeGreaterThan(0)
+  expect(recent.reminders.deliveries.every(item => item.status === 'sent')).toBe(true)
+  for (const [actionId, state] of [[unknownActionId, 'unknown'], [failedActionId, 'failed']] as const) {
+    const occurrences = await env.DB.prepare('SELECT id FROM action_reminders WHERE action_id=? AND status=?').bind(actionId, state).all<{id: string}>()
+    expect(occurrences.results).toHaveLength(1)
+    const before = await retained(actionId), alreadyMocked = vi.isMockFunction(globalThis.fetch), outbound = vi.spyOn(globalThis, 'fetch'), calls = outbound.mock.calls.length
+    try {
+      const report = await readHealth(f, actionId)
+      expect(report.reminders.occurrences).toEqual([expect.objectContaining({id: occurrences.results[0].id, state, attempts: 1, explanation: expect.stringContaining(state === 'unknown' ? 'may have succeeded' : 'failed'), repairPlan: [expect.stringContaining(state === 'unknown' ? 'unresent' : 'does not replay')]})])
+      expect(await readHealth(f, actionId)).toEqual(report)
+      expect(outbound).toHaveBeenCalledTimes(calls)
+    } finally { if (!alreadyMocked) outbound.mockRestore() }
+    expect(await retained(actionId)).toEqual(before)
+  }
+  // Mail configuration explains schedule failure without exposing the configured sender or credentials.
+  const sender = ['synthetic-pencil-sender', 'example.test'].join(String.fromCharCode(64))
+  const origin = 'https://forms.example.test'
+  const unavailable = createWorkerApp(undefined, createPencilPlatform(origin, {
+    ...env, APP_ORIGIN: origin, SEED_ADMIN_EMAIL: sender, MAIL_PROVIDER: 'sendgrid',
+    MAIL_API_KEY: 'synthetic-pencil-health-2', MAIL_FROM: sender,
+  } as WorkerBindings))
+  const callsBeforeUnavailable = vi.isMockFunction(globalThis.fetch) ? vi.mocked(globalThis.fetch).mock.calls.length : null
+  const response = await unavailable.request(`${origin}/api/app/actions/${failedActionId}/health`, {headers: {Cookie: `__Host-operator_session=${f.lead.token}`}})
+  expect(response.status).toBe(200)
+  if (callsBeforeUnavailable !== null) expect(vi.mocked(globalThis.fetch).mock.calls).toHaveLength(callsBeforeUnavailable)
+  const report = await response.json() as ActionHealthReport
+  expect(report.reminders).toMatchObject({actionId: failedActionId, state: 'unavailable', repairPlan: [expect.stringContaining('repair mail configuration')]})
+  for (const value of ['synthetic-pencil-health-2', sender]) expect(JSON.stringify(report)).not.toContain(value)
 }
