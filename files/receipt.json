@@ -1,0 +1,156 @@
+{
+  "branch": "cloud/sd-pencil-c-f48",
+  "candidateIdentities": {
+    "commits": 0,
+    "range": "origin/main..HEAD",
+    "valid": true
+  },
+  "checks": [
+    {
+      "command": "cloud_run pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/analysis-output.worker.test.ts",
+      "durationSeconds": 33.24,
+      "exit": 0,
+      "filesPassed": 1,
+      "head": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+      "resultLog": "runtime.log",
+      "runtime": "Node 24.19.0; pnpm 10.12.4",
+      "testsPassed": 2
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "countsAfter": {
+        "done": 142,
+        "missing": 49,
+        "partial": 61
+      },
+      "countsBefore": {
+        "done": 142,
+        "missing": 49,
+        "partial": 61
+      },
+      "head": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+      "ledger": {
+        "command": null,
+        "exit": 0,
+        "reason": "No migrations changed"
+      },
+      "lock": {
+        "changed": false,
+        "check": "pnpm source:check",
+        "checkExit": 0,
+        "write": "node scripts/edition-authoring/cli.mjs lock",
+        "writeExit": 0
+      },
+      "newProductCommits": 0,
+      "sourceDiff": [],
+      "views": {
+        "check": "node scripts/contract-docs.mjs check AGENT-002",
+        "checkExit": 0,
+        "committedViews": false,
+        "restoredFrom": "origin/main",
+        "write": "node scripts/contract-docs.mjs write AGENT-002",
+        "writeExit": 0
+      }
+    }
+  ],
+  "ci": {
+    "workflow_runs": [
+      {
+        "conclusion": null,
+        "event": "push",
+        "head_branch": "cloud/sd-pencil-c-f48",
+        "head_sha": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42526939148",
+        "id": 42526939148,
+        "name": "Verify candidate",
+        "status": "queued"
+      },
+      {
+        "conclusion": "success",
+        "event": "dynamic",
+        "head_branch": "main",
+        "head_sha": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42526036001",
+        "id": 42526036001,
+        "name": "Push on main",
+        "status": "completed"
+      },
+      {
+        "conclusion": "skipped",
+        "event": "push",
+        "head_branch": "main",
+        "head_sha": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42526036271",
+        "id": 42526036271,
+        "name": "Run demo",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_branch": "main",
+        "head_sha": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42526036289",
+        "id": 42526036289,
+        "name": "Verify candidate",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_branch": "main",
+        "head_sha": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42526036281",
+        "id": 42526036281,
+        "name": "Run site",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_branch": "cloud/sd-pencil-c-f45-rebase-ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+        "head_sha": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42524647744",
+        "id": 42524647744,
+        "name": "Verify candidate",
+        "status": "completed"
+      }
+    ]
+  },
+  "claim": "AGENT-002 PARTIAL",
+  "countsAfter": {
+    "done": 142,
+    "missing": 49,
+    "partial": 61
+  },
+  "countsBefore": {
+    "done": 142,
+    "missing": 49,
+    "partial": 61
+  },
+  "dependenciesChanged": false,
+  "generatedViewsCommitted": false,
+  "head": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+  "newProductCommits": 0,
+  "productDiff": [],
+  "productPush": "success",
+  "publicationScan": {
+    "commit": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+    "complete": null,
+    "custody": "fleet lander",
+    "findings": null,
+    "historyScanned": null
+  },
+  "repository": "just-every/run-pencil",
+  "schema": 1,
+  "scope": "Selected within_response proof already present in pinned predecessor and current main; validated without a new product commit",
+  "tag": "sd-pencil-c-f48",
+  "testRegistrationDelta": 0
+}

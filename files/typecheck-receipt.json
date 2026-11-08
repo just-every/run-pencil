@@ -1,0 +1,4 @@
+{
+  "command": "pnpm typecheck",
+  "exit": 0
+}

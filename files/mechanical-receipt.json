@@ -1,0 +1,35 @@
+{
+  "head": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+  "views": {
+    "write": "node scripts/contract-docs.mjs write AGENT-002",
+    "writeExit": 0,
+    "check": "node scripts/contract-docs.mjs check AGENT-002",
+    "checkExit": 0,
+    "restoredFrom": "origin/main",
+    "committedViews": false
+  },
+  "lock": {
+    "write": "node scripts/edition-authoring/cli.mjs lock",
+    "writeExit": 0,
+    "check": "pnpm source:check",
+    "checkExit": 0,
+    "changed": false
+  },
+  "ledger": {
+    "command": null,
+    "exit": 0,
+    "reason": "No migrations changed"
+  },
+  "sourceDiff": [],
+  "newProductCommits": 0,
+  "countsBefore": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "countsAfter": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "command": "cloud_run pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/analysis-output.worker.test.ts",
+  "exit": 0,
+  "head": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+  "filesPassed": 1,
+  "testsPassed": 2,
+  "durationSeconds": 33.24,
+  "runtime": "Node 24.19.0; pnpm 10.12.4",
+  "resultLog": "runtime.log"
+}

@@ -1,0 +1,4 @@
+{
+  "command": "pnpm exec rer check --profile first-party",
+  "exit": 0
+}
