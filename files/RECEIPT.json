@@ -1,0 +1,156 @@
+{
+  "schema": 1,
+  "tag": "sd-pencil-c-f43",
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f43",
+  "head": "c7d5a9847d6dcd8787ba5a346efa45bda5ddeae3",
+  "origin_main_at_final_fetch": "c7d5a9847d6dcd8787ba5a346efa45bda5ddeae3",
+  "product_changes": [],
+  "product_commits_created": 0,
+  "status_changes": [],
+  "counts_before": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "counts_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "checks": [
+    {
+      "command": "npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/contract-docs.mjs write MOB-001",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/contract-docs.mjs check MOB-001",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm source:check",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run timeout 1200 pnpm exec playwright test response-search.spec.ts --config /tmp/pencil-cloud.playwright.ts --workers=1 --reporter=line",
+      "exit": 0,
+      "passed": 2,
+      "failed": 0,
+      "duration": "1.1m",
+      "widths": [
+        1440,
+        390,
+        360
+      ]
+    }
+  ],
+  "browser": {
+    "executable": "/usr/bin/chromium",
+    "args": [
+      "--no-sandbox",
+      "--use-mock-keychain",
+      "--password-store=basic"
+    ],
+    "runtime_node": "v24.19.0",
+    "pnpm": "10.12.4",
+    "temporary_config_changes": [
+      "absolute testDir",
+      "webServer cwd",
+      "system Chromium executable and no-sandbox",
+      "output directory outside product"
+    ],
+    "initial_harness_attempt": {
+      "exit": 1,
+      "reason": "temporary config resolved web server relative to /tmp; corrected cwd before successful run"
+    },
+    "screens_inspected": [
+      "inbox-1440.png",
+      "inbox-390.png",
+      "inbox-360-initial.png",
+      "inbox-360-bulk.png",
+      "inbox-360-note.png",
+      "inbox-360-filtered.png",
+      "inbox-360-reloaded.png"
+    ],
+    "minimum_hit_width_asserted": 44,
+    "minimum_hit_height_asserted": 44,
+    "checkbox_effective_target": "label.selection-hit",
+    "viewport_restored": true
+  },
+  "identity_check": {
+    "command": "git log origin/main..HEAD --format=\"%an <%ae>%n%cn <%ce>%n%(trailers:only,unfold)\"",
+    "exit": 0,
+    "candidate_commit_count": 0
+  },
+  "contract_status_diff_empty": true,
+  "generated_views_restored": true,
+  "source_lock_changed": false,
+  "push": {
+    "command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-pencil-c-f43",
+    "exit": 0,
+    "attempts": 1
+  },
+  "publication_scan": {
+    "commit": "c7d5a9847d6dcd8787ba5a346efa45bda5ddeae3",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "reason": "Cloud route delegates the publication scan to the maintained Mac lander."
+  },
+  "migration_ledger": "not applicable; no migrations changed",
+  "created_at": "2026-11-08T18:05:13.033637+00:00",
+  "ci": {
+    "branch_verify": {
+      "id": 42508030645,
+      "status": "in_progress",
+      "conclusion": null,
+      "head": "c7d5a9847d6dcd8787ba5a346efa45bda5ddeae3",
+      "event": "push"
+    },
+    "main_verify": {
+      "id": 42505950432,
+      "status": "completed",
+      "conclusion": "success",
+      "head": "c7d5a9847d6dcd8787ba5a346efa45bda5ddeae3",
+      "event": "push"
+    },
+    "main_run_site": {
+      "id": 42505950175,
+      "status": "completed",
+      "conclusion": "success",
+      "head": "c7d5a9847d6dcd8787ba5a346efa45bda5ddeae3",
+      "event": "push"
+    },
+    "prior_f42_verify": {
+      "id": 42506128332,
+      "status": "completed",
+      "conclusion": "failure",
+      "head": "c7d5a9847d6dcd8787ba5a346efa45bda5ddeae3",
+      "job": 128809515373,
+      "summary": "worker-1: 63 passed, 0 failed, 1 pending; exit 1; no failed assertion diagnostic in log"
+    },
+    "github_calls_used": 4,
+    "dispatches": 0,
+    "reruns": 0
+  }
+}

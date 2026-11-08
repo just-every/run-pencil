@@ -1,0 +1,6 @@
+Run 42506128332, failed job 128809515373.
+Read once with gh run view 42506128332 --repo just-every/run-pencil --job 128809515373 --log-failed. Exit 0.
+worker-1: 63 passed, 0 failed, 1 pending; exit 1.
+desktop-7: 10 passed, 0 failed; exit 0.
+archive-delivery: 1 passed, 0 failed, 0 pending; exit 0.
+No failed assertion or diagnostic identifying the pending test was present in the failed-job log. No repair, dispatch or rerun was attempted.
