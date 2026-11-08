@@ -64,6 +64,13 @@ function failure(context: Context<WorkerEnvironment>, error: unknown) {
 }
 
 export function registerFlowRoutes(app: Hono<WorkerEnvironment>, services: RequestServices) {
+  app.post('/api/app/flows/:flowId/identity-links', zValidator('param', z.object({flowId:resourceId})), zValidator('json',z.object({revisionId:resourceId,values:z.record(z.string().max(64),z.union([z.string().max(1000),z.number(),z.boolean()])).refine(value=>Object.keys(value).length<=20)}).strict()), async context => {
+    try {
+      requireSameOriginRequest(context.req.raw)
+      const {revisionId,values}=context.req.valid('json')
+      return context.json(await services(context).flows.createIdentityLink(context.get('operatorSession').workspaceId,context.req.param('flowId'),revisionId,values,context.get('platform').configuration.sessionSecret),201)
+    } catch(error) { return failure(context,error) }
+  })
   app.get('/api/app/dashboard', zValidator('query', z.object({ status: z.enum(['draft', 'open', 'closed', 'archived']).optional() })), async (context) => {
     try {
       return context.json(await services(context).flows.listDashboard(context.get('operatorSession').workspaceId, context.req.valid('query').status))
@@ -240,9 +247,9 @@ export function registerFlowRoutes(app: Hono<WorkerEnvironment>, services: Reque
     }
   })
 
-  app.get('/api/public/flows/:slug', zValidator('param', z.object({ slug: flowSlug })), zValidator('query',z.object({collector:z.string().regex(/^[a-f0-9]{32}$/).optional(),source:z.enum(['direct','embed']).default('direct')})), async (context) => {
+  app.get('/api/public/flows/:slug', zValidator('param', z.object({ slug: flowSlug })), zValidator('query',z.object({identity:z.string().max(40000).optional(),collector:z.string().regex(/^[a-f0-9]{32}$/).optional(),source:z.enum(['direct','embed']).default('direct')})), async (context) => {
     try {
-      const flow=await services(context).flows.getPublicFlow(context.req.param('slug'),context.req.header('x-pencil-access'))
+      const flow=await services(context).flows.getPublicFlow(context.req.param('slug'),context.req.header('x-pencil-access'),context.req.valid('query').identity,context.get('platform').configuration.sessionSecret)
       const {source,collector}=context.req.valid('query')
       await services(context).collectors.requireOpen(flow.flow.id,source,collector)
       return context.json(flow)

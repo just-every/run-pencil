@@ -1,3 +1,4 @@
+import { issueIdentityLink, readIdentityLink } from './identity-link'
 import { answerAlertPublicationIssues, remapAnswerAlerts } from '../../shared/answerAlerts'
 import type { LedgerFilter } from '../reporting'
 import type { NativeAgentAttribution } from '../audit'
@@ -509,7 +510,15 @@ export class FlowService {
     await this.repository.restoreFlow(flowId, new Date().toISOString(), operatorId)
   }
 
-  async getPublicFlow(slug: string, accessToken?:string) {
+  async createIdentityLink(workspaceId: string, flowId: string, revisionId: string, values: Record<string, unknown>, secret: string) {
+    const flow = await this.requireWorkspaceFlow(workspaceId, flowId)
+    const revision = await this.repository.findCurrentPublishedRevision(flow.id)
+    if (!revision || revision.id !== revisionId || flow.status !== 'open') throw new ValidationError('Choose the current open published revision before creating an identifying link.')
+    const token = await issueIdentityLink(secret, {workspaceId, flowId, revisionId}, formSettings(revision.formSettingsJson), values)
+    return { revisionId, path: `/f/${encodeURIComponent(flow.slug)}?identity=${encodeURIComponent(token)}` }
+  }
+
+  async getPublicFlow(slug: string, accessToken?:string, identityLink?: string, secret?: string) {
     const resolved = await this.repository.getCurrentPublicSnapshot(slug)
     const flow = resolved?.flow
     if (!flow || flow.status === 'draft' || flow.status === 'archived') throw new NotFoundError('This flow is not available for responses.')
@@ -522,8 +531,10 @@ export class FlowService {
       if(!this.access)throw new ValidationError('Access verification is unavailable.')
       await this.access.require(formSettings(revision.formSettingsJson),revision.id,revision.title,flow.slug,accessToken)
     }
+    const settings = formSettings(revision.formSettingsJson)
+    const fixed = identityLink ? await readIdentityLink(secret ?? '', identityLink, {workspaceId:flow.workspaceId,flowId:flow.id,revisionId:revision.id}, settings) : undefined
     const { steps, choices, rules } = resolved
-    return presentFlow({ formSettings: formSettings(revision.formSettingsJson), reviewBeforeSubmit: revisionReviewEnabled(revision.policySnapshotJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: flow.title }, revision: this.publicRevision(revision), steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) })
+    return presentFlow({ ...(identityLink ? {identityLink, hiddenContext:normalizeHidden(settings,fixed!)} : {}), formSettings: formSettings(revision.formSettingsJson), reviewBeforeSubmit: revisionReviewEnabled(revision.policySnapshotJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: flow.title }, revision: this.publicRevision(revision), steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules) })
   }
 
   private async requireWorkspaceFlow(workspaceId: string, flowId: string) {

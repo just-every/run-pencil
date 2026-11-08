@@ -16,7 +16,7 @@ import { responseQualityIssue, type ResponseQualitySettings } from './responseQu
 export type HiddenField = { id: string; name: string; type: 'text' | 'number' | 'email' | 'date' | 'boolean'; category: 'plain' | 'campaign' | 'identifying' | 'click_id' }
 export type FormSettings = { responseQuality?: ResponseQualitySettings; answerAlerts?: AnswerAlertRule[]; responseEdits?: ResponseEditSettings; googleSheets?:boolean; marketing?: MarketingOptIn; text?: RespondentText; confirmation?: ConfirmationSettings; prefill?: PrefillMapping[]; linkPreview?: LinkPreviewSettings; reviewBeforeSubmit?: boolean; access?: {id:string;mode:'password'|'email'|'signed'}; redirectOrigins?: string[]; calculations?: Calculation[]; hiddenFields: HiddenField[]; identityMode: 'anonymous' | 'identified' }
 export type ResponseContext = { consents?: ConsentRecord[]; prefill?: Record<string,PrefillMarker>; presentedOrder?: import('./presentationOrder').PresentationOrder; verifiedEmail?:string; verifiedSubject?:string; calculations?: Record<string,number|string|null>; hidden: Record<string, string | number | boolean>; discarded: number; identityMode: 'anonymous' | 'identified' }
-const reserved = new Set(['collector','resume','source','challenge','kiosk','__proto__','constructor','prototype'])
+const reserved = new Set(['identity','collector','resume','source','challenge','kiosk','__proto__','constructor','prototype'])
 export const hiddenFieldLimits = manifest.limits.hiddenFields
 
 export function formSettings(json?: string | null): FormSettings {

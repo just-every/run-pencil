@@ -1,3 +1,4 @@
+import { IdentityLinkFields } from './IdentityLinkFields'
 import { QrKioskControls } from '../../collectors'
 import { Copy } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type FocusEvent } from 'react'
@@ -44,6 +45,7 @@ function CopyField({ label, value, multiline = false }: { label: string; value: 
 
 export function FlowSharePanel({ draft, disabled, onDirtyChange, onSave }: { draft: BuilderDraft; disabled: boolean; onDirtyChange: (dirty: boolean) => void; onSave: (settings: FormSettings) => Promise<void> }) {
   const { flow } = draft
+  const [identifyingPath,setIdentifyingPath]=useState<string>()
   const [origin, setOrigin] = useState<string>()
   useEffect(() => { setOrigin(window.location.origin) }, [])
   const available = flow.status === 'open' || flow.status === 'closed'
@@ -52,7 +54,7 @@ export function FlowSharePanel({ draft, disabled, onDirtyChange, onSave }: { dra
     <h2 id="flow-share-title">Share this flow</h2>
     {!available ? <p className="muted">{flow.status === 'archived' ? 'This flow is archived. Its public link is unavailable.' : 'Publish this flow before sharing it. An unpublished flow has no public form.'}</p> : <>
       <p className="muted">{flow.status === 'closed' ? 'This flow is closed. Visitors will see the closed page until the flow accepts responses again.' : 'These links open the current published form. Unpublished draft changes are not included.'}</p>
-      {links ? <><CopyField key={links.publicUrl} label="Public link" value={links.publicUrl} /><a className="quiet-button focus-ring" href={`/f/${flow.slug}`} target="_blank" rel="noopener">View public flow</a><QrKioskControls flowId={flow.id} publicPath={new URL(links.publicUrl).pathname} label="Public link" /><CopyField key={links.scriptCode} label="Script embed" value={links.scriptCode} multiline /><CopyField key={links.embedCode} label="Embed code" value={links.embedCode} multiline /></> : <p className="muted" aria-busy="true">Loading sharing links…</p>}
+      {links ? <><IdentityLinkFields key={flow.draftVersion} flowId={flow.id} slug={flow.slug} onIssued={setIdentifyingPath}/>{identifyingPath ? <CopyField label="Identifying link" value={new URL(identifyingPath,origin).href}/> : null}<CopyField key={links.publicUrl} label="Public link" value={links.publicUrl} /><a className="quiet-button focus-ring" href={`/f/${flow.slug}`} target="_blank" rel="noopener">View public flow</a><QrKioskControls flowId={flow.id} publicPath={new URL(links.publicUrl).pathname} label="Public link" /><CopyField key={links.scriptCode} label="Script embed" value={links.scriptCode} multiline /><CopyField key={links.embedCode} label="Embed code" value={links.embedCode} multiline /></> : <p className="muted" aria-busy="true">Loading sharing links…</p>}
       <p className="muted">Embedding works only on hosts allowed in <Link className="focus-ring" to="/app/settings">Settings</Link>. An empty host list blocks embedding.</p>
     </>}
     <FlowLinkPreview key={flow.draftVersion} draft={draft} publicUrl={origin ? flowShareLinks(origin, flow.slug).publicUrl : undefined} disabled={disabled} onDirtyChange={onDirtyChange} onSave={onSave} />

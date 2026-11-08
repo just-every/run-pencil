@@ -13,6 +13,7 @@ import { requireSameOriginRequest } from '../auth'
 
 const orderMap=z.record(resourceId,z.array(resourceId).max(1000)).refine(value=>Object.keys(value).length<=250)
 const startSessionSchema = z.object({
+  identityLink:z.string().max(40000).optional(),
   presentation:z.object({choices:orderMap,blocks:orderMap}).strict().optional(),
   accessToken:z.string().max(8192).optional(),
   deviceClass: z.enum(['mobile', 'tablet', 'desktop']),
@@ -27,6 +28,7 @@ const sessionCredentials = z.object({
 })
 
 const submitResponseSchema = sessionCredentials.extend({
+  identityLink:z.string().max(40000).optional(),removeIdentity:z.boolean().optional(),
   hidden:z.record(z.string().max(64),z.union([z.string().max(1000),z.number(),z.boolean()])).refine(value=>Object.keys(value).length<=100).optional(),
   // Missing credentials reach the named session refusal; present credentials
   // retain their original format bounds and never bypass service admission.

@@ -25,16 +25,18 @@ export const loadPublicConfig = createServerFn({ method: 'GET' }).handler(async 
 })
 
 export const loadPublicFlow = createServerFn({ method: 'GET' })
-  .inputValidator(z.object({ slug: z.string().min(1).max(120), collectorKey:z.string().regex(/^[a-f0-9]{32}$/).optional(), source:z.enum(['direct','embed']).default('direct') }))
+  .inputValidator(z.object({ slug: z.string().min(1).max(120), identityLink:z.string().max(40000).optional(), collectorKey:z.string().regex(/^[a-f0-9]{32}$/).optional(), source:z.enum(['direct','embed']).default('direct') }))
   .handler(async ({ data }) => {
     const { requestServices } = await import('../platform/request.server')
-    const { services } = await requestServices()
+    const { services, platform } = await requestServices()
     let flow: Awaited<ReturnType<typeof services.flows.getPublicFlow>> | undefined
     try {
-      flow=await services.flows.getPublicFlow(data.slug)
+      flow=await services.flows.getPublicFlow(data.slug,undefined,data.identityLink,platform.configuration.sessionSecret)
       await services.collectors.requireOpen(flow.flow.id,data.source,data.collectorKey)
       return { state: 'open' as const, flow, collectorKey:data.collectorKey }
     } catch (error) {
+      const {IdentityLinkError}=await import('../features/flows/identity-link')
+      if(error instanceof IdentityLinkError)return {state:'closed' as const,flow:{title:'Identifying link unavailable',slug:data.slug,message:error.message}}
       const {AccessRequiredError}=await import('../features/restricted-access/service')
       if(error instanceof AccessRequiredError)return {state:'restricted' as const,restriction:error.requirement,collectorKey:data.collectorKey}
       const { FlowClosedError, PencilError } = await import('../shared/errors')
@@ -109,6 +111,8 @@ export const loadInvitation = createServerFn({ method: 'GET' })
       const context = await services.responses.invitationFlow(data.token)
       return { state: 'open' as const, flow: context.publicFlow }
     } catch (error) {
+      const {IdentityLinkError}=await import('../features/flows/identity-link')
+      if(error instanceof IdentityLinkError)return {state:'closed' as const,flow:{title:'Identifying link unavailable',slug:data.slug,message:error.message}}
       const {AccessRequiredError}=await import('../features/restricted-access/service')
       if(error instanceof AccessRequiredError)return {state:'restricted' as const,restriction:error.requirement}
       const { FlowClosedError, PencilError } = await import('../shared/errors')

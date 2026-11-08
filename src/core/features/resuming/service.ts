@@ -1,3 +1,4 @@
+import { identitySessionToken, type IdentityInput } from '../flows/identity-link'
 import { presentFlow } from '../../shared/presentationOrder'
 import { formSettings, normalizeHidden, hiddenAnswers } from '../../shared/hiddenFields'
 import type { MailSender } from '../../../base/operator-auth/index.mjs'
@@ -11,7 +12,7 @@ import { hashResumeValue, resumeBearer, resumedSessionToken } from './credential
 import { resumeMessage } from './message'
 import { ResumeRepository } from './repository'
 
-type SaveInput = { slug: string; sessionId: string; sessionToken: string; commandKey: string; email: string; currentStepId: string; answers: Array<{ stepId: string; value: unknown }>; invitationToken?: string; hidden?:Record<string,unknown>; clientAddress?: string }
+type SaveInput = IdentityInput & { slug: string; sessionId: string; sessionToken: string; commandKey: string; email: string; currentStepId: string; answers: Array<{ stepId: string; value: unknown }>; invitationToken?: string; hidden?:Record<string,unknown>; clientAddress?: string }
 
 export class ResumeService {
   constructor(private readonly repository: ResumeRepository, private readonly responses: ResponseRepository,
@@ -40,7 +41,7 @@ export class ResumeService {
       participantId=invitation.id
     } else if (input.invitationToken) throw new ValidationError('This response does not use an invitation.')
     const graph = await this.flows.getRevisionGraph(context.revision.id)
-    const hiddenContext = normalizeHidden(formSettings(context.revision.formSettingsJson),input.hidden ?? {})
+    const hiddenContext = {...await this.responseService.resolveIdentityContext(context,input), ...(input.identityLink ? {identityLink:input.identityLink,removeIdentity:input.removeIdentity===true} : {})}
     const accessIdentity=await this.responseService.sessionAccessIdentity(input.sessionId,formSettings(context.revision.formSettingsJson))
     if(accessIdentity?.email){hiddenContext.verifiedEmail=accessIdentity.email;hiddenContext.identityMode='identified'}
     if(accessIdentity?.subject){hiddenContext.verifiedSubject=accessIdentity.subject;hiddenContext.identityMode='identified'}
@@ -79,7 +80,8 @@ export class ResumeService {
     if (row.response_id && row.completion_step_id) {
       return {state:'completed' as const,flow:resumedPublicFlow(flow,revision,graph,!!row.participant_id,row.completion_step_id),completionStepId:row.completion_step_id}
     }
-    const sessionToken=await resumedSessionToken(token)
+    const savedContext=JSON.parse(row.response_context_json ?? '{}')
+    const sessionToken=await identitySessionToken(await resumedSessionToken(token),savedContext.identityLink)
     if (!await this.repository.activate(row,await hashResumeValue(sessionToken),new Date().toISOString())) {
       // A final submission can commit between resolution and activation. Read
       // its receipt rather than offering a fresh response for the completed one.
@@ -93,6 +95,6 @@ export class ResumeService {
     const invitation=row.participant_id ? await this.repository.invitationToken(row.participant_id) : undefined
     if (row.participant_id && !invitation) return unavailable()
     if (!row.answers_json || !row.current_step_id) return unavailable()
-    return {state:'open' as const,flow:presentFlow({...resumedPublicFlow(flow,revision,graph,!!row.participant_id),hiddenContext:JSON.parse(row.response_context_json ?? '{}')},(()=>{const order=JSON.parse(context.session.presentationJson);return {choices:order.choices ?? {},blocks:order.blocks ?? {}}})()),sessionId:row.session_id,sessionToken,revisionId:revision.id,answers:JSON.parse(row.answers_json) as Array<{stepId:string;value:unknown}>,currentStepId:row.current_step_id,...(invitation?{invitationToken:invitation.token}:{})}
+    return {state:'open' as const,flow:presentFlow({...resumedPublicFlow(flow,revision,graph,!!row.participant_id),hiddenContext:savedContext,...(savedContext.identityLink?{identityLink:savedContext.identityLink,removeIdentity:savedContext.removeIdentity}: {})},(()=>{const order=JSON.parse(context.session.presentationJson);return {choices:order.choices ?? {},blocks:order.blocks ?? {}}})()),sessionId:row.session_id,sessionToken,revisionId:revision.id,answers:JSON.parse(row.answers_json) as Array<{stepId:string;value:unknown}>,currentStepId:row.current_step_id,...(invitation?{invitationToken:invitation.token}:{})}
   }
 }

@@ -1,3 +1,4 @@
+import { identityContext, identitySessionToken, readIdentityLink, type IdentityInput } from '../flows/identity-link'
 import { hasStraightLinedMatrix } from '../../shared/responseQuality'
 import { consentRecords } from '../../shared/marketingConsent'
 import { closedFlowFor } from '../../shared/closedFlow'
@@ -93,6 +94,12 @@ export class ResponseService {
     }
   }
 
+  async resolveIdentityContext(context: NonNullable<Awaited<ReturnType<ResponseRepository['findSubmissionContext']>>>, input: IdentityInput & {sessionToken:string}) {
+    const {flow,revision}=context
+    const current = input.identityLink || input.sessionToken.startsWith('i.') ? await this.flowRepository.findCurrentPublishedRevision(flow.id) : revision
+    return identityContext(this.loadTimeSecret,{workspaceId:flow.workspaceId,flowId:flow.id,revisionId:current?.id ?? ''},formSettings(revision.formSettingsJson),input,input.sessionToken)
+  }
+
   async sessionAccessIdentity(sessionId:string,settings:import('../../shared/hiddenFields').FormSettings){return this.access.sessionIdentity(sessionId,settings)}
 
   async expireSessions(now: string, limit: number) { return this.repository.foldExpiredSessions(now, limit) }
@@ -127,13 +134,17 @@ export class ResponseService {
     return { invitation, collector, flow, revision, steps, choices, rules, publicFlow: presentFlow({ formSettings: formSettings(revision.formSettingsJson), reviewBeforeSubmit: revisionReviewEnabled(revision.policySnapshotJson), branchSelection: revisionBranchSelection(revision.policySnapshotJson), flow: { id: flow.id, slug: flow.slug, title: revision.title }, revision: { id: revision.id, number: revision.number, publishedAt: revision.publishedAt, deadlineAt: revision.deadlineAt, targetCompletedResponses: revision.targetCompletedResponses }, steps: publicSteps(steps), choices: publicChoices(steps, choices), branchRules: publicRules(rules), prefilledAnswers, prefillProof, identity: 'identified' as const, completedStepId: invitation.responseStatus === 'completed' ? invitation.completionStepId : null }) }
   }
 
-  async startPublicSession(input: { slug: string; deviceClass: DeviceClass; source: PublicSource; clientAddress?: string; invitationToken?: string; collectorKey?: string; accessToken?:string; presentation?:PresentationOrder }) {
+  async startPublicSession(input: { slug: string; deviceClass: DeviceClass; source: PublicSource; clientAddress?: string; invitationToken?: string; collectorKey?: string; accessToken?:string; presentation?:PresentationOrder; identityLink?: string }) {
     if (input.invitationToken && input.collectorKey !== undefined) throw new ValidationError('An invitation uses its original collector; remove the collection-link override.')
     await this.enforcePublicRequestRateLimit({ clientAddress: input.clientAddress, scope: 'session' })
     const invitationContext = input.invitationToken ? await this.invitationFlow(input.invitationToken,input.accessToken) : undefined
     if (invitationContext && invitationContext.flow.slug !== input.slug) throw new NotFoundError('This invitation belongs to another flow.')
     if (invitationContext?.invitation.responseStatus === 'completed') throw new ValidationError('This invitation has already completed its response.')
     const { flow, revision, steps, choices, rules } = invitationContext ?? await this.currentPublicRevision(input.slug)
+    if (input.identityLink) {
+      if (invitationContext) throw new ValidationError('An invitation cannot replace its identity with a public identifying link.')
+      await readIdentityLink(this.loadTimeSecret,input.identityLink,{workspaceId:flow.workspaceId,flowId:flow.id,revisionId:revision.id},formSettings(revision.formSettingsJson))
+    }
     const collector = invitationContext?.collector ?? await this.collectors.requireOpen(flow.id, input.source, input.collectorKey)
       .catch(error => collectorFlowFailure(error, { title: revision.title, slug: flow.slug }))
     const grant=await this.access.require(formSettings(revision.formSettingsJson),revision.id,revision.title,flow.slug,input.accessToken)
@@ -142,7 +153,7 @@ export class ResponseService {
     const firstStep = steps[0]
     if (!firstStep) throw new ValidationError('This published flow has no first screen.')
     const now = new Date()
-    const token = crypto.randomUUID().replaceAll('-', '') + crypto.randomUUID().replaceAll('-', '')
+    const token = await identitySessionToken(crypto.randomUUID().replaceAll('-', '') + crypto.randomUUID().replaceAll('-', ''),input.identityLink)
     const session = {
       id: ulid(),
       presentationJson:JSON.stringify(presentation),
@@ -186,7 +197,7 @@ export class ResponseService {
     }
   }
 
-  async submitPublicResponse(input: { slug: string; sessionId: string; sessionToken: string; idempotencyKey: string; answers: AnswerInput[]; prefillProof?:string; hidden?:Record<string,unknown>; honeypot?: string; loadTime?: string; clientAddress?: string; invitationToken?: string }) {
+  async submitPublicResponse(input: IdentityInput & { slug: string; sessionId: string; sessionToken: string; idempotencyKey: string; answers: AnswerInput[]; prefillProof?:string; hidden?:Record<string,unknown>; honeypot?: string; loadTime?: string; clientAddress?: string; invitationToken?: string }) {
     await this.enforcePublicRequestRateLimit({ clientAddress: input.clientAddress, scope: 'submission' })
     if (!input.sessionToken) throw new SessionUnavailableError()
     const tokenHash = await this.hash(input.sessionToken)
@@ -238,7 +249,7 @@ export class ResponseService {
 
     const { steps, choices, rules } = await this.flowRepository.getRevisionGraph(revision.id)
     const settings = formSettings(revision.formSettingsJson)
-    const hiddenContext = normalizeHidden(settings,input.hidden ?? {})
+    const hiddenContext = await this.resolveIdentityContext(context,input)
     const accessIdentity=await this.access.sessionIdentity(session.id,settings)
     if(accessIdentity?.email){hiddenContext.verifiedEmail=accessIdentity.email;hiddenContext.identityMode='identified'}
     if(accessIdentity?.subject){hiddenContext.verifiedSubject=accessIdentity.subject;hiddenContext.identityMode='identified'}

@@ -27,6 +27,8 @@ export type BranchRule = {
 }
 
 export type PublicFlow = {
+  identityLink?: string
+  removeIdentity?: boolean
   prefillProof?: string
   prefilledAnswers?: Record<string,import('../shared/knownDataPrefill').PrefilledAnswer>
   reviewBeforeSubmit?: boolean
@@ -166,14 +168,15 @@ export const api = {
   archiveFlow: (flowId: string) => request<void>(`/api/app/flows/${encodeURIComponent(flowId)}/archive`, { method: 'POST' }),
   restoreFlow: (flowId: string) => request<void>(`/api/app/flows/${encodeURIComponent(flowId)}/restore`, { method: 'POST' }),
   results: (flowId: string, revisionId?: string, filter: LedgerFilter = {}, allRevisions = false) => request<FlowResults>(`/api/app/flows/${encodeURIComponent(flowId)}/results?${query({...filter,revisionId})}${allRevisions ? '&allRevisions=true' : ''}`),
+  createIdentityLink:(flowId:string,revisionId:string,values:Record<string,unknown>)=>request<{revisionId:string;path:string}>(`/api/app/flows/${encodeURIComponent(flowId)}/identity-links`,{method:'POST',body:JSON.stringify({revisionId,values})}),
   publicFlow: (slug: string) => request<PublicFlow>(`/api/public/flows/${encodeURIComponent(slug)}`),
-  startSession: (slug: string, deviceClass: 'mobile' | 'tablet' | 'desktop', source: 'direct' | 'embed', invitationToken?: string, collectorKey?: string, accessToken?:string, presentation?:import('../shared/presentationOrder').PresentationOrder) =>
-    request<{ sessionId: string; sessionToken: string; revisionId: string; flowId: string; flow: PublicFlow }>(`/api/public/flows/${encodeURIComponent(slug)}/sessions`, { method: 'POST', body: JSON.stringify({ deviceClass, source, invitationToken, collectorKey, accessToken, presentation }) }),
+  startSession: (slug: string, deviceClass: 'mobile' | 'tablet' | 'desktop', source: 'direct' | 'embed', invitationToken?: string, collectorKey?: string, accessToken?:string, presentation?:import('../shared/presentationOrder').PresentationOrder, identityLink?:string) =>
+    request<{ sessionId: string; sessionToken: string; revisionId: string; flowId: string; flow: PublicFlow }>(`/api/public/flows/${encodeURIComponent(slug)}/sessions`, { method: 'POST', body: JSON.stringify({ deviceClass, source, invitationToken, collectorKey, accessToken, presentation, identityLink }) }),
   advanceSession: (slug: string, input: { sessionId: string; sessionToken: string; stepId: string }) => request<void>(`/api/public/flows/${encodeURIComponent(slug)}/sessions/advance`, { method: 'POST', body: JSON.stringify(input) }),
-  saveResponse: (slug: string, input: { sessionId: string; sessionToken: string; commandKey: string; email: string; currentStepId: string; answers: Array<{ stepId: string; value: unknown }>; invitationToken?: string; hidden?:Record<string,unknown> }) =>
+  saveResponse: (slug: string, input: import('../features/flows/identity-link').IdentityInput & { sessionId: string; sessionToken: string; commandKey: string; email: string; currentStepId: string; answers: Array<{ stepId: string; value: unknown }>; invitationToken?: string; hidden?:Record<string,unknown> }) =>
     request<{ state: 'saved'; expiresAt: string }>(`/api/public/flows/${encodeURIComponent(slug)}/sessions/save`, { method: 'POST', body: JSON.stringify(input) }),
   resumeResponse: (slug: string, token: string) => request<SavedResponseState>(`/api/public/flows/${encodeURIComponent(slug)}/resume`, { method: 'POST', body: JSON.stringify({ token }) }),
-  submitResponse: (slug: string, input: { sessionId: string; sessionToken: string; loadTime: string; prefillProof?:string; idempotencyKey: string; answers: Array<{ stepId: string; value: unknown }>; honeypot?: string; invitationToken?: string; hidden?:Record<string,unknown> }) =>
+  submitResponse: (slug: string, input: import('../features/flows/identity-link').IdentityInput & { sessionId: string; sessionToken: string; loadTime: string; prefillProof?:string; idempotencyKey: string; answers: Array<{ stepId: string; value: unknown }>; honeypot?: string; invitationToken?: string; hidden?:Record<string,unknown> }) =>
     request<{ responseId: string; idempotent: boolean; completionStepId: string | null; redirectUrl?: string | null; disposition: 'released' | 'quarantined'; payment?: { state: PaymentState; checkoutUrl?: string; checkoutSessionId?: string } }>(`/api/public/flows/${encodeURIComponent(slug)}/responses`, { method: 'POST', body: JSON.stringify(input) }),
   paymentReturn: (slug: string, input: { token: string; outcome: 'success' | 'cancel' }) => request<PaymentReturnView>(`/api/public/flows/${encodeURIComponent(slug)}/payments/return`, { method: 'POST', body: JSON.stringify(input) }),
   quarantinedResponses: (revisionId: string) => request<Array<{ id: string; quarantineReason: string | null; completedAt: string; answers: Array<{ stepId: string; value: unknown }> }>>(`/api/app/revisions/${encodeURIComponent(revisionId)}/quarantine`),

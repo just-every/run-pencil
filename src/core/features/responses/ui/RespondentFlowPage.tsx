@@ -47,8 +47,9 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
   const [unconfirmedClosedFlow, setUnconfirmedClosedFlow] = useState<ClosedFlow>()
   const [closedRestart, setClosedRestart] = useState(false)
   const [baseFlow, setFlow] = useState<PublicFlow>(initialFlow)
+  const [removeIdentity,setRemoveIdentity]=useState(initialFlow.removeIdentity===true)
   const [hidden, setHidden] = useState<Record<string,unknown>>(() => Object.fromEntries((initialFlow.formSettings?.hiddenFields ?? []).flatMap(field => initialFlow.hiddenContext?.hidden[field.id] === undefined ? [] : [[field.name,initialFlow.hiddenContext.hidden[field.id]]])))
-  useEffect(() => { if (!resume && !restoredAnswers && !editToken) setHidden(Object.fromEntries([...new URLSearchParams(window.location.search)].filter(([name])=>!['collector','resume','source','challenge','kiosk','payment-return','payment-key','__pencil_first'].includes(name)))) }, [])
+  useEffect(() => { if (!resume && !restoredAnswers && !editToken) setHidden(Object.fromEntries([...new URLSearchParams(window.location.search)].filter(([name])=>!['identity','collector','resume','source','challenge','kiosk','payment-return','payment-key','__pencil_first'].includes(name)).concat(initialFlow.identityLink ? (initialFlow.formSettings?.hiddenFields ?? []).filter(field=>field.category==='identifying'&&initialFlow.hiddenContext?.hidden[field.id]!==undefined).map(field=>[field.name,String(initialFlow.hiddenContext!.hidden[field.id])]) : []))) }, [])
   const hiddenContext = normalizeHidden(baseFlow.formSettings ?? {hiddenFields:[],identityMode:'anonymous'},hidden)
   const flow = {...baseFlow,hiddenContext}
   const emailSelection=invitationToken && !resume && !restoredAnswers && !initialFlow.completedStepId ? initialEmailAnswer : undefined
@@ -115,7 +116,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
     if(editToken)return {sessionId:'editing',sessionToken:editToken,revisionId:flow.revision.id}
     if (!sessionStart.current) {
       const context = responseContext.current
-      sessionStart.current = (invitationToken ? api.startSession(slug, deviceClass(), 'direct', invitationToken,undefined,accessToken,flow.presentation) : api.startSession(slug, deviceClass(), embedded ? 'embed' : 'direct', undefined, collectorKey, accessToken,flow.presentation)).then((session) => {
+      sessionStart.current = (invitationToken ? api.startSession(slug, deviceClass(), 'direct', invitationToken,undefined,accessToken,flow.presentation,initialFlow.identityLink) : api.startSession(slug, deviceClass(), embedded ? 'embed' : 'direct', undefined, collectorKey, accessToken,flow.presentation,initialFlow.identityLink)).then((session) => {
         if (context === responseContext.current && session.revisionId !== flow.revision.id) {
           restartCandidate.current = session
           setFormChanged(true)
@@ -201,7 +202,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
     const context = responseContext.current
     navigating.current = true; setSubmitting(true)
     try {
-      const session = restartCandidate.current ?? await (invitationToken ? api.startSession(slug, deviceClass(), 'direct', invitationToken,undefined,accessToken,flow.presentation) : api.startSession(slug, deviceClass(), embedded ? 'embed' : 'direct', undefined, collectorKey, accessToken,flow.presentation))
+      const session = restartCandidate.current ?? await (invitationToken ? api.startSession(slug, deviceClass(), 'direct', invitationToken,undefined,accessToken,flow.presentation,initialFlow.identityLink) : api.startSession(slug, deviceClass(), embedded ? 'embed' : 'direct', undefined, collectorKey, accessToken,flow.presentation,initialFlow.identityLink))
       if (context !== responseContext.current) return
       restartCandidate.current = session
       const changed = session.revisionId !== flow.revision.id
@@ -251,7 +252,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
           return
         }
         const submittedAnswers = questionSteps.flatMap((step) => filled(answers[step.id]) ? [{ stepId: step.id, value: answers[step.id] }] : [])
-        const attempt = { input: { ...credentials, idempotencyKey: idempotencyKey.current, answers: submittedAnswers, prefillProof:initialFlow.prefillProof, hidden, honeypot, loadTime: editToken?'':await view.token(), ...(invitationToken ? { invitationToken } : {}) } }
+        const attempt = { input: { ...credentials, idempotencyKey: idempotencyKey.current, answers: submittedAnswers, prefillProof:initialFlow.prefillProof, hidden, identityLink:initialFlow.identityLink,removeIdentity, honeypot, loadTime: editToken?'':await view.token(), ...(invitationToken ? { invitationToken } : {}) } }
         attemptedFinal = attempt
         setPendingFinal(attempt)
         await confirmFinal(attempt)
@@ -277,7 +278,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
     try {
       const credentials = await ensureSession()
       if (credentials.revisionId !== flow.revision.id) throw new Error('This form has changed. Choose the current form before saving.')
-      const input = { ...credentials, hidden, email, currentStepId: current.id, answers: questionSteps.flatMap(step => filled(answers[step.id]) ? [{ stepId: step.id, value: answers[step.id] }] : []), ...(invitationToken ? { invitationToken } : {}) }
+      const input = { ...credentials, hidden, identityLink:initialFlow.identityLink,removeIdentity, email, currentStepId: current.id, answers: questionSteps.flatMap(step => filled(answers[step.id]) ? [{ stepId: step.id, value: answers[step.id] }] : []), ...(invitationToken ? { invitationToken } : {}) }
       const fingerprint = JSON.stringify(input)
       if (saveAttempt.current?.fingerprint !== fingerprint) saveAttempt.current = { fingerprint, commandKey: crypto.randomUUID() }
       return await api.saveResponse(slug, { ...input, commandKey: saveAttempt.current.commandKey })
@@ -306,7 +307,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
         <h1 className="display" id="respondent-title" tabIndex={-1}>{reviewing ? 'Review your answers' : screen?.layout && !isCompletion ? screen.layout.title : displayedStep.prompt}</h1>
         {reviewing ? null : screen?.layout && !isCompletion ? screen.layout.description ? <p className="respondent-helper">{screen.layout.description}</p> : null : current.helperText ? <p className="respondent-helper">{displayedStep.helperText}</p> : null}
         {!reviewing && (isWelcome || (!path.some((step) => step.kind === 'welcome') && current.kind === 'question' && (index === 0 || emailSelection && index === initialIndex))) ? <RespondentPrivacyNote config={config} flow={flow} prefilled={Object.keys(prefills).length>0} withDestinations={!editToken} verifiedAs={verifiedIdentity??initialFlow.hiddenContext?.verifiedEmail??initialFlow.hiddenContext?.verifiedSubject} identity={initialFlow.identity === 'identified' ? 'invitation' : hiddenContext.identityMode === 'identified' ? 'link' : 'anonymous'} /> : null}
-        {!isCompletion && hiddenContext.identityMode === 'identified' && Object.entries(hiddenContext.hidden).some(([id])=>flow.formSettings?.hiddenFields.some(field=>field.id===id&&field.category==='identifying')) ? <aside className="privacy-card"><span>Answering as {flow.formSettings?.hiddenFields.filter(field=>field.category==='identifying'&&hiddenContext.hidden[field.id]!==undefined).map(field=>String(hiddenContext.hidden[field.id])).join(', ')}. These link-supplied values are unverified. <button type="button" className="quiet-button" disabled={submitting||!!pendingFinal} onClick={()=>setHidden(previous=>Object.fromEntries(Object.entries(previous).filter(([name])=>!flow.formSettings?.hiddenFields.some(field=>field.name===name&&field.category==='identifying'))))}>This isn’t me</button></span></aside> : null}
+        {!isCompletion && hiddenContext.identityMode === 'identified' && Object.entries(hiddenContext.hidden).some(([id])=>flow.formSettings?.hiddenFields.some(field=>field.id===id&&field.category==='identifying')) ? <aside className="privacy-card"><span>Answering as {flow.formSettings?.hiddenFields.filter(field=>field.category==='identifying'&&hiddenContext.hidden[field.id]!==undefined).map(field=>String(hiddenContext.hidden[field.id])).join(', ')}. These link-supplied values are unverified. <button type="button" className="quiet-button" disabled={submitting||!!pendingFinal} onClick={()=>{setRemoveIdentity(true);setHidden(previous=>Object.fromEntries(Object.entries(previous).filter(([name])=>!flow.formSettings?.hiddenFields.some(field=>field.name===name&&field.category==='identifying'))))}}>This isn’t me</button></span></aside> : null}
         {emailSelection && !isCompletion ? <p className="status-note">Selected from email: {flow.choices.find(choice=>choice.stepId===emailSelection.stepId&&choice.id===emailSelection.value)?.label ?? String(emailSelection.value)} · not submitted yet. Continue or submit to confirm.</p> : null}
         {!editToken && !isCompletion && flow.formSettings?.confirmation?.enabled ? <p className="status-note">After you submit, a confirmation will be emailed to {flow.formSettings.confirmation.emailStepId ? 'the address you enter in the marked question' : 'your invitation address'}, if eligible. {flow.formSettings.confirmation.includeAnswers ? 'It includes a copy of the answer types selected for this form.' : 'It does not include your answers.'}</p> : null}
         {!editToken && !reviewing && current.kind==='question' && flow.formSettings?.confirmation?.enabled && flow.formSettings.confirmation.emailStepId===current.id ? <p className="respondent-required">Send my confirmation here</p> : null}
