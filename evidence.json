@@ -13,16 +13,22 @@
       "sha256": "a1d93c9f546eaa74019461d28f6f2ca5748d98ae6b585b5d6d62f441e085f696"
     },
     {
-      "blob": "9dd12c3c82151fa2d9c1795b65aef2201b9417d8",
-      "bytes": 2383,
+      "blob": "d48f8232d7beae4341f103cd2f47bfbb9e9705ec",
+      "bytes": 2386,
       "path": "CI.json",
-      "sha256": "75be2e15aae5b138c95294b299d902e434cf146131c00320c3d9653bc2290ffb"
+      "sha256": "064a5720cd81ef9baca25d4c99d4e46ff6afeef541ec1171d551078f945251bb"
     },
     {
-      "blob": "27f631a2ffffbbe3103118f1ca31248a8717dbb1",
-      "bytes": 1045,
+      "blob": "42c895ebef16a2721988f2545dec267f1a928bcb",
+      "bytes": 4075,
+      "path": "FIRST-EVIDENCE-TRANSFER.json",
+      "sha256": "4774b3148c8935b710ca4bf77b05cc3180e8223586316fa91c6f0f08259d90d9"
+    },
+    {
+      "blob": "d2f4919c02424003e542093cd1ad3cc982d568f9",
+      "bytes": 1437,
       "path": "GITHUB-CALLS.json",
-      "sha256": "6ae9a3a0ec298666d12109c26cf60ac8670be9d5c5f69d054f355a798b0ba272"
+      "sha256": "16eac01b3925abd8a22db65ae6bfb3f9e6d6745281dd49c0bf3a71848537e755"
     },
     {
       "blob": "586bb4bcfb69318399b8c5ccb179badfff95a145",
@@ -49,10 +55,10 @@
       "sha256": "e1a64f1220ec09cc8e8e40d09f465f16c9ba95795b97e180e916cfb103caaf41"
     },
     {
-      "blob": "d28230d36d3dfa6ed37a41565983448de5ba757c",
-      "bytes": 677,
+      "blob": "36b3336737acdad31daf5a15623e7b0e17eba1fc",
+      "bytes": 977,
       "path": "PRODUCT.json",
-      "sha256": "9964121688408bb4410b54f0b556f24831e175293257d3990e5420d83aecbcf3"
+      "sha256": "56c11f92d1d222c4af5bcfe962c94813ea310bf3c1b9bfc1b3569c6b8dc420ba"
     },
     {
       "blob": "3afd2d464bed82bf518ebc921cb724dbfc227a27",
@@ -61,10 +67,10 @@
       "sha256": "73976a735270a9aa2dc750b7990d97e077d0b7c0032b297e61de1695667c9428"
     },
     {
-      "blob": "f0f2d92a459f0b8c0137b72a1649db3d3f78e3f0",
-      "bytes": 12286,
+      "blob": "486720d512722bb54958d0864ad103c00e7942e0",
+      "bytes": 13288,
       "path": "REPORT.md",
-      "sha256": "eb5d7becc49eb219fa33e3e134e35e4fc986c0e0f1aa1830031dce346fd49699"
+      "sha256": "7f8da6726c981d3fe371d992bc94dae5d76fb14617e2f8c2f239b7c86536d654"
     },
     {
       "blob": "6937f53acd66e3e17673592f45e28add3e954e11",

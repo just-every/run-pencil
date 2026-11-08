@@ -34,5 +34,23 @@
       "--jq",
       "{status,conclusion,head_sha,html_url}"
     ]
+  },
+  {
+    "time": 1794180612.8861198,
+    "args": [
+      "api",
+      "repos/just-every/run-pencil/actions/runs/42534636287",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  },
+  {
+    "time": 1794180913.9218998,
+    "args": [
+      "api",
+      "repos/just-every/run-pencil/actions/runs/42534636287",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
   }
 ]

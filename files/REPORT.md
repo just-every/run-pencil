@@ -22,8 +22,8 @@ The clause has two acceptance outcomes, reported as points 1 and 2. Its addition
 
 | Item | Proof on candidate | Result |
 | --- | --- | --- |
-| Acceptance 1: fetch every emitted answer link as a scanner and find no answers or sessions | tests/invitation-links.test.ts, existing emitted invitation answer links registration, helper tests/helpers/invitation-scanner-proof.ts:10–75 | Local PASS; exact-SHA Verify recorded in CI.json |
-| Acceptance 2: click 9, land on question two and complete | Existing NPS leg of tests/e2e/distribution-foundation.spec.ts:161–257, same original registration; added stable-choice helper tests/e2e/invitation-choice-proof.ts:74–117 | Local PASS at 1440 and 390; receipt in CHECKS.json; exact-SHA Verify recorded in CI.json |
+| Acceptance 1: fetch every emitted answer link as a scanner and find no answers or sessions | tests/invitation-links.test.ts, existing emitted invitation answer links registration, helper tests/helpers/invitation-scanner-proof.ts:10–75 | PASS; exact-SHA Verify push 42534636287 completed success |
+| Acceptance 2: click 9, land on question two and complete | Existing NPS leg of tests/e2e/distribution-foundation.spec.ts:161–257, same original registration; added stable-choice helper tests/e2e/invitation-choice-proof.ts:74–117 | Local PASS at 1440 and 390; receipt in CHECKS.json; exact-SHA Verify push 42534636287 completed success |
 | NPS, CSAT, published rating and short-choice buttons | Original NPS fixture plus independent CSAT, explicit 0–3 rating and authored-choice fixtures, scanner helper:14–46 | Local PASS for these supported invitation examples |
 | Clicking selects a value but the GET and HEAD write no answer, session, response, views, starts or participant state | Scanner helper:48–75; browser helper:43–46 and 74–84 | Local PASS |
 | Selection stays uncommitted until explicit interaction and stores the same choice once | Browser helper:79–117, real native request, authenticated ledger and replay | Local PASS at 1440 and 390; receipt in CHECKS.json |
@@ -41,7 +41,7 @@ The clause has two acceptance outcomes, reported as points 1 and 2. Its addition
 | --- | --- | --- |
 | 1 | PARTIAL for full clause; scoped missing outcomes exercised | Both existing registrations and focused helpers; program and remaining eligibility proof not claimed; current exact source anchors are in PROOF-INDEX.json |
 | 2 | PASS for scoped no-write and once-only guarantees | Real authored data, genuine emitted links, full state snapshots, invalid hints, native ledger, replay |
-| 3 | PENDING independent exact-SHA CI | Default Verify loads both existing registrations; helpers run without flags; only screenshot saving uses PENCIL_CAPTURE_DIR |
+| 3 | PASS on exact-SHA push Verify 42534636287 | Verify push 42534636287 completed success on the full candidate; it loads both existing registrations. Helpers run without flags; only screenshot saving uses PENCIL_CAPTURE_DIR |
 | 4 | PASS for local candidate proof | CHECKS.json binds commands to full candidate; no relevant bytes changed after the checks |
 | 5 | INSPECTED | DIST-014 already names PROG-002 inheritance; no inheritance or clause rewrite |
 | 6 | PASS mechanical generation, no judgment change | Generator write and check succeeded, generated views restored; all status cells remain main's bytes |
@@ -74,3 +74,9 @@ Visual inspection: all four new states were captured at each width, with PNG wid
 Final local result: production build exit=0; production emitted-worker scanner 1 passed; touched browser registration 2 passed in 2.2 minutes (1440 and 390); typecheck exit=0; first-party exit=0; source integrity exit=0; contract generator write and check exit=0. Every final command is bound to 1e65537decf1b294c86fce248432849d49eaa748 in CHECKS.json.
 
 CLAIM DIST-014 PARTIAL points=1,2 tests=tests/invitation-links.test.ts#emitted invitation answer links are inert for repeated GET and HEAD scanners, pinned to their revision and cannot reopen completed or closed responses; tests/e2e/distribution-foundation.spec.ts#invitation capabilities reject invalid tokens before the accessible audience delivery, completion, opt-out and erasure journey
+
+Final CI result: Verify candidate push run 42534636287 completed SUCCESS on exact head 1e65537decf1b294c86fce248432849d49eaa748. URL: https://github.com/just-every/run-pencil/actions/runs/42534636287. Six GitHub calls were used, including upstream health, discovery and three rate-limited candidate polls. No dispatch, rerun, failed-job download or PR was needed. Local acceptance proof and exact-SHA branch Verify are green. The remaining clause scope is honestly PARTIAL and row 11 remains with the guarded lander.
+
+Final self-check: no blocker is known; source lock is fresh; no production byte, generated view, status cell, pre-existing assertion or registration was changed. Publication scan, main equality and Run site remain unestablished for the candidate until the Mac lander performs its guards.
+
+READY repo=just-every/run-pencil branch=cloud/sd-pencil-c-f51 head=1e65537decf1b294c86fce248432849d49eaa748

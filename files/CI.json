@@ -2,10 +2,10 @@
   "run_id": 42534636287,
   "event": "push",
   "latest": {
-    "conclusion": null,
+    "conclusion": "success",
     "head_sha": "1e65537decf1b294c86fce248432849d49eaa748",
     "html_url": "https://github.com/just-every/run-pencil/actions/runs/42534636287",
-    "status": "in_progress"
+    "status": "completed"
   },
   "main": [
     {

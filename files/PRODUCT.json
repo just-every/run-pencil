@@ -17,5 +17,14 @@
     "findings": null,
     "reason": "cloud branch route delegates exact-tree scan to guarded Mac lander"
   },
-  "verify_run_id": 42534636287
+  "verify_run_id": 42534636287,
+  "verify": {
+    "conclusion": "success",
+    "head_sha": "1e65537decf1b294c86fce248432849d49eaa748",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42534636287",
+    "status": "completed",
+    "id": 42534636287,
+    "event": "push"
+  },
+  "ready_for_guarded_handoff": true
 }
