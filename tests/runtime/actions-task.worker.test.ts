@@ -4,6 +4,7 @@ import { contract } from '../../src/test/contract'
 import { createWorkerApp } from '../../src/core/app/worker'
 import { createPencilPlatform } from '../../src/core/platform/runtime'
 import type { WorkerBindings } from '../../src/core/app/environment'
+import { proveTaskHealthRead, proveBrokenOwnerAndTaskHealth } from './action-health-scenario'
 import { actionsHttp, everyStoredValue } from './actions-fixture'
 declare const __PENCIL_CORE_MIGRATIONS__: D1Migration[]
 beforeAll(() => applyD1Migrations(env.DB, __PENCIL_CORE_MIGRATIONS__))
@@ -26,7 +27,7 @@ async function configured(key = `TASK-KEY-CANARY-${crypto.randomUUID()}`) {
   return { f, key, action, preview, confirm, retry }
 }
 
-contract(['ACT-003', 'ACT-004', 'ACT-007'], 'a 500 fails visibly and a dropped connection is unknown; both keep the local action and a retry on the same key creates one task', async () => {
+contract(['ACT-003', 'ACT-004', 'ACT-007', 'AGENT-005'], 'a 500 fails visibly and a dropped connection is unknown; both keep the local action and a retry on the same key creates one task', async () => {
   for (const mode of ['fail-once-500', 'store-then-drop-once'] as const) {
     await reset(mode)
     const t = await configured()
@@ -45,6 +46,7 @@ contract(['ACT-003', 'ACT-004', 'ACT-007'], 'a 500 fails visibly and a dropped c
       expect(first.body.delivery!.attempts).toEqual([expect.objectContaining({ outcome: 'unknown', outcomeClass: 'network' })])
       expect(Object.keys((await received()).tasks)).toHaveLength(1)
     }
+    await proveTaskHealthRead(t.f, t.action.id, mode === 'fail-once-500' ? 'failed' : 'unknown')
     const retried = await t.retry()
     expect(retried.body.delivery).toMatchObject({ state: 'confirmed', remoteTaskId: 'task-1' })
     const settled = await (await t.f.call('/api/app/integration-deliveries')).json() as { deliveries: Array<{ actionId: string | null; state: string; attempts: Array<{ outcome: string | null }> }> }
@@ -55,8 +57,9 @@ contract(['ACT-003', 'ACT-004', 'ACT-007'], 'a 500 fails visibly and a dropped c
     expect(Object.keys(state.tasks)).toHaveLength(1)
     expect(state.tasks).toEqual({ [`pencil-action-${t.action.id}`]: 'task-1' })
     expect(state.requests.map(request => request.idempotencyKey)).toEqual([`pencil-action-${t.action.id}`, `pencil-action-${t.action.id}`])
-    if (mode === 'store-then-drop-once') expect(state.requests.map(request => request.body)).toEqual([state.requests[0].body, state.requests[0].body])
+    expect(state.requests.map(request => request.body)).toEqual([state.requests[0].body, state.requests[0].body])
   }
+  await proveBrokenOwnerAndTaskHealth(receiver)
   // The self-serve Todoist path confirms the same displayed command and uses
   // its UUID again when the paid/network edge reports a temporary failure.
   const todo = await actionsHttp({TASK_PROVIDER:'webhook',TASK_WEBHOOK_URL:'https://api.todoist.com/api/v1/sync',TASK_API_KEY:'synthetic-todoist-network-edge-only'} as Partial<WorkerBindings>)
