@@ -1,0 +1,12 @@
+{
+  "command": "node scripts/edition-authoring/cli.mjs check",
+  "exit": 0,
+  "head": "d5c81d3c666e4036f92bc4f4bc43ac12344db75d",
+  "ok": true,
+  "manifest": "e25c3b355263974e7455f1e2bdbed5bb84f664019ad5c4519793aa54288ce5a6",
+  "toolchain": {
+    "id": "runeditrun/edition-authoring",
+    "version": "1.1.0",
+    "sha256": "abf7237e9313adfc739e3b9d77cfde98253aba5094193a22a77abd2866bd511a"
+  }
+}

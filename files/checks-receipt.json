@@ -1,0 +1,136 @@
+{
+  "schema": 1,
+  "tag": "sd-pencil-c-f38",
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f38",
+  "head": "d5c81d3c666e4036f92bc4f4bc43ac12344db75d",
+  "base_main": "feebe981e55bb369397c6b6d57b7f0fa5e20bb3b",
+  "time": "2026-11-08T15:03:58.612185+00:00",
+  "checks": [
+    {
+      "name": "setup",
+      "command": "cloud_run npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0
+    },
+    {
+      "name": "worker",
+      "command": "cloud_run pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/respondent-confirmations.worker.test.ts",
+      "exit": 0
+    },
+    {
+      "name": "typecheck",
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "name": "first-party",
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "name": "views",
+      "command": "node scripts/contract-docs.mjs write RESP-020 && node scripts/contract-docs.mjs check RESP-020",
+      "exit": 0
+    },
+    {
+      "name": "lock",
+      "command": "node scripts/edition-authoring/cli.mjs lock && node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    }
+  ],
+  "runtime": {
+    "node": "24.19.0",
+    "pnpm": "10.12.4"
+  },
+  "worker": {
+    "files": 1,
+    "tests": 1,
+    "passed": 1,
+    "duration_seconds": 18.87
+  },
+  "counts_before": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "counts_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "new_registrations": 0,
+  "new_production_changes": 0,
+  "predecessor": "af4e05084534df677bf5c33ec3b7f776181f9eaf",
+  "generated_views_committed": false,
+  "contract_changed": false,
+  "source_lock_fresh": true,
+  "publication_scan": {
+    "commit": "d5c81d3c666e4036f92bc4f4bc43ac12344db75d",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "status": "deferred to maintained Mac lander as cloud protocol requires"
+  },
+  "ci": {
+    "workflow_runs": [
+      {
+        "conclusion": null,
+        "event": "push",
+        "head_sha": "d5c81d3c666e4036f92bc4f4bc43ac12344db75d",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42492708029",
+        "id": 42492708029,
+        "name": "Verify candidate",
+        "status": "in_progress"
+      }
+    ]
+  },
+  "main_ci": {
+    "workflow_runs": [
+      {
+        "conclusion": "skipped",
+        "event": "push",
+        "head_sha": "feebe981e55bb369397c6b6d57b7f0fa5e20bb3b",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42491764015",
+        "id": 42491764015,
+        "name": "Run demo",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_sha": "feebe981e55bb369397c6b6d57b7f0fa5e20bb3b",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42491764033",
+        "id": 42491764033,
+        "name": "Verify candidate",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_sha": "feebe981e55bb369397c6b6d57b7f0fa5e20bb3b",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42491764100",
+        "id": 42491764100,
+        "name": "Run site",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "dynamic",
+        "head_sha": "feebe981e55bb369397c6b6d57b7f0fa5e20bb3b",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42491763293",
+        "id": 42491763293,
+        "name": "Push on main",
+        "status": "completed"
+      },
+      {
+        "conclusion": "success",
+        "event": "push",
+        "head_sha": "feebe981e55bb369397c6b6d57b7f0fa5e20bb3b",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42490501081",
+        "id": 42490501081,
+        "name": "Verify candidate",
+        "status": "completed"
+      }
+    ]
+  }
+}

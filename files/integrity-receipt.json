@@ -1,0 +1,15 @@
+{
+  "head": "d5c81d3c666e4036f92bc4f4bc43ac12344db75d",
+  "clean_worktree": true,
+  "production_references_unchanged": true,
+  "existing_registration_assertions_byte_preserved": true,
+  "changed_files": [
+    "sources.lock.json",
+    "tests/runtime/confirmation-withholding-scenario.ts",
+    "tests/runtime/respondent-confirmations.worker.test.ts"
+  ],
+  "packet_secret_review": "passed",
+  "new_test_registrations": 0,
+  "push": "success",
+  "branch": "cloud/sd-pencil-c-f38"
+}
