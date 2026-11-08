@@ -1,0 +1,17 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+
+ RUN  v4.1.11 /workspace/run-pencil
+
+ ✓ tests/runtime/analysis-output.worker.test.ts > [ANLY-003,ANLY-004,ANLY-005,ANLY-011,ANLY-012,AGENT-002] findings rank themes by recomputed support, quote exact stored excerpts, link every figure to its responses and withhold a theme below the disclosure threshold 1525ms
+ ✓ tests/runtime/analysis-output.worker.test.ts > [ANLY-006] a sufficient run proposes one primary action, and turning it into an action records the analysis without contacting anyone 341ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  21:23:26
+   Duration  26.16s (transform 11.24s, setup 0ms, import 22.10s, tests 2.83s, environment 0ms)
+

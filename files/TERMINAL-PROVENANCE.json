@@ -1,0 +1,56 @@
+{
+  "tag": "sd-pencil-c-f47",
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f47",
+  "head": "f007a2ad9fc235aaac7b4365227fb048d68f86f1",
+  "newProductCommits": 0,
+  "productTreeEqualsMain": true,
+  "workingTreeClean": true,
+  "remoteRefsFile": "REMOTE-REFS.txt",
+  "ciDiscoveryFile": "CI-RUNS.json",
+  "githubApiCalls": 1,
+  "verify": {
+    "id": 42522517963,
+    "event": "push",
+    "branch": "cloud/sd-pencil-c-f46",
+    "status": "completed",
+    "conclusion": "success",
+    "head": "f007a2ad9fc235aaac7b4365227fb048d68f86f1"
+  },
+  "mainVerify": {
+    "id": 42524465660,
+    "event": "push",
+    "status": "completed",
+    "conclusion": "success",
+    "head": "f007a2ad9fc235aaac7b4365227fb048d68f86f1"
+  },
+  "runSite": {
+    "id": 42524465843,
+    "event": "push",
+    "status": "completed",
+    "conclusion": "success",
+    "head": "f007a2ad9fc235aaac7b4365227fb048d68f86f1"
+  },
+  "freshBranchVerify": {
+    "id": 42525160043,
+    "event": "push",
+    "branch": "cloud/sd-pencil-c-f47",
+    "status": "in_progress",
+    "conclusion": null,
+    "head": "f007a2ad9fc235aaac7b4365227fb048d68f86f1"
+  },
+  "publicationScan": {
+    "status": "UNESTABLISHED",
+    "custody": "maintained Mac fleet"
+  },
+  "productPush": {
+    "command": "python3 cloud-push.py origin cloud/sd-pencil-c-f47",
+    "attempt": 1,
+    "exit": 0,
+    "file": "product-push.log"
+  },
+  "clause": "AGENT-002",
+  "claim": "PARTIAL",
+  "cleanup": "product clone will be deleted after evidence transfer; packet remains outside it",
+  "recordedAt": "2026-11-08T21:27:51.662243+00:00"
+}
