@@ -1,0 +1,450 @@
+[
+  {
+    "label": "views-write",
+    "command": [
+      "node",
+      "scripts/contract-docs.mjs",
+      "write",
+      "DIST-014"
+    ],
+    "head": "124b97fd290a2e3a01c5f9faabab67684881ded3",
+    "exit": 0,
+    "finished": "2026-11-08T23:08:20.880066+00:00",
+    "log_sha256": "add1439336ce3bfe2cecca2404647404c2dbc4c81b870607bd52ef9a4b5f3a7c"
+  },
+  {
+    "label": "views-check",
+    "command": [
+      "node",
+      "scripts/contract-docs.mjs",
+      "check",
+      "DIST-014"
+    ],
+    "head": "124b97fd290a2e3a01c5f9faabab67684881ded3",
+    "exit": 0,
+    "finished": "2026-11-08T23:08:20.986765+00:00",
+    "log_sha256": "2cd29c9e81dacb35485dc1ced277248fb40abef69641f4c8e91fe16b65f94a23"
+  },
+  {
+    "label": "lock-write",
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "lock"
+    ],
+    "head": "124b97fd290a2e3a01c5f9faabab67684881ded3",
+    "exit": 0,
+    "finished": "2026-11-08T23:08:21.277206+00:00",
+    "log_sha256": "691d777a59854de9e9c893724ad68bb1873893d263fe7420444ba257b7543b1c"
+  },
+  {
+    "label": "lock-check",
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "head": "124b97fd290a2e3a01c5f9faabab67684881ded3",
+    "exit": 0,
+    "finished": "2026-11-08T23:08:21.576620+00:00",
+    "log_sha256": "1921ad158b2dca379397bffb216369f6609d438569870af4dfa6e23bd219d969"
+  },
+  {
+    "label": "build",
+    "command": [
+      "npx",
+      "-y",
+      "@runeditrun/rer",
+      "build"
+    ],
+    "head": "6bb2cbcd9441c7d06de19458faa576cf1fc48f78",
+    "exit": 0,
+    "finished": "2026-11-08T23:08:46.269733+00:00",
+    "log_sha256": "689efcc9933819b10883fbffe6d0a548a08065e03672f7662cd05ba69527413d"
+  },
+  {
+    "label": "scanner",
+    "command": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "tests/invitation-links.test.ts"
+    ],
+    "head": "6bb2cbcd9441c7d06de19458faa576cf1fc48f78",
+    "exit": 0,
+    "finished": "2026-11-08T23:08:55.661344+00:00",
+    "log_sha256": "f7675f3f5eddea58e166855a6adc113027efaadea91407bc077c2b0bdbc31d52"
+  },
+  {
+    "label": "typecheck",
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "head": "6bb2cbcd9441c7d06de19458faa576cf1fc48f78",
+    "exit": 0,
+    "finished": "2026-11-08T23:09:10.958240+00:00",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "first-party",
+    "command": [
+      "pnpm",
+      "exec",
+      "rer",
+      "check",
+      "--profile",
+      "first-party"
+    ],
+    "head": "6bb2cbcd9441c7d06de19458faa576cf1fc48f78",
+    "exit": 0,
+    "finished": "2026-11-08T23:09:11.842733+00:00",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "source-check",
+    "command": [
+      "pnpm",
+      "source:check"
+    ],
+    "head": "6bb2cbcd9441c7d06de19458faa576cf1fc48f78",
+    "exit": 0,
+    "finished": "2026-11-08T23:09:12.616535+00:00",
+    "log_sha256": "abecabb3e2af71bcef1655bda53947c89bba000993fa79024576a4499abc0f51"
+  },
+  {
+    "label": "browser",
+    "command": [
+      "timeout",
+      "1200",
+      "pnpm",
+      "exec",
+      "playwright",
+      "test",
+      "tests/e2e/distribution-foundation.spec.ts",
+      "--config",
+      "/tmp/pencil-browser-config.mts",
+      "--workers=1"
+    ],
+    "head": "6bb2cbcd9441c7d06de19458faa576cf1fc48f78",
+    "exit": 1,
+    "finished": "2026-11-08T23:11:20.164819+00:00",
+    "log_sha256": "e3a34d84112d87cdaecfa3321f78d4e831d244a94c55b90d78b9b52e47068956"
+  },
+  {
+    "label": "final-lock-write",
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "lock"
+    ],
+    "head": "6bb2cbcd9441c7d06de19458faa576cf1fc48f78",
+    "exit": 0,
+    "finished": "2026-11-08T23:11:36.913772+00:00",
+    "log_sha256": "ab81f6a9346d01fb0c7533b5ed07a37a98b4315a2512fae53cb7ccb3cc194db1"
+  },
+  {
+    "label": "final-lock-check",
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "head": "6bb2cbcd9441c7d06de19458faa576cf1fc48f78",
+    "exit": 0,
+    "finished": "2026-11-08T23:11:37.266067+00:00",
+    "log_sha256": "e4ab8bcf78557f6f66cb3f5fe27558660cc7db4995b8d876e7fbd5d537f32038"
+  },
+  {
+    "label": "final-scanner",
+    "command": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "tests/invitation-links.test.ts"
+    ],
+    "head": "b6b15ab5961f1b8729c60475a2742f187ace7f59",
+    "exit": 0,
+    "finished": "2026-11-08T23:11:47.315046+00:00",
+    "log_sha256": "7d9a0ea9109febbb6b5abc6ef84008a3bf1286d39b425ce3ae9b1a4dec5577a6"
+  },
+  {
+    "label": "final-typecheck",
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "head": "b6b15ab5961f1b8729c60475a2742f187ace7f59",
+    "exit": 0,
+    "finished": "2026-11-08T23:12:03.441401+00:00",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "final-first-party",
+    "command": [
+      "pnpm",
+      "exec",
+      "rer",
+      "check",
+      "--profile",
+      "first-party"
+    ],
+    "head": "b6b15ab5961f1b8729c60475a2742f187ace7f59",
+    "exit": 0,
+    "finished": "2026-11-08T23:12:04.394500+00:00",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "final-source-check",
+    "command": [
+      "pnpm",
+      "source:check"
+    ],
+    "head": "b6b15ab5961f1b8729c60475a2742f187ace7f59",
+    "exit": 0,
+    "finished": "2026-11-08T23:12:05.247052+00:00",
+    "log_sha256": "6066cf42e0eba1cb9dd70b8cd3febe3df3a6e17ec3f79ac0d4a1683522e43ca9"
+  },
+  {
+    "label": "candidate-views-write",
+    "command": [
+      "node",
+      "scripts/contract-docs.mjs",
+      "write",
+      "DIST-014"
+    ],
+    "head": "b6b15ab5961f1b8729c60475a2742f187ace7f59",
+    "exit": 0,
+    "finished": "2026-11-08T23:14:01.775058+00:00",
+    "log_sha256": "add1439336ce3bfe2cecca2404647404c2dbc4c81b870607bd52ef9a4b5f3a7c"
+  },
+  {
+    "label": "candidate-views-check",
+    "command": [
+      "node",
+      "scripts/contract-docs.mjs",
+      "check",
+      "DIST-014"
+    ],
+    "head": "b6b15ab5961f1b8729c60475a2742f187ace7f59",
+    "exit": 0,
+    "finished": "2026-11-08T23:14:01.888344+00:00",
+    "log_sha256": "2cd29c9e81dacb35485dc1ced277248fb40abef69641f4c8e91fe16b65f94a23"
+  },
+  {
+    "label": "candidate-lock-check",
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "head": "b6b15ab5961f1b8729c60475a2742f187ace7f59",
+    "exit": 0,
+    "finished": "2026-11-08T23:14:02.261070+00:00",
+    "log_sha256": "e4ab8bcf78557f6f66cb3f5fe27558660cc7db4995b8d876e7fbd5d537f32038"
+  },
+  {
+    "label": "final-browser",
+    "command": [
+      "timeout",
+      "1200",
+      "pnpm",
+      "exec",
+      "playwright",
+      "test",
+      "tests/e2e/distribution-foundation.spec.ts",
+      "--config",
+      "/tmp/pencil-browser-config.mts",
+      "--workers=1"
+    ],
+    "head": "b6b15ab5961f1b8729c60475a2742f187ace7f59",
+    "exit": 0,
+    "finished": "2026-11-08T23:14:15.714716+00:00",
+    "log_sha256": "a3e35bf8d2b98e7cacd0c2d6e90b20ac431b472ee8ec6091d4f8eb7d27093cfd"
+  },
+  {
+    "label": "candidate-production-build",
+    "command": [
+      "npx",
+      "-y",
+      "@runeditrun/rer",
+      "build"
+    ],
+    "head": "b6b15ab5961f1b8729c60475a2742f187ace7f59",
+    "exit": 0,
+    "finished": "2026-11-08T23:15:08.975288+00:00",
+    "log_sha256": "ce9570faf0f9f75e45a0c29d1f39e3ee86c131cf5f94d7b80dc7a7c43d56fdc6"
+  },
+  {
+    "label": "candidate-production-scanner",
+    "command": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "tests/invitation-links.test.ts"
+    ],
+    "head": "b6b15ab5961f1b8729c60475a2742f187ace7f59",
+    "exit": 0,
+    "finished": "2026-11-08T23:15:18.488945+00:00",
+    "log_sha256": "772a4a04c19dbeb310aba9db2f8e096de97e8ce64e97a1abdd44b110d6ae1d3c"
+  },
+  {
+    "label": "candidate-final-lock-check",
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "head": "b6b15ab5961f1b8729c60475a2742f187ace7f59",
+    "exit": 0,
+    "finished": "2026-11-08T23:15:18.823769+00:00",
+    "log_sha256": "e4ab8bcf78557f6f66cb3f5fe27558660cc7db4995b8d876e7fbd5d537f32038"
+  },
+  {
+    "label": "viewport-lock-write",
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "lock"
+    ],
+    "head": "b6b15ab5961f1b8729c60475a2742f187ace7f59",
+    "exit": 0,
+    "finished": "2026-11-08T23:15:56.279645+00:00",
+    "log_sha256": "876ad64b988d599d22d5aab306bd55a33aa10f527d5db53735a39fac8f17bb9c"
+  },
+  {
+    "label": "viewport-lock-check",
+    "command": [
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "head": "b6b15ab5961f1b8729c60475a2742f187ace7f59",
+    "exit": 0,
+    "finished": "2026-11-08T23:15:56.604283+00:00",
+    "log_sha256": "26395faec983cf1a75f8e589c75c34de3df9dc06a83f8c11da5231ca54b897fd"
+  },
+  {
+    "label": "viewport-typecheck",
+    "command": [
+      "pnpm",
+      "typecheck"
+    ],
+    "head": "1e65537decf1b294c86fce248432849d49eaa748",
+    "exit": 0,
+    "finished": "2026-11-08T23:16:12.287357+00:00",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "viewport-first-party",
+    "command": [
+      "pnpm",
+      "exec",
+      "rer",
+      "check",
+      "--profile",
+      "first-party"
+    ],
+    "head": "1e65537decf1b294c86fce248432849d49eaa748",
+    "exit": 0,
+    "finished": "2026-11-08T23:16:13.223898+00:00",
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "label": "viewport-source-check",
+    "command": [
+      "pnpm",
+      "source:check"
+    ],
+    "head": "1e65537decf1b294c86fce248432849d49eaa748",
+    "exit": 0,
+    "finished": "2026-11-08T23:16:14.018790+00:00",
+    "log_sha256": "fbbe968648548b951f90d2798de5f70208778f9220799e586cdaf12b4cf0dbd0"
+  },
+  {
+    "label": "viewport-browser",
+    "command": [
+      "timeout",
+      "1200",
+      "pnpm",
+      "exec",
+      "playwright",
+      "test",
+      "tests/e2e/distribution-foundation.spec.ts",
+      "--config",
+      "/tmp/pencil-browser-config.mts",
+      "--workers=1"
+    ],
+    "head": "1e65537decf1b294c86fce248432849d49eaa748",
+    "exit": 0,
+    "finished": "2026-11-08T23:18:24.671344+00:00",
+    "log_sha256": "71361286c76db178ec836a42a8164a9b08cebc48680be9bc5ec3fdc5f22287a8"
+  },
+  {
+    "label": "final-production-build",
+    "command": [
+      "npx",
+      "-y",
+      "@runeditrun/rer",
+      "build"
+    ],
+    "head": "1e65537decf1b294c86fce248432849d49eaa748",
+    "exit": 0,
+    "finished": "2026-11-08T23:19:28.296323+00:00",
+    "log_sha256": "615e2a3f21b6e0084636a19bcaca69ba7cda152ec174b65f4c4defee496482a0"
+  },
+  {
+    "label": "final-production-scanner",
+    "command": [
+      "pnpm",
+      "exec",
+      "vitest",
+      "run",
+      "tests/invitation-links.test.ts"
+    ],
+    "head": "1e65537decf1b294c86fce248432849d49eaa748",
+    "exit": 0,
+    "finished": "2026-11-08T23:19:37.886367+00:00",
+    "log_sha256": "def15e68770e1ad8e9e2ea9f85fd01cfb30dd5397e9670bf97edb28656399334"
+  },
+  {
+    "label": "final-views-write",
+    "command": [
+      "node",
+      "scripts/contract-docs.mjs",
+      "write",
+      "DIST-014"
+    ],
+    "head": "1e65537decf1b294c86fce248432849d49eaa748",
+    "exit": 0,
+    "finished": "2026-11-08T23:19:38.000871+00:00",
+    "log_sha256": "add1439336ce3bfe2cecca2404647404c2dbc4c81b870607bd52ef9a4b5f3a7c"
+  },
+  {
+    "label": "final-views-check",
+    "command": [
+      "node",
+      "scripts/contract-docs.mjs",
+      "check",
+      "DIST-014"
+    ],
+    "head": "1e65537decf1b294c86fce248432849d49eaa748",
+    "exit": 0,
+    "finished": "2026-11-08T23:19:38.107304+00:00",
+    "log_sha256": "2cd29c9e81dacb35485dc1ced277248fb40abef69641f4c8e91fe16b65f94a23"
+  },
+  {
+    "label": "final-source-integrity",
+    "command": [
+      "pnpm",
+      "source:check"
+    ],
+    "head": "1e65537decf1b294c86fce248432849d49eaa748",
+    "exit": 0,
+    "finished": "2026-11-08T23:19:38.920388+00:00",
+    "log_sha256": "fbbe968648548b951f90d2798de5f70208778f9220799e586cdaf12b4cf0dbd0"
+  }
+]

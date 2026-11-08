@@ -1,0 +1,38 @@
+[
+  {
+    "time": 1794179522.7360744,
+    "args": [
+      "api",
+      "repos/just-every/run-pencil/actions/runs?head_sha=ae8ee162c63e3b970d7ee61eec82614bcf9e2c06&per_page=100",
+      "--jq",
+      "[.workflow_runs[] | {id,name,event,status,conclusion,head_sha,html_url}]"
+    ]
+  },
+  {
+    "time": 1794179720.9441519,
+    "args": [
+      "api",
+      "repos/just-every/run-pencil/actions/runs?head_sha=b6b15ab5961f1b8729c60475a2742f187ace7f59&per_page=100",
+      "--jq",
+      "[.workflow_runs[] | {id,name,event,status,conclusion,head_sha,html_url}]"
+    ]
+  },
+  {
+    "time": 1794180010.8135433,
+    "args": [
+      "api",
+      "repos/just-every/run-pencil/actions/runs?head_sha=1e65537decf1b294c86fce248432849d49eaa748&per_page=100",
+      "--jq",
+      "[.workflow_runs[] | {id,name,event,status,conclusion,head_sha,html_url}]"
+    ]
+  },
+  {
+    "time": 1794180311.8465917,
+    "args": [
+      "api",
+      "repos/just-every/run-pencil/actions/runs/42534636287",
+      "--jq",
+      "{status,conclusion,head_sha,html_url}"
+    ]
+  }
+]

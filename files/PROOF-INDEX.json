@@ -1,0 +1,80 @@
+{
+  "head": "1e65537decf1b294c86fce248432849d49eaa748",
+  "anchors": [
+    {
+      "file": "tests/helpers/invitation-scanner-proof.ts",
+      "line": 9,
+      "anchor": "export async function proveNonNpsInvitationScanners"
+    },
+    {
+      "file": "tests/helpers/invitation-scanner-proof.ts",
+      "line": 13,
+      "anchor": "const fixtures ="
+    },
+    {
+      "file": "tests/helpers/invitation-scanner-proof.ts",
+      "line": 45,
+      "anchor": "const textLinks ="
+    },
+    {
+      "file": "tests/helpers/invitation-scanner-proof.ts",
+      "line": 53,
+      "anchor": "const snapshot ="
+    },
+    {
+      "file": "tests/helpers/invitation-scanner-proof.ts",
+      "line": 61,
+      "anchor": "const before ="
+    },
+    {
+      "file": "tests/helpers/invitation-scanner-proof.ts",
+      "line": 64,
+      "anchor": "for (const link"
+    },
+    {
+      "file": "tests/e2e/invitation-choice-proof.ts",
+      "line": 8,
+      "anchor": "export async function proveInvitationChoice"
+    },
+    {
+      "file": "tests/e2e/invitation-choice-proof.ts",
+      "line": 43,
+      "anchor": "const inert ="
+    },
+    {
+      "file": "tests/e2e/invitation-choice-proof.ts",
+      "line": 59,
+      "anchor": "for (const hint"
+    },
+    {
+      "file": "tests/e2e/invitation-choice-proof.ts",
+      "line": 76,
+      "anchor": "await page.setContent"
+    },
+    {
+      "file": "tests/e2e/invitation-choice-proof.ts",
+      "line": 80,
+      "anchor": "Promise.all([page.waitForNavigation"
+    },
+    {
+      "file": "tests/e2e/invitation-choice-proof.ts",
+      "line": 102,
+      "anchor": "const receipt ="
+    },
+    {
+      "file": "tests/e2e/invitation-choice-proof.ts",
+      "line": 107,
+      "anchor": "const stored ="
+    },
+    {
+      "file": "tests/e2e/invitation-choice-proof.ts",
+      "line": 113,
+      "anchor": "const replay ="
+    },
+    {
+      "file": "tests/e2e/invitation-choice-proof.ts",
+      "line": 121,
+      "anchor": "finally"
+    }
+  ]
+}

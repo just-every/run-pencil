@@ -1,0 +1,21 @@
+{
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f51",
+  "head": "1e65537decf1b294c86fce248432849d49eaa748",
+  "remote_head": "1e65537decf1b294c86fce248432849d49eaa748",
+  "pushed": true,
+  "pr": null,
+  "upstream_main": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+  "product_commit_count": 3,
+  "production_diff_bytes": 0,
+  "contract_diff_bytes": 0,
+  "status_clean": true,
+  "publication_scan": {
+    "commit": "1e65537decf1b294c86fce248432849d49eaa748",
+    "complete": false,
+    "historyScanned": null,
+    "findings": null,
+    "reason": "cloud branch route delegates exact-tree scan to guarded Mac lander"
+  },
+  "verify_run_id": 42534636287
+}
