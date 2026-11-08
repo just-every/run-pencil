@@ -1,6 +1,6 @@
 # Pencil forms for WordPress
 
-1. Copy this directory into `wp-content/plugins/pencil` on your WordPress site, then activate **Pencil forms** in Plugins. No theme changes are needed.
+1. Copy this directory into `./wp-content/plugins/pencil` on your WordPress site, then activate **Pencil forms** in Plugins. No theme changes are needed.
 2. In `wp-config.php`, before WordPress loads, set the Pencil installation origin:
 
    ```php

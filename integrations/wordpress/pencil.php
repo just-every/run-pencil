@@ -31,7 +31,7 @@ function pencil_shortcode($attributes) {
     }
 
     $source = rtrim(PENCIL_INSTALLATION_URL, '/') . '/embed.js?flow=' . rawurlencode($attributes['flow']);
-    return '<script async src="' . esc_url($source) . '"></script>';
+    return '<script async src="' . esc_url($source) . '" referrerpolicy="origin"></script>';
 }
 
 add_shortcode('pencil', 'pencil_shortcode');

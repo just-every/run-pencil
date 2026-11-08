@@ -1121,11 +1121,11 @@
       "executable": false
     },
     "integrations/wordpress/pencil.php": {
-      "sha256": "491fcbf00e94a4a3f54753941bd08d1d7c1d82b7ff297ce20bc89e1e0abf9e4b",
+      "sha256": "60e48d882f612965ae93e551d82842abe8deb7b2ca302be821480a284e225cb4",
       "executable": false
     },
     "integrations/wordpress/README.md": {
-      "sha256": "4b6109375f552bcfcc6f2cf6702f47017df4d1fedfba90aff7c0fbf9ed18e3f0",
+      "sha256": "82329d78268c562014ea8679aa78b4200f1a80935b74c7545307f46f920b0980",
       "executable": false
     },
     "LICENSE": {
@@ -8913,7 +8913,7 @@
       "executable": false
     },
     "tests/e2e/wordpress-embed.ts": {
-      "sha256": "bd00085c1503590e3b518d0be5c7ac5700532b8f8ed04a03a869d4d6a9a1dc04",
+      "sha256": "15fe66828ecc4cf6ecd40041dd4adf61c9e88fcb8de0c8355b092194c1bc6c53",
       "executable": false
     },
     "tests/fixtures/completion-redirects.ts": {

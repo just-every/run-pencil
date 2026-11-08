@@ -51,6 +51,7 @@ export async function proveWordpressEmbed(operator: Page, browser: Browser, info
     await embedded.getByRole('button', { name: 'Continue', exact: true }).click()
     await embedded.getByRole('textbox', { name: 'What could we do better?' }).fill(canary)
     await assertHeight()
+    const submitted = visitor.waitForRequest(request => request.method() === 'POST' && new URL(request.url()).pathname === `/api/public/flows/${flow.slug}/responses`)
     await embedded.getByRole('button', { name: 'Submit response', exact: true }).click()
     await expect(embedded.getByRole('heading', { name: 'Thank you. Your response has been received.' })).toBeVisible()
     expect(await assertHeight()).not.toBe(initialHeight)
@@ -80,6 +81,15 @@ export async function proveWordpressEmbed(operator: Page, browser: Browser, info
     const answers = after.tables.find(table => table.name === 'response_answers')!
     const responseId = answers.columns.indexOf('response_id'), value = answers.columns.indexOf('value_json')
     expect(answers.rows.filter(row => row[responseId].value === added[0]).map(row => row[value].value)).toContain(JSON.stringify(canary))
+    expect(await visitor.content()).not.toContain(added[0])
+    expect(requested.join('\n')).not.toContain(added[0])
+    // A repeated native capture keeps its response; it cannot insert a second one.
+    const submission = await submitted
+    const replay = await visitor.request.post(submission.url(), { headers: { Origin: 'null' }, data: submission.postDataJSON() })
+    expect(replay.status()).toBe(201)
+    expect((await replay.json()).responseId).toBe(added[0])
+    expect((await responseRows()).ids.sort()).toEqual(after.ids.sort())
+    expect(await visitor.evaluate(() => (window as unknown as HostEvidence).pencilEvents.filter(event => event.type === 'pencil:completed'))).toHaveLength(1)
     expect(JSON.stringify(events)).not.toContain(added[0])
     expect(JSON.stringify(await visitor.evaluate(() => (window as unknown as HostEvidence).pencilMessages))).not.toContain(added[0])
 
@@ -92,9 +102,12 @@ export async function proveWordpressEmbed(operator: Page, browser: Browser, info
     expect((await responseRows()).ids.sort()).toEqual(after.ids.sort())
 
     expect((await operator.request.put('/api/app/workspace', { headers, data: { ...workspace, embedAllowedOrigins: [otherHost] } })).status()).toBe(200)
-    const refusedScript = visitor.waitForResponse(response => response.url().startsWith(`${installation}/embed.js?`))
+    const refusedScript = visitor.waitForRequest(request => request.url().startsWith(`${installation}/embed.js?`), { timeout: 10_000 })
     await visitor.goto(validPage)
-    expect((await refusedScript).status()).toBe(403)
+    await refusedScript
+    const refusedSource = await visitor.request.get(`${installation}/embed.js?flow=${flow.slug}`, { headers: { Referer: wordpress.origin } })
+    expect(refusedSource.status()).toBe(403)
+    expect(await refusedSource.text()).not.toContain('createElement')
     await expect(visitor.locator('iframe')).toHaveCount(0)
     expect(await visitor.evaluate(() => (window as unknown as HostEvidence).pencilEvents)).toEqual([])
     const refusedFrame = await visitor.request.get(`${installation}/embed/${flow.slug}`, { headers: { Referer: wordpress.origin, 'Sec-Fetch-Dest': 'iframe' } })
