@@ -8725,7 +8725,7 @@
       "executable": false
     },
     "tests/e2e/invitation-choice-proof.ts": {
-      "sha256": "02d04fb05cba862309a342d72e835b0f004a47f118e152bcba2378469df9ffa3",
+      "sha256": "d0abdd582e43fe35c41cb8b7be2e816ae086a3a7093853218c11a2d4f9cd6795",
       "executable": false
     },
     "tests/e2e/journey-http.spec.ts": {

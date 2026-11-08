@@ -97,6 +97,8 @@ export async function proveInvitationChoice(owner: Page, info: TestInfo) {
     await page.getByRole('button', { name: 'Submit response', exact: true }).click()
     const submitted = await submission
     expect(submitted.status()).toBeLessThan(300)
+    const receipt = await submitted.json()
+    expect(receipt).toMatchObject({ idempotent: false, disposition: 'released' })
     expect(submitted.request().postDataJSON().answers).toContainEqual({ stepId: question.id, value: selected.id })
     await expect(page.getByRole('heading', { name: 'Workshop choice recorded', exact: true })).toBeVisible()
     await audienceScreen(page, info, 'choice-completed')
@@ -108,10 +110,11 @@ export async function proveInvitationChoice(owner: Page, info: TestInfo) {
     // Replay the actual admitted request; one completion and the same choice survive.
     const replay = await page.request.post(submitted.url(), { headers: { Origin: origin }, data: submitted.request().postDataJSON() })
     expect(replay.status()).toBeLessThan(300)
-    expect(await replay.json()).toEqual(await submitted.json())
+    expect(await replay.json()).toEqual({ ...receipt, idempotent: true })
     await page.reload()
     await expect(page.getByRole('heading', { name: 'Workshop choice recorded', exact: true })).toBeVisible()
-    expect(await ledger()).toEqual(stored)
+    // A ledger read assigns a new query cutoff; retained business data stays identical.
+    expect(await ledger()).toEqual({ ...stored, cutoff: expect.any(String) })
     expect((await traffic()).totals.submissions).toBe(1)
   } finally {
     await Promise.all(contexts.map(context => context.close()))
