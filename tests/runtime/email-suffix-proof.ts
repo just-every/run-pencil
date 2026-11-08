@@ -81,6 +81,13 @@ export async function emailSuffixRoutingProof() {
   expect(preview.screens.find(screen => screen.stepId === email.id)?.evaluations[0].trace).toMatchObject({ value: unicode, matched: true })
   await f.publish()
   await submit([{ stepId: gate.id, value: true }, { stepId: email.id, value: unicode }], matching.id)
+  // A raw admitted address may expand when lowercased. Publication must retain
+  // the shorter preimage rather than applying the raw limit to normalized text.
+  const expanding = address('İ.com', 'x'.repeat(194))
+  expect(expanding).toHaveLength(200)
+  await save('i\u0307.com')
+  await f.publish()
+  await submit([{ stepId: gate.id, value: true }, { stepId: email.id, value: expanding }], matching.id)
 }
 
 /** Every published destination needs an admissible, path-correlated witness. */
@@ -113,6 +120,9 @@ export async function emailSuffixFeasibilityProof() {
     leaf(email.id, 'ends_with', '.com'),
     leaf(email.id, 'ends_with', '.'),
     leaf(email.id, 'ends_with', `${'x'.repeat(196)}.z`),
+    all(leaf(email.id, 'equals', address('İ.com', 'x'.repeat(194))), leaf(email.id, 'ends_with', 'i\u0307.com')),
+    // The stored suffix itself can need a shorter raw Unicode preimage.
+    leaf(email.id, 'ends_with', `${'x'.repeat(193)}i\u0307.com`),
   ]
   for (const condition of feasible) {
     await save(condition)
@@ -135,6 +145,10 @@ export async function emailSuffixFeasibilityProof() {
   await save(leaf(email.id, 'ends_with', 'mail.com'), leaf(email.id, 'ends_with', 'gmail.com'))
   await f.publish()
   await save(leaf(email.id, 'ends_with', 'gmail.com'), leaf(email.id, 'ends_with', 'mail.com'))
+  await expect(f.publish()).rejects.toMatchObject({ details: expect.arrayContaining([expect.objectContaining({ stepId: matching.id, reason: expect.stringContaining('reachable') })]) })
+  // A negated equality shares the same normalized class as a positive one;
+  // first-match precedence must not manufacture a second matching destination.
+  await save(leaf(email.id, 'ends_with', 'gmail.com'), leaf(email.id, 'not_equals', address('gmail.co')))
   await expect(f.publish()).rejects.toMatchObject({ details: expect.arrayContaining([expect.objectContaining({ stepId: matching.id, reason: expect.stringContaining('reachable') })]) })
   await emailSuffixProofBudget()
 }

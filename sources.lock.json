@@ -9269,7 +9269,7 @@
       "executable": false
     },
     "tests/runtime/email-suffix-proof.ts": {
-      "sha256": "b0b5251f459ad862f41ae1269ad1a9fa2af27e6e55f620f8b268eab5fb4ab9d2",
+      "sha256": "05bf990e8b198a67c0e508a87eec027014cc12bdf535a53ddac610c68a956ca0",
       "executable": false
     },
     "tests/runtime/export-reader.global.ts": {
