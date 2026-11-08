@@ -8865,7 +8865,7 @@
       "executable": false
     },
     "tests/e2e/studio-journey.ts": {
-      "sha256": "c7107b17f40069a2f7290cd770a70572a9df616387d7d0eceddd818b3ed37087",
+      "sha256": "440d0bc52bd8ec3c0e20a343fb7ceffde8aeafac85ae6cd73bd2cb55807304b6",
       "executable": false
     },
     "tests/e2e/submission-inbox-journey.ts": {

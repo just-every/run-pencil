@@ -14,7 +14,7 @@ export async function studioJourney(page:Page,info:TestInfo,provider:Awaited<Ret
   if(theme)await call(`/api/app/analysis/${run.id}/findings/${theme.id}/decision`,{decision:'accepted'})
  }
  const context=await call('/api/app/studio')
- const selected=context.findings.find((item:any)=>item.summary==='A slow queue.')
+ const selected=context.findings.find((item:any)=>item.flowTitle===priorTitle&&item.summary==='A slow queue.')
  expect(selected).toBeTruthy()
  const selection={runId:selected.runId,findingId:selected.findingId}
  const capture=async(name:string)=>{await page.screenshot({path:info.outputPath(`${info.project.name}-${name}.png`),fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect((await new AxeBuilder({page}).analyze()).violations).toEqual([])}
@@ -40,7 +40,7 @@ export async function studioJourney(page:Page,info:TestInfo,provider:Awaited<Ret
    const findings=page.getByRole('group',{name:'Accepted theme summaries to include',exact:true})
    await expect(findings.getByRole('checkbox',{checked:true})).toHaveCount(0)
    await expect(findings).not.toContainText('Long queue, only one till open.')
-   await findings.getByRole('checkbox',{name:new RegExp('A slow queue\\.')}).check()
+   await findings.getByRole('checkbox',{name:`${selected.flowTitle}: ${selected.title} ${selected.summary}`,exact:true}).check()
    expect(await findings.getByRole('checkbox',{checked:true}).count()).toBe(1)
   }
   const generate=page.getByRole('button',{name:/^Generate with http:\/\/127\.0\.0\.1:\d+$/})
