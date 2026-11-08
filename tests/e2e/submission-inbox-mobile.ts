@@ -34,6 +34,7 @@ async function collectMobileInbox(call: ScenarioCall, slug: string) {
 /** Run only the added phone leg at 360, then restore the existing mobile project. */
 export async function reviewMobileSubmissionInbox(page: Page, info: TestInfo, call: ScenarioCall) {
   const scenario = await collectMobileInbox(call, `synthetic-pencil-${info.project.name}-${Date.now()}`)
+  const session = await call<{ operator: { id: string } }>('/auth/session')
   const viewport = page.viewportSize()!
   const measurements: Array<{ control: string; width: number; height: number }> = []
   const hit = async (control: Locator, name: string) => {
@@ -43,6 +44,7 @@ export async function reviewMobileSubmissionInbox(page: Page, info: TestInfo, ca
     expect(box, name).not.toBeNull()
     expect(box!.width, `${name} width`).toBeGreaterThanOrEqual(44)
     expect(box!.height, `${name} height`).toBeGreaterThanOrEqual(44)
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), name).toBe(true)
     measurements.push({ control: name, width: box!.width, height: box!.height })
   }
   try {
@@ -71,6 +73,7 @@ export async function reviewMobileSubmissionInbox(page: Page, info: TestInfo, ca
     const addTag = inbox.getByLabel('Add tag', { exact: true })
     await hit(assign, 'Assign'); await assign.selectOption(assignee.id)
     await hit(addTag, 'Add tag'); await addTag.fill(tag)
+    await captureSubmissionInbox(page, info, 'submission-inbox-360-bulk')
     await hit(apply, 'Apply assignment and tag'); await apply.click()
     await expect(row).toContainText(assignee.displayName)
     await expect(row.locator('.tag')).toHaveText(tag)
@@ -113,6 +116,7 @@ export async function reviewMobileSubmissionInbox(page: Page, info: TestInfo, ca
     const saved = await call<SubmissionDetail>(`${scenario.root}/submissions/${scenario.responses[0]}`)
     expect(saved.submission).toMatchObject({ responseId: scenario.responses[0], statusId: 'done', assignee: { id: assignee.id }, tags: [tag], noteCount: 1 })
     expect(saved.notes.map(entry => entry.text)).toEqual([note])
+    expect(saved.notes[0].author?.id).toBe(session.operator.id)
     const untouched = await call<SubmissionDetail>(`${scenario.root}/submissions/${scenario.responses[1]}`)
     expect(untouched.submission).toMatchObject({ statusId: 'new', assignee: null, tags: [], noteCount: 0 })
     const ledger = await call<Ledger>(scenario.root + '/ledger?workflowStatus=done')
@@ -124,9 +128,8 @@ export async function reviewMobileSubmissionInbox(page: Page, info: TestInfo, ca
     expect(changes.map(entry => entry.kind).sort()).toEqual([
       'submission.assignment_changed', 'submission.note_added', 'submission.status_changed', 'submission.tags_changed',
     ])
-    for (const entry of changes) expect(entry).toMatchObject({ actor: { id: assignee.id }, form: { id: scenario.flowId }, details: { fields: 1 } })
+    for (const entry of changes) expect(entry).toMatchObject({ actor: { id: session.operator.id }, form: { id: scenario.flowId }, details: { fields: 1 } })
     expect(JSON.stringify(audit)).not.toContain(note)
-    await hit(inbox.getByRole('link', { name: 'Back to form results', exact: false }), 'Back to form results')
     await info.attach('360 pixel hit areas', { body: JSON.stringify(measurements, null, 2), contentType: 'application/json' })
   } finally {
     await page.setViewportSize(viewport)

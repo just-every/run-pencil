@@ -10,7 +10,7 @@ import type { ScenarioCall } from '../results-scenario'
 import { triageSubmission } from './submission-inbox-journey'
 import { reviewMobileSubmissionInbox } from './submission-inbox-mobile'
 
-contract(['LEDG-006', 'WORK-001'], 'operators search responses, see matching answers and download the same filtered records', async ({ page }, info) => {
+contract(['LEDG-006', 'WORK-001', 'MOB-001'], 'operators search responses, see matching answers and download the same filtered records', async ({ page }, info) => {
   test.setTimeout(120_000)
   const email = operatorEmail()
   await page.goto('/signin'); await page.getByLabel('Operator email').fill(email)
