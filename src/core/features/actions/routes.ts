@@ -7,7 +7,7 @@ import { freezeEvidence } from './evidence'
 import { ValidationError } from '../../shared/errors'
 import { createActionSchema, editActionSchema, measurementSchema, transitionSchema } from './model'
 import { registerTaskConnectionRoutes } from './connection-routes'
-import { actionHealth } from './health'
+import { readActionHealth } from './health'
 
 const actionParam = validateInput('param', z.object({ actionId: resourceId }))
 
@@ -35,7 +35,7 @@ export function registerActionRoutes(app: Hono<WorkerEnvironment>, services: Req
     const { workspaceId } = c.get('operatorSession'), { actionId } = c.req.valid('param'), actions = services(c).actions
     // Resolve workspace authority before reading either delivery history.
     const action = await actions.records.get(workspaceId, actionId)
-    return c.json(actionHealth(actionId, await actions.tasks.status(workspaceId, actionId), action.reminders))
+    return c.json(await readActionHealth(c.get('platform').databaseBinding, workspaceId, actionId, await actions.tasks.status(workspaceId, actionId), action.reminders))
   })
   app.patch('/api/app/actions/:actionId', actionParam, validateInput('json', editActionSchema), async c => {
     const { workspaceId, operatorId } = c.get('operatorSession'), { actionId } = c.req.valid('param')

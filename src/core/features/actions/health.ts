@@ -1,5 +1,5 @@
 import type { TaskStatus } from './deliveries'
-import type { ActionReminders } from './reminders'
+import type { ActionReminders, ReminderDelivery } from './reminders'
 
 const taskReasons: Record<string, string> = {
   '3xx': 'The task receiver returned a redirect; Pencil did not follow it.',
@@ -22,7 +22,7 @@ const reminderPlans: Partial<Record<ActionReminders['state'], string[]>> = {
 }
 
 /** A projection of native records only: no provider probe, inferred root cause, payload or repair execution. */
-export function actionHealth(actionId: string, task: TaskStatus, reminders: ActionReminders) {
+function actionHealth(actionId: string, task: TaskStatus, reminders: ActionReminders) {
   const delivery = task.delivery
   const attempts = delivery?.attempts.filter(attempt => attempt.outcome === 'failed' || attempt.outcome === 'unknown'
     || (attempt.outcome === null && delivery.state === 'unknown' && !delivery.inFlight)).map(attempt => ({
@@ -57,7 +57,7 @@ export function actionHealth(actionId: string, task: TaskStatus, reminders: Acti
       // A native schedule belongs to the action; occurrences have their own retained IDs.
       actionId, state: reminders.state, explanation: reminders.explanation,
       repairPlan: reminderPlans[reminders.state] ?? [],
-      historyLimit: 30,
+      history: 'All retained failed and unknown reminder occurrences.',
       occurrences: reminders.deliveries.filter(item => item.status === 'failed' || item.status === 'unknown').map(item => ({
         id: item.id, kind: item.kind, dueDate: item.dueDate, state: item.status, attempts: item.attempts,
         explanation: item.status === 'unknown'
@@ -69,6 +69,15 @@ export function actionHealth(actionId: string, task: TaskStatus, reminders: Acti
       })),
     },
   }
+}
+
+export async function readActionHealth(db: D1Database, workspaceId: string, actionId: string, task: TaskStatus, reminders: ActionReminders) {
+  // The normal detail reader shows recent history. A health report must also include older unresolved failures.
+  const failures = (await db.prepare(`SELECT d.id,d.kind,d.due_date AS dueDate,d.status,d.attempts,d.reason,d.updated_at AS updatedAt
+    FROM action_reminders d JOIN actions a ON a.id=d.action_id
+    WHERE a.id=? AND a.workspace_id=? AND d.status IN ('failed','unknown') ORDER BY d.due_date DESC,d.created_at DESC,d.id DESC`)
+    .bind(actionId, workspaceId).all<ReminderDelivery>()).results
+  return actionHealth(actionId, task, { ...reminders, deliveries: failures })
 }
 
 export type ActionHealthReport = ReturnType<typeof actionHealth>

@@ -92,6 +92,15 @@ export async function brokenActionHealth(receiver: string) {
 }
 
 export async function reminderFailureHealth(f: Fixture, unknownActionId: string, failedActionId: string) {
+  // Retained sent history can push an old failure off the normal detail page; health must still include it.
+  await env.DB.batch(Array.from({length: 31}, (_, index) => env.DB.prepare(`INSERT INTO action_reminders
+    (id,action_id,operator_id,kind,due_date,review_date,status,idempotency_key,attempts,available_at,created_at,updated_at)
+    SELECT ?,action_id,operator_id,'overdue',?,review_date,'sent',?,1,available_at,created_at,updated_at
+    FROM action_reminders WHERE action_id=? AND status='failed' LIMIT 1`)
+    .bind(crypto.randomUUID(), new Date(Date.parse('2027-01-01T00:00:00Z') + index * 86400000).toISOString().slice(0,10), crypto.randomUUID(), failedActionId)))
+  const recent = await (await f.call(`/api/app/actions/${failedActionId}`)).json() as {reminders: {deliveries: Array<{status: string}>}}
+  expect(recent.reminders.deliveries.length).toBeGreaterThan(0)
+  expect(recent.reminders.deliveries.every(item => item.status === 'sent')).toBe(true)
   for (const [actionId, state] of [[unknownActionId, 'unknown'], [failedActionId, 'failed']] as const) {
     const occurrences = await env.DB.prepare('SELECT id FROM action_reminders WHERE action_id=? AND status=?').bind(actionId, state).all<{id: string}>()
     expect(occurrences.results).toHaveLength(1)
