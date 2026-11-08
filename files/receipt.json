@@ -1,0 +1,100 @@
+{
+  "tag": "sd-pencil-rer-pin-103",
+  "repository": "just-every/run-pencil",
+  "status": "BLOCKED",
+  "branch": "cloud/sd-pencil-rer-pin-103",
+  "product_head": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+  "origin_main": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+  "fresh_full_history": true,
+  "clone_command": "git clone --filter=blob:none https://github.com/just-every/run-pencil.git /home/agent/rer-consolidation/work/sd-pencil-rer-pin-103/run-pencil",
+  "pin_before": "0.2.94",
+  "pin_after_worktree": "0.2.103",
+  "base_release_tag": "rer-v0.2.103",
+  "base_release_commit": "e82790b601c62e077a1a09380fc787531d9cded5",
+  "install": {
+    "command": "pnpm install",
+    "exit": 0
+  },
+  "refresh": {
+    "command": "pnpm exec rer refresh-base --ref e82790b601c62e077a1a09380fc787531d9cded5 --base-archive /tmp/pencil-base-103 --offline",
+    "wrapper": "cloud_run timeout 600",
+    "exit": 4,
+    "error": "Base archive has no Git history. Repeat with --base <checkout> containing the recorded and target commits; no files were refreshed."
+  },
+  "verify": {
+    "command": "pnpm exec rer verify",
+    "exit": null,
+    "status": "not run after required blocked stop"
+  },
+  "mechanical_lock": {
+    "command": "pnpm source:lock",
+    "exit": null,
+    "status": "not run after required blocked stop"
+  },
+  "mechanical_check": {
+    "command": "pnpm source:check",
+    "exit": null,
+    "status": "not run after required blocked stop"
+  },
+  "probe": {
+    "status": "not run after required blocked stop"
+  },
+  "typecheck": {
+    "command": "pnpm typecheck",
+    "status": "not run after required blocked stop"
+  },
+  "diff_stat": "package.json   |  2 +-\n pnpm-lock.yaml | 10 +++++-----\n 2 files changed, 6 insertions(+), 6 deletions(-)",
+  "changed_files": [
+    "package.json",
+    "pnpm-lock.yaml"
+  ],
+  "contract_sha256_before": "dbd7b800b4377018e0e69b5c450112de0a76caa2214e8882505b907f651f19e7",
+  "contract_sha256_after": "dbd7b800b4377018e0e69b5c450112de0a76caa2214e8882505b907f651f19e7",
+  "counts_before": {
+    "published": {
+      "done": 117,
+      "partial": 3,
+      "missing": 0,
+      "total": 120
+    },
+    "target_and_push_further": {
+      "done": 25,
+      "partial": 58,
+      "missing": 49,
+      "total": 132
+    },
+    "all": {
+      "done": 142,
+      "partial": 61,
+      "missing": 49,
+      "total": 252
+    }
+  },
+  "counts_after": {
+    "published": {
+      "done": 117,
+      "partial": 3,
+      "missing": 0,
+      "total": 120
+    },
+    "target_and_push_further": {
+      "done": 25,
+      "partial": 58,
+      "missing": 49,
+      "total": 132
+    },
+    "all": {
+      "done": 142,
+      "partial": 61,
+      "missing": 49,
+      "total": 252
+    }
+  },
+  "clause_changes": [],
+  "product_commits": [],
+  "product_push_attempts": 0,
+  "pr_url": null,
+  "ci_run_ids": [],
+  "patch_sha256": "67334a7a5f9955f783a1670ce44402316c4468540e6e4b8df9deb478a81e3a1e",
+  "recorded_at_utc": "2026-11-08T21:59:02.986859+00:00"
+}

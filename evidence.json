@@ -1,0 +1,46 @@
+{
+  "files": [
+    {
+      "blob": "d8ab92d2df18b31997f9524802e9949eb6feabe6",
+      "bytes": 2341,
+      "path": "PLAN.md",
+      "sha256": "0dccd4f93b5a574fc7e36a72c1cbf26d247bd5adcc31daa2cc13d9c7f019e748"
+    },
+    {
+      "blob": "8486d262ef19f8a4f68ee84f5eae4fc1a6831916",
+      "bytes": 4346,
+      "path": "REPORT.md",
+      "sha256": "0930413e9743163b1fb73345c9df7ae4aab0d12dce5b7985661c790c4ff82445"
+    },
+    {
+      "blob": "786cde249a04090eb4532271d3ca7c3f27cedaf2",
+      "bytes": 213,
+      "path": "base-refresh.log",
+      "sha256": "fe9f27d63a7850942e14b775daca11fedb0d53b3bdd7583be219dfb9ee8e5eb2"
+    },
+    {
+      "blob": "00be58f712bee14f8a348aaf477b151a648aa146",
+      "bytes": 199,
+      "path": "github-calls.jsonl",
+      "sha256": "c9b6dfa973df5263507f9814fc07534791efa83f9dac1e17931566c2388f268f"
+    },
+    {
+      "blob": "07eda22c388f55aef21e17750ee471462feee59d",
+      "bytes": 2965,
+      "path": "receipt.json",
+      "sha256": "47c7ea2d76ed9c89b7f3ec83c6a226bf1599227c18200d42a4431a2f356d3d4d"
+    },
+    {
+      "blob": "c8b715bb27e03bbfb53399f30ebfe52412dac93f",
+      "bytes": 1558,
+      "path": "uncommitted-pin.patch",
+      "sha256": "67334a7a5f9955f783a1670ce44402316c4468540e6e4b8df9deb478a81e3a1e"
+    }
+  ],
+  "product_branch": "cloud/sd-pencil-rer-pin-103",
+  "product_head": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+  "ref": "refs/heads/evidence/sd-pencil-rer-pin-103",
+  "repository": "just-every/run-pencil",
+  "schema": 1,
+  "tag": "sd-pencil-rer-pin-103"
+}
