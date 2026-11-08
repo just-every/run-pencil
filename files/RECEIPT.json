@@ -91,18 +91,19 @@
     "complete": null,
     "historyScanned": null,
     "findings": null,
-    "state": "not run in cloud; maintained Mac lander owns the complete full-history scan"
+    "state": "No separate cloud-side scan receipt claimed; exact-head Verify succeeded, maintained Mac lander must run its own complete full-history publication scan"
   },
   "history_is_shallow": false,
   "ci": {
     "run_id": 42489922999,
     "event": "push",
     "head": "af4e05084534df677bf5c33ec3b7f776181f9eaf",
-    "observed_status": "in_progress",
-    "observed_conclusion": null,
+    "observed_status": "completed",
+    "observed_conclusion": "success",
     "discovery": "candidate-ci-discovery.json",
-    "observed_at": "2026-11-08T14:33:22.671277+00:00",
-    "receipt": "candidate-ci-status.json"
+    "observed_at": "2026-11-08T14:43:25.708888+00:00",
+    "receipt": "candidate-ci-status.json",
+    "url": "https://github.com/just-every/run-pencil/actions/runs/42489922999"
   },
   "landing": {
     "main_equals_candidate": false,
@@ -115,5 +116,12 @@
     "remote_verified_head": "af4e05084534df677bf5c33ec3b7f776181f9eaf",
     "remote_receipt": "product-remote.txt"
   },
-  "github_core_calls": 3
+  "github_core_calls": 5,
+  "evidence_initial_readback": {
+    "ref": "refs/heads/evidence/sd-pencil-c-f37",
+    "head": "fa10610552cac0b36de60688495bc9429be04cf2",
+    "files_verified": 23,
+    "receipt": "evidence-readback.json"
+  },
+  "custody": "READY for guarded landing; clause claim remains PARTIAL"
 }

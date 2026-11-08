@@ -61,7 +61,7 @@ Local exact-candidate T run: one registration passed, 15.18 seconds total and 2.
 | --- | --- | --- |
 | 1 | Selected scope PASS locally; full clause remains PARTIAL | T covers the three acceptance sentences; H covers every selected withholding outcome. The four unbuilt optional dependencies remain held. No DONE claim. |
 | 2 | PASS locally | Populated independent values, permissive positive control, denied cases, exact fixed expected text, one sent row and replay refusal. H lines 80 to 113 and 118 to 129. |
-| 3 | CI recorded, qualification pending final run state | Existing default Worker include pattern loads T and its awaited H call. Push Verify run 42489922999 is on the exact candidate; its observed terminal state is in the receipt. No nightly flag or new registration. |
+| 3 | PASS exact-SHA CI | Existing default Worker include pattern loads T and its awaited H call. Push Verify run 42489922999 completed successfully on the exact candidate; its terminal state is in the receipt. No nightly flag or new registration. |
 | 4 | PASS locally | T reran on the committed candidate. No relevant byte changed afterward; hashes are in RECEIPT.json. |
 | 5 | PASS inspected | RESP-020 already names LOGIC-001, FIELD-015, BRAND-001, DIST-006, GOV-004, LOGIC-004, PAY-001 and SIGN-001 duties. No inheritance rewrite. |
 | 6 | PASS mechanical, judgment unchanged | Touched generator write and check exited zero, then both generated views were restored from main. No Status, Gap, Evidence or provenance cell was edited. |
@@ -99,6 +99,14 @@ CLAIM RESP-020 PARTIAL points=1,2,3 tests=tests/runtime/respondent-confirmations
 
 GAP RESP-020: GOV-004 sensitive withholding, LOGIC-004 quiz results, PAY-001 payment receipt links and SIGN-001 signed PDFs remain unbuilt and inherit before shipping. Real mail provider and consent, DONE, activation and release qualification remain unclaimed; all existing holds and prerequisites are unchanged.
 
-## Current CI observation
+## Earlier CI observation
 
 At 2026-11-08T14:33:22.671277+00:00, push Verify run 42489922999 remained in progress on af4e05084534df677bf5c33ec3b7f776181f9eaf. Three GitHub core calls have been used: exact-main discovery, exact-candidate discovery and the first candidate status read. The next candidate read is deferred for at least 300 seconds. No dispatch or rerun was issued.
+
+## Final exact-head result
+
+At 2026-11-08T14:43:25.708888+00:00, push Verify candidate run 42489922999 completed with conclusion success on af4e05084534df677bf5c33ec3b7f776181f9eaf. Five GitHub core calls were used in total; no dispatch, rerun, job-log fetch or repair was needed. The final REST response is candidate-ci-status.json. This is the candidate's own run, distinct from parent main provenance. DONE-RIDERS row 3 and pre-ready exact-SHA Verify now pass. Row 11 remains pending the guarded lander. Main equality, candidate Run site, the lander's complete publication scan and clause promotion are not claimed.
+
+Product branch publication and remote readback both succeeded. The exact candidate's source bytes and clean checkout were checked again after CI. The complete relevant packet is published as a later report-only child of the initial evidence snapshot. The initial 23-file evidence readback receipt is retained as evidence-readback.json. Product and report-only histories remain separate. After the final evidence publication, the product clone and its dependencies are deleted as instructed; all actual packet files remain outside it.
+
+READY custody is for guarded landing of the selected proof. RESP-020 remains PARTIAL under the supplied held remainder; the clause status cells and counts are unchanged. No DONE, activation, release, real mail-provider or consent qualification is inferred from green Verify.

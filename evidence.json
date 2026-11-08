@@ -1,22 +1,22 @@
 {
   "files": [
     {
-      "blob": "72182141d8dd128119db1312ede97eff6b5555bf",
-      "bytes": 2790,
+      "blob": "ff7552bcfa11a7721827d8cb0c849a1eaacc7d6e",
+      "bytes": 2911,
       "path": "PLAN.md",
-      "sha256": "44b7a84181cf2093b9f14babb79a2510bd41614393c79a6121eaa9e27c84a8d1"
+      "sha256": "aadd4f219967a19629cb7696a06b2995bd7f14cf3135055def797aa61345ae28"
     },
     {
-      "blob": "c91dff51abf28fa4122a2a953ed46769c9117a5e",
-      "bytes": 3624,
+      "blob": "622e1eb358a813bd1db7034973ec84246513324f",
+      "bytes": 4065,
       "path": "RECEIPT.json",
-      "sha256": "593bd27c69a885b60adebd1fc8ab2736305e23eec4851dbc22a1765aa769ed43"
+      "sha256": "6c6193672e0b90566698795ec28dd60497f9da23be3e69a4c7103e818be33f35"
     },
     {
-      "blob": "a46faec2205e56f8667d32f1ad92f73b7d4a618c",
-      "bytes": 14612,
+      "blob": "56335b8528787f75fbb4e747d69f768095141641",
+      "bytes": 16021,
       "path": "REPORT.md",
-      "sha256": "6910b660cc42ca8685a7814c3e08a741744d2964c7d23106c049486be03ff037"
+      "sha256": "4234e3195e2b12939eeb4636f6e9f3d1fa8e9aaae80c1283de0b8fb7e1a3465f"
     },
     {
       "blob": "852d988c20dec2b690ace051a798fd0cfc9a34d4",
@@ -25,10 +25,10 @@
       "sha256": "9c2477d4f4d544b8ab1763719ac649369678d7332ec05d461528cbe61d3a4b46"
     },
     {
-      "blob": "a00538fb264f4861e9be5d3e5146780850382816",
-      "bytes": 176,
+      "blob": "e89395c2de93ab9ea465ae40be1b7fe25f300c42",
+      "bytes": 179,
       "path": "candidate-ci-status.json",
-      "sha256": "2c9cf57b5e070aef8c12a0b3df11ab1206719a467765c585d74514ffe56fbc17"
+      "sha256": "1eb94a997cc14fd10a1b45b6a6c4c37a3b3db3d08b7a362b2ecf09b2e254cb25"
     },
     {
       "blob": "b78a0528268e1115a69b7c9595e5b1afc9492158",
@@ -37,10 +37,10 @@
       "sha256": "e2bd0a2aa2e708750f09671bae990c0f9bb33d220835b208cbfad1902720a9b9"
     },
     {
-      "blob": "0ea5e61c3865f8855bbac6814475ea6c33172285",
+      "blob": "715d62c7c8bcf3a439e2c12ba48436c0845a6761",
       "bytes": 33,
       "path": "ci-observed-time.txt",
-      "sha256": "1d3216763af8cea66be0ce2900a29738d4e2ba5073042fa76181d824ab405222"
+      "sha256": "f2be9d315e0121911efb27119540c9ed1ce3dce0a7143106c13d083e1698b073"
     },
     {
       "blob": "f8b0d6d5848028b07592fb45daed1a8633e9a9a6",
@@ -53,6 +53,12 @@
       "bytes": 70,
       "path": "contract-write.log",
       "sha256": "13f608aa11efb1dd4517b89338792c4365155b72c9bdb611719472f92ff3ec02"
+    },
+    {
+      "blob": "4a943323bc25bc80270ae8237b43b6d90b13a9c3",
+      "bytes": 4510,
+      "path": "evidence-readback.json",
+      "sha256": "8eeca7fd724248a57f0899a5a7b11894edb4ec3586aa1f9382cdb6881c374d1b"
     },
     {
       "blob": "e756fc2f697ecd2de8b5e553527129e07966e186",
