@@ -7217,11 +7217,15 @@
       "executable": false
     },
     "src/core/features/responses/ui/respondent.css": {
-      "sha256": "12c78a7bb1137226c0a8a16600b1ce4cffffbfa421ac9f992efe2b48c9043080",
+      "sha256": "4cc291962143035c57b211ca14e34cc95dde7deb07962c0727d9887f1101b0aa",
       "executable": false
     },
     "src/core/features/responses/ui/RespondentFlowPage.tsx": {
-      "sha256": "a0e4ae55ecbe1786d83f008a27b91633880176291ea4a2da5d23b71a4a79d698",
+      "sha256": "cb7cba46fdf83bd5fd4953036ec40d6dd73fcad10f613db7b83922f5f6bc8ca5",
+      "executable": false
+    },
+    "src/core/features/responses/ui/RespondentPaymentNotice.tsx": {
+      "sha256": "a0b8c89bd399184e366e463296eee6f9b755e361090b0e703f7821249dcdb03f",
       "executable": false
     },
     "src/core/features/responses/ui/RespondentPrivacyNote.tsx": {

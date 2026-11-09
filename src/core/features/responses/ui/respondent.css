@@ -30,6 +30,9 @@
 .privacy-card { display: grid; grid-template-columns: auto 1fr; gap: 14px; margin-top: 28px; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; color: var(--muted); background: rgba(255, 255, 255, 0.55); font-size: 15px; line-height: 1.5; }
 .privacy-card svg { color: var(--ink); }
 .privacy-card strong { color: var(--ink); font-weight: 600; }
+.respondent-payment-notice[data-state='processing'] { border-color: var(--draft-ink); color: var(--draft-ink); background: var(--yellow-wash); }
+.respondent-payment-notice[data-state='processing'] :is(svg, strong) { color: inherit; }
+.respondent-payment-notice strong { display: block; }
 .respondent-required { margin: 24px 0 0; color: var(--subtle); font-size: 14px; }
 
 .answer-stack { display: grid; gap: 12px; margin-top: 12px; }

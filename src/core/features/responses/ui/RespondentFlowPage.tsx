@@ -15,7 +15,8 @@ import { SaveResponse } from './SaveResponse'
 import { BrandIdentity } from '../../brand'
 import { brandStyle } from '../../brand'
 import { useEmbedProtocol, checkoutFallbackAvailable } from '../../embedding'
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { RespondentPaymentNotice } from './RespondentPaymentNotice'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { answerIssue, isUnanswered } from '../../../shared/answers'
 import { visiblePath } from '../../../shared/flowPath'
@@ -319,7 +320,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
         {isPayment && payment?.notice ? <p className="status-note" role="status">{payment.notice}</p> : null}
         {!reviewing && isPayment && quote ? <><PaymentSummary quote={quote} /><p className="payment-note">You pay on Stripe’s secure checkout page. Stripe receives the items and amounts above; {config.publicFlowBusinessName} and this form never receive your card or bank details.</p></> : null}
         {!reviewing && isPayment && payment?.notice ? <ReviewAnswers flow={flow} steps={questionSteps} answers={answers} disabled={!hydrated || submitting || leaving} onEdit={id=>backTo(screens.findIndex(entry=>entry.steps.some(step=>step.id===id)))} /> : null}
-        {isCompletion && payment ? <p className="privacy-card"><Check aria-hidden="true" color="var(--green)" size={22} /><span>{payment.state === 'paid' ? 'Your payment is received.' : payment.state === 'refunded' ? 'Your payment was refunded.' : 'Stripe is confirming your payment; the business sees it once Stripe confirms.'}</span></p> : null}
+        {isCompletion && payment ? <RespondentPaymentNotice state={payment.state} /> : null}
         <label className="respondent-honeypot" aria-hidden="true">Company website<input autoComplete="off" name="company-website" onChange={(event) => setHoneypot(event.target.value)} tabIndex={-1} value={honeypot} /></label>
         {checkoutFallback ? <p className="status-note">The embedding host could not open checkout. <a className="primary-button focus-ring" href={checkoutFallback} target="_top" onClick={()=>setLeaving(true)}>Continue to Stripe Checkout</a> opens this payment in the same tab.</p> : null}
         {pendingFinal && !submitting && !checkoutFallback ? <p className="status-note">Retry to confirm the answers already submitted.</p> : null}
