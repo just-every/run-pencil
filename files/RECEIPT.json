@@ -169,13 +169,14 @@
     "attempt": 1,
     "remote_branch": "3c51bdf7dd44363933242447e1536a421f6e9e14"
   },
-  "github_calls_used": 6,
+  "github_calls_used": 7,
   "ci": {
-    "run_id": 42544820495,
+    "conclusion": "success",
     "head_sha": "3c51bdf7dd44363933242447e1536a421f6e9e14",
-    "status": "in_progress",
-    "conclusion": null,
-    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42544820495"
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42544820495",
+    "status": "completed",
+    "run_id": 42544820495,
+    "observed_at": "2026-11-09T01:36:06Z"
   },
   "unchanged_source_hashes": {
     "CONTRACT.md": "dbd7b800b4377018e0e69b5c450112de0a76caa2214e8882505b907f651f19e7",
@@ -189,8 +190,16 @@
   },
   "cleanup": {
     "docker_fixture_containers": "none remain",
-    "product_clone": "pending final evidence publication",
+    "product_clone": "Scheduled immediately after final evidence publication and exact-head transfer validation; terminal message confirms removal.",
     "test_browsers": "closed by Playwright",
     "started_server_processes": "stopped by existing graceful shutdown and cloud subreaper"
+  },
+  "status": "READY",
+  "blockers": [],
+  "evidence_transport": {
+    "repository": "just-every/run-pencil",
+    "ref": "refs/heads/evidence/sd-pencil-rer-pin-103-fix1",
+    "preliminary_head": "ab49c79304582d9cfb779fe3b07d7a52fb9d5cf7",
+    "final_head": "Printed by final publication command; copied verbatim into terminal message."
   }
 }

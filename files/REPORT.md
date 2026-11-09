@@ -55,4 +55,17 @@ Before and after: done 142, partial 61, missing 49; total 252. Clause status cha
 
 All four commits in `origin/main..HEAD`, including every reachable side parent, passed the fleet author/committer and trailer audit immediately before push. No OpenAI/Codex co-author line survived. IDENTITY.txt is the exact requested audit output. The new commit has fleet author and committer and no trailers. Product push through cloud-push.py succeeded on attempt 1 to the named cloud branch only, and remote tracking head equals the product head. No force push, main fast-forward or landing was performed.
 
-Exact-SHA Verify run: `42544820495`, https://github.com/just-every/run-pencil/actions/runs/42544820495 . Its discovery returned in_progress for the full product SHA. One watcher is waiting under the minimum 300-second poll interval and ten-call task budget. CI receipt and terminal status will be appended after the watcher returns. Product READY/PUSHED custody and the report-only evidence ref remain separate.
+Exact-SHA Verify run: `42544820495`, https://github.com/just-every/run-pencil/actions/runs/42544820495 . Its discovery returned in_progress for the full product SHA. One watcher made a single status query 18 minutes after discovery, respecting the minimum 300-second poll interval and ten-call task budget. The terminal result is recorded below. Product READY/PUSHED custody and the report-only evidence ref remain separate.
+
+
+## Final exact-SHA result
+
+At 2026-11-09T01:36:06Z, REST returned `status=completed`, `conclusion=success`, `head_sha=3c51bdf7dd44363933242447e1536a421f6e9e14` for Verify candidate run `42544820495`. CI.json is the actual complete selected status response. Seven task GitHub invocations were used: two original failed-job archives, one read-only Base comparison, main run listing, main archive, exact-SHA run discovery and one exact-SHA status query. No red-check exemption is needed.
+
+The named product branch is READY for the fleet's independent landing checks. No PR was required or created. Blockers: none. The full hosted wall, including the previously red hosted/desktop lanes, completed successfully on the exact product SHA. This does not establish the unavailable original WordPress response status; the original failure cause remains unproven, and no WordPress source or assertion was changed.
+
+The complete public-safe packet is published only to `refs/heads/evidence/sd-pencil-rer-pin-103-fix1`. Its final head is the exact EVIDENCE line in the terminal return. The ordinary report-only publisher preserves the product branch, HEAD and index and appends to the existing evidence history. After final transfer validation the product clone and its node_modules are removed as instructed. The additional verified product bundle remains outside the clone at the path and SHA recorded in BUNDLE-RECEIPT.json; it is not included in the report-only Git tree.
+
+POST lanes/sd/INBOX.md: sd-pencil-rer-pin-103-fix1 repaired missing signed decision route; relay 2371/2372 to 2656/2656, desktop WordPress passed unchanged; clause changes none (142 done/61 partial/49 missing); SHA 3c51bdf7dd44363933242447e1536a421f6e9e14; exact-SHA Verify 42544820495 success (original red 42542006704; main 42541318493). Product pushed to cloud/sd-pencil-rer-pin-103-fix1; evidence ref returned separately; no landing claim.
+
+READY branch=cloud/sd-pencil-rer-pin-103-fix1 head=3c51bdf7dd44363933242447e1536a421f6e9e14
