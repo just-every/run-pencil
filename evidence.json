@@ -25,6 +25,12 @@
       "sha256": "0297ef3fe81a8e458eb214ca74f895981c6c0f206a223bceea12b49dd807538b"
     },
     {
+      "blob": "33530fcb3125558af51555b8d8fd50a16e8480c7",
+      "bytes": 519,
+      "path": "CLOUD-PLAYWRIGHT.ts",
+      "sha256": "3666ec2257d7890e8dc11b45a29c2d25ad7517d6c637215e31a5a605c3b5f0f7"
+    },
+    {
       "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
       "bytes": 0,
       "path": "FIRST-PARTY.txt",
