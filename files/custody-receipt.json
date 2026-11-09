@@ -1,0 +1,29 @@
+{
+  "head": "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85",
+  "branch": "cloud/sd-pencil-c-f54",
+  "push_command": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-pencil-c-f54",
+  "push_exit": 0,
+  "push_attempts": 1,
+  "remote_refs": [
+    "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85\trefs/heads/cloud/sd-pencil-c-f54",
+    "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85\trefs/heads/main"
+  ],
+  "product_new_commits": 0,
+  "product_diff_files": 0,
+  "working_tree_clean": true,
+  "candidate_identity_range": "",
+  "last_commit": "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85\nRun Edit Run fleet <fleet@runeditrun.com>\nRun Edit Run fleet <fleet@runeditrun.com>\nProve original pre-device archive recovery before current upgrade\n\n",
+  "generated_views_restored": true,
+  "source_lock_unchanged": true,
+  "clause_status_changed": false,
+  "counts_before": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "counts_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  }
+}

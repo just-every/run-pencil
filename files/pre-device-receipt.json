@@ -1,0 +1,23 @@
+{
+  "head": "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85",
+  "branch": "cloud/sd-pencil-c-f54",
+  "proof": {
+    "release": "0.6.0",
+    "sourceCommit": "4ccc2364080cd822c6a12662c1e191683a8fbe6b",
+    "originalMigrations": 51,
+    "archiveSha256": "1874592c8f0839e4c797ffde27ea6dfb7a28018d4220978a64f6669b836444ab",
+    "exactReexport": true,
+    "responses": 2,
+    "answers": 2,
+    "retainedLinks": 2,
+    "currentMigrations": 78,
+    "historicalDeviceClasses": [
+      null,
+      null
+    ],
+    "currentImportRefused": true
+  },
+  "registration": "scripts/deployment-data.check.mjs",
+  "test": "complete archive recovery retains exact data and attachment custody and refuses unsafe sources, archives and destinations without overwrites",
+  "exit": 0
+}

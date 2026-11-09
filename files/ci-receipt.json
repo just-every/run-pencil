@@ -1,0 +1,35 @@
+{
+  "head": "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85",
+  "source": "Observed gh api exact-head actions runs discovery before product branch publication",
+  "runs": [
+    {
+      "id": 42544571644,
+      "name": "Verify candidate",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85",
+      "url": "https://github.com/just-every/run-pencil/actions/runs/42544571644"
+    },
+    {
+      "id": 42546909748,
+      "name": "Verify candidate",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85",
+      "url": "https://github.com/just-every/run-pencil/actions/runs/42546909748"
+    },
+    {
+      "id": 42546909872,
+      "name": "Run site",
+      "status": "completed",
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85",
+      "url": "https://github.com/just-every/run-pencil/actions/runs/42546909872"
+    }
+  ],
+  "dispatches": 0,
+  "reruns": 0
+}
