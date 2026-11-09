@@ -34,6 +34,7 @@ import { DraftRewritePanel } from '../../analysis/ui'
 import { TypeSettings } from './TypeSettings'
 import { stepRules, type AuthoringDraft, type EditableChoice, type EditableRule } from '../authoring'
 import { StepCanvas } from './StepCanvas'
+import { QuestionVideoSettings } from './QuestionVideoSettings'
 import { ChoiceEditor } from './ChoiceEditor'
 import { DistributionPanel } from '../../distribution'
 import { ArrowDown, ArrowLeft, ArrowUp, GitBranch, Copy, Eye, Plus, Save, Send, Trash2 } from 'lucide-react'
@@ -322,11 +323,12 @@ export function FlowBuilderPage() {
             <details><summary className="focus-ring">Extra wording</summary><label className="inspector-field">Why ask this?<textarea aria-label="Why ask this?" disabled={saving} className="text-area" onChange={(event) => setHelperText(event.target.value)} value={helperText} /></label></details>
             {selected.kind === 'question' ? <label className="inspector-field">Question type<select aria-label="Question type" disabled={saving} className="text-input" onChange={(event) => {
               const nextType = event.target.value as FlowStep['questionType']
+              const media = settings.video === undefined ? {} : { video: settings.video }
               setQuestionType(nextType)
               setCanvasAnswer(undefined)
-              setSettingsText('')
+              setSettingsText(Object.keys(media).length ? JSON.stringify(media) : '')
               if (!['single_choice', 'multiple_choice', 'priority', 'dropdown', 'matrix'].includes(nextType ?? '')) setChoices([])
-              if (nextType === 'matrix' && questionType !== 'matrix') { setSettingsText(JSON.stringify({ matrixMode: 'single', matrixRows: [{ id: crypto.randomUUID(), label: 'Row 1' }] })); setChoices([{ newId: crypto.randomUUID(), value: '1', label: 'Disagree' }, { newId: crypto.randomUUID(), value: '2', label: 'Agree' }]) }
+              if (nextType === 'matrix' && questionType !== 'matrix') { setSettingsText(JSON.stringify({ ...media, matrixMode: 'single', matrixRows: [{ id: crypto.randomUUID(), label: 'Row 1' }] })); setChoices([{ newId: crypto.randomUUID(), value: '1', label: 'Disagree' }, { newId: crypto.randomUUID(), value: '2', label: 'Agree' }]) }
               if (nextType !== questionType) { setCanvasAnswer(undefined); setRules([]) }
             }} value={questionType ?? ''}>{questionTypes.map(type => <option value={type} key={type}>{questionTypeLabels[type]}</option>)}</select></label> : null}
             {selected.kind === 'question' && ['single_choice', 'multiple_choice', 'priority', 'dropdown', 'matrix'].includes(questionType ?? '') ? <ChoiceEditor key={selected.id} disabled={saving} choices={choices} onChange={setChoices} /> : null}
@@ -350,6 +352,7 @@ export function FlowBuilderPage() {
             }}/>:null}
             {selected.kind==='completion'?<ConfirmationSettings key={`confirmation-${draftRead}-${selected.id}`} draft={draft} stepId={selected.id} disabled={saving||dirty} onSave={async confirmation=>{setNotice(undefined);const result=await api.saveFormSettings(flowId,{...draft.formSettings!,confirmation},draft.flow.draftVersion);if(result.kind==='conflict')throw new Error('Another operator saved first. Reload the draft.');await load();setNotice({tone:'success',message:'Confirmation settings saved to the draft. Publish to apply it.'})}}/>:null}
             <TypeSettings type={questionType} settings={settings} disabled={saving} onChange={(key, value) => { const next: Record<string, unknown> = { ...settings }; if (value === undefined) delete next[key]; else next[key] = value; setSettingsText(Object.keys(next).length ? JSON.stringify(next, null, 2) : '') }} />
+            {selected.kind === 'question' && !draft.steps.some(step => (step.questionSettings?.screen as { questionIds: string[] } | undefined)?.questionIds.includes(selected.id)) ? <QuestionVideoSettings value={settings.video} disabled={saving} onChange={video => { const next = { ...settings }; if (video === undefined) delete next.video; else next.video = video; setSettingsText(Object.keys(next).length ? JSON.stringify(next, null, 2) : '') }} /> : null}
             {selected.kind === 'question' && questionType === 'rating' ? <RatingSettings settings={settings} disabled={saving} onChangeSettings={next => setSettingsText(JSON.stringify(next, null, 2))} /> : null}
             {selected.kind === 'question' && questionType === 'multiple_choice' ? <div className="ledger-filters">{[['minSelections', 'Minimum selections', 1], ['maxSelections', 'Maximum selections', choices.length]].map(([key, label, fallback]) => <label className="inspector-field" key={key}>{label}<input disabled={saving} className="text-input" type="number" min={0} max={choices.length} value={settings[String(key)] as number ?? fallback} onChange={(event) => updateSetting(String(key), event.target.value)} /></label>)}</div> : null}
             {selected.kind !== 'completion' ? <label className="inspector-field">Default next screen<select className="text-input" disabled={saving} onChange={(event) => setNextStepId(event.target.value || null)} value={nextStepId ?? ''}><option value="">Choose a screen</option>{draft.steps.filter((step) => step.id !== selected.id && step.kind !== 'welcome').map((step) => <option key={step.id} value={step.id}>{nextScreenLabel(step.prompt, phone)}</option>)}</select></label> : null}

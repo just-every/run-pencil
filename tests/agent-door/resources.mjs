@@ -4,6 +4,8 @@ import assert from 'node:assert/strict'
 import { randomBytes, randomUUID, webcrypto } from 'node:crypto'
 import { serveHosted, HOSTED_ORIGIN } from '@runeditrun/rer/internal/cli/hosted-output.mjs'
 import { signJws, seconds, policyEnvelope, autonomousPolicy, accessToken } from '@runeditrun/rer/internal/modules/agent-door/conformance/crypto.mjs'
+import { proveRelayPrivacy } from './relay-privacy.mjs'
+import { proveResourceWriteReadback } from './resource-write-readback.mjs'
 
 // Extend the hosted door check with resource scope and exact native-projection
 // proof. Only this disposable installation's signing ring and sessions are used.
@@ -32,10 +34,6 @@ export async function checkPencilResources(root, declaration) {
     const cookie = admitted.headers.getSetCookie().map(value => value.split(';', 1)[0]).join('; ')
     await admitted.body?.cancel()
     assert.ok(cookie)
-    const settings = await sign('rer-business-settings+jwt', { v: 1, iss: issuer, aud: HOSTED_ORIGIN, sub: installationId, business, email, owner_id: sub, jti: randomUUID(), iat, exp: iat + 300, rev: 1, values: {}, logo: null, team: null })
-    const paired = await post('/api/rer/business-settings', { settings })
-    assert.equal(paired.status, 200)
-    assert.equal((await paired.json()).rev, 1)
     const context = { signer: { privateKey: pair.privateKey, kid, installationId, issuer }, origin: HOSTED_ORIGIN,
       person: { sub, email }, business, consent: randomUUID(), agentId: randomUUID(), seq: 0, revision: 0,
       surface: { specialist: 'form-design', tools: [{ scope: 'pencil.flows.read' }, { scope: 'pencil.flows.write' }] }, resourceScopes: ['evidence:read'] }
@@ -43,6 +41,18 @@ export async function checkPencilResources(root, declaration) {
     const adopted = await post('/api/rer/agent-policy', { policy: policy.policy })
     assert.equal(adopted.status, 200)
     await adopted.body?.cancel()
+    const unknownIat = seconds()
+    const unknown = await post('/api/rer/agent-decisions', { pull: await sign('rer-agent-decisions+jwt', {
+      v: 1, iss: issuer, aud: HOSTED_ORIGIN, sub: installationId, business,
+      after: 0, limit: 200, iat: unknownIat, exp: unknownIat + 60, jti: randomUUID(),
+    }) })
+    assert.equal(unknown.status, 404, 'A policy alone cannot prove durable Business settings are running')
+    assert.equal(await unknown.text(), '')
+    console.log('PROBE pencil-0.2.104: signed relay pull with adopted policy but missing Business settings -> empty 404')
+    const settings = await sign('rer-business-settings+jwt', { v: 1, iss: issuer, aud: HOSTED_ORIGIN, sub: installationId, business, email, owner_id: sub, jti: randomUUID(), iat, exp: iat + 300, rev: 1, values: {}, logo: null, team: null })
+    const paired = await post('/api/rer/business-settings', { settings })
+    assert.equal(paired.status, 200)
+    assert.equal((await paired.json()).rev, 1)
     const token = await accessToken(context)
     let id = 0
     async function mcp(method, params, bearer = token) {
@@ -74,6 +84,7 @@ export async function checkPencilResources(root, declaration) {
     const draft = await native.json()
     assert.deepEqual(JSON.parse(contents[0].text), { ...draft, stepIds: draft.steps.map(step => step.id) }, 'Resource fields must equal the native authorized builder projection')
     assert.equal(draft.flow.title, 'Synthetic resource authority proof')
+    await proveResourceWriteReadback({ mcp, hosted, cookie, draft, uri: links[0].uri })
     const limited = await accessToken(context, { scope: 'pencil.flows.read pencil.flows.write' })
     const refused = await mcp('resources/read', { uri: links[0].uri }, limited)
     assert.equal(refused.response.status, 403)
@@ -86,7 +97,10 @@ export async function checkPencilResources(root, declaration) {
     const unauthorized = await mcp('resources/read', { uri: links[0].uri }, stranger)
     assert.equal(unauthorized.response.status, 401)
     assert.equal(unauthorized.body.result, undefined)
-    console.log('Pencil resources: write link, native projection, untrusted text, evidence scope and sponsor authority PASS')
+    const current = await hosted.fetch(`api/app/flows/${record.id}/draft`, { headers: { Cookie: cookie } })
+    assert.equal(current.status, 200)
+    await proveRelayPrivacy({ hosted, post, sign, cookie, context, mcp, draft: await current.json() })
+    console.log('Pencil resources: write link, updated readback, native projection, untrusted text, evidence scope and sponsor authority PASS')
   } finally { await hosted.close() }
 }
 

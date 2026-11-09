@@ -22,5 +22,5 @@ export function editorPolicy(existing: string, bindings: WorkerBindings) {
   let origin: string | undefined
   try { origin = editorConfiguration(readManagementConfiguration(bindings).editor)?.managementOrigin } catch { /* Invalid config stays disabled. */ }
   const retained = existing.split(';').map(value => value.trim()).filter(value => value && !/^frame-(src|ancestors)\b/.test(value))
-  return [...retained, `frame-ancestors 'self'${origin ? ` ${origin}` : ''}`, `frame-src 'self'${origin ? ` ${origin}` : ''}`].join('; ')
+  return [...retained, `frame-ancestors 'self'${origin ? ` ${origin}` : ''}`, `frame-src 'self' https://www.youtube-nocookie.com https://player.vimeo.com${origin ? ` ${origin}` : ''}`].join('; ')
 }

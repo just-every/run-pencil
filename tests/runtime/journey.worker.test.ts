@@ -1,4 +1,5 @@
 import { matureLoad } from './load-time-fixture'
+import { proveQuestionVideo } from './question-video-proof'
 import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { scheduledNotificationPrestate, assertScheduledNotificationEffects } from './retention-notification-evidence'
 import { eraseResponseAndImportCustody } from '../../src/core/features/importing/erasure'
@@ -160,7 +161,8 @@ contract(['BASE-DATA-002','RESP-013','RESP-019'], 'scheduled retention folds aba
   expect((await req('/__scheduled')).status).toBe(404)
 })
 
-contract(['FLOW-008','FLOW-009','FLOW-017','FLOW-020','RESP-004','RESP-010','LEDG-004'], 'builds, previews, publishes and reports a branching form without preview effects; pins live revisions and exact answers', async () => {
+contract(['FLOW-008','FLOW-009','FLOW-017','FLOW-020','RESP-004','RESP-010','LEDG-004','FIELD-005'], 'builds, previews, publishes and reports a branching form without preview effects; pins live revisions and exact answers', async () => {
+  await proveQuestionVideo(req)
   const f = await fixture('journey-branch')
   const sessionCount = await env.DB.prepare('SELECT count(*) AS n FROM respondent_sessions').first<{ n: number }>()
   const preview = await ok<{ path: unknown[] }>(`${f.path}/draft/preview`, { answers: { [f.route.id]: f.skip.id } })

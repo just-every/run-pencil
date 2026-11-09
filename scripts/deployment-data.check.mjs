@@ -13,6 +13,7 @@ import { exportWithObjects, restoreWithObjects } from './deployment-data-object-
 import { testRestore } from './deployment-data-restore-test.mjs';
 import { recoveryCommand } from './deployment-data-cli.mjs';
 import { providerFetch, providerEnv } from './deployment-data-hosted-test-helpers.mjs';
+import { preDeviceArchiveProof } from './deployment-data-pre-device-proof.mjs';
 
 const stamp = '2026-10-02T00:00:00.000Z';
 function fixture() {
@@ -269,7 +270,7 @@ const archiveCase5 = { name: "a target appearing during private staging is never
 
 
 test('complete archive recovery retains exact data and attachment custody and refuses unsafe sources, archives and destinations without overwrites', async () => {
-  for (const entry of [archiveCase0, archiveCase1, archiveCase2, archiveCase3, archiveCase4, archiveCase5]) {
+  for (const entry of [archiveCase0, archiveCase1, archiveCase2, archiveCase3, archiveCase4, archiveCase5, { name: 'original pre-device controller restores populated history before the trusted current upgrade', run: preDeviceArchiveProof }]) {
     try { await entry.run(); }
     catch (cause) { throw new Error(entry.name, { cause }); }
   }

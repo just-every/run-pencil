@@ -22,6 +22,12 @@ export function pencilPeople(db: D1Database, services: PencilServices) {
     .first<{ owner_id: string | null }>()
   const people: PeopleAdapter = {
     person: nativeOperator,
+    async businessStopped() {
+      const state = await db.prepare('SELECT stopped,owner_id FROM bs_settings WHERE singleton=1')
+        .first<{ stopped: number; owner_id: string | null }>()
+      // Missing state or pairing never grants Business admission.
+      return !(state?.stopped === 0 && typeof state.owner_id === 'string' && state.owner_id.length > 0)
+    },
     async sponsor({ sub }) {
       const binding = await settings()
       if (!binding?.owner_id) return null

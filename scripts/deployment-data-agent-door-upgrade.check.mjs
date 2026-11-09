@@ -56,3 +56,56 @@ test('a populated agent door upgrades without losing history or restoring author
     db.close();
   }
 });
+
+test('relay privacy upgrade removes only provable cross-Business memberships and fences future executions', () => {
+  const db = new DatabaseSync(':memory:');
+  try {
+    for (const name of ['0074_agent_door.sql', '0077_agent_door_refresh.sql']) {
+      db.exec(readFileSync(new URL(`../migrations/core/${name}`, import.meta.url), 'utf8'));
+    }
+    const audit = db.prepare('INSERT INTO agent_door_audit(id,at,agent,classes,row,evidence) VALUES(?,?,?,?,?,?)');
+    const row = (id, fields = {}) => audit.run(id, '2026-11-09T00:00:00Z', 'agent-a', '[]',
+      JSON.stringify({ door: 'mcp', consent: {}, ...fields }), '{"kept":true}');
+    db.exec(`INSERT INTO agent_door_state(id,envelope) VALUES(1,'{"business":"business-a"}')`);
+    row('old-pending');
+    db.exec(`UPDATE agent_door_state SET envelope='{"business":"business-b"}'`);
+    row('leaked-execution', { decision_id: 'old-pending' });
+    row('new-decision');
+    row('unprovable-execution', { decision_id: 'missing-parent' });
+    const before = db.prepare('SELECT * FROM agent_door_audit ORDER BY id').all();
+    const memberships = () => db.prepare('SELECT decision_id,business FROM agent_door_relay ORDER BY decision_id').all()
+      .map(row => ({ ...row }));
+    assert.equal(memberships().find(row => row.decision_id === 'leaked-execution').business, 'business-b');
+    const migration = readFileSync(new URL('../migrations/core/0078_agent_door_relay_privacy.sql', import.meta.url), 'utf8');
+    db.exec(migration);
+    assert.deepEqual(db.prepare('SELECT * FROM agent_door_audit ORDER BY id').all(), before,
+      'Privacy repair must retain every audit byte');
+    assert.deepEqual(memberships(), [
+      { decision_id: 'new-decision', business: 'business-b' },
+      { decision_id: 'old-pending', business: 'business-a' },
+      { decision_id: 'unprovable-execution', business: 'business-b' },
+    ], 'Only a provably cross-Business membership may be removed');
+    db.exec(migration);
+    assert.equal(memberships().length, 3, 'Repeating the forward repair must preserve retained memberships');
+    for (const outcome of ['done', 'refused']) {
+      row(`after-${outcome}`, { decision_id: 'old-pending', outcome });
+      assert.equal(memberships().find(row => row.decision_id === `after-${outcome}`).business, 'business-a');
+    }
+    row('after-missing-parent', { decision_id: 'never-published', outcome: 'refused' });
+    assert.ok(!memberships().some(row => row.decision_id === 'after-missing-parent'),
+      'An execution without historical parent membership must not acquire the current Business');
+    db.prepare('UPDATE agent_door_audit SET row=? WHERE id=?')
+      .run('{"door":"mcp","consent":{},"decision_id":"old-pending","outcome":"done"}', 'after-refused');
+    assert.equal(memberships().find(row => row.decision_id === 'after-refused').business, 'business-a');
+    db.prepare('UPDATE agent_door_audit SET row=? WHERE id=?')
+      .run('{"tombstone":{"at":"2026-11-09T01:00:00Z"}}', 'after-done');
+    assert.equal(memberships().find(row => row.decision_id === 'after-done').business, 'business-a');
+    const table = { name: 'agent_door_relay', columns: ['sequence', 'decision_id', 'business'], rows: [] };
+    assert.ok(Object.values(classify(table)).every(value => value === 'excluded-authorization'));
+    assert.deepEqual(sanitize({ ...table, rows: [[{ type: 'text', value: 'synthetic-private-membership' }]] }).rows, []);
+    assert.equal(db.prepare('PRAGMA integrity_check').get().integrity_check, 'ok');
+    console.log('PROBE pencil-0.2.104: populated 0077 -> 0078 relay migration -> one provable leak removed; all audits retained; done/refused executions stay with original Business');
+  } finally {
+    db.close();
+  }
+});

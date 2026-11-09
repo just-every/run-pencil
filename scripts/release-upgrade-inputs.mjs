@@ -150,6 +150,9 @@ export async function withReleaseUpgradeInputs(root, run) {
 }
 
 async function upgradeFrom(root, previous, release, run) {
+  const pinned = await command(release.repository, 'git', ['rev-parse', '--verify', `${release.ref}^{commit}`])
+  if (pinned.code !== 0 || !/^[a-f0-9]{40}$/.test(pinned.output.trim())) throw new Error('The declared predecessor must resolve to an exact source commit.')
+  release = { ...release, ref: pinned.output.trim() }
   const releasedFiles = new Set(await releasedMigrationFiles(release.repository, release.ref))
   const rewrites = await releasedRewrites(root)
   const migrations = []
@@ -180,7 +183,7 @@ async function upgradeFrom(root, previous, release, run) {
     }
     const fixturePath = join(temporary, 'fixture.sql.input')
     await writeFile(fixturePath, fixtureText)
-    return await run({ tag: release.label, migrationCount: migrations.length, env: {
+    return await run({ tag: release.label, version: previous, predecessor: { repository: release.repository, commit: release.ref }, migrationCount: migrations.length, env: {
       PENCIL_PREVIOUS_MIGRATIONS_DIR: temporary,
       PENCIL_UPGRADE_FIXTURE_PATH: fixturePath,
       PENCIL_UPGRADE_CHECKS_JSON: JSON.stringify(checks),

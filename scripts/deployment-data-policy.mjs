@@ -10,6 +10,7 @@ const retained = {
   agent_door_audit: 'sequence id at agent classes row evidence',
   agent_door_calls: 'agent key digest decision_id created_at state outcome expires_at',
   agent_door_events: 'sequence id uri event',
+  // 0078 repairs relay memberships/triggers; all Business feed custody stays excluded.
   agent_door_relay: 'sequence decision_id business',
   agent_door_retired_refs: 'digest marker',
   agent_door_reviews: 'id state saved marked_by marked_at',
