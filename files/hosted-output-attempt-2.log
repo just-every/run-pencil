@@ -1,0 +1,50 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+(node:17050) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Hydration check: 2 page(s), 2 load(s)
+  /: 1 load(s), 1 section(s)
+  /setup: 1 load(s), 0 section(s)
+file:///home/agent/rer-consolidation/work/sd-pencil-rer-pin-105/run-pencil/node_modules/.pnpm/@runeditrun+rer@0.2.105/node_modules/@runeditrun/rer/cli/hydration/check.mjs:68
+  if (failures.length) throw new RerError('hydration_units_failed', `Page sections did not hydrate as separate units:\n  ${failures.join('\n  ')}\nEvery page section and the root chrome sit in a HydrationUnit, intros carry data-intro under the root's intro guard, and the client entry passes createRecoverableErrorHandler (src/base/hydration/README.md; SEED-COMMAND-CONTRACT.md, Hydration units).`, 1, { failures, hydration: result });
+                             ^
+
+RerError: Page sections did not hydrate as separate units:
+  / plain load: the page did not settle (timeout); check could not serve /rer-theme.css: fetch failed, console error: Failed to load resource: net::ERR_FAILED
+  /setup plain load: the page did not settle (timeout); check could not serve /assets/theme-CY3ylD8_.css: fetch failed, console error: Failed to load resource: net::ERR_FAILED
+Every page section and the root chrome sit in a HydrationUnit, intros carry data-intro under the root's intro guard, and the client entry passes createRecoverableErrorHandler (src/base/hydration/README.md; SEED-COMMAND-CONTRACT.md, Hydration units).
+    at checkHydration (file:///home/agent/rer-consolidation/work/sd-pencil-rer-pin-105/run-pencil/node_modules/.pnpm/@runeditrun+rer@0.2.105/node_modules/@runeditrun/rer/cli/hydration/check.mjs:68:30)
+    at async file:///home/agent/rer-consolidation/work/sd-pencil-rer-pin-105/run-pencil/scripts/verify-hosted-output.mjs:12:1 {
+  code: 'hydration_units_failed',
+  exitCode: 1,
+  failures: [
+    '/ plain load: the page did not settle (timeout); check could not serve /rer-theme.css: fetch failed, console error: Failed to load resource: net::ERR_FAILED',
+    '/setup plain load: the page did not settle (timeout); check could not serve /assets/theme-CY3ylD8_.css: fetch failed, console error: Failed to load resource: net::ERR_FAILED'
+  ],
+  hydration: {
+    served: 'production build as rer deploy hosts it',
+    pages: [
+      {
+        path: '/',
+        sections: [ 'section.door-card (main:0>section:1)' ],
+        intros: [],
+        loads: 1,
+        advisories: [],
+        cases: []
+      },
+      {
+        path: '/setup',
+        sections: [],
+        intros: [],
+        loads: 1,
+        advisories: [],
+        cases: []
+      }
+    ],
+    loads: 2,
+    ms: 142584
+  }
+}
+
+Node.js v22.20.0

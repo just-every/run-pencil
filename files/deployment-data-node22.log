@@ -1,0 +1,46 @@
+TAP version 13
+# PROBE pencil-0.2.104: populated 0077 -> 0078 relay migration -> one provable leak removed; all audits retained; done/refused executions stay with original Business
+# (node:6435) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: legacy held Business principals acquire stop-guard provenance without changing history
+ok 1 - legacy held Business principals acquire stop-guard provenance without changing history
+  ---
+  duration_ms: 18.071604
+  type: 'test'
+  ...
+# Subtest: a populated agent door upgrades without losing history or restoring authority
+ok 2 - a populated agent door upgrades without losing history or restoring authority
+  ---
+  duration_ms: 10.719949
+  type: 'test'
+  ...
+# Subtest: relay privacy upgrade removes only provable cross-Business memberships and fences future executions
+ok 3 - relay privacy upgrade removes only provable cross-Business memberships and fences future executions
+  ---
+  duration_ms: 12.682292
+  type: 'test'
+  ...
+# [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+# (node:6442) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Pencil retention maintenance {
+#   expiredRespondentSessions: 0,
+#   expiredOperatorSessions: 0,
+#   expiredRateWindows: 0,
+#   moreWorkMayRemain: false
+# }
+# Subtest: owner recovery preserves product data and refuses unsafe migration histories across kit and Platform installations
+ok 4 - owner recovery preserves product data and refuses unsafe migration histories across kit and Platform installations
+  ---
+  duration_ms: 507029.448271
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 520140.569711

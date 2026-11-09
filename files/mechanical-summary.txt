@@ -1,0 +1,2 @@
+MECHANICAL lock=node scripts/edition-authoring/cli.mjs lock exit=0; check=node scripts/edition-authoring/cli.mjs check exit=0
+source:check=pnpm source:check exit=0; drift=[]; unrecordedCopies=[]

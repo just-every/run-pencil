@@ -1,0 +1,8 @@
+{
+  "tool": "gitleaks 8.30.1 dir --redact",
+  "genericApiKeyFlags": 32,
+  "uniquePublicArchiveDigests": 7,
+  "publicMigrationDigests": 4,
+  "credentialFindings": 0,
+  "validation": "Every flagged line is a public source SHA256: 28 flags repeat 7 edition archive content-addressing digests verified against tracked origin JSON; 4 are migration hashes verified against origin/main. Exact stdout is retained. No exclusions or allowlists were added. Product publicationScan independently passed complete=true, findings=0, reviewed=0."
+}

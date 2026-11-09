@@ -1,0 +1,3 @@
+(node:16058) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Pencil's additive import migration matches the maintained Base SQL exports.

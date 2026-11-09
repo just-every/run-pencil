@@ -1,0 +1,6 @@
+{
+  "command": "cloud_run timeout 600 npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+  "exit": 0,
+  "hooksReinstalled": true,
+  "log": "Local setup log excluded from packet because setup may print private development credentials."
+}

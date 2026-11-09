@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "observed_at": "2026-11-09T18:28:27.435009+00:00",
+  "command": "source /tmp/rer-cloud-toolchain.sh; export PATH=\"$HOME/.rer/node/node-v22.20.0-linux-x64/bin:$PATH\"; cloud_run timeout 300 node tests/agent-door/legacy-approvals.mjs",
+  "node": "v22.20.0",
+  "exit": 0,
+  "historical_producer": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+  "historical_rer_pin": "0.2.94",
+  "candidate_rer_pin": "0.2.105",
+  "base_revision": "feb76ac8321ff1275168cce10009291721064738",
+  "migrations_applied": [
+    "0077_agent_door_refresh.sql",
+    "0078_agent_door_relay_privacy.sql",
+    "0079_agent_door_legacy_principals.sql"
+  ],
+  "probes": [
+    "PROBE pencil-0.2.105: POST /agents/api/approvals/:id/approve + running historical MCP approval -> executed; native form open",
+    "PROBE pencil-0.2.105: POST /agents/api/approvals/:id/approve + tagged-stopped historical MCP approval -> refused sponsor_unavailable; draft unchanged",
+    "PROBE pencil-0.2.105: POST /agents/api/approvals/:id/approve + untagged-stopped historical MCP approval -> refused sponsor_unavailable; draft unchanged",
+    "PROBE pencil-0.2.105: POST /agents/api/approvals/:id/approve + embedded public embedded invoke approval -> executed; native form open",
+    "PROBE pencil-0.2.105: POST /agents/api/approvals/:id/approve + untagged-missing-state historical MCP approval -> refused sponsor_unavailable; draft unchanged",
+    "PROBE pencil-0.2.105: POST /agents/api/approvals/:id/approve + untagged-unreadable-state historical MCP approval -> refused sponsor_unavailable; draft unchanged"
+  ],
+  "log": {
+    "file": "legacy-approvals.log",
+    "sha256": "6d741ab53e90c75cd92159e7c7199e6d2a9931321200dac705979a7068603f9a"
+  },
+  "negative_control": {
+    "file": "legacy-approvals-before-refresh.log",
+    "exit": 1,
+    "observed": "old copied Base refused tagged stopped approval but executed the untagged historical approval",
+    "sha256": "c830d6b87720058bdb27cdfd8505cf147bf648b642bae6d03c76e1bdbf37bbf1"
+  }
+}

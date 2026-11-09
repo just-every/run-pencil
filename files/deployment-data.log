@@ -1,0 +1,32 @@
+PROBE pencil-0.2.104: populated 0077 -> 0078 relay migration -> one provable leak removed; all audits retained; done/refused executions stay with original Business
+✔ legacy held Business principals acquire stop-guard provenance without changing history (11.318932ms)
+✔ a populated agent door upgrades without losing history or restoring authority (5.740685ms)
+✔ relay privacy upgrade removes only provable cross-Business memberships and fences future executions (5.205123ms)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Pencil retention maintenance {
+  expiredRespondentSessions: 0,
+  expiredOperatorSessions: 0,
+  expiredRateWindows: 3,
+  moreWorkMayRemain: false
+}
+
+Interrupted while running:
+
+⚠ scripts/deployment-data-hosted.check.mjs (scripts/deployment-data-hosted.check.mjs:1:1)
+✖ scripts/deployment-data-hosted.check.mjs (448938.984167ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 1
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 449291.520623
+
+✖ failing tests:
+
+test at scripts/deployment-data-hosted.check.mjs:1:1
+✖ scripts/deployment-data-hosted.check.mjs (448938.984167ms)
+  'Promise resolution is still pending but the event loop has already resolved'

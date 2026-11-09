@@ -1,0 +1,6 @@
+{
+  "historicalProducer": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+  "mainAncestorCheck": "git merge-base --is-ancestor ae8ee162c63e3b970d7ee61eec82614bcf9e2c06 origin/main",
+  "exit": 0,
+  "interpretation": "Historical producer is on Pencil main ancestry, before the 0.2.96 source-tag introduction; immediate pre-0.2.104 code already tags principals."
+}

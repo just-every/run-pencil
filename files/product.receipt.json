@@ -1,0 +1,16 @@
+{
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-rer-pin-105",
+  "head": "859d55e95c00c585f5cbc0247791adb404638dfb",
+  "tree": "867fec9bded68df2fc42dc2774968757600730e1",
+  "base": "f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d",
+  "shallow": false,
+  "cloneCommand": "git clone --filter=blob:none https://github.com/just-every/run-pencil.git <task>/run-pencil",
+  "author": "Run Edit Run fleet <fleet@runeditrun.com>",
+  "committer": "Run Edit Run fleet <fleet@runeditrun.com>",
+  "message": "Adopt rer 0.2.105 and guard legacy Business approvals",
+  "pushState": "pushed",
+  "pr": null,
+  "landingPerformed": false,
+  "remoteHeadVerified": "859d55e95c00c585f5cbc0247791adb404638dfb"
+}

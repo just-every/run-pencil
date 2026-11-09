@@ -1,0 +1,14 @@
+{
+  "name": "publication",
+  "command": [
+    "timeout",
+    "-k",
+    "10",
+    "600",
+    "pnpm",
+    "verify:publication"
+  ],
+  "exit": 0,
+  "seconds": 123.06,
+  "finished": "2026-11-09T18:47:32.553902+00:00"
+}

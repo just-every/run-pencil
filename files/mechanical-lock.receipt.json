@@ -1,0 +1,13 @@
+{
+  "name": "mechanical-lock",
+  "command": [
+    "timeout",
+    "300",
+    "node",
+    "scripts/edition-authoring/cli.mjs",
+    "lock"
+  ],
+  "exit": 0,
+  "seconds": 1.16,
+  "finished": "2026-11-09T18:28:33.070930+00:00"
+}

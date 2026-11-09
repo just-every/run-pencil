@@ -1,0 +1,77 @@
+{
+  "repository": "just-every/run-pencil",
+  "head": "859d55e95c00c585f5cbc0247791adb404638dfb",
+  "budget": 10,
+  "watchLimit": 6,
+  "calls": [
+    {
+      "number": 1,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-pencil/actions/runs?head_sha=859d55e95c00c585f5cbc0247791adb404638dfb&per_page=100",
+        "--jq",
+        "[.workflow_runs[] | {id,name,path,status,conclusion,head_sha,html_url}]"
+      ],
+      "epoch": 1794250142.2452998,
+      "at": "2026-11-09T18:49:03.727442+00:00",
+      "exit": 0
+    },
+    {
+      "number": 2,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-pencil/actions/runs/42677374273",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ],
+      "epoch": 1794250442.280231,
+      "at": "2026-11-09T18:54:03.411134+00:00",
+      "exit": 0
+    },
+    {
+      "number": 3,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-pencil/actions/runs/42677374273",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ],
+      "epoch": 1794250742.2971568,
+      "at": "2026-11-09T18:59:03.882900+00:00",
+      "exit": 0
+    },
+    {
+      "number": 4,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-pencil/actions/runs/42677374273",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ],
+      "epoch": 1794251042.302756,
+      "at": "2026-11-09T19:04:03.443655+00:00",
+      "exit": 1,
+      "error": "gh: Bad credentials (HTTP 401)\n"
+    },
+    {
+      "number": 5,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-pencil",
+        "--jq",
+        "{full_name,default_branch}"
+      ],
+      "epoch": 1794251184.041019,
+      "at": "2026-11-09T19:06:24.940887+00:00",
+      "exit": 1,
+      "error": "gh: Bad credentials (HTTP 401)\n"
+    }
+  ],
+  "state": "credential_recovery",
+  "run_id": 42677374273
+}

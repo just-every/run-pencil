@@ -1,0 +1,14 @@
+{
+  "name": "source-check-after-commit",
+  "command": [
+    "timeout",
+    "-k",
+    "10",
+    "300",
+    "pnpm",
+    "source:check"
+  ],
+  "exit": 0,
+  "seconds": 2.33,
+  "finished": "2026-11-09T18:46:44.431852+00:00"
+}

@@ -1,0 +1,29 @@
+{
+  "base": "f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d",
+  "stagedTree": "867fec9bded68df2fc42dc2774968757600730e1",
+  "files": [
+    "base-copies.json",
+    "package.json",
+    "pnpm-lock.yaml",
+    "sources.lock.json",
+    "src/base/agent-door/README.md",
+    "src/base/agent-door/approval-execution.ts",
+    "src/base/agent-door/principal.ts",
+    "tests/agent-door/legacy-approvals.mjs",
+    "tests/agent-door/resources.mjs"
+  ],
+  "noContractChanges": true,
+  "noGeneratedViewChanges": true,
+  "noMigrationChanges": true,
+  "clauseCountsBefore": [
+    142,
+    61,
+    49
+  ],
+  "clauseCountsAfter": [
+    142,
+    61,
+    49
+  ],
+  "clauseStatusChanges": []
+}

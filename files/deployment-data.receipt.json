@@ -1,0 +1,15 @@
+{
+  "name": "deployment-data",
+  "command": [
+    "timeout",
+    "600",
+    "node",
+    "--test",
+    "--test-concurrency=1",
+    "scripts/deployment-data-agent-door-upgrade.check.mjs",
+    "scripts/deployment-data-hosted.check.mjs"
+  ],
+  "exit": 1,
+  "seconds": 449.88,
+  "finished": "2026-11-09T18:11:37.812078+00:00"
+}

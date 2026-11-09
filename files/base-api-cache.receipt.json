@@ -1,0 +1,7 @@
+{
+  "acquisition": "gh api repos/runeditrun/base/tarball/feb76ac8321ff1275168cce10009291721064738",
+  "exit": 0,
+  "archiveSha256": "18efeae705c508df2b182b19d78afe10d3b91ef87db81cb96675d60fe7952c2a",
+  "regularFilesCached": 4694,
+  "validation": "Each cached file is keyed by exact Git blob SHA-1; unmodified refresh-base API reader validates blob identity, length and digests against the authenticated commit tree. Cache contains only bytes obtained through gh api; no Base clone."
+}

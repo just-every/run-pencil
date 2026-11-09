@@ -1,0 +1,17 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+(node:16527) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Pencil legacy approvals: unchanged historical native worker compiled
+Pencil legacy approvals: historical native Miniflare D1 migrated
+Pencil legacy approvals: native historical owner admitted
+Pencil legacy approvals: historical public MCP saved five untagged Business approvals
+Pencil legacy approvals: same D1 upgraded to candidate native worker
+PROBE pencil-0.2.105: POST /agents/api/approvals/:id/approve + running historical MCP approval -> executed; native form open
+PROBE pencil-0.2.105: POST /agents/api/approvals/:id/approve + tagged-stopped historical MCP approval -> refused sponsor_unavailable; draft unchanged
+PROBE pencil-0.2.105: POST /agents/api/approvals/:id/approve + untagged-stopped historical MCP approval -> refused sponsor_unavailable; draft unchanged
+PROBE pencil-0.2.105: POST /agents/api/approvals/:id/approve + embedded public embedded invoke approval -> executed; native form open
+PROBE pencil-0.2.105: POST /agents/api/approvals/:id/approve + untagged-missing-state historical MCP approval -> refused sponsor_unavailable; draft unchanged
+PROBE pencil-0.2.105: POST /agents/api/approvals/:id/approve + untagged-unreadable-state historical MCP approval -> refused sponsor_unavailable; draft unchanged
+Pencil legacy approvals: historical producer ae8ee162c63e3b970d7ee61eec82614bcf9e2c06; actual 0077–0079 upgrade; tagged and untagged stopped Business refusal, missing and unreadable state refusal, running Business and embedded controls PASS

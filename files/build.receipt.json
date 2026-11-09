@@ -1,0 +1,14 @@
+{
+  "name": "build",
+  "command": [
+    "timeout",
+    "900",
+    "npx",
+    "-y",
+    "@runeditrun/rer",
+    "build"
+  ],
+  "exit": 0,
+  "seconds": 187.72,
+  "finished": "2026-11-09T18:28:51.824674+00:00"
+}

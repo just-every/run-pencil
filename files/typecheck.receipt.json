@@ -1,0 +1,12 @@
+{
+  "name": "typecheck",
+  "command": [
+    "timeout",
+    "600",
+    "pnpm",
+    "typecheck"
+  ],
+  "exit": 0,
+  "seconds": 141.12,
+  "finished": "2026-11-09T18:28:11.130847+00:00"
+}

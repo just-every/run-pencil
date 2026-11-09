@@ -1,0 +1,15 @@
+{
+  "name": "deployment-data-node22",
+  "command": [
+    "timeout",
+    "1200",
+    "node",
+    "--test",
+    "--test-concurrency=1",
+    "scripts/deployment-data-agent-door-upgrade.check.mjs",
+    "scripts/deployment-data-hosted.check.mjs"
+  ],
+  "exit": 0,
+  "exitEvidence": "/proc/6428/stat zombie exit_code",
+  "finished": "2026-11-09T18:20:24.077036+00:00"
+}

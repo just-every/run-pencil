@@ -1,0 +1,28 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+PROBE pencil-0.2.105: POST /agents/api/approvals/:id/approve + running historical MCP approval -> executed; native form open
+PROBE pencil-0.2.105: POST /agents/api/approvals/:id/approve + tagged-stopped historical MCP approval -> refused sponsor_unavailable; draft unchanged
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: untagged-stopped approval state
++ actual - expected
+
++ 'executed'
+- 'refused'
+
+    at approve (file:///home/agent/rer-consolidation/work/sd-pencil-rer-pin-105/run-pencil/tests/agent-door/legacy-approvals.mjs:190:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async checkLegacyApprovals (file:///home/agent/rer-consolidation/work/sd-pencil-rer-pin-105/run-pencil/tests/agent-door/legacy-approvals.mjs:210:5)
+    at async file:///home/agent/rer-consolidation/work/sd-pencil-rer-pin-105/run-pencil/tests/agent-door/legacy-approvals.mjs:222:90 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 'executed',
+  expected: 'refused',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.19.0

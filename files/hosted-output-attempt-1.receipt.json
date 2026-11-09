@@ -1,0 +1,14 @@
+{
+  "name": "hosted-output",
+  "command": [
+    "timeout",
+    "900",
+    "node",
+    "--require",
+    "/tmp/cloud-browser.cjs",
+    "scripts/verify-hosted-output.mjs"
+  ],
+  "exit": 1,
+  "seconds": 45.46,
+  "finished": "2026-11-09T18:30:17.067735+00:00"
+}

@@ -1,0 +1,12 @@
+{
+  "name": "migrations",
+  "command": [
+    "timeout",
+    "300",
+    "pnpm",
+    "verify:migrations"
+  ],
+  "exit": 0,
+  "seconds": 61.36,
+  "finished": "2026-11-09T18:22:47.833908+00:00"
+}

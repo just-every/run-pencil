@@ -1,0 +1,18 @@
+{
+  "name": "hydration-diagnostic",
+  "command": [
+    "timeout",
+    "300",
+    "node",
+    "--require",
+    "/tmp/cloud-browser.cjs",
+    "--require",
+    "/tmp/diag-fetch.cjs",
+    "node_modules/@runeditrun/rer/cli/hydration/check.mjs",
+    ".",
+    "--details"
+  ],
+  "exit": 0,
+  "seconds": 35.89,
+  "finished": "2026-11-09T18:37:00.296228+00:00"
+}

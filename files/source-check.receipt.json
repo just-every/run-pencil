@@ -1,0 +1,12 @@
+{
+  "name": "source-check",
+  "command": [
+    "timeout",
+    "600",
+    "pnpm",
+    "source:check"
+  ],
+  "exit": 0,
+  "seconds": 1.64,
+  "finished": "2026-11-09T18:28:35.644671+00:00"
+}

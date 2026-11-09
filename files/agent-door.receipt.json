@@ -1,0 +1,14 @@
+{
+  "name": "agent-door",
+  "command": [
+    "timeout",
+    "900",
+    "node",
+    "--input-type=module",
+    "-e",
+    "import {resolveProject} from \"@runeditrun/rer/internal/cli/project.mjs\"; import {checkAgentDoor} from \"@runeditrun/rer/internal/cli/agent-door.mjs\"; import {checkPencilResources} from \"./tests/agent-door/resources.mjs\"; const p=await resolveProject(process.cwd()); const d=p.adapter.deployDeclaration ?? p.adapter.deploy?.declaration; await checkAgentDoor(p.root,{declaration:d,setupManifest:p.setupManifest,owner:p.adapter.hooks?.owner}); await checkPencilResources(p.root,d);"
+  ],
+  "exit": -9,
+  "seconds": 581.58,
+  "finished": "2026-11-09T18:46:39.509394+00:00"
+}

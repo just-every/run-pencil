@@ -1,0 +1,13 @@
+{
+  "rer": "0.2.105",
+  "base": "feb76ac8321ff1275168cce10009291721064738",
+  "counts": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49,
+    "total": 252
+  },
+  "migrationsUnchanged": true,
+  "migrationCount": 81,
+  "migration0079": "e02d300e4934ddcbd25019ad9a8e7ef1c9f1cc71390b149d5c685ee41fe9a7d9"
+}

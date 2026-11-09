@@ -1,0 +1,13 @@
+{
+  "name": "first-party",
+  "command": [
+    "timeout",
+    "600",
+    "bash",
+    "-c",
+    "pnpm verify:manifest && pnpm verify:boundaries && pnpm verify:cli"
+  ],
+  "exit": 0,
+  "seconds": 12.64,
+  "finished": "2026-11-09T18:26:18.970718+00:00"
+}

@@ -1,0 +1,16 @@
+{
+  "kind": "negative-regression-control",
+  "producerCommit": "ae8ee162c63e3b970d7ee61eec82614bcf9e2c06",
+  "producerRer": "0.2.94",
+  "candidateCopiedBaseRer": "0.2.104 (before refresh)",
+  "command": "source /tmp/rer-cloud-toolchain.sh; cloud_run timeout 300 node tests/agent-door/legacy-approvals.mjs",
+  "node": "24.19.0 (initial instrumented VM Node; final candidate uses pinned 22.20.0)",
+  "exit": 1,
+  "log": "legacy-approvals-before-refresh.log",
+  "observations": {
+    "runningBusinessApproval": "executed; native form open",
+    "taggedStoppedBusinessApproval": "refused sponsor_unavailable; draft unchanged",
+    "untaggedStoppedBusinessApproval": "executed (expected refusal; reproduces legacy hole)"
+  },
+  "claim": "The regression test fails on the previous copied Base implementation, before rer 0.2.105 refresh. This is baseline evidence, not a candidate pass."
+}

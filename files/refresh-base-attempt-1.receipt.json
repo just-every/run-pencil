@@ -1,0 +1,8 @@
+{
+  "command": "pnpm exec rer refresh-base --ref feb76ac8321ff1275168cce10009291721064738 --from-api",
+  "exit": 4,
+  "exitEvidence": "Initial execution tool completion returned exit_code=4.",
+  "httpStatus": "unknown (not supplied by the refresh command)",
+  "filesRefreshed": false,
+  "recovery": "launcher refresh, fleet Git reinstall, 15 second backoff, immutable API cache"
+}

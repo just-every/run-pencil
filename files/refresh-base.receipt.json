@@ -1,0 +1,19 @@
+{
+  "name": "refresh-base",
+  "command": [
+    "timeout",
+    "1800",
+    "python3",
+    "/tmp/fleet-command.py",
+    "pnpm",
+    "exec",
+    "rer",
+    "refresh-base",
+    "--ref",
+    "feb76ac8321ff1275168cce10009291721064738",
+    "--from-api"
+  ],
+  "exit": 0,
+  "seconds": 73.31,
+  "finished": "2026-11-09T18:25:09.859122+00:00"
+}

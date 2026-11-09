@@ -1,0 +1,13 @@
+{
+  "name": "mechanical-check",
+  "command": [
+    "timeout",
+    "300",
+    "node",
+    "scripts/edition-authoring/cli.mjs",
+    "check"
+  ],
+  "exit": 0,
+  "seconds": 0.62,
+  "finished": "2026-11-09T18:28:33.861538+00:00"
+}

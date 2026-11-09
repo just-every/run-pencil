@@ -1,0 +1,16 @@
+{
+  "name": "asset-transport-diagnostic",
+  "command": [
+    "timeout",
+    "180",
+    "node",
+    "--require",
+    "/tmp/diag-fetch.cjs",
+    "--input-type=module",
+    "-e",
+    "import {serveHosted} from \"@runeditrun/rer/internal/cli/hosted-output.mjs\"; const h=await serveHosted(process.cwd(),{declaration:\"deploy.json\"}); try { for (const headers of [{},{host:\"rer-hosted-check.invalid\"},{host:\"rer-hosted-check.invalid\",accept:\"text/css,*/*;q=0.1\",\"accept-encoding\":\"gzip, deflate, br, zstd\",\"sec-fetch-mode\":\"no-cors\",\"sec-fetch-dest\":\"style\",referer:\"https://rer-hosted-check.invalid/\"}]) { try {const r=await h.fetch(\"rer-theme.css\",{headers}); console.log(JSON.stringify({headerNames:Object.keys(headers),status:r.status,bytes:(await r.arrayBuffer()).byteLength}));} catch(e){console.error(e.message,e.cause?.code,e.cause?.message); process.exitCode=1;} } } finally {await h.close();}"
+  ],
+  "exit": 137,
+  "seconds": 262.68,
+  "finished": "2026-11-09T18:42:14.338771+00:00"
+}
