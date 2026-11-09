@@ -2,7 +2,7 @@
 
 Pencil now refuses a legacy untagged Business approval after its Business detaches, or when the durable stop state is missing or unreadable, with `sponsor_unavailable` and an unchanged native draft. Running Business approvals and the public embedded invocation control still execute. This is a schema-neutral adoption of rer 0.2.105; migration 0079 remains valid, idempotent and byte-identical.
 
-Product repository: just-every/run-pencil. Branch: `cloud/sd-pencil-rer-pin-105`. Head: `859d55e95c00c585f5cbc0247791adb404638dfb`. Tree: `867fec9bded68df2fc42dc2774968757600730e1`. Base: `f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d`. Push custody: pushed. PR: none required or created. CI state: credential_recovery. Landing: not performed; reserved to the fleet Mac.
+Product repository: just-every/run-pencil. Branch: `cloud/sd-pencil-rer-pin-105`. Head: `859d55e95c00c585f5cbc0247791adb404638dfb`. Tree: `867fec9bded68df2fc42dc2774968757600730e1`. Base: `f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d`. Push custody: pushed. PR: none required or created. CI state: success. Landing: not performed; reserved to the fleet Mac.
 
 ## Plan and result
 
@@ -66,16 +66,27 @@ pnpm source:check passed before and after commit; drift=[], unrecordedCopies=[].
 
 An initial immutable API blob read failed without an HTTP status. A subsequent cache-wrapper replacement interrupted the next refresh before any copies were written. The final refresh passed after the prescribed refresh/backoff recovery and a fixed cache wrapper. The original Node24 data-check attempt was cancelled; the complete Node22 retry passed. The first hosted attempt selected the VM global Playwright and a missing bundled browser; the launcher was normalized to the checkout Playwright and system Chromium. A following stylesheet-forwarding fetch failure was transient: the maintained hydration diagnostic passed unchanged, then the entire original hosted script passed. Optional standalone transport/conformance diagnostics were bounded or cancelled after the complete required script passed; their raw non-secret logs and receipts are retained, not represented as product gate successes. Private setup output is excluded because it can contain local development credentials. The setup exit0 receipt is included.
 
+The CI observation path briefly returned HTTP 401. Only the fleet decrypted bundle was refreshed and re-read; bounded authorization probes recovered, and the next run poll at the required 300-second interval returned completed/success on the exact candidate SHA. Seven total CI-budget calls were used, including recovery probes. No alternate credential was sought.
+
 ## CI and custody
 
 Verify candidate run ID: 42677374273. Exact head: 859d55e95c00c585f5cbc0247791adb404638dfb.
 
-Actions watcher calls: 5; polling intervals are at least 300 seconds, with one watcher and a ten-call CI budget. Full public metadata and timestamps are in ci-watch.receipt.json. Product branch custody and report-only evidence publication are separate. Evidence conveys no acceptance, READY or landing decision.
+```json
+{
+  "conclusion": "success",
+  "head_sha": "859d55e95c00c585f5cbc0247791adb404638dfb",
+  "html_url": "https://github.com/just-every/run-pencil/actions/runs/42677374273",
+  "status": "completed"
+}
+```
+
+Actions watcher calls: 7; polling intervals are at least 300 seconds, with one watcher and a ten-call CI budget. Full public metadata and timestamps are in ci-watch.receipt.json. Product branch custody and report-only evidence publication are separate. Evidence conveys no acceptance, READY or landing decision.
 
 Publication scanner: status=PASS, complete=True, findings=0, reviewed=0. No scanner exclusions or allowlists were added.
 
 Packet content inspection: 32 generic-pattern flags were verified as public source archive or migration SHA256 digests; no credential values were selected. See packet-content-review.receipt.json and the actual redacted scan output. This is separate from the product publication scan above.
 
-Blockers: CI completion or result remains pending; see terminal status and CI receipt.
+Blockers: none.
 
 The complete selected non-secret packet is published only to refs/heads/evidence/sd-pencil-rer-pin-105. Product checkout/dependencies are removed after successful report transfer; terminal confirmation follows that cleanup.

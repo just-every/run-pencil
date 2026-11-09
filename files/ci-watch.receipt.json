@@ -70,8 +70,40 @@
       "at": "2026-11-09T19:06:24.940887+00:00",
       "exit": 1,
       "error": "gh: Bad credentials (HTTP 401)\n"
+    },
+    {
+      "number": 6,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-pencil",
+        "--jq",
+        "{full_name,default_branch}"
+      ],
+      "epoch": 1794251326.8917713,
+      "at": "2026-11-09T19:08:47.839474+00:00",
+      "exit": 0
+    },
+    {
+      "number": 7,
+      "command": [
+        "gh",
+        "api",
+        "repos/just-every/run-pencil/actions/runs/42677374273",
+        "--jq",
+        "{status,conclusion,head_sha,html_url}"
+      ],
+      "epoch": 1794251342.3087175,
+      "at": "2026-11-09T19:09:03.013523+00:00",
+      "exit": 0
     }
   ],
-  "state": "credential_recovery",
-  "run_id": 42677374273
+  "state": "success",
+  "run_id": 42677374273,
+  "result": {
+    "conclusion": "success",
+    "head_sha": "859d55e95c00c585f5cbc0247791adb404638dfb",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42677374273",
+    "status": "completed"
+  }
 }

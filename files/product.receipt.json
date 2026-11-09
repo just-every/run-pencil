@@ -12,5 +12,8 @@
   "pushState": "pushed",
   "pr": null,
   "landingPerformed": false,
-  "remoteHeadVerified": "859d55e95c00c585f5cbc0247791adb404638dfb"
+  "remoteHeadVerified": "859d55e95c00c585f5cbc0247791adb404638dfb",
+  "ciState": "completed/success",
+  "ciRun": 42677374273,
+  "exactShaVerified": "859d55e95c00c585f5cbc0247791adb404638dfb"
 }
