@@ -1,0 +1,10 @@
+# sd-pencil-c-f53 execution plan
+
+1. Resolve the predecessor declared by RELEASE.json using the existing release upgrade provenance path. Pin its full commit before reading original recovery source and migrations. Refuse to synthesize a controller from current migrations.
+2. Extend the existing archive registration with one focused pre-device recovery helper. Use the compatible populated predecessor fixture and independently assert released and quarantined historical responses, distinct answers, their revision and stable-question relationships, and the original hash ledger.
+3. Export using the original source controller, prove the current importer still refuses this inventory without creating a target, restore into a new database with the original controller, and prove identical archive bytes and checksum plus retained rows and relationships.
+4. Use the installed current deployment kit's migration runner, retaining original applied ledger entries. Prove all historical response device classes stay null, credentials stay excluded, and repeat upgrades apply nothing. Re-export using the current controller.
+5. Run the touched archive registration, release migration checks, typecheck and first-party contract checks. Generate contract views, check them and restore main's generated files. Regenerate the edition source lock last; leave all Status cells and migration bytes unchanged.
+6. Publish each substantial product commit only to cloud/sd-pencil-c-f53 after identity and trailer review. Discover exact-SHA branch Verify through REST, observing the five-minute poll interval. Return the complete public-safe report packet on evidence/sd-pencil-c-f53 separately from product custody.
+
+Scope: original-controller pre-device archive proof only. No UI, production behavior, new registration, acceptance rewrite, release activation or status promotion. The held remainder keeps RSLT-004 PARTIAL. Landing, complete publication scan, main equality and Run site remain the maintained lander's responsibility.

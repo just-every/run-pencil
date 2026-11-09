@@ -1,0 +1,16 @@
+{
+  "head": "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85",
+  "changed_files": [
+    "scripts/deployment-data-pre-device-proof.mjs",
+    "scripts/deployment-data.check.mjs",
+    "scripts/release-upgrade-inputs.mjs",
+    "sources.lock.json"
+  ],
+  "contract_status_rows_changed": 0,
+  "generated_views_committed": false,
+  "migration_bytes_changed": false,
+  "new_test_registrations": 0,
+  "removed_assertions": 0,
+  "email_shaped_strings_added": 0,
+  "product_push_succeeded": true
+}

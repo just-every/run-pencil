@@ -1,0 +1,6 @@
+{
+  "head": "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85",
+  "command": "pnpm verify:migrations",
+  "exit": 0,
+  "output": "migrations.log"
+}

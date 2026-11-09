@@ -1,0 +1,14 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Pre-device archive recovery: {"release":"0.6.0","sourceCommit":"4ccc2364080cd822c6a12662c1e191683a8fbe6b","originalMigrations":51,"archiveSha256":"b9f5337d8c68a429149606a1bb5655c2309c7bda33d0d24fa081c5f82b1f591b","exactReexport":true,"responses":2,"answers":2,"retainedLinks":2,"currentMigrations":78,"historicalDeviceClasses":[null,null],"currentImportRefused":true}
+✔ complete archive recovery retains exact data and attachment custody and refuses unsafe sources, archives and destinations without overwrites (36373.794411ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 37338.891711
+rer toolchain: node v24.19.0 pnpm 10.12.4 (pins 22.20.0 / 10.12.4)

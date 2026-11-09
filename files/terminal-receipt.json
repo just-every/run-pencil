@@ -1,0 +1,24 @@
+{
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f53",
+  "head": "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85",
+  "status": "PUSHED",
+  "verify_run": 42544571644,
+  "verify_event": "push",
+  "verify_status": "in_progress",
+  "verify_conclusion": null,
+  "github_calls": 4,
+  "clause": "RSLT-004",
+  "clause_before": "PARTIAL",
+  "clause_after": "PARTIAL",
+  "counts_before": {
+    "DONE": 142,
+    "PARTIAL": 61,
+    "MISSING": 49
+  },
+  "counts_after": {
+    "DONE": 142,
+    "PARTIAL": 61,
+    "MISSING": 49
+  }
+}

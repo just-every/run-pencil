@@ -1,0 +1,38 @@
+[
+  {
+    "name": "archive",
+    "head": "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85",
+    "command": "node --test scripts/deployment-data.check.mjs",
+    "exit": 0,
+    "started_at": "2026-11-09T01:15:37.296004+00:00",
+    "finished_at": "2026-11-09T01:16:15.514962+00:00",
+    "output": "archive.log"
+  },
+  {
+    "name": "typecheck",
+    "head": "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85",
+    "command": "pnpm typecheck",
+    "exit": 0,
+    "started_at": "2026-11-09T01:16:15.515154+00:00",
+    "finished_at": "2026-11-09T01:16:33.278970+00:00",
+    "output": "typecheck.log"
+  },
+  {
+    "name": "first-party",
+    "head": "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85",
+    "command": "npx -y @runeditrun/rer check --profile first-party",
+    "exit": 0,
+    "started_at": "2026-11-09T01:16:33.279174+00:00",
+    "finished_at": "2026-11-09T01:16:35.419862+00:00",
+    "output": "first-party.log"
+  },
+  {
+    "name": "lock",
+    "head": "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85",
+    "command": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0,
+    "started_at": "2026-11-09T01:16:35.420075+00:00",
+    "finished_at": "2026-11-09T01:16:36.463990+00:00",
+    "output": "lock.log"
+  }
+]

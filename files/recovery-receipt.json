@@ -1,0 +1,18 @@
+{
+  "release": "0.6.0",
+  "sourceCommit": "4ccc2364080cd822c6a12662c1e191683a8fbe6b",
+  "originalMigrations": 51,
+  "archiveSha256": "b9f5337d8c68a429149606a1bb5655c2309c7bda33d0d24fa081c5f82b1f591b",
+  "exactReexport": true,
+  "responses": 2,
+  "answers": 2,
+  "retainedLinks": 2,
+  "currentMigrations": 78,
+  "historicalDeviceClasses": [
+    null,
+    null
+  ],
+  "currentImportRefused": true,
+  "candidate": "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85",
+  "registered_test": "complete archive recovery retains exact data and attachment custody and refuses unsafe sources, archives and destinations without overwrites"
+}
