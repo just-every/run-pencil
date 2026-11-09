@@ -1,0 +1,63 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f57",
+  "head": "6bb7927ecf707cec630874ddec40a4faa77825f5",
+  "node": "v22.20.0",
+  "checks": [
+    {
+      "name": "resource-journey",
+      "command": [
+        "timeout",
+        "300",
+        "node",
+        "tests/agent-door/resources.mjs"
+      ],
+      "head": "6bb7927ecf707cec630874ddec40a4faa77825f5",
+      "exit": 0,
+      "started": "2026-11-09T05:34:13.732021+00:00",
+      "ended": "2026-11-09T05:34:21.956965+00:00",
+      "log": "resource-journey.log"
+    },
+    {
+      "name": "typecheck",
+      "command": [
+        "pnpm",
+        "typecheck"
+      ],
+      "head": "6bb7927ecf707cec630874ddec40a4faa77825f5",
+      "exit": 0,
+      "started": "2026-11-09T05:34:21.957138+00:00",
+      "ended": "2026-11-09T05:34:56.963024+00:00",
+      "log": "typecheck.log"
+    },
+    {
+      "name": "first-party",
+      "command": [
+        "pnpm",
+        "exec",
+        "rer",
+        "check",
+        "--profile",
+        "first-party"
+      ],
+      "head": "6bb7927ecf707cec630874ddec40a4faa77825f5",
+      "exit": 0,
+      "started": "2026-11-09T05:34:56.963628+00:00",
+      "ended": "2026-11-09T05:34:58.728776+00:00",
+      "log": "first-party.log"
+    },
+    {
+      "name": "source-check",
+      "command": [
+        "pnpm",
+        "source:check"
+      ],
+      "head": "6bb7927ecf707cec630874ddec40a4faa77825f5",
+      "exit": 0,
+      "started": "2026-11-09T05:34:58.728869+00:00",
+      "ended": "2026-11-09T05:35:00.052618+00:00",
+      "log": "source-check.log"
+    }
+  ]
+}

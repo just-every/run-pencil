@@ -1,0 +1,64 @@
+{
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f57",
+  "head": "6bb7927ecf707cec630874ddec40a4faa77825f5",
+  "base": "66c12b3b8fc144c701562b979fbae2945ffed7af",
+  "mechanical": {
+    "views": {
+      "command": "node scripts/contract-docs.mjs write and check BASE-AGENT-001 through BASE-AGENT-013",
+      "writeExit": 0,
+      "checkExit": 0,
+      "restored": [
+        "ACCEPTANCE.md",
+        "docs/CLAIMS.md"
+      ]
+    },
+    "lock": {
+      "command": "node scripts/edition-authoring/cli.mjs lock; pnpm source:check",
+      "exit": 0
+    },
+    "ledger": {
+      "command": null,
+      "reason": "No migration changes",
+      "exit": 0
+    }
+  },
+  "status": {
+    "clause": "BASE-AGENT-003",
+    "before": "partial",
+    "after": "partial",
+    "countsBefore": {
+      "done": 142,
+      "partial": 61,
+      "missing": 49
+    },
+    "countsAfter": {
+      "done": 142,
+      "partial": 61,
+      "missing": 49
+    }
+  },
+  "registrations": {
+    "added": 0,
+    "removed": 0
+  },
+  "productPush": "succeeded",
+  "ci": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "6bb7927ecf707cec630874ddec40a4faa77825f5",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42568038500",
+      "id": 42568038500,
+      "name": "Verify candidate",
+      "status": "in_progress"
+    }
+  ],
+  "publicationScan": {
+    "commit": "6bb7927ecf707cec630874ddec40a4faa77825f5",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "reason": "Delegated to maintained Mac lander as instructed; cloud did not run scanner"
+  }
+}
