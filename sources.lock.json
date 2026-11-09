@@ -8540,8 +8540,12 @@
       "sha256": "d597c708c8af5b052f565f09736b5a0130cae24ec48486e0dddc55d0da742c84",
       "executable": false
     },
+    "tests/agent-door/resource-write-readback.mjs": {
+      "sha256": "191f5ecec9d013bf639211848ea988b0c1b116e65ba7cb0d6824f53b92d12820",
+      "executable": false
+    },
     "tests/agent-door/resources.mjs": {
-      "sha256": "a3e03a1cd77bddda4570680708276a50211a83ba13a9e73098aac36981a50549",
+      "sha256": "8d6f8255fb4b087bca3823944f3f3ae21d74976a05cb6d8f63c4104d22a0c4d1",
       "executable": false
     },
     "tests/contract/data-release.contract.test.ts": {

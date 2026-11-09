@@ -4,6 +4,7 @@ import assert from 'node:assert/strict'
 import { randomBytes, randomUUID, webcrypto } from 'node:crypto'
 import { serveHosted, HOSTED_ORIGIN } from '@runeditrun/rer/internal/cli/hosted-output.mjs'
 import { signJws, seconds, policyEnvelope, autonomousPolicy, accessToken } from '@runeditrun/rer/internal/modules/agent-door/conformance/crypto.mjs'
+import { proveResourceWriteReadback } from './resource-write-readback.mjs'
 
 // Extend the hosted door check with resource scope and exact native-projection
 // proof. Only this disposable installation's signing ring and sessions are used.
@@ -74,6 +75,7 @@ export async function checkPencilResources(root, declaration) {
     const draft = await native.json()
     assert.deepEqual(JSON.parse(contents[0].text), { ...draft, stepIds: draft.steps.map(step => step.id) }, 'Resource fields must equal the native authorized builder projection')
     assert.equal(draft.flow.title, 'Synthetic resource authority proof')
+    await proveResourceWriteReadback({ mcp, hosted, cookie, draft, uri: links[0].uri })
     const limited = await accessToken(context, { scope: 'pencil.flows.read pencil.flows.write' })
     const refused = await mcp('resources/read', { uri: links[0].uri }, limited)
     assert.equal(refused.response.status, 403)
@@ -86,7 +88,7 @@ export async function checkPencilResources(root, declaration) {
     const unauthorized = await mcp('resources/read', { uri: links[0].uri }, stranger)
     assert.equal(unauthorized.response.status, 401)
     assert.equal(unauthorized.body.result, undefined)
-    console.log('Pencil resources: write link, native projection, untrusted text, evidence scope and sponsor authority PASS')
+    console.log('Pencil resources: write link, updated readback, native projection, untrusted text, evidence scope and sponsor authority PASS')
   } finally { await hosted.close() }
 }
 
