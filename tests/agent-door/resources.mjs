@@ -6,6 +6,7 @@ import { serveHosted, HOSTED_ORIGIN } from '@runeditrun/rer/internal/cli/hosted-
 import { signJws, seconds, policyEnvelope, autonomousPolicy, accessToken } from '@runeditrun/rer/internal/modules/agent-door/conformance/crypto.mjs'
 import { proveRelayPrivacy } from './relay-privacy.mjs'
 import { proveResourceWriteReadback } from './resource-write-readback.mjs'
+import { checkLegacyApprovals } from './legacy-approvals.mjs'
 
 // Extend the hosted door check with resource scope and exact native-projection
 // proof. Only this disposable installation's signing ring and sessions are used.
@@ -102,6 +103,7 @@ export async function checkPencilResources(root, declaration) {
     await proveRelayPrivacy({ hosted, post, sign, cookie, context, mcp, draft: await current.json() })
     console.log('Pencil resources: write link, updated readback, native projection, untrusted text, evidence scope and sponsor authority PASS')
   } finally { await hosted.close() }
+  await checkLegacyApprovals(root)
 }
 
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) await checkPencilResources(process.cwd(), 'deploy.json')
