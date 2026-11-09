@@ -1,0 +1,118 @@
+{
+  "files": [
+    {
+      "blob": "aef5b1858f28e4c2824af0416be5f85c40b50688",
+      "bytes": 5586,
+      "path": "ADOPTION-DIFF.txt",
+      "sha256": "da183a0058f3ffcf48755e1849e4c52b9f493c2bb078a810e68f02af59daa81c"
+    },
+    {
+      "blob": "c9653b367736e9f03f9470bfa89f865e878a6cd0",
+      "bytes": 6719,
+      "path": "BASE-COMPARISON.json",
+      "sha256": "410a19aeeb90e1f2b6f88229510a74cbe0f1aa8898fab4b43e29f796873ed638"
+    },
+    {
+      "blob": "4b95bf48526ae04711523f51b4560234460c78da",
+      "bytes": 518,
+      "path": "BUNDLE-RECEIPT.json",
+      "sha256": "d3c398aa81fcc441730baeb518987fa2da02e6a54b8728bea5536ee81628edd0"
+    },
+    {
+      "blob": "fc2c1e4f8c68143be6ee3538c3108daccccaad71",
+      "bytes": 239,
+      "path": "CI-DISCOVERY.json",
+      "sha256": "182ba0067e15a592024931d907b69e6a539f60b5d61386b6787348a11b98e820"
+    },
+    {
+      "blob": "f25b17b82650fa11af2cbbb679c91b6f1c0c95e2",
+      "bytes": 1933,
+      "path": "FIX.patch",
+      "sha256": "babc133e3eec6547058d40f24485ccfe850ed1bb0f0a773e360c912d4bbd0e58"
+    },
+    {
+      "blob": "945e5057adb6655eab1d4f2cbf38dd67d63b15fe",
+      "bytes": 1191,
+      "path": "HOSTED-FAILURES.json",
+      "sha256": "3782df28bbeebbb5f5214ecff167449557c9aeafdda66b051b9c92b86a14f3f1"
+    },
+    {
+      "blob": "0cc8a986f8ed938a86e70e6627b1c7dc877c37c9",
+      "bytes": 340,
+      "path": "IDENTITY.txt",
+      "sha256": "73f5cb4854f149c83e76c61149c58c24c2e1fafedbc995d010a7d2dabe7c0bbe"
+    },
+    {
+      "blob": "cae11c6217f5900b05c6c1de59c801f0b9876188",
+      "bytes": 870,
+      "path": "MAIN-RUNS.json",
+      "sha256": "bfce045372c192a634d436a694be0a3ca1dae94254d7026ea844f6bfab591b9a"
+    },
+    {
+      "blob": "680e0cb315901b67e55e5f4139f97418c1d3907b",
+      "bytes": 536,
+      "path": "MIGRATION-LEDGERS.txt",
+      "sha256": "49fd7a8ac6ccbdb9c35041a5acf269d61aee35effd93227e32949e845f177330"
+    },
+    {
+      "blob": "a1fd332a1c9167f412fad00588048db86bc8aca0",
+      "bytes": 1781,
+      "path": "PLAN.md",
+      "sha256": "b3d4c7de5ce05c6adf026e395233c3a73e9d57d8a82aa66965b5b9924ea7883f"
+    },
+    {
+      "blob": "572a8db28a5055150e47fc4f8eaa57df18331ffd",
+      "bytes": 403,
+      "path": "PRODUCT-PUSH.txt",
+      "sha256": "283676b091e5715972ceadf4a61c2ce9c0a4e66e7c5265587a11d03e8492ec05"
+    },
+    {
+      "blob": "12c0e224854cec7a689557aa09a3659866d6445b",
+      "bytes": 7324,
+      "path": "PUBLICATION.json",
+      "sha256": "252f8a885e4f8a512d5444d224344816e78e315558d85408f5dca6f7a7030aac"
+    },
+    {
+      "blob": "fb031f140057ae1334843ec74a83fa807689f05a",
+      "bytes": 7846,
+      "path": "RECEIPT.json",
+      "sha256": "cb9d6d445882803c99fdfed854ba7f388c8ee8514bc707035d374bdb302e1e05"
+    },
+    {
+      "blob": "65b3e1e8ed890461be60b79629d4e666feb18c66",
+      "bytes": 111859,
+      "path": "RELAY-AFTER.txt",
+      "sha256": "8b73e087ada9ff6c2850b11999a7af162f434a71a430871d669ad9ec0104d694"
+    },
+    {
+      "blob": "541f5f8c6872abd06bf89e14989c54ac21c268da",
+      "bytes": 93414,
+      "path": "RELAY-BEFORE.txt",
+      "sha256": "6154b75280f5558f3a46f9c288ee34a09198931a244d23cbf30ce388e6a80886"
+    },
+    {
+      "blob": "1d8fff985d902bc9196be154cbfcb438efed4edd",
+      "bytes": 8464,
+      "path": "REPORT.md",
+      "sha256": "0247655148129367388ce2a5722d43bdc9ee4ca20d1fb4dec9af950e0427c2c0"
+    },
+    {
+      "blob": "2b82dcc720159c8648287449c3d9154db0d91af8",
+      "bytes": 463,
+      "path": "playwright-cloud.config.mts",
+      "sha256": "d4cd22e6e80b29ef268e62a1305271c784fd5508a373c9a982e546c0be92c14e"
+    },
+    {
+      "blob": "f348f46631ba56269807e6720fb6cfdd13b8f6af",
+      "bytes": 763,
+      "path": "relay-check.mjs",
+      "sha256": "6b30001053bd81293b6c210f95de57e02b605a8e7e3790f08ad421fb87aff04e"
+    }
+  ],
+  "product_branch": "cloud/sd-pencil-rer-pin-103-fix1",
+  "product_head": "3c51bdf7dd44363933242447e1536a421f6e9e14",
+  "ref": "refs/heads/evidence/sd-pencil-rer-pin-103-fix1",
+  "repository": "just-every/run-pencil",
+  "schema": 1,
+  "tag": "sd-pencil-rer-pin-103-fix1"
+}

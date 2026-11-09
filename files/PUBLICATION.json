@@ -1,0 +1,267 @@
+{
+  "schema": "rer.publish-check/v3",
+  "status": "PASS",
+  "complete": true,
+  "source": {
+    "commit": "60214d9b5faa86d89f85a6276456a8b6bd6fb01c",
+    "tree": "4a9ada2f06b9ced95409f6ae5713f78acb9e7b6a"
+  },
+  "scanner": {
+    "name": "gitleaks",
+    "version": "8.30.1"
+  },
+  "history": {
+    "scope": "all-local-refs-and-selected-commit",
+    "commits": 1,
+    "trees": 1,
+    "blobs": 2246,
+    "commitMessages": 1,
+    "tagMessages": 0,
+    "hydration": {
+      "missingBefore": 0,
+      "missingAfter": 0,
+      "fetches": 0,
+      "seconds": 0.009968
+    },
+    "preExistingCommits": [],
+    "newlyPublicCommits": [
+      "60214d9b5faa86d89f85a6276456a8b6bd6fb01c"
+    ]
+  },
+  "findings": [],
+  "preExisting": [],
+  "warnings": [],
+  "fixtures": [],
+  "reviewed": [],
+  "info": [
+    {
+      "rule": "provenance.declared-source",
+      "path": ".edition/sources/08fc4af5b265e0708c4081603461740885bb41c0d5bf70c8700eb8603397feed.json",
+      "commit": "60214d9b5faa86d89f85a6276456a8b6bd6fb01c",
+      "commits": [
+        "60214d9b5faa86d89f85a6276456a8b6bd6fb01c"
+      ],
+      "scope": "release-tree",
+      "scopes": [
+        "release-tree"
+      ],
+      "blob": "23235b7abcc3f2d61a228ef709904d58b1c48276",
+      "severity": "INFO"
+    },
+    {
+      "rule": "provenance.declared-source",
+      "path": ".edition/sources/384c0550b679f7a06610ec579f13a143541205330d67b6a1c0a0ba33a7fa5448.json",
+      "commit": "60214d9b5faa86d89f85a6276456a8b6bd6fb01c",
+      "commits": [
+        "60214d9b5faa86d89f85a6276456a8b6bd6fb01c"
+      ],
+      "scope": "release-tree",
+      "scopes": [
+        "release-tree"
+      ],
+      "blob": "9b6369076b1508f81251f147a0525c05e5b3e4fd",
+      "severity": "INFO"
+    },
+    {
+      "rule": "provenance.declared-source",
+      "path": ".edition/sources/47157ecd0c3ab750fafe2a1356d729ad223ac3453c4dcc8591a71cbf4e103a25.json",
+      "commit": "60214d9b5faa86d89f85a6276456a8b6bd6fb01c",
+      "commits": [
+        "60214d9b5faa86d89f85a6276456a8b6bd6fb01c"
+      ],
+      "scope": "release-tree",
+      "scopes": [
+        "release-tree"
+      ],
+      "blob": "60878e3b53e52a8481c1f84fa13825a00372b5b4",
+      "severity": "INFO"
+    },
+    {
+      "rule": "provenance.declared-source",
+      "path": ".edition/sources/95fc29b3d9dd34fb7b60c2b5c85bdf221f75108959c0e078f69d46ac40841dcf.json",
+      "commit": "60214d9b5faa86d89f85a6276456a8b6bd6fb01c",
+      "commits": [
+        "60214d9b5faa86d89f85a6276456a8b6bd6fb01c"
+      ],
+      "scope": "release-tree",
+      "scopes": [
+        "release-tree"
+      ],
+      "blob": "1b1286966e8a3da762df7f01e61e4f4f12c91110",
+      "severity": "INFO"
+    },
+    {
+      "rule": "provenance.declared-source",
+      "path": ".edition/sources/9b2f7ad4784314ce87f62df62acf04e911c765fbd4c5142d06c2318a9dfc4dfe.json",
+      "commit": "60214d9b5faa86d89f85a6276456a8b6bd6fb01c",
+      "commits": [
+        "60214d9b5faa86d89f85a6276456a8b6bd6fb01c"
+      ],
+      "scope": "release-tree",
+      "scopes": [
+        "release-tree"
+      ],
+      "blob": "c5f9b8c6823c89f1f9ce5bc70a9f113e5debffcc",
+      "severity": "INFO"
+    },
+    {
+      "rule": "provenance.declared-source",
+      "path": ".edition/sources/b65885f39be01a95b447a668af5aca7e164ad71de6ca0489e455442267278503.json",
+      "commit": "60214d9b5faa86d89f85a6276456a8b6bd6fb01c",
+      "commits": [
+        "60214d9b5faa86d89f85a6276456a8b6bd6fb01c"
+      ],
+      "scope": "release-tree",
+      "scopes": [
+        "release-tree"
+      ],
+      "blob": "fc13cabb327e08aadb9bd64bd42333a317b0755b",
+      "severity": "INFO"
+    },
+    {
+      "rule": "provenance.declared-source",
+      "path": ".edition/sources/d50bae99cf39066140bdd091e9e02917cefe570bfa019e24bd48a7d3f2d27c59.json",
+      "commit": "60214d9b5faa86d89f85a6276456a8b6bd6fb01c",
+      "commits": [
+        "60214d9b5faa86d89f85a6276456a8b6bd6fb01c"
+      ],
+      "scope": "release-tree",
+      "scopes": [
+        "release-tree"
+      ],
+      "blob": "52b1a39d3fd8a5466dfdea6bee67e6cf76edc33d",
+      "severity": "INFO"
+    },
+    {
+      "rule": "provenance.declared-source",
+      "path": ".edition/sources/e7d262c7c44a89e8439a7ffdf154faf4215befd90babd77bc12d0534639ee06d.json",
+      "commit": "60214d9b5faa86d89f85a6276456a8b6bd6fb01c",
+      "commits": [
+        "60214d9b5faa86d89f85a6276456a8b6bd6fb01c"
+      ],
+      "scope": "release-tree",
+      "scopes": [
+        "release-tree"
+      ],
+      "blob": "9fdf1fc60094930499f917a2ba2bb5fe35cc5d6f",
+      "severity": "INFO"
+    },
+    {
+      "rule": "provenance.declared-source",
+      "path": "edition.json",
+      "commit": "60214d9b5faa86d89f85a6276456a8b6bd6fb01c",
+      "commits": [
+        "60214d9b5faa86d89f85a6276456a8b6bd6fb01c"
+      ],
+      "scope": "release-tree",
+      "scopes": [
+        "release-tree"
+      ],
+      "blob": "86b8b29fb7af5dbfd29afa7a61ab7de5854079a0",
+      "severity": "INFO"
+    },
+    {
+      "rule": "provenance.declared-source",
+      "path": "sources.lock.json",
+      "commit": "60214d9b5faa86d89f85a6276456a8b6bd6fb01c",
+      "commits": [
+        "60214d9b5faa86d89f85a6276456a8b6bd6fb01c"
+      ],
+      "scope": "release-tree",
+      "scopes": [
+        "release-tree"
+      ],
+      "blob": "de40548af87f66d4c224b4547ce9a4890778d95a",
+      "severity": "INFO"
+    }
+  ],
+  "thirdPartyNotices": [
+    {
+      "rule": "notice.third-party",
+      "path": "scripts/edition-authoring/vendor/yaml/LICENSE",
+      "commit": "60214d9b5faa86d89f85a6276456a8b6bd6fb01c",
+      "commits": [
+        "60214d9b5faa86d89f85a6276456a8b6bd6fb01c"
+      ],
+      "scope": "release-tree",
+      "scopes": [
+        "release-tree",
+        "working-tree"
+      ],
+      "blob": "e060aaa1fe0f933e699c8feb3fdcc51c2999bf0c",
+      "package": "yaml",
+      "version": "2.9.1"
+    }
+  ],
+  "guarantees": {
+    "historyScanned": true,
+    "visualRecognition": false,
+    "environmentChecked": false
+  },
+  "timings": {
+    "totalSeconds": 23.588952,
+    "phases": {
+      "history.prepare": {
+        "calls": 1,
+        "seconds": 0.027305
+      },
+      "history.context": {
+        "calls": 1,
+        "seconds": 0.013593
+      },
+      "history.text": {
+        "calls": 2267,
+        "seconds": 8.889586
+      },
+      "working-tree.context": {
+        "calls": 1,
+        "seconds": 0.006357
+      },
+      "working-tree.text": {
+        "calls": 2267,
+        "seconds": 8.397731
+      },
+      "identities.prepare": {
+        "calls": 2,
+        "seconds": 0.224234
+      },
+      "gitleaks.git": {
+        "calls": 1,
+        "seconds": 1.47609
+      },
+      "checksums.prepare": {
+        "calls": 2,
+        "seconds": 0.000225
+      },
+      "gitleaks.dir": {
+        "calls": 1,
+        "seconds": 1.28643
+      },
+      "messages.text": {
+        "calls": 1,
+        "seconds": 0.001044
+      },
+      "gitleaks.messages": {
+        "calls": 1,
+        "seconds": 0.41733
+      },
+      "github.references": {
+        "calls": 1,
+        "seconds": 1.104963
+      }
+    }
+  },
+  "implementation": {
+    "version": "0.2.103",
+    "sha256": "c5f2d788f2f08764cd018e049b507c26f5ac01f651e2e8696398d89a5a886ffb",
+    "python": "3.12.14"
+  },
+  "publicBase": null,
+  "invocation": {
+    "caller": "release",
+    "scans": 1,
+    "stagedAnnotation": false,
+    "version": "0.2.103",
+    "seconds": 23.940084940000002
+  }
+}

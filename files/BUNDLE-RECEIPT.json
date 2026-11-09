@@ -1,0 +1,9 @@
+{
+  "path": "/home/agent/rer-consolidation/work/sd-pencil-rer-pin-103-fix1/product-3c51bdf7dd44363933242447e1536a421f6e9e14.bundle",
+  "sha256": "9b2520f22ff69a3bf60930285c4f3a9a8d849b14b26e9bf585d91b7d362d7d47",
+  "bytes": 119140,
+  "head": "3c51bdf7dd44363933242447e1536a421f6e9e14",
+  "verified": true,
+  "requires_commit": "191c091413fa30a975150e462f1cc9c4ea869be1",
+  "purpose": "Additional local recovery copy of already pushed product history; not READY or landing proof. Excluded from evidence publication."
+}

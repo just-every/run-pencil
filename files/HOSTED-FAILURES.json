@@ -1,0 +1,17 @@
+[
+  {
+    "source": "hosted-relay",
+    "run_id": 42542006704,
+    "selected_actual_log_lines": [
+      "2026-11-09T00:58:25.5664631Z FAIL BASE-AGENT-009.relay.route: Signed decision pull must return 200, got 404."
+    ]
+  },
+  {
+    "source": "hosted-wordpress",
+    "run_id": 42542006704,
+    "selected_actual_log_lines": [
+      "2026-11-09T00:58:42.3473796Z Browser failure: [DIST-013,DIST-002,DIST-009,BASE-PUBLIC-001,BASE-PUBLIC-002] copied async script mounts an opaque allowed-host iframe, resizes, emits only permitted events and rejects malicious messages at /home/runner/work/run-pencil/run-pencil/tests/e2e/wordpress-embed.ts:89:29, /home/runner/work/run-pencil/run-pencil/tests/e2e/script-embed.spec.ts:197:5 (desktop, attempt 1, failed)",
+      "2026-11-09T00:58:42.3479253Z Browser failure: [DIST-013,DIST-002,DIST-009,BASE-PUBLIC-001,BASE-PUBLIC-002] copied async script mounts an opaque allowed-host iframe, resizes, emits only permitted events and rejects malicious messages at /home/runner/work/run-pencil/run-pencil/tests/e2e/wordpress-embed.ts:89:29, /home/runner/work/run-pencil/run-pencil/tests/e2e/script-embed.spec.ts:197:5 (desktop, attempt 2, failed)"
+    ]
+  }
+]

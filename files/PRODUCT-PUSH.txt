@@ -1,0 +1,7 @@
+fleet Git: removed 0 credential-bearing GitHub URL rewrite sections
+PUSH attempt=1/5 command=git push --porcelain origin HEAD:refs/heads/cloud/sd-pencil-rer-pin-103-fix1
+fleet Git: removed 0 credential-bearing GitHub URL rewrite sections
+To https://github.com/just-every/run-pencil.git
+*	HEAD:refs/heads/cloud/sd-pencil-rer-pin-103-fix1	[new branch]
+Done
+PUSH_OK branch=cloud/sd-pencil-rer-pin-103-fix1

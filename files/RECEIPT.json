@@ -1,0 +1,196 @@
+{
+  "tag": "sd-pencil-rer-pin-103-fix1",
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-rer-pin-103-fix1",
+  "head": "3c51bdf7dd44363933242447e1536a421f6e9e14",
+  "adoption_head": "13a9f98aa0ecbb4e0a989a09f69a66196960eeb8",
+  "main_head": "191c091413fa30a975150e462f1cc9c4ea869be1",
+  "full_history": true,
+  "checks": [
+    {
+      "name": "setup",
+      "command": "cloud_run timeout 600 npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+      "exit": 0,
+      "result": "Prepared local owner and applied ordered migrations including 0077."
+    },
+    {
+      "name": "build-before",
+      "command": "cloud_run timeout 360 npx -y @runeditrun/rer build --non-interactive",
+      "exit": 0
+    },
+    {
+      "name": "relay-before",
+      "command": "cloud_run timeout 300 node /tmp/pencil-relay-check.mjs",
+      "exit": 1,
+      "evidence": [
+        "FAIL BASE-AGENT-009.relay.route: Signed decision pull must return 200, got 404.",
+        "Agent door conformance: 2371/2372 points passed.",
+        "{\"code\":\"agent_door_failed\",\"message\":\"Agent door conformance failed: BASE-AGENT-009.relay.route.\",\"failures\":[\"BASE-AGENT-009.relay.route\"]}"
+      ]
+    },
+    {
+      "name": "build-after",
+      "command": "cloud_run timeout 360 npx -y @runeditrun/rer build --non-interactive",
+      "exit": 0
+    },
+    {
+      "name": "relay-after",
+      "command": "cloud_run timeout 300 node /tmp/pencil-relay-check.mjs",
+      "exit": 0,
+      "evidence": [
+        "PASS BASE-AGENT-009.relay.route",
+        "PASS BASE-AGENT-009.relay.page.0",
+        "PASS BASE-AGENT-009.relay.page.1",
+        "PASS BASE-AGENT-009.relay.unattributed",
+        "PASS BASE-AGENT-009.relay.count",
+        "PASS BASE-AGENT-009.relay.replay",
+        "PASS BASE-AGENT-009.relay.cursor",
+        "PASS BASE-AGENT-009.relay.foreign",
+        "Agent door conformance: 2656/2656 points passed.",
+        "{\"ok\":true,\"total\":2656,\"passed\":2656,\"failed\":[]}"
+      ]
+    },
+    {
+      "name": "typecheck",
+      "command": "timeout 180 pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "name": "released-d1-upgrade",
+      "command": "timeout 180 pnpm verify:migrations",
+      "exit": 0,
+      "evidence": [
+        "Workers D1 upgrade from refs/tags/v0.6.0: 51 released migrations; 3 passed, 0 failed, 0 pending."
+      ]
+    },
+    {
+      "name": "populated-agent-upgrade",
+      "command": "timeout 120 node --test scripts/deployment-data-agent-door-upgrade.check.mjs scripts/deployment-data-ledger.check.mjs",
+      "exit": 0,
+      "note": "Only deployment-data-agent-door-upgrade.check.mjs exists and ran. The intended ledger proof was run separately below.",
+      "evidence": [
+        "\u2714 a populated agent door upgrades without losing history or restoring authority (4.705262ms)",
+        "\u2139 tests 1",
+        "\u2139 suites 0",
+        "\u2139 pass 1",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0",
+        "\u2139 duration_ms 85.372358"
+      ]
+    },
+    {
+      "name": "ledger-name-filter-attempt",
+      "command": "timeout 180 node --test --test-name-pattern='migration ledgers' scripts/deployment-data-hosted.check.mjs",
+      "exit": 0,
+      "note": "Filter did not match the registered owner-recovery test. Not counted as behavioral ledger proof; corrected by unfiltered file run below."
+    },
+    {
+      "name": "migration-ledger-recovery",
+      "command": "timeout 240 node --test scripts/deployment-data-hosted.check.mjs",
+      "exit": 0,
+      "evidence": [
+        "\u2714 owner recovery preserves product data and refuses unsafe migration histories across kit and Platform installations (108975.4801ms)",
+        "\u2139 tests 1",
+        "\u2139 suites 0",
+        "\u2139 pass 1",
+        "\u2139 fail 0",
+        "\u2139 cancelled 0",
+        "\u2139 skipped 0",
+        "\u2139 todo 0",
+        "\u2139 duration_ms 110026.043754"
+      ]
+    },
+    {
+      "name": "desktop-wordpress-first-attempt",
+      "command": "cloud_run timeout -k 30 600 pnpm exec playwright test --config /tmp/pencil-cloud.config.mts tests/e2e/script-embed.spec.ts --project desktop --workers=1 --reporter=line",
+      "exit": 1,
+      "result": "Docker cli UID 33 could not read the 0700/0600 bind-mounted plugin. Failed at wp plugin activate pencil before replay assertion. A separate container confirmed permission denied. Changed only local fixture/plugin directory modes to 0755 and regular files to 0644; Git records no source/mode changes."
+    },
+    {
+      "name": "desktop-wordpress-after-local-permission-repair",
+      "command": "cloud_run timeout -k 30 600 pnpm exec playwright test --config /tmp/pencil-cloud.config.mts tests/e2e/script-embed.spec.ts --project desktop --workers=1 --reporter=line",
+      "exit": 0,
+      "result": "One complete desktop journey passed at 1440 pixels using /usr/bin/chromium --no-sandbox and real Docker Compose WordPress. Includes unmodified replay 201/same ID, stored-answer, no duplicate, allowed/disallowed hosts and privacy assertions.",
+      "evidence": [
+        "  1 passed (1.3m)"
+      ]
+    },
+    {
+      "name": "source-lock",
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "name": "source-check",
+      "command": "pnpm source:check",
+      "exit": 0
+    },
+    {
+      "name": "publication",
+      "command": "PENCIL_PUBLICATION_REPORT=/tmp/pencil-publication-report.json timeout 180 pnpm verify:publication",
+      "exit": 0,
+      "evidence": {
+        "status": "PASS",
+        "complete": true,
+        "findings": 0,
+        "reviewed": 0
+      }
+    },
+    {
+      "name": "source-check-after-commit",
+      "command": "pnpm source:check",
+      "exit": 0,
+      "head": "3c51bdf7dd44363933242447e1536a421f6e9e14"
+    },
+    {
+      "name": "packet-secret-scan",
+      "command": "gitleaks dir <explicit packet> --no-banner --redact --report-format json",
+      "exit": 0,
+      "result": "No leaks found in explicit public-safe packet selection."
+    }
+  ],
+  "clauses_before": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49,
+    "total": 252
+  },
+  "clauses_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49,
+    "total": 252
+  },
+  "clause_status_changes": [],
+  "product_push": {
+    "status": "pushed",
+    "attempt": 1,
+    "remote_branch": "3c51bdf7dd44363933242447e1536a421f6e9e14"
+  },
+  "github_calls_used": 6,
+  "ci": {
+    "run_id": 42544820495,
+    "head_sha": "3c51bdf7dd44363933242447e1536a421f6e9e14",
+    "status": "in_progress",
+    "conclusion": null,
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42544820495"
+  },
+  "unchanged_source_hashes": {
+    "CONTRACT.md": "dbd7b800b4377018e0e69b5c450112de0a76caa2214e8882505b907f651f19e7",
+    "ACCEPTANCE.md": "9ff7580af2018cdfea37ecf961e6d718f9ecd68c6a331b05eba5e6440f264f8d",
+    "docs/CLAIMS.md": "9980408330f1817f4d403f3f249907aac76f1eb4d33cdd48b24ff96a0411c5bc",
+    "tests/e2e/script-embed.spec.ts": "a93a6feafc8396cf0905eaaeab5788263b1199944e456068600f5aa7ee4e5210",
+    "tests/e2e/wordpress-embed.ts": "15fe66828ecc4cf6ecd40041dd4adf61c9e88fcb8de0c8355b092194c1bc6c53",
+    "tests/helpers/wordpress.ts": "45d9186010832acfc3e5900527911e4d963e231d9224221f78a70d55d2ae777c",
+    "tests/fixtures/wordpress/compose.yml": "8f7e2aa139db2db9b1b9d26fed09265fd39c9c760415998cf084fa837a1cf34b",
+    "integrations/wordpress/pencil.php": "60e48d882f612965ae93e551d82842abe8deb7b2ca302be821480a284e225cb4"
+  },
+  "cleanup": {
+    "docker_fixture_containers": "none remain",
+    "product_clone": "pending final evidence publication",
+    "test_browsers": "closed by Playwright",
+    "started_server_processes": "stopped by existing graceful shutdown and cloud subreaper"
+  }
+}
