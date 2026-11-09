@@ -70,15 +70,32 @@ export async function questionVideoJourney(page: Page, project: string) {
       await page.getByText('Saved.', { exact: true }).waitFor({ state: 'visible' })
     }
     await addStep(rail, 'Add question')
-    await editor.getByLabel('Prompt', { exact: true }).fill('What did you notice?')
-    await editor.getByLabel('Required response', { exact: true }).check()
-    await (await videoField()).fill(youtubeUrl)
-    await save()
     const builderUrl = page.url()
     const flowId = /flows\/([^/]+)\//.exec(builderUrl)![1]
     const base = `/api/app/flows/${flowId}`
+    await editor.getByLabel('Prompt', { exact: true }).fill('What did you notice?')
+    await editor.getByLabel('Required response', { exact: true }).check()
+    if (assertBehaviour) {
+      const before = await readDraft(base)
+      for (const url of ['https://unapproved.example/watch?v=pencilvid01', 'http://www.youtube.com/watch?v=pencilvid01', 'https://www.youtube.com/watch?v=short']) {
+        await (await videoField()).fill(url)
+        await expect(editor.getByLabel('Video URL', { exact: true })).toHaveAttribute('aria-invalid', 'true')
+        const refusal = page.waitForResponse(response => response.url().endsWith(`${base}/draft`) && response.request().method() === 'PUT')
+        await editor.getByRole('button', { name: 'Save', exact: true }).click()
+        expect((await refusal).status()).toBe(400)
+        await expect(page.getByRole('alert').filter({ hasText: 'Question video settings are invalid.' })).toBeVisible()
+        expect(await readDraft(base)).toEqual(before)
+      }
+    }
+    await (await videoField()).fill(youtubeUrl)
+    await save()
+    await editor.getByLabel('Question type', { exact: true }).selectOption('long_text')
+    await save()
     const question = (await readDraft(base)).steps.find(step => step.kind === 'question')!
-    if (assertBehaviour) expect(question.questionSettings?.video).toEqual(youtube)
+    if (assertBehaviour) {
+      expect(question.questionType).toBe('long_text')
+      expect(question.questionSettings?.video).toEqual(youtube)
+    }
     await addStep(rail, 'Add completion screen')
     await editor.getByLabel('Prompt', { exact: true }).fill('Your observation is recorded.')
     await save()

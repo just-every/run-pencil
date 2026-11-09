@@ -323,11 +323,12 @@ export function FlowBuilderPage() {
             <details><summary className="focus-ring">Extra wording</summary><label className="inspector-field">Why ask this?<textarea aria-label="Why ask this?" disabled={saving} className="text-area" onChange={(event) => setHelperText(event.target.value)} value={helperText} /></label></details>
             {selected.kind === 'question' ? <label className="inspector-field">Question type<select aria-label="Question type" disabled={saving} className="text-input" onChange={(event) => {
               const nextType = event.target.value as FlowStep['questionType']
+              const media = settings.video === undefined ? {} : { video: settings.video }
               setQuestionType(nextType)
               setCanvasAnswer(undefined)
-              setSettingsText('')
+              setSettingsText(Object.keys(media).length ? JSON.stringify(media) : '')
               if (!['single_choice', 'multiple_choice', 'priority', 'dropdown', 'matrix'].includes(nextType ?? '')) setChoices([])
-              if (nextType === 'matrix' && questionType !== 'matrix') { setSettingsText(JSON.stringify({ matrixMode: 'single', matrixRows: [{ id: crypto.randomUUID(), label: 'Row 1' }] })); setChoices([{ newId: crypto.randomUUID(), value: '1', label: 'Disagree' }, { newId: crypto.randomUUID(), value: '2', label: 'Agree' }]) }
+              if (nextType === 'matrix' && questionType !== 'matrix') { setSettingsText(JSON.stringify({ ...media, matrixMode: 'single', matrixRows: [{ id: crypto.randomUUID(), label: 'Row 1' }] })); setChoices([{ newId: crypto.randomUUID(), value: '1', label: 'Disagree' }, { newId: crypto.randomUUID(), value: '2', label: 'Agree' }]) }
               if (nextType !== questionType) { setCanvasAnswer(undefined); setRules([]) }
             }} value={questionType ?? ''}>{questionTypes.map(type => <option value={type} key={type}>{questionTypeLabels[type]}</option>)}</select></label> : null}
             {selected.kind === 'question' && ['single_choice', 'multiple_choice', 'priority', 'dropdown', 'matrix'].includes(questionType ?? '') ? <ChoiceEditor key={selected.id} disabled={saving} choices={choices} onChange={setChoices} /> : null}
