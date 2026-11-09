@@ -1,0 +1,1 @@
+browser-payment-cwd exit=1

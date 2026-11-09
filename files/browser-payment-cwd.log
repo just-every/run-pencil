@@ -1,0 +1,107 @@
+[WebServer] (node:2934) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:2945) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:2956) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+[WebServer] (node:2956) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+[WebServer] [plugin tanstack-start-core::server-fn:client] /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/src/core/app/loaders.ts:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [plugin tanstack-start-core::server-fn:client] /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/src/core/app/loaders.ts:105:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [plugin tanstack-start-core::server-fn:client] /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/src/core/app/loaders.ts:126:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [plugin tanstack-start-core::server-fn:client] /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/src/core/features/results/ui/sharedReportLoader.ts:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [plugin builtin:vite-reporter] 
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+[WebServer] [PLUGIN_TIMINGS] JavaScript callbacks ran for 21.9s of this 24.5s build (90%).
+[WebServer] The slowest callbacks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+[WebServer]   - plugin pencil:docs-site load (11%, 2.7s, 2539 calls)
+[WebServer]   - plugin pencil-backup-manifest load (8%, 2.1s, 2523 calls)
+[WebServer]   - plugin tanstack-router:code-splitter:compile-virtual-file transform (5%, 1.3s, 31 calls)
+[WebServer]   - plugin tanstack-router:code-splitter:compile-reference-file transform (5%, 1.2s, 34 calls)
+[WebServer]   - plugin rer:private-archives writeBundle (4%, 1.0s, 1 call)
+[WebServer] Additional callback time came from the callbacks below and from callbacks under 1s.
+[WebServer] 5 callbacks are listed without a time. Their calls overlapped, so the time inside one call includes work from other calls. To find their cost, profile the build with `node --cpu-prof`:
+[WebServer]   - plugin tanstack-start-core:import-protection resolveId (7540 calls)
+[WebServer]   - plugin vite:asset load (15 calls)
+[WebServer]   - plugin @tailwindcss/vite:generate:build transform (29 calls)
+[WebServer]   … and 2 more
+[WebServer] See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.
+[WebServer] 
+
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:105:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:126:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/src/core/features/results/ui/sharedReportLoader.ts?tss-serverfn-split:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/src/core/app/loaders.ts:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/src/core/app/loaders.ts:105:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/src/core/app/loaders.ts:126:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/src/core/features/results/ui/sharedReportLoader.ts:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] (node:3090) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+
+[WebServer] Pencil browser setup: app migrations exited 1
+
+[WebServer] 
+[WebServer] Error: The service is no longer running
+[WebServer]     at /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:1078:34
+[WebServer]     at sendRequest (/home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:880:36)
+[WebServer]     at Object.formatMessages2 [as formatMessages] (/home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:1077:5)
+[WebServer]     at /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:2342:85
+[WebServer]     at new Promise (<anonymous>)
+[WebServer]     at Object.formatMessages (/home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:2342:44)
+[WebServer]     at /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:2489:67
+[WebServer]     at MessagePort.<anonymous> (/home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:2502:9)
+[WebServer]     at [nodejs.internal.kHybridDispatch] (node:internal/event_target:827:20)
+[WebServer]     at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28)
+[WebServer] 
+[WebServer] (error handler also failed: Error: The service is no longer running
+[WebServer]     at /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:1078:34
+[WebServer]     at sendRequest (/home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:880:36)
+[WebServer]     at Object.formatMessages2 [as formatMessages] (/home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:1077:5)
+[WebServer]     at /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:2342:85
+[WebServer]     at new Promise (<anonymous>)
+[WebServer]     at Object.formatMessages (/home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:2342:44)
+[WebServer]     at /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:2489:67
+[WebServer]     at MessagePort.<anonymous> (/home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/esbuild@0.28.1/node_modules/esbuild/lib/main.js:2502:9)
+[WebServer]     at [nodejs.internal.kHybridDispatch] (node:internal/event_target:827:20)
+[WebServer]     at MessagePort.<anonymous> (node:internal/per_context/messageport:23:28))
+
+Error: Timed out waiting 120000ms from config.webServer.
+

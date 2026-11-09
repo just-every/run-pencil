@@ -1,0 +1,422 @@
+{
+  "tag": "sd-pencil-c-f60",
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f60",
+  "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "predecessor": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "origin_main": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "new_product_commits": 0,
+  "product_diff_files": 0,
+  "status_before": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "status_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "typecheck": {
+    "command": "pnpm typecheck",
+    "node": "22.20.0",
+    "pnpm": "10.12.4",
+    "exit": 0
+  },
+  "first_party": {
+    "command": "npx -y @runeditrun/rer check --profile first-party",
+    "exit": 0
+  },
+  "generated_views": {
+    "write": "node scripts/contract-docs.mjs write PAY-004",
+    "check": "node scripts/contract-docs.mjs check PAY-004",
+    "exit": 0,
+    "restored_from": "origin/main"
+  },
+  "setup": {
+    "initial_exit": 3,
+    "initial_failure": "Pinned pnpm fetch failed",
+    "fallback": "npm install pinned pnpm under the documented manual cache",
+    "retry_exit": 0
+  },
+  "ci_observed": [
+    {
+      "conclusion": "skipped",
+      "event": "push",
+      "head_sha": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42593015609",
+      "id": 42593015609,
+      "name": "Run demo",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42593015597",
+      "id": 42593015597,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "dynamic",
+      "head_sha": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42593014353",
+      "id": 42593014353,
+      "name": "Push on main",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42593015478",
+      "id": 42593015478,
+      "name": "Verify candidate",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "event": "push",
+      "head_sha": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42590319983",
+      "id": 42590319983,
+      "name": "Verify candidate",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_sha": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42585055043",
+      "id": 42585055043,
+      "name": "Verify candidate",
+      "status": "completed"
+    }
+  ],
+  "observed_utc": "2026-11-09T10:21:40.482674+00:00",
+  "source_lock": {
+    "write": "node scripts/edition-authoring/cli.mjs lock",
+    "check": "node scripts/edition-authoring/cli.mjs check",
+    "write_exit": 0,
+    "check_exit": 0,
+    "changed_product_files": 0
+  },
+  "native_runs": [
+    {
+      "command": "pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/calculations.worker.test.ts",
+      "exit": 1,
+      "passed": 5,
+      "failed": 1,
+      "failure": "Test timed out in 30000ms.",
+      "context": "Concurrent setup migrations",
+      "log": "native-payment.log"
+    },
+    {
+      "command": "pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/calculations.worker.test.ts",
+      "exit": 1,
+      "passed": 5,
+      "failed": 1,
+      "failure": "Stripe period totals could not be read. Reconciliation is incomplete.",
+      "line": 569,
+      "context": "No other heavy work; product equals main",
+      "log": "native-payment-isolated.log"
+    },
+    {
+      "command": "pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/calculations.worker.test.ts -t 'preserves signed tax and discount totals'",
+      "exit": 1,
+      "failed": 1,
+      "skipped_by_selection": 5,
+      "failure": "Stripe could not be reached. Your answers are saved; retry to continue to payment.",
+      "line": 768,
+      "log": "native-payment-focused.log"
+    }
+  ],
+  "ci_jobs": {
+    "jobs": [
+      {
+        "completed_at": "2026-11-09T08:19:08Z",
+        "conclusion": "success",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42585055043/job/129052768766",
+        "id": 129052768766,
+        "name": "plan",
+        "started_at": "2026-11-09T08:19:04Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-09T08:20:42Z",
+        "conclusion": "success",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42585055043/job/129052811026",
+        "id": 129052811026,
+        "name": "checks",
+        "started_at": "2026-11-09T08:19:11Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-09T08:20:23Z",
+        "conclusion": "success",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42585055043/job/129052811082",
+        "id": 129052811082,
+        "name": "builds",
+        "started_at": "2026-11-09T08:19:11Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-09T08:19:08Z",
+        "conclusion": "skipped",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42585055043/job/129052812897",
+        "id": 129052812897,
+        "name": "journeys",
+        "started_at": "2026-11-09T08:19:09Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-09T08:31:31Z",
+        "conclusion": "success",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42585055043/job/129053298465",
+        "id": 129053298465,
+        "name": "shards (5, desktop-4 mobile-7 desktop-5 admission)",
+        "started_at": "2026-11-09T08:20:26Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-09T08:31:27Z",
+        "conclusion": "success",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42585055043/job/129053298492",
+        "id": 129053298492,
+        "name": "shards (6, mobile-2 desktop-3 mobile-8 unit)",
+        "started_at": "2026-11-09T08:20:25Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-09T08:31:50Z",
+        "conclusion": "success",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42585055043/job/129053298511",
+        "id": 129053298511,
+        "name": "shards (2, mobile-1 mobile-5)",
+        "started_at": "2026-11-09T08:20:26Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-09T08:30:06Z",
+        "conclusion": "success",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42585055043/job/129053298515",
+        "id": 129053298515,
+        "name": "shards (8, desktop-2 archive-recovery desktop-8 archive-stream)",
+        "started_at": "2026-11-09T08:20:26Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-09T08:30:12Z",
+        "conclusion": "success",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42585055043/job/129053298538",
+        "id": 129053298538,
+        "name": "shards (1, desktop-1 archive-graph)",
+        "started_at": "2026-11-09T08:20:26Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-09T08:32:03Z",
+        "conclusion": "success",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42585055043/job/129053298555",
+        "id": 129053298555,
+        "name": "shards (7, mobile-4 desktop-6 mobile-3 archive-restore)",
+        "started_at": "2026-11-09T08:20:26Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-09T08:30:12Z",
+        "conclusion": "success",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42585055043/job/129053298617",
+        "id": 129053298617,
+        "name": "shards (4, worker-1 desktop-7 archive-delivery)",
+        "started_at": "2026-11-09T08:20:25Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-09T08:31:20Z",
+        "conclusion": "success",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42585055043/job/129053298683",
+        "id": 129053298683,
+        "name": "shards (3, worker-2 mobile-6 hosted)",
+        "started_at": "2026-11-09T08:20:26Z",
+        "status": "completed"
+      },
+      {
+        "completed_at": "2026-11-09T08:32:32Z",
+        "conclusion": "success",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42585055043/job/129057934487",
+        "id": 129057934487,
+        "name": "verify",
+        "started_at": "2026-11-09T08:32:05Z",
+        "status": "completed"
+      }
+    ],
+    "total_count": 13
+  },
+  "publication_scan": {
+    "status": "NOT_RUN",
+    "reason": "Cloud branch route leaves the full-history scan with the maintained lander",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null
+  },
+  "provider_calls": "No live provider call; loopback test fixtures only",
+  "new_registrations": 0,
+  "removed_registrations": 0,
+  "new_policy_defaults": [],
+  "full_clause_claim": "PARTIAL",
+  "browser": {
+    "registered_desktop": {
+      "exit": 0,
+      "width": 1440,
+      "test": "builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals",
+      "log": "browser-payment-external.log"
+    },
+    "registered_mobile_initial": {
+      "exit": 1,
+      "width": 390,
+      "line": 268,
+      "failure": "Heading was still loading at the 5000ms assertion timeout",
+      "log": "browser-payment-external.log"
+    },
+    "registered_mobile_retry": {
+      "exit": 1,
+      "width": 390,
+      "line": 432,
+      "failure": "Iframe checkout fallback link was not visible at the 5000ms assertion timeout",
+      "log": "browser-payment-mobile-retry.log"
+    },
+    "mobile_processing_probe": {
+      "exit": 0,
+      "width": 390,
+      "duration_seconds": 28.1,
+      "helper": "tests/e2e/payment-processing-proof.ts",
+      "temporary_probe": "ach-processing-probe.spec.ts",
+      "log": "browser-processing-probe.log"
+    },
+    "screenshots_inspected": [
+      "screenshots/ach-respondent-processing-desktop.png",
+      "screenshots/ach-respondent-paid-desktop.png",
+      "screenshots/ach-respondent-processing-mobile.png",
+      "screenshots/ach-respondent-paid-mobile.png"
+    ],
+    "test_timeouts_changed": false,
+    "assertions_changed": false,
+    "product_registrations_changed": false,
+    "screenshots": [
+      "screenshots/ach-respondent-processing-desktop.png",
+      "screenshots/ach-processing-desktop.png",
+      "screenshots/ach-paid-desktop.png",
+      "screenshots/ach-respondent-paid-desktop.png",
+      "screenshots/ach-respondent-processing-mobile.png",
+      "screenshots/ach-processing-mobile.png",
+      "screenshots/ach-paid-mobile.png",
+      "screenshots/ach-respondent-paid-mobile.png"
+    ]
+  },
+  "proof_server": {
+    "pid": 3542,
+    "hard_timeout_seconds": 1200,
+    "stopped": true,
+    "exit": 0
+  },
+  "final_ci_observed": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_branch": "cloud/sd-pencil-c-f60",
+      "head_sha": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42600176457",
+      "id": 42600176457,
+      "name": "Verify candidate",
+      "status": "in_progress"
+    },
+    {
+      "conclusion": "skipped",
+      "event": "push",
+      "head_branch": "main",
+      "head_sha": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42593015609",
+      "id": 42593015609,
+      "name": "Run demo",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_branch": "main",
+      "head_sha": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42593015597",
+      "id": 42593015597,
+      "name": "Run site",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "dynamic",
+      "head_branch": "main",
+      "head_sha": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42593014353",
+      "id": 42593014353,
+      "name": "Push on main",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_branch": "main",
+      "head_sha": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42593015478",
+      "id": 42593015478,
+      "name": "Verify candidate",
+      "status": "completed"
+    },
+    {
+      "conclusion": "failure",
+      "event": "push",
+      "head_branch": "cloud/sd-pencil-c-f59",
+      "head_sha": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42590319983",
+      "id": 42590319983,
+      "name": "Verify candidate",
+      "status": "completed"
+    },
+    {
+      "conclusion": "success",
+      "event": "push",
+      "head_branch": "cloud/sd-pencil-c-f58",
+      "head_sha": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42585055043",
+      "id": 42585055043,
+      "name": "Verify candidate",
+      "status": "completed"
+    }
+  ],
+  "github_api_calls": 3,
+  "product_push": {
+    "branch": "cloud/sd-pencil-c-f60",
+    "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+    "exit": 0,
+    "attempts": 1,
+    "new_product_commits": 0,
+    "receipt": "product-push.txt"
+  },
+  "main_equals_product_head": true,
+  "full_history": true,
+  "product_worktree_clean": true,
+  "candidate_commit_range_count": 0,
+  "source_lock_final": {
+    "write": "node scripts/edition-authoring/cli.mjs lock",
+    "check": "pnpm source:check",
+    "write_exit": 0,
+    "check_exit": 0
+  },
+  "complete_local_native_file_passed": false,
+  "complete_local_mobile_registration_passed": false,
+  "processing_scope_proved_at_widths": [
+    1440,
+    390
+  ]
+}

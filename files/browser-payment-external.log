@@ -1,0 +1,98 @@
+(node:4277) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:4293) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:4293) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+
+[1/2] [desktop] › tests/e2e/contract.ts:4:3 › [LOGIC-003,LOGIC-006,PAY-001,PAY-005,PAY-003,PAY-004,DIST-009] builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals
+(node:4932) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+(node:4932) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+
+[2/2] [mobile] › tests/e2e/contract.ts:4:3 › [LOGIC-003,LOGIC-006,PAY-001,PAY-005,PAY-003,PAY-004,DIST-009] builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals
+  1) [mobile] › tests/e2e/contract.ts:4:3 › [LOGIC-003,LOGIC-006,PAY-001,PAY-005,PAY-003,PAY-004,DIST-009] builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: 'Standard order · Total 48', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: 'Standard order · Total 48', exact: true }) with timeout 5000ms
+      - waiting for getByRole('heading', { name: 'Standard order · Total 48', exact: true })
+
+
+       at calculations.spec.ts:268
+
+      266 |     await proof('checkout-top-level')
+      267 |     await visitor.getByRole('button', { name: 'Pay $48.00', exact: true }).click()
+    > 268 |     await expect(visitor.getByRole('heading', { name: 'Standard order · Total 48', exact: true })).toBeVisible()
+          |                                                                                                    ^
+      269 |     await expect(visitor.getByText(/Your payment is received\./)).toBeVisible()
+      270 |     await proof('success-return')
+      271 |   } finally { await visitorContext.close(); await host.close() }
+        at /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/tests/e2e/calculations.spec.ts:268:100
+
+    attachment #1: Calculations payment-connection · mobile (image/png) ────────────────────────────
+    ../browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/attachments/Calculations-payment-connection-·-mobile-9c45d2960b70af6c365e100a191f5f058757ace2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: Calculations builder · mobile (image/png) ───────────────────────────────────────
+    ../browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/attachments/Calculations-builder-·-mobile-a11d4b77c1b6b80151efd1d2ea8ccb02cc6aa9aa.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: Calculations payment-builder · mobile (image/png) ───────────────────────────────
+    ../browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/attachments/Calculations-payment-builder-·-mobile-40f0f76cc6c953fc7a1d76c889dabf8a1978fe2b.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: Calculations preview · mobile (image/png) ───────────────────────────────────────
+    ../browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/attachments/Calculations-preview-·-mobile-c98ef22322475bba45be77aa15f780d222ee4b29.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #5: Calculations payment-step · mobile (image/png) ──────────────────────────────────
+    ../browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/attachments/Calculations-payment-step-·-mobile-0176281c92ba320c26052a15e6b9a9541c39af3e.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #6: Calculations cancel-return · mobile (image/png) ─────────────────────────────────
+    ../browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/attachments/Calculations-cancel-return-·-mobile-da61907451cfe85c6032093dba64b66f17e39f8b.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #7: Calculations completed-4 · mobile (image/png) ───────────────────────────────────
+    ../browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/attachments/Calculations-completed-4-·-mobile-0ccb8394fe6c715558945b4bd23d96cb2d08d5a0.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #8: Calculations completed-8 · mobile (image/png) ───────────────────────────────────
+    ../browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/attachments/Calculations-completed-8-·-mobile-933f24ef869bff87092d0f18696e006b425297e5.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #9: Embed payment (image/png) ───────────────────────────────────────────────────────
+    ../browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/attachments/Embed-payment-8f662a654ad65dbdc0d8e060b9ca6c56ba39eca5.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #10: Embed checkout-top-level (image/png) ───────────────────────────────────────────
+    ../browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/attachments/Embed-checkout-top-level-356960e5dca6c2cac0c9bf81460f7b5a26e244e9.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/error-context.md
+
+    attachment #12: trace (application/zip) ────────────────────────────────────────────────────────
+    ../browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace ../browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  1 failed
+    [mobile] › tests/e2e/contract.ts:4:3 › [LOGIC-003,LOGIC-006,PAY-001,PAY-005,PAY-003,PAY-004,DIST-009] builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals 
+  1 passed (4.3m)

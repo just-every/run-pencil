@@ -1,0 +1,59 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+(node:2606) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+
+ RUN  v4.1.11 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil
+
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+exception = kj/async-io.c++:72: disconnected: stream disconnected prematurely
+stack: /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a3cc66 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57dfc57 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57e0967 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57e3993 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57be310 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57c4f80 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57dc7b0 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2238860 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@329c8f0 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2ed06c0
+uncaught exception; source = Uncaught (in promise); stack = Error: Network connection lost.
+uncaught exception; exception = workerd/jsg/_virtual_includes/iterator/workerd/jsg/value.h:1494: disconnected: jsg.Error: Network connection lost.
+stack: /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@322cfe0 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@322dc4f /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5aa0368 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2f8956f
+exception = rust/cxx/kj-rs-io/ffi.rs:176: disconnected: write(): Broken pipe (os error 32)
+stack: /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57e9491 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57e9893 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a228c0 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a2e0c0 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2f98500 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2238860 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@329c8f0 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2ed06c0
+uncaught exception; source = Uncaught (in promise); stack = Error: Network connection lost.
+uncaught exception; exception = workerd/jsg/_virtual_includes/iterator/workerd/jsg/value.h:1494: disconnected: jsg.Error: Network connection lost.
+stack: /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@322cfe0 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@322dc4f /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5aa0368 /home/agent/rer-consolidation/work/sd-pencil-c-f60/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2f8956f
+ ❯ tests/runtime/calculations.worker.test.ts (6 tests | 1 failed | 5 skipped) 32253ms
+   × [PAY-002,PAY-005,PAY-003,PAY-004] preserves signed tax and discount totals in the ledger, exports, archives and erasure while refusing a changed subtotal 28946ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/runtime/calculations.worker.test.ts > [PAY-002,PAY-005,PAY-003,PAY-004] preserves signed tax and discount totals in the ledger, exports, archives and erasure while refusing a changed subtotal
+AssertionError: {"error":"VALIDATION_ERROR","message":"Stripe could not be reached. Your answers are saved; retry to continue to payment."}: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ accepted tests/runtime/calculations.worker.test.ts:26:58
+     24| const literal = (value: number): CalculationExpression => ({ kind: 'li…
+     25| async function accepted<T>(response: Response, status = 200): Promise<…
+     26|   expect(response.status, await response.clone().text()).toBe(status)
+       |                                                          ^
+     27|   return response.json() as Promise<T>
+     28| }
+ ❯ Object.submit tests/runtime/calculations.worker.test.ts:62:21
+ ❯ tests/runtime/calculations.worker.test.ts:768:21
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 skipped (6)
+   Start at  09:59:16
+   Duration  116.96s (transform 39.08s, setup 0ms, import 80.15s, tests 32.25s, environment 0ms)
+

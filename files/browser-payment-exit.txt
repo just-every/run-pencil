@@ -1,0 +1,1 @@
+browser-payment exit=1

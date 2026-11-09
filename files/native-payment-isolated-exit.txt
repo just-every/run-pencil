@@ -1,0 +1,1 @@
+native-payment-isolated exit=1

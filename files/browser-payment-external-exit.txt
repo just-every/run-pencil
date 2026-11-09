@@ -1,0 +1,1 @@
+browser-payment-external exit=1
