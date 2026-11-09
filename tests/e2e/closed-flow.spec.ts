@@ -1,3 +1,4 @@
+import { proveMarketingReview } from './marketing-review-proof'
 import { developmentInbox } from '../helpers/development-outbox'
 import { devKeyHeaders } from '../helpers/dev-key.mjs'
 import { operatorEmail } from './auth-identity'
@@ -219,5 +220,9 @@ contract(["RESP-009"], "closed flows refuse late submissions, retain their named
     expect((await page.request.put('/api/app/workspace', { headers: mutationHeaders, data: { ...settings, embedAllowedOrigins: workspace.embedAllowedOrigins } })).status()).toBe(200)
     await noScript.close()
   }
+  });
+  await test.step('published form opt-in survives review and answer editing and is retained once with the completion time', async () => {
+    test.setTimeout(120_000)
+    await proveMarketingReview(page, info)
   });
 })
