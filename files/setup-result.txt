@@ -1,0 +1,3 @@
+command=cloud_run npx -y @runeditrun/rer setup --owner-email [fleet identity] --non-interactive
+exit=1
+Build and local migrations completed. Runtime startup failed in pinned rer production-runtime.mjs: JSON.parse received the CLI preface "Using secrets defined in dist/server/.dev.vars" instead of JSON. No key values retained. The browser harness uses its existing dedicated native runtime independently. No product or Base repair made.

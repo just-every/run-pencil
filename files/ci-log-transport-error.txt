@@ -1,0 +1,5 @@
+command=gh run view 42590319983 --repo just-every/run-pencil --job 129076285287 --log-failed
+exit=1
+error=failed to get run log: zip: not a valid zip file
+HTTP status=unknown; no HTTP response body supplied
+No archive download retry attempted.

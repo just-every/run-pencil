@@ -1,0 +1,23 @@
+{
+  "candidate": [
+    {
+      "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+      "file": "worker-assertion.txt",
+      "exit": 1,
+      "network_connection_lost": true
+    },
+    {
+      "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+      "file": "worker-retry-assertion.txt",
+      "exit": 1,
+      "network_connection_lost": true
+    }
+  ],
+  "main": {
+    "head": "6bb7927ecf707cec630874ddec40a4faa77825f5",
+    "file": "worker-main-assertion.txt",
+    "exit": 1,
+    "network_connection_lost": true
+  },
+  "classification": "Loopback transport errors reproduced on unchanged main; no product repair attempted."
+}

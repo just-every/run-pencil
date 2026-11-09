@@ -1,0 +1,36 @@
+{
+  "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "typecheck": {
+    "command": "pnpm typecheck",
+    "exit": 0,
+    "output": "silent repository reporter"
+  },
+  "first_party": {
+    "command": "pnpm exec rer check --profile first-party",
+    "exit": 0,
+    "output": "silent repository reporter"
+  },
+  "views": {
+    "write": "node scripts/contract-docs.mjs write PAY-004",
+    "check": "node scripts/contract-docs.mjs check PAY-004",
+    "exit": 0,
+    "restored_from": "origin/main",
+    "committed": false
+  },
+  "lock": {
+    "regenerate": "node scripts/edition-authoring/cli.mjs lock",
+    "check": "node scripts/edition-authoring/cli.mjs check",
+    "exit": 0
+  },
+  "base_integrity": {
+    "command": "pnpm source:check",
+    "exit": 0
+  },
+  "ledger": {
+    "command": null,
+    "exit": 0,
+    "reason": "No migration changed"
+  },
+  "contract_diff": "empty",
+  "working_tree": "clean"
+}

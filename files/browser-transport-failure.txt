@@ -1,0 +1,24 @@
+head=0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef
+Initial browser server startup: timed out after 120000ms during local migrations, before tests.
+Retry: CI Node 22.20.0; system Chromium; local-only startup timeout 300000ms; committed tests unchanged.
+  1) [desktop] › tests/e2e/contract.ts:4:3 › [LOGIC-003,LOGIC-006,PAY-001,PAY-005,PAY-003,PAY-004,DIST-009] builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals 
+
+    Test timeout of 240000ms exceeded.
+
+    Error: apiRequestContext.fetch: Test timeout of 240000ms exceeded.
+
+       at calculations.spec.ts:44
+
+      42 |   const slug = `calculated-order-${info.project.name}-${Date.now()}`
+      43 |   const call = async <T,>(path: string, method = 'GET', data?: unknown) => {
+    > 44 |     const response = await page.request.fetch(path, { method, ...(data === undefined ? {} : { data }) })
+         |                                         ^
+      45 |     expect(response.status(), await response.text()).toBeLessThan(300)
+      46 |     return response.json() as Promise<T>
+      47 |   }
+        at call (/home/agent/rer-consolidation/work/sd-pencil-c-f59/run-pencil/tests/e2e/calculations.spec.ts:44:41)
+        at /home/agent/rer-consolidation/work/sd-pencil-c-f59/run-pencil/tests/e2e/calculations.spec.ts:409:82
+
+
+The local server also reported: OPTIONS to the native session advance route failed: Network connection lost.
+The remaining broad run was stopped by SIGINT to its recorded Playwright PID after this failure. Results: one failed, one passed, one interrupted and three not run. No assertion or source was edited.

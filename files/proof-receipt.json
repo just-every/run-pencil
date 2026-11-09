@@ -1,0 +1,72 @@
+{
+  "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "branch": "cloud/sd-pencil-c-f59",
+  "probe": {
+    "source": "scoped-probe.ts",
+    "helper": "tests/e2e/payment-processing-proof.ts",
+    "exit": 0,
+    "cases": [
+      {
+        "viewport": [
+          1440,
+          900
+        ],
+        "result": "passed",
+        "duration_seconds": 27.5
+      },
+      {
+        "viewport": [
+          390,
+          844
+        ],
+        "result": "passed",
+        "duration_seconds": 53.2
+      }
+    ],
+    "checked": [
+      "native fixture Checkout offered ACH",
+      "initial genuine return reports processing",
+      "respondent pending live status, clock and pending colours",
+      "authenticated record agrees and one response exists",
+      "reload of genuine return keeps processing and response IDs",
+      "signed asynchronous success updates record to paid",
+      "same genuine return shows existing paid notice and check icon",
+      "pending and paid colours differ",
+      "response IDs and answers stay identical",
+      "no horizontal overflow"
+    ]
+  },
+  "screens": [
+    "ach-paid-desktop.png",
+    "ach-paid-mobile.png",
+    "ach-processing-desktop.png",
+    "ach-processing-mobile.png",
+    "ach-respondent-paid-desktop.png",
+    "ach-respondent-paid-mobile.png",
+    "ach-respondent-processing-desktop.png",
+    "ach-respondent-processing-mobile.png"
+  ],
+  "native_comparison": "native-comparison.json",
+  "product_push_receipt": "product-push.txt",
+  "mechanical_receipt": "mechanical.json",
+  "claims": {
+    "PAY-004": "PARTIAL"
+  },
+  "counts_before": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "counts_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "handoff": "BLOCKED",
+  "blocking_ci": {
+    "run": 42590319983,
+    "job": 129070748419,
+    "reason": "WordPress assertion not reproduced; local exact-lane attempt failed before test cases."
+  },
+  "github_calls": 7
+}

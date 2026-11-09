@@ -1,0 +1,28 @@
+[
+  {
+    "file": "src/core/features/responses/ui/RespondentFlowPage.tsx",
+    "email_shaped_added": false,
+    "provider_key_added": false
+  },
+  {
+    "file": "src/core/features/responses/ui/RespondentPaymentNotice.tsx",
+    "email_shaped_added": false,
+    "provider_key_added": false
+  },
+  {
+    "file": "src/core/features/responses/ui/respondent.css",
+    "email_shaped_added": false,
+    "provider_key_added": false
+  },
+  {
+    "file": "tests/e2e/calculations.spec.ts",
+    "email_shaped_added": false,
+    "provider_key_added": false
+  },
+  {
+    "file": "tests/e2e/payment-processing-proof.ts",
+    "email_shaped_added": false,
+    "provider_key_added": false
+  }
+]
+Changed-text identity and provider-key hygiene: pass. Full publication scan remains a lander duty.

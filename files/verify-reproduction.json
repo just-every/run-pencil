@@ -1,0 +1,24 @@
+{
+  "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "job": 129070748419,
+  "run": 42590319983,
+  "command": "node scripts/run-contract-lane.mjs desktop-7 /home/agent/rer-consolidation/work/sd-pencil-c-f59/reproduced-lane",
+  "environment": {
+    "CI": "1",
+    "Node": "22.20.0",
+    "GITHUB_RUN_ID": "42590319983",
+    "PENCIL_CI_BUILDS": ".rer/ci-builds",
+    "browser": "/usr/bin/chromium",
+    "local_startup_timeout_ms": 300000
+  },
+  "test": "copied async script mounts an opaque allowed-host iframe, resizes, emits only permitted events and rejects malicious messages",
+  "ci_location": "tests/e2e/wordpress-embed.ts:104:144",
+  "exit": 1,
+  "failure": "Browser setup failed before test cases (1 runner errors, exit 1).",
+  "test_cases_executed": 0,
+  "reproduced": false,
+  "product_repairs": 0,
+  "reruns_dispatched": 0,
+  "handoff": "BLOCKED",
+  "configuration_restored": true
+}

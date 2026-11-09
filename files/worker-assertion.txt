@@ -1,0 +1,29 @@
+head=0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef
+command=pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/calculations.worker.test.ts
+exit=1
+ FAIL  tests/runtime/calculations.worker.test.ts > [PAY-002,PAY-005,PAY-003,PAY-004] preserves signed tax and discount totals in the ledger, exports, archives and erasure while refusing a changed subtotal
+AssertionError: {"error":"VALIDATION_ERROR","message":"Stripe period totals could not be read. Reconciliation is incomplete."}: expected 400 to be 200 // Object.is equality
+
+- Expected
++ Received
+
+- 200
++ 400
+
+ ❯ accepted tests/runtime/calculations.worker.test.ts:26:58
+     24| const literal = (value: number): CalculationExpression => ({ kind: 'li…
+     25| async function accepted<T>(response: Response, status = 200): Promise<…
+     26|   expect(response.status, await response.clone().text()).toBe(status)
+       |                                                          ^
+     27|   return response.json() as Promise<T>
+     28| }
+ ❯ tests/runtime/calculations.worker.test.ts:569:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 passed (6)
+   Start at  09:00:46
+   Duration  133.84s (transform 47.65s, setup 0ms, import 90.88s, tests 28.36s, environment 0ms)
+

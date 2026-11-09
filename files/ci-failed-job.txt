@@ -1,0 +1,15 @@
+run=42590319983
+job=129070748419
+head=0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef
+command=gh run view 42590319983 --repo just-every/run-pencil --job 129070748419 --log-failed
+exit=0
+shards (4, worker-1 desktop-7 archive-delivery)	Run every original lane and retain every result	2026-11-09T09:04:59.6644806Z Workers D1 upgrade from refs/tags/v0.6.0: 51 released migrations; 3 passed, 0 failed, 0 pending.
+shards (4, worker-1 desktop-7 archive-delivery)	Run every original lane and retain every result	2026-11-09T09:11:45.0710909Z worker-1: completed in 405.352 s.
+shards (4, worker-1 desktop-7 archive-delivery)	Run every original lane and retain every result	2026-11-09T09:11:45.0761553Z worker-1: 64 passed, 0 failed, 0 pending; exit 0.
+shards (4, worker-1 desktop-7 archive-delivery)	Run every original lane and retain every result	2026-11-09T09:15:28.4154919Z Browser failure: [DIST-013,DIST-002,DIST-009,BASE-PUBLIC-001,BASE-PUBLIC-002] copied async script mounts an opaque allowed-host iframe, resizes, emits only permitted events and rejects malicious messages at /home/runner/work/run-pencil/run-pencil/tests/e2e/wordpress-embed.ts:104:144, /home/runner/work/run-pencil/run-pencil/tests/e2e/script-embed.spec.ts:197:5 (desktop, attempt 1, failed)
+shards (4, worker-1 desktop-7 archive-delivery)	Run every original lane and retain every result	2026-11-09T09:15:28.4160976Z Browser failure: [DIST-013,DIST-002,DIST-009,BASE-PUBLIC-001,BASE-PUBLIC-002] copied async script mounts an opaque allowed-host iframe, resizes, emits only permitted events and rejects malicious messages at /home/runner/work/run-pencil/run-pencil/tests/e2e/wordpress-embed.ts:104:144, /home/runner/work/run-pencil/run-pencil/tests/e2e/script-embed.spec.ts:197:5 (desktop, attempt 2, failed)
+shards (4, worker-1 desktop-7 archive-delivery)	Run every original lane and retain every result	2026-11-09T09:15:28.4229932Z desktop-7: 9 passed, 1 failed; exit 1.
+shards (4, worker-1 desktop-7 archive-delivery)	Run every original lane and retain every result	2026-11-09T09:15:28.4595508Z Archive group delivery: started.
+shards (4, worker-1 desktop-7 archive-delivery)	Run every original lane and retain every result	2026-11-09T09:17:03.2574567Z Archive group delivery: passed in 94.799 s.
+shards (4, worker-1 desktop-7 archive-delivery)	Run every original lane and retain every result	2026-11-09T09:17:03.2622817Z archive-delivery: 1 passed, 0 failed, 0 pending; exit 0.
+shards (4, worker-1 desktop-7 archive-delivery)	Run every original lane and retain every result	2026-11-09T09:17:03.2674775Z ##[error]Process completed with exit code 1.

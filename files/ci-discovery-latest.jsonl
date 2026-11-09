@@ -1,0 +1,2 @@
+{"conclusion":null,"event":"push","head_sha":"0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef","html_url":"https://github.com/just-every/run-pencil/actions/runs/42590319983","id":42590319983,"name":"Verify candidate","status":"in_progress"}
+{"conclusion":"success","event":"push","head_sha":"0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef","html_url":"https://github.com/just-every/run-pencil/actions/runs/42585055043","id":42585055043,"name":"Verify candidate","status":"completed"}

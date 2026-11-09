@@ -1,0 +1,8 @@
+head=0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef
+command=cloud_run timeout 1200 env PENCIL_E2E_SITE_URL=[unused local site endpoint] pnpm exec playwright test --config /tmp/pencil-point.config.mts --workers=1 --reporter=list
+exit=0
+Node=22.20.0; Chromium=/usr/bin/chromium; flags=--no-sandbox; CPU throttle=4
+  ✓  1 [desktop] › ../../../../../../tmp/pencil-point-proof/payment.spec.ts:7:5 › PAY-004 scoped native ACH processing probe (27.5s)
+  ✓  2 [mobile] › ../../../../../../tmp/pencil-point-proof/payment.spec.ts:7:5 › PAY-004 scoped native ACH processing probe (53.2s)
+  2 passed (2.9m)
+The temporary fixture invokes unchanged tests/e2e/payment-processing-proof.ts through native authenticated authoring and public Checkout doors. The source is retained as scoped-probe.ts. No test registration was added to the product.
