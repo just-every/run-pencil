@@ -1,0 +1,50 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+
+ RUN  v4.1.11 /workspace/run-pencil
+
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+exception = rust/cxx/kj-rs-io/ffi.rs:176: disconnected: write(): Broken pipe (os error 32)
+stack: /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57e9491 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@57e9893 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a228c0 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a2e0c0 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2f98500 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2238860 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@329c8f0 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2ed06c0
+uncaught exception; source = Uncaught (in promise); stack = Error: Network connection lost.
+uncaught exception; exception = workerd/jsg/_virtual_includes/iterator/workerd/jsg/value.h:1494: disconnected: jsg.Error: Network connection lost.
+stack: /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@322cfe0 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@322dc4f /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5aa0368 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20261006.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@2f8956f
+ ❯ tests/runtime/calculations.worker.test.ts (6 tests | 1 failed | 5 skipped) 22109ms
+   × [PAY-002,PAY-005,PAY-003,PAY-004] preserves signed tax and discount totals in the ledger, exports, archives and erasure while refusing a changed subtotal 20290ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/runtime/calculations.worker.test.ts > [PAY-002,PAY-005,PAY-003,PAY-004] preserves signed tax and discount totals in the ledger, exports, archives and erasure while refusing a changed subtotal
+AssertionError: {"error":"VALIDATION_ERROR","message":"Stripe could not be reached. Your answers are saved; retry to continue to payment."}: expected 400 to be 201 // Object.is equality
+
+- Expected
++ Received
+
+- 201
++ 400
+
+ ❯ accepted tests/runtime/calculations.worker.test.ts:26:58
+     24| const literal = (value: number): CalculationExpression => ({ kind: 'li…
+     25| async function accepted<T>(response: Response, status = 200): Promise<…
+     26|   expect(response.status, await response.clone().text()).toBe(status)
+       |                                                          ^
+     27|   return response.json() as Promise<T>
+     28| }
+ ❯ Object.submit tests/runtime/calculations.worker.test.ts:62:21
+ ❯ tests/runtime/calculations.worker.test.ts:580:25
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 5 skipped (6)
+   Start at  10:55:53
+   Duration  65.80s (transform 18.64s, setup 0ms, import 39.35s, tests 22.11s, environment 0ms)
+
+CHECK_RECEIPT {"name": "native-retry", "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef", "command": ["pnpm", "exec", "vitest", "run", "--config", "vitest.worker.config.ts", "tests/runtime/calculations.worker.test.ts", "-t", "preserves signed tax and discount totals"], "exit": 1, "started": "2026-11-09T10:55:41.170445+00:00", "finished": "2026-11-09T10:56:59.841872+00:00"}

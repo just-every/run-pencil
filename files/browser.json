@@ -1,0 +1,22 @@
+{
+  "name": "browser",
+  "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "command": [
+    "timeout",
+    "1200",
+    "pnpm",
+    "exec",
+    "playwright",
+    "test",
+    "--config",
+    "/tmp/pencil-cloud-playwright.config.ts",
+    "calculations.spec.ts",
+    "--grep",
+    "builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals",
+    "--workers=1",
+    "--reporter=line"
+  ],
+  "exit": 1,
+  "started": "2026-11-09T10:53:53.747270+00:00",
+  "finished": "2026-11-09T10:56:05.116418+00:00"
+}

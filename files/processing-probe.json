@@ -1,0 +1,19 @@
+{
+  "name": "processing-probe",
+  "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "command": [
+    "timeout",
+    "1200",
+    "pnpm",
+    "exec",
+    "playwright",
+    "test",
+    "--config",
+    "/tmp/pencil-processing-probe.config.ts",
+    "--workers=1",
+    "--reporter=line"
+  ],
+  "exit": 0,
+  "started": "2026-11-09T11:04:55.346450+00:00",
+  "finished": "2026-11-09T11:09:03.420495+00:00"
+}

@@ -1,0 +1,16 @@
+{
+  "candidate": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "vm_node": "24.19.0",
+  "ci_node_probe": "22.20.0",
+  "pnpm": "10.12.4",
+  "chromium": "/usr/bin/chromium",
+  "browser_launch_args": [
+    "--no-sandbox",
+    "--use-mock-keychain",
+    "--password-store=basic"
+  ],
+  "cloud_browser_config": "cloud-browser-config.ts",
+  "product_configuration_changes": false,
+  "github_api_calls": 3,
+  "api_polls_minimum_seconds": 300
+}

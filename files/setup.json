@@ -1,0 +1,17 @@
+{
+  "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "command": [
+    "npx",
+    "-y",
+    "@runeditrun/rer",
+    "setup",
+    "--owner-email",
+    "fleet@runeditrun.com",
+    "--non-interactive"
+  ],
+  "exit": 1,
+  "dependencies_installed": true,
+  "stage": "Starting your application on this computer",
+  "error": "SyntaxError: Unexpected token U: Using secrets defined in dist/server/.dev.vars is not valid JSON",
+  "scope": "Local setup startup; no product files changed."
+}

@@ -1,0 +1,12 @@
+{
+  "name": "lock",
+  "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "command": [
+    "node",
+    "scripts/edition-authoring/cli.mjs",
+    "lock"
+  ],
+  "exit": 0,
+  "started": "2026-11-09T10:52:44.125218+00:00",
+  "finished": "2026-11-09T10:52:45.951274+00:00"
+}

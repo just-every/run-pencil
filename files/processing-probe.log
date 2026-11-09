@@ -1,0 +1,111 @@
+[WebServer] (node:4625) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:4636) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] (node:4647) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+[WebServer] (node:4647) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/app/loaders.ts:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/app/loaders.ts:105:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/app/loaders.ts:126:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/features/results/ui/sharedReportLoader.ts:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [plugin builtin:vite-reporter] 
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/features/results/ui/sharedReportLoader.ts?tss-serverfn-split:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:105:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:126:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/features/results/ui/sharedReportLoader.ts:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts:105:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts:126:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+
+[WebServer] [PLUGIN_TIMINGS] JavaScript callbacks ran for 10.9s of this 11.7s build (93%).
+[WebServer] The slowest callbacks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+[WebServer]   - plugin pencil-backup-manifest load (29%, 3.4s, 3328 calls)
+[WebServer]   - plugin vite-plugin-cloudflare:additional-modules resolveId (10%, 1.1s, 2 calls)
+[WebServer] Additional callback time came from the callbacks below and from callbacks under 1s.
+[WebServer] 5 callbacks are listed without a time. Their calls overlapped, so the time inside one call includes work from other calls. To find their cost, profile the build with `node --cpu-prof`:
+[WebServer]   - plugin tanstack-start-core:import-protection resolveId (10482 calls)
+[WebServer]   - plugin vite:asset load (15 calls)
+[WebServer]   - plugin @tailwindcss/vite:generate:build transform (29 calls)
+[WebServer]   … and 2 more
+[WebServer] See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.
+[WebServer] 
+
+[WebServer] (node:4689) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+
+[WebServer] ▲ [WARNING] Scheduled Workers are not automatically triggered during local development.
+[WebServer] 
+[WebServer]   To manually trigger a scheduled event, run:
+[WebServer]     curl "http://127.0.0.1:4173/cdn-cgi/local/scheduled"
+[WebServer]   For more details, see https://developers.cloudflare.com/workers/configuration/cron-triggers/#test-cron-triggers-locally
+[WebServer] 
+[WebServer] 
+
+
+Running 2 tests using 1 worker
+
+(node:4608) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:5293) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/2] [desktop] › ../../tmp/pencil-processing-probe/processing.spec.ts:7:5 › public-door probe of the existing ACH processing helper
+[desktop] › ../../tmp/pencil-processing-probe/processing.spec.ts:7:5 › public-door probe of the existing ACH processing helper
+(node:5293) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+
+(node:5485) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[2/2] [mobile] › ../../tmp/pencil-processing-probe/processing.spec.ts:7:5 › public-door probe of the existing ACH processing helper
+[mobile] › ../../tmp/pencil-processing-probe/processing.spec.ts:7:5 › public-door probe of the existing ACH processing helper
+(node:5485) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+
+  2 passed (4.1m)
+CHECK_RECEIPT {"name": "processing-probe", "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef", "command": ["timeout", "1200", "pnpm", "exec", "playwright", "test", "--config", "/tmp/pencil-processing-probe.config.ts", "--workers=1", "--reporter=line"], "exit": 0, "started": "2026-11-09T11:04:55.346450+00:00", "finished": "2026-11-09T11:09:03.420495+00:00"}

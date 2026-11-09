@@ -1,0 +1,13 @@
+{
+  "name": "views-write",
+  "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "command": [
+    "node",
+    "scripts/contract-docs.mjs",
+    "write",
+    "PAY-004"
+  ],
+  "exit": 0,
+  "started": "2026-11-09T10:52:43.245739+00:00",
+  "finished": "2026-11-09T10:52:43.617072+00:00"
+}

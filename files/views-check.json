@@ -1,0 +1,13 @@
+{
+  "name": "views-check",
+  "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "command": [
+    "node",
+    "scripts/contract-docs.mjs",
+    "check",
+    "PAY-004"
+  ],
+  "exit": 0,
+  "started": "2026-11-09T10:52:43.701826+00:00",
+  "finished": "2026-11-09T10:52:43.910757+00:00"
+}
