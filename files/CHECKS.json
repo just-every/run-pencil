@@ -1,0 +1,61 @@
+{
+  "head": "191c091413fa30a975150e462f1cc9c4ea869be1",
+  "checks": [
+    {
+      "name": "agent-door",
+      "command": [
+        "node",
+        "node_modules/@runeditrun/rer/cli/agent-door.mjs",
+        ".",
+        "deploy.json"
+      ],
+      "exit": 0,
+      "seconds": 39.06,
+      "log": "agent-door.log"
+    },
+    {
+      "name": "resources",
+      "command": [
+        "node",
+        "tests/agent-door/resources.mjs"
+      ],
+      "exit": 0,
+      "seconds": 8.36,
+      "log": "resources.log"
+    },
+    {
+      "name": "typecheck",
+      "command": [
+        "pnpm",
+        "typecheck"
+      ],
+      "exit": 0,
+      "seconds": 41.0,
+      "log": "typecheck.log"
+    },
+    {
+      "name": "first-party",
+      "command": [
+        "pnpm",
+        "exec",
+        "rer",
+        "check",
+        "--profile",
+        "first-party"
+      ],
+      "exit": 0,
+      "seconds": 2.26,
+      "log": "first-party.log"
+    },
+    {
+      "name": "source-check",
+      "command": [
+        "pnpm",
+        "source:check"
+      ],
+      "exit": 0,
+      "seconds": 2.74,
+      "log": "source-check.log"
+    }
+  ]
+}

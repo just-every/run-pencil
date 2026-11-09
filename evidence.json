@@ -1,0 +1,88 @@
+{
+  "files": [
+    {
+      "blob": "4a91fcadd8e78324af0d01d566221599ab2ba6f8",
+      "bytes": 1122,
+      "path": "CHECKS.json",
+      "sha256": "9e44d0f069f7985ed4c371ae90997851c3e220a933ab862920f6d81853490fe3"
+    },
+    {
+      "blob": "171a1b61bfbf48daa4d4d779a3f9ae41831da18b",
+      "bytes": 431,
+      "path": "CI.json",
+      "sha256": "8817b1e926794af958e9b9a71b7f0943c61d3724a7705f8bf73bd87d0d6711a6"
+    },
+    {
+      "blob": "e72b8ac81bf51f300dd73d3348c4f6d66436f840",
+      "bytes": 1530,
+      "path": "PLAN.md",
+      "sha256": "4ddc24e8c60ae64eae7b6ff8444e74c91eb92f3f0cc04869ed606d7a4d9680b8"
+    },
+    {
+      "blob": "f896208e586c49e98aabb783b2c7304bcd937ac3",
+      "bytes": 11285,
+      "path": "REPORT.md",
+      "sha256": "292250240ade344c6507df7cb05dbcc0ce409cf352905a22584c2f909e764de8"
+    },
+    {
+      "blob": "0217c45bcc9c0b76aaffb3ca190f28507faf942c",
+      "bytes": 96990,
+      "path": "agent-door-pinned.log",
+      "sha256": "564dca445b9dad59b64b6679c5b89aac9adff75dec8f3a17e9b9a6f990c12e66"
+    },
+    {
+      "blob": "3c182627b27bc363f60c658d0ad4a07e82522dce",
+      "bytes": 96990,
+      "path": "agent-door.log",
+      "sha256": "c865ddcd30c611970d5964535afbcb827719bd541e290b99df3a80b0c2b6302b"
+    },
+    {
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "path": "first-party.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "blob": "a422259c39ae5204880e16769e54a1f629970a1f",
+      "bytes": 1271259,
+      "path": "lock.log",
+      "sha256": "e2c3217099e9fbad83bac5707cc61abc986b61e415e9effc13488589dad56fcb"
+    },
+    {
+      "blob": "4b60ba3b1f415b77ebe45ba45efebbdc57a96c89",
+      "bytes": 410,
+      "path": "provenance.json",
+      "sha256": "d899a8ea2146281406601169e30e1e586483ee38ec6b887b3902f49bfa55e7a0"
+    },
+    {
+      "blob": "b176bf1146a034d395f53d6e60c20ddcb11c864c",
+      "bytes": 298,
+      "path": "resources.log",
+      "sha256": "a73463908ec375050ef798fa027d3e65ec7a0213335af336bcb5d63da5cf7557"
+    },
+    {
+      "blob": "2acd6455444458e1b901c93ff2d0d287d3ec8b13",
+      "bytes": 459971,
+      "path": "source-check.log",
+      "sha256": "7e505fbb1578a635689480da0b1f9dd11ef122ab049db22c903d357b6242c72e"
+    },
+    {
+      "blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "bytes": 0,
+      "path": "typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "blob": "22177a2239b81b70cc462f38a188f30920276530",
+      "bytes": 152,
+      "path": "views.log",
+      "sha256": "bbc156dd10b6daee06e849fa3e343859148d5a6b534f76996b50ca10070974c2"
+    }
+  ],
+  "product_branch": "cloud/sd-pencil-c-f52",
+  "product_head": "191c091413fa30a975150e462f1cc9c4ea869be1",
+  "ref": "refs/heads/evidence/sd-pencil-c-f52",
+  "repository": "just-every/run-pencil",
+  "schema": 1,
+  "tag": "sd-pencil-c-f52"
+}

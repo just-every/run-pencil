@@ -1,0 +1,16 @@
+{
+  "head": "191c091413fa30a975150e462f1cc9c4ea869be1",
+  "calls": 1,
+  "runs": [
+    {
+      "id": 42539915478,
+      "name": "Verify candidate",
+      "event": "push",
+      "status": "in_progress",
+      "conclusion": null,
+      "head_sha": "191c091413fa30a975150e462f1cc9c4ea869be1",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42539915478",
+      "created_at": "2026-11-09T00:23:22Z"
+    }
+  ]
+}

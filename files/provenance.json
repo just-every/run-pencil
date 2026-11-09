@@ -1,0 +1,12 @@
+{
+  "head": "191c091413fa30a975150e462f1cc9c4ea869be1",
+  "predecessor": "4b681954ca9199771a792441ef15615c258884e8",
+  "main": "1e65537decf1b294c86fce248432849d49eaa748",
+  "scope": "BASE-AGENT-002.4 absent-step deletion and draft reopen",
+  "changes": [
+    "sources.lock.json",
+    "src/agent-door/flow-tools.ts",
+    "tests/agent-door/business-refusals.mjs",
+    "tests/agent-door/native-journey.mjs"
+  ]
+}
