@@ -3,6 +3,7 @@ import { contract } from '../src/test/contract'
 import { issueLoadTime } from '../src/core/features/traffic/loadTime'
 import type { BuilderDraft } from '../src/core/app/api'
 import { emittedWorker } from './helpers/emitted-worker.mjs'
+import { proveNonNpsInvitationScanners } from './helpers/invitation-scanner-proof'
 
 contract('DIST-014','emitted invitation answer links are inert for repeated GET and HEAD scanners, pinned to their revision and cannot reopen completed or closed responses',async()=>{
   const origin='https://forms.example.test',relay='https://run.example.test/api/managed-mail/send'
@@ -27,6 +28,7 @@ contract('DIST-014','emitted invitation answer links are inert for repeated GET 
     await json(`${path}/publish`,{expectedVersion:published.flow.draftVersion})
     const contact=await json<{id:string}>('/api/app/distribution/contacts',{name:'Synthetic recipient',email:'synthetic-pencil-reader@example.test'})
     await json(`${path}/distribution`,{contactIds:[contact.id],commandKey:'synthetic-pencil-embedded-invitation'})
+    await proveNonNpsInvitationScanners(runtime, db, json, messages, contact.id, origin)
     const mail=messages.find(message=>message.to==='synthetic-pencil-reader@example.test')!
     expect(mail).toBeDefined();expect(mail.html).toContain('Recommend &lt;Studio&gt;')
     expect(mail.html).not.toContain('Recommend <Studio>')
