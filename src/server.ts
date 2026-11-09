@@ -60,8 +60,8 @@ async function fetchPencil(request: Request, bindings: WorkerBindings, execution
       return Response.json({ status: 'not-ready', message: error instanceof DeploymentConfigurationError ? error.message : 'Invalid deployment configuration.' }, { status: 503, headers: { 'Cache-Control': 'no-store' } })
     }
     const path = new URL(request.url).pathname
-    // Shared agent credentials and signed policy are admitted before native app redirects.
-    if (path === '/mcp' || path.startsWith('/.well-known/oauth-protected-resource') || path === '/agents' || path.startsWith('/agents/') || path === '/api/rer/agent-policy' || path === '/api/rer/business-settings' || path === '/rer-business-logo' || path === '/rer-business.css') {
+    // Shared agent credentials, signed policy and decision pulls are admitted before native app redirects.
+    if (path === '/mcp' || path.startsWith('/.well-known/oauth-protected-resource') || path === '/agents' || path.startsWith('/agents/') || path === '/api/rer/agent-policy' || path === '/api/rer/agent-decisions' || path === '/api/rer/business-settings' || path === '/rer-business-logo' || path === '/rer-business.css') {
       const services = await initializePencil(platform)
       const response = await pencilAgentDoor(bindings, platform, services).handle(request)
       if (response) return response

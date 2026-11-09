@@ -8549,7 +8549,7 @@
       "executable": false
     },
     "src/server.ts": {
-      "sha256": "c02aec2f076436c319863b548e7e06eb8a2524143e55bcb4b0eb132fd58f3a31",
+      "sha256": "629cb39908797616229906b0767bda4199eac11d95dca86090bb0ce42e0031f0",
       "executable": false
     },
     "src/site/client-plugin.ts": {
