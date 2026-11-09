@@ -10,6 +10,7 @@ import { expect, test } from './fixtures'
 import { signInEmptyWorkspace, addStep } from './authoring-helpers'
 import { nativeHost, observeEmbedMessages } from './brand-helpers'
 import { startStripeReceiver, stripeFixture } from './stripe-receiver'
+import { provePaymentProcessing } from './payment-processing-proof'
 
 // Submission admission uses the signed public form-load timestamp.
 const formLoad = (page: Page) => page.waitForResponse(response => new URL(response.url()).pathname.endsWith('/views') && response.request().method() === 'POST' && response.ok())
@@ -563,24 +564,7 @@ contract(['LOGIC-003', 'LOGIC-006', 'PAY-001', 'PAY-005', 'PAY-003', 'PAY-004', 
     await page.getByRole('radio',{name:'No',exact:true}).check()
     await submissionWindow(bankLoad)
     await page.getByRole('button',{name:'Continue',exact:true}).click()
-    await page.getByRole('button',{name:/Pay.*40/}).click()
-    await page.getByRole('button',{name:'Pay $40.00',exact:true}).click()
-    await expect(page.getByText(/Stripe is confirming your payment/)).toBeVisible()
-    await page.goto(`/app/flows/${flow.id}/results`)
-    await page.getByRole('button',{name:'View answers',exact:true}).first().click()
-    const bankRecord=page.getByRole('region',{name:'Payment',exact:true})
-    await expect(bankRecord).toContainText('Payment processing')
-    await bankRecord.screenshot({path:info.outputPath(`ach-processing-${info.project.name}.png`)})
-    const bank=[...stripe.sessions.values()].filter(row=>row.ach).at(-1)!
-    bank.payment_status='paid'
-    await stripe.event('checkout.session.async_payment_succeeded',bank)
-    await stripe.event('charge.succeeded',{id:'synthetic-pencil-1',payment_intent:bank.payment_intent,payment_method_details:{type:'us_bank_account',us_bank_account:{last4:'6789'}}})
-    await page.reload()
-    await page.getByRole('button',{name:'View answers',exact:true}).first().click()
-    await expect(bankRecord).toContainText('Paid')
-    await expect(bankRecord).toContainText('US bank account (ACH) · ending 6789')
-    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true)
-    await bankRecord.screenshot({path:info.outputPath(`ach-paid-${info.project.name}.png`)})
+    await provePaymentProcessing(page, info, stripe, flow.id, slug)
   } finally { await refundCdp.detach() }
   } finally { await stripe.close() }
 })

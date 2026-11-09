@@ -8617,7 +8617,7 @@
       "executable": false
     },
     "tests/e2e/calculations.spec.ts": {
-      "sha256": "db76a3b87a72af48e849b70350bb92de3f3f37142657659f51b3d66fce7ce10e",
+      "sha256": "13afe5274b2c8f1151977d1d4fcf33f14aa7c116db248e1a8550701ea9b68551",
       "executable": false
     },
     "tests/e2e/chat-settings-proof.ts": {
@@ -8814,6 +8814,10 @@
     },
     "tests/e2e/pages.spec.ts": {
       "sha256": "c780e748bae1149203256282afce8bc05db02968a09969d4f8c2e23e4330dd91",
+      "executable": false
+    },
+    "tests/e2e/payment-processing-proof.ts": {
+      "sha256": "68d1821193c7f65f05f3ba8136aa9aa4717e51169016c5bb5497b836ff050d9c",
       "executable": false
     },
     "tests/e2e/plain-iframe-hidden-fields.ts": {
