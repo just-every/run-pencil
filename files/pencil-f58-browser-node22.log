@@ -1,0 +1,169 @@
+[WebServer] (node:4153) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:4164) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:4175) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[WebServer] (node:4175) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/app/loaders.ts:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/app/loaders.ts:105:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/app/loaders.ts:126:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/features/results/ui/sharedReportLoader.ts:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin builtin:vite-reporter] 
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[WebServer] [PLUGIN_TIMINGS] JavaScript callbacks ran for 9.4s of this 10.8s build (87%).
+[WebServer] The slowest callbacks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+[WebServer]   - plugin pencil-backup-manifest load (22%, 2.3s, 2523 calls)
+[WebServer]   - plugin pencil:docs-site load (12%, 1.3s, 2539 calls)
+[WebServer] Additional callback time came from the callbacks below and from callbacks under 1s.
+[WebServer] 5 callbacks are listed without a time. Their calls overlapped, so the time inside one call includes work from other calls. To find their cost, profile the build with `node --cpu-prof`:
+[WebServer]   - plugin tanstack-start-core:import-protection resolveId (7540 calls)
+[WebServer]   - plugin vite:asset load (15 calls)
+[WebServer]   - plugin @tailwindcss/vite:generate:build transform (29 calls)
+[WebServer]   … and 2 more
+[WebServer] See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.
+[WebServer] 
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:105:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:126:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/features/results/ui/sharedReportLoader.ts?tss-serverfn-split:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts:105:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts:126:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/features/results/ui/sharedReportLoader.ts:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] (node:4224) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+[WebServer] ▲ [WARNING] Scheduled Workers are not automatically triggered during local development.
+[WebServer] 
+[WebServer]   To manually trigger a scheduled event, run:
+[WebServer]     curl "http://127.0.0.1:4173/cdn-cgi/local/scheduled"
+[WebServer]   For more details, see https://developers.cloudflare.com/workers/configuration/cron-triggers/#test-cron-triggers-locally
+[WebServer] 
+[WebServer] 
+(node:4136) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:4849) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:4849) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+[WebServer] ▲ [WARNING] ProxyWorker: GET http://127.0.0.1:4173/api/app/payments recovered on attempt 2 after a dropped connection to the UserWorker
+[WebServer] 
+[WebServer] 
+  ✘  1 [desktop] › tests/e2e/contract.ts:4:3 › [LOGIC-003,LOGIC-006,PAY-001,PAY-005,PAY-003,PAY-004,DIST-009] builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals (4.1m)
+
+
+  1) [desktop] › tests/e2e/contract.ts:4:3 › [LOGIC-003,LOGIC-006,PAY-001,PAY-005,PAY-003,PAY-004,DIST-009] builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals 
+
+    Test timeout of 240000ms exceeded.
+
+    Error: apiRequestContext.get: Test timeout of 240000ms exceeded.
+
+       at payment-processing-proof.ts:21
+
+      19 |   const notice = page.getByRole('status', { name: 'Payment status', exact: true })
+      20 |   const ledger = async () => {
+    > 21 |     const response = await page.request.get(`/api/app/flows/${flowId}/ledger`)
+         |                                         ^
+      22 |     expect(response.ok()).toBe(true)
+      23 |     return response.json() as Promise<Ledger>
+      24 |   }
+        at ledger (/workspace/run-pencil/tests/e2e/payment-processing-proof.ts:21:41)
+        at sameResponse (/workspace/run-pencil/tests/e2e/payment-processing-proof.ts:26:26)
+        at provePaymentProcessing (/workspace/run-pencil/tests/e2e/payment-processing-proof.ts:65:9)
+        at /workspace/run-pencil/tests/e2e/calculations.spec.ts:567:5
+
+    attachment #1: Calculations payment-connection · desktop (image/png) ───────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-payment-connection-·-desktop-2fa128bf01e946a97efd52b330f1acb187c227af.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: Calculations builder · desktop (image/png) ──────────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-builder-·-desktop-f1f70224d6ded214605778505dba465d35ed6518.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: Calculations payment-builder · desktop (image/png) ──────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-payment-builder-·-desktop-018419e41444b043921475efef129b45520739c9.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: Calculations preview · desktop (image/png) ──────────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-preview-·-desktop-c0572f255f3e2397ba7c6ee4801abb5fd586f6d7.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #5: Calculations payment-step · desktop (image/png) ─────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-payment-step-·-desktop-ffc8f075448cd3beb60d790ce03bdb36945796a0.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #6: Calculations cancel-return · desktop (image/png) ────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-cancel-return-·-desktop-33b65beba6c6e7f9d8529fa3e11ecc1c60c2a80f.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #7: Calculations completed-4 · desktop (image/png) ──────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-completed-4-·-desktop-f66ccc36c7621fbd544956e1131cf65d9c332723.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #8: Calculations completed-8 · desktop (image/png) ──────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-completed-8-·-desktop-568bcb934f3276215fbf8a55eedd861609cb0878.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #9: Embed payment (image/png) ───────────────────────────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Embed-payment-9467b4de3157cca373d0e57a8322b4a10f8daf09.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #10: Embed checkout-top-level (image/png) ───────────────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Embed-checkout-top-level-069a1c111b5acd86a1c7e62b482675049bb04d09.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #11: Embed success-return (image/png) ───────────────────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Embed-success-return-17bdaca83b50cae65e2078619955549c54ec0661.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #12: Calculations payment-ledger · desktop (image/png) ──────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-payment-ledger-·-desktop-96c2ee2601da5584b22b8163768c9fcefb0d7c7d.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #13: Calculations ledger · desktop (image/png) ──────────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-ledger-·-desktop-741b772e7cc69d717db46b4fc947fddf1bd54b79.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #14: Embed missing acknowledgement · desktop (image/png) ────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Embed-missing-acknowledgement-·-desktop-6930d9585a54b3cfb7be7053ddf89af4dd26cd35.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #15: ACH respondent processing · desktop (image/png) ────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/ACH-respondent-processing-·-desktop-dc0df1a158a0ed33d4eb4f1461daa054ddea7ece.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/error-context.md
+
+    attachment #17: trace (application/zip) ────────────────────────────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop] › tests/e2e/contract.ts:4:3 › [LOGIC-003,LOGIC-006,PAY-001,PAY-005,PAY-003,PAY-004,DIST-009] builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals 

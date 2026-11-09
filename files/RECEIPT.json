@@ -1,0 +1,162 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f58",
+  "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "main_at_merge": "6bb7927ecf707cec630874ddec40a4faa77825f5",
+  "public_door_probe": {
+    "command": "cloud_run timeout 1200 pnpm exec playwright test --config /tmp/pencil-f58-probe.config.ts --workers=1",
+    "exit": 0,
+    "report": "processing-probe.json",
+    "stats": {
+      "startTime": "2026-11-09T08:14:22.604Z",
+      "duration": 163623.059,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "widths": [
+      1440,
+      390
+    ],
+    "node": "22.20.0",
+    "chromium": "/usr/bin/chromium",
+    "product_bytes_unchanged_since_probe": [
+      {
+        "path": "src/core/features/responses/ui/RespondentFlowPage.tsx",
+        "sha256": "cb7cba46fdf83bd5fd4953036ec40d6dd73fcad10f613db7b83922f5f6bc8ca5",
+        "matches_committed_head": true
+      },
+      {
+        "path": "src/core/features/responses/ui/RespondentPaymentNotice.tsx",
+        "sha256": "a0b8c89bd399184e366e463296eee6f9b755e361090b0e703f7821249dcdb03f",
+        "matches_committed_head": true
+      },
+      {
+        "path": "src/core/features/responses/ui/respondent.css",
+        "sha256": "4cc291962143035c57b211ca14e34cc95dde7deb07962c0727d9887f1101b0aa",
+        "matches_committed_head": true
+      },
+      {
+        "path": "tests/e2e/calculations.spec.ts",
+        "sha256": "13afe5274b2c8f1151977d1d4fcf33f14aa7c116db248e1a8550701ea9b68551",
+        "matches_committed_head": true
+      },
+      {
+        "path": "tests/e2e/payment-processing-proof.ts",
+        "sha256": "68d1821193c7f65f05f3ba8136aa9aa4717e51169016c5bb5497b836ff050d9c",
+        "matches_committed_head": true
+      }
+    ]
+  },
+  "mechanical": {
+    "typecheck": {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    "first_party": {
+      "command": "cloud_run npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0
+    },
+    "views": {
+      "command": "node scripts/contract-docs.mjs write PAY-004 && node scripts/contract-docs.mjs check PAY-004",
+      "exit": 0,
+      "generated_views_restored": true,
+      "output": "Contract documents check: PAY-004; 142 done, 61 partial, 49 missing.\n"
+    },
+    "lock": {
+      "command": "node scripts/edition-authoring/cli.mjs lock && pnpm source:check",
+      "exit": 0,
+      "source_lock_sha256": "c2e5ef627a326ee9f29eb2c2119f3ebf154b199f13c0598671718e6ca89d9b1d",
+      "output": "source-check.log"
+    },
+    "migration_ledger": "not applicable; no migration changed"
+  },
+  "contract_diff": "",
+  "registration_delta": 0,
+  "counts_before": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "counts_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "claim": "PAY-004 PARTIAL",
+  "scope": "dedicated respondent processing notice and genuine return proof only",
+  "ci": [
+    {
+      "conclusion": "success",
+      "head_sha": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42585055043",
+      "status": "completed",
+      "id": 42585055043,
+      "event": "push",
+      "name": "Verify candidate"
+    }
+  ],
+  "publication_scan": {
+    "status": "not run in cloud",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "custody": "maintained Mac lander"
+  },
+  "landed": false,
+  "run_site_on_candidate": "pending landing",
+  "pr": null,
+  "full_history_clone": true,
+  "local_native_baseline": {
+    "head": "6bb7927ecf707cec630874ddec40a4faa77825f5",
+    "command": "cloud_run timeout 1200 pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/calculations.worker.test.ts -t 'preserves signed tax and discount totals'",
+    "exit": 1,
+    "result": "Stripe fixture transport failed on unchanged main; HTTP 400 instead of 201 at calculations.worker.test.ts:789",
+    "log": "baseline-worker.log"
+  },
+  "local_full_browser_baseline": {
+    "head": "6bb7927ecf707cec630874ddec40a4faa77825f5",
+    "exit": 0,
+    "report": "baseline-browser.json",
+    "stats": {
+      "startTime": "2026-11-09T08:20:46.408Z",
+      "duration": 293203.859,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "local_full_browser_candidate": {
+    "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+    "command": "cloud_run timeout 1200 pnpm exec playwright test --config /tmp/pencil-f58.playwright.config.ts tests/e2e/calculations.spec.ts --grep 'builds a conditional total' --workers=1",
+    "exit": 1,
+    "report": "candidate-browser.json",
+    "stats": {
+      "startTime": "2026-11-09T08:26:09.515Z",
+      "duration": 310348.166,
+      "expected": 0,
+      "skipped": 0,
+      "unexpected": 2,
+      "flaky": 0
+    },
+    "failures": [
+      {
+        "project": "desktop",
+        "file": "tests/e2e/calculations.spec.ts",
+        "line": 432,
+        "failure": "existing Continue to Stripe Checkout fallback link was not visible within 5000ms; before ACH helper"
+      },
+      {
+        "project": "mobile",
+        "file": "tests/e2e/calculations.spec.ts",
+        "line": 162,
+        "failure": "existing successful views response was not observed within 15000ms; before ACH helper"
+      }
+    ]
+  },
+  "handoff": "READY; guarded landing, publication scan and Run site remain with the maintained Mac lander",
+  "github_api_calls": 6
+}

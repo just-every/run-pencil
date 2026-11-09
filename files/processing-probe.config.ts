@@ -1,0 +1,3 @@
+import { defineConfig } from '/workspace/run-pencil/node_modules/@playwright/test/index.mjs'
+import config from '/workspace/run-pencil/playwright.config'
+export default defineConfig({ ...config, testDir: '/tmp/pencil-f58-probe', outputDir: '/tmp/pencil-f58-probe-results', reporter: [['list'], ['json', { outputFile: '/tmp/pencil-f58-probe.json' }]], use: { ...config.use, launchOptions: { ...config.use?.launchOptions, executablePath: '/usr/bin/chromium', args: ['--no-sandbox', '--use-mock-keychain', '--password-store=basic'] } }, webServer: Array.isArray(config.webServer) ? config.webServer.slice(0, 1).map(server => ({ ...server, cwd: '/workspace/run-pencil', timeout: 300_000 })) : config.webServer })

@@ -1,0 +1,434 @@
+{
+  "config": {
+    "argv": [
+      "/home/agent/.rer/toolchain/node-22.20.0/node_modules/node/bin/node",
+      "/workspace/run-pencil/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      "/tmp/pencil-f58.playwright.config.ts",
+      "tests/e2e/calculations.spec.ts",
+      "--grep",
+      "builds a conditional total",
+      "--workers=1"
+    ],
+    "configFile": "/tmp/pencil-f58.playwright.config.ts",
+    "rootDir": "/workspace/run-pencil/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/workspace/run-pencil/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "/workspace/run-pencil/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/workspace/run-pencil/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "/workspace/run-pencil/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/workspace/run-pencil/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "desktop",
+        "testDir": "/workspace/run-pencil/tests/e2e",
+        "snapshotDir": "/workspace/run-pencil/tests/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4173",
+          "launchOptions": {
+            "headless": true,
+            "args": [
+              "--no-sandbox",
+              "--use-mock-keychain",
+              "--password-store=basic"
+            ],
+            "executablePath": "/usr/bin/chromium"
+          },
+          "trace": "retain-on-failure",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "desktop"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/workspace/run-pencil/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "mobile",
+        "testDir": "/workspace/run-pencil/tests/e2e",
+        "snapshotDir": "/workspace/run-pencil/tests/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4173",
+          "launchOptions": {
+            "headless": true,
+            "args": [
+              "--no-sandbox",
+              "--use-mock-keychain",
+              "--password-store=basic"
+            ],
+            "executablePath": "/usr/bin/chromium"
+          },
+          "trace": "retain-on-failure",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "screen": {
+            "width": 393,
+            "height": 851
+          },
+          "deviceScaleFactor": 2.75,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "mobile"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/tmp/pencil-f58-browser.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "calculations.spec.ts",
+      "file": "calculations.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "[LOGIC-003,LOGIC-006,PAY-001,PAY-005,PAY-003,PAY-004,DIST-009] builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 141301,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('iframe').contentFrame().getByRole('link', { name: 'Continue to Stripe Checkout', exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" locator('iframe').contentFrame().getByRole('link', { name: 'Continue to Stripe Checkout', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('iframe').contentFrame().getByRole('link', { name: 'Continue to Stripe Checkout', exact: true })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('iframe').contentFrame().getByRole('link', { name: 'Continue to Stripe Checkout', exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" locator('iframe').contentFrame().getByRole('link', { name: 'Continue to Stripe Checkout', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('iframe').contentFrame().getByRole('link', { name: 'Continue to Stripe Checkout', exact: true })\u001b[22m\n\n    at /workspace/run-pencil/tests/e2e/calculations.spec.ts:432:32",
+                    "location": {
+                      "file": "/workspace/run-pencil/tests/e2e/calculations.spec.ts",
+                      "column": 32,
+                      "line": 432
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39mcalculations.spec.ts:432\n\n  430 |     await child.getByRole('button', { name: 'Pay $48.00 with Stripe', exact: true }).click()\n  431 |     const continuation = child.getByRole('link', { name: 'Continue to Stripe Checkout', exact: true })\n> 432 |     await expect(continuation).toBeVisible()\n      |                                ^\n  433 |     await expect(continuation).toHaveAttribute('target', '_top')\n  434 |     const fallbackCheckout = [...stripe.sessions.values()].find(session => !previousSessions.has(session.id))\n  435 |     expect(fallbackCheckout).toBeDefined()"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/run-pencil/tests/e2e/calculations.spec.ts",
+                        "column": 32,
+                        "line": 432
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('iframe').contentFrame().getByRole('link', { name: 'Continue to Stripe Checkout', exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" locator('iframe').contentFrame().getByRole('link', { name: 'Continue to Stripe Checkout', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for locator('iframe').contentFrame().getByRole('link', { name: 'Continue to Stripe Checkout', exact: true })\u001b[22m\n\n\n   at calculations.spec.ts:432\n\n  430 |     await child.getByRole('button', { name: 'Pay $48.00 with Stripe', exact: true }).click()\n  431 |     const continuation = child.getByRole('link', { name: 'Continue to Stripe Checkout', exact: true })\n> 432 |     await expect(continuation).toBeVisible()\n      |                                ^\n  433 |     await expect(continuation).toHaveAttribute('target', '_top')\n  434 |     const fallbackCheckout = [...stripe.sessions.values()].find(session => !previousSessions.has(session.id))\n  435 |     expect(fallbackCheckout).toBeDefined()\n    at /workspace/run-pencil/tests/e2e/calculations.spec.ts:432:32"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T08:27:25.660Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "Calculations payment-connection · desktop",
+                      "contentType": "image/png",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-payment-connection-·-desktop-2fa128bf01e946a97efd52b330f1acb187c227af.png"
+                    },
+                    {
+                      "name": "Calculations builder · desktop",
+                      "contentType": "image/png",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-builder-·-desktop-f1f70224d6ded214605778505dba465d35ed6518.png"
+                    },
+                    {
+                      "name": "Calculations payment-builder · desktop",
+                      "contentType": "image/png",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-payment-builder-·-desktop-018419e41444b043921475efef129b45520739c9.png"
+                    },
+                    {
+                      "name": "Calculations preview · desktop",
+                      "contentType": "image/png",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-preview-·-desktop-c0572f255f3e2397ba7c6ee4801abb5fd586f6d7.png"
+                    },
+                    {
+                      "name": "Calculations payment-step · desktop",
+                      "contentType": "image/png",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-payment-step-·-desktop-ffc8f075448cd3beb60d790ce03bdb36945796a0.png"
+                    },
+                    {
+                      "name": "Calculations cancel-return · desktop",
+                      "contentType": "image/png",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-cancel-return-·-desktop-33b65beba6c6e7f9d8529fa3e11ecc1c60c2a80f.png"
+                    },
+                    {
+                      "name": "Calculations completed-4 · desktop",
+                      "contentType": "image/png",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-completed-4-·-desktop-f66ccc36c7621fbd544956e1131cf65d9c332723.png"
+                    },
+                    {
+                      "name": "Calculations completed-8 · desktop",
+                      "contentType": "image/png",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-completed-8-·-desktop-568bcb934f3276215fbf8a55eedd861609cb0878.png"
+                    },
+                    {
+                      "name": "Embed payment",
+                      "contentType": "image/png",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Embed-payment-9467b4de3157cca373d0e57a8322b4a10f8daf09.png"
+                    },
+                    {
+                      "name": "Embed checkout-top-level",
+                      "contentType": "image/png",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Embed-checkout-top-level-069a1c111b5acd86a1c7e62b482675049bb04d09.png"
+                    },
+                    {
+                      "name": "Embed success-return",
+                      "contentType": "image/png",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Embed-success-return-17bdaca83b50cae65e2078619955549c54ec0661.png"
+                    },
+                    {
+                      "name": "Calculations payment-ledger · desktop",
+                      "contentType": "image/png",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-payment-ledger-·-desktop-96c2ee2601da5584b22b8163768c9fcefb0d7c7d.png"
+                    },
+                    {
+                      "name": "Calculations ledger · desktop",
+                      "contentType": "image/png",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-ledger-·-desktop-741b772e7cc69d717db46b4fc947fddf1bd54b79.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/run-pencil/tests/e2e/calculations.spec.ts",
+                    "column": 32,
+                    "line": 432
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "8ebd8106908a17de735d-d116f85458b81dd240e9",
+          "file": "contract.ts",
+          "line": 4,
+          "column": 3
+        },
+        {
+          "title": "[LOGIC-003,LOGIC-006,PAY-001,PAY-005,PAY-003,PAY-004,DIST-009] builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 73305,
+                  "error": {
+                    "message": "TimeoutError: page.waitForResponse: Timeout 15000ms exceeded while waiting for event \"response\"",
+                    "stack": "TimeoutError: page.waitForResponse: Timeout 15000ms exceeded while waiting for event \"response\"\n    at formLoad (/workspace/run-pencil/tests/e2e/calculations.spec.ts:16:39)\n    at /workspace/run-pencil/tests/e2e/calculations.spec.ts:162:20",
+                    "location": {
+                      "file": "/workspace/run-pencil/tests/e2e/calculations.spec.ts",
+                      "column": 39,
+                      "line": 16
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39mcalculations.spec.ts:16\n\n  14 |\n  15 | // Submission admission uses the signed public form-load timestamp.\n> 16 | const formLoad = (page: Page) => page.waitForResponse(response => new URL(response.url()).pathname.endsWith('/views') && response.request().method() === 'POST' && response.ok())\n     |                                       ^\n  17 | async function submissionWindow(load: Promise<Response>) {\n  18 |   const {loadTime} = await (await load).json() as {loadTime:string}\n  19 |   const at = Number(loadTime.split('.')[1])"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/workspace/run-pencil/tests/e2e/calculations.spec.ts",
+                        "column": 39,
+                        "line": 16
+                      },
+                      "message": "TimeoutError: page.waitForResponse: Timeout 15000ms exceeded while waiting for event \"response\"\n\n   at calculations.spec.ts:16\n\n  14 |\n  15 | // Submission admission uses the signed public form-load timestamp.\n> 16 | const formLoad = (page: Page) => page.waitForResponse(response => new URL(response.url()).pathname.endsWith('/views') && response.request().method() === 'POST' && response.ok())\n     |                                       ^\n  17 | async function submissionWindow(load: Promise<Response>) {\n  18 |   const {loadTime} = await (await load).json() as {loadTime:string}\n  19 |   const at = Number(loadTime.split('.')[1])\n    at formLoad (/workspace/run-pencil/tests/e2e/calculations.spec.ts:16:39)\n    at /workspace/run-pencil/tests/e2e/calculations.spec.ts:162:20"
+                    },
+                    {
+                      "location": {
+                        "file": "/workspace/run-pencil/tests/e2e/calculations.spec.ts",
+                        "column": 39,
+                        "line": 16
+                      },
+                      "message": "TimeoutError: page.waitForResponse: Timeout 15000ms exceeded while waiting for event \"response\"\n\n   at calculations.spec.ts:16\n\n  14 |\n  15 | // Submission admission uses the signed public form-load timestamp.\n> 16 | const formLoad = (page: Page) => page.waitForResponse(response => new URL(response.url()).pathname.endsWith('/views') && response.request().method() === 'POST' && response.ok())\n     |                                       ^\n  17 | async function submissionWindow(load: Promise<Response>) {\n  18 |   const {loadTime} = await (await load).json() as {loadTime:string}\n  19 |   const at = Number(loadTime.split('.')[1])\n    at formLoad (/workspace/run-pencil/tests/e2e/calculations.spec.ts:16:39)\n    at /workspace/run-pencil/tests/e2e/calculations.spec.ts:162:20"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "(node:11227) PromiseRejectionHandledWarning: Promise rejection was handled asynchronously (rejection id: 35)\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-11-09T08:30:02.869Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "Calculations payment-connection · mobile",
+                      "contentType": "image/png",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/attachments/Calculations-payment-connection-·-mobile-6d94f5c09e242253f44fcfb8fed359489195c9ad.png"
+                    },
+                    {
+                      "name": "Calculations builder · mobile",
+                      "contentType": "image/png",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/attachments/Calculations-builder-·-mobile-d094890892bbbcd1c6c6c1e50e28b2fa92c80061.png"
+                    },
+                    {
+                      "name": "Calculations payment-builder · mobile",
+                      "contentType": "image/png",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/attachments/Calculations-payment-builder-·-mobile-029d7da632fcb9cdc61fe78dccfa1e5a667a65e9.png"
+                    },
+                    {
+                      "name": "Calculations preview · mobile",
+                      "contentType": "image/png",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/attachments/Calculations-preview-·-mobile-d23229cf3e5e6e79882a4c4d4f0cfa8d94f92aa3.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/workspace/run-pencil/test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/workspace/run-pencil/tests/e2e/calculations.spec.ts",
+                    "column": 39,
+                    "line": 16
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "8ebd8106908a17de735d-eaff6c208e0421e786f2",
+          "file": "contract.ts",
+          "line": 4,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-09T08:26:09.515Z",
+    "duration": 310348.166,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

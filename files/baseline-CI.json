@@ -1,0 +1,5 @@
+{"conclusion":"success","event":"dynamic","head_sha":"6bb7927ecf707cec630874ddec40a4faa77825f5","id":42569716441,"name":"Push on main","status":"completed"}
+{"conclusion":"success","event":"push","head_sha":"6bb7927ecf707cec630874ddec40a4faa77825f5","id":42569717140,"name":"Run site","status":"completed"}
+{"conclusion":"success","event":"push","head_sha":"6bb7927ecf707cec630874ddec40a4faa77825f5","id":42569717083,"name":"Verify candidate","status":"completed"}
+{"conclusion":"skipped","event":"push","head_sha":"6bb7927ecf707cec630874ddec40a4faa77825f5","id":42569717176,"name":"Run demo","status":"completed"}
+{"conclusion":"success","event":"push","head_sha":"6bb7927ecf707cec630874ddec40a4faa77825f5","id":42568038500,"name":"Verify candidate","status":"completed"}

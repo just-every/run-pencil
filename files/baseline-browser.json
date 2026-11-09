@@ -1,0 +1,261 @@
+{
+  "config": {
+    "argv": [
+      "/home/agent/.rer/toolchain/node-22.20.0/node_modules/node/bin/node",
+      "/workspace/run-pencil-main/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      "/tmp/pencil-main.playwright.config.ts",
+      "tests/e2e/calculations.spec.ts",
+      "--grep",
+      "builds a conditional total",
+      "--project",
+      "desktop",
+      "--workers=1"
+    ],
+    "configFile": "/tmp/pencil-main.playwright.config.ts",
+    "rootDir": "/workspace/run-pencil-main/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/pencil-main-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "/workspace/run-pencil-main/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/tmp/pencil-main-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "/workspace/run-pencil-main/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/tmp/pencil-main-browser-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "desktop",
+        "testDir": "/workspace/run-pencil-main/tests/e2e",
+        "snapshotDir": "/workspace/run-pencil-main/tests/e2e",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4173",
+          "launchOptions": {
+            "headless": true,
+            "args": [
+              "--no-sandbox",
+              "--use-mock-keychain",
+              "--password-store=basic"
+            ],
+            "executablePath": "/usr/bin/chromium"
+          },
+          "trace": "retain-on-failure",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "desktop"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/tmp/pencil-main-browser.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "calculations.spec.ts",
+      "file": "calculations.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "[LOGIC-003,LOGIC-006,PAY-001,PAY-005,PAY-003,PAY-004,DIST-009] builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 208360,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-09T08:22:10.326Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "Calculations payment-connection · desktop",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-main-browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-payment-connection-·-desktop-63a8d857c75c0f24fcf4c0302598d3844f3e5d7b.png"
+                    },
+                    {
+                      "name": "Calculations builder · desktop",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-main-browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-builder-·-desktop-b5aea0b92b93af04a415c5ae4cb4bd19c4bf77f7.png"
+                    },
+                    {
+                      "name": "Calculations payment-builder · desktop",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-main-browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-payment-builder-·-desktop-56fd9bfb87a9bd7e566257c90288c2458c79c2c8.png"
+                    },
+                    {
+                      "name": "Calculations preview · desktop",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-main-browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-preview-·-desktop-73555c447ec735705d75c28f8fc4fc2440d9cfa7.png"
+                    },
+                    {
+                      "name": "Calculations payment-step · desktop",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-main-browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-payment-step-·-desktop-f974f9cb382a717484a5d5e969b9b257cd88fbd6.png"
+                    },
+                    {
+                      "name": "Calculations cancel-return · desktop",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-main-browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-cancel-return-·-desktop-c9ac54f7346baf573b8fa0efc7c83eb05517a5c7.png"
+                    },
+                    {
+                      "name": "Calculations completed-4 · desktop",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-main-browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-completed-4-·-desktop-fd8a66a6d3db47e5c9076b5722e161fbd2027ff6.png"
+                    },
+                    {
+                      "name": "Calculations completed-8 · desktop",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-main-browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-completed-8-·-desktop-acb8cb58168fdc16521430a778ceb54088c4aee5.png"
+                    },
+                    {
+                      "name": "Embed payment",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-main-browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Embed-payment-54d03e7dce1503e0526d265747d4b1c93d246359.png"
+                    },
+                    {
+                      "name": "Embed checkout-top-level",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-main-browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Embed-checkout-top-level-b219e2fb2c16005a0da1f638ec92859b3552347d.png"
+                    },
+                    {
+                      "name": "Embed success-return",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-main-browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Embed-success-return-eaddd09b575476a2f064967a56242c3e5638bcbc.png"
+                    },
+                    {
+                      "name": "Calculations payment-ledger · desktop",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-main-browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-payment-ledger-·-desktop-90e9e28ed167b0dd49b6abf7b588bfc3cec69fb6.png"
+                    },
+                    {
+                      "name": "Calculations ledger · desktop",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-main-browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-ledger-·-desktop-b25f08579c38af6e93e0ef7f700cc0e89214ad9b.png"
+                    },
+                    {
+                      "name": "Embed missing acknowledgement · desktop",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-main-browser-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Embed-missing-acknowledgement-·-desktop-4fd350c3b8c831ad29909a637200fe4121a3c273.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8ebd8106908a17de735d-d116f85458b81dd240e9",
+          "file": "contract.ts",
+          "line": 4,
+          "column": 3
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-09T08:20:46.408Z",
+    "duration": 293203.859,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,259 @@
+[WebServer] (node:10039) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:10050) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:10061) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[WebServer] (node:10061) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/app/loaders.ts:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/app/loaders.ts:105:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/app/loaders.ts:126:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/features/results/ui/sharedReportLoader.ts:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin builtin:vite-reporter] 
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[WebServer] [PLUGIN_TIMINGS] JavaScript callbacks ran for 5.0s of this 5.4s build (92%).
+[WebServer] The slowest callbacks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+[WebServer]   - plugin tanstack-start-core::server-fn:client transform (32%, 1.7s, 17 calls)
+[WebServer]   - plugin pencil-backup-manifest load (19%, 1.0s, 2523 calls)
+[WebServer] Additional callback time came from the callbacks below and from callbacks under 1s.
+[WebServer] 4 callbacks are listed without a time. Their calls overlapped, so the time inside one call includes work from other calls. To find their cost, profile the build with `node --cpu-prof`:
+[WebServer]   - plugin tanstack-start-core:import-protection resolveId (7540 calls)
+[WebServer]   - plugin vite:asset load (15 calls)
+[WebServer]   - plugin @tailwindcss/vite:generate:build transform (29 calls)
+[WebServer]   … and 1 more
+[WebServer] See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.
+[WebServer] 
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/features/results/ui/sharedReportLoader.ts?tss-serverfn-split:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:105:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:126:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts:105:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts:126:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/features/results/ui/sharedReportLoader.ts:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] (node:10106) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+[WebServer] ▲ [WARNING] Scheduled Workers are not automatically triggered during local development.
+[WebServer] 
+[WebServer]   To manually trigger a scheduled event, run:
+[WebServer]     curl "http://127.0.0.1:4173/cdn-cgi/local/scheduled"
+[WebServer]   For more details, see https://developers.cloudflare.com/workers/configuration/cron-triggers/#test-cron-triggers-locally
+[WebServer] 
+[WebServer] 
+(node:10022) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:10672) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:10672) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+[WebServer] ✘ [ERROR] Error inside ProxyWorker (the affected request failed; the dev server continues): POST http://127.0.0.1:4173/api/public/flows/calculated-order-desktop-1794212852015/responses (failed after 1 attempt): Network connection lost.
+[WebServer] 
+[WebServer] 
+[WebServer] ▲ [WARNING] ProxyWorker: GET http://127.0.0.1:4173/api/app/answer-alerts?flowId=01M6ZPQ2EWBWYT4XXW3T0JX0S9 recovered on attempt 2 after a dropped connection to the UserWorker
+[WebServer] 
+[WebServer] 
+  ✘  1 [desktop] › tests/e2e/contract.ts:4:3 › [LOGIC-003,LOGIC-006,PAY-001,PAY-005,PAY-003,PAY-004,DIST-009] builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals (2.4m)
+(node:11227) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:11227) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+[WebServer] ▲ [WARNING] ProxyWorker: GET http://127.0.0.1:4173/api/app/distribution/segments recovered on attempt 2 after a dropped connection to the UserWorker
+[WebServer] 
+[WebServer] 
+[WebServer] ▲ [WARNING] ProxyWorker: GET http://127.0.0.1:4173/api/app/distribution/contacts?q=&offset=0&limit=250 recovered on attempt 2 after a dropped connection to the UserWorker
+[WebServer] 
+[WebServer] 
+[WebServer] ✘ [ERROR] kj::getCaughtExceptionAsKj() = kj/async-io-unix.c++:186: disconnected: ::write(fd, buffer.begin(), buffer.size()): Broken pipe
+[WebServer] 
+[WebServer]   stack: /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2038 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2ef1 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583f90f /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583fb55 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589bd33 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fad7 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fe48 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3343740 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247f477
+[WebServer] 
+[WebServer] 
+[WebServer] ✘ [ERROR] kj::getCaughtExceptionAsKj() = kj/async-io-unix.c++:186: disconnected: ::write(fd, buffer.begin(), buffer.size()): Broken pipe
+[WebServer] 
+[WebServer]   stack: /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2038 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2ef1 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583f90f /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583fb55 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589bd33 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fad7 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fe48 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3343740 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247f477
+[WebServer] 
+[WebServer] 
+[WebServer] ▲ [WARNING] ProxyWorker: GET http://127.0.0.1:4173/api/app/flows/01M6ZPVX2G1ABBJ2TY326K7340/collectors recovered on attempt 2 after a dropped connection to the UserWorker
+[WebServer] 
+[WebServer] 
+[WebServer] ✘ [ERROR] kj::getCaughtExceptionAsKj() = kj/async-io-unix.c++:186: disconnected: ::write(fd, buffer.begin(), buffer.size()): Broken pipe
+[WebServer] 
+[WebServer]   stack: /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2038 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@56a2ef1 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583f90f /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@583fb55 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@5a392a8 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589bd33 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fad7 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@589fe48 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@3343740 /workspace/run-pencil/node_modules/.pnpm/@cloudflare+workerd-linux-64@1.20260907.1/node_modules/@cloudflare/workerd-linux-64/bin/workerd@247f477
+[WebServer] 
+[WebServer] 
+[WebServer] ✘ [ERROR] Error inside ProxyWorker (the affected request failed; the dev server continues): POST http://127.0.0.1:4173/api/public/flows/calculated-order-mobile-1794213010416/views (failed after 1 attempt): Network connection lost.
+[WebServer] 
+[WebServer] 
+(node:11227) PromiseRejectionHandledWarning: Promise rejection was handled asynchronously (rejection id: 35)
+  ✘  2 [mobile] › tests/e2e/contract.ts:4:3 › [LOGIC-003,LOGIC-006,PAY-001,PAY-005,PAY-003,PAY-004,DIST-009] builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals (1.2m)
+[WebServer] 🪵  Logs were written to "/workspace/run-pencil/.isolated-config/.wrangler/logs/wrangler-2026-11-09_08-27-16_892.log"
+
+
+  1) [desktop] › tests/e2e/contract.ts:4:3 › [LOGIC-003,LOGIC-006,PAY-001,PAY-005,PAY-003,PAY-004,DIST-009] builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('iframe').contentFrame().getByRole('link', { name: 'Continue to Stripe Checkout', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" locator('iframe').contentFrame().getByRole('link', { name: 'Continue to Stripe Checkout', exact: true }) with timeout 5000ms
+      - waiting for locator('iframe').contentFrame().getByRole('link', { name: 'Continue to Stripe Checkout', exact: true })
+
+
+       at calculations.spec.ts:432
+
+      430 |     await child.getByRole('button', { name: 'Pay $48.00 with Stripe', exact: true }).click()
+      431 |     const continuation = child.getByRole('link', { name: 'Continue to Stripe Checkout', exact: true })
+    > 432 |     await expect(continuation).toBeVisible()
+          |                                ^
+      433 |     await expect(continuation).toHaveAttribute('target', '_top')
+      434 |     const fallbackCheckout = [...stripe.sessions.values()].find(session => !previousSessions.has(session.id))
+      435 |     expect(fallbackCheckout).toBeDefined()
+        at /workspace/run-pencil/tests/e2e/calculations.spec.ts:432:32
+
+    attachment #1: Calculations payment-connection · desktop (image/png) ───────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-payment-connection-·-desktop-2fa128bf01e946a97efd52b330f1acb187c227af.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: Calculations builder · desktop (image/png) ──────────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-builder-·-desktop-f1f70224d6ded214605778505dba465d35ed6518.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: Calculations payment-builder · desktop (image/png) ──────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-payment-builder-·-desktop-018419e41444b043921475efef129b45520739c9.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: Calculations preview · desktop (image/png) ──────────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-preview-·-desktop-c0572f255f3e2397ba7c6ee4801abb5fd586f6d7.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #5: Calculations payment-step · desktop (image/png) ─────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-payment-step-·-desktop-ffc8f075448cd3beb60d790ce03bdb36945796a0.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #6: Calculations cancel-return · desktop (image/png) ────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-cancel-return-·-desktop-33b65beba6c6e7f9d8529fa3e11ecc1c60c2a80f.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #7: Calculations completed-4 · desktop (image/png) ──────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-completed-4-·-desktop-f66ccc36c7621fbd544956e1131cf65d9c332723.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #8: Calculations completed-8 · desktop (image/png) ──────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-completed-8-·-desktop-568bcb934f3276215fbf8a55eedd861609cb0878.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #9: Embed payment (image/png) ───────────────────────────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Embed-payment-9467b4de3157cca373d0e57a8322b4a10f8daf09.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #10: Embed checkout-top-level (image/png) ───────────────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Embed-checkout-top-level-069a1c111b5acd86a1c7e62b482675049bb04d09.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #11: Embed success-return (image/png) ───────────────────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Embed-success-return-17bdaca83b50cae65e2078619955549c54ec0661.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #12: Calculations payment-ledger · desktop (image/png) ──────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-payment-ledger-·-desktop-96c2ee2601da5584b22b8163768c9fcefb0d7c7d.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #13: Calculations ledger · desktop (image/png) ──────────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/attachments/Calculations-ledger-·-desktop-741b772e7cc69d717db46b4fc947fddf1bd54b79.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/error-context.md
+
+    attachment #15: trace (application/zip) ────────────────────────────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [mobile] › tests/e2e/contract.ts:4:3 › [LOGIC-003,LOGIC-006,PAY-001,PAY-005,PAY-003,PAY-004,DIST-009] builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals 
+
+    TimeoutError: page.waitForResponse: Timeout 15000ms exceeded while waiting for event "response"
+
+       at calculations.spec.ts:16
+
+      14 |
+      15 | // Submission admission uses the signed public form-load timestamp.
+    > 16 | const formLoad = (page: Page) => page.waitForResponse(response => new URL(response.url()).pathname.endsWith('/views') && response.request().method() === 'POST' && response.ok())
+         |                                       ^
+      17 | async function submissionWindow(load: Promise<Response>) {
+      18 |   const {loadTime} = await (await load).json() as {loadTime:string}
+      19 |   const at = Number(loadTime.split('.')[1])
+        at formLoad (/workspace/run-pencil/tests/e2e/calculations.spec.ts:16:39)
+        at /workspace/run-pencil/tests/e2e/calculations.spec.ts:162:20
+
+    TimeoutError: page.waitForResponse: Timeout 15000ms exceeded while waiting for event "response"
+
+       at calculations.spec.ts:16
+
+      14 |
+      15 | // Submission admission uses the signed public form-load timestamp.
+    > 16 | const formLoad = (page: Page) => page.waitForResponse(response => new URL(response.url()).pathname.endsWith('/views') && response.request().method() === 'POST' && response.ok())
+         |                                       ^
+      17 | async function submissionWindow(load: Promise<Response>) {
+      18 |   const {loadTime} = await (await load).json() as {loadTime:string}
+      19 |   const at = Number(loadTime.split('.')[1])
+        at formLoad (/workspace/run-pencil/tests/e2e/calculations.spec.ts:16:39)
+        at /workspace/run-pencil/tests/e2e/calculations.spec.ts:162:20
+
+    attachment #1: Calculations payment-connection · mobile (image/png) ────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/attachments/Calculations-payment-connection-·-mobile-6d94f5c09e242253f44fcfb8fed359489195c9ad.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: Calculations builder · mobile (image/png) ───────────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/attachments/Calculations-builder-·-mobile-d094890892bbbcd1c6c6c1e50e28b2fa92c80061.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: Calculations payment-builder · mobile (image/png) ───────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/attachments/Calculations-payment-builder-·-mobile-029d7da632fcb9cdc61fe78dccfa1e5a667a65e9.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: Calculations preview · mobile (image/png) ───────────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/attachments/Calculations-preview-·-mobile-d23229cf3e5e6e79882a4c4d4f0cfa8d94f92aa3.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/error-context.md
+
+    attachment #6: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/calculations--LOGIC-003-LO-a3a08-tains-both-published-totals-mobile/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [desktop] › tests/e2e/contract.ts:4:3 › [LOGIC-003,LOGIC-006,PAY-001,PAY-005,PAY-003,PAY-004,DIST-009] builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals 
+    [mobile] › tests/e2e/contract.ts:4:3 › [LOGIC-003,LOGIC-006,PAY-001,PAY-005,PAY-003,PAY-004,DIST-009] builds a conditional total, previews calculated routing, pays each branch on Stripe Checkout and retains both published totals 

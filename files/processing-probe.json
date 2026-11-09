@@ -1,0 +1,294 @@
+{
+  "config": {
+    "argv": [
+      "/home/agent/.rer/toolchain/node-22.20.0/node_modules/node/bin/node",
+      "/workspace/run-pencil/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      "/tmp/pencil-f58-probe.config.ts",
+      "--workers=1"
+    ],
+    "configFile": "/tmp/pencil-f58-probe.config.ts",
+    "rootDir": "/tmp/pencil-f58-probe",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/tmp/pencil-f58-probe-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "desktop",
+        "name": "desktop",
+        "testDir": "/tmp/pencil-f58-probe",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/tmp/pencil-f58-probe-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile",
+        "name": "mobile",
+        "testDir": "/tmp/pencil-f58-probe",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/tmp/pencil-f58-probe-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "desktop",
+        "testDir": "/tmp/pencil-f58-probe",
+        "snapshotDir": "/tmp/pencil-f58-probe",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4173",
+          "launchOptions": {
+            "headless": true,
+            "args": [
+              "--no-sandbox",
+              "--use-mock-keychain",
+              "--password-store=basic"
+            ],
+            "executablePath": "/usr/bin/chromium"
+          },
+          "trace": "retain-on-failure",
+          "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          },
+          "screen": {
+            "width": 1920,
+            "height": 1080
+          },
+          "deviceScaleFactor": 1,
+          "isMobile": false,
+          "hasTouch": false,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "desktop"
+      },
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/tmp/pencil-f58-probe-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "mobile",
+        "testDir": "/tmp/pencil-f58-probe",
+        "snapshotDir": "/tmp/pencil-f58-probe",
+        "testIgnore": [],
+        "testMatch": "**/*.@(spec|test).?(c|m)[jt]s?(x)",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "http://127.0.0.1:4173",
+          "launchOptions": {
+            "headless": true,
+            "args": [
+              "--no-sandbox",
+              "--use-mock-keychain",
+              "--password-store=basic"
+            ],
+            "executablePath": "/usr/bin/chromium"
+          },
+          "trace": "retain-on-failure",
+          "userAgent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Mobile Safari/537.36",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "screen": {
+            "width": 393,
+            "height": 851
+          },
+          "deviceScaleFactor": 2.75,
+          "isMobile": true,
+          "hasTouch": true,
+          "defaultBrowserType": "chromium"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "mobile"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/tmp/pencil-f58-probe.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "processing.spec.ts",
+      "file": "processing.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "native ACH respondent processing public-door probe",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "desktop",
+              "projectName": "desktop",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 19343,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "(node:7860) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-11-09T08:16:22.979Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ACH respondent processing · desktop",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-f58-probe-results/processing-native-ACH-resp-01a16-rocessing-public-door-probe-desktop/attachments/ACH-respondent-processing-·-desktop-5bf4531bebe6b479dcae3bdfed848085041c172b.png"
+                    },
+                    {
+                      "name": "ACH respondent paid · desktop",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-f58-probe-results/processing-native-ACH-resp-01a16-rocessing-public-door-probe-desktop/attachments/ACH-respondent-paid-·-desktop-dae1a42b07c015138b926ec5a0c577a9fc6eb2fa.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "01a2c824ea3aa04346f9-dd072b2cc955d7e4db91",
+          "file": "processing.spec.ts",
+          "line": 8,
+          "column": 5
+        },
+        {
+          "title": "native ACH respondent processing public-door probe",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "mobile",
+              "projectName": "mobile",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 21679,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "(node:8018) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-11-09T08:16:43.821Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "ACH respondent processing · mobile",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-f58-probe-results/processing-native-ACH-resp-01a16-rocessing-public-door-probe-mobile/attachments/ACH-respondent-processing-·-mobile-c311aaca34563c0400a66e7ed4b2591a3fa646b7.png"
+                    },
+                    {
+                      "name": "ACH respondent paid · mobile",
+                      "contentType": "image/png",
+                      "path": "/tmp/pencil-f58-probe-results/processing-native-ACH-resp-01a16-rocessing-public-door-probe-mobile/attachments/ACH-respondent-paid-·-mobile-df84f3e84a76134a078910f83d9e64b08418d348.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "01a2c824ea3aa04346f9-023bf6a07f521ae9e21d",
+          "file": "processing.spec.ts",
+          "line": 8,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-09T08:14:22.604Z",
+    "duration": 163623.059,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
