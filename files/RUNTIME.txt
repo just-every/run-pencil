@@ -1,0 +1,20 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+
+ RUN  v4.1.11 /workspace/run-pencil
+
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+console warning; message = Called .text() on an HTTP body which does not appear to be text. The body's Content-Type is "application/octet-stream". The result will probably be corrupted. Consider checking the Content-Type header before interpreting entities as text.
+
+ Test Files  1 passed (1)
+      Tests  12 passed (12)
+   Start at  03:28:58
+   Duration  35.06s (transform 12.14s, setup 0ms, import 23.67s, tests 8.94s, environment 0ms)
+

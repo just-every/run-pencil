@@ -1,0 +1,109 @@
+[WebServer] (node:5807) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:5819) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:5844) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[WebServer] (node:5844) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[WebServer] (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+[WebServer]   - import "../../vite.config" without a file extension (tests/helpers/vite-mail.config.ts:3:23). Add the file extension
+[WebServer] Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/app/loaders.ts:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/app/loaders.ts:105:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/app/loaders.ts:126:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:client] /workspace/run-pencil/src/core/features/results/ui/sharedReportLoader.ts:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin builtin:vite-reporter] 
+[WebServer] (!) Some chunks are larger than 500 kB after minification. Consider:
+[WebServer] - Using dynamic import() to code-split the application
+[WebServer] - Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+[WebServer] - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[WebServer] [PLUGIN_TIMINGS] JavaScript callbacks ran for 8.8s of this 10.0s build (88%).
+[WebServer] The slowest callbacks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+[WebServer]   - plugin pencil-backup-manifest load (21%, 2.1s, 2522 calls)
+[WebServer]   - plugin pencil:docs-site load (16%, 1.6s, 2538 calls)
+[WebServer] Additional callback time came from the callbacks below and from callbacks under 1s.
+[WebServer] 5 callbacks are listed without a time. Their calls overlapped, so the time inside one call includes work from other calls. To find their cost, profile the build with `node --cpu-prof`:
+[WebServer]   - plugin tanstack-start-core:import-protection resolveId (7537 calls)
+[WebServer]   - plugin vite:asset load (15 calls)
+[WebServer]   - plugin @tailwindcss/vite:generate:build transform (29 calls)
+[WebServer]   … and 2 more
+[WebServer] See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.
+[WebServer] 
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/features/results/ui/sharedReportLoader.ts?tss-serverfn-split:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:105:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts?tss-serverfn-split:126:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts:27:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts:105:31 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/app/loaders.ts:126:36 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [plugin tanstack-start-core::server-fn:ssr] /workspace/run-pencil/src/core/features/results/ui/sharedReportLoader.ts:5:33 createServerFn().inputValidator() is deprecated. Use createServerFn().validator() instead.
+[WebServer] [PLUGIN_TIMINGS] JavaScript callbacks ran for 7.1s of this 8.0s build (89%).
+[WebServer] The slowest callbacks, timed inside each callback (the wait before a callback starts is excluded, the time it awaits is included):
+[WebServer]   - plugin pencil-backup-manifest load (30%, 2.4s, 3327 calls)
+[WebServer] Additional callback time came from the callbacks below and from callbacks under 1s.
+[WebServer] 5 callbacks are listed without a time. Their calls overlapped, so the time inside one call includes work from other calls. To find their cost, profile the build with `node --cpu-prof`:
+[WebServer]   - plugin tanstack-start-core:import-protection resolveId (10479 calls)
+[WebServer]   - plugin vite:asset load (15 calls)
+[WebServer]   - plugin @tailwindcss/vite:generate:build transform (29 calls)
+[WebServer]   … and 2 more
+[WebServer] See https://rolldown.rs/reference/InputOptions.checks#bundlertimings for more details.
+[WebServer] 
+[WebServer] (node:5905) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:5917) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+[WebServer] (node:5930) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:6531) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 
+[WebServer] (node:6539) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] Scheduled Workers are not automatically triggered during local development.
+[WebServer] 
+[WebServer]   To manually trigger a scheduled event, run:
+[WebServer]     curl "http://127.0.0.1:4173/cdn-cgi/local/scheduled"
+[WebServer]   For more details, see https://developers.cloudflare.com/workers/configuration/cron-triggers/#test-cron-triggers-locally
+[WebServer] 
+[WebServer] 
+
+Running 2 tests using 1 worker
+
+(node:6576) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] ProxyWorker: GET http://127.0.0.1:4173/api/app/distribution/contacts?q=&offset=0&limit=250 recovered on attempt 2 after a dropped connection to the UserWorker
+[WebServer] 
+[WebServer] 
+[WebServer] ▲ [WARNING] ProxyWorker: GET http://127.0.0.1:4173/api/app/flows/01M6Z5RD36SV14FYR7XDSGG9KP/collectors recovered on attempt 2 after a dropped connection to the UserWorker
+[WebServer] 
+[WebServer] 
+  ✓  1 [desktop] › tests/e2e/authoring.spec.ts:7:1 › labels, one Save, real controls, reorder, branching, Share and a current dashboard (58.9s)
+(node:6832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] ▲ [WARNING] ProxyWorker: GET http://127.0.0.1:4173/api/app/workspace recovered on attempt 2 after a dropped connection to the UserWorker
+[WebServer] 
+[WebServer] 
+[WebServer] ▲ [WARNING] ProxyWorker: GET http://127.0.0.1:4173/api/app/flows/01M6Z5T7ZQ6S2NBAAWK6N1GA3S/draft recovered on attempt 2 after a dropped connection to the UserWorker
+[WebServer] 
+[WebServer] 
+[WebServer] ▲ [WARNING] ProxyWorker: GET http://127.0.0.1:4173/_serverFn/25cababebd97083b8806d84c439a89ffd1fef1bff1fdbb3030d2538da7dcd222?payload=%7B%22t%22%3A%7B%22t%22%3A10%2C%22i%22%3A0%2C%22p%22%3A%7B%22k%22%3A%5B%22data%22%5D%2C%22v%22%3A%5B%7B%22t%22%3A10%2C%22i%22%3A1%2C%22p%22%3A%7B%22k%22%3A%5B%22path%22%2C%22search%22%5D%2C%22v%22%3A%5B%7B%22t%22%3A1%2C%22s%22%3A%22%2Fapp%22%7D%2C%7B%22t%22%3A1%2C%22s%22%3A%22%22%7D%5D%7D%2C%22o%22%3A0%7D%5D%7D%2C%22o%22%3A0%7D%2C%22f%22%3A127%2C%22m%22%3A%5B%5D%7D recovered on attempt 2 after a dropped connection to the UserWorker
+[WebServer] 
+[WebServer] 
+  ✓  2 [mobile] › tests/e2e/authoring.spec.ts:7:1 › labels, one Save, real controls, reorder, branching, Share and a current dashboard (57.1s)
+
+  2 passed (3.2m)

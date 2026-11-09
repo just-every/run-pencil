@@ -1,0 +1,12 @@
+{
+  "commandExit": 0,
+  "rawLogSha256": "eb72b73fdf74dadbd0a26e35f55092a5e56232596dedd40ebb0eb5173318b01f",
+  "result": [
+    {
+      "ok": true,
+      "schemaVersion": 1,
+      "edition": "just-every/pencil",
+      "manifest": "e25c3b355263974e7455f1e2bdbed5bb84f664019ad5c4519793aa54288ce5a6"
+    }
+  ]
+}

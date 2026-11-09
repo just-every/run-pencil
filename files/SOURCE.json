@@ -1,0 +1,18 @@
+{
+  "commandExit": 0,
+  "rawLogSha256": "1892b885c6a33a572d34c2e527e705be5fe06ee0d1a532254a63a346cd5bfc7d",
+  "result": [
+    {
+      "ok": true,
+      "schemaVersion": 1,
+      "edition": "just-every/pencil",
+      "manifest": "e25c3b355263974e7455f1e2bdbed5bb84f664019ad5c4519793aa54288ce5a6"
+    },
+    {
+      "ok": true,
+      "drift": [],
+      "unrecordedCopies": [],
+      "adapted": []
+    }
+  ]
+}

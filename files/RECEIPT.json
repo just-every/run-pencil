@@ -1,0 +1,181 @@
+{
+  "tag": "sd-pencil-c-f56",
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f56",
+  "head": "66c12b3b8fc144c701562b979fbae2945ffed7af",
+  "baseMain": "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85",
+  "capturedAt": "2026-11-09T03:34:04.124678+00:00",
+  "checks": [
+    {
+      "command": "cloud_run npx -y @runeditrun/rer build",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run pnpm exec vitest run --config vitest.worker.config.ts tests/runtime/journey.worker.test.ts",
+      "exit": 0,
+      "files": 1,
+      "tests": 12
+    },
+    {
+      "command": "PENCIL_E2E_SITE_URL=http://127.0.0.1:4199 cloud_run timeout 1200 pnpm exec playwright test tests/e2e/authoring.spec.ts --config .rer/cloud-playwright.config.ts --project desktop --project mobile --workers=1",
+      "exit": 0,
+      "passed": 2,
+      "assertionWidth": 1440,
+      "screens": [
+        1440,
+        390
+      ],
+      "browser": "/usr/bin/chromium --no-sandbox"
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "cloud_run npx -y @runeditrun/rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "pnpm verify:manifest",
+      "exit": 0
+    },
+    {
+      "command": "pnpm verify:boundaries",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/contract-docs.mjs write FIELD-005; node scripts/contract-docs.mjs check FIELD-005",
+      "exit": 0,
+      "generatedViewsRestored": true
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock; pnpm source:check",
+      "exit": 0,
+      "ok": true,
+      "drift": [],
+      "unrecordedCopies": []
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check after production build",
+      "exit": 0,
+      "ok": true
+    }
+  ],
+  "screens": [
+    {
+      "file": "desktop-video-builder.png",
+      "viewport": 1440,
+      "sha256": "1f3f282bfe293ece20dc7af740a427501678e4d3a257b1f564ba0a321ee74699",
+      "bytes": 354415
+    },
+    {
+      "file": "desktop-video-preview.png",
+      "viewport": 1440,
+      "sha256": "826c032f8d3af964e18c0ebae7b1770f001702588c02afc0c788194b8a5b29bb",
+      "bytes": 820196
+    },
+    {
+      "file": "desktop-video-vimeo-preview.png",
+      "viewport": 1440,
+      "sha256": "ddc455d91c260918d1817996814c89bf018741872d74a8d33cdf468735753396",
+      "bytes": 1532382
+    },
+    {
+      "file": "desktop-video-public-before-play.png",
+      "viewport": 1440,
+      "sha256": "51f8b6e58eeb0aa715c004fb3f8be5531af1d671097840d58fb83987c13312cc",
+      "bytes": 586627
+    },
+    {
+      "file": "desktop-video-public-playing.png",
+      "viewport": 1440,
+      "sha256": "090a6951ace5dedc5c958e76c9195c0007186a5855bd0a8718fc471772b791e6",
+      "bytes": 924308
+    },
+    {
+      "file": "desktop-video-vimeo-public-before-play.png",
+      "viewport": 1440,
+      "sha256": "be559c66668a43af7660c632b2212eeffbfc98f7f18f0b89f2f10d4ce2859cc4",
+      "bytes": 586569
+    },
+    {
+      "file": "desktop-video-vimeo-public-playing.png",
+      "viewport": 1440,
+      "sha256": "090a6951ace5dedc5c958e76c9195c0007186a5855bd0a8718fc471772b791e6",
+      "bytes": 924308
+    },
+    {
+      "file": "mobile-video-builder.png",
+      "viewport": 390,
+      "sha256": "35ce8e13b3c5e2e84809c233c8f4d1d158e73d602768f64bff3dae09ca1a2397",
+      "bytes": 761927
+    },
+    {
+      "file": "mobile-video-preview.png",
+      "viewport": 390,
+      "sha256": "f6255ca6db82ab1e8a2aca6a3c43680888cd849eb0c4c1a200372d4e70b97057",
+      "bytes": 1374560
+    },
+    {
+      "file": "mobile-video-vimeo-preview.png",
+      "viewport": 390,
+      "sha256": "ec43b98000b0e694239bd18fc68058ba61be92d04308fa0b28c36e6b66543edf",
+      "bytes": 1523288
+    },
+    {
+      "file": "mobile-video-public-before-play.png",
+      "viewport": 390,
+      "sha256": "82d1543899c13ee179a609e34a06a6bd950400e24921eaa5e6b83beb237b86c8",
+      "bytes": 452975
+    },
+    {
+      "file": "mobile-video-public-playing.png",
+      "viewport": 390,
+      "sha256": "78fcef4a712c2956c96c84d594c51d0e2cc97c51a3038bd33886caa241a068b9",
+      "bytes": 436704
+    },
+    {
+      "file": "mobile-video-vimeo-public-before-play.png",
+      "viewport": 390,
+      "sha256": "cc08db37edbfbdd0fbbdb7409b85cf8c5b4cd0c8ad8970e05eab6b16e396aa38",
+      "bytes": 452949
+    },
+    {
+      "file": "mobile-video-vimeo-public-playing.png",
+      "viewport": 390,
+      "sha256": "78fcef4a712c2956c96c84d594c51d0e2cc97c51a3038bd33886caa241a068b9",
+      "bytes": 436704
+    }
+  ],
+  "registrationsAdded": 0,
+  "registrationsRemoved": 0,
+  "newEmailShapedFixtureValues": 0,
+  "contractStatusDiff": "empty",
+  "generatedViewsCommitted": false,
+  "migrations": "none",
+  "scan": {
+    "status": "not run in cloud",
+    "commit": "66c12b3b8fc144c701562b979fbae2945ffed7af",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "custody": "maintained Mac lander"
+  },
+  "landing": {
+    "mainEqualsCandidate": false,
+    "RunSite": "not run from cloud",
+    "PR": "not required; branch push is Verify entry point"
+  },
+  "ci": [
+    {
+      "conclusion": null,
+      "event": "push",
+      "head_sha": "66c12b3b8fc144c701562b979fbae2945ffed7af",
+      "html_url": "https://github.com/just-every/run-pencil/actions/runs/42557045263",
+      "id": 42557045263,
+      "name": "Verify candidate",
+      "status": "in_progress"
+    }
+  ],
+  "githubCalls": 1
+}
