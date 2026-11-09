@@ -1,0 +1,11 @@
+PROBE pencil-0.2.104: populated 0077 -> 0078 relay migration -> one provable leak removed; all audits retained; done/refused executions stay with original Business
+✔ a populated agent door upgrades without losing history or restoring authority (14.535853ms)
+✔ relay privacy upgrade removes only provable cross-Business memberships and fences future executions (5.896569ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 178.640278

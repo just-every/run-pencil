@@ -1,0 +1,19 @@
+{
+  "files": [
+    {
+      "path": "tests/agent-door/relay-privacy.mjs",
+      "change": "modified",
+      "before": {
+        "sha256": "7247356cab24472da9c773444eaee655a962feca3c765ed14ae8794addce3cfb",
+        "executable": false
+      },
+      "after": {
+        "sha256": "7a11ab3133c166acf8dea9ca3ced6ee9c9d8ddfdf972c8da7f3bd1122e81d2df",
+        "executable": false
+      }
+    }
+  ],
+  "metadata": [],
+  "meaning": "Origins are comparison baselines; changing an origin does not assert adoption or local byte equality."
+}
+

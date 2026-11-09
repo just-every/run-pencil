@@ -1,0 +1,50 @@
+{
+  "lock": {
+    "label": "source-lock-final",
+    "command": [
+      "timeout",
+      "120",
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "lock"
+    ],
+    "exit": 0,
+    "seconds": 0.75
+  },
+  "check": {
+    "label": "source-lock-check-final",
+    "command": [
+      "timeout",
+      "120",
+      "node",
+      "scripts/edition-authoring/cli.mjs",
+      "check"
+    ],
+    "exit": 0,
+    "seconds": 1.29
+  },
+  "sourceCheck": {
+    "label": "source-check-final",
+    "command": [
+      "timeout",
+      "180",
+      "pnpm",
+      "source:check"
+    ],
+    "exit": 0,
+    "seconds": 3.17
+  },
+  "migrationLedger": {
+    "label": "migration-ledger-node22",
+    "command": [
+      "timeout",
+      "900",
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "scripts/deployment-data-hosted.check.mjs"
+    ],
+    "exit": 0,
+    "seconds": 416.61
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "tag": "sd-pencil-rer-pin-104",
+  "repository": "just-every/run-pencil",
+  "clone": "fresh full-history clone",
+  "candidate": "3c51bdf7dd44363933242447e1536a421f6e9e14",
+  "candidateMatched": true,
+  "mergedMain": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "setupCommand": "cloud_run timeout 300 npx -y @runeditrun/rer setup --owner-email fleet@runeditrun.com --non-interactive",
+  "setupExit": 0,
+  "rerPin": "0.2.104",
+  "npmIntegrity": "sha512-kilBKHhzb1JQITlJjtM+idrn17gNXJUcR1dqZ29v9J04o6PMVYyyoo3KfNs941ykh7vEUjaunAftvZvIhwu3VA==",
+  "releaseNotesRead": "https://github.com/runeditrun/base/releases/tag/rer-v0.2.104",
+  "baseTarget": "96045612467d5e752c668e8557b4bf6e906edfb1",
+  "baseAcquisition": "gh api only; no Base clone",
+  "credentialValuesIncluded": false,
+  "shallow": "false",
+  "fetchedPredecessor": "3c51bdf7dd44363933242447e1536a421f6e9e14"
+}

@@ -1,0 +1,10 @@
+{
+  "source": "gh api repos/runeditrun/base/tarball/96045612467d5e752c668e8557b4bf6e906edfb1",
+  "target": "96045612467d5e752c668e8557b4bf6e906edfb1",
+  "verification": "each blob SHA-1 includes Git blob header and equals authenticated immutable API tree object id",
+  "verifiedFiles": 4692,
+  "treeFiles": 4692,
+  "unmatchedFiles": [],
+  "archiveSha256": "5ab4af6ffba6e80a30694fab8d57ebc0eb83917997bedb63cfd202f225164c1d",
+  "ancestry": "uncached GitHub API; no fabricated history"
+}

@@ -1,0 +1,29 @@
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
+
+
+Pencil resources: disposable hosted installation ready
+PROBE pencil-0.2.104: signed relay pull with adopted policy but missing Business settings -> empty 404
+PROBE pencil-0.2.104: POST /api/rer/agent-decisions + signed running Business pull -> 200 with decisions
+PROBE pencil-0.2.104: POST old Business approval/approve after pairing new Business -> refused; new signed relay has no old decision or execution
+PROBE pencil-0.2.104: POST old Business approval/reject after pairing new Business -> rejected; new signed relay has no old decision or execution
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The native owner must durably stop Business settings
+
+404 !== 200
+
+    at proveRelayPrivacy (file:///home/agent/rer-consolidation/work/sd-pencil-rer-pin-104/run-pencil/tests/agent-door/relay-privacy.mjs:79:10)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async checkPencilResources (file:///home/agent/rer-consolidation/work/sd-pencil-rer-pin-104/run-pencil/tests/agent-door/resources.mjs:102:5)
+    at async file:///home/agent/rer-consolidation/work/sd-pencil-rer-pin-104/run-pencil/tests/agent-door/resources.mjs:107:90 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 404,
+  expected: 200,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v22.20.0

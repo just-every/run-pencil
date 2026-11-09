@@ -1,0 +1,45 @@
+{
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-rer-pin-104",
+  "predecessor": "3c51bdf7dd44363933242447e1536a421f6e9e14",
+  "main": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "head": "bd597801ed2d13626ee5898c3bc91cb55cdf1edd",
+  "rer": {
+    "before": "0.2.103",
+    "after": "0.2.104"
+  },
+  "coreMigrations": {
+    "before": 79,
+    "after": 80
+  },
+  "baseCopies": {
+    "before": 231,
+    "after": 232
+  },
+  "baseFiles": {
+    "before": 773,
+    "after": 776
+  },
+  "contractCounts": {
+    "before": {
+      "done": 142,
+      "partial": 61,
+      "missing": 49,
+      "total": 252
+    },
+    "after": {
+      "done": 142,
+      "partial": 61,
+      "missing": 49,
+      "total": 252
+    }
+  },
+  "clauseStatusChanges": [],
+  "conformance": {
+    "recordedBefore": "2307/2307 (CONTRACT.md predecessor evidence)",
+    "observedAfter": "2675/2675"
+  },
+  "trackedPathsDeletedByRefresh": [],
+  "productScope": "Pencil only; no Base clone, push, or PR",
+  "pr": null
+}

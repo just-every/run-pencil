@@ -1,0 +1,35 @@
+{
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-rer-pin-104",
+  "head": "bd597801ed2d13626ee5898c3bc91cb55cdf1edd",
+  "parents": [
+    "3c51bdf7dd44363933242447e1536a421f6e9e14",
+    "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef"
+  ],
+  "status": "READY",
+  "pushAttempts": 1,
+  "pushGuard": "python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-pencil-rer-pin-104",
+  "publication": {
+    "status": "PASS",
+    "complete": true,
+    "findings": 0,
+    "reviewed": 0
+  },
+  "workingTreeClean": true,
+  "pr": null,
+  "landingClaim": false,
+  "remoteAdvertisement": {
+    "head": "bd597801ed2d13626ee5898c3bc91cb55cdf1edd",
+    "ref": "refs/heads/cloud/sd-pencil-rer-pin-104",
+    "verified": true
+  },
+  "requiredCI": {
+    "runId": 42612405228,
+    "url": "https://github.com/just-every/run-pencil/actions/runs/42612405228",
+    "head": "bd597801ed2d13626ee5898c3bc91cb55cdf1edd",
+    "status": "completed",
+    "conclusion": "success",
+    "observations": 4,
+    "generatedViewExemption": false
+  }
+}

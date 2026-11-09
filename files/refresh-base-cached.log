@@ -1,0 +1,1649 @@
+{
+  "refreshed": "96045612467d5e752c668e8557b4bf6e906edfb1",
+  "record": "base-copies.json",
+  "copies": [
+    {
+      "path": ".github/workflows/run-demo.yml",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "docs/contract-changes-20261002.json",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "migrations/core/0012_base_invitation_cancellation.sql",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "migrations/core/0013_base_mail_outbox.sql",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "migrations/core/0022_owner_claim.sql",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "migrations/core/0023_dev_sessions.sql",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "migrations/core/0024_domain_rules_step_up.sql",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "migrations/core/0027_base_provider_control.sql",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "migrations/core/0028_base_provider_pins.sql",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "migrations/core/0029_base_dependency_setup.sql",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "migrations/core/0030_base_idp_owner.sql",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "migrations/core/0036_owner_signin.sql",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "migrations/core/0075_business_settings.sql",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "migrations/core/0076_business_people.sql",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/artifact.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/bindings.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/capabilities.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/cli.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/declarations.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/export.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/generators",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 4,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/mail.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/migrations.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/native-export.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/package.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/paths.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/payloads.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/schema/dependencies.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/schema/json-schema.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/schema/setup-validation.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/schema/SETUP.schema.json",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/sign-in.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/spec.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/sql-statements.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/base-copies.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/cli.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/files.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/LICENSE",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/manifest.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/parent-comparison.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/projection-lock.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/release.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/sources.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/updates.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/install-gitleaks.sh",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/schema/json-schema.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "SEED-COMMAND-CONTRACT.md",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/agent-door",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 68,
+      "added": [
+        "src/base/agent-door/business-state.ts",
+        "src/base/agent-door/conformance/business-stop.mjs"
+      ],
+      "removed": []
+    },
+    {
+      "path": "src/base/ai",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 13,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/business-settings",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 16,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/contract-filter.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/contract-page.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/contract-style.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/d1-transport",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 4,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/demo",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 14,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/dependencies",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 16,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/deployment-health.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/dispatch.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/editor",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 13,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/font-head.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/font-response.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/hydration",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 4,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/icon-head.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/identity.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/import-kit/CONTRACT.md",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/import-kit/FIXTURES.md",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/import-kit/README.md",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/import-kit/schema",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 2,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/import-kit/src",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 218,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/LICENSE",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/lobby.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/mail",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 65,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/operator-auth",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 111,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/owner-claim",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 10,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/page-style.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/rejected-response.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/run-site.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/seed-contract.d.mts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/seed-contract.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/select-style.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/setup-state.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/setup.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/static-assets.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/theme-frame.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/foundation/runtime/icon-head.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/foundation/runtime/theme-frame.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/run-pricing.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/delivery/base/schema/business-field-inputs.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/archive-source.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/workflow-copies.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/edition-migrations.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/module-closure.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/copy-checkout.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/base-acknowledgements.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/adopt.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/lock.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/offline-git.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/hosting-page.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/run-chooser-style.ts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/workflow-scripts.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/module-packages.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/copy-namespaces.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/module-edges.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/runtime-dependencies.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/module-resolution.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/module-syntax.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/package-target.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/LICENSE",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/README.md",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-helper-string-parser/index.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-helper-validator-identifier/identifier.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-helper-validator-identifier/index.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-helper-validator-identifier/keyword.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/index.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/options.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/parse-error.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/parse-error/bind-operator-errors.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/parse-error/module-errors.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/parse-error/parse-expression-errors.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/parse-error/pipeline-operator-errors.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/parse-error/standard-errors.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/parse-error/strict-mode-errors.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/parse-error/to-node-description.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/parser/base.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/parser/comments.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/parser/expression.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/parser/index.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/parser/lval.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/parser/node.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/parser/statement.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/parser/util.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/plugin-utils.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/plugins/estree.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/plugins/flow/index.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/plugins/flow/scope.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/plugins/jsx/index.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/plugins/jsx/xhtml.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/plugins/placeholders.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/plugins/typescript/index.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/plugins/typescript/scope.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/plugins/v8intrinsic.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/tokenizer/context.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/tokenizer/index.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/tokenizer/state.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/tokenizer/types.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/types.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/util/class-scope.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/util/expression-scope.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/util/identifier.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/util/location.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/util/production-parameter.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/util/scope.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/util/scopeflags.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/babel-parser/babel-parser/util/whitespace.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/LICENSE",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/README.md",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/compose/compose-collection.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/compose/compose-doc.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/compose/compose-node.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/compose/compose-scalar.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/compose/composer.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/compose/resolve-block-map.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/compose/resolve-block-scalar.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/compose/resolve-block-seq.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/compose/resolve-end.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/compose/resolve-flow-collection.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/compose/resolve-flow-scalar.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/compose/resolve-props.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/compose/util-contains-newline.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/compose/util-empty-scalar-position.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/compose/util-flow-indent-check.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/compose/util-map-includes.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/doc/Document.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/doc/anchors.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/doc/applyReviver.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/doc/createNode.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/doc/directives.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/errors.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/index.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/log.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/nodes/Alias.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/nodes/Collection.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/nodes/Node.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/nodes/Pair.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/nodes/Scalar.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/nodes/YAMLMap.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/nodes/YAMLSeq.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/nodes/addPairToJSMap.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/nodes/identity.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/nodes/toJS.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/parse/cst-scalar.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/parse/cst-stringify.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/parse/cst-visit.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/parse/cst.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/parse/lexer.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/parse/line-counter.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/parse/parser.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/public-api.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/Schema.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/common/map.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/common/null.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/common/seq.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/common/string.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/core/bool.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/core/float.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/core/int.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/core/schema.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/json/schema.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/tags.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/yaml-1.1/binary.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/yaml-1.1/bool.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/yaml-1.1/float.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/yaml-1.1/int.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/yaml-1.1/merge.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/yaml-1.1/omap.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/yaml-1.1/pairs.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/yaml-1.1/schema.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/yaml-1.1/set.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/schema/yaml-1.1/timestamp.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/stringify/foldFlowLines.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/stringify/stringify.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/stringify/stringifyCollection.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/stringify/stringifyComment.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/stringify/stringifyDocument.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/stringify/stringifyNumber.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/stringify/stringifyPair.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/stringify/stringifyString.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/util.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "scripts/edition-authoring/vendor/yaml/visit.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/run-data.mjs",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    },
+    {
+      "path": "src/base/run-data.d.mts",
+      "from": "e82790b601c62e077a1a09380fc787531d9cded5",
+      "files": 1,
+      "added": [],
+      "removed": []
+    }
+  ],
+  "retired": [],
+  "adapted": [],
+  "relocated": [],
+  "withheld": [],
+  "packageDependencies": [
+    {
+      "package": "react",
+      "version": "^19.2.8",
+      "baseVersion": "19.3.1",
+      "conflict": true,
+      "files": [
+        "src/base/editor/react.tsx",
+        "src/base/hydration/unit.tsx"
+      ]
+    }
+  ],
+  "editionMigrations": [],
+  "templateAdoptions": [],
+  "notices": [
+    ".github/workflows/verify.yml: preserved seed-owned workflow. The current template pins Ubuntu 24.04 and moves browser and apt caches to the runner temporary directory. To adopt, merge export/verify.yml from Base 96045612467d5e752c668e8557b4bf6e906edfb1 into .github/workflows/verify.yml, then run node node_modules/@runeditrun/rer/edition-authoring/cli.mjs record-base .github/workflows/verify.yml export/verify.yml 96045612467d5e752c668e8557b4bf6e906edfb1 --base <base-checkout> and repeat rer refresh-base --ref 96045612467d5e752c668e8557b4bf6e906edfb1 --base <base-checkout>."
+  ],
+  "next": "Run verify-base, then the edition tests, and commit the copied files with the record."
+}
+refresh-base: complete (exit 0)

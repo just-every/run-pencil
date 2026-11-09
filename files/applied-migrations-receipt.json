@@ -1,0 +1,12 @@
+[
+  {
+    "path": "migrations/core/0074_agent_door.sql",
+    "unchanged": true,
+    "sha256": "016d8a98b964385f5c4a13447361c3c783910a76aaf4606b0e0081482bc819cc"
+  },
+  {
+    "path": "migrations/core/0077_agent_door_refresh.sql",
+    "unchanged": true,
+    "sha256": "b0f029a66d5b404f6adb3e5b132dcff6ab30f615c39dc49bd6fbfadbd22e3062"
+  }
+]

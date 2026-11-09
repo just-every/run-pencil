@@ -1,0 +1,83 @@
+{
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-rer-pin-104",
+  "head_sha": "bd597801ed2d13626ee5898c3bc91cb55cdf1edd",
+  "queries": [
+    {
+      "call": 1,
+      "epoch": 1794225174.2098916,
+      "utc": "2026-11-09T11:52:54.209892+00:00",
+      "endpoint": "repos/just-every/run-pencil/actions/runs?head_sha=bd597801ed2d13626ee5898c3bc91cb55cdf1edd&per_page=100",
+      "exit": 0,
+      "response": [
+        {
+          "conclusion": null,
+          "event": "push",
+          "head_branch": "cloud/sd-pencil-rer-pin-104",
+          "head_sha": "bd597801ed2d13626ee5898c3bc91cb55cdf1edd",
+          "html_url": "https://github.com/just-every/run-pencil/actions/runs/42612405228",
+          "id": 42612405228,
+          "name": "Verify candidate",
+          "status": "in_progress"
+        }
+      ]
+    },
+    {
+      "call": 2,
+      "epoch": 1794225475.211064,
+      "utc": "2026-11-09T11:57:55.211064+00:00",
+      "endpoint": "repos/just-every/run-pencil/actions/runs/42612405228",
+      "exit": 0,
+      "response": {
+        "conclusion": null,
+        "event": "push",
+        "head_branch": "cloud/sd-pencil-rer-pin-104",
+        "head_sha": "bd597801ed2d13626ee5898c3bc91cb55cdf1edd",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42612405228",
+        "id": 42612405228,
+        "name": "Verify candidate",
+        "status": "in_progress"
+      }
+    },
+    {
+      "call": 3,
+      "epoch": 1794225776.2122247,
+      "utc": "2026-11-09T12:02:56.212225+00:00",
+      "endpoint": "repos/just-every/run-pencil/actions/runs/42612405228",
+      "exit": 0,
+      "response": {
+        "conclusion": null,
+        "event": "push",
+        "head_branch": "cloud/sd-pencil-rer-pin-104",
+        "head_sha": "bd597801ed2d13626ee5898c3bc91cb55cdf1edd",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42612405228",
+        "id": 42612405228,
+        "name": "Verify candidate",
+        "status": "in_progress"
+      }
+    },
+    {
+      "call": 4,
+      "epoch": 1794226077.2134905,
+      "utc": "2026-11-09T12:07:57.213490+00:00",
+      "endpoint": "repos/just-every/run-pencil/actions/runs/42612405228",
+      "exit": 0,
+      "response": {
+        "conclusion": "success",
+        "event": "push",
+        "head_branch": "cloud/sd-pencil-rer-pin-104",
+        "head_sha": "bd597801ed2d13626ee5898c3bc91cb55cdf1edd",
+        "html_url": "https://github.com/just-every/run-pencil/actions/runs/42612405228",
+        "id": 42612405228,
+        "name": "Verify candidate",
+        "status": "completed"
+      }
+    }
+  ],
+  "watcher": "one watcher; reads at least 300 seconds apart; maximum eight watcher calls, two calls reserved for failure diagnosis",
+  "run_id": 42612405228,
+  "run_url": "https://github.com/just-every/run-pencil/actions/runs/42612405228",
+  "final_status": "completed",
+  "final_conclusion": "success",
+  "result": "success"
+}

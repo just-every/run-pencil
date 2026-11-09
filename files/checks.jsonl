@@ -1,0 +1,29 @@
+{"label": "populated-migration", "command": ["timeout", "120", "node", "--test", "scripts/deployment-data-agent-door-upgrade.check.mjs"], "exit": 0, "seconds": 0.36}
+{"label": "native-d1-upgrade", "command": ["timeout", "300", "pnpm", "verify:migrations"], "exit": 0, "seconds": 84.59}
+{"label": "migration-ledger", "command": ["timeout", "240", "node", "--test", "--test-concurrency=1", "scripts/deployment-data-hosted.check.mjs"], "exit": 124, "seconds": 240.92}
+{"label": "contract-write", "command": ["timeout", "60", "node", "scripts/contract-docs.mjs", "write", "BASE-AGENT-001", "BASE-AGENT-002", "BASE-AGENT-003", "BASE-AGENT-004", "BASE-AGENT-005", "BASE-AGENT-006", "BASE-AGENT-007", "BASE-AGENT-008", "BASE-AGENT-009", "BASE-AGENT-010", "BASE-AGENT-011", "BASE-AGENT-012", "BASE-AGENT-013"], "exit": 0, "seconds": 0.31}
+{"label": "contract-check", "command": ["timeout", "60", "node", "scripts/contract-docs.mjs", "check", "BASE-AGENT-001", "BASE-AGENT-002", "BASE-AGENT-003", "BASE-AGENT-004", "BASE-AGENT-005", "BASE-AGENT-006", "BASE-AGENT-007", "BASE-AGENT-008", "BASE-AGENT-009", "BASE-AGENT-010", "BASE-AGENT-011", "BASE-AGENT-012", "BASE-AGENT-013"], "exit": 0, "seconds": 0.31}
+{"label": "typecheck", "command": ["timeout", "240", "pnpm", "typecheck"], "exit": 124, "seconds": 260.61}
+{"label": "first-party", "command": ["timeout", "240", "pnpm", "exec", "rer", "check", "--profile", "first-party"], "exit": 0, "seconds": 4.49}
+{"label": "typecheck-node22", "command": ["timeout", "240", "pnpm", "typecheck"], "exit": 0, "seconds": 205.06}
+{"label": "first-party-node22", "command": ["timeout", "240", "pnpm", "exec", "rer", "check", "--profile", "first-party"], "exit": 0, "seconds": 3.74}
+{"label": "gitleaks-install", "command": ["timeout", "650", "bash", "scripts/install-gitleaks.sh"], "exit": 0, "seconds": 5.21}
+{"label": "migration-ledger-node22", "command": ["timeout", "900", "node", "--test", "--test-concurrency=1", "scripts/deployment-data-hosted.check.mjs"], "exit": 0, "seconds": 416.61}
+{"label": "integration-sync", "command": ["timeout", "900", "pnpm", "integration:sync"], "exit": 0, "seconds": 104.43}
+{"label": "first-party-final", "command": ["timeout", "120", "pnpm", "exec", "rer", "check", "--profile", "first-party"], "exit": 0, "seconds": 3.45}
+{"label": "manifest", "command": ["timeout", "90", "pnpm", "verify:manifest"], "exit": 0, "seconds": 1.08}
+{"label": "boundaries", "command": ["timeout", "90", "pnpm", "verify:boundaries"], "exit": 0, "seconds": 5.87}
+{"label": "base-source", "command": ["timeout", "180", "pnpm", "verify:base"], "exit": 0, "seconds": 2.9}
+{"label": "source-changes", "command": ["timeout", "120", "node", "scripts/edition-authoring/cli.mjs", "changes"], "exit": 0, "seconds": 1.26}
+{"label": "source-lock", "command": ["timeout", "120", "node", "scripts/edition-authoring/cli.mjs", "lock"], "exit": 0, "seconds": 2.13}
+{"label": "source-lock-check", "command": ["timeout", "120", "node", "scripts/edition-authoring/cli.mjs", "check"], "exit": 0, "seconds": 1.7}
+{"label": "base-copies-offline", "command": ["timeout", "120", "node", "scripts/edition-authoring/cli.mjs", "verify-base", "--offline"], "exit": 0, "seconds": 0.76}
+{"label": "product-build", "command": ["timeout", "900", "npx", "-y", "@runeditrun/rer", "build"], "exit": 0, "seconds": 141.99}
+{"label": "hosted-relay-privacy", "command": ["timeout", "900", "node", "tests/agent-door/resources.mjs"], "exit": 1, "seconds": 25.77}
+{"label": "agent-door-conformance", "command": ["timeout", "1200", "node", "node_modules/@runeditrun/rer/cli/agent-door.mjs", ".", "deploy.json"], "exit": 0, "seconds": 139.57}
+{"label": "hosted-relay-privacy-final", "command": ["timeout", "900", "node", "tests/agent-door/resources.mjs"], "exit": 0, "seconds": 18.47}
+{"label": "source-changes-final", "command": ["timeout", "120", "node", "scripts/edition-authoring/cli.mjs", "changes"], "exit": 0, "seconds": 1.12}
+{"label": "source-lock-final", "command": ["timeout", "120", "node", "scripts/edition-authoring/cli.mjs", "lock"], "exit": 0, "seconds": 0.75}
+{"label": "source-lock-check-final", "command": ["timeout", "120", "node", "scripts/edition-authoring/cli.mjs", "check"], "exit": 0, "seconds": 1.29}
+{"label": "source-check-final", "command": ["timeout", "180", "pnpm", "source:check"], "exit": 0, "seconds": 3.17}
+{"label": "publication", "command": ["timeout", "600", "pnpm", "verify:publication"], "exit": 0, "seconds": 119.15}

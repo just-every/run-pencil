@@ -1,0 +1,264 @@
+{
+  "command": "gitleaks dir ../packet --redact --no-banner --report-format json --report-path ../packet/packet-scan.json --log-level error",
+  "scannerExit": 1,
+  "rawFindings": 35,
+  "uniqueSnapshotCacheIdentities": 7,
+  "credentialFindings": 0,
+  "result": "All raw matches verified as committed baseline snapshot cache identities, not credentials",
+  "exclusionsOrAllowlistsApplied": false,
+  "productPublicationGate": {
+    "exit": 0,
+    "status": "PASS",
+    "complete": true,
+    "findings": 0,
+    "reviewed": 0
+  },
+  "matches": [
+    {
+      "file": "source-lock-final.log",
+      "line": 207,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-final.log",
+      "line": 401,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-final.log",
+      "line": 469,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-final.log",
+      "line": 577,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-final.log",
+      "line": 616,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-final.log",
+      "line": 655,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-final.log",
+      "line": 760,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-check-final.log",
+      "line": 208,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-check-final.log",
+      "line": 402,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-check-final.log",
+      "line": 470,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-check-final.log",
+      "line": 578,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-check-final.log",
+      "line": 617,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-check-final.log",
+      "line": 656,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-check-final.log",
+      "line": 761,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-check.log",
+      "line": 208,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-check.log",
+      "line": 402,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-check.log",
+      "line": 470,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-check.log",
+      "line": 578,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-check.log",
+      "line": 617,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-check.log",
+      "line": 656,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-check.log",
+      "line": 761,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-check-final.log",
+      "line": 208,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-check-final.log",
+      "line": 402,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-check-final.log",
+      "line": 470,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-check-final.log",
+      "line": 578,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-check-final.log",
+      "line": 617,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-check-final.log",
+      "line": 656,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock-check-final.log",
+      "line": 761,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock.log",
+      "line": 207,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock.log",
+      "line": 401,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock.log",
+      "line": 469,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock.log",
+      "line": 577,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock.log",
+      "line": 616,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock.log",
+      "line": 655,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    },
+    {
+      "file": "source-lock.log",
+      "line": 760,
+      "rule": "generic-api-key",
+      "classification": "committed baseline snapshot cache SHA-256 identity; not a credential",
+      "verifiedAgainst": "HEAD:sources.lock.json components[].baseline.key"
+    }
+  ],
+  "symlinks": false
+}
