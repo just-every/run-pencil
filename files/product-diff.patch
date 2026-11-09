@@ -1,0 +1,158 @@
+diff --git a/management/integration/deployment-spec.json b/management/integration/deployment-spec.json
+index 941f9bb..48bbcd5 100644
+--- a/management/integration/deployment-spec.json
++++ b/management/integration/deployment-spec.json
+@@ -490,6 +490,12 @@
+       "name": "0078_agent_door_relay_privacy.sql",
+       "sha256": "fb9e276013234f2f3afbd10dc654e93edc361b2165fd4cb2c0273ce44ab70a7a",
+       "sql": "-- Old relay triggers can assign an old Business's approval execution to a new\n-- Business. Any seed that applied 0040 and re-paired with a pending approval can\n-- already contain these rows. Remove only provable cross-Business memberships;\n-- retain every audit and do not infer missing historical membership.\n-- Count affected memberships before applying:\n-- SELECT COUNT(*) FROM agent_door_relay r JOIN agent_door_audit a ON a.id=r.decision_id\n-- WHERE EXISTS(SELECT 1 FROM agent_door_relay parent\n--   WHERE parent.decision_id=json_extract(a.row,'$.decision_id') AND parent.business<>r.business);\nDELETE FROM agent_door_relay\nWHERE sequence IN (\n  SELECT r.sequence FROM agent_door_relay r JOIN agent_door_audit a ON a.id=r.decision_id\n  WHERE EXISTS(SELECT 1 FROM agent_door_relay parent\n    WHERE parent.decision_id=json_extract(a.row,'$.decision_id') AND parent.business<>r.business)\n);\n\n-- Recreate even on databases where the shipped triggers already exist.\nDROP TRIGGER IF EXISTS agent_door_relay_audit_insert;\nDROP TRIGGER IF EXISTS agent_door_relay_audit_update;\n-- Executions inherit only their decision's membership, including no membership.\n-- Erasure drops the link, door and consent; preserve its existing membership.\n-- Plain INSERT then DELETE: an outer UPSERT's conflict policy overrides a trigger's.\nCREATE TRIGGER IF NOT EXISTS agent_door_relay_audit_insert AFTER INSERT ON agent_door_audit\nWHEN json_extract(NEW.row,'$.door')='mcp' AND json_extract(NEW.row,'$.consent') IS NOT NULL\nBEGIN\n  INSERT INTO agent_door_relay(decision_id,business)\n    SELECT NEW.id,business FROM (SELECT CASE WHEN json_extract(NEW.row,'$.decision_id') IS NOT NULL THEN\n      (SELECT business FROM agent_door_relay WHERE decision_id=json_extract(NEW.row,'$.decision_id') ORDER BY sequence DESC LIMIT 1)\n    ELSE COALESCE((SELECT business FROM agent_door_relay WHERE decision_id=NEW.id ORDER BY sequence DESC LIMIT 1),\n      (SELECT json_extract(envelope,'$.business') FROM agent_door_state WHERE id=1)) END AS business)\n    WHERE business IS NOT NULL;\n  DELETE FROM agent_door_relay WHERE decision_id=NEW.id AND (\n    sequence<(SELECT MAX(sequence) FROM agent_door_relay WHERE decision_id=NEW.id)\n    OR (json_extract(NEW.row,'$.decision_id') IS NOT NULL AND NOT EXISTS(\n      SELECT 1 FROM agent_door_relay WHERE decision_id=json_extract(NEW.row,'$.decision_id'))));\nEND;\nCREATE TRIGGER IF NOT EXISTS agent_door_relay_audit_update AFTER UPDATE ON agent_door_audit\nWHEN EXISTS(SELECT 1 FROM agent_door_relay WHERE decision_id=NEW.id)\n  OR (json_extract(NEW.row,'$.door')='mcp' AND json_extract(NEW.row,'$.consent') IS NOT NULL)\nBEGIN\n  INSERT INTO agent_door_relay(decision_id,business)\n    SELECT NEW.id,business FROM (SELECT CASE WHEN json_extract(NEW.row,'$.decision_id') IS NOT NULL THEN\n      (SELECT business FROM agent_door_relay WHERE decision_id=json_extract(NEW.row,'$.decision_id') ORDER BY sequence DESC LIMIT 1)\n    ELSE COALESCE((SELECT business FROM agent_door_relay WHERE decision_id=NEW.id ORDER BY sequence DESC LIMIT 1),\n      (SELECT json_extract(envelope,'$.business') FROM agent_door_state WHERE id=1)) END AS business)\n    WHERE business IS NOT NULL;\n  DELETE FROM agent_door_relay WHERE decision_id=NEW.id AND (\n    sequence<(SELECT MAX(sequence) FROM agent_door_relay WHERE decision_id=NEW.id)\n    OR (json_extract(NEW.row,'$.decision_id') IS NOT NULL AND NOT EXISTS(\n      SELECT 1 FROM agent_door_relay WHERE decision_id=json_extract(NEW.row,'$.decision_id'))));\nEND;\n"
++    },
++    {
++      "binding": "DB",
++      "name": "0079_agent_door_legacy_principals.sql",
++      "sha256": "e02d300e4934ddcbd25019ad9a8e7ef1c9f1cc71390b149d5c685ee41fe9a7d9",
++      "sql": "-- Before 0.2.104, Business credentials saved consent but no principal source.\n-- Local credentials never carry consent. Restore only that missing provenance\n-- on held Business calls so the existing execution-time stop guard applies.\n-- Do not infer a Business from today's pairing or rewrite historical audits.\nUPDATE agent_door_approvals\nSET saved=json_set(saved,'$.principal.source','business')\nWHERE state='pending'\n  AND json_type(saved,'$.principal')='object'\n  AND json_extract(saved,'$.principal.source') IS NULL\n  AND json_type(saved,'$.principal.consent')='text'\n  AND length(trim(json_extract(saved,'$.principal.consent')))>0;\n"
+     }
+   ],
+   "compatibilityDate": "2026-09-08",
+diff --git a/migrations/core/0079_agent_door_legacy_principals.sql b/migrations/core/0079_agent_door_legacy_principals.sql
+new file mode 100644
+index 0000000..8ac5e2b
+--- /dev/null
++++ b/migrations/core/0079_agent_door_legacy_principals.sql
+@@ -0,0 +1,11 @@
++-- Before 0.2.104, Business credentials saved consent but no principal source.
++-- Local credentials never carry consent. Restore only that missing provenance
++-- on held Business calls so the existing execution-time stop guard applies.
++-- Do not infer a Business from today's pairing or rewrite historical audits.
++UPDATE agent_door_approvals
++SET saved=json_set(saved,'$.principal.source','business')
++WHERE state='pending'
++  AND json_type(saved,'$.principal')='object'
++  AND json_extract(saved,'$.principal.source') IS NULL
++  AND json_type(saved,'$.principal.consent')='text'
++  AND length(trim(json_extract(saved,'$.principal.consent')))>0;
+diff --git a/scripts/deployment-data-agent-door-upgrade.check.mjs b/scripts/deployment-data-agent-door-upgrade.check.mjs
+index 5e25efa..1655dcf 100644
+--- a/scripts/deployment-data-agent-door-upgrade.check.mjs
++++ b/scripts/deployment-data-agent-door-upgrade.check.mjs
+@@ -4,6 +4,65 @@ import { DatabaseSync } from 'node:sqlite';
+ import { test } from 'node:test';
+ import { classify, sanitize } from './deployment-data-policy.mjs';
+ 
++test('legacy held Business principals acquire stop-guard provenance without changing history', () => {
++  const db = new DatabaseSync(':memory:');
++  try {
++    for (const name of ['0074_agent_door.sql', '0077_agent_door_refresh.sql', '0078_agent_door_relay_privacy.sql']) {
++      db.exec(readFileSync(new URL(`../migrations/core/${name}`, import.meta.url), 'utf8'));
++    }
++    db.exec(`INSERT INTO agent_door_state(id,envelope) VALUES(1,'{"business":"original-business"}')`);
++    const saved = principal => JSON.stringify({ decision_id: 'legacy-decision', principal,
++      revision: 7, summary_sha256: 'original-hash', args: { flowId: 'draft' }, evidence: { kept: true } });
++    const cases = [
++      ['legacy-business', 'pending', { consent: 'business-consent', person: { id: 'owner' } }, true],
++      ['partial-approval', 'pending', { consent: 'business-consent' }, true],
++      ['null-source', 'pending', { consent: 'business-consent', source: null }, true],
++      ['new-business', 'pending', { consent: 'business-consent', source: 'business' }, false],
++      ['explicit-local', 'pending', { consent: 'business-consent', source: 'local' }, false],
++      ['legacy-local', 'pending', { person: { id: 'owner' } }, false],
++      ['null-consent', 'pending', { consent: null }, false],
++      ['empty-consent', 'pending', { consent: '  ' }, false],
++      ['invalid-consent', 'pending', { consent: 1 }, false],
++      ['executed', 'executed', { consent: 'business-consent' }, false],
++      ['rejected', 'rejected', { consent: 'business-consent' }, false],
++      ['erased', 'pending', null, false],
++    ];
++    for (const [id, state, principal] of cases) db.prepare(
++      'INSERT INTO agent_door_approvals(id,state,saved,approvals,version) VALUES(?,?,?,?,?)'
++    ).run(id, state, saved(principal), '[{"ref":"owner","person":"owner"}]', 3);
++    db.exec(`INSERT INTO agent_door_audit(id,at,agent,classes,row,evidence)
++      VALUES('legacy-decision','2026-11-09T00:00:00Z','agent','[]','{ "door": "mcp", "consent": "business-consent" }','{ "kept": true }');`);
++    const rows = () => db.prepare('SELECT * FROM agent_door_approvals ORDER BY id').all();
++    const before = rows();
++    const otherTables = db.prepare("SELECT name FROM sqlite_schema WHERE type='table' AND name LIKE 'agent_door_%' AND name!='agent_door_approvals'").all();
++    const history = otherTables.map(({ name }) => [name, db.prepare(`SELECT * FROM ${name}`).all()]);
++    const migration = readFileSync(new URL('../migrations/core/0079_agent_door_legacy_principals.sql', import.meta.url), 'utf8');
++    db.exec(migration);
++    for (const row of rows()) {
++      const original = before.find(value => value.id === row.id);
++      const changed = cases.find(([id]) => id === row.id)[3];
++      if (!changed) assert.deepEqual(row, original, `${row.id} must stay byte-identical`);
++      else {
++        const expected = JSON.parse(original.saved);
++        expected.principal.source = 'business';
++        assert.deepEqual(JSON.parse(row.saved), expected);
++        assert.deepEqual({ ...row, saved: original.saved }, { ...original }, 'Only saved principal provenance changes');
++      }
++    }
++    for (const [name, original] of history) assert.deepEqual(db.prepare(`SELECT * FROM ${name}`).all(), original,
++      `Every byte outside saved approval provenance survives in ${name}`);
++    const once = rows();
++    db.exec(migration);
++    assert.deepEqual(rows(), once, 'The forward repair is idempotent');
++    const table = { name: 'agent_door_approvals', columns: Object.keys(once[0]), rows: once.map(row =>
++      Object.values(row).map(value => value === null ? { type: 'null' } : { type: 'text', value: String(value) })) };
++    assert.ok(Object.values(classify(table)).every(value => value === 'excluded-authorization'));
++    assert.deepEqual(sanitize(table).rows, [], 'Legacy or tagged pending authority never travels in backups');
++  } finally {
++    db.close();
++  }
++});
++
+ test('a populated agent door upgrades without losing history or restoring authority', () => {
+   const db = new DatabaseSync(':memory:');
+   try {
+diff --git a/scripts/deployment-data-policy.mjs b/scripts/deployment-data-policy.mjs
+index 3b84381..7299255 100644
+--- a/scripts/deployment-data-policy.mjs
++++ b/scripts/deployment-data-policy.mjs
+@@ -6,6 +6,7 @@ const retained = {
+   // Door decisions contain private product data. Pending authority and signed
+   // Business bindings are inventoried but never travel to another installation.
+   agent_door_agents: 'id name specialist sponsor sponsor_name revoked window requests tombstone',
++  // 0079 restores legacy Business principal provenance; saved authority still never travels.
+   agent_door_approvals: 'id state saved approvals result version',
+   agent_door_audit: 'sequence id at agent classes row evidence',
+   agent_door_calls: 'agent key digest decision_id created_at state outcome expires_at',
+diff --git a/sources.lock.json b/sources.lock.json
+index bb48323..4a618e9 100644
+--- a/sources.lock.json
++++ b/sources.lock.json
+@@ -1133,7 +1133,7 @@
+       "executable": false
+     },
+     "management/integration/deployment-spec.json": {
+-      "sha256": "c34e0843f24f70eb200e4c50e038a3f76d67750f0d051645f2da713a48c1bf43",
++      "sha256": "0166ecf954491405affa505a57e54c6fa161003474a3c14889dbacecad69045f",
+       "executable": false
+     },
+     "migrations/core/0000_seeded_flowly_data_spine.sql": {
+@@ -1456,6 +1456,10 @@
+       "sha256": "fb9e276013234f2f3afbd10dc654e93edc361b2165fd4cb2c0273ce44ab70a7a",
+       "executable": false
+     },
++    "migrations/core/0079_agent_door_legacy_principals.sql": {
++      "sha256": "e02d300e4934ddcbd25019ad9a8e7ef1c9f1cc71390b149d5c685ee41fe9a7d9",
++      "executable": false
++    },
+     "migrations/released-rewrites.json": {
+       "sha256": "e958b230b03bb5e3d203d5c2fc8ecf3cc513389bfdfe99d9d4ed4ebc64e84d80",
+       "executable": false
+@@ -1745,7 +1749,7 @@
+       "executable": false
+     },
+     "scripts/deployment-data-agent-door-upgrade.check.mjs": {
+-      "sha256": "86f0a62a3f100f2a10ea5653ecb2ffab688139f4ea2471efbfea53bf4f1bb8ad",
++      "sha256": "4a2d2e9a99d80f0724ec0aabba345fa735edbc1ce57b27576b7fbfdaa906a69d",
+       "executable": false
+     },
+     "scripts/deployment-data-browser-manifest.d.mts": {
+@@ -1849,7 +1853,7 @@
+       "executable": false
+     },
+     "scripts/deployment-data-policy.mjs": {
+-      "sha256": "0e340859c7ae044d38d087cc8bfd42a72be28c9006a24351b1cc4926d339b4c1",
++      "sha256": "d80575918544eaef563cc7508f6ce0130fcc20aa7155eee9c66040c0e7e2e830",
+       "executable": false
+     },
+     "scripts/deployment-data-pre-device-proof.mjs": {

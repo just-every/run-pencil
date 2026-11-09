@@ -1,0 +1,144 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-rer-pin-104-fix1",
+  "pinnedHead": "bd597801ed2d13626ee5898c3bc91cb55cdf1edd",
+  "mainHead": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "fullHistoryClone": true,
+  "clauseCounts": {
+    "before": {
+      "done": 142,
+      "partial": 61,
+      "missing": 49
+    },
+    "after": {
+      "done": 142,
+      "partial": 61,
+      "missing": 49
+    }
+  },
+  "checks": [
+    {
+      "command": "node --test scripts/deployment-data-agent-door-upgrade.check.mjs",
+      "exit": 0,
+      "tests": 3,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "command": "pnpm verify:migrations",
+      "exit": 0,
+      "tests": 3,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "predecessor": "refs/tags/v0.6.0",
+      "releasedMigrations": 51
+    },
+    {
+      "command": "pnpm typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm exec rer check --profile first-party",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/contract-docs.mjs check BASE-AGENT-011",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs lock",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "command": "pnpm source:check",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/sync-integration.mjs --check",
+      "exit": 0
+    },
+    {
+      "command": "native main-to-candidate public-door legacy-upgrade probe",
+      "exit": 0
+    },
+    {
+      "command": "node scripts/verify-hosted-output.mjs",
+      "status": "passed",
+      "initialFailure": "Hydration edit did not settle within the unchanged test time limit while concurrent builds were running",
+      "exit": 0,
+      "conformance": {
+        "passed": 2675,
+        "total": 2675
+      },
+      "pencilResources": "PASS",
+      "hydration": "PASS"
+    },
+    {
+      "command": "node scripts/deployment-data-hosted.check.mjs",
+      "status": "passed",
+      "initialAttempt": {
+        "command": "timeout 600 node --test scripts/deployment-data-hosted.check.mjs",
+        "exit": 124,
+        "result": "one cancelled file; no failed assertions"
+      },
+      "runtime": "Node 22.20.0",
+      "boundSeconds": 1800,
+      "exit": 0,
+      "tests": 1,
+      "passed": 1,
+      "failed": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "durationMs": 489918.418268,
+      "internalRecoveryCases": 3
+    },
+    {
+      "command": "node scripts/verify-publication.mjs",
+      "exit": 0,
+      "status": "PASS",
+      "complete": true,
+      "findings": 0,
+      "reviewed": 0
+    }
+  ],
+  "ci": {
+    "conclusion": null,
+    "event": "push",
+    "head_sha": "f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42625108892",
+    "id": 42625108892,
+    "name": "Verify candidate",
+    "path": ".github/workflows/verify.yml",
+    "status": "in_progress",
+    "run_id": 42625108892,
+    "apiCallsUsed": 2,
+    "observedAt": "2026-11-09T13:28:53.145763+00:00"
+  },
+  "productPush": {
+    "status": "pushed",
+    "branch": "cloud/sd-pencil-rer-pin-104-fix1",
+    "head": "f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d",
+    "attempts": 1
+  },
+  "builds": {
+    "candidateSetup": 0,
+    "mainSetup": 0,
+    "candidateRerBuild": 0,
+    "mainRerBuild": 0,
+    "candidateProductionDeliveryBuild": 0,
+    "mainProductionDeliveryBuild": 0
+  },
+  "conformance": {
+    "passed": 2675,
+    "total": 2675
+  },
+  "mainRefreshedBeforeCommit": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "productHead": "f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d"
+}

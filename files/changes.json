@@ -1,0 +1,52 @@
+{
+  "files": [
+    {
+      "path": "management/integration/deployment-spec.json",
+      "change": "modified",
+      "before": {
+        "sha256": "c34e0843f24f70eb200e4c50e038a3f76d67750f0d051645f2da713a48c1bf43",
+        "executable": false
+      },
+      "after": {
+        "sha256": "0166ecf954491405affa505a57e54c6fa161003474a3c14889dbacecad69045f",
+        "executable": false
+      }
+    },
+    {
+      "path": "migrations/core/0079_agent_door_legacy_principals.sql",
+      "change": "added",
+      "before": null,
+      "after": {
+        "sha256": "e02d300e4934ddcbd25019ad9a8e7ef1c9f1cc71390b149d5c685ee41fe9a7d9",
+        "executable": false
+      }
+    },
+    {
+      "path": "scripts/deployment-data-agent-door-upgrade.check.mjs",
+      "change": "modified",
+      "before": {
+        "sha256": "86f0a62a3f100f2a10ea5653ecb2ffab688139f4ea2471efbfea53bf4f1bb8ad",
+        "executable": false
+      },
+      "after": {
+        "sha256": "4a2d2e9a99d80f0724ec0aabba345fa735edbc1ce57b27576b7fbfdaa906a69d",
+        "executable": false
+      }
+    },
+    {
+      "path": "scripts/deployment-data-policy.mjs",
+      "change": "modified",
+      "before": {
+        "sha256": "0e340859c7ae044d38d087cc8bfd42a72be28c9006a24351b1cc4926d339b4c1",
+        "executable": false
+      },
+      "after": {
+        "sha256": "d80575918544eaef563cc7508f6ce0130fcc20aa7155eee9c66040c0e7e2e830",
+        "executable": false
+      }
+    }
+  ],
+  "metadata": [],
+  "meaning": "Origins are comparison baselines; changing an origin does not assert adoption or local byte equality."
+}
+

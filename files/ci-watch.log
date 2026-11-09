@@ -1,0 +1,2 @@
+CI_API call=1/10 time=2026-11-09T13:23:52.261269+00:00 exact-SHA Verify not yet discovered
+CI_API call=2/10 {"conclusion": null, "event": "push", "head_sha": "f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d", "html_url": "https://github.com/just-every/run-pencil/actions/runs/42625108892", "id": 42625108892, "name": "Verify candidate", "path": ".github/workflows/verify.yml", "status": "in_progress", "run_id": 42625108892, "apiCallsUsed": 2, "observedAt": "2026-11-09T13:28:53.145763+00:00"}

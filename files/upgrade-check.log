@@ -1,0 +1,12 @@
+PROBE pencil-0.2.104: populated 0077 -> 0078 relay migration -> one provable leak removed; all audits retained; done/refused executions stay with original Business
+✔ legacy held Business principals acquire stop-guard provenance without changing history (11.369065ms)
+✔ a populated agent door upgrades without losing history or restoring authority (7.495892ms)
+✔ relay privacy upgrade removes only provable cross-Business memberships and fences future executions (8.58479ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 711.061944

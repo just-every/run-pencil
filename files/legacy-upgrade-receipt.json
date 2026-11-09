@@ -1,0 +1,42 @@
+{
+  "schema": 1,
+  "installation": "one disposable native Miniflare D1 installation for the fixed upgrade and all three controls",
+  "mainHead": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "beforeHead": "bd597801ed2d13626ee5898c3bc91cb55cdf1edd",
+  "legacyPrincipalsCreatedOnMain": 2,
+  "lackedSource": true,
+  "after": {
+    "http": 200,
+    "state": "refused",
+    "code": "sponsor_unavailable",
+    "form": "draft"
+  },
+  "running": {
+    "http": 200,
+    "state": "executed",
+    "code": null,
+    "form": "open"
+  },
+  "postUpgradeHeld": {
+    "http": 200,
+    "state": "refused",
+    "code": "sponsor_unavailable",
+    "form": "draft"
+  },
+  "signedDetachmentHttp": 200,
+  "auditsPreserved": {
+    "mainUpgrade": 5,
+    "forwardRepair": 5,
+    "sha256": "5b2ef932cc9e408a00ae3ef579692bc7df1025b1fc55266c2d7f21f4684871a2"
+  },
+  "migrationLedgerEntries": 81,
+  "before": {
+    "http": 200,
+    "state": "executed",
+    "code": null,
+    "form": "open"
+  },
+  "baselineInstallation": "separate disposable native control because signed detachment is terminal",
+  "baselineLegacyPrincipalsCreatedOnMain": 1,
+  "baselineMainAuditRowsPreserved": 2
+}
