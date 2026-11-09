@@ -64,7 +64,6 @@ export async function proveMarketingReview(page: Page, info: TestInfo) {
     }
     await checkReview()
     await expect(review.getByRole('definition')).toHaveText('Original synthetic interest')
-    await page.screenshot({ path: info.outputPath(`marketing-review-${info.project.name}.png`), fullPage: true })
 
     // A newer draft is deliberately left unpublished while this revision stays live.
     const nextDraft = await draft()
@@ -79,6 +78,7 @@ export async function proveMarketingReview(page: Page, info: TestInfo) {
     await checkReview()
     await expect(review.getByRole('definition')).toHaveText('Edited synthetic interest')
     await expect(page.getByText(draftWording, { exact: true })).toHaveCount(0)
+    await page.screenshot({ path: info.outputPath(`marketing-review-${info.project.name}.png`), fullPage: true })
     await page.waitForTimeout(3100)
     const accepted = page.waitForResponse(response => new URL(response.url()).pathname === `/api/public/flows/${slug}/responses` && response.request().method() === 'POST')
     await submit.click()
@@ -102,7 +102,17 @@ export async function proveMarketingReview(page: Page, info: TestInfo) {
     await expect(consent.getByRole('definition')).toContainText(wording)
     await expect(consent.getByRole('definition')).toContainText('(form opt-in)')
     await expect(consent).not.toContainText(draftWording)
+    await page.reload()
+    await expect(page.locator('.operator-shell[data-hydrated=true]')).toBeVisible()
+    expect((await ledger()).responses).toEqual(stored.responses)
+    await page.getByRole('button', { name: 'View answers', exact: true }).click()
+    await expect(consent.getByRole('definition')).toHaveCount(1)
+    await expect(consent.getByRole('definition')).toContainText(wording)
     await page.screenshot({ path: info.outputPath(`marketing-ledger-${info.project.name}.png`), fullPage: true })
+    await info.attach('marketing-consent-receipt', {
+      body: JSON.stringify({ viewport: page.viewportSize(), revisionId: response.revisionId, completedAt: response.completedAt, submissions: submissions.length, total: stored.total, consents: response.consents }, null, 2),
+      contentType: 'application/json',
+    })
   } finally {
     page.off('request', recordSubmission)
   }
