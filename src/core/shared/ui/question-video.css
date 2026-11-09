@@ -1,0 +1,5 @@
+.question-video { margin: 1rem 0; min-width: 0; }
+.question-video-placeholder { padding: 1rem; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); }
+.question-video-placeholder p { margin: 0 0 .75rem; font-size: 14px; line-height: 1.5; }
+.question-video-placeholder button { min-height: 44px; font-size: 14px; }
+.question-video-frame { display: block; width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 12px; }

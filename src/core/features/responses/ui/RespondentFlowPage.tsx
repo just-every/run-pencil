@@ -20,6 +20,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { answerIssue, isUnanswered } from '../../../shared/answers'
 import { visiblePath } from '../../../shared/flowPath'
 import { QuestionInput } from '../../../shared/ui/QuestionInput'
+import { QuestionVideo } from '../../../shared/ui/QuestionVideo'
 import { PublicClosedPage } from './PublicClosedPage'
 import { api, ApiError, type ClosedFlow, type ChoiceOption, type PublicFlow, type SavedResponseState } from '../../../app/api'
 import type { PublicSeedConfig } from '../../../shared/config'
@@ -313,6 +314,7 @@ export function RespondentFlowPage({ config, slug, embedded = false, landing = f
         {!editToken && !reviewing && current.kind==='question' && flow.formSettings?.confirmation?.enabled && flow.formSettings.confirmation.emailStepId===current.id ? <p className="respondent-required">Send my confirmation here</p> : null}
         {!reviewing && !screen?.layout && prefills[current.id] ? <p className="respondent-required">Prefilled{prefills[current.id].locked ? ' · locked by the operator' : ' · you can edit this answer'}</p> : null}
         {!reviewing && !screen?.layout && current.kind === 'question' && current.required ? <p className="respondent-required">Required</p> : null}
+        {!reviewing && !screen?.layout && current.kind === 'question' ? <QuestionVideo key={`${flow.revision.id}-${current.id}`} value={current.questionSettings?.video} disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} /> : null}
         {reviewing ? <ReviewAnswers flow={flow} steps={questionSteps} answers={answers} disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} onEdit={id=>backTo(screens.findIndex(entry=>entry.steps.some(step=>step.id===id)))} /> : current.kind === 'question' && screen?.layout ? <ScreenQuestions confirmationStepId={!editToken&&flow.formSettings?.confirmation?.enabled?flow.formSettings.confirmation.emailStepId:undefined} prefills={prefills} steps={screen.steps} choices={flow.choices} answers={answers} errors={fieldErrors} disabled={!hydrated || submitting || !!pendingFinal || needsAdmission} recall={(text,id)=>interpolateAnswerRecall(text,flow,answers,id)} onChange={changeAnswer}/> : current.kind === 'question' ? <AnswerFieldset id={current.id} disabled={prefills[current.id]?.locked || !hydrated || submitting || !!pendingFinal || needsAdmission} labelledBy="respondent-title" error={fieldErrors[current.id]}><QuestionInput key={`${flow.revision.id}-${current.id}`} choices={currentChoices} onChange={(value) => changeAnswer(current.id, value)} step={displayedStep} value={answers[current.id]} /></AnswerFieldset> : null}
         {isPayment && payment?.notice ? <p className="status-note" role="status">{payment.notice}</p> : null}
         {!reviewing && isPayment && quote ? <><PaymentSummary quote={quote} /><p className="payment-note">You pay on Stripe’s secure checkout page. Stripe receives the items and amounts above; {config.publicFlowBusinessName} and this form never receive your card or bank details.</p></> : null}

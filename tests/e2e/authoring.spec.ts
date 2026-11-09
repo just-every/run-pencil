@@ -2,6 +2,7 @@ import { appHeaders } from './api-headers'
 import { expect, test } from './fixtures'
 import { checkAuthoringLayout, signInEmptyWorkspace, addStep } from './authoring-helpers'
 import { browserLogo } from './brand-helpers'
+import { questionVideoJourney } from './question-video-journey'
 
 test('labels, one Save, real controls, reorder, branching, Share and a current dashboard', async ({ page, context }, info) => {
   test.setTimeout(120_000)
@@ -174,4 +175,5 @@ test('labels, one Save, real controls, reorder, branching, Share and a current d
   await expect(card.getByText('Unpublished changes')).toBeVisible()
   await checkAuthoringLayout(page)
   await page.screenshot({ path: `test-results/${info.project.name}-authoring-dashboard.png`, fullPage: true })
+  await questionVideoJourney(page, info.project.name)
 })

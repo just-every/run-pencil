@@ -14,6 +14,7 @@ import { validateAnswerRecall } from '../../shared/answerRecall'
 import { publicSteps, publicChoices, publicRules } from './serialization'
 import { scoreQuestionTypes, scoreAnswerIssue } from '../../shared/scoreQuestions'
 import { calendarDate, typeSettingsValid } from '../../shared/questionTypes'
+import { questionVideoIssues } from '../../shared/questionVideo'
 import { matchesBranch } from '../../shared/branching'
 import type { BranchSelection } from '../../shared/flowPolicies'
 import { reachableDestinations } from './reachable-destinations'
@@ -106,6 +107,7 @@ export function validateRevisionGraph(steps: StoredStep[], choices: StoredChoice
   const hidden = hiddenOperands(settings?.hiddenFields ?? []), calculations=settings?.calculations ?? []
   const operands = [...hidden,...calculationOperands(calculations)]
   const issues: GraphIssue[] = validateScreens({formSettings:settings,steps:publicSteps(steps),choices:publicChoices(steps,choices),branchRules:publicRules(rules)})
+  issues.push(...questionVideoIssues(publicSteps(steps)))
   issues.push(...validateCalculations(calculations,publicSteps(steps),settings?.hiddenFields ?? [],publicChoices(steps,choices)).map(error=>({stepId:error.calculationId ?? 'flow',reason:error.message})))
   issues.push(...completionRedirectIssues({steps:publicSteps(steps),choices:publicChoices(steps,choices),branchRules:publicRules(rules)},settings))
   const capacityIssue = structureLimitIssue(steps)

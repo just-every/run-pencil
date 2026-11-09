@@ -24,6 +24,7 @@ import { remapAnswerRecall } from '../../shared/answerRecall'
 import { remapChoiceSettings } from '../../shared/otherChoices'
 import type { QuestionType } from '../../shared/questionKinds'
 import { typeSettingsValid } from '../../shared/questionTypes'
+import { questionVideoIssues } from '../../shared/questionVideo'
 import { paymentStepSettingsIssue } from '../../shared/payments'
 import { templateStructure, type FlowTemplateId } from './templates'
 import { structureContent } from './unpublished'
@@ -276,6 +277,8 @@ export class FlowService {
     const selectedRawStep = rawSteps.find((step) => step.stableId === input.stepId)
     if (!selectedRawStep) throw new NotFoundError('The requested draft step does not exist.')
     const currentChoices = rawChoices.filter((choice) => choice.stepId === selectedRawStep.id)
+    const videoIssues = questionVideoIssues(draft.steps.map(step => step.id === selected.id ? { ...step, questionSettings: input.questionSettings === undefined ? selected.questionSettings : input.questionSettings } : step))
+    if (videoIssues.length) throw new ValidationError('Question video settings are invalid.', videoIssues)
     if (!typeSettingsValid(selectedQuestionType, input.questionSettings === undefined ? selected.questionSettings ?? {} : input.questionSettings ?? {})) throw new ValidationError('This question has invalid type-specific settings.')
     const paymentIssue = paymentStepSettingsIssue(selected.kind, input.questionSettings === undefined ? selected.questionSettings : input.questionSettings)
     if (paymentIssue) throw new ValidationError(paymentIssue)
@@ -319,6 +322,11 @@ export class FlowService {
     if(snapshot.flow.draftVersion!==input.expectedVersion) return draftConflict(snapshot.flow.draftVersion)
     if(snapshot.flow.status==='archived') throw new ValidationError('Duplicate an archived flow before editing.')
     const changes=screenChanges(this.builderDraft(snapshot),input.stepId,input.layout)
+    const videoIssues = questionVideoIssues(this.builderDraft(snapshot).steps.map(step => {
+      const change = changes.find(item => item.id === step.id)
+      return change ? { ...step, questionSettings: change.settings } : step
+    }))
+    if (videoIssues.length) throw new ValidationError('Question video settings are invalid.', videoIssues)
     const saved=await this.repository.updateScreen({...input,revisionId:snapshot.revision.id,now:new Date().toISOString(),changes})
     return saved?{kind:'updated' as const,draftVersion:input.expectedVersion+1}:draftConflict((await this.requireWorkspaceFlow(input.workspaceId,input.flowId)).draftVersion)
   }
@@ -342,6 +350,8 @@ export class FlowService {
     const now = new Date().toISOString()
     const stableId = ulid()
     const stepId = ulid()
+    const videoIssues = questionVideoIssues([...draft.steps, { ...input.step, id: stableId }])
+    if (videoIssues.length) throw new ValidationError('Question video settings are invalid.', videoIssues)
     if (input.step.kind === 'question' && !input.step.questionType) throw new ValidationError('A question needs a question type.')
     if (input.step.kind !== 'question' && input.step.questionType) throw new ValidationError('Only questions can have a question type.')
     if (!typeSettingsValid(input.step.questionType, input.step.questionSettings ?? {})) throw new ValidationError('This question has invalid type-specific settings.')

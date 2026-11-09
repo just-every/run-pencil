@@ -7,6 +7,7 @@ import { scoreQuestionTypes } from './scoreQuestions'
 import { textSettingsValid } from './textValidation'
 import { ratingSettingsValid } from './ratingScale'
 import { dateDisplaySettingsValid } from './dateFormat'
+import { questionVideoValid } from './questionVideo'
 /** Dates are calendar values, never instants. */
 export function calendarDate(value: unknown): value is string {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
@@ -22,8 +23,9 @@ export function decimalPlaces(value: number) {
 export function typeSettingsValid(type: string | null, settings: Record<string, unknown>) {
   if (!settings || typeof settings !== 'object' || Array.isArray(settings)) return false
   if (!layoutSettingsValid(settings)) return false
+  if (settings.video !== undefined && (!type || !questionVideoValid(settings.video) || settings.screen !== undefined)) return false
   if(settings.randomizeChoices !== undefined && (typeof settings.randomizeChoices !== 'boolean' || !randomizableChoices(type)))return false
-  const {screen: _screen, showWhen: _showWhen, randomizeChoices:_randomize, ...answerSettings} = settings
+  const {screen: _screen, showWhen: _showWhen, randomizeChoices:_randomize, video: _video, ...answerSettings} = settings
   settings = answerSettings
   const text = (value: unknown) => typeof value === 'string' && value.trim().length > 0 && value.length <= 1000
   if (type === 'short_text' || type === 'long_text') return textSettingsValid(type, settings)

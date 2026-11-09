@@ -5929,7 +5929,7 @@
       "executable": false
     },
     "src/core/features/flows/graph.ts": {
-      "sha256": "3af27f130bd97f08dcd89e3ec25014ca3e56acd2d59b1e55bd477e8ead63da4d",
+      "sha256": "ec028fa799b29db390398968cb5eb605db1bf59bd8b85e0836d56ee0ae1526e3",
       "executable": false
     },
     "src/core/features/flows/identity-link.ts": {
@@ -5985,7 +5985,7 @@
       "executable": false
     },
     "src/core/features/flows/service.ts": {
-      "sha256": "d73af3c817f37f524c45801facbfdbe6f45c12c866976be3dfbf6bf11fabfb03",
+      "sha256": "8e203752759c13f9a2cc29df14d7be205da6294ce5e026577e71cb236b94ab96",
       "executable": false
     },
     "src/core/features/flows/structure.ts": {
@@ -6049,11 +6049,11 @@
       "executable": false
     },
     "src/core/features/flows/ui/DraftPreview.tsx": {
-      "sha256": "2b8e1ed57d9ea470f56d3a2a3e6d8f1b42bb19b7b22f5695c35f2a3049e61772",
+      "sha256": "163b7a6c326a432f2d0e303c58e35a364445f38abb158ed1f06b214f66c0b77d",
       "executable": false
     },
     "src/core/features/flows/ui/FlowBuilderPage.tsx": {
-      "sha256": "afe4012aa810150b200a455e16ebf62f42b407a60a484c677c0818e5a009b33e",
+      "sha256": "070aa2b0065f29d9c8d41faea74b65aecd9107f0106be003231c481071c7a0e3",
       "executable": false
     },
     "src/core/features/flows/ui/FlowLifecycle.tsx": {
@@ -6108,6 +6108,10 @@
       "sha256": "9076abfbaaf303696582e7f4c739908ce6c0beecb025da1a8c7d84f85b05f400",
       "executable": false
     },
+    "src/core/features/flows/ui/QuestionVideoSettings.tsx": {
+      "sha256": "217d40b36f68baa3636dae5cac81e1143cc5e78ae34e0e6add46479d79e5c517",
+      "executable": false
+    },
     "src/core/features/flows/ui/RatingSettings.tsx": {
       "sha256": "e9f437bec39570303cc20978b7183536c06c7e2b6c29f702893b8253554bc2b3",
       "executable": false
@@ -6141,7 +6145,7 @@
       "executable": false
     },
     "src/core/features/flows/ui/StepCanvas.tsx": {
-      "sha256": "bc10baceab329c89cb7e14d7524bae735dbe66269271919bff63c966fa57165f",
+      "sha256": "4d8971c37bf0d8ad5ba29881bf7632b058cc4c6a5a716860d3794836d19d71b4",
       "executable": false
     },
     "src/core/features/flows/ui/TextSettings.tsx": {
@@ -7217,7 +7221,7 @@
       "executable": false
     },
     "src/core/features/responses/ui/RespondentFlowPage.tsx": {
-      "sha256": "a341e3d6b7da1d09bf759acd6d458dbd94ed083551649bd3f12a04d1569501fa",
+      "sha256": "a0e4ae55ecbe1786d83f008a27b91633880176291ea4a2da5d23b71a4a79d698",
       "executable": false
     },
     "src/core/features/responses/ui/RespondentPrivacyNote.tsx": {
@@ -7901,7 +7905,7 @@
       "executable": false
     },
     "src/core/platform/management.ts": {
-      "sha256": "46e8d4470743f35299ea925004d7e37ca2fc1b0f9f7716ae7e53c36f7b16cdbf",
+      "sha256": "2e781de0b3686dfbad3565c76e2a9bbf2ba9a5dc5efd74868db30ea4598f34f7",
       "executable": false
     },
     "src/core/platform/request.server.ts": {
@@ -8085,7 +8089,11 @@
       "executable": false
     },
     "src/core/shared/questionTypes.ts": {
-      "sha256": "b39fe31ba18b72ed026ff13462744683d00b71010468191c4d15f517d1f7e80e",
+      "sha256": "f2508beede0a377811a02892319d68e854480c07391caeddd7ccc6c3ba2e5019",
+      "executable": false
+    },
+    "src/core/shared/questionVideo.ts": {
+      "sha256": "86908e3c03e6cb74b4a3f15b6b4f6bd3c4b48e1e654d0bf365e1b6d5157da9b7",
       "executable": false
     },
     "src/core/shared/ratingScale.ts": {
@@ -8196,8 +8204,16 @@
       "sha256": "a95442f7f4747a5fff3c1a1b9d322bb70f72d6058dc638b516c6270f5f5df61a",
       "executable": false
     },
+    "src/core/shared/ui/question-video.css": {
+      "sha256": "2c2a412c2e507d06d9ea72ad143a06199f10f3d973f0c05fe0cf114c2c5180ed",
+      "executable": false
+    },
     "src/core/shared/ui/QuestionInput.tsx": {
       "sha256": "1d72570662c62dbea209193424a7bb25a9170923d08e03cece58517ab04af285",
+      "executable": false
+    },
+    "src/core/shared/ui/QuestionVideo.tsx": {
+      "sha256": "77bf0d21be99404037561a0c5ad408a2edc55406d127a84ecb2913c5b1f9cb5e",
       "executable": false
     },
     "src/core/shared/ui/rating-scale.css": {
@@ -8577,7 +8593,7 @@
       "executable": false
     },
     "tests/e2e/authoring.spec.ts": {
-      "sha256": "8f45049ab38a1f6b57e9978796f26ac70b38b5d47d2b4479e985785c451a07f0",
+      "sha256": "6ed3203c8d6e907638ba3bf60849b590ad04e7d6e80e76d60bf2ff0093f0dd17",
       "executable": false
     },
     "tests/e2e/brand-helpers.ts": {
@@ -8822,6 +8838,10 @@
     },
     "tests/e2e/question-progress.spec.ts": {
       "sha256": "03b38853c51ef86efe7c645c767c77b69853c5465e8bb7a4632c8e81a218e196",
+      "executable": false
+    },
+    "tests/e2e/question-video-journey.ts": {
+      "sha256": "7b3f5b38cab974d4244fa1a5122b784406b8cbe5c9adeaefc7bc426277119b4a",
       "executable": false
     },
     "tests/e2e/randomized-order.spec.ts": {
@@ -9453,7 +9473,7 @@
       "executable": false
     },
     "tests/runtime/journey.worker.test.ts": {
-      "sha256": "df883550fe0e837cb07580b0ee58c5a3e069dc8cde32e19f44e5fdebc4748dc8",
+      "sha256": "f03c28f12df5e69047904709fe27025b2238d63c5d126a7b6cc8248e0ccd942b",
       "executable": false
     },
     "tests/runtime/ledger-filters.worker.test.ts": {
@@ -9550,6 +9570,10 @@
     },
     "tests/runtime/question-counts.worker.test.ts": {
       "sha256": "dc9bccd463a2592536b7b9483e06f73e8422c9877b6577524aefa8befc11467c",
+      "executable": false
+    },
+    "tests/runtime/question-video-proof.ts": {
+      "sha256": "9b0a7ce308e4854be6eab8b01902fc57e63cf6e2a9f507ac0a46187aa83612d8",
       "executable": false
     },
     "tests/runtime/randomized-order.worker.test.ts": {
