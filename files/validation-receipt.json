@@ -109,17 +109,13 @@
     }
   ],
   "ci": {
-    "conclusion": null,
-    "event": "push",
+    "conclusion": "success",
     "head_sha": "f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d",
     "html_url": "https://github.com/just-every/run-pencil/actions/runs/42625108892",
-    "id": 42625108892,
-    "name": "Verify candidate",
-    "path": ".github/workflows/verify.yml",
-    "status": "in_progress",
+    "status": "completed",
     "run_id": 42625108892,
-    "apiCallsUsed": 2,
-    "observedAt": "2026-11-09T13:28:53.145763+00:00"
+    "apiCallsUsed": 4,
+    "observedAt": "2026-11-09T13:38:52.457826+00:00"
   },
   "productPush": {
     "status": "pushed",
@@ -140,5 +136,11 @@
     "total": 2675
   },
   "mainRefreshedBeforeCommit": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
-  "productHead": "f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d"
+  "productHead": "f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d",
+  "runtimeSourceUnchangedFromPinnedHead": true,
+  "initialEvidenceHead": "4132a3e9d1b194021f5aa0497cdd17e32ce4bf96",
+  "custody": "READY",
+  "blockers": [],
+  "pr": null,
+  "landingClaimed": false
 }

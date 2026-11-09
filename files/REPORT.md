@@ -2,7 +2,7 @@
 
 Repository: just-every/run-pencil. Branch: cloud/sd-pencil-rer-pin-104-fix1.
 
-Product head: f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d. The named branch was pushed on the first guarded attempt. All local checks pass; exact-SHA Verify is being watched through one REST watcher at intervals of at least 300 seconds. No PR was created and no landing is claimed.
+Product head: f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d. The named branch was pushed on the first guarded attempt. All local checks pass and exact-SHA Verify completed successfully. One REST watcher observed the run at intervals of at least 300 seconds. No PR was created and no landing is claimed.
 
 ## Plan and scope
 
@@ -33,8 +33,12 @@ The first hosted-data invocation reached its 600-second command bound without fa
 
 ## Exact-SHA CI and return protocol
 
-Product push: `python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-pencil-rer-pin-104-fix1`, success on attempt 1. The guard used the decrypted-bundle helper and a credential-free HTTPS origin. No main/default ref was pushed and no published history was rewritten. CI run identity and terminal status will be appended from the actual REST response before return.
+Product push: `python3 $HOME/rer-consolidation/.tools/cloud-push.py origin cloud/sd-pencil-rer-pin-104-fix1`, success on attempt 1. The guard used the decrypted-bundle helper and a credential-free HTTPS origin. No main/default ref was pushed and no published history was rewritten. Exact-SHA Verify run 42625108892 completed/success on f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d, observed at 2026-11-09T13:38:52.457826+00:00. URL: https://github.com/just-every/run-pencil/actions/runs/42625108892. CI REST calls used: 4/10.
 
 Complete machine-readable results are in validation-receipt.json; the signed native-door observations are in legacy-upgrade-receipt.json. Full check outputs, the exact product diff and source-lock records are selected explicitly for report-only publication on evidence/sd-pencil-rer-pin-104-fix1. No credentials, environment dumps, private gate material or symlinks are selected. Evidence custody is separate from product readiness and landing. The disposable worktrees and their node_modules will be deleted after successful product/evidence preservation, as requested.
 
-Exact-SHA Verify discovered: run 42625108892, https://github.com/just-every/run-pencil/actions/runs/42625108892, head f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d, in_progress as observed at 2026-11-09T13:28:53.145763+00:00 (2 of 10 CI API calls used). Initial evidence publication preserves the completed local work while this run continues; it does not signal READY.
+Exact-SHA Verify discovered: run 42625108892, https://github.com/just-every/run-pencil/actions/runs/42625108892, head f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d, in_progress as observed at 2026-11-09T13:28:53.145763+00:00 (2 of 10 CI API calls used). That initial evidence publication preserved the completed local work while CI continued; its custody was report-only.
+
+The product runtime files in src/agent-door and src/base/agent-door are byte-unchanged from bd597801ed2d13626ee5898c3bc91cb55cdf1edd (`git diff --exit-code` passed); the before-fix replay uses that identical runtime with migrations only through 0078. The initial report-only evidence head is 4132a3e9d1b194021f5aa0497cdd17e32ce4bf96. Product HEAD and index were preserved across that transfer.
+
+Terminal product custody: READY, branch cloud/sd-pencil-rer-pin-104-fix1, head f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d, Verify 42625108892 completed/success. Before/after blocking findings in this builder's replay: 1 -> 0. Clause status changes: none (142/61/49). Blockers: none. No PR or landing claim. Final evidence publication remains separate report-only transport.

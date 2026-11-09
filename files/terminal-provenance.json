@@ -1,0 +1,22 @@
+{
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-rer-pin-104-fix1",
+  "head": "f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d",
+  "tree": "3d104c9450d3bc7a7afaf628414e8360b9b32089",
+  "clean": true,
+  "fullHistory": true,
+  "remoteRefs": [
+    "f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d\trefs/heads/cloud/sd-pencil-rer-pin-104-fix1",
+    "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef\trefs/heads/main"
+  ],
+  "ci": {
+    "conclusion": "success",
+    "head_sha": "f591a3e245f1e5fa9f3b5fa63f8b474eecc3cd3d",
+    "html_url": "https://github.com/just-every/run-pencil/actions/runs/42625108892",
+    "status": "completed",
+    "run_id": 42625108892,
+    "apiCallsUsed": 4,
+    "observedAt": "2026-11-09T13:38:52.457826+00:00"
+  },
+  "observedAt": "2026-11-09T13:39:47.674780+00:00"
+}
