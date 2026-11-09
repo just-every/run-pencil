@@ -1,0 +1,15 @@
+FETCH_REFRESH exit=0
+remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/just-every/run-pencil.git/'
+
+FETCH_REJECTED attempt=1 HTTP=unknown (not supplied by Git)
+FETCH_REFRESH exit=0
+remote: Invalid username or token. Password authentication is not supported for Git operations.
+fatal: Authentication failed for 'https://github.com/just-every/run-pencil.git/'
+
+FETCH_REJECTED attempt=2 HTTP=unknown (not supplied by Git)
+FETCH_REFRESH exit=0
+From https://github.com/just-every/run-pencil
+ * branch            main       -> FETCH_HEAD
+
+FETCH_OK

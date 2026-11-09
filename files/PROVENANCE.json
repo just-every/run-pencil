@@ -1,0 +1,41 @@
+{
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f55",
+  "head": "62f363358de9f3517296b7d67714f68b476040bc",
+  "base": "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85",
+  "commits": [
+    "62f363358de9f3517296b7d67714f68b476040bc Prove published review consent persists after ledger reload",
+    "8c62cfee2f526faca406116045c56daf2da8a6b9 Show published marketing opt-in on final review [skip ci]"
+  ],
+  "changed_files": [
+    "sources.lock.json",
+    "src/core/features/responses/ui/RespondentFlowPage.tsx",
+    "tests/e2e/closed-flow.spec.ts",
+    "tests/e2e/marketing-review-proof.ts"
+  ],
+  "counts_before": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49,
+    "total": 252
+  },
+  "counts_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49,
+    "total": 252
+  },
+  "contract_status_changed": false,
+  "generated_views_committed": false,
+  "push": "successful",
+  "scan": {
+    "commit": "62f363358de9f3517296b7d67714f68b476040bc",
+    "complete": null,
+    "historyScanned": null,
+    "findings": null,
+    "status": "NOT RUN in cloud; maintained Mac lander must scan full history"
+  },
+  "main_equals_candidate": false,
+  "run_site": "not run; landing pending",
+  "pr": null
+}

@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f55",
+  "head": "62f363358de9f3517296b7d67714f68b476040bc",
+  "base": "d2863a5ae28f0ca6fcfd4cab28f8f4e9b5f91f85",
+  "recorded_at": "2026-11-09T03:29:10.794874+00:00",
+  "checks": [
+    {
+      "check": "browser",
+      "command": "cloud_run perl -e 'alarm 1200; exec @ARGV' -- pnpm exec playwright test --config /tmp/pencil-cloud.config.ts --workers=1",
+      "exit": 0,
+      "head": "62f363358de9f3517296b7d67714f68b476040bc"
+    },
+    {
+      "check": "typecheck",
+      "command": "pnpm typecheck",
+      "exit": 0,
+      "head": "62f363358de9f3517296b7d67714f68b476040bc"
+    },
+    {
+      "check": "first-party",
+      "command": "cloud_run pnpm exec rer check --profile first-party",
+      "exit": 0,
+      "head": "62f363358de9f3517296b7d67714f68b476040bc"
+    },
+    {
+      "check": "source",
+      "command": "pnpm source:check",
+      "exit": 0,
+      "head": "62f363358de9f3517296b7d67714f68b476040bc"
+    },
+    {
+      "check": "views",
+      "command": "node scripts/contract-docs.mjs write GOV-007 && node scripts/contract-docs.mjs check GOV-007",
+      "exit": 0,
+      "restored": [
+        "ACCEPTANCE.md",
+        "docs/CLAIMS.md"
+      ]
+    },
+    {
+      "check": "lock",
+      "command": "node scripts/edition-authoring/cli.mjs lock && node scripts/edition-authoring/cli.mjs check",
+      "exit": 0
+    },
+    {
+      "check": "migration-ledger",
+      "command": null,
+      "exit": 0,
+      "reason": "No migration changes"
+    }
+  ],
+  "browser": {
+    "passed": 2,
+    "failed": 0,
+    "widths": [
+      1440,
+      390
+    ],
+    "registered_behavior_tests_added": 0,
+    "desktop_duration_seconds": 53.1,
+    "mobile_duration": "1.1m",
+    "total_duration": "2.8m",
+    "chromium": "/usr/bin/chromium"
+  },
+  "artifacts": [
+    {
+      "path": "BROWSER.log",
+      "bytes": 7876,
+      "sha256": "5f18bec274e6e68eaafc465d8a0620dec21f276eaf28365f876105ce16503112"
+    },
+    {
+      "path": "VIEWS.log",
+      "bytes": 138,
+      "sha256": "4e564f631a5afe1ae8712aaaee30acbe1d9c3e97db095b058234a41002cec817"
+    },
+    {
+      "path": "marketing-review-desktop.png",
+      "bytes": 683988,
+      "sha256": "a06f934ccab8a5b0058070a6d683f1c30d4e463bffbb7c3710e679fa4c019b54"
+    },
+    {
+      "path": "marketing-review-mobile.png",
+      "bytes": 497927,
+      "sha256": "1ad8c97bf6f4baaa5805b42792acd2f8b5df1036db5ebf901f4bdff24e9de1c7"
+    },
+    {
+      "path": "marketing-ledger-desktop.png",
+      "bytes": 727345,
+      "sha256": "cf5de3aa8ddb013d512340571707557c3cfff89a33d548d063b1f3f2f36f74c6"
+    },
+    {
+      "path": "marketing-ledger-mobile.png",
+      "bytes": 2729281,
+      "sha256": "d0fc3f811cf3eb13809a03c133b82d8715782bef7e57e20b2d0dc37c2517ce7a"
+    }
+  ]
+}
