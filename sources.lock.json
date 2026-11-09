@@ -7221,7 +7221,7 @@
       "executable": false
     },
     "src/core/features/responses/ui/RespondentFlowPage.tsx": {
-      "sha256": "a0e4ae55ecbe1786d83f008a27b91633880176291ea4a2da5d23b71a4a79d698",
+      "sha256": "9e5f37fa53fd0711d72f3e11bae67ff26c9fbcfe0fdf3cc8da9745ae50f7ee68",
       "executable": false
     },
     "src/core/features/responses/ui/RespondentPrivacyNote.tsx": {
@@ -8621,7 +8621,7 @@
       "executable": false
     },
     "tests/e2e/closed-flow.spec.ts": {
-      "sha256": "17e0271aca4249e711d7ff5e92285a9e8885a3c0a65ab74794a96108029f7127",
+      "sha256": "2780f757194e2a0fd986926d6322014a78ccb9d1ccc07529382c1d8cfc00967a",
       "executable": false
     },
     "tests/e2e/coding.spec.ts": {
@@ -8778,6 +8778,10 @@
     },
     "tests/e2e/mail-recovery.spec.ts": {
       "sha256": "96db27ec4dcd9da9b3fedaf2b49924bf4109a16bd4074516d01344944f1c114b",
+      "executable": false
+    },
+    "tests/e2e/marketing-review-proof.ts": {
+      "sha256": "92a9599bd22fb26175a4f69c381b86740d4176399e1ab6946950fe61570b633b",
       "executable": false
     },
     "tests/e2e/matrix-journey.ts": {
