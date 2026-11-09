@@ -1,0 +1,32 @@
+{
+  "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "run": 42604957193,
+  "job": 129118958765,
+  "attempts": [
+    {
+      "attempt": 1,
+      "command": "gh run view 42604957193 --repo just-every/run-pencil --job 129118958765 --log-failed",
+      "http": 401,
+      "result": "failed to get job: HTTP 401: Bad credentials",
+      "exit_recorded": false
+    },
+    {
+      "attempt": 2,
+      "launcher_refreshed": true,
+      "command": "gh run view 42604957193 --repo just-every/run-pencil --job 129118958765 --log-failed",
+      "http": 401,
+      "result": "failed to get job: HTTP 401: Bad credentials",
+      "exit_recorded": false
+    },
+    {
+      "attempt": 3,
+      "backoff_seconds": 45,
+      "refresh_exit": 0,
+      "configuration_exit": 0,
+      "command": "gh api repos/just-every/run-pencil/actions/jobs/129118958765 --jq {id,name,conclusion}",
+      "exit": 0,
+      "http": null,
+      "result": "{\"conclusion\":\"failure\",\"id\":129118958765,\"name\":\"shards (5, desktop-4 mobile-7 desktop-5 admission)\"}"
+    }
+  ]
+}

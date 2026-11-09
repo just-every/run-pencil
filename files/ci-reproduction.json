@@ -1,0 +1,15 @@
+{
+  "name": "ci-reproduction",
+  "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "command": [
+    "timeout",
+    "1200",
+    "node",
+    "scripts/run-contract-lane.mjs",
+    "desktop-4",
+    "/tmp/pencil-ci-contract-evidence"
+  ],
+  "exit": 1,
+  "started": "2026-11-09T11:19:11.539838+00:00",
+  "finished": "2026-11-09T11:21:18.085908+00:00"
+}

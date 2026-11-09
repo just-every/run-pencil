@@ -1,0 +1,13 @@
+Pencil browser setup: app migrations exited 1
+Browser setup failed before test cases (1 runner errors, exit 1).
+file:///workspace/run-pencil/scripts/ci-contract-evidence.mjs:11
+  if (!run) throw new Error('Sharded contract evidence requires the current GitHub run.')
+                  ^
+
+Error: Sharded contract evidence requires the current GitHub run.
+    at identity (file:///workspace/run-pencil/scripts/ci-contract-evidence.mjs:11:19)
+    at writeCiContractEvidence (file:///workspace/run-pencil/scripts/ci-contract-evidence.mjs:49:72)
+    at async file:///workspace/run-pencil/scripts/run-contract-lane.mjs:43:1
+
+Node.js v22.20.0
+CHECK_RECEIPT {"name": "ci-reproduction", "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef", "command": ["timeout", "1200", "node", "scripts/run-contract-lane.mjs", "desktop-4", "/tmp/pencil-ci-contract-evidence"], "exit": 1, "started": "2026-11-09T11:19:11.539838+00:00", "finished": "2026-11-09T11:21:18.085908+00:00"}

@@ -1,0 +1,21 @@
+{
+  "status": "BLOCKED",
+  "repository": "just-every/run-pencil",
+  "branch": "cloud/sd-pencil-c-f61",
+  "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "verify_run": 42604957193,
+  "failed_job": 129118958765,
+  "point_probe_passed_cases": 2,
+  "new_product_commits": 0,
+  "counts_before": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "counts_after": {
+    "done": 142,
+    "partial": 61,
+    "missing": 49
+  },
+  "reason": "Unreproduced notification-controls CI failure; no speculative repair."
+}

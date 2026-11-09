@@ -1,0 +1,7 @@
+Actual result lines from job 129118958765 of run 42604957193. The archive omits the raw assertion diff. Step environment metadata and unrelated successful output are excluded.
+
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-09T11:03:04.9355435Z Browser failure: [NOTIFY-002,NOTIFY-004,NOTIFY-005,BASE-PUBLIC-003] notification preference and failed delivery controls are accessible on desktop and mobile with authenticated results at contract.ts:4:3 (desktop, attempt 1, timedOut)
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-09T11:03:04.9361176Z Browser failure: [NOTIFY-002,NOTIFY-004,NOTIFY-005,BASE-PUBLIC-003] notification preference and failed delivery controls are accessible on desktop and mobile with authenticated results at /home/runner/work/run-pencil/run-pencil/tests/e2e/notifications.spec.ts:147:128 (desktop, attempt 2, failed)
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-09T11:03:04.9434876Z desktop-4: 10 passed, 1 failed; exit 1.
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-09T11:07:04.7924099Z mobile-7: 10 passed, 0 failed; exit 0.
+shards (5, desktop-4 mobile-7 desktop-5 admission)	Run every original lane and retain every result	2026-11-09T11:09:10.4901533Z desktop-5: 14 passed, 0 failed; exit 0.

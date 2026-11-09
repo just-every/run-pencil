@@ -1,0 +1,11 @@
+{
+  "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "job": 129118958765,
+  "run": 42604957193,
+  "command": "node scripts/run-contract-lane.mjs desktop-4 /tmp/pencil-ci-contract-evidence",
+  "test": "notification preference and failed delivery controls are accessible on desktop and mobile with authenticated results",
+  "exit": 1,
+  "failure": "Browser setup failed before test cases (1 runner errors, exit 1). Error: Sharded contract evidence requires the current GitHub run.",
+  "ci_assertion_reproduced": false,
+  "product_edits": false
+}

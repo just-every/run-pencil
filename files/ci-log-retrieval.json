@@ -1,0 +1,17 @@
+{
+  "head": "0ed9dd1bdfb98836ea8f95feba80c5a32034e9ef",
+  "run": 42604957193,
+  "job": 129118958765,
+  "command": [
+    "gh",
+    "run",
+    "view",
+    "42604957193",
+    "--repo",
+    "just-every/run-pencil",
+    "--job",
+    "129118958765",
+    "--log-failed"
+  ],
+  "exit": 0
+}
