@@ -6,6 +6,7 @@ const retained = {
   // Door decisions contain private product data. Pending authority and signed
   // Business bindings are inventoried but never travel to another installation.
   agent_door_agents: 'id name specialist sponsor sponsor_name revoked window requests tombstone',
+  // 0079 restores legacy Business principal provenance; saved authority still never travels.
   agent_door_approvals: 'id state saved approvals result version',
   agent_door_audit: 'sequence id at agent classes row evidence',
   agent_door_calls: 'agent key digest decision_id created_at state outcome expires_at',

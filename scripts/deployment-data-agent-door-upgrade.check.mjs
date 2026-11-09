@@ -4,6 +4,65 @@ import { DatabaseSync } from 'node:sqlite';
 import { test } from 'node:test';
 import { classify, sanitize } from './deployment-data-policy.mjs';
 
+test('legacy held Business principals acquire stop-guard provenance without changing history', () => {
+  const db = new DatabaseSync(':memory:');
+  try {
+    for (const name of ['0074_agent_door.sql', '0077_agent_door_refresh.sql', '0078_agent_door_relay_privacy.sql']) {
+      db.exec(readFileSync(new URL(`../migrations/core/${name}`, import.meta.url), 'utf8'));
+    }
+    db.exec(`INSERT INTO agent_door_state(id,envelope) VALUES(1,'{"business":"original-business"}')`);
+    const saved = principal => JSON.stringify({ decision_id: 'legacy-decision', principal,
+      revision: 7, summary_sha256: 'original-hash', args: { flowId: 'draft' }, evidence: { kept: true } });
+    const cases = [
+      ['legacy-business', 'pending', { consent: 'business-consent', person: { id: 'owner' } }, true],
+      ['partial-approval', 'pending', { consent: 'business-consent' }, true],
+      ['null-source', 'pending', { consent: 'business-consent', source: null }, true],
+      ['new-business', 'pending', { consent: 'business-consent', source: 'business' }, false],
+      ['explicit-local', 'pending', { consent: 'business-consent', source: 'local' }, false],
+      ['legacy-local', 'pending', { person: { id: 'owner' } }, false],
+      ['null-consent', 'pending', { consent: null }, false],
+      ['empty-consent', 'pending', { consent: '  ' }, false],
+      ['invalid-consent', 'pending', { consent: 1 }, false],
+      ['executed', 'executed', { consent: 'business-consent' }, false],
+      ['rejected', 'rejected', { consent: 'business-consent' }, false],
+      ['erased', 'pending', null, false],
+    ];
+    for (const [id, state, principal] of cases) db.prepare(
+      'INSERT INTO agent_door_approvals(id,state,saved,approvals,version) VALUES(?,?,?,?,?)'
+    ).run(id, state, saved(principal), '[{"ref":"owner","person":"owner"}]', 3);
+    db.exec(`INSERT INTO agent_door_audit(id,at,agent,classes,row,evidence)
+      VALUES('legacy-decision','2026-11-09T00:00:00Z','agent','[]','{ "door": "mcp", "consent": "business-consent" }','{ "kept": true }');`);
+    const rows = () => db.prepare('SELECT * FROM agent_door_approvals ORDER BY id').all();
+    const before = rows();
+    const otherTables = db.prepare("SELECT name FROM sqlite_schema WHERE type='table' AND name LIKE 'agent_door_%' AND name!='agent_door_approvals'").all();
+    const history = otherTables.map(({ name }) => [name, db.prepare(`SELECT * FROM ${name}`).all()]);
+    const migration = readFileSync(new URL('../migrations/core/0079_agent_door_legacy_principals.sql', import.meta.url), 'utf8');
+    db.exec(migration);
+    for (const row of rows()) {
+      const original = before.find(value => value.id === row.id);
+      const changed = cases.find(([id]) => id === row.id)[3];
+      if (!changed) assert.deepEqual(row, original, `${row.id} must stay byte-identical`);
+      else {
+        const expected = JSON.parse(original.saved);
+        expected.principal.source = 'business';
+        assert.deepEqual(JSON.parse(row.saved), expected);
+        assert.deepEqual({ ...row, saved: original.saved }, { ...original }, 'Only saved principal provenance changes');
+      }
+    }
+    for (const [name, original] of history) assert.deepEqual(db.prepare(`SELECT * FROM ${name}`).all(), original,
+      `Every byte outside saved approval provenance survives in ${name}`);
+    const once = rows();
+    db.exec(migration);
+    assert.deepEqual(rows(), once, 'The forward repair is idempotent');
+    const table = { name: 'agent_door_approvals', columns: Object.keys(once[0]), rows: once.map(row =>
+      Object.values(row).map(value => value === null ? { type: 'null' } : { type: 'text', value: String(value) })) };
+    assert.ok(Object.values(classify(table)).every(value => value === 'excluded-authorization'));
+    assert.deepEqual(sanitize(table).rows, [], 'Legacy or tagged pending authority never travels in backups');
+  } finally {
+    db.close();
+  }
+});
+
 test('a populated agent door upgrades without losing history or restoring authority', () => {
   const db = new DatabaseSync(':memory:');
   try {
