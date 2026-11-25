@@ -885,7 +885,7 @@
       "executable": false
     },
     "deploy.json": {
-      "sha256": "2c647c26e7d90bd81ea300f64b5e8e52ce940f8a40224b8fccb735179204baa0",
+      "sha256": "a570b5146896582ba3a6dabc29278cd808326c1e0d85648ca52f12b38614381f",
       "executable": false
     },
     "deploy/wrangler.template.toml": {
@@ -2529,11 +2529,11 @@
       "executable": true
     },
     "scripts/installer/deploy.mjs": {
-      "sha256": "84020ed6a46e054075c8ea8991a57587a4f80bdee6b1a0d3b7196f18f87bd4e8",
+      "sha256": "79accd2db66d07907fd69c5618b5935c2988b70584b3d2ac57f22e66135739f3",
       "executable": false
     },
     "scripts/installer/local.mjs": {
-      "sha256": "f0f324bfbb2b1ef4bbecb76a723e913215fc4087ad1adc4d07607ff11eb688ab",
+      "sha256": "bedf691077c632e6acb8900d98fedf4c99c250667c9e9c88f45e55104c0057b4",
       "executable": false
     },
     "scripts/installer/seed.mjs": {
@@ -7977,7 +7977,7 @@
       "executable": false
     },
     "src/core/platform/config/runtime.ts": {
-      "sha256": "ea047e15cab8063a6c598195a4afebd8d341c3a8ffbf247f17b7beaefba3d89d",
+      "sha256": "90f2074531012652240ead21018a63650317cfd92fcaadb26ad81b1568945e31",
       "executable": false
     },
     "src/core/platform/config/sealing.ts": {
@@ -8005,7 +8005,7 @@
       "executable": false
     },
     "src/core/platform/mail/base.server.ts": {
-      "sha256": "e05bd4e4c28aa5de5bacafde84200ee9aef463df5a135214302c8a0c5ffab10e",
+      "sha256": "854ab4852d699337efedead1fd2e0b39662ff959bf6e7384e9fdd26b9949d142",
       "executable": false
     },
     "src/core/platform/mail/erasure.ts": {
@@ -8013,11 +8013,11 @@
       "executable": false
     },
     "src/core/platform/mail/index.ts": {
-      "sha256": "14de041fa6a8beb1a413f3472d2a2981497d4b743888afab6762c6fe7c11f2bd",
+      "sha256": "8c3db46b21ac250147f9f61941e8a9cc529bccded64ac96d59423201db2f7a55",
       "executable": false
     },
     "src/core/platform/mail/production.server.ts": {
-      "sha256": "41a8303b1c0bd69428ce4d434ab4aeb1afb92a8f216cd6707bf85a3c5beb753e",
+      "sha256": "08577c6170e6e8d9b069bf931f1a2b89386351fd0732b43a3ac353ff7c33bd58",
       "executable": false
     },
     "src/core/platform/management.ts": {
@@ -9561,7 +9561,7 @@
       "executable": false
     },
     "tests/runtime/google-import-http.ts": {
-      "sha256": "a7804f9ae8ffc8bcfeae99b158525c36812980c19abb378fa3f3ef14d7a94bee",
+      "sha256": "db7e2f22f463fa7b877facb91e3ffca68f47ac45df9a81a17f7887208bbfb019",
       "executable": false
     },
     "tests/runtime/google-sheets.worker.test.ts": {
@@ -9638,6 +9638,10 @@
     },
     "tests/runtime/long-forms.worker.test.ts": {
       "sha256": "02770125df273fe6fdee7f06f0e54dc2eaabf57df06309d055e62b0009d883ee",
+      "executable": false
+    },
+    "tests/runtime/mail-off.worker.test.ts": {
+      "sha256": "1a7636cc8ab34f418fd5d4fcc407c39480876ef80475ab6cad76c94dfae86b1f",
       "executable": false
     },
     "tests/runtime/matrix-scenario.ts": {
