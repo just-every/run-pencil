@@ -1,4 +1,4 @@
--- Synthetic populated Pencil 0.6.0 data: the 0.5.0 fixture rows applied on the released 0000 through 0050 schema, plus rows for what 0.6.0 added.
+-- Synthetic populated Pencil 0.7.0 data on its released 0000 through 0052 schema.
 INSERT INTO workspaces (id,name,time_zone,sending_window_start,sending_window_end,setup_operator_initialized_at,embed_allowed_origins_json,created_at,updated_at) VALUES ('upgrade-workspace','Cedar Studio','Australia/Brisbane','08:30','18:00','2026-10-01T12:00:00.000Z','["https://example.org"]','2026-10-01T12:00:00.000Z','2026-10-01T12:00:00.000Z');
 INSERT INTO operators (id,workspace_id,email,display_name,is_setup_operator,created_at,updated_at) VALUES ('upgrade-operator-1','upgrade-workspace','operator1@example.com','Operator 1',1,'2026-10-01T12:00:00.000Z','2026-10-01T12:00:00.000Z');
 INSERT INTO operators (id,workspace_id,email,display_name,is_setup_operator,created_at,updated_at) VALUES ('upgrade-operator-2','upgrade-workspace','operator2@example.com','Operator 2',0,'2026-10-01T12:00:00.000Z','2026-10-01T12:00:00.000Z');
@@ -78,3 +78,6 @@ INSERT INTO workspace_codes (id,workspace_id,label,normalized_label,created_by_o
 INSERT INTO answer_code_assignments (id,workspace_id,answer_id,code_id,source,actor_operator_id,created_at) VALUES ('upgrade-code-assignment-1','upgrade-workspace','upgrade-answer-1','upgrade-code-1','manual','upgrade-operator-1','2026-10-16T12:00:00.000Z');
 INSERT INTO revision_view_counters (revision_id,source,day,count) VALUES ('upgrade-revision-2','direct','2026-10-16',7);
 INSERT INTO form_access_rules (id,flow_id,mode,domains_json,emails_json,created_at) VALUES ('upgrade-access-1','upgrade-digest-flow','email','["example.com"]','[]','2026-10-16T12:00:00.000Z');
+
+-- A closed form has a retention policy that its owner placed on legal hold.
+INSERT INTO form_retention (flow_id,days,legal_hold,version,change_id,created_at,updated_at) VALUES ('upgrade-digest-flow',30,1,1,'upgrade-retention-policy','2026-10-19T12:00:00.000Z','2026-10-19T12:00:00.000Z');

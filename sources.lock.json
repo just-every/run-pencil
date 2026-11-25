@@ -853,7 +853,7 @@
       "executable": false
     },
     "CHANGELOG.md": {
-      "sha256": "e2a58f978df5849461249237694c59dd4851cc09cd297492f861e8871749f9a1",
+      "sha256": "32686861604baa9d4f810408947f3ed79324600a7836dc52fb8b8563e22e0b47",
       "executable": false
     },
     "CLAIMS.md": {
@@ -1477,7 +1477,7 @@
       "executable": false
     },
     "package.json": {
-      "sha256": "214826f4e297f2bb4395829b35892987806fd01b1ea22a6a520cf7f7df1cbaa2",
+      "sha256": "7988744c960b15f22b3fcf92f6d2ee7c2a1d62ecc714b20efaade05bf2265b36",
       "executable": false
     },
     "playwright.admission.config.ts": {
@@ -1537,7 +1537,7 @@
       "executable": false
     },
     "RELEASE.json": {
-      "sha256": "ccd9c1a2ce5b344003ac34fce1aebb863f216432d684c8588a1d1474959e7f9c",
+      "sha256": "051e8978038195cede12db5445b43ef7f0f012ef2c79c80be847e95d55a53ea1",
       "executable": false
     },
     "rer-project.json": {
@@ -2685,7 +2685,7 @@
       "executable": false
     },
     "seed.json": {
-      "sha256": "b0eae0f96af07d33bd08f7ce10838a5ae36df113b6b89c3118b83b72f88f3465",
+      "sha256": "d3f454709cc4453de876859648be4e6fd3cbb2ac0ea49579bb0ab2a1e85b63fa",
       "executable": false
     },
     "src/agent-door/flow-tools.ts": {
@@ -9812,12 +9812,12 @@
       "sha256": "1b234b154aef410b34542fe0f31141fbce46b51493d0b76f55f897d94c2a780c",
       "executable": false
     },
-    "tests/runtime/upgrades/0.6.0.json": {
-      "sha256": "a19775f2f6355845e4053bfbd662b34f4e5eb7de6dc494a2d3990aeb9dd22eef",
+    "tests/runtime/upgrades/0.7.0.json": {
+      "sha256": "18b3793aadac95c53f9239358e831f081c79fffca73bd7f318d19b62a460ced0",
       "executable": false
     },
-    "tests/runtime/upgrades/0.6.0.sql": {
-      "sha256": "4df72e451cb6b8e58d762b7085fd0797c9157b46993a320a8d50be45a6263ed9",
+    "tests/runtime/upgrades/0.7.0.sql": {
+      "sha256": "e94d41d67f87e91f48300aba5a055b8bd31a4dda95e9998ead79f45eac77b265",
       "executable": false
     },
     "tests/runtime/upgrades/queued-retry-dispatch.ts": {

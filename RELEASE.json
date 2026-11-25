@@ -1,54 +1,125 @@
 {
-  "version": "0.7.0",
-  "previousVersion": "0.6.0",
-  "date": "2026-10-19",
-  "contractChanges": {
-    "FIELD-006": {
-      "change": "added",
-      "summary": "An operator can randomize a question's choices, with Other and None of the above anchored last, or the questions in a page or group; each respondent's order is stable through preview, Back and resume, stored with the response and exported.",
-      "migrationIds": [
-        "0051_presentation_order.sql"
-      ]
-    },
-    "GOV-003": {
-      "change": "added",
-      "summary": "A form's owner can opt into a retention period after which released and quarantined responses and private saves are deleted under DATA-002, with seven days' in-app notice and a legal hold that pauses all automatic deletion; other forms keep BASE-DATA-002.",
-      "migrationIds": [
-        "0052_retention.sql"
-      ]
-    },
-    "RESP-013": {
-      "change": "changed",
-      "summary": "A respondent session record also holds FIELD-006's stable choice and block presentation IDs, never answers or identity.",
-      "migrationIds": [
-        "0051_presentation_order.sql"
-      ],
-      "was": "A session record held the session, revision, source, start time, furthest step and device class.",
-      "now": "It also holds FIELD-006's stable choice and block presentation IDs; still never answers, contact identity, raw IP, user-agent or host identity."
-    }
-  },
-  "proseChanges": [
-    {
-      "document": "docs/LOCAL-DATA-RECOVERY.md",
-      "change": "changed",
-      "date": "2026-10-19",
-      "summary": "Deployed D1 recovery explains how Run Edit Run Platform's migration ledger is handled.",
-      "was": "Recovery named the same kit and ledger kind for the target and did not mention Platform's rer_migrations ledger.",
-      "now": "A Platform-installed database's rer_migrations history travels as names and digests; restore checks the target's own ledger and never rewrites, drops or recreates it."
-    }
-  ],
+  "version": "0.7.1",
+  "previousVersion": "0.7.0",
+  "date": "2026-11-25",
+  "contractChanges": {},
+  "proseChanges": [],
   "extensionPointChanges": [],
   "migrations": [
     {
-      "id": "0051_presentation_order.sql",
-      "buyerSteps": "Adds each respondent session's stored presentation order for randomized choices and question blocks. Additive; existing sessions get an empty order. Local installs: export first, then rer setup after pulling (rer dev also applies it before serving). Hosted deployments apply it through rer deploy."
+      "id": "0053_response_search_values.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
     },
     {
-      "id": "0052_retention.sql",
-      "buyerSteps": "Adds per-form retention schedules and their notices. Additive; every existing form stays without a schedule and keeps all its data. Local installs: export first, then rer setup after pulling (rer dev also applies it before serving). Hosted deployments apply it through rer deploy."
+      "id": "0054_action_owner_reminders.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0055_payments.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0056_paid_collector_admission.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0057_link_preview_snapshots.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0058_respondent_confirmations.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0059_response_device_class.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0060_analysis_contradictions.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0061_payment_totals.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0062_payment_ledger.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0063_response_event_webhooks.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0064_form_addresses.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0065_sms_invitations.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0066_google_sheets.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0067_response_edits.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0068_answer_alerts.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0069_chat_integrations.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0070_sms_refusal_retry.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0071_contact_time_zones.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0072_matrix_questions.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0072_privacy_save_lookup.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0073_saved_reports.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0074_agent_door.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0075_business_settings.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0076_business_people.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0077_agent_door_refresh.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0078_agent_door_relay_privacy.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
+    },
+    {
+      "id": "0079_agent_door_legacy_principals.sql",
+      "buyerSteps": "Back up first. Apply once through the normal upgrade runner in migration order, keeping previous entries in the migration ledger."
     }
   ],
   "breaking": false,
-  "publicReleaseNotes": "Pencil 0.7.0 is the next regular release after 0.6.0. It fixes backup on a Pencil installed by Run Edit Run, and adds randomized order and retention schedules.\n\nBackup fix: on a Pencil installed by Run Edit Run (Managed), the Backup page and the recovery command refused to export with a migration-history error, because they did not recognise the migration ledger Run Edit Run keeps (rer_migrations). Both now check that ledger against Pencil's own migrations and export normally. Restoring into another installation checks the target's ledger and never rewrites, drops or recreates it. Installations set up locally or with rer deploy are unchanged.\n\nForms: an operator can shuffle a question's choices, with Other and None of the above kept last, and shuffle the questions in a page or group. Each respondent keeps the order they first saw through preview, Back and resume. That order is stored with the response and included in CSV and JSON exports. Retention: an owner can turn on a retention period for a form. Responses and private saves past it are then deleted, after seven days' notice in the app, and a legal hold pauses all automatic deletion. Forms without a schedule keep everything as before.\n\nRelease checks (19 October 2026, rer 0.2.65): Verify, including its installer and README jobs, passed on the release source. A populated scratch database installed by Run Edit Run Platform's own migration runner was upgraded from the Pencil source Run Edit Run currently installs (43 migrations) to 0.7.0 (53). It was then exported with the native recovery command, restored into a second Platform-installed database whose ledger stayed byte-identical, and re-exported to the same archive. The populated 0.6.0 upgrade test applies 0051 and 0052 with every row kept.\n\nNot in this release: CONTRACT.md's target clauses marked partial or missing, among them file uploads, payments, signatures, matrix grids, quizzes, multi-language forms, roles and SSO, integrations, shared report links and SMS.\n\nKnown issues: there is still no supported way to restore a hosted backup into a deployment that rer deploy has already claimed. The restore command refuses that target (NONEMPTY_TARGET) and writes nothing. An archive restores only into the Pencil version that made it. Back up before upgrading, and keep the original deployment.\n\nBack up first. Locally: stop dev, mkdir -p exports, rer export --output exports/before-0.7.0.rer, pull, then rer install, rer setup and rer dev. Hosted: download and check a backup at /app/backup and choose Test restoration, then rer deploy on the same environment. Migrations 0051 and 0052 are additive and apply in order.\n\nProduct screenshot: .github/assets/release/pencil-0.5.0-results-1440.png",
-  "agentUpdateInstructions": "Read CHANGELOG.md 0.7.0, OPERATIONS.md, docs/LOCAL-DATA-RECOVERY.md and docs/guide/backup.md. Back up first: locally rer export --output exports/before-0.7.0.rer (create the ignored exports folder with mkdir -p exports), hosted from /app/backup with Check backup and Test restoration. Preserve every applied migration's bytes, including 0019 as your database applied it (migrations/released-rewrites.json), and apply 0051 and 0052 in order after 0050 before serving the new source: locally with rer setup (rer dev also applies pending migrations), hosted with rer deploy on the same environment and receipt. Keep the rer pin 0.2.65 from package.json and its lockfile. Keep Platform's rer_migrations ledger recognised exactly as scripts/deployment-data-ledger.mjs defines it: export carries only its names and digests, restore validates the target's ledger in place and never writes it, and mixed or altered ledgers stay refused. Never let a retention schedule delete data on a form whose owner did not opt in, or while a legal hold is on. Run the populated 0.6.0 upgrade test (pnpm verify:migrations) and the complete verification gate on the integrated source."
+  "publicReleaseNotes": "Pencil 0.7.1 supports hosted setup with mail off and owner sign-in through rer. It pins rer 0.2.105.\n\nDeploy with `MAIL_PROVIDER=none` to set up hosted Pencil without a mail sender or API key. The setup owner signs in with `rer signin`. Forms and responses remain available. Email invitations and notifications require a mail provider.\n\nThis release also includes response edits, matrix questions, saved reports and more control over invitations and integrations.\n\nBack up Pencil 0.7.0 before updating in place. Adopt 0.7.1 with the pinned rer 0.2.105 and apply the 28 pending migrations through the normal upgrade runner. Preserve the existing migration ledger and already applied SQL. Confirm owner access and check existing records before resuming writes.",
+  "agentUpdateInstructions": "Back up Pencil 0.7.0 before updating in place. Adopt 0.7.1 with the pinned rer 0.2.105 and apply the 28 pending migrations through the normal upgrade runner. Preserve the existing migration ledger and already applied SQL. Confirm owner access and check existing records before resuming writes. Deploy with `MAIL_PROVIDER=none` to set up hosted Pencil without a mail sender or API key. The setup owner signs in with `rer signin`. Forms and responses remain available. Email invitations and notifications require a mail provider. Keep existing provider configuration where the workspace needs mail."
 }

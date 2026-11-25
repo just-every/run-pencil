@@ -1,6 +1,14 @@
 # Release notes
 
-## Unreleased
+## 0.7.1 — 2026-11-25
+
+Pencil 0.7.1 supports hosted setup with mail off and owner sign-in through rer. It pins rer 0.2.105.
+
+Deploy with `MAIL_PROVIDER=none` to set up hosted Pencil without a mail sender or API key. The setup owner signs in with `rer signin`. Forms and responses remain available. Email invitations and notifications require a mail provider.
+
+This release also includes response edits, matrix questions, saved reports and more control over invitations and integrations.
+
+Back up Pencil 0.7.0 before updating in place. Adopt 0.7.1 with the pinned rer 0.2.105 and apply the 28 pending migrations through the normal upgrade runner. Preserve the existing migration ledger and already applied SQL. Confirm owner access and check existing records before resuming writes.
 
 A checkout set up on one port now opens its app when `rer dev` or `rer demo` serves it on another.
 
