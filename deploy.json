@@ -25,6 +25,11 @@
       "environment": "SETUP_TOKEN"
     },
     {
+      "binding": "MAIL_PROVIDER",
+      "environment": "PENCIL_MAIL_PROVIDER",
+      "verifyStandIn": "sendgrid"
+    },
+    {
       "binding": "SEED_ADMIN_EMAIL",
       "environment": "SEED_ADMIN_EMAIL"
     },
@@ -50,7 +55,6 @@
   "vars": {
     "PENCIL_LOCAL_DEVELOPMENT": "false",
     "SEED_SAMPLE_DATA": "false",
-    "MAIL_PROVIDER": "resend",
     "MAIL_RELAY_URL": ""
   }
 }
