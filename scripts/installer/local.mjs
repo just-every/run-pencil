@@ -31,6 +31,8 @@ export const commandAdapter = createCommandAdapter(lifecycle, {
  // rer dev skips setup on an existing install: a pulled source's new migrations are applied before it serves.
  localPrerequisites: applyPendingMigrations,
  deploy: pencilDeploy(lifecycle), portability,
+ // A deploy with MAIL_PROVIDER=none runs with mail off: the owner signs in with this command instead of an emailed link.
+ mailOffSignIn: 'rer signin',
  // Local dev identity: the local-only Worker entry, the build output rer build scans for the dev layer, and the kept
  // local owner-entry test.
  devIdentity: { entry: 'src/server.dev.ts', output: ['dist'] },

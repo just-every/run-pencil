@@ -3,7 +3,7 @@ import { createMailSender } from '../../../base/mail/index.mjs'
 import type { MailSender } from '../../../base/operator-auth/index.mjs'
 import type { MailConfiguration } from './index'
 
-export function productionMailSender(configuration: Exclude<MailConfiguration, { kind: 'local-development' }>): MailSender {
+export function productionMailSender(configuration: Exclude<MailConfiguration, { kind: 'local-development' } | { kind: 'none' }>): MailSender {
   const sender = createMailSender({ provider: configuration.kind, mode: 'production', apiKey: configuration.apiKey,
     ...(configuration.kind === 'rer' ? { relayUrl: configuration.relayUrl } : {}) })
   if (configuration.kind !== 'rer') return sender
