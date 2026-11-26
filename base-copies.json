@@ -13,7 +13,16 @@
       },
       "originFiles": [
         "export/run-demo.yml"
-      ]
+      ],
+      "adapted": {
+        ".github/workflows/run-demo.yml": "feb76ac8321ff1275168cce10009291721064738"
+      },
+      "acknowledged": {
+        ".github/workflows/run-demo.yml": {
+          "sha256": "1267cb0fe077804f182acd04776a9ba6c770c4c0cdb1025d184be3cf0d754722",
+          "mode": "100644"
+        }
+      }
     },
     {
       "path": "docs/contract-changes-20261002.json",

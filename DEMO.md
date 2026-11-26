@@ -49,9 +49,9 @@ and the claim origin from its `APP_ORIGIN`. Its task webhook points at
 keys; the demo guard answers the send with a provider success and nothing
 leaves.
 
-`.github/workflows/run-demo.yml` is Base's `export/run-demo.yml`, recorded in
-`base-copies.json`. It runs only when dispatched by hand, in the `run-demo`
-environment on the RunEditRun account (`vars.CLOUDFLARE_ACCOUNT_ID`). With
+The `run-demo.yml` workflow adapts Base's template, as recorded in
+`base-copies.json`. It deploys each published release at its tag and supports
+manual dispatch in the same `run-demo` environment. With
 `test_only` it deploys the separate test host `demo.test.run-pencil.com` with
 Turnstile's test keys, where starts need the private
 `RER_DEMO_MEASUREMENT_TOKEN`; with `remove` it removes that demo.
